@@ -120,4 +120,5 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 
 
-
+# grappelli custom
+GRAPPELLI_ADMIN_TITLE = "Gargantext"

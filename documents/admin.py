@@ -5,16 +5,16 @@ from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTa
 
 from documents.models import Database, Language, Project, Corpus, Document
 
-class DocumentInLine(NestedStackedInline):
+class DocumentInLine(admin.StackedInline):
     model = Document
     extra = 0
 
-class CorpusInLine(NestedStackedInline):
+class CorpusInLine(admin.StackedInline):
     model = Corpus
     extra = 0
     inlines = [DocumentInLine,]
 
-class ProjectAdmin(NestedModelAdmin):
+class ProjectAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
     list_display = ('title', 'date', 'analyst')
     inlines = [CorpusInLine,]

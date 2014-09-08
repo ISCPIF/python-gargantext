@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
 
-from gargantext_web.views import home
+from gargantext_web.views import home, project, corpus
 
 admin.autodiscover()
 
@@ -13,7 +13,10 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
+    
     url(r'^$', home),
+    url(r'^project/(\d+)/$', project),
+    url(r'^project/(\d+)/corpus/(\d+)/$', corpus),
 )
 
 from django.conf import settings

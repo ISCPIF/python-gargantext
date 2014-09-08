@@ -1,0 +1,63 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+                {% if project %}
+                <h1>{{ project.title }} </h1>
+                <p> {{ project.subtitle }}</p>
+                {% endif %}
+
+                {% if corpus %}
+                <h2>{{ corpus.title }} </h2>
+                <p>{{ corpus.subtitle }} </p>
+                <p>{{ corpus.date }}, {{ corpus.language }}, {{ corpus.database }} ({{ number}} docs)</p>
+                {% endif %}
+            </div>
+
+        </div>
+</div>
+
+<div class="container">
+    <div class="row">
+				
+ 
+        <div class="col-md-4">
+            <ul>
+            {% if dates %}
+            <h3>Main dates</h3>
+            {% for d in dates %}
+            <li>{{ d.to_char }} : {{ d.count }}</li>
+            {% endfor %}
+            {% endif %}
+            </ul>
+        </div>
+       
+        
+        <div class="col-md-4">
+            <ul>
+            {% if sources %}
+            <h3>Main sources</h3>
+            {% for source in sources %}
+            <li>{{ source.source }} : {{ source.count }}</li>
+            {% endfor %}
+            {% endif %}
+            </ul>
+        </div>
+
+           
+            
+    </div>
+</div>
+
+
+{% endblock %}

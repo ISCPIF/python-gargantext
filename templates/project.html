@@ -1,0 +1,42 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+            {% if project %}
+            <h1>{{ project.title }}</h1>
+            <h2> {{ project.subtitle }}</h2>
+            <h3> {{number}} corpora </h3>
+            <p>
+            <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/add/">Add a corpus</a></p>
+
+            {% endif %}
+        </div>
+</div>
+
+<div class="container">
+    <div class="row">
+								{% if corpora  %}
+										{% for corpus in corpora %}
+										<div class="col-md-4">
+                        <h3><a href="/project/{{ project.id }}/corpus/{{corpus.id}}">{{ corpus.title }}</a></h3>
+												<h4>{{ corpus.subtitle }}</h4>
+                        <p>{{ corpus.language }}, {{ corpus.database}}</p>
+										</div>
+										{% endfor %}
+								{% endif %}
+        
+    </div>
+</div>
+
+{% endblock %}

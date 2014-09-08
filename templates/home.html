@@ -13,105 +13,23 @@
 
 <div class="container theme-showcase" role="main">
         <div class="jumbotron">
-						<p class="right"> <img src="{{ MEDIA_URL }}{{author.picture_id.url }}" height="130" width="115" style="float:right" /></a><br/> </p>
-        <h1>{{ author.firstName }} {{ author.lastName }}</h1>
-            <div class="row">
-                <div class="col-md-4">
-                    <p>
-                        {{ profession.title }}
-                        {{ profession.abstract }}
-                    </p>
-                </div>
-                <div class="col-md-4">
-                    <p>
-                    </p>
-                </div>
-                
-        <div class="col-md-4">
-                    <p>
-                    </p>
-                </div>
-            
-    </div>
+						<h1>My {{number}} projects</h1>
+						<p>Template showing my working space</p>
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/project/add/">Add a project</a>
         </div>
-    </div>
+</div>
 
 <div class="container">
     <div class="row">
-            <div class="col-md-4">
-								{% if book or article or blogPost %}
-                <h2>Last publications</h2>
-        {% if book %}
-                <h3>Book</h3>
-        {{ book.title }}
-        {% if book.url %}
-        <a class="btn btn-xs btn-default" href={{ book.url }} role="button">More...</a>
-        {% endif %}
-        {% endif %}
-        
-        {% if article %}
-                <h3>Article</h3>
-                <p> {{ article.title }}
-                    {% if article.url %}}
-                    <a class="btn btn-xs btn-default" href={{ article.url }} role="button">More...</a>
-                    {% endif %}
-                </p>
-        {% endif %}
-                
-        {% if blogPost %}
-                <h3>Blog</h3>
-                <p> {{ blogPost.title }}
-								{% if blogPost.url %}
-                <a class="btn btn-xs btn-default" href="{{ blogPost.url}}" role="button">More...</a>
+								{% if projects %}
+										{% for project in projects %}
+										<div class="col-md-4">
+												<h3><a href="/project/{{ project.id }}">{{ project.title }}</a></h3>
+												<h4>{{ project.subtitle }}<h4>
+										</div>
+										{% endfor %}
 								{% endif %}
-                </p>
-        {% endif %}
-        {% endif %}
-            </div>
         
-		<div class="col-md-4">
-				{% if projects %}
-            <h2>Current projects</h2>
-						{% for project in projects %}
-
-								<h3>{{ project.title }}</h3>
-								<p>
-								{{ project.abstract }}
-								{% if project.url %}
-								<a class="btn btn-xs btn-default" href="{{ project.url }}" role="button">More...</a>
-								{% endif %}
-								</p>
-						{% endfor %}
-				{% endif %}
-        
-		</div>
-        <div class="col-md-4">
-				{% if conference or seminar or workshop or course %}
-            <h2>Next talks</h2>
-        
-        {% if conference %}
-            <h3>Conference</h3>
-            <p>{{ conference.title }}</p>
-        {% endif %}
- 
-        {% if seminar %}
-            <h3>Seminar</h3>
-            <! if english or french !>
-            <p>{{ seminar.title }}</p>
-        {% endif %}
- 
-        {% if workshop %}
-            <h3>Workshop</h3>
-            <p>{{ workshop.title }}</p>
-        {% endif %}
-        
-        {% if course %}
-            <h3>Course</h3>
-            <p>{{ course.title }}</p>
-        {% endif %}
-        {% endif %}
-
-        </div>
     </div>
 </div>
 

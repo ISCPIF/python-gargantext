@@ -1,9 +1,7 @@
 
 from django.shortcuts import redirect
-
 from django.shortcuts import render
 
-import datetime
 
 from django.http import Http404, HttpResponse
 from django.template.loader import get_template
@@ -11,8 +9,12 @@ from django.template import Context
 
 from documents.models import Project, Corpus, Document
 
+from django.contrib.auth.models import User
+
+import datetime
 from itertools import *
 from django.db import connection
+
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -35,6 +37,7 @@ def home(request):
         return redirect('/login/?next=%s' % request.path)
     
     t = get_template('home.html')
+
 
     date = datetime.datetime.now()
     projects = Project.objects.all().order_by("-date")

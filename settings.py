@@ -24,6 +24,24 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
+
+
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes
+    # Don't forget to use absolute paths, not relative paths.
+    #'/var/www/gargantext/templates',
+    '/home/alexandre/projets/gargantext.py/gargantext_web/templates',
+
+#import os.path
+#
+#TEMPLATE_DIRS = (
+#    os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
+#)
+)
+
+
+
 ALLOWED_HOSTS = []
 
 
@@ -90,9 +108,8 @@ USE_TZ = True
 
 ROOT_URLCONF = 'gargantext_web.urls'
 
-STATIC_URL = '/static/'
-
 STATIC_ROOT = '/var/www/gargantext/static/'
+STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/var/www/gargantext/media'
 #MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
@@ -106,8 +123,8 @@ STATICFILES_FINDERS = (
 
 
 STATICFILES_DIRS = (
-            os.path.join(BASE_DIR, "static"),
-                #'/var/www/www/alexandre/static',
+            #os.path.join(BASE_DIR, "static"),
+                '/home/alexandre/projets/gargantext.py/gargantext_web/static',
                 #'/var/www/www/alexandre/media',
                 #'/var/www/alexandre.delanoe.org/',
                 )

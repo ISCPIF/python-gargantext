@@ -105,6 +105,8 @@ class Document(models.Model):
 
 
 
+
+
 # class relation corpus / document (pour enlever des documents d'un corpus)
 
 # table ngrams

@@ -41,7 +41,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class CorpusAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
-    list_display = ('analyst', 'database', 'date', 'title')
+    list_display = ('title', 'date', 'database', 'analyst')
     inlines = [DocumentInLine,]
 
 

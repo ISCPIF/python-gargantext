@@ -112,25 +112,32 @@ class Document(models.Model):
 
 class Ngram(models.Model):
     terms    = models.CharField(max_length=100, unique=True)
+    stem     = models.CharField(max_length=100)
     n        = models.IntegerField()
-#stem
+    def __str__(self):
+        return self.terms
 
 class NgramDocument(models.Model):
     terms       = models.ForeignKey(Ngram)
     document    = models.ForeignKey(Document)
     occurrences = models.IntegerField()
+    def __str__(self):
+        return self.terms
 
 class List(models.Model):
     title       = models.CharField(max_length=100, unique=True)
     analyst     = models.ForeignKey(User)
     date        = models.DateField()
-# public analyst (as postgres)
+    def __str__(self):
+        return self.title
 
 class ListNgram(models.Model):
     liste       = models.ForeignKey(List)
     mainForm    = models.ForeignKey(Ngram)
     othersForms = models.ManyToManyField(Ngram)
-#c-value
+    cvalue      = models.DecimalField(blank=True)
+    def __str__(self):
+        return self.mainForm
 
 ######################################################################
 # Coocurrences
@@ -138,8 +145,8 @@ class ListNgram(models.Model):
 ######################################################################
 
 
-
 class Coocurrence(models.Model):
+    title       = models.CharField(max_length=100)
     corpus      = models.ForeignKey(Corpus)
     whitelists  = models.ManyToManyField(List)
     
@@ -148,6 +155,9 @@ class Coocurrence(models.Model):
     
     occurrence  = models.IntegerField()
     distance    = models.DecimalField()
+    def __str__(self):
+        return self.title
+
 
 
 # graph ?

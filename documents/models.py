@@ -133,9 +133,9 @@ class List(models.Model):
 
 class ListNgram(models.Model):
     liste       = models.ForeignKey(List)
-    mainForm    = models.ForeignKey(Ngram)
-    othersForms = models.ManyToManyField(Ngram)
-    cvalue      = models.DecimalField(blank=True)
+    mainForm    = models.ForeignKey(Ngram, related_name="mainForm")
+    othersForms = models.ManyToManyField(Ngram, related_name="otherForms")
+    cvalue      = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
     def __str__(self):
         return self.mainForm
 
@@ -144,17 +144,16 @@ class ListNgram(models.Model):
 # Graph
 ######################################################################
 
-
 class Coocurrence(models.Model):
     title       = models.CharField(max_length=100)
     corpus      = models.ForeignKey(Corpus)
     whitelists  = models.ManyToManyField(List)
-    
-    ngram1      = models.ForeignKey(Ngram)
-    ngram2      = models.ForeignKey(Ngram)
-    
+
+    ngram1      = models.ForeignKey(Ngram, related_name="x")
+    ngram2      = models.ForeignKey(Ngram, related_name="y")
+
     occurrence  = models.IntegerField()
-    distance    = models.DecimalField()
+    distance    = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
     def __str__(self):
         return self.title
 

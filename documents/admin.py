@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from documents.models import Database, Language, Project, Corpus, Document
+from documents.models import Database, Language, Project, Corpus, Document, Ngram, NgramDocument, List, ListNgram
 
 class DocumentInLine(admin.StackedInline):
     model = Document
@@ -98,3 +98,7 @@ admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
 
 
+admin.site.register(Ngram)
+admin.site.register(NgramDocument)
+admin.site.register(List)
+admin.site.register(ListNgram)

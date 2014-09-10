@@ -111,8 +111,15 @@ class Document(models.Model):
 ######################################################################
 
 class Ngram(models.Model):
-    terms    = models.CharField(max_length=100, unique=True)
-    stem     = models.CharField(max_length=100)
+    terms    = models.TextField(unique=True)
+    stem     = models.TextField(blank=True)
+    n        = models.IntegerField()
+    def __str__(self):
+        return self.terms
+
+class NgramTemporary(models.Model):
+    terms    = models.TextField()
+    stem     = models.TextField(blank=True)
     n        = models.IntegerField()
     def __str__(self):
         return self.terms
@@ -120,14 +127,21 @@ class Ngram(models.Model):
 class NgramDocument(models.Model):
     terms       = models.ForeignKey(Ngram)
     document    = models.ForeignKey(Document)
-    occurrences = models.IntegerField()
+    occurrences = models.IntegerField(default=1, blank=True, null=True)
     def __str__(self):
-        return self.terms
+        return self.terms.terms
+
+class NgramDocumentTemporary(models.Model):
+    terms       = models.Textfield()
+    document    = models.IntegerField()
+    occurrences = models.IntegerField(blank=True, null=True)
+    def __str__(self):
+        return self.terms.terms
 
 class List(models.Model):
     title       = models.CharField(max_length=100, unique=True)
     analyst     = models.ForeignKey(User)
-    date        = models.DateField()
+    date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
     def __str__(self):
         return self.title
 
@@ -137,7 +151,7 @@ class ListNgram(models.Model):
     othersForms = models.ManyToManyField(Ngram, related_name="otherForms")
     cvalue      = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
     def __str__(self):
-        return self.mainForm
+        return self.mainForm.terms
 
 ######################################################################
 # Coocurrences

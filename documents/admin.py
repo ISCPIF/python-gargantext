@@ -97,9 +97,8 @@ class NgramDocAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 class ListNgramAdmin(admin.ModelAdmin):
-    list_display = ('liste', 'mainForm', 'cvalue')
+    list_display = ('mainForm', 'liste', 'cvalue')
     list_per_page = 20
-
 
 
 admin.site.register(Database)

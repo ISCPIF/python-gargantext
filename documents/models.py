@@ -114,6 +114,7 @@ class Ngram(models.Model):
     terms    = models.TextField(unique=True)
     stem     = models.TextField(blank=True)
     n        = models.IntegerField()
+# post-tag = models.ManyToMany(blank=True)
     def __str__(self):
         return self.terms
 
@@ -132,11 +133,11 @@ class NgramDocument(models.Model):
         return self.terms.terms
 
 class NgramDocumentTemporary(models.Model):
-    terms       = models.Textfield()
-    document    = models.IntegerField()
+    terms       = models.TextField(blank=True)
+    document    = models.IntegerField(blank=True)
     occurrences = models.IntegerField(blank=True, null=True)
     def __str__(self):
-        return self.terms.terms
+        return self.terms
 
 class List(models.Model):
     title       = models.CharField(max_length=100, unique=True)
@@ -152,6 +153,12 @@ class ListNgram(models.Model):
     cvalue      = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
     def __str__(self):
         return self.mainForm.terms
+
+#class Postag(models.Model):
+#    abrev       = models.CharField(max_length=30, unique=True)
+#    description = models.TextField(blank=True)
+#    def __str__(self):
+#        return(self.abrev)
 
 ######################################################################
 # Coocurrences

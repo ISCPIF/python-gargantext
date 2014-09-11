@@ -38,7 +38,6 @@ class ProjectAdmin(admin.ModelAdmin):
             obj.analyst = request.user
         obj.save()
 
-
 class CorpusAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
     list_display = ('title', 'date', 'database', 'analyst')
@@ -63,7 +62,6 @@ class CorpusAdmin(admin.ModelAdmin):
         if not change:
             obj.analyst = request.user
         obj.save()
-
 
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
@@ -90,6 +88,20 @@ class DocumentAdmin(admin.ModelAdmin):
             obj.analyst = request.user
         obj.save()
 
+class NgramAdmin(admin.ModelAdmin):
+    list_display = ('terms', 'stem', 'n')
+    list_per_page = 20
+
+class NgramDocAdmin(admin.ModelAdmin):
+    list_display = ('terms', 'document', 'occurrences')
+    list_per_page = 20
+
+class ListNgramAdmin(admin.ModelAdmin):
+    list_display = ('liste', 'mainForm', 'cvalue')
+    list_per_page = 20
+
+
+
 admin.site.register(Database)
 admin.site.register(Language)
 
@@ -97,8 +109,8 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
 
+admin.site.register(Ngram,NgramAdmin)
+admin.site.register(NgramDocument, NgramDocAdmin)
 
-admin.site.register(Ngram)
-admin.site.register(NgramDocument)
 admin.site.register(List)
-admin.site.register(ListNgram)
+admin.site.register(ListNgram, ListNgramAdmin)

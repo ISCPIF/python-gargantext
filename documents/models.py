@@ -27,7 +27,6 @@ class Language(models.Model):
         return self.language
     language        = models.CharField(max_length=30, unique=True)
 
-
 class Project(models.Model):
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
     analyst     = models.ForeignKey(User, related_name='entries')
@@ -45,7 +44,6 @@ class Project(models.Model):
     
     def __str__(self):
         return self.title
-
 
 class Corpus(models.Model):
     project     = models.ForeignKey(Project)
@@ -70,7 +68,6 @@ class Corpus(models.Model):
     
     def __str__(self):
         return self.title
-
 
 class Document(models.Model):
     project     = models.ForeignKey(Project)
@@ -149,8 +146,8 @@ class List(models.Model):
 class ListNgram(models.Model):
     liste       = models.ForeignKey(List)
     mainForm    = models.ForeignKey(Ngram, related_name="mainForm")
-    othersForms = models.ManyToManyField(Ngram, related_name="otherForms")
-    cvalue      = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
+    othersForms = models.ManyToManyField(Ngram, related_name="otherForms", blank=True)
+    cvalue      = models.DecimalField(max_digits=19, decimal_places=10, blank=True, null=True)
     def __str__(self):
         return self.mainForm.terms
 
@@ -177,7 +174,6 @@ class Coocurrence(models.Model):
     distance    = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
     def __str__(self):
         return self.title
-
 
 
 # graph ?

@@ -5,6 +5,12 @@
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+<link rel="stylesheet" href="{% static "css/morris.css" %}">
+
+<script src="{% static "js/jquery-1.9.1.min.js"%}"></script>
+<script src="{% static "js/raphael-min.js"%}"></script>
+<script src="{% static "js/morris.min.js"%}"></script>
+
 {% endblock %}
 
 
@@ -31,33 +37,66 @@
     <div class="row">
 				
  
-        <div class="col-md-4">
-            <ul>
-            {% if dates %}
-            <h3>Main dates</h3>
-            {% for d in dates %}
-            <li>{{ d.to_char }} : {{ d.count }}</li>
-            {% endfor %}
-            {% endif %}
-            </ul>
+        <div class="col-md-8">
+						<h3>Histogram publications</h3>
+            <div id="hero-area" style="height: 300px;"></div>
         </div>
        
         
         <div class="col-md-4">
-            <ul>
-            {% if sources %}
-            <h3>Main sources</h3>
-            {% for source in sources %}
-            <li>{{ source.source }} : {{ source.count }}</li>
-            {% endfor %}
-            {% endif %}
-            </ul>
+						<h3>Donut chart publications</h3>
+            <div id="hero-donut" style="height: 250px;"></div>    
         </div>
 
            
             
     </div>
 </div>
+
+
+
+<script>
+
+        // Morris Area Chart
+        Morris.Area({
+            element: 'hero-area',
+            data: [
+            {% if dates %}
+            {% for d in dates %}
+						{period: {{ d.to_char }}, Quantity: {{ d.count }}},
+            {% endfor %}
+            {% endif %}
+            ],
+            xkey: 'period',
+            ykeys: ['Quantity',],
+            labels: ['publications',],
+            lineWidth: 2,
+            hideHover: 'auto',
+            lineColors: ["#939393",]
+          });
+
+
+        // Morris Donut Chart
+        Morris.Donut({
+            element: 'hero-donut',
+            data: [
+            {% if sources %}
+            {% for source in sources %}
+						{label: '{{ source.source }}', value: {{ source.count }} },
+            {% endfor %}
+            {% endif %}
+
+            ],
+            colors: ["#939393", "#939555"],
+            //colors: ["#30a1ec", "#76bdee"],
+            formatter: function (y) { return y + "%" }
+        });
+
+
+
+
+
+</script>
 
 
 {% endblock %}

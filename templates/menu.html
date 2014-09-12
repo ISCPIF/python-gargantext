@@ -24,6 +24,7 @@
             <li><a href="/admin/">Admin</a></li>
             <li><a href="/contact/">Contact</a></li>
           </ul>
+
           
       </div>
       </div>
@@ -43,7 +44,25 @@
 
 <!-- Place at the end of the document so the pages load faster -->
 {% load staticfiles %}
-<script src="{% static "js/jquery.min.js" %}"></script>
+
+
+
+<script src="{% static "js/jquery-1.9.1.min.js"%}"></script>
+
+
+<script src="{% static "js/easy/jquery.easypiechart.js"%}"></script>
+
+<script type="text/javascript">
+$(function() {
+    $('.chart').easyPieChart({
+        //your configuration goes here
+				size : 50
+    });
+});
+
+</script>
+
+
 <script src="{% static "js/bootstrap.min.js" %}"></script>
 </body>
 </html>

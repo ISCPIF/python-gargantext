@@ -5,6 +5,8 @@
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+
+
 {% endblock %}
 
 
@@ -32,6 +34,8 @@
                         <h3><a href="/project/{{ project.id }}/corpus/{{corpus.id}}">{{ corpus.title }}</a></h3>
 												<h4>{{ corpus.subtitle }}</h4>
                         <p>{{ corpus.language }}, {{ corpus.database}}</p>
+												<div class="chart" data-percent="73">73%</div>
+
 										</div>
 										{% endfor %}
 								{% endif %}

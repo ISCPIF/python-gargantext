@@ -39,13 +39,13 @@
     <div class="row">
 				
  
-        <div class="col-md-8">
+        <div class="col-md-6">
 						<h3>Histogram publications</h3>
             <div id="hero-area" style="height: 300px;"></div>
         </div>
        
         
-        <div class="col-md-4">
+        <div class="col-md-3">
 						<h3>Donut chart publications</h3>
             <div id="hero-donut" style="height: 250px;"></div>    
         </div>
@@ -63,13 +63,13 @@
             data: [
             {% if dates %}
             {% for d in dates %}
-						{period: {{ d.to_char }}, Quantity: {{ d.count }}},
+						{Period: '{{ d.to_char }}', Quantity: '{{ d.count }}', Infos: '10'},
             {% endfor %}
             {% endif %}
             ],
-            xkey: 'period',
-            ykeys: ['Quantity',],
-            labels: ['publications',],
+            xkey: 'Period',
+            ykeys: ['Quantity', 'Infos'],
+            labels: ['publications', 'Infos'],
             lineWidth: 2,
             hideHover: 'auto',
             lineColors: ["#939393",]
@@ -82,9 +82,9 @@
         Morris.Donut({
             element: 'hero-donut',
             data: [
-            {% if sources %}
-            {% for source in sources %}
-						{label: '{{ source.source }}', value: {{ source.count }} },
+            {% if sources_donut %}
+            {% for source in sources_donut %}
+						{label: '{{ source.source }}, {{source.count}} docs', value: {{ source.part }} },
             {% endfor %}
             {% endif %}
 

@@ -51,7 +51,6 @@ def home(request):
     
     return HttpResponse(html)
 
-
 def project(request, p_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)

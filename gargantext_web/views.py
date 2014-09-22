@@ -77,7 +77,6 @@ def project(request, p_id):
     
     return HttpResponse(html)
 
-
 def corpus(request, p_id, c_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -101,6 +100,14 @@ def corpus(request, p_id, c_id):
                         group by source
                         order by 1 DESC limit %d;''' % (int(c_id), int(15)))
 
+    sources_donut = []
+    for s in sources:
+        ss = dict()
+        ss['count'] = s['count']
+        ss['part'] = round(ss['count'] * 100 / number)
+        ss['source'] = s['source']
+        sources_donut.append(ss)
+
     
     dates = query_to_dicts('''select to_char(date, 'YYYY'), count(*) 
                             from documents_document 
@@ -115,7 +122,7 @@ def corpus(request, p_id, c_id):
             'corpus' : corpus,\
             'documents': documents,\
             'number' : number,\
-            'sources' : sources,\
+            'sources_donut' : sources_donut,\
             'dates' : dates,\
             }))
     

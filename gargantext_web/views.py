@@ -1,7 +1,5 @@
-
 from django.shortcuts import redirect
 from django.shortcuts import render
-
 
 from django.http import Http404, HttpResponse
 from django.template.loader import get_template

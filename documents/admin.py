@@ -43,7 +43,6 @@ class CorpusAdmin(admin.ModelAdmin):
     list_display = ('title', 'date', 'database', 'analyst')
     inlines = [DocumentInLine,]
 
-
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(CorpusAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:

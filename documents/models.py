@@ -11,7 +11,7 @@ from django_hstore import hstore
 ######################################################################
 
 
-class Database(models.Model):
+class Source(models.Model):
     """
     Web Of Science, Europresse, Pubmed...
     """
@@ -47,7 +47,7 @@ class Project(models.Model):
 
 class Corpus(models.Model):
     project     = models.ForeignKey(Project)
-    database    = models.ForeignKey(Database)
+    database    = models.ForeignKey(Source)
     language    = models.ForeignKey(Language)
     
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
@@ -65,16 +65,15 @@ class Corpus(models.Model):
         get_latest_by = 'date'
         ordering = ('-date',)
         verbose_name_plural = 'corpora'
-    
+
     def __str__(self):
         return self.title
 
 class Document(models.Model):
     project     = models.ForeignKey(Project)
-    corpus      = models.ForeignKey(Corpus)
-    #corpus      = models.ManyToManyField(Corpus)
+    corpus      = models.ManyToManyField(Corpus)
     analyst     = models.ForeignKey(User)
-    
+
     date        = models.DateField(blank=True, null=True)
 
     uniqu_id    = models.CharField(max_length=150, unique=True)
@@ -85,18 +84,18 @@ class Document(models.Model):
 
     country     = models.CharField(max_length=100, blank=True)
     url         = models.URLField(blank=True)
-    
+
     abstract    = models.TextField(blank=True)
     text        = models.TextField(blank=True)
 
     others      = hstore.DictionaryField(blank=True)
     objects     = hstore.HStoreManager()
-    
+
     class Meta:
         get_latest_by = 'date'
         ordering = ('-date',)
         #verbose_name_plural = 'entries'
-    
+
     def __str__(self):
         return self.title
 
@@ -108,10 +107,11 @@ class Document(models.Model):
 ######################################################################
 
 class Ngram(models.Model):
-    terms    = models.TextField(unique=True)
-    stem     = models.TextField(blank=True)
+    terms    = models.CharField(max_length=64, unique=True)
+    stem     = models.CharField(max_length=64, blank=True)
     n        = models.IntegerField()
 # post-tag = models.ManyToMany(blank=True)
+# ajouter une table stem ?
     def __str__(self):
         return self.terms
 
@@ -140,6 +140,9 @@ class List(models.Model):
     title       = models.CharField(max_length=100, unique=True)
     analyst     = models.ForeignKey(User)
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
+    TYPES       = ((1,"Black List"), (2,"White List"), (3,"Grey List"))
+    type_list   = models.IntegerField(choices=TYPES)
+    corpus      = models.ManyToManyField(Corpus, related_name="relatedCorpus", blank=True)
     def __str__(self):
         return self.title
 

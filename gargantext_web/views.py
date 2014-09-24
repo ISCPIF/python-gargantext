@@ -38,7 +38,7 @@ def home(request):
 
 
     date = datetime.datetime.now()
-    projects = Project.objects.all().order_by("-date")
+    projects = Project.objects.all().filter(analyst=request.user.pk).order_by("-date")
     number = len(projects)
 
     html = t.render(Context({\
@@ -62,7 +62,7 @@ def project(request, p_id):
 
     date = datetime.datetime.now()
     project = Project.objects.get(pk=p_id)
-    corpora = Corpus.objects.all().filter(project_id=p_id)
+    corpora = Corpus.objects.all().filter(project_id=p_id,analyst=request.user.pk)
     number = len(corpora)
     
     html = t.render(Context({\
@@ -86,9 +86,10 @@ def corpus(request, p_id, c_id):
     t = get_template('corpus.html')
 
     date = datetime.datetime.now()
-    project = Project.objects.get(pk=p_id)
-    corpus  = Corpus.objects.get(pk=c_id)
-    documents  = Document.objects.all().filter(corpus_id=c_id).order_by("-date")
+    
+    project = Project.objects.get(pk=p_id, analyst=request.user.pk)
+    corpus  = Corpus.objects.get(pk=c_id, analyst=request.user.pk)
+    documents  = Document.objects.all().filter(analyst=request.user.pk,corpus_id=c_id).order_by("-date")
     number = len(documents)
 
     sources = query_to_dicts('''select count(*),source 
@@ -96,16 +97,17 @@ def corpus(request, p_id, c_id):
                         where corpus_id = %d
                         group by source
                         order by 1 DESC limit %d;''' % (int(c_id), int(15)))
-
     sources_donut = []
     for s in sources:
         ss = dict()
         ss['count'] = s['count']
-        ss['part'] = round(ss['count'] * 100 / number)
+        try:
+            ss['part'] = round(ss['count'] * 100 / number)
+        except:
+            ss['part'] = None
         ss['source'] = s['source']
         sources_donut.append(ss)
 
-    
     dates = query_to_dicts('''select to_char(date, 'YYYY'), count(*) 
                             from documents_document 
                             where corpus_id = %d

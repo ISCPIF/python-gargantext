@@ -35,6 +35,7 @@ def home(request):
         return redirect('/login/?next=%s' % request.path)
     
     t = get_template('home.html')
+    user = request.user
 
 
     date = datetime.datetime.now()
@@ -42,6 +43,7 @@ def home(request):
     number = len(projects)
 
     html = t.render(Context({\
+            'user': user,\
             'date': date,\
             'projects': projects,\
             'number': number,\
@@ -59,6 +61,7 @@ def project(request, p_id):
         raise Http404()
 
     t = get_template('project.html')
+    user = request.user
 
     date = datetime.datetime.now()
     project = Project.objects.get(pk=p_id)
@@ -66,6 +69,7 @@ def project(request, p_id):
     number = len(corpora)
     
     html = t.render(Context({\
+            'user': user,\
             'date': date,\
             'project': project,\
             'corpora' : corpora,\
@@ -84,6 +88,7 @@ def corpus(request, p_id, c_id):
         raise Http404()
 
     t = get_template('corpus.html')
+    user = request.user
 
     date = datetime.datetime.now()
     
@@ -116,6 +121,7 @@ def corpus(request, p_id, c_id):
     
     
     html = t.render(Context({\
+            'user': user,\
             'date': date,\
             'project': project,\
             'corpus' : corpus,\

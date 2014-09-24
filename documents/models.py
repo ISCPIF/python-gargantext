@@ -107,18 +107,20 @@ class Document(models.Model):
 ######################################################################
 
 class Ngram(models.Model):
-    terms    = models.CharField(max_length=64, unique=True)
-    stem     = models.CharField(max_length=64, blank=True)
+    terms    = models.TextField(unique=True)
+    stem     = models.TextField(blank=True)
     n        = models.IntegerField()
-# post-tag = models.ManyToMany(blank=True)
-# ajouter une table stem ?
+    # post-tag = models.ManyToMany(blank=True)
+    # ajouter une table stem ?
     def __str__(self):
         return self.terms
 
 class NgramTemporary(models.Model):
-    terms    = models.TextField()
+    terms    = models.TextField(unique=True)
     stem     = models.TextField(blank=True)
     n        = models.IntegerField()
+    # post-tag = models.ManyToMany(blank=True)
+    # ajouter une table stem ?
     def __str__(self):
         return self.terms
 
@@ -179,6 +181,19 @@ class Coocurrence(models.Model):
         return self.title
 
 
-# graph ?
+class Clique(models.Model):
+    title       = models.CharField(max_length=100)
+    ngram      = models.ForeignKey(Ngram)
+    def __str__(self):
+        return self.title
+
+
+class Phylo(models.Model):
+    date        = models.DateField(blank=True, null=True)
+    clique      = models.ForeignKey(Clique)
+    clique      = models.ForeignKey(Clique)
+    score       = models.DecimalField(max_digits=19, decimal_places=10, blank=True, null=True)
+    def __str__(self):
+        return self.title
 
 

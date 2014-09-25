@@ -41,7 +41,8 @@ class ProjectAdmin(admin.ModelAdmin):
 class CorpusAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
     list_display = ('title', 'date', 'database', 'analyst')
-    inlines = [DocumentInLine,]
+    #inlines = [DocumentInLine,]
+
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(CorpusAdmin, self).has_change_permission(request, obj)
@@ -61,6 +62,9 @@ class CorpusAdmin(admin.ModelAdmin):
         if not change:
             obj.analyst = request.user
         obj.save()
+        for i in range(1,100000):
+            print("GOOOOOOOOOOOOOO")
+
 
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('analyst',)

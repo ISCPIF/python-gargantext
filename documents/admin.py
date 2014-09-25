@@ -66,7 +66,7 @@ class DocumentAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
     list_display = ('date', 'source', 'title')
     list_per_page = 20
-
+    list_filter = ('project', 'corpus')
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(DocumentAdmin, self).has_change_permission(request, obj)

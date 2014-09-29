@@ -31,12 +31,23 @@ def query_to_dicts(query_string, *query_args):
     return
 
 def home(request):
+    t = get_template('home.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
+
+def projects(request):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     
-    t = get_template('home.html')
+    t = get_template('projects.html')
     user = request.user
-
 
     date = datetime.datetime.now()
     projects = Project.objects.all().filter(user=request.user.pk).order_by("-date")

@@ -39,7 +39,7 @@ def home(request):
 
 
     date = datetime.datetime.now()
-    projects = Project.objects.all().filter(analyst=request.user.pk).order_by("-date")
+    projects = Project.objects.all().filter(user=request.user.pk).order_by("-date")
     number = len(projects)
 
     html = t.render(Context({\
@@ -65,7 +65,7 @@ def project(request, p_id):
 
     date = datetime.datetime.now()
     project = Project.objects.get(pk=p_id)
-    corpora = Corpus.objects.all().filter(project_id=p_id,analyst=request.user.pk)
+    corpora = Corpus.objects.all().filter(project_id=p_id,user=request.user.pk)
     number = len(corpora)
     
     html = t.render(Context({\
@@ -92,9 +92,9 @@ def corpus(request, p_id, c_id):
 
     date = datetime.datetime.now()
     
-    project = Project.objects.get(pk=p_id, analyst=request.user.pk)
-    corpus  = Corpus.objects.get(pk=c_id, analyst=request.user.pk)
-    documents  = Document.objects.all().filter(analyst=request.user.pk,corpus_id=c_id).order_by("-date")
+    project = Project.objects.get(pk=p_id, user=request.user.pk)
+    corpus  = Corpus.objects.get(pk=c_id, user=request.user.pk)
+    documents  = Document.objects.all().filter(user=request.user.pk,corpus_id=c_id).order_by("-date")
     number = len(documents)
 
     sources = query_to_dicts('''select count(*),source 

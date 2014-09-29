@@ -15,15 +15,15 @@ class CorpusInLine(admin.StackedInline):
     inlines = [DocumentInLine,]
 
 class ProjectAdmin(admin.ModelAdmin):
-    exclude = ('analyst',)
-    list_display = ('title', 'date', 'analyst')
+    exclude = ('user',)
+    list_display = ('title', 'date', 'user')
     inlines = [CorpusInLine,]
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(ProjectAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:
             return False
-        if obj is not None and not request.user.is_superuser and request.user.id != obj.analyst.id:
+        if obj is not None and not request.user.is_superuser and request.user.id != obj.user.id:
             return False
         return True
 
@@ -31,23 +31,23 @@ class ProjectAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return Project.objects.all()
         
-        return Project.objects.filter(analyst=request.user)
+        return Project.objects.filter(user=request.user)
 
     def save_model(self, request, obj, form, change):
         if not change:
-            obj.analyst = request.user
+            obj.user = request.user
         obj.save()
 
 class CorpusAdmin(admin.ModelAdmin):
-    exclude = ('analyst',)
-    list_display = ('title', 'date', 'analyst')
+    exclude = ('user',)
+    list_display = ('title', 'date', 'database')
     #inlines = [DocumentInLine,]
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(CorpusAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:
             return False
-        if obj is not None and not request.user.is_superuser and request.user.id != obj.analyst.id:
+        if obj is not None and not request.user.is_superuser and request.user.id != obj.user.id:
             return False
         return True
 
@@ -55,18 +55,17 @@ class CorpusAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return Corpus.objects.all()
         
-        return Corpus.objects.filter(analyst=request.user)
+        return Corpus.objects.filter(user=request.user)
 
     def save_model(self, request, obj, form, change):
         if not change:
-            obj.analyst = request.user
+            obj.user = request.user
         obj.save()
         for i in range(1,100000):
             print("GOOOOOOOOOOOOOO")
 
-
 class DocumentAdmin(admin.ModelAdmin):
-    exclude = ('analyst',)
+    exclude = ('user',)
     list_display = ('date', 'source', 'title')
     list_per_page = 20
     list_filter = ('project', 'corpus')
@@ -75,7 +74,7 @@ class DocumentAdmin(admin.ModelAdmin):
         has_class_permission = super(DocumentAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:
             return False
-        if obj is not None and not request.user.is_superuser and request.user.id != obj.analyst.id:
+        if obj is not None and not request.user.is_superuser and request.user.id != obj.user.id:
             return False
         return True
 
@@ -83,11 +82,11 @@ class DocumentAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return Document.objects.all()
         
-        return Document.objects.filter(analyst=request.user)
+        return Document.objects.filter(user=request.user)
 
     def save_model(self, request, obj, form, change):
         if not change:
-            obj.analyst = request.user
+            obj.user = request.user
         obj.save()
 
 class NgramAdmin(admin.ModelAdmin):

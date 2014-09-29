@@ -5,8 +5,7 @@ from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTa
 
 from documents.models import Source, Language, Project, Corpus, Document, Ngram, NgramDocument, List, ListNgram
 
-from sources.europresse import Europresse
-from gargantext_web.settings import MEDIA_ROOT
+from sources import importateur
 
 class DocumentInLine(admin.StackedInline):
     model = Document
@@ -64,25 +63,11 @@ class CorpusAdmin(admin.ModelAdmin):
         if not change:
             obj.user = request.user
         obj.save()
-        print(obj.database, obj.language, obj.zip_file)
-        
         try:
-# importer(
-            import zipfile
-            c = Europresse()
-            if zipfile.is_zipfile(obj.zip_file):
-                with zipfile.ZipFile(obj.zip_file, 'r') as z:
-                    for f in z.namelist():
-                        i = z.open(f, 'r')
-                        for l in i.readline():
-                            print(l)
-                        #c.importer(MEDIA_ROOT + "/" + str(f))
-
-#                    for article in c:
-#                        print(article['title'])
+            importateur.importer(obj.database, obj.language, obj.zip_file)
         except Exception as e:
-            print(e)
-
+            print("Error importateur", e)
+        
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('user',)
     list_display = ('date', 'source', 'title')

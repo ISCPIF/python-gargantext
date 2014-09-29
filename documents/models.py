@@ -11,7 +11,7 @@ from django_hstore import hstore
 ######################################################################
 
 def upload_to(instance, filename):
-    return 'images/%s/%s' % (instance.user.user.username, filename)
+    return 'corpora/%s/%s' % (instance.user.username, filename)
 
 class Source(models.Model):
     """
@@ -31,7 +31,7 @@ class Language(models.Model):
 
 class Project(models.Model):
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
-    analyst     = models.ForeignKey(User, related_name='entries')
+    user        = models.ForeignKey(User, related_name='entries')
 
     title       = models.CharField(max_length=300, blank=True)
     subtitle    = models.CharField(max_length=300, blank=True)
@@ -53,7 +53,7 @@ class Corpus(models.Model):
     language    = models.ForeignKey(Language)
     
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
-    analyst     = models.ForeignKey(User)
+    user        = models.ForeignKey(User)
 
     title       = models.CharField(max_length=300, blank=True)
     subtitle    = models.CharField(max_length=300, blank=True)
@@ -74,7 +74,7 @@ class Corpus(models.Model):
 class Document(models.Model):
     project     = models.ForeignKey(Project)
     corpus      = models.ManyToManyField(Corpus)
-    analyst     = models.ForeignKey(User)
+    user        = models.ForeignKey(User)
 
     date        = models.DateField(blank=True, null=True)
 
@@ -142,7 +142,7 @@ class NgramDocumentTemporary(models.Model):
 
 class List(models.Model):
     title       = models.CharField(max_length=100, unique=True)
-    analyst     = models.ForeignKey(User)
+    user        = models.ForeignKey(User)
     date        = models.DateField(default=timezone.now(), verbose_name="Date of creation")
     TYPES       = ((1,"Black List"), (2,"White List"), (3,"Grey List"))
     type_list   = models.IntegerField(choices=TYPES)

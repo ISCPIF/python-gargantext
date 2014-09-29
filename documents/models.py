@@ -10,6 +10,8 @@ from django_hstore import hstore
 # PROJECT / CORPUS / DOCUMENT
 ######################################################################
 
+def upload_to(instance, filename):
+    return 'images/%s/%s' % (instance.user.user.username, filename)
 
 class Source(models.Model):
     """
@@ -56,7 +58,7 @@ class Corpus(models.Model):
     title       = models.CharField(max_length=300, blank=True)
     subtitle    = models.CharField(max_length=300, blank=True)
     
-    zip_file    = models.FileField(upload_to='documents', blank=True)
+    zip_file    = models.FileField(upload_to=upload_to, blank=True)
 
     others      = hstore.DictionaryField(blank=True, null=True)
     objects     = hstore.HStoreManager()

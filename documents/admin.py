@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from documents.models import Database, Language, Project, Corpus, Document, Ngram, NgramDocument, List, ListNgram
+from documents.models import Source, Language, Project, Corpus, Document, Ngram, NgramDocument, List, ListNgram
 
 class DocumentInLine(admin.StackedInline):
     model = Document
@@ -40,9 +40,8 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class CorpusAdmin(admin.ModelAdmin):
     exclude = ('analyst',)
-    list_display = ('title', 'date', 'database', 'analyst')
+    list_display = ('title', 'date', 'analyst')
     #inlines = [DocumentInLine,]
-
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(CorpusAdmin, self).has_change_permission(request, obj)
@@ -104,7 +103,7 @@ class ListNgramAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 
-admin.site.register(Database)
+admin.site.register(Source)
 admin.site.register(Language)
 
 admin.site.register(Project, ProjectAdmin)

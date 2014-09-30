@@ -21,7 +21,6 @@ import os
 import sys
 import imp
 imp.reload(sys)
-sys.path.append("../../gargantext/")
 import re
 
 import locale
@@ -43,11 +42,10 @@ class Europresse(Document):
         """self.corpus is a list
         articles is the list of articles in the HTML page
         article is an article as dict"""
-        # I do not think this initialisation is usefull
-        Document.__init__(self)
 
-        # Specific declarations for Europress
+        # Specific declarations for Europresse
         self.data       = []
+        self.object_ids = []
 
         # Encoding
         self.codif      = "UTF-8"
@@ -166,7 +164,7 @@ class Europresse(Document):
                     article['date'] = datetime.now()
 
 
-                article['object_id'] = article['text'][-9]
+                article['uniqu_id'] = article['text'][-9]
                 article['text'].pop()
                 article['text'] = ' '.join(article['text'])
                 article['text'] = re.sub('Tous droits réservés.*$', '', article['text'])
@@ -179,47 +177,41 @@ class Europresse(Document):
                         'authors': "", 'section': "", 'page':"", 'text': "", 'object_id':""}
                 count += 1
 
-    def ajouter(self):
+    def ajouter(self, project=None, corpus=None, user=None):
         """ Appends notices to self.corpus from self.data removing duplicates"""
         for i in self.data:
-            if i['object_id'] not in self.object_ids and isinstance(i['date'], datetime):
-                self.object_ids.append(i['object_id'])
-                self.append(i)
+            if i['uniqu_id'] not in self.object_ids and isinstance(i['date'], datetime):
+                self.object_ids.append(i['uniqu_id'])
+                doc = Document()
+                
+                doc.project = project
+                doc.user    = user
+
+                doc.date    = i['date']
+                doc.uniqu_id= i['uniqu_id']
+                doc.title   = i['title']
+                print(doc.project)
+
+                doc.source  = i['source']
+                doc.authors = i['authors']
+                doc.text    = i['text']
+
+                doc.save()
+                doc.corpus.add(corpus)
+
         self.data = []
-
-    def importer(self, file):
-        print('file being parsed by europress parser: ', file)
-        try:
-            self.parse(file)
-            self.ajouter()
-        except Exception as e:
-            print("Error parsing", e)
-
-    def add(self, file=None):
-        import glob
-        import sys
-        if file is not None:
-            files = glob.glob( file + "/*html")
-            for file in files:
-                #self.test_unicode(file)
-                self.parse(file)
-            self.ajouter()
-        else:
-            print("Usage: self.add(\"your file\")")
 
 
 def demo():
     import sys
     data = Europresse()
     try:
-        data.add(sys.argv[1])
+        pass
     except Exception as e:
-        print(e)
-    #data.add('../data/html/html_english/')
+        print("very usefull function", e)
     
     for a in data.corpus:
         print(a['date'])
-    #print(len(data.corpus))
 
 
 if __name__ == "__main__" :

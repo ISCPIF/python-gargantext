@@ -64,7 +64,7 @@ class CorpusAdmin(admin.ModelAdmin):
             obj.user = request.user
         obj.save()
         try:
-            importateur.importer(obj.database, obj.language, obj.zip_file)
+            importateur.importer(obj.database, obj.language, obj.zip_file, project=obj.project, corpus=obj, user=obj.user)
         except Exception as e:
             print("Error importateur", e)
         

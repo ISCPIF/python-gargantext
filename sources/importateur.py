@@ -6,20 +6,17 @@ from sources.europresse import Europresse
 
 import zipfile
 
-def importer(source, language, zip_file):
+def importer(source, language, zip_file, project=None, corpus=None, user=None):
     if source.database == "Europresse":
         try:
             c = Europresse()
             if zipfile.is_zipfile(zip_file):
                 with zipfile.ZipFile(zip_file, 'r') as z:
-                    for f in z.namelist():
-                        i = z.open(f, 'r')
-                        for l in i.readline():
-                            print(l)
-                        #c.importer(MEDIA_ROOT + "/" + str(f))
+                    for fichiers in z.namelist():
+                        fichier = z.open(fichiers, 'r')
+                        c.parse(fichier)
+                        c.ajouter(project=project, corpus=corpus, user=user)
 
-#                    for article in c:
-#                        print(article['title'])
         except Exception as e:
             print(e)
     elif source.database == "Isi":

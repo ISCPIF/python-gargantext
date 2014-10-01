@@ -108,7 +108,7 @@ def corpus(request, p_id, c_id):
     documents  = Document.objects.filter(user=request.user.pk,corpus=c_id).order_by("-date")
     number = len(documents)
 
-    sources = query_to_dicts('''select count(*),source 
+    sources = query_to_dicts('''select count(*), source 
                         from documents_document
                         INNER JOIN documents_corpus AS t2
                         ON  t2.id = %d 
@@ -125,14 +125,21 @@ def corpus(request, p_id, c_id):
         ss['source'] = s['source']
         sources_donut.append(ss)
 
-    dates = query_to_dicts('''select to_char(date, 'YYYY'), count(*) 
+    dates = query_to_dicts('''select to_char(documents_document.date, 'YYYY'), count(*) 
                             from documents_document 
                             INNER JOIN documents_corpus AS t2
                             ON  t2.id = %d 
-                            group by to_char(date, 'YYYY')
+                            group by to_char(documents_document.date, 'YYYY') 
                             order by 1 DESC;''' %  (int(c_id),))
-    
-    
+#
+#    dates = query_to_dicts('''select to_char(documents_document.date, 'YYYY-MM'), count(*) 
+#                            from documents_document 
+#                            INNER JOIN documents_corpus AS t2
+#                            ON  t2.id = %d 
+#                            group by to_char(documents_document.date, 'YYYY-MM') 
+#                            order by 1 DESC;''' %  (int(c_id),))
+#
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\

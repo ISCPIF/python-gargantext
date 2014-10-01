@@ -177,7 +177,7 @@ class Europresse(Document):
                         'authors': "", 'section': "", 'page':"", 'text': "", 'object_id':""}
                 count += 1
 
-    def ajouter(self, project=None, corpus=None, user=None):
+    def add(self, project=None, corpus=None, user=None):
         """ Appends notices to self.corpus from self.data removing duplicates"""
         for i in self.data:
             if i['uniqu_id'] not in self.object_ids and isinstance(i['date'], datetime):

@@ -1,0 +1,45 @@
+##############################################################################
+# LEGEND:
+# NAME (what you want[1])	FIELD (see your data)	SEPARATORS (see your data)
+# 
+# [1] 
+# Be careful to these names variables which do not have to change:
+# BEGIN, ID-unique, END
+##############################################################################
+BEGIN	PT	""
+authors	AU	\n
+AF	AF	"\n"
+title	TI	""
+source	SO	"\n"
+language	LA	""
+DT	DT	""
+keywords	DE	;
+ID	ID	;
+text	AB	
+ISIC1	C1	\n
+reprint_author	RP	,
+email	EM	\n
+thanks	FX	
+CR	CR	\n
+number	NR	\n
+TC	TC	""
+Z9	Z9	""
+PU	PU	""
+PI	PI	""
+PA	PA	""
+SN	SN	""
+journal_small	J9	""
+JI	JI	""
+month	PD	""
+year	PY	""
+volume	VL	""
+IS	IS	""
+BP	BP	""
+EP	EP	""
+DOI	DI	""
+page	PG	""
+field	WC	""
+SC	SC	""
+GA	GA	""
+object_id	UT	""
+END	ER	""

@@ -31,7 +31,7 @@ from lxml import etree
 from documents.models import Document
 #from .corpus import Corpus
 
-class Europresse(Document):
+class Europresse():
     """
     1) First build tree to parse data
     2) Then each notice (article) is nested in a dictionary,
@@ -45,7 +45,6 @@ class Europresse(Document):
 
         # Specific declarations for Europresse
         self.data       = []
-        self.object_ids = []
 
         # Encoding
         self.codif      = "UTF-8"
@@ -177,11 +176,16 @@ class Europresse(Document):
                         'authors': "", 'section': "", 'page':"", 'text': "", 'object_id':""}
                 count += 1
 
-    def add(self, project=None, corpus=None, user=None):
+    def add(self, project=None, corpus=None, user=None, ids=None):
         """ Appends notices to self.corpus from self.data removing duplicates"""
+        if ids is not None:
+            self.object_ids = ids
+        else:
+            self.object_ids = set()
+        
         for i in self.data:
             if i['uniqu_id'] not in self.object_ids and isinstance(i['date'], datetime):
-                self.object_ids.append(i['uniqu_id'])
+                self.object_ids.add(i['uniqu_id'])
                 doc = Document()
                 
                 doc.project = project
@@ -190,7 +194,6 @@ class Europresse(Document):
                 doc.date    = i['date']
                 doc.uniqu_id= i['uniqu_id']
                 doc.title   = i['title']
-                print(doc.project)
 
                 doc.source  = i['source']
                 doc.authors = i['authors']
@@ -210,7 +213,6 @@ def demo():
     except Exception as e:
         print("very usefull function", e)
     
-    for a in data.corpus:
         print(a['date'])
 
 

@@ -1,7 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" 
+ISI parser.
+__author__ : alexandre+gargantext @ delanoe.org
+__licence__ : GPL version 3.0+
+__DATE__ : 2014
+__VERSION__ : 1.0
+"""
+
+
+
 import os, sys
 #reload(sys)
 import re
 import locale
+# import hashlib ?
+
 from datetime import datetime, date
 from dateutil import parser
 
@@ -22,7 +36,6 @@ class Isi() :
         """
         # Specific declarations for Europresse
         self.data       = []
-        self.object_ids = []
 
     def read_param(self,file) :
         """
@@ -35,7 +48,7 @@ class Isi() :
         for line in lines:
             if line[0] != '#':
                 tag = line.split('\t')
-                tags[tag[1]] = [tag[0], tag[2]]
+                tags[str(tag[1])] = [str(tag[0]), str(tag[2])]
         return tags
 
     def rules(self, parameters) :
@@ -51,12 +64,17 @@ class Isi() :
         """
         #source = open(file, 'r')
         lines = source.readlines()
-        document = {}
+        doc = {}
         if bdd == 'isi':
-            parameters = self.read_param('sources/parameters/isi.init')
+            try:
+                print("reading parameters ISI")
+                parameters = self.read_param('sources/parameters/isi.init')
+            except Exception as e: print(e)
         elif bdd == 'ris':
-            parameters = self.read_param('sources/parameters/ris.init')
-
+            try:
+                print("reading parameters RIS")
+                parameters = self.read_param('sources/parameters/ris.init')
+            except Exception as e: print(e)
 
         for key in list(parameters.keys()):
             if parameters[key][0] == 'BEGIN' :
@@ -68,8 +86,14 @@ class Isi() :
                 del parameters[end]
         
         for line in lines :
-            if document == {} and line[:2] == begin :
-                document['url'] = " "
+            line = str(line, encoding='UTF-8')
+            
+            if bdd == 'ris':
+                line = line.replace(' - ', '')
+
+            if doc == {} and line[:2] == begin :
+                #print(line)
+                doc['url'] = " "
                 key             = ""
                 result          = ""
 
@@ -77,9 +101,9 @@ class Isi() :
                 
                 if key != "" and key != line[:2]:
                     try:
-                        document[parameters[key][0]] = result
+                        doc[parameters[key][0]] = result
                     except Exception as e: print(e)
-                    #document.setdefault(parameters[key][0],[]).append(result)
+                    #doc.setdefault(parameters[key][0],[]).append(result)
                 
                 key = line[:2]
                 result = line[2:].strip()
@@ -89,47 +113,83 @@ class Isi() :
                     result = result + ' ' + line[2:].strip()#.split(";")
                     
                 except Exception as error :
-                    pass
+                    print(error)
             
             elif line[:2] == end :
-                document[parameters[key][0]] = result
-                
+                doc[parameters[key][0]] = result
                 try:
                     try: 
-                        date = document['year'] + " " + document['month']
-                        document['date'] = parser.parse(date)
+                        date = doc['year'] + " " + doc['month']
+                        doc['date'] = parser.parse(date)
                     except:
-                        date = document['year']
-                        document['date'] = datetime.strptime(date, '%Y')
+                        date = doc['year']
+                        doc['date'] = datetime.strptime(date, '%Y')
 
-                except Exception as e: print('88', e)
-                self.data.append(document)
-                document = {}
+                except Exception as e: 
+                    print('88', e)
+                    try:
+                        print(doc['year'])
+                    except Exception as e: print('58',e)
+                self.data.append(doc)
+                doc = {}
 
-    def add(self, project=None, corpus=None, user=None):
+    def add(self, project=None, corpus=None, user=None, ids=None):
         """ Appends notices to self.corpus from self.data removing duplicates"""
+        if ids is not None:
+            self.object_ids = ids
+        else:
+            self.object_ids = set()
+
         for i in self.data:
+            if 'uniqu_id' not in i.keys():
+                #crypt = md5.new()
+                #crypt.update(i['title'])
+                #i['uniqu_id'] = crypt.digest()
+                i['uniqu_id'] = i['title'] + i['date']
+
             if i['uniqu_id'] not in self.object_ids and isinstance(i['date'], datetime):
-                self.object_ids.append(i['uniqu_id'])
+                self.object_ids.add(i['uniqu_id'])
                 doc = Document()
                 
-                doc.project = project
-                doc.user    = user
+                try: 
+                    doc.project = project
+                except Exception as e: print(e)
+                
+                try:
+                    doc.user    = user
+                except Exception as e: print(e)
 
-                doc.date    = i['date']
-                doc.uniqu_id= i['uniqu_id']
-                doc.title   = i['title']
-                print(doc.project)
+                try:
+                    doc.date    = i['date']
+                except Exception as e: print(e)
+                    
+                try:
+                    doc.uniqu_id= i['uniqu_id']
+                except Exception as e: print(e)
+                    
+                try:
+                    doc.title   = i['title']
+                except Exception as e: print(e)
 
-                doc.source  = i['source']
-                doc.authors = i['authors']
-                doc.text    = i['text']
+                try:
+                    doc.source  = i['source']
+                except Exception as e: print(e)
+                    
+                try:
+                    doc.authors = i['authors']
+                except Exception as e: print(e)
+                    
+                try:
+                    doc.abstract    = i['abstract']
+                except Exception as e: print(e)
 
-                doc.save()
+                try:
+                    doc.save()
+                except Exception as e: print(e)
+                
                 doc.corpus.add(corpus)
 
         self.data = []
-
 
 
 def demo():

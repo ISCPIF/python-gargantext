@@ -88,11 +88,16 @@ except:
 
 def test_import(corpus):
     try:
+# TODO factorization here
         importateur.importer(corpus.database, corpus.language, corpus.zip_file, project=corpus.project, corpus=corpus, user=corpus.user)
     except Exception as e:
         print(e)
 
+#test_import(i)
 
-test_import(i)
+def extract_words(corpus, fields=['title',]):
+    try:
+        pass
+    except Exception as e: print(e)
 
 

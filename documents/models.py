@@ -73,7 +73,7 @@ class Corpus(models.Model):
 
 class Document(models.Model):
     project     = models.ForeignKey(Project)
-    corpus      = models.ForeignKey(Corpus)
+    corpus      = models.ManyToManyField(Corpus)
     user        = models.ForeignKey(User)
 
     date        = models.DateField(blank=True, null=True)
@@ -81,7 +81,7 @@ class Document(models.Model):
 
     title       = models.CharField(max_length=300, blank=True)
     authors     = models.TextField(blank=True)
-    source      = models.CharField(max_length=100, unique=True)
+    source      = models.CharField(max_length=100, blank=True)
 
     country     = models.CharField(max_length=100, blank=True)
     url         = models.URLField(blank=True)

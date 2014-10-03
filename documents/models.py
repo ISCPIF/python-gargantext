@@ -79,7 +79,7 @@ class Document(models.Model):
     date        = models.DateField(blank=True, null=True)
     uniqu_id    = models.CharField(max_length=150, unique=True)
 
-    title       = models.CharField(max_length=300, blank=True)
+    title       = models.TextField(blank=True)
     authors     = models.TextField(blank=True)
     source      = models.CharField(max_length=100, blank=True)
 

@@ -9,7 +9,6 @@ from sources.pubmed import Pubmed
 import zipfile
 
 def importer(source, language, zip_file, project=None, corpus=None, user=None):
-    
     ids = set([ doc.uniqu_id for doc in Document.objects.filter(corpus=corpus)])
     
     if source.database == "Europresse":
@@ -22,6 +21,8 @@ def importer(source, language, zip_file, project=None, corpus=None, user=None):
                         fichier = z.open(fichiers, 'r')
                         c.parse(fichier)
                         c.add(project=project, corpus=corpus, user=user, ids=ids)
+                        fichier.close()
+                    z.close()
 
         except Exception as e:
             print(e)
@@ -37,6 +38,8 @@ def importer(source, language, zip_file, project=None, corpus=None, user=None):
                         fichier = z.open(fichiers, 'r')
                         c.parse(fichier, bdd='isi')
                         c.add(project=project, corpus=corpus, user=user, ids=ids)
+                        fichier.close()
+                    z.close()
 
         except Exception as e:
             print(e)
@@ -51,6 +54,7 @@ def importer(source, language, zip_file, project=None, corpus=None, user=None):
                         fichier = z.open(fichiers, 'r')
                         c.parse(fichier, bdd='ris')
                         c.add(project=project, corpus=corpus, user=user, ids=ids)
+                    z.close()
 
         except Exception as e:
             print(e)
@@ -65,6 +69,7 @@ def importer(source, language, zip_file, project=None, corpus=None, user=None):
                         fichier = z.open(fichiers, 'r')
                         c.parse(fichier)
                         c.ajouter(project=project, corpus=corpus, user=user, ids=ids)
+                    z.close()
 
         except Exception as e:
             print(e)

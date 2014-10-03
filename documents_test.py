@@ -3,6 +3,7 @@
 from django.contrib.auth.models import User
 from documents.models import Project, Corpus, Document, Source, Language
 from sources import importateur
+from analysis import extract
 
 try:
     user = User.objects.get(username="alexandre")
@@ -93,11 +94,12 @@ def test_import(corpus):
     except Exception as e:
         print(e)
 
-#test_import(i)
+test_import(i)
 
-def extract_words(corpus, fields=['title',]):
+def test_words(corpus, field='abstract'):
     try:
-        pass
+        extract.words_field(corpus, field=field)
     except Exception as e: print(e)
 
+test_words(i)
 

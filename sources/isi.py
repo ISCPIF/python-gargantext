@@ -8,8 +8,6 @@ __DATE__ : 2014
 __VERSION__ : 1.0
 """
 
-
-
 import os, sys
 #reload(sys)
 import re
@@ -19,8 +17,6 @@ import locale
 from datetime import datetime, date
 from dateutil import parser
 
-#sys.path.append("../../gargantext/")
-#from .corpus import Corpus
 from documents.models import Document
 
 #TODO:
@@ -50,6 +46,7 @@ class Isi() :
                 tag = line.split('\t')
                 tags[str(tag[1])] = [str(tag[0]), str(tag[2])]
         return tags
+        source.close()
 
     def rules(self, parameters) :
         """
@@ -62,7 +59,6 @@ class Isi() :
         The dict needed is parameters, results of read_param function.
         The file needed is the file to be parsed in raw text only.
         """
-        #source = open(file, 'r')
         lines = source.readlines()
         doc = {}
         if bdd == 'isi':

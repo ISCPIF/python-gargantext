@@ -81,7 +81,7 @@ class Document(models.Model):
 
     title       = models.TextField(blank=True)
     authors     = models.TextField(blank=True)
-    source      = models.CharField(max_length=100, blank=True)
+    source      = models.TextField(blank=True)
 
     country     = models.CharField(max_length=100, blank=True)
     url         = models.URLField(blank=True)

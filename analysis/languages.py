@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import nltk
-import treetaggerwrapper as tt
+import analysis.treetaggerwrapper as tt
 
 # ENGLISH
 

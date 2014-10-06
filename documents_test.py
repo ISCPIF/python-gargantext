@@ -69,7 +69,6 @@ except:
     c.save()
 
 
-
 try:
     i = Corpus.objects.get(title = "Science ISI WOS")
     i.zip_file = "corpora/" + user.username + "/" + "pesticidesOnly.zip"
@@ -86,7 +85,6 @@ except:
     i.save()
 
 
-
 def test_import(corpus):
     try:
 # TODO factorization here
@@ -94,7 +92,7 @@ def test_import(corpus):
     except Exception as e:
         print(e)
 
-test_import(i)
+#test_import(i)
 
 def test_words(corpus, field='abstract'):
     try:

@@ -34,20 +34,25 @@ def query_to_dicts(query_string, *query_args):
 def date_range(start_dt, end_dt = None, format=None):
     if format is None:
         form = "%Y-%m-%d"
+        d = 1
 
     elif format == "years":
         form = "%Y"
+        d = 365
     
     elif format == "months":
         form = "%Y-%m"
+        d = 30
+
     elif format == "days":
         form = "%Y-%m-%d"
+        d = 1
 
     start_dt = datetime.datetime.strptime(start_dt, form)
     if end_dt: end_dt = datetime.datetime.strptime(end_dt, form)
     while start_dt <= end_dt:
         yield start_dt.strftime(form)
-        start_dt += datetime.timedelta(days=1)
+        start_dt += datetime.timedelta(days=d)
 
 # SOME VIEWS
 
@@ -157,10 +162,14 @@ def corpus(request, p_id, c_id):
         
         if duree.days > 365:
             date_format = 'YYYY'
+            date_form = 'years'
+
         elif duree.days > 60:
             date_format = 'YYYY-MM'
+            date_form = 'months'
         else:
             date_format = 'YYYY-MM-DD'
+            date_form = 'days'
 
         dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
                                 from documents_document as t1
@@ -169,18 +178,21 @@ def corpus(request, p_id, c_id):
                                 WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
                                 group by to_char(t1.date, '%s') 
                                 order by 1 DESC;''' %  (date_format, request.user.pk, int(c_id), date_format))
-    except:
-        dates = None
-    histo = []
+    
+        
+        histo = []
 
-    for e in date_range('1990-01-01', '1992-02-01', format='days'):
-        print(e)
+#        for e in date_range('1990-01', '1992-02', format=date_form):
+#            print(e)
 #        if date_format = 'YYYY':
 #            while True:
 #                if d -histo.append(d)
-    for d in dates:
-        histo.append(d)
-
+        for d in dates:
+            histo.append(d)
+         
+    except:
+        dates = None
+       
     html = t.render(Context({\
             'user': user,\
             'date': date,\

@@ -183,7 +183,7 @@ class Coocurrence(models.Model):
 
 
 class Clique(models.Model):
-    title       = models.CharField(max_length=100)
+    title      = models.CharField(max_length=100)
     ngram      = models.ForeignKey(Ngram)
     def __str__(self):
         return self.title

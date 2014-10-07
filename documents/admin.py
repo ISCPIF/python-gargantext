@@ -3,7 +3,10 @@ from django.contrib import admin
 # Register your models here.
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from documents.models import Source, Language, Project, Corpus, Document, Ngram, NgramDocument, List, ListNgram
+from documents.models import Source, Language,\
+        Project, Corpus, Document,\
+        Ngram, NgramDocument, List, ListNgram,\
+        Coocurrence, Clique, Phylo
 
 from sources import importateur
 
@@ -118,3 +121,8 @@ admin.site.register(NgramDocument, NgramDocAdmin)
 
 admin.site.register(List)
 admin.site.register(ListNgram, ListNgramAdmin)
+
+admin.site.register(Coocurrence)
+admin.site.register(Clique)
+admin.site.register(Phylo)
+

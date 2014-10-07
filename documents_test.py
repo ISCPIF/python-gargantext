@@ -92,7 +92,7 @@ def test_import(corpus):
     except Exception as e:
         print(e)
 
-#test_import(i)
+test_import(i)
 
 def test_words(corpus, field='abstract'):
     try:

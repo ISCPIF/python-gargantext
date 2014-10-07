@@ -130,14 +130,14 @@ def corpus(request, p_id, c_id):
     
     
     try:
-        duree = documents.first().date - documents.last().date
+        first = documents.first().date 
+        last  = documents.last().date
+        duree = first - last
         
         if duree.days > 365:
             date_format = 'YYYY'
-        
         elif duree.days > 60:
             date_format = 'YYYY-MM'
-        
         else:
             date_format = 'YYYY-MM-DD'
 
@@ -150,7 +150,13 @@ def corpus(request, p_id, c_id):
                                 order by 1 DESC;''' %  (date_format, request.user.pk, int(c_id), date_format))
     except:
         dates = None
+    histo = []
 
+    for d in dates:
+#        if date_format = 'YYYY':
+#            while True:
+#                if d -histo.append(d)
+        histo.append(d)
 
     html = t.render(Context({\
             'user': user,\
@@ -160,7 +166,7 @@ def corpus(request, p_id, c_id):
             'documents': documents,\
             'number' : number,\
             'sources_donut' : sources_donut,\
-            'dates' : dates,\
+            'dates' : histo,\
             }))
     
     return HttpResponse(html)

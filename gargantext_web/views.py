@@ -117,12 +117,6 @@ def corpus(request, p_id, c_id):
                         GROUP BY source
                         order by 1 DESC limit %d;''' % (request.user.pk, int(c_id), int(15)))
 
-#    sources = query_to_dicts('''select count(*), source 
-#                        from documents_document AS t1
-#                        INNER JOIN documents_document_corpus AS t2
-#                        ON documents_document_corpus_id = t2.id and  t2.id = %d
-#                        group by source
-#                        order by 1 DESC limit %d;''' % (int(c_id), int(15)))
     sources_donut = []
     for s in sources:
         ss = dict()
@@ -133,29 +127,30 @@ def corpus(request, p_id, c_id):
             ss['part'] = None
         ss['source'] = s['source']
         sources_donut.append(ss)
+    
+    
+    try:
+        duree = documents.first().date - documents.last().date
+        
+        if duree.days > 365:
+            date_format = 'YYYY'
+        
+        elif duree.days > 60:
+            date_format = 'YYYY-MM'
+        
+        else:
+            date_format = 'YYYY-MM-DD'
 
-    dates = query_to_dicts('''select to_char(t1.date, 'YYYY'), count(*) 
-                            from documents_document as t1
-                            INNER JOIN documents_document_corpus as t2
-                            ON (  t1.id = t2.document_id )
-                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                            group by to_char(t1.date, 'YYYY') 
-                            order by 1 DESC;''' %  (request.user.pk, int(c_id)))
+        dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
+                                from documents_document as t1
+                                INNER JOIN documents_document_corpus as t2
+                                ON (  t1.id = t2.document_id )
+                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
+                                group by to_char(t1.date, '%s') 
+                                order by 1 DESC;''' %  (date_format, request.user.pk, int(c_id), date_format))
+    except:
+        dates = None
 
-#    dates = query_to_dicts('''select to_char(documents_document.date, 'YYYY'), count(*) 
-#                            from documents_document 
-#                            INNER JOIN documents_corpus AS t2
-#                            ON  t2.id = %d 
-#                            group by to_char(documents_document.date, 'YYYY') 
-#                            order by 1 DESC;''' %  (int(c_id),))
-#
-#    dates = query_to_dicts('''select to_char(documents_document.date, 'YYYY-MM'), count(*) 
-#                            from documents_document 
-#                            INNER JOIN documents_corpus AS t2
-#                            ON  t2.id = %d 
-#                            group by to_char(documents_document.date, 'YYYY-MM') 
-#                            order by 1 DESC;''' %  (int(c_id),))
-#
 
     html = t.render(Context({\
             'user': user,\

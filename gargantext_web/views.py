@@ -13,6 +13,7 @@ import datetime
 from itertools import *
 from django.db import connection
 
+# SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -29,6 +30,15 @@ def query_to_dicts(query_string, *query_args):
         row_dict = dict(zip(col_names, row))
         yield row_dict
     return
+
+def date_range(start_dt, end_dt = None, format="%Y-%m-%d"):
+    start_dt = datetime.datetime.strptime(start_dt, format)
+    if end_dt: end_dt = datetime.datetime.strptime(end_dt, format)
+    while start_dt <= end_dt:
+        yield start_dt.strftime(format)
+        start_dt += datetime.timedelta(days=1)
+
+# SOME VIEWS
 
 def home(request):
     t = get_template('home.html')
@@ -152,10 +162,12 @@ def corpus(request, p_id, c_id):
         dates = None
     histo = []
 
-    for d in dates:
+    for e in date_range('1990-01-01', '1990-02-01'):
+        print(e)
 #        if date_format = 'YYYY':
 #            while True:
 #                if d -histo.append(d)
+    for d in dates:
         histo.append(d)
 
     html = t.render(Context({\

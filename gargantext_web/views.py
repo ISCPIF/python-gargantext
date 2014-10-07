@@ -31,11 +31,22 @@ def query_to_dicts(query_string, *query_args):
         yield row_dict
     return
 
-def date_range(start_dt, end_dt = None, format="%Y-%m-%d"):
-    start_dt = datetime.datetime.strptime(start_dt, format)
-    if end_dt: end_dt = datetime.datetime.strptime(end_dt, format)
+def date_range(start_dt, end_dt = None, format=None):
+    if format is None:
+        form = "%Y-%m-%d"
+
+    elif format == "years":
+        form = "%Y"
+    
+    elif format == "months":
+        form = "%Y-%m"
+    elif format == "days":
+        form = "%Y-%m-%d"
+
+    start_dt = datetime.datetime.strptime(start_dt, form)
+    if end_dt: end_dt = datetime.datetime.strptime(end_dt, form)
     while start_dt <= end_dt:
-        yield start_dt.strftime(format)
+        yield start_dt.strftime(form)
         start_dt += datetime.timedelta(days=1)
 
 # SOME VIEWS
@@ -162,7 +173,7 @@ def corpus(request, p_id, c_id):
         dates = None
     histo = []
 
-    for e in date_range('1990-01-01', '1990-02-01'):
+    for e in date_range('1990-01-01', '1992-02-01', format='days'):
         print(e)
 #        if date_format = 'YYYY':
 #            while True:

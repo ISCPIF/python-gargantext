@@ -181,7 +181,6 @@ def corpus(request, p_id, c_id):
     
         
         histo = []
-
 #        for e in date_range('1990-01', '1992-02', format=date_form):
 #            print(e)
 #        if date_format = 'YYYY':
@@ -191,7 +190,7 @@ def corpus(request, p_id, c_id):
             histo.append(d)
          
     except:
-        dates = None
+        histo = None
        
     html = t.render(Context({\
             'user': user,\

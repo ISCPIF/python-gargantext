@@ -6,9 +6,10 @@ from django.contrib.auth.models import User
 from django_hstore import hstore
 from treebeard.mp_tree import MP_Node
 
+from time import time
 
 def upload_to(instance, filename):
-    return 'corpora/%s/%s' % (instance.user.username, filename)
+    return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
 
 
 class NodeType(models.Model):
@@ -44,22 +45,22 @@ class Document(Node):
         proxy=True
 
 
+
+
 class Ngram(models.Model):
     terms    = models.TextField(unique=True)
-    stem     = models.TextField(blank=True)
     n        = models.IntegerField()
     # post-tag = models.ManyToMany(blank=True)
     # ajouter une table stem ?
     def __str__(self):
         return self.terms
 
-
 class NodeNgramNgram(models.Model):
     ngramX      = models.ForeignKey(Ngram, related_name="X")
     ngramY      = models.ForeignKey(Ngram, related_name="Y")
 
     node        = models.ForeignKey(Node)
-    score       = models.DecimalField(max_digits=19, decimal_places=10,blank=True)
+    score       = models.FloatField(default=0)
 
     def __str__(self):
         return self.node

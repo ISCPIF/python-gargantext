@@ -7,6 +7,7 @@ from django_hstore import hstore
 
 from treebeard.mp_tree import MP_Node
 
+from time import time
 ######################################################################
 # DATABASES / LANGUAGES 
 # PROJECT / CORPUS / DOCUMENT
@@ -14,6 +15,7 @@ from treebeard.mp_tree import MP_Node
 
 def upload_to(instance, filename):
     return 'corpora/%s/%s' % (instance.user.username, filename)
+    #return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
 
 class Source(models.Model):
     """

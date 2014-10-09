@@ -6,18 +6,18 @@ from node.models import NodeType, Node, Ngram, NodeNgramNgram, Project
 
 
 class NodeAdmin(admin.ModelAdmin):
-    exclude = ('user','path', 'depth', 'numchild')
-    list_display = ('type', 'name', 'date', 'file')
-    list_filter = ('type',)
+    exclude = ('user', 'type', 'path', 'depth', 'numchild')
+    list_display = ('name', 'date', 'file')
     search_fields = ('name',)
+    # list_filter = ('type',)
     # date_hierarchy
-    #inlines = [CorpusInLine,]
+    # inlines = [CorpusInLine,]
 
     #_nodetype_name = 'Project'
     #_parent_nodetype_name = 'Root'
 
     def has_change_permission(self, request, obj=None):
-        has_class_permission = super(ProjectAdmin, self).has_change_permission(request, obj)
+        has_class_permission = super(NodeAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:
             return False
         if obj is not None and not request.user.is_superuser and request.user.id != obj.user.id:
@@ -38,15 +38,21 @@ class NodeAdmin(admin.ModelAdmin):
             nodeType        = NodeType.objects.get(name=self._nodetype_name)
             nodeTypeParent  = NodeType.objects.get(name=self._parent_nodetype_name)
             
-            nodeParent      = Node.objects.get(type = nodeTypeParent, user = request.user)
-            node            = nodeRoot.add_child(type = nodeType,\
+            try:
+                nodeParent      = Node.objects.get(type = nodeTypeParent, user = request.user)
+            except:
+                nodeParent = Node.add_root(type = nodeTypeParent, user = request.user)
+            
+            obj.user = request.user
+            
+            node            = nodeParent.add_child(type = nodeType,\
                                                user = request.user,\
                                                name=obj.name,\
                                                file=obj.file,\
                                                metadata=obj.metadata)
             
-            nodeParent.save()
-            node.save()
+            #nodeParent.save()
+            #node.save()
             obj = node
             
         else:
@@ -67,9 +73,11 @@ class DocumentAdmin(NodeAdmin):
 
 admin.site.register(NodeType)
 
-#admin.site.register(Project, ProjectAdmin)
-#admin.site.register(Node, Document)
+admin.site.register(Project, ProjectAdmin)
+#admin.site.register(Corpus, CorpusAdmin)
+#admin.site.register(Document, DocumentAdmin)
 
+admin.site.register(Node)
 admin.site.register(Ngram)
 admin.site.register(NodeNgramNgram)
 

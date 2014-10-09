@@ -68,6 +68,7 @@ class CorpusAdmin(admin.ModelAdmin):
         obj.save()
         try:
             importateur.importer(obj.database, obj.language, obj.zip_file, project=obj.project, corpus=obj, user=obj.user)
+            #importateur.importer(obj)
         except Exception as e:
             print("Error importateur", e)
         
@@ -76,6 +77,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ('date', 'source', 'title')
     list_per_page = 20
     list_filter = ('project', 'corpus')
+    search_fields = ('title',)
 
     def has_change_permission(self, request, obj=None):
         has_class_permission = super(DocumentAdmin, self).has_change_permission(request, obj)

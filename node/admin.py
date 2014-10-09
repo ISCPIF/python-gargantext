@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django import forms
 
 from node.models import NodeType, Node, Project, Corpus, Document
+
 
 
 class NodeAdmin(admin.ModelAdmin):
@@ -37,17 +39,17 @@ class NodeAdmin(admin.ModelAdmin):
             nodeTypeParent  = NodeType.objects.get(name=self._parent_nodetype_name)
             
             try:
-                nodeParent      = Node.objects.get(type = nodeTypeParent, user = request.user)
+                nodeParent  = Node.objects.get(type = nodeTypeParent, user = request.user)
             except:
-                nodeParent = Node.add_root(type = nodeTypeParent, user = request.user)
+                nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user)
             
-            obj.user = request.user
+            obj.user        = request.user
             
             node            = nodeParent.add_child(type = nodeType,\
-                                               user = request.user,\
-                                               name=obj.name,\
-                                               file=obj.file,\
-                                               metadata=obj.metadata)
+                                                user    = request.user,\
+                                                name    = obj.name,\
+                                                file    = obj.file,\
+                                                metadata= obj.metadata)
             
             #nodeParent.save()
             #node.save()
@@ -57,12 +59,16 @@ class NodeAdmin(admin.ModelAdmin):
             obj.save()
 
 class ProjectAdmin(NodeAdmin):
-    _parent_nodetype_name = 'Root'
-    _nodetype_name = 'Project'
+    _parent_nodetype_name   = 'Root'
+    _nodetype_name          = 'Project'
+
+class CorpusForm(forms.ModelForm):
+    parent = forms.ModelChoiceField(Node.objects.filter(user_id=1, type_id=2))
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'
     _nodetype_name = 'Corpus'
+    form = CorpusForm
 
 class DocumentAdmin(NodeAdmin):
     _parent_nodetype_name = 'Corpus'

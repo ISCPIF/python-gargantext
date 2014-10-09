@@ -15,10 +15,10 @@ from analysis.languages import english_stem
 #        from analysis.languages import french_stem as stem
 #        print("Selection langue anglaise")
 
-
 stemmer = EnglishStemmer()
 
 l = set()
+# du format: terms, stems, count
 
 d = defaultdict( lambda:\
     defaultdict( lambda:\
@@ -26,68 +26,9 @@ d = defaultdict( lambda:\
     defaultdict( int )\
     )))
 
-#if isinstance(corpus, Corpus) and field in [ column.name for column in Document._meta.fields]:
+# if isinstance(corpus, Corpus) and field in [ column.name for column in Document._meta.fields]:
 
-def words_field(corpus=None, field='abstract'):
-    docs = Document.objects.filter(corpus=corpus)
-    
-           
-    def fouille(text, grammar_rule='jj_nn'):
-        # TODO : grammar_rule
-        from analysis.grammar_rules import jj_nn as rule
-        grammar = nltk.RegexpParser(rule)
-        
-        #text = clean(text)
-        sentances = nltk.sent_tokenize(text)
-        result = []
-        
-        for sentance in sentances:
-            try:
-                t = pos_tag(sentance)
-                g = grammar.parse(t)
-                x = g.subtrees()
-            
-                while True:
-                    try:
-                        subtree = next(x)
-                        if subtree.label() == 'NP':
-                            #print(subtree.label())
-                            result.append(subtree.leaves())
-                            
-                    except Exception as e:
-                        break
-                        
-            except Exception as e:
-                print(e)
-                pass
-        return iter(result)
-
-    
-    for doc in docs:
-        try:
-            sentences = nltk.sent_tokenize(doc.abstract)
-            words = [ nltk.wordpunct_tokenize(str(sentence)) for sentence in sentences ]
-    
-            for word in words[0]:
-                try:
-                    stems = stemmer.stem(str(word))
-                    new = (word, stems, len(stems.split(" ")))
-                    l.add(new)
-                    
-                    d[word][doc.id]['count'] = d[word][doc.pk].get('count', 0) + 1
-                except Exception as e: pass#print(e)
-#             
-        except Exception as e: pass#print(e)
-    
-    # l = liste
-    # du format: terms, stems, count
-
-    new_grams   = [ Ngram(terms=x[0], stem=x[1], n=x[2]) for x in l]
-    new_gramDoc = [ NgramDocumentTemporary(terms=k, document=pk, occurrences=d[k][pk]['count']) \
-               for k in d.keys() \
-               for pk in d[k].keys()\
-               ]
-
+def save_newgrams(new_grams):
     NgramTemporary.objects.bulk_create(new_grams)
     NgramDocumentTemporary.objects.bulk_create(new_gramDoc)
 
@@ -111,10 +52,87 @@ def words_field(corpus=None, field='abstract'):
                  INNER JOIN documents_ngram AS GT ON GT.terms = NDT.terms ;
                  
                  delete from documents_ngramdocumenttemporary;
-             """
+                 """
     cursor.execute(query_string)
 
 
+
+
+def words_field(corpus=None, field='abstract'):
+    docs = Document.objects.filter(corpus=corpus)
+    
+    def ngrams(text, grammar_rule='jj_nn'):
+        # TODO : grammar_rule
+        from analysis.grammar_rules import jj_nn as rule
+        grammar = nltk.RegexpParser(rule)
+
+        #text = clean(text)
+        sentances = nltk.sent_tokenize(text)
+        result = []
+
+        for sentance in sentances:
+            try:
+                t = pos_tag(sentance)
+                g = grammar.parse(t)
+                x = g.subtrees()
+
+                while True:
+                    try:
+                        subtree = next(x)
+                        if subtree.label() == 'NP':
+                            #print(subtree.label())
+                            result.append(subtree.leaves())
+
+                    except Exception as e:
+                        break
+
+            except Exception as e:
+                print(e)
+                pass
+        return iter(result)
+
+    def ograms(text, field=doc.abstract)
+        try:
+            sentences = nltk.sent_tokenize(field)
+            words = [ nltk.wordpunct_tokenize(str(sentence)) for sentence in sentences ]
+
+            for word in words[0]:
+                try:
+                    stems = stemmer.stem(str(word))
+                    new = (word, stems, len(stems.split(" ")))
+                    l.add(new)
+    
+                    d[word][doc.id]['count'] = d[word][doc.pk].get('count', 0) + 1
+                except Exception as e: pass#print(e)
+    
+        except Exception as e: pass#print(e)
+    
+
+    for doc in docs:
+        try:
+            sentences = nltk.sent_tokenize(doc.abstract)
+            words = [ nltk.wordpunct_tokenize(str(sentence)) for sentence in sentences ]
+
+            for word in words[0]:
+                try:
+                    stems = stemmer.stem(str(word))
+                    new = (word, stems, len(stems.split(" ")))
+                    l.add(new)
+                    
+                    d[word][doc.id]['count'] = d[word][doc.pk].get('count', 0) + 1
+                except Exception as e: pass#print(e)
+#             
+        except Exception as e: pass#print(e)
+    
+
+    new_grams   = [ Ngram(terms=x[0], stem=x[1], n=x[2]) for x in l]
+    new_gramDoc = [ NgramDocumentTemporary(terms=k, document=pk, occurrences=d[k][pk]['count']) \
+               for k in d.keys() \
+               for pk in d[k].keys() ]
+
+    save_newgrams(new_grams)
+
+    
 def words_fields(corpus=None, fields=['title',]):
     try:
         for field in fields:

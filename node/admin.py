@@ -1,8 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
-
-from node.models import NodeType, Node, Ngram, NodeNgramNgram, Project
+from node.models import NodeType, Node, Project, Corpus, Document
 
 
 class NodeAdmin(admin.ModelAdmin):
@@ -76,9 +74,5 @@ admin.site.register(NodeType)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
-
-admin.site.register(Node)
-admin.site.register(Ngram)
-admin.site.register(NodeNgramNgram)
 
 

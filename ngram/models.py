@@ -3,6 +3,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 
+from node.models import Node
+
+
 class Ngram(models.Model):
     terms    = models.TextField(unique=True)
     n        = models.IntegerField()

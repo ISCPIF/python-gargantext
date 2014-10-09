@@ -9,13 +9,11 @@ class Ngram(models.Model):
     def __str__(self):
         return "[%d] %s" % (self.pk, self.terms)
 
-
 class NodeNgram(models.Model):
     node        = models.ForeignKey(Node)
     ngram       = models.ForeignKey(Ngram, related_name="nodengram")
     def __str__(self):
         return "%s: %s" % (self.node.name, self.ngram.terms)
-
 
 class NodeNgramNgram(models.Model):
     node        = models.ForeignKey(Node)

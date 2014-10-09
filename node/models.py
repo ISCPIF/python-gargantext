@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -16,7 +15,6 @@ class NodeType(models.Model):
     name       = models.CharField(max_length=200)
     def __str__(self):
         return self.name
-
 
 class Node(MP_Node):
     #parent = models.ForeignKey('self', related_name='children_set', null=True, db_index=True)
@@ -43,7 +41,5 @@ class Corpus(Node):
 class Document(Node):
     class Meta:
         proxy=True
-
-
 
 

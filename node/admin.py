@@ -74,8 +74,8 @@ class DocumentAdmin(NodeAdmin):
 admin.site.register(NodeType)
 
 admin.site.register(Project, ProjectAdmin)
-#admin.site.register(Corpus, CorpusAdmin)
-#admin.site.register(Document, DocumentAdmin)
+admin.site.register(Corpus, CorpusAdmin)
+admin.site.register(Document, DocumentAdmin)
 
 admin.site.register(Node)
 admin.site.register(Ngram)

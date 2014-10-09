@@ -47,22 +47,3 @@ class Document(Node):
 
 
 
-class Ngram(models.Model):
-    terms    = models.TextField(unique=True)
-    n        = models.IntegerField()
-    # post-tag = models.ManyToMany(blank=True)
-    # ajouter une table stem ?
-    def __str__(self):
-        return self.terms
-
-class NodeNgramNgram(models.Model):
-    ngramX      = models.ForeignKey(Ngram, related_name="X")
-    ngramY      = models.ForeignKey(Ngram, related_name="Y")
-
-    node        = models.ForeignKey(Node)
-    score       = models.FloatField(default=0)
-
-    def __str__(self):
-        return self.node
-
-

@@ -39,11 +39,12 @@ class NodeAdmin(admin.ModelAdmin):
             nodeTypeParent  = NodeType.objects.get(name=self._parent_nodetype_name)
             
             try:
-                nodeParent  = Node.objects.get(id = request.POST['parent'])
-                #nodeParent  = Node.objects.get(type = nodeTypeParent, user = request.user)
+                if nodeType.name == 'Project':
+                    nodeParent  = Node.objects.get(type = nodeTypeParent, user = request.user)
+                else:
+                    nodeParent  = Node.objects.get(id = request.POST['parent'])
             except:
                 nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user, name="Parent")
-            
             obj.user        = request.user
             
             node            = nodeParent.add_child(type = nodeType,\

@@ -44,7 +44,7 @@ class NodeAdmin(admin.ModelAdmin):
                 else:
                     nodeParent  = Node.objects.get(id = request.POST['parent'])
             except:
-                nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user, name="Parent")
+                nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user, name=request.user.username)
             obj.user        = request.user
             
             node            = nodeParent.add_child(type = nodeType,\

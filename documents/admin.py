@@ -52,7 +52,7 @@ class CorpusAdmin(admin.ModelAdmin):
         has_class_permission = super(CorpusAdmin, self).has_change_permission(request, obj)
         if not has_class_permission:
             return False
-        if obj is ot None and not request.user.is_superuser and request.user.id != obj.user.id:
+        if obj is not None and not request.user.is_superuser and request.user.id != obj.user.id:
             return False
         return True
 

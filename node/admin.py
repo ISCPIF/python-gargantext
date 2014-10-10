@@ -65,6 +65,9 @@ class ProjectAdmin(NodeAdmin):
     _nodetype_name          = 'Project'
 
 class CorpusForm(forms.ModelForm):
+#    def __init__(self, request, *args, **kwargs):
+#        self.request = request
+#    print(self.request.user.username)
     parent = forms.ModelChoiceField(Node.objects.filter(user_id=1, type_id=2))
 
 class CorpusAdmin(NodeAdmin):

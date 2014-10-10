@@ -37,6 +37,7 @@ class Project(Node):
 class Corpus(Node):
     class Meta:
         proxy=True
+        verbose_name_plural = 'Corpora'
 
 class Document(Node):
     class Meta:

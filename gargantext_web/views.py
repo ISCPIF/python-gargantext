@@ -74,10 +74,11 @@ def projects(request):
         return redirect('/login/?next=%s' % request.path)
     
     t = get_template('projects.html')
+    
     user = request.user
-    project = NodeType.objects.get(name='Project')
-
     date = datetime.datetime.now()
+    
+    project = NodeType.objects.get(name='Project')
     projects = Node.objects.filter(user=user, type_id = project.id).order_by("-date")
     number = len(projects)
 

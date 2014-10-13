@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django import forms
+from django.forms import ModelForm, ModelChoiceField
 
 from node.models import NodeType, Node, Project, Corpus, Document
-
 
 
 class NodeAdmin(admin.ModelAdmin):
@@ -60,24 +59,38 @@ class NodeAdmin(admin.ModelAdmin):
         else:
             obj.save()
 
+######################################################################
+
 class ProjectAdmin(NodeAdmin):
     _parent_nodetype_name   = 'Root'
     _nodetype_name          = 'Project'
 
-class CorpusForm(forms.ModelForm):
-#    def __init__(self, request, *args, **kwargs):
-#        self.request = request
-#    print(self.request.user.username)
-    parent = forms.ModelChoiceField(Node.objects.filter(user_id=1, type_id=2))
+######################################################################
+
+class CorpusForm(ModelForm):
+    #parent = ModelChoiceField(Node.objects.filter(user_id=request.user.id, type_id=2))
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request',None)
+        super(CorpusForm, self).__init__(*args, **kwargs)
+        #self.request = kwargs.pop('request', None)
+        #self.request = kwargs.pop("request")
+        #print(self.request)
+    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=2))
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'
     _nodetype_name = 'Corpus'
     form = CorpusForm
 
+######################################################################
+
+class DocumentForm(ModelForm):
+    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=3))
+
 class DocumentAdmin(NodeAdmin):
     _parent_nodetype_name = 'Corpus'
     _nodetype_name = 'Document'
+    form = DocumentForm
 
 
 admin.site.register(NodeType)

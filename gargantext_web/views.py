@@ -91,12 +91,12 @@ def projects(request):
     
     return HttpResponse(html)
 
-def project(request, p_id):
+def project(request, project_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
-        offset = str(p_id)
+        offset = str(project_id)
     except ValueError:
         raise Http404()
 
@@ -104,10 +104,11 @@ def project(request, p_id):
     user = request.user
 
     date = datetime.datetime.now()
-    project = Project.objects.get(pk=p_id)
-    corpora = Corpus.objects.all().filter(project_id=p_id,user=request.user.pk)
-    number = len(corpora)
     
+    project = Node.objects.get(id=project_id)
+    corpora = project.get_children()
+    number = len(corpora)
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\
@@ -115,7 +116,7 @@ def project(request, p_id):
             'corpora' : corpora,\
             'number': number,\
             }))
-    
+
     return HttpResponse(html)
 
 def corpus(request, p_id, c_id):

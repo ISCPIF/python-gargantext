@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from django.template import Context
 
 from documents.models import Project, Corpus, Document
+from node.models import Node, NodeType
 
 from django.contrib.auth.models import User
 
@@ -74,9 +75,10 @@ def projects(request):
     
     t = get_template('projects.html')
     user = request.user
+    project = NodeType.objects.get(name='Project')
 
     date = datetime.datetime.now()
-    projects = Project.objects.all().filter(user=request.user.pk).order_by("-date")
+    projects = Node.objects.filter(user=user, type_id = project.id).order_by("-date")
     number = len(projects)
 
     html = t.render(Context({\

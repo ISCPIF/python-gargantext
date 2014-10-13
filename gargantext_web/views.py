@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from django.template import Context
 
 from documents.models import Project, Corpus, Document
+from node.models import Node, NodeType
 
 from django.contrib.auth.models import User
 
@@ -73,10 +74,12 @@ def projects(request):
         return redirect('/login/?next=%s' % request.path)
     
     t = get_template('projects.html')
+    
     user = request.user
-
     date = datetime.datetime.now()
-    projects = Project.objects.all().filter(user=request.user.pk).order_by("-date")
+    
+    project = NodeType.objects.get(name='Project')
+    projects = Node.objects.filter(user=user, type_id = project.id).order_by("-date")
     number = len(projects)
 
     html = t.render(Context({\
@@ -88,12 +91,12 @@ def projects(request):
     
     return HttpResponse(html)
 
-def project(request, p_id):
+def project(request, project_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
-        offset = str(p_id)
+        offset = str(project_id)
     except ValueError:
         raise Http404()
 
@@ -101,10 +104,11 @@ def project(request, p_id):
     user = request.user
 
     date = datetime.datetime.now()
-    project = Project.objects.get(pk=p_id)
-    corpora = Corpus.objects.all().filter(project_id=p_id,user=request.user.pk)
-    number = len(corpora)
     
+    project = Node.objects.get(id=project_id)
+    corpora = project.get_children()
+    number = len(corpora)
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\
@@ -112,7 +116,7 @@ def project(request, p_id):
             'corpora' : corpora,\
             'number': number,\
             }))
-    
+
     return HttpResponse(html)
 
 def corpus(request, p_id, c_id):

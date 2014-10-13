@@ -60,8 +60,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     #'south',
-    'documents',
+    #'documents',
     'node',
+    'ngram',
     'django_hstore',
 )
 
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'gargantext',
+        'NAME': 'ggdev',
         'USER': 'alexandre',
         'PASSWORD': 'C8kdcUrAQy66U',
         'HOST': '127.0.0.1',

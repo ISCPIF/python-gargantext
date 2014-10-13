@@ -16,8 +16,7 @@
 <div class="container theme-showcase" role="main">
         <div class="jumbotron">
             {% if project %}
-            <h1>{{ project.title }}</h1>
-            <h2> {{ project.subtitle }}</h2>
+            <h1>{{ project.name }}</h1>
             <h3> {{number}} corpora </h3>
             <p>
             <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/add/">Add a corpus</a></p>
@@ -32,11 +31,11 @@
 								{% if corpora  %}
 										{% for corpus in corpora %}
 										<div class="col-md-4">
-                        <h3><a href="/project/{{ project.id }}/corpus/{{corpus.id}}">{{ corpus.title }}</a></h3>
+                        <h3><a href="/project/{{ project.id }}/corpus/{{corpus.id}}">{{ corpus.name }}</a></h3>
 												<h4>{{ corpus.subtitle }}</h4>
-                        <p>{{ corpus.language }}, {{ corpus.database}}</p>
+                        <p>{{ corpus.language }} {{ corpus.database}}</p>
 												<h5>Activity:</h5>
-												<div class="chart" data-percent="50">73%</div>
+												<div class="chart" data-percent="73">73%</div>
 
 										</div>
 										{% endfor %}

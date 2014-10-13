@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -17,7 +16,6 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
-
 class Node(MP_Node):
     #parent = models.ForeignKey('self', related_name='children_set', null=True, db_index=True)
     user       = models.ForeignKey(User)
@@ -32,6 +30,10 @@ class Node(MP_Node):
     def __str__(self):
         return self.name
 
+    def liste(self, user):
+        for noeud in Node.objects.filter(user=user):
+            print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
+
 class Project(Node):
     class Meta:
         proxy=True
@@ -39,30 +41,10 @@ class Project(Node):
 class Corpus(Node):
     class Meta:
         proxy=True
+        verbose_name_plural = 'Corpora'
 
 class Document(Node):
     class Meta:
         proxy=True
-
-
-
-
-class Ngram(models.Model):
-    terms    = models.TextField(unique=True)
-    n        = models.IntegerField()
-    # post-tag = models.ManyToMany(blank=True)
-    # ajouter une table stem ?
-    def __str__(self):
-        return self.terms
-
-class NodeNgramNgram(models.Model):
-    ngramX      = models.ForeignKey(Ngram, related_name="X")
-    ngramY      = models.ForeignKey(Ngram, related_name="Y")
-
-    node        = models.ForeignKey(Node)
-    score       = models.FloatField(default=0)
-
-    def __str__(self):
-        return self.node
 
 

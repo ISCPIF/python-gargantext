@@ -1,8 +1,7 @@
 from django.contrib import admin
+from django.forms import ModelForm, ModelChoiceField
 
-# Register your models here.
-
-from node.models import NodeType, Node, Ngram, NodeNgramNgram, Project
+from node.models import NodeType, Node, Project, Corpus, Document
 
 
 class NodeAdmin(admin.ModelAdmin):
@@ -39,17 +38,19 @@ class NodeAdmin(admin.ModelAdmin):
             nodeTypeParent  = NodeType.objects.get(name=self._parent_nodetype_name)
             
             try:
-                nodeParent      = Node.objects.get(type = nodeTypeParent, user = request.user)
+                if nodeType.name == 'Project':
+                    nodeParent  = Node.objects.get(type = nodeTypeParent, user = request.user)
+                else:
+                    nodeParent  = Node.objects.get(id = request.POST['parent'])
             except:
-                nodeParent = Node.add_root(type = nodeTypeParent, user = request.user)
-            
-            obj.user = request.user
+                nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user, name=request.user.username)
+            obj.user        = request.user
             
             node            = nodeParent.add_child(type = nodeType,\
-                                               user = request.user,\
-                                               name=obj.name,\
-                                               file=obj.file,\
-                                               metadata=obj.metadata)
+                                                user    = request.user,\
+                                                name    = obj.name,\
+                                                file    = obj.file,\
+                                                metadata= obj.metadata)
             
             #nodeParent.save()
             #node.save()
@@ -58,27 +59,44 @@ class NodeAdmin(admin.ModelAdmin):
         else:
             obj.save()
 
+######################################################################
+
 class ProjectAdmin(NodeAdmin):
-    _parent_nodetype_name = 'Root'
-    _nodetype_name = 'Project'
+    _parent_nodetype_name   = 'Root'
+    _nodetype_name          = 'Project'
+
+######################################################################
+
+class CorpusForm(ModelForm):
+    #parent = ModelChoiceField(Node.objects.filter(user_id=request.user.id, type_id=2))
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request',None)
+        super(CorpusForm, self).__init__(*args, **kwargs)
+        #self.request = kwargs.pop('request', None)
+        #self.request = kwargs.pop("request")
+        #print(self.request)
+    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=2))
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'
     _nodetype_name = 'Corpus'
+    form = CorpusForm
+
+######################################################################
+
+class DocumentForm(ModelForm):
+    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=3))
 
 class DocumentAdmin(NodeAdmin):
     _parent_nodetype_name = 'Corpus'
     _nodetype_name = 'Document'
+    form = DocumentForm
 
 
 admin.site.register(NodeType)
 
 admin.site.register(Project, ProjectAdmin)
-#admin.site.register(Corpus, CorpusAdmin)
-#admin.site.register(Document, DocumentAdmin)
-
-admin.site.register(Node)
-admin.site.register(Ngram)
-admin.site.register(NodeNgramNgram)
+admin.site.register(Corpus, CorpusAdmin)
+admin.site.register(Document, DocumentAdmin)
 
 

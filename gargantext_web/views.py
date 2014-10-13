@@ -114,7 +114,7 @@ def project(request, project_id):
         dashboard = dict()
         dashboard['id']     = corpus.pk
         dashboard['name']   = corpus.name
-        dashboard['count']  = len(corpus.get_children())
+        dashboard['count']  = corpus.get_children_count()
         board.append(dashboard)
 
     html = t.render(Context({\

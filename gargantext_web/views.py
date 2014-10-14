@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.shortcuts import render
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
@@ -14,6 +14,7 @@ import datetime
 from itertools import *
 from django.db import connection
 
+from django import forms
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -219,4 +220,31 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
+
+from node.admin import CorpusForm
+
+class NameForm(forms.Form):
+    your_name = forms.CharField(label='Your name', max_length=100)
+    sender = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+    fichier = forms.FileField()
+
+
+def get_name(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CorpusForm(request.POST, request=request)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/thanks/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = CorpusForm(request=request)
+
+    return render(request, 'name.html', {'form': form})
 

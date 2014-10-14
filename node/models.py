@@ -30,6 +30,10 @@ class Node(MP_Node):
     def __str__(self):
         return self.name
 
+    def liste(self, user):
+        for noeud in Node.objects.filter(user=user):
+            print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
+
 class Project(Node):
     class Meta:
         proxy=True
@@ -37,6 +41,7 @@ class Project(Node):
 class Corpus(Node):
     class Meta:
         proxy=True
+        verbose_name_plural = 'Corpora'
 
 class Document(Node):
     class Meta:

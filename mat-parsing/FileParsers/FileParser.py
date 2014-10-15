@@ -4,10 +4,10 @@ import Collections
 """
 class FileParser:
     
-    def __init__(self, file=None, path="", encoding="utf8"):
+    def __init__(self, file=None, filepath="", encoding="utf8"):
         # ...get the file item...
         if file is None:
-            self._file = open(path, "rb")
+            self._file = open(filepath, "rb")
         else:
             self._file = file
         # ...and parse!
@@ -15,7 +15,7 @@ class FileParser:
     
     """Add a document to the database.
     """
-    def add_document(self, parent, title, contents, metadata, resource_guid=None):
+    def create_document(self, title, contents, metadata, resource_guid=None):
         # create or retrieve a resource for that document, based on its user id
         if resource_guid is None:
             resource = Resource(guid=resource_guid)

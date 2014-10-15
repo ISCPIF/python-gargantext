@@ -10,21 +10,29 @@ from time import time
 def upload_to(instance, filename):
     return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
 
+    
+class Resource(models.Model):
+    guid        = models.CharField(max_length=255)
+    file        = models.FileField(upload_to=upload_to, blank=True)
 
 class NodeType(models.Model):
-    name       = models.CharField(max_length=200)
+    name        = models.CharField(max_length=200)
     def __str__(self):
         return self.name
 
 class Node(MP_Node):
     #parent = models.ForeignKey('self', related_name='children_set', null=True, db_index=True)
-    user       = models.ForeignKey(User)
-    type       = models.ForeignKey(NodeType)
-    name       = models.CharField(max_length=200)
+    user        = models.ForeignKey(User)
+    type        = models.ForeignKey(NodeType)
+    name        = models.CharField(max_length=200)
     
-    date       = models.DateField(default=timezone.now(), blank=True)
-    file       = models.FileField(upload_to=upload_to, blank=True)
-    metadata   = hstore.DictionaryField(blank=True)
+    date        = models.DateField(default=timezone.now(), blank=True)
+    metadata    = hstore.DictionaryField(blank=True)
+    
+    # the 'file' column should be deprecated soon;
+    # use resources instead.
+    file        = models.FileField(upload_to=upload_to, blank=True)
+    resources   = models.ManyToManyField(Resource)
     
     #objects    = hstore.HStoreManager()
     def __str__(self):

@@ -15,17 +15,31 @@ class FileParser:
     
     """Add a document to the database.
     """
-    def create_document(self, title, contents, metadata, resource_guid=None):
+    def create_document(self, title, contents, language, metadata, guid=None):
         # create or retrieve a resource for that document, based on its user id
-        if resource_guid is None:
-            resource = Resource(guid=resource_guid)
+        if guid is None:
+            resource = Resource(guid=guid)
         else:
             try:
-                resource = Resource.get(guid=resource_guid)
+                resource = Resource.get(guid=guid)
             except:
-                resource = Resource(guid=resource_guid)
+                resource = Resource(guid=guid)
         # create the document itself
-        document = 
+        document = Node(
+            
+            # WRITE STUFF HERE!!!
+            
+        )
+        
+        # parse it!
+        # TODO: beware the language!!!!
+        if self._parsers[language] = None:
+            self._parsers[language] = NltkParser
+        
+        # WRITE STUFF HERE!!!
+        
+        # return the created document
+        return document
     
     """Useful method to detect the document encoding.
     Not sure it should be here actually.

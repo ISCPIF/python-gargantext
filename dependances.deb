@@ -1,0 +1,5 @@
+# Paquets Debian a installer
+libffi-dev
+libxml2-dev
+libxslt1-dev
+

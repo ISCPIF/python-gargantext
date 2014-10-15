@@ -33,7 +33,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes
     # Don't forget to use absolute paths, not relative paths.
-    '/home/alexandre/projets/gargantext.py/gargantext_web/templates',
+    '/srv/gargantext/templates',
 
 #import os.path
 #
@@ -85,9 +85,9 @@ WSGI_APPLICATION = 'wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ggdev',
-        'USER': 'alexandre',
-        'PASSWORD': 'C8kdcUrAQy66U',
+        'NAME': 'gargandb',
+        'USER': 'gargantext',
+        'PASSWORD': 'C8krdcURAQy99U',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -129,7 +129,7 @@ STATICFILES_FINDERS = (
 
 STATICFILES_DIRS = (
             #os.path.join(BASE_DIR, "static"),
-                '/home/alexandre/projets/gargantext.py/gargantext_web/static',
+                '/srv/gargantext/static',
                 #'/var/www/www/alexandre/media',
                 #'/var/www/alexandre.delanoe.org/',
                 )

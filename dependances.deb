@@ -1,5 +1,18 @@
 # Paquets Debian a installer
+
+#lxml
 libffi-dev
 libxml2-dev
 libxslt1-dev
+
+# ipython readline
+libncurses5-dev
+pandoc
+
+
+# scipy:
+gfortran
+libopenblas-dev
+liblapack-dev
+
 

@@ -16,4 +16,4 @@ I - Local Installation
 
 6) ./manage.py runserver
 
-That's it
+That's all

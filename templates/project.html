@@ -24,17 +24,18 @@
             {% endif %}
         </div>
 </div>
+<!-- Add jumbotron container for each type of coprus (presse, science etc.) --!>
 
 <div class="container">
     <div class="row">
-								{% if corpora  %}
-										{% for corpus in corpora %}
+								{% if board  %}
+										{% for corpus in board %}
 										<div class="col-md-4">
-                        <h3><a href="/project/{{ project.id }}/corpus/{{corpus.id}}">{{ corpus.name }}</a></h3>
-												<h4>{{ corpus.subtitle }}</h4>
-                        <p>{{ corpus.language }}, {{ corpus.database}}</p>
+                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></h3>
+												<h4>{{ corpus.count }} Documents </h4>
+                        <p>{{ corpus.language }} {{ corpus.database}}</p>
 												<h5>Activity:</h5>
-												<div class="chart" data-percent="50">73%</div>
+												<div class="chart" data-percent="73">73%</div>
 
 										</div>
 										{% endfor %}

@@ -19,42 +19,78 @@
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                {% if project %}
-                <h1>{{ project.title }} </h1>
-                <p> {{ project.subtitle }}</p>
-                {% endif %}
+	<div class="jumbotron">
+    <div class="row">
+        <div class="col-md-4">
+				{% if project %}
+						<h1>{{ project.title }} </h1>
+						<p> {{ project.subtitle }}</p>
+					{% endif %}
 
-                {% if corpus %}
-                <h2>{{ corpus.title }} </h2>
-                <p>{{ corpus.subtitle }} </p>
-                <p>{{ corpus.date }}, {{ corpus.language }}, {{ corpus.database }} ({{ number}} docs)</p>
-                {% endif %}
-								<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Modify corpus</a></p>
-            </div>
+					{% if corpus %}
+						<h2>{{ corpus.title }} </h2>
+						<p>{{ corpus.subtitle }} </p>
+						<p>{{ corpus.date }}, {{ corpus.language }}, {{ corpus.database }} ({{ number}} docs)</p>
+					{% endif %}
 
-        </div>
+					{% if number > 0 %}
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Modify corpus</a>
+						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export corpus</a></p>
+					{% endif %}
+			</div>
+
+        <div class="col-md-7">
+						<h2> Historic</h2>
+						<div id="hero-area" style="height: 300px;"></div>
+					{% if number == 0 %}
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add documents</a></p>
+					{% endif %}
+			</div>
+
+			</div>
+	</div>
 </div>
 
 <div class="container">
-{% if number > 0 %}
     <div class="row">
-        <div class="col-md-6">
-						<h3>Histogram</h3>
-            <div id="hero-area" style="height: 300px;"></div>
+        <div class="col-md-4">
+        <div class="jumbotron">
+						<h3>Exploration</h3>
+						<ol>
+								<li>Feature</li>
+								<li>Feature</li>
+								<li>Feature</li>
+						</ol>
+				</div>
+				</div>
+
+				<div class="col-md-4">
+        <div class="jumbotron">
+						<h3>Catography</h3>
+						<ol>
+								<li>Feature</li>
+								<li>Feature</li>
+								<li>Feature</li>
+						</ol>
         </div>
-        <div class="col-md-3">
-						<h3>Donut chart</h3>
-            <div id="hero-donut" style="height: 250px;"></div>    
         </div>
+
+				<div class="col-md-4">
+        <div class="jumbotron">
+						<h3>Dynamics</h3>
+						<ol>
+								<li>Feature</li>
+								<li>Feature</li>
+								<li>Feature</li>
+						</ol>
+        </div>
+        </div>
+
     </div>
-{% endif %}
-{% if number == 0 %}
-Please add documents:
-<a class="btn btn-xs btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Button to Add documents</a></p>
-{% endif %}
 
 </div>
+
+
 
 <script>
         // Morris Area Chart
@@ -75,6 +111,7 @@ Please add documents:
             lineColors: ["#939393",]
           });
 </script>
+
 
 <script>
         // Morris Donut Chart

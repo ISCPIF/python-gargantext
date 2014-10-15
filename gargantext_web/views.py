@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.shortcuts import render
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
@@ -14,6 +14,7 @@ import datetime
 from itertools import *
 from django.db import connection
 
+from django import forms
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -109,43 +110,53 @@ def project(request, project_id):
     corpora = project.get_children()
     number = len(corpora)
 
+    board = list()
+    for corpus in corpora:
+        dashboard = dict()
+        dashboard['id']     = corpus.pk
+        dashboard['name']   = corpus.name
+        dashboard['count']  = corpus.get_children_count()
+        board.append(dashboard)
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\
             'project': project,\
-            'corpora' : corpora,\
+            'board' : board,\
             'number': number,\
             }))
 
     return HttpResponse(html)
 
-def corpus(request, p_id, c_id):
+def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     
     try:
-        offset = str(p_id)
+        offset = str(project_id)
+        offset = str(corpus_id)
     except ValueError:
         raise Http404()
 
     t = get_template('corpus.html')
+    
     user = request.user
-
     date = datetime.datetime.now()
     
-    project = Project.objects.get(pk=p_id, user=request.user.pk)
-    corpus  = Corpus.objects.get(pk=c_id, user=request.user.pk)
-    print(Document.objects.filter(corpus=c_id, user=request.user.pk).query)
-    documents  = Document.objects.filter(user=request.user.pk,corpus=c_id).order_by("-date")
+    project = Node.objects.get(id=project_id)
+    corpus  = Node.objects.get(id=corpus_id)
+    
+    #print(Document.objects.filter(corpus=c_id, user=request.user.pk).query)
+    documents  = corpus.get_children()
     number = len(documents)
 
     sources = query_to_dicts('''select count(*), source 
-                        from documents_document as t1
+                        from node_node as t1
                         INNER JOIN documents_document_corpus as t2
                         ON (  t1.id = t2.document_id )
                         WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
                         GROUP BY source
-                        order by 1 DESC limit %d;''' % (request.user.pk, int(c_id), int(15)))
+                        order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
 
     sources_donut = []
     for s in sources:
@@ -181,7 +192,7 @@ def corpus(request, p_id, c_id):
                                 ON (  t1.id = t2.document_id )
                                 WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
                                 group by to_char(t1.date, '%s') 
-                                order by 1 DESC;''' %  (date_format, request.user.pk, int(c_id), date_format))
+                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
     
         
         histo = []
@@ -209,4 +220,31 @@ def corpus(request, p_id, c_id):
     
     return HttpResponse(html)
 
+
+from node.admin import CorpusForm
+
+class NameForm(forms.Form):
+    your_name = forms.CharField(label='Your name', max_length=100)
+    sender = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+    fichier = forms.FileField()
+
+
+def get_name(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CorpusForm(request.POST, request=request)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/thanks/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = CorpusForm(request=request)
+
+    return render(request, 'name.html', {'form': form})
 

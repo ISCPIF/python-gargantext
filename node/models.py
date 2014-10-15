@@ -45,7 +45,7 @@ class Node(MP_Node):
     
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     
-    date        = models.DateField(default=timezone.now(), blank=True)
+    date        = models.DateField(default=timezone.now, blank=True)
     metadata    = hstore.DictionaryField(blank=True)
     
     # the 'file' column should be deprecated soon;

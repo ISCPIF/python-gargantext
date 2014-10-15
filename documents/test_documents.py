@@ -1,5 +1,5 @@
 
-
+from django.db import transaction
 from django.contrib.auth.models import User
 from documents.models import Project, Corpus, Document, Source, Language
 from sources import importateur

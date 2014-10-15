@@ -1,5 +1,5 @@
 # Paquets Debian a installer
-
+# easy_install -U distribute (matplotlib)
 #lxml
 libffi-dev
 libxml2-dev

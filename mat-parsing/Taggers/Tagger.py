@@ -12,7 +12,7 @@ _re_sentence = re.compile(r'''(?x)  # set flag to allow verbose regexps
     ''', re.UNICODE | re.MULTILINE | re.DOTALL)
 
 
-"""This class is a model for performing tagging in a pipeline fashion.
+"""This base class is a model for performing tagging in a pipeline fashion.
 When started, it initiates the parser;
 when passed text, the text is piped to the parser.
 When ended, the parser is closed and the tagged word returned
@@ -24,7 +24,7 @@ class Tagger:
         self.buffer = []
     
     """Initialize the tagger.
-    This method shall be overriden by inherited classes.
+    This method can be overriden by inherited classes.
     """
     def start(self):
         pass
@@ -44,8 +44,8 @@ class Tagger:
             )
     
     """Ends the tagger and returns the tagged tokens.
-    This method shall be overriden by inherited classes.
-    Example of output: [('The', 'DET'), ('dog', 'NOM'), ('is', 'VER'), ('green', 'ADJ'), ('.', 'PUN')]
+    This method can be overriden by inherited classes.
+    Example of output: [('This', 'DT'), ('is', 'VBZ'), ('not', 'RB'), ('a', 'DT'), ('sentence', 'NN'), ('.', '.')]
     """
     def end(self):
         return self.buffer

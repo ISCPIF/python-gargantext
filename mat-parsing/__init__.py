@@ -1,3 +1,7 @@
+from Taggers import *
+from FileParsers import *
+
+
 import zipfile
 import Collections
 # import chardet

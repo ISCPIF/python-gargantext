@@ -75,6 +75,7 @@ class CorpusForm(ModelForm):
         self.request = kwargs.pop('request', None)
         super(CorpusForm, self).__init__(*args, **kwargs)
         print(self.request)
+        self.parent = ModelChoiceField(Node.objects.filter(user_id=self.request.user.id, type_id=2))
     #parent = ModelChoiceField(Node.objects.filter(user_id=request.user.id, type_id=2))
     #print(self.request.user.id)
     class Meta:

@@ -1,0 +1,22 @@
+2014-10-15
+
+    points à discuter:
+
+    *   language ? quelle convention (iso alpha2/3) ?
+        pour qui ?
+        *   ngrams
+        *   nodes
+        comment ?
+        *   soit un noeud de type language
+        *   soit une table
+        *   soit... les deux !
+        
+    
+    *   nouvelle archi
+
+    *   transaction
+
+    *   interface graphique / admin Django   
+        *   ok pour JS + Django dans un premier temps
+    
+    *   que font exactement les parsers (outre les metadata) ?

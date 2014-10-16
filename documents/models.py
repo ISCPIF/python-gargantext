@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django_hstore import hstore
 
-from treebeard.mp_tree import MP_Node
+#from treebeard.mp_tree import MP_Node
 
 from time import time
 ######################################################################

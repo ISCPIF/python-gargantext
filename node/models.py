@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from django_hstore import hstore
-from cte_tree.models import CTENode
+from cte_tree.models import CTENode, Manager
+#from cte_tree.fields import DepthField, PathField, OrderingField
 
 from time import time
 
@@ -21,6 +22,11 @@ class NodeType(models.Model):
         return self.name
 
 class Node(CTENode):
+#    depth       = DepthField()
+#    path        = PathField()
+#    ordering    = OrderingField()
+    objects     = Manager()
+
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
     name        = models.CharField(max_length=200)
@@ -33,7 +39,6 @@ class Node(CTENode):
     file        = models.FileField(upload_to=upload_to, blank=True)
     #resources   = models.ManyToManyField(Resource)
     
-    #objects    = hstore.HStoreManager()
     def __str__(self):
         return self.name
 

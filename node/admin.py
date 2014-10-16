@@ -41,12 +41,13 @@ class NodeAdmin(admin.ModelAdmin):
                 if nodeType.name == 'Project':
                     nodeParent  = Node.objects.get(type = nodeTypeParent, user = request.user)
                 else:
-                    nodeParent  = Node.objects.get(id = request.POST['parent'])
+                    nodeParent  = Node.objects.create(id = request.POST['parent'])
             except:
-                nodeParent  = Node.add_root(type = nodeTypeParent, user = request.user, name=request.user.username)
+                nodeParent  = Node.objects.create(type = nodeTypeParent, user = request.user, name=request.user.username)
             obj.user        = request.user
             
-            node            = nodeParent.add_child(type = nodeType,\
+            node            = Node.objects.create(type = nodeType,\
+                                                parent  = nodeParent,\
                                                 user    = request.user,\
                                                 name    = obj.name,\
                                                 file    = obj.file,\

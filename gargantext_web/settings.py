@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'django_extensions',
     #'south',
     #'documents',
+    'cte_tree',
     'node',
     'ngram',
     'django_hstore',

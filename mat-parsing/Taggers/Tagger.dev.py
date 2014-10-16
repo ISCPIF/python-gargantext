@@ -55,9 +55,12 @@ class Tagger:
     Example of output: [('This', 'DT'), ('is', 'VBZ'), ('not', 'RB'), ('a', 'DT'), ('sentence', 'NN'), ('.', '.')]
     """
     def tag_tokens(self, tokens, block=False):
-        self.tagging_start()
+        if not block:
+            self.tagging_start()
         # do something with the tokens here
-        self.tagging_end()
+        if not block:
+            self.tagging_end()
+            return []
         
     """Send a text to be tagged.
     """
@@ -67,4 +70,5 @@ class Tagger:
             tokens = _re_sentence.findall(line)
             self.tag_tokens(tokens, True)
         self.tagging_end()
+        return []
 

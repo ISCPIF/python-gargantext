@@ -22,29 +22,7 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
-class Node(MP_Node):
-    #parent = models.ForeignKey('self', related_name='children_set', null=True, db_index=True)
-    user        = models.ForeignKey(User)
-    type        = models.ForeignKey(NodeType)
-    name        = models.CharField(max_length=200)
-    
-    date        = models.DateField(default=timezone.now(), blank=True)
-    metadata    = hstore.DictionaryField(blank=True)
-    
-    # the 'file' column should be deprecated soon;
-    # use resources instead.
-    file        = models.FileField(upload_to=upload_to, blank=True)
-    #resources   = models.ManyToManyField(Resource)
-    
-    #objects    = hstore.HStoreManager()
-    def __str__(self):
-        return self.name
-
-    def liste(self, user):
-        for noeud in Node.objects.filter(user=user):
-            print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
-
-class Nodec(CTENode):
+class Node(CTENode):
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
     name        = models.CharField(max_length=200)

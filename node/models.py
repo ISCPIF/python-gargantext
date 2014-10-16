@@ -3,8 +3,6 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from django_hstore import hstore
-
-from treebeard.mp_tree import MP_Node
 from cte_tree.models import CTENode
 
 from time import time

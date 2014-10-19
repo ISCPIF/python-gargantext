@@ -3,13 +3,13 @@ import collections
 
 # This allows the fast retrieval of ngram ids
 # from the cache instead of using the database for every call
-class Ngram_Cache:
+class NgramCache:
     
     def __init__(self, language):
         self._cache = {}
         self._language = language
             
-    def get(self, terms):
+    def __getitem__(self, terms):
         terms = terms.strip().lower()
         if terms not in self._cache:
             try:
@@ -32,7 +32,7 @@ class FileParser:
         else:
             self._file = file
         # cache for ngrams
-        self._ngram_caches = collections.defaultdicts(Ngram_Cache)
+        self._ngramcaches = collections.defaultdicts(NgramCache)
         # extractors
         self._extractors = {}
         self._document_nodetype = NodeType.get(label='document')
@@ -91,9 +91,10 @@ class FileParser:
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
         # we should already be in a transaction, so no use doing another one (or is there?)
-        ngram_cache = self._ngram_caches[language.iso3]
-        for ngram_text, occurences in ngrams.items():
-            ngram = ngram_cache.get(ngram_text)
+        ngramcache = self._ngramcaches[language.iso3]
+        for terms, occurences in ngrams.items():
+            ngram_text = ' '.join([term[0] for term in terms])
+            ngram = ngramcache[ngram_text]
             Node_Ngram(
                 node       = childNode,
                 ngram      = ngram,

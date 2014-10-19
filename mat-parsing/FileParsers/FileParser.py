@@ -12,10 +12,35 @@ class FileParser:
             self._file = file
         # ...and parse!
         self.parse()
+        # extractors
+        self._extractors = {}
+        self._document_nodetype = NodeType.get(label='document')
+        with Language.objects.all() as languages:
+            self._languages_iso2 = {language.iso2.lower(): language for language in Language}
+            self._languages_iso3 = {language.iso3.lower(): language for language in Language}
+    
+    """Extract the ngrams from a given text.
+    """
+    def extract_ngrams(self, text, language):
+        # Get the appropriate ngrams extractor, if it exists
+        if language not in self._extractors:
+            extractor = None
+            if language == 'en':
+                extractor = EnglishNgramsExtractor()
+            elif language == 'fr':
+                extractor = FrenchNgramsExtractor()
+            self._extractors[language] = extractor
+        else:
+            extractor = self._extractors[language]
+        # Extract the 
+        if extractor:
+            return extractor.extract_ngrams(text)
+        else:
+            return []
     
     """Add a document to the database.
     """
-    def create_document(self, title, contents, language, metadata, guid=None):
+    def create_document(self, parentNode, title, contents, language, metadata, guid=None):
         # create or retrieve a resource for that document, based on its user id
         if guid is None:
             resource = Resource(guid=guid)
@@ -25,19 +50,19 @@ class FileParser:
             except:
                 resource = Resource(guid=guid)
         # create the document itself
-        document = Node(
-            
-            # WRITE STUFF HERE!!!
-            
+        childNode = Node(
+            user        = parentNode.pk,
+            type        = self._document_nodetype,
+            name        = title,
+            language    = language
+            metadata    = metadata
+            resource    = resource
         )
+        parentNode.add_child(childNode)
         
         # parse it!
-        # TODO: beware the language!!!!
-        if self._parsers[language] = None:
-            self._parsers[language] = NltkParser
-        
-        # WRITE STUFF HERE!!!
-        
+        ngrams = self.extract_ngrams(contents, language)
+        for 
         # return the created document
         return document
     

@@ -83,7 +83,7 @@ class Node(MP_Node):
     # the 'file' column should be deprecated soon;
     # use resources instead.
     file        = models.FileField(upload_to=upload_to, blank=True)
-    resources   = models.ManyToManyField(Resource)
+    resource    = models.ForeignKey(Resource)
     
     #objects    = hstore.HStoreManager()
     def __str__(self):

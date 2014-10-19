@@ -37,7 +37,7 @@ class NgramsExtractor:
             for subtree in grammar_parsed.subtrees():
                 if subtree.label() == self._label:
                     result.append(subtree.leaves())
-        except Exception as e:
+        except:
             print("Problem while parsing rule '%s'" % (self._rule, ))
             pass
         return iter(result)

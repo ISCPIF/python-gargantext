@@ -20,19 +20,19 @@ class PubmedFileParser(FileParser):
                 metadata    = {
                     # other metadata should also be included:
                     # authors, submission date, etc.
-                    "date_pub": datetime.date(year, month, day),
-                    "journal":  xml_article.find('MedlineCitation/Article/Journal/Title').text
-                    "title":    xml_article.find('MedlineCitation/Article/ArticleTitle').text
-                    "language": xml_article.find('MedlineCitation/Article/Language').text
-                    "doi":      xml_article.find('PubmedData/ArticleIdList/ArticleId[type=doi]').text
+                    "date_pub":      datetime.date(year, month, day),
+                    "journal":       xml_article.find('MedlineCitation/Article/Journal/Title').text
+                    "title":         xml_article.find('MedlineCitation/Article/ArticleTitle').text
+                    "language_iso3": xml_article.find('MedlineCitation/Article/Language').text
+                    "doi":           xml_article.find('PubmedData/ArticleIdList/ArticleId[type=doi]').text
                 }
                 contents    = xml_article.find('MedlineCitation/Article/Abstract/AbstractText').text
                 # create the document in the database
-                childNode   = self.create_document(
+                yield self.create_document(
+                    parentNode  = parentNode
                     title       = metadata["title"],
                     contents    = contents,
-                    language    = metadata["language"],
+                    language    = self._languages_iso3[metadata["language"].lower()]
                     metadata    = metadata,
                     guid        = metadata["doi"],
                 )
-                parentNode.add_child(childNode)

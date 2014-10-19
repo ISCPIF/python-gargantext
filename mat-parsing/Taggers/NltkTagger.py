@@ -1,4 +1,4 @@
-from Tagger import Tagger
+from Taggers.Tagger import Tagger
 
 import nltk
 

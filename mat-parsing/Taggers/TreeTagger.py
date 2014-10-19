@@ -1,4 +1,4 @@
-from Tagger import Tagger
+from Taggers.Tagger import Tagger
 
 import subprocess
 import threading
@@ -46,7 +46,7 @@ Shall be used for french texts.
 """
 class TreeTagger(Tagger):
     
-    def start(self, treeTaggerPath = "../../../nlp/pythonwrapperP3/treetagger"):
+    def start(self, treeTaggerPath = "./Taggers/treetagger"):
         binaryFile = "%s/bin/tree-tagger" % treeTaggerPath
         tagcmdlist = [
             binaryFile,
@@ -70,9 +70,11 @@ class TreeTagger(Tagger):
         
     def stop(self):
         # terminates the 'treetagger' process
-        self._popen.kill()
-        self._popen.terminate()
-        
+        try:
+            self._popen.kill()
+            self._popen.terminate()
+        except:
+            pass
         
     def tagging_start(self):
         self.buffer = []

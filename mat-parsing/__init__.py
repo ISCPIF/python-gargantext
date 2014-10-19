@@ -1,4 +1,5 @@
 from Taggers import *
+from NgramsExtractors import *
 from FileParsers import *
 
 

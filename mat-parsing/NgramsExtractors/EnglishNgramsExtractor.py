@@ -1,6 +1,9 @@
-from NgramsExtractor import NgramsExtractor
+from NgramsExtractors.NgramsExtractor import NgramsExtractor
+from Taggers import NltkTagger
 
 
 class EnglishNgramsExtractor(NgramsExtractor):
 
-    pass
+    def start(self):
+        self.tagger = NltkTagger()
+        

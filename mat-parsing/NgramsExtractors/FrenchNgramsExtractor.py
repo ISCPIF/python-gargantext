@@ -1,6 +1,9 @@
-from NgramsExtractor import NgramsExtractor
+from NgramsExtractors.NgramsExtractor import NgramsExtractor
+from Taggers import TreeTagger
 
 
 class FrenchNgramsExtractor(NgramsExtractor):
 
-    pass
+    def start(self):
+        self.tagger = TreeTagger()
+

@@ -1,7 +1,9 @@
-            
+from django.db import transaction
+from FileParser import FileParser
 
-class EuropressFileParser(FileParser, contents):
+
+class EuropressFileParser(FileParser):
     
-    def parse:
+    def parse(self, parentNode):
         pass
  

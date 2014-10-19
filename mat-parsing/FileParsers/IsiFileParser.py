@@ -2,16 +2,20 @@ from django.db import transaction
 from FileParser import FileParser
 
 
-class PubmedFileParser(FileParser):
+class IsiFileParser(FileParser):
     
     def parse(self, parentNode):
+        # read the file, line by line
+        for line in self.__file:
+            
+        
+        
         # open the file as XML
         xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
         xml = etree.parse(self._file, parser=xml_parser)
         # parse all the articles, one by one
         # all database operations should be performed within one transaction
         xml_articles = xml.findall('PubmedArticle')
-        documents = []
         with transaction.atomic():
             for xml_article in xml_articles:
                 # extract data from the document
@@ -29,7 +33,7 @@ class PubmedFileParser(FileParser):
                 }
                 contents    = xml_article.find('MedlineCitation/Article/Abstract/AbstractText').text
                 # create the document in the database
-                document    = self.create_document(
+                yield self.create_document(
                     parentNode  = parentNode
                     title       = metadata["title"],
                     contents    = contents,
@@ -37,6 +41,3 @@ class PubmedFileParser(FileParser):
                     metadata    = metadata,
                     guid        = metadata["doi"],
                 )
-                if document:
-                    documents.append(document)
-        return documents

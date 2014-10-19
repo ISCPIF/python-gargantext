@@ -84,7 +84,8 @@ class FileParser:
                 resource = Resource(guid=guid)
         # If the parent node already has a child with this resource, pass
         # (is it a good thing?)
-        if parentNode.get_descendants().
+        if parentNode.get_descendants().filter(resource=resource).exists():
+            return None
         # create the document itself
         childNode = Node(
             user        = parentNode.pk,

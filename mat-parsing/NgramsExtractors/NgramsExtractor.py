@@ -9,9 +9,10 @@ class NgramsExtractor:
     """Class instanciation.
     This method can be overriden.
     """
-    def __init__(self, rule="NP: {<JJ.*>*<NN.*|>+<JJ.*>*}"):
+    def __init__(self, rule="{<JJ.*>*<NN.*|>+<JJ.*>*}"):
         self.start()
-        self._rule = rule
+        self._label = "NP"
+        self._rule = self._label + ": " + rule
         
     def __del__(self):
         self.stop()
@@ -33,20 +34,11 @@ class NgramsExtractor:
         result = []
         try:
             grammar_parsed = grammar.parse(tagged_ngrams)
-            grammar_parsed_iterator = grammar_parsed.subtrees()
-
-            while True:
-                try:
-                    subtree = next(grammar_parsed_iterator)
-                    if subtree.label() == 'NP':
-                        #print(subtree.label())
-                        result.append(subtree.leaves())
-
-                except Exception as e:
-                    break
-
+            for subtree in grammar_parsed.subtrees():
+                if subtree.label() == self._label:
+                    result.append(subtree.leaves())
         except Exception as e:
-            print(e)
+            print("Problem while parsing rule '%s'" % (self._rule, ))
             pass
         return iter(result)
         

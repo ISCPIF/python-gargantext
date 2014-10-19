@@ -85,6 +85,9 @@ class Node(MP_Node):
     file        = models.FileField(upload_to=upload_to, blank=True)
     resource    = models.ForeignKey(Resource)
     
+    ngrams      = models.ManyToManyField(NGrams)
+    
+    
     #objects    = hstore.HStoreManager()
     def __str__(self):
         return self.name

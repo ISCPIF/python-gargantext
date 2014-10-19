@@ -5,16 +5,17 @@ import collections
 # from the cache instead of using the database for every call
 class Ngram_Cache:
     
-    def __init__(self):
+    def __init__(self, language):
         self._cache = {}
+        self._language = language
             
     def get(self, terms):
         terms = terms.strip().lower()
         if terms not in self._cache:
             try:
-                ngram = NGram.get(terms=terms)
+                ngram = NGram.get(terms=terms, language=self._language)
             except:
-                ngram = NGram(terms=terms, n=len(terms))
+                ngram = NGram(terms=terms, n=len(terms), language=self._language)
                 ngram.save()
             self._cache[terms] = ngram
         return self._cache[terms]
@@ -73,6 +74,9 @@ class FileParser:
                 resource = Resource.get(guid=guid)
             except:
                 resource = Resource(guid=guid)
+        # If the parent node already has a child with this resource, pass
+        # (is it a good thing?)
+        if parentNode.get_descendants().
         # create the document itself
         childNode = Node(
             user        = parentNode.pk,
@@ -87,15 +91,14 @@ class FileParser:
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
         # we should already be in a transaction, so no use doing another one (or is there?)
-        # btw, this is not very good (the get/insert part)
         ngram_cache = self._ngram_caches[language.iso3]
-        for ngram_text, count in ngrams.items():
+        for ngram_text, occurences in ngrams.items():
             ngram = ngram_cache.get(ngram_text)
             Node_Ngram(
-                node  = childNode,
-                ngram = ngram,
-                count = count
-            )
+                node       = childNode,
+                ngram      = ngram,
+                occurences = occurences
+            ).save()
                 
         # return the created document
         return document
@@ -111,4 +114,5 @@ class FileParser:
     This method shall be overriden by inherited classes.
     """
     def parse(self):
-        pass
+        return []
+

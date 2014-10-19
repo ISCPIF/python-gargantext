@@ -29,35 +29,6 @@ class Ngram(models.Model):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255)
-    
-class class Ngram_Cache:
-    
-    def __init__(self, language):
-        self._language_id = {}
-        self._ngram_ids = []
-        # get the language id
-        language = language.lower()
-        if len(language) == "3":
-            self._language_id = Language.get(iso3=language).id
-        elif len(language) == "2":
-            self._language_id = Language.get(iso2=language).id
-        else:
-            import pycountry
-            pycountry.languages.get(alpha2='an')
-            
-    def get(self, language, terms):
-        # get the term id
-        terms = terms.strip().lower()
-        if terms not in self._cache[language]:
-            try:
-                ngram = NGram.get(terms=terms)
-            except:
-                
-                ngram = NGram(terms=terms, n=len(terms), language_id=self._language_id)
-                ngram.save()
-            self._cache[language][terms] = ngram.pk
-        # return the term id
-        return self._cache[language][terms]
 
     
 class Resource(models.Model):
@@ -96,7 +67,10 @@ class Node(MP_Node):
         for noeud in Node.objects.filter(user=user):
             print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
 
-
+class Node_Ngram(mdels.Model):
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
+    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    occurences  = models.IntegerField()
 
 class Project(Node):
     class Meta:

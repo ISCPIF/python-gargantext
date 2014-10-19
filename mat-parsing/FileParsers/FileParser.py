@@ -20,6 +20,14 @@ class NgramCache:
             self._cache[terms] = ngram
         return self._cache[terms]
 
+        
+class NgramCaches(collections.defaultdict):
+
+    def __missing__(self, language):
+        self[language] = NgramCache(language)
+        return self[language]
+        
+    
 
 """Base class for performing files parsing depending on their type.
 """
@@ -32,7 +40,7 @@ class FileParser:
         else:
             self._file = file
         # cache for ngrams
-        self._ngramcaches = collections.defaultdicts(NgramCache)
+        self._ngramcaches = NgramCaches()
         # extractors
         self._extractors = {}
         self._document_nodetype = NodeType.get(label='document')
@@ -90,8 +98,8 @@ class FileParser:
         
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
-        # we should already be in a transaction, so no use doing another one (or is there?)
-        ngramcache = self._ngramcaches[language.iso3]
+        # we are already in a transaction, so no use doing another one (or is there?)
+        ngramcache = self._ngramcaches[language]
         for terms, occurences in ngrams.items():
             ngram_text = ' '.join([term[0] for term in terms])
             ngram = ngramcache[ngram_text]

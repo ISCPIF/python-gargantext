@@ -69,19 +69,18 @@ class ProjectAdmin(NodeAdmin):
 from django.db.models.query import EmptyQuerySet
 
 class CorpusForm(ModelForm):
-    parent = ModelChoiceField(EmptyQuerySet)
+    #parent = ModelChoiceField(EmptyQuerySet)
     
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        super(CorpusForm, self).__init__(*args, **kwargs)
-        parent_type = NodeType.objects.get(name="Project")
-        #parent_type = NodeType.objects.get(name=self._parent_nodetype_name)
-        self.fields['parent'].queryset = Node.objects.filter(user_id=self.request.user.id, type_id=parent_type.id)
+        try:
+            self.request = kwargs.pop('request', None)
+            super(CorpusForm, self).__init__(*args, **kwargs)
+            parent_type = NodeType.objects.get(name="Project")
+            #parent_type = NodeType.objects.get(name=self._parent_nodetype_name)
+            self.fields['parent'].queryset = Node.objects.filter(user_id=self.request.user.id, type_id=parent_type.id)
+        except:
+            pass
     
-    
-    #self.parent = ModelChoiceField(Node.objects.filter(user_id=self.request.user.id, type_id=2))
-    #parent = ModelChoiceField(Node.objects.filter(user_id=request.user.id, type_id=2))
-    #print(self.request.user.id)
     class Meta:
         model = Corpus
 

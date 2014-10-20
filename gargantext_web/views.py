@@ -107,8 +107,8 @@ def project(request, project_id):
     date = datetime.datetime.now()
     
     project = Node.objects.get(id=project_id)
-    corpora = project.get_children()
-    number = len(corpora)
+    corpora = project.children
+    number  = project.children.count()
 
     board = list()
     for corpus in corpora:
@@ -230,21 +230,30 @@ class NameForm(forms.Form):
     fichier = forms.FileField()
 
 
-def get_name(request):
+def add_corpus(request):
     # if this is a POST request we need to process the form data
+    #print(request.method)
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
-        form = CorpusForm(request.POST, request=request)
+        form = CorpusForm(request.POST, request.FILES)
         # check whether it's valid:
         if form.is_valid():
+#            corpus = Node
+#            corpus.user = request.user
+#            corpus.type = forms
+            form.save()
+
+#            print(form.cleaned_data)
+#            print(form.cleaned_data['name'])
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            return HttpResponseRedirect('/thanks/')
+            return HttpResponseRedirect('/projects/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
         form = CorpusForm(request=request)
 
-    return render(request, 'name.html', {'form': form})
+    return render(request, 'add_corpus.html', {'form': form})
+    print("5")
 

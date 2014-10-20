@@ -15,7 +15,7 @@
 <div class="container theme-showcase" role="main">
 		<div class="jumbotron">
 				<h1>Title</h1>
-		<form action="/your-name/" method="post">
+		<form enctype="multipart/form-data" action="/add/corpus/" method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Save" />

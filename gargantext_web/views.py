@@ -238,15 +238,17 @@ def add_corpus(request):
         form = CorpusForm(request.POST, request.FILES)
         # check whether it's valid:
         if form.is_valid():
-#            corpus = Node
-#            corpus.user = request.user
-#            corpus.type = forms
             form.save()
-
-#            print(form.cleaned_data)
-#            print(form.cleaned_data['name'])
             # process the data in form.cleaned_data as required
-            # ...
+#            corpus.user = request.user
+#            print(form.cleaned_data['name'])
+            
+            try:
+                print(type(form.cleaned_data['fichier']))
+                print("here we parse" + str(form.cleaned_data['fichier']))
+            except Exception as error:
+                print(error)
+
             # redirect to a new URL:
             return HttpResponseRedirect('/projects/')
 

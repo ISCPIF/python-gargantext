@@ -6,7 +6,7 @@ import collections
 class NgramCache:
     
     def __init__(self, language):
-        self._cache = {}
+        self._cache = dict()
         self._language = language
             
     def __getitem__(self, terms):
@@ -34,7 +34,7 @@ class FileParser:
         # cache for ngrams
         self._ngramcaches = collections.defaultdicts(NgramCache)
         # extractors
-        self._extractors = {}
+        self._extractors = dict()
         self._document_nodetype = NodeType.get(label='document')
         with Language.objects.all() as languages:
             self._languages_iso2 = {language.iso2.lower(): language for language in Language}
@@ -61,7 +61,7 @@ class FileParser:
                 [token for token, tag in extractor.extract_ngrams(text)]
             )
         else:
-            return {}
+            return dict()
     
     """Add a document to the database.
     """
@@ -115,5 +115,5 @@ class FileParser:
     This method shall be overriden by inherited classes.
     """
     def parse(self):
-        return []
+        return list()
 

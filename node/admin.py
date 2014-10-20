@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 
-from node.models import NodeType, Node, Project, Corpus, Document
-
+from node.models import NodeType, Language, Node, Project, Corpus, Document
 
 class NodeAdmin(admin.ModelAdmin):
     exclude = ('user', 'type', 'path', 'depth', 'numchild')
@@ -103,8 +102,13 @@ class DocumentAdmin(NodeAdmin):
     _nodetype_name = 'Document'
     form = DocumentForm
 
+class LanguageAdmin(admin.ModelAdmin):
+    class Meta:
+        ordering = ['fullname',]
+
 
 admin.site.register(NodeType)
+admin.site.register(Language, LanguageAdmin)
 
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)

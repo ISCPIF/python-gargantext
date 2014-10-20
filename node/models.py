@@ -22,6 +22,8 @@ class Language(models.Model):
     iso2        = models.CharField(max_length=2)
     iso3        = models.CharField(max_length=3)
     fullname    = models.CharField(max_length=255)
+    def __str__(self):
+        return self.fullname
 
 
 class Ngram(models.Model):

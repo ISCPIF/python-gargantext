@@ -59,6 +59,7 @@ class Node(CTENode):
     date        = models.DateField(default=timezone.now, blank=True)
     metadata    = hstore.DictionaryField(blank=True)
     
+    fichier      = models.FileField(upload_to=upload_to, blank=True)
     resource    = models.ForeignKey(Resource, blank=True, null=True)
     #ngrams      = models.ManyToManyField(NGrams)
     

@@ -107,7 +107,7 @@ def project(request, project_id):
     date = datetime.datetime.now()
     
     project = Node.objects.get(id=project_id)
-    corpora = project.children
+    corpora = project.children.all()
     number  = project.children.count()
 
     board = list()
@@ -115,7 +115,7 @@ def project(request, project_id):
         dashboard = dict()
         dashboard['id']     = corpus.pk
         dashboard['name']   = corpus.name
-        dashboard['count']  = corpus.get_children_count()
+        dashboard['count']  = corpus.children.count()
         board.append(dashboard)
 
     html = t.render(Context({\
@@ -147,8 +147,8 @@ def corpus(request, project_id, corpus_id):
     corpus  = Node.objects.get(id=corpus_id)
     
     #print(Document.objects.filter(corpus=c_id, user=request.user.pk).query)
-    documents  = corpus.get_children()
-    number = len(documents)
+    documents  = corpus.children
+    number = corpus.children.count()
 
     sources = query_to_dicts('''select count(*), source 
                         from node_node as t1

@@ -43,6 +43,7 @@ class NodeAdmin(admin.ModelAdmin):
                     nodeParent  = Node.objects.create(id = request.POST['parent'])
             except:
                 nodeParent  = Node.objects.create(type = nodeTypeParent, user = request.user, name=request.user.username)
+            
             obj.user        = request.user
             
             node            = Node.objects.create(type = nodeType,\

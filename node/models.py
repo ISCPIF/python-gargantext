@@ -14,7 +14,8 @@ from collections import defaultdict
 # Some usefull functions
 
 def upload_to(instance, filename):
-    return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
+    return 'corpora/%s/%s' % (instance.user.username, filename)
+    #return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
 
 # All classes here
 

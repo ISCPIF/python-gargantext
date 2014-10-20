@@ -72,7 +72,7 @@ def home(request):
 
 def projects(request):
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/admin/logout/?next=%s' % request.path)
     
     t = get_template('projects.html')
     
@@ -150,13 +150,16 @@ def corpus(request, project_id, corpus_id):
     documents  = corpus.children
     number = corpus.children.count()
 
-    sources = query_to_dicts('''select count(*), source 
-                        from node_node as t1
-                        INNER JOIN documents_document_corpus as t2
-                        ON (  t1.id = t2.document_id )
-                        WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                        GROUP BY source
-                        order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
+    try:
+        sources = query_to_dicts('''select count(*), source 
+                            from node_node as t1
+                            INNER JOIN documents_document_corpus as t2
+                            ON (  t1.id = t2.document_id )
+                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
+                            GROUP BY source
+                            order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
+    except:
+        pass
 
     sources_donut = []
     for s in sources:
@@ -186,13 +189,16 @@ def corpus(request, project_id, corpus_id):
             date_format = 'YYYY-MM-DD'
             date_form = 'days'
 
-        dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
+        try:
+            dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
                                 from documents_document as t1
                                 INNER JOIN documents_document_corpus as t2
                                 ON (  t1.id = t2.document_id )
                                 WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
                                 group by to_char(t1.date, '%s') 
                                 order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
+        except:
+            pass
     
         
         histo = []

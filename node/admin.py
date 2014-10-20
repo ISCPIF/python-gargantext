@@ -4,8 +4,8 @@ from django.forms import ModelForm, ModelChoiceField
 from node.models import NodeType, Language, Node, Project, Corpus, Document
 
 class NodeAdmin(admin.ModelAdmin):
-    exclude = ('user', 'type', 'path', 'depth', 'numchild')
-    list_display = ('name', 'date', 'file')
+    exclude = ('user', 'path', 'depth', 'numchild')
+    list_display = ('name', 'date')
     search_fields = ('name',)
     # list_filter = ('type',)
     # date_hierarchy
@@ -49,7 +49,6 @@ class NodeAdmin(admin.ModelAdmin):
                                                 parent  = nodeParent,\
                                                 user    = request.user,\
                                                 name    = obj.name,\
-                                                file    = obj.file,\
                                                 metadata= obj.metadata)
             
             #nodeParent.save()
@@ -68,7 +67,6 @@ class ProjectAdmin(NodeAdmin):
 ######################################################################
 
 from django.db.models.query import EmptyQuerySet
-
 
 class CorpusForm(ModelForm):
     parent = ModelChoiceField(EmptyQuerySet)
@@ -106,7 +104,6 @@ class LanguageAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return Language.objects.filter(implemented=1)
-
     
     class Meta:
         ordering = ['fullname',]

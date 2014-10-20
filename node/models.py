@@ -60,7 +60,7 @@ class Node(CTENode):
     # use resources instead.
     file        = models.FileField(upload_to=upload_to, blank=True)
     #resources   = models.ManyToManyField(Resource)
-    resource    = models.ForeignKey(Resource)
+    resource    = models.ForeignKey(Resource, blank=True)
     #ngrams      = models.ManyToManyField(NGrams)
     
     

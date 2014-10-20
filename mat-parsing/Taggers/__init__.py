@@ -1,2 +1,2 @@
-from NltkTagger import NltkTagger
-from TreeTagger import TreeTagger
+from Taggers.NltkTagger import NltkTagger
+from Taggers.TreeTagger import TreeTagger

@@ -1,4 +1,5 @@
 from Taggers import *
+from NgramsExtractors import *
 from FileParsers import *
 
 
@@ -7,23 +8,7 @@ import Collections
 # import chardet
 
 
-# This allows the fast retrieval of ngram ids
-# from the cache instead of using the database
-class Ngram_Cache:
-    
-    def __init__(self):
-        self._cache = {}
-            
-    def get(self, terms):
-        terms = terms.strip().lower()
-        if terms not in self._cache:
-            try:
-                ngram = NGram.get(terms=terms)
-            except:
-                ngram = NGram(terms=terms, n=len(terms))
-                ngram.save()
-            self._cache[terms] = ngram.pk
-        return self._cache[terms]
+
 
 
 

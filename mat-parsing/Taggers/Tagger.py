@@ -1,17 +1,6 @@
 import re
 
 
-"""This regular expression is really good at tokenizing a text!
-"""
-_re_sentence = re.compile(r'''(?x)  # set flag to allow verbose regexps
-    (?:[A-Z])(?:\.[A-Z])+\.?        # abbreviations, e.g. U.S.A.
-    | \w+(?:-\w+)*                  # words with optional internal hyphens
-    | \$?\d+(?:\.\d+)?%?            # currency and percentages, e.g. $12.40, 82%
-    | \.\.\.                        # ellipsis
-    | [][.,;"'?!():-_`]             # these are separate tokens
-    ''', re.UNICODE | re.MULTILINE | re.DOTALL)
-
-
 """This base class is a model for performing tagging in a pipeline fashion.
 When started, it initiates the parser;
 when passed text, the text is piped to the parser.
@@ -21,40 +10,63 @@ in a tuple format.
 class Tagger:
 
     def __init__(self):
+        # This regular expression is really good at tokenizing a text!
+        self._re_sentence = re.compile(r'''(?x)  # set flag to allow verbose regexps
+            (?:[A-Z])(?:\.[A-Z])+\.?        # abbreviations, e.g. U.S.A.
+            | \w+(?:-\w+)*                  # words with optional internal hyphens
+            | \$?\d+(?:\.\d+)?%?            # currency and percentages, e.g. $12.40, 82%
+            | \.\.\.                        # ellipsis
+            | [][.,;"'?!():-_`]             # these are separate tokens
+            ''', re.UNICODE | re.MULTILINE | re.DOTALL)
         self.buffer = []
+        self.start()
+        
+    def __del__(self):
+        self.stop()
     
-    """Initialize the tagger.
+    """Initializes the tagger. This method is called by the constructor.
     This method can be overriden by inherited classes.
     """
     def start(self):
         pass
-
-    """Send a list of tokens to be tagged.
-    This method shall be overriden by inherited classes.
+    
+    """Ends the tagger.
+    This method is called by the destructor.
+    This method can be overriden by inherited classes.
     """
-    def send_tokens(self, tokens):
+    def stop(self):
         pass
+
+    """This method is userful in the case of pipelines requiring
+    boundaries around blocks of text.
+    """
+    def tagging_start(self):
+        pass
+        
+    def tagging_end(self):
+        pass
+        
+    """Returns the tagged tokens.
+    This method shall be overriden by inherited classes.
+    Example of input: ['This', 'is', 'not', 'a', 'sentence', '.']
+    Example of output: [('This', 'DT'), ('is', 'VBZ'), ('not', 'RB'), ('a', 'DT'), ('sentence', 'NN'), ('.', '.')]
+    """
+    def tag_tokens(self, tokens, single=True):
+        if single:
+            self.tagging_start()
+        # do something with the tokens here
+        if single:
+            self.tagging_end()
+        return []
         
     """Send a text to be tagged.
     """
-    def send_text(self, text):
+    def tag_text(self, text):
+        tokens_tags = []
+        self.tagging_start()
         for line in text.split('\n'):
-            self.send_tokens(
-                _re_sentence.findall(line)
-            )
-    
-    """Ends the tagger and returns the tagged tokens.
-    This method can be overriden by inherited classes.
-    Example of output: [('This', 'DT'), ('is', 'VBZ'), ('not', 'RB'), ('a', 'DT'), ('sentence', 'NN'), ('.', '.')]
-    """
-    def end(self):
-        return self.buffer
-    
-    """Starts the tagger, pipes the text,
-    ends the tagger, returns the result.
-    """
-    def tag(self, text):
-        self.start()
-        self.send_text(text)
-        return self.end()
-        
+            tokens = self._re_sentence.findall(line)
+            tokens_tags += self.tag_tokens(tokens, False)
+        self.tagging_end()
+        return tokens_tags
+

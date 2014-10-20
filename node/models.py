@@ -8,7 +8,6 @@ from cte_tree.models import CTENode, Manager
 from time import time
 
 from django.contrib.auth.models import User
-from language import Language
 
 from collections import defaultdict
 
@@ -60,7 +59,7 @@ class Node(CTENode):
     file        = models.FileField(upload_to=upload_to, blank=True)
     #resources   = models.ManyToManyField(Resource)
     resource    = models.ForeignKey(Resource)
-    ngrams      = models.ManyToManyField(NGrams)
+    #ngrams      = models.ManyToManyField(NGrams)
     
     
     def __str__(self):
@@ -70,7 +69,7 @@ class Node(CTENode):
         for noeud in Node.objects.filter(user=user):
             print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
 
-class Node_Ngram(mdels.Model):
+class Node_Ngram(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)
     ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
     occurences  = models.IntegerField()

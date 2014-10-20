@@ -1,4 +1,6 @@
 Here informations for installation:
+-----------------------------------
+
 
 I - Local Installation
 All informations are in init folder

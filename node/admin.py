@@ -103,6 +103,11 @@ class DocumentAdmin(NodeAdmin):
     form = DocumentForm
 
 class LanguageAdmin(admin.ModelAdmin):
+    
+    def get_queryset(self, request):
+        return Language.objects.filter(implemented=1)
+
+    
     class Meta:
         ordering = ['fullname',]
 

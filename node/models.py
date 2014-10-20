@@ -19,19 +19,24 @@ def upload_to(instance, filename):
 # All classes here
 
 class Language(models.Model):
-    iso2        = models.CharField(max_length=2)
+    iso2        = models.CharField(max_length=2, unique=True)
     iso3        = models.CharField(max_length=3)
     fullname    = models.CharField(max_length=255)
+    implemented = models.BooleanField(blank=True)
+    
     def __str__(self):
         return self.fullname
 
+class DatabaseType(models.Model):
+    name    = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
 
 class Ngram(models.Model):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255)
 
-    
 class Resource(models.Model):
     guid        = models.CharField(max_length=255)
     file        = models.FileField(upload_to=upload_to, blank=True)
@@ -42,9 +47,6 @@ class NodeType(models.Model):
         return self.name
 
 class Node(CTENode):
-#    depth       = DepthField()
-#    path        = PathField()
-#    ordering    = OrderingField()
     objects     = Manager()
 
     user        = models.ForeignKey(User)
@@ -59,8 +61,10 @@ class Node(CTENode):
     # the 'file' column should be deprecated soon;
     # use resources instead.
     file        = models.FileField(upload_to=upload_to, blank=True)
+    bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
+    
     #resources   = models.ManyToManyField(Resource)
-    resource    = models.ForeignKey(Resource, blank=True)
+    #resource    = models.ForeignKey(Resource, blank=True, null=True)
     #ngrams      = models.ManyToManyField(NGrams)
     
     

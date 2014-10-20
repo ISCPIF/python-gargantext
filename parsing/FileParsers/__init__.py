@@ -1,2 +1,2 @@
-from EuropressFileParser import EuropressFileParser
-from PubmedFileParser import PubmedFileParser
+#from parsing.FileParsers import EuropressFileParser
+from parsing.FileParsers import PubmedFileParser

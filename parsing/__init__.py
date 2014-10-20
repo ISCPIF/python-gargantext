@@ -1,10 +1,10 @@
-from Taggers import *
-from NgramsExtractors import *
-from FileParsers import *
+#from .Taggers import *
+#from .NgramsExtractors import *
+from .FileParsers import *
 
 
 import zipfile
-import Collections
+import collections
 # import chardet
 
 

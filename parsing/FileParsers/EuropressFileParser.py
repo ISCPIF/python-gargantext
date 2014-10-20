@@ -1,7 +1,8 @@
             
-
-class EuropressFileParser(FileParser, contents):
-    
-    def parse:
-        pass
- 
+#import FileParser
+#
+#class EuropressFileParser(FileParser, contents):
+#    
+#    def parse():
+#        pass
+# 

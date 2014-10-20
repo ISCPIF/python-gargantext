@@ -76,18 +76,18 @@ class FileParser:
                 resource = Resource(guid=guid)
         # If the parent node already has a child with this resource, pass
         # (is it a good thing?)
-        if parentNode.get_descendants().
+        if parentNode.get_descendants():
         # create the document itself
-        childNode = Node(
-            user        = parentNode.pk,
-            type        = self._document_nodetype,
-            name        = title,
-            language    = language
-            metadata    = metadata
-            resource    = resource
-        )
-        parentNode.add_child(childNode)
-        
+            childNode = Node(
+                user        = parentNode.pk,
+                type        = self._document_nodetype,
+                name        = title,
+                language    = language,
+                metadata    = metadata,
+                resource    = resource
+            )
+            parentNode.add_child(childNode)
+            
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
         # we should already be in a transaction, so no use doing another one (or is there?)

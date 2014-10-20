@@ -35,7 +35,7 @@ class FileParser:
         self._ngramcaches = collections.defaultdicts(NgramCache)
         # extractors
         self._extractors = dict()
-        self._document_nodetype = NodeType.get(label='document')
+        self._document_nodetype = NodeType.get(name='Document')
         with Language.objects.all() as languages:
             self._languages_iso2 = {language.iso2.lower(): language for language in Language}
             self._languages_iso3 = {language.iso3.lower(): language for language in Language}

@@ -6,7 +6,7 @@ class PubmedFileParser(FileParser):
     
     def parse(self, parentNode):
         # open the file as XML
-        xml_parser = etree.XMLParser(resolve_entities=False,recover=True)
+        xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
         xml = etree.parse(self._file, parser=xml_parser)
         # parse all the articles, one by one
         # all database operations should be performed within one transaction

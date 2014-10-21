@@ -1,5 +1,5 @@
 import collections
-
+from node.models import Node, NodeType, Language
 
 class NgramCache:
     """
@@ -45,10 +45,10 @@ class FileParser:
         self._ngramcaches = NgramCaches()
         # extractors
         self._extractors = dict()
-        self._document_nodetype = NodeType.get(name='Document')
-        with Language.objects.all() as languages:
-            self._languages_iso2 = {language.iso2.lower(): language for language in Language}
-            self._languages_iso3 = {language.iso3.lower(): language for language in Language}
+        self._document_nodetype = NodeType.objects.get(name='Document')
+        languages = Language.objects.all()
+        self._languages_iso2 = {language.iso2.lower(): language for language in languages}
+        self._languages_iso3 = {language.iso3.lower(): language for language in languages}
         #self.parse()
     
     """Extract the ngrams from a given text.
@@ -80,17 +80,17 @@ class FileParser:
     """
     def create_document(self, parentNode, title, contents, language, metadata, guid=None):
         # create or retrieve a resource for that document, based on its user id
-        if guid is None:
-            resource = Resource(guid=guid)
-        else:
-            try:
-                resource = Resource.get(guid=guid)
-            except:
-                resource = Resource(guid=guid)
-        # If the parent node already has a child with this resource, pass
-        # (is it a good thing?)
-        if parentNode.descendants().filter(resource=resource).exists():
-            return None
+#        if guid is None:
+#            resource = Resource(guid=guid)
+#        else:
+#            try:
+#                resource = Resource.get(guid=guid)
+#            except:
+#                resource = Resource(guid=guid)
+#        # If the parent node already has a child with this resource, pass
+#        # (is it a good thing?)
+#        if parentNode.descendants().filter(resource=resource).exists():
+#            return None
         # create the document itself
         childNode = Node(
             user        = parentNode.pk,
@@ -98,7 +98,7 @@ class FileParser:
             name        = title,
             language    = language,
             metadata    = metadata,
-            resource    = resource,
+            #resource    = resource,
             parent      = parentNode
         )
             

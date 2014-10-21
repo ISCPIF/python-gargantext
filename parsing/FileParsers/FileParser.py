@@ -1,5 +1,6 @@
 import collections
-from node.models import Node, NodeType, Language
+from node.models import Node, NodeType, Language, Ngram, Node_Ngram
+from parsing.NgramsExtractors import *
 
 class NgramCache:
     """
@@ -15,9 +16,9 @@ class NgramCache:
         terms = terms.strip().lower()
         if terms not in self._cache:
             try:
-                ngram = NGram.get(terms=terms, language=self._language)
+                ngram = Ngram.get(terms=terms, language=self._language)
             except:
-                ngram = NGram(terms=terms, n=len(terms), language=self._language)
+                ngram = Ngram(terms=terms, n=len(terms), language=self._language)
                 ngram.save()
             self._cache[terms] = ngram
         return self._cache[terms]
@@ -66,8 +67,13 @@ class FileParser:
             extractor = self._extractors[language]
         # Extract the ngrams
         if extractor:
+            tokens = []
+            for ngram in extractor.extract_ngrams(text):
+                ngram_text = ' '.join([token for token, tag in ngram])
+                tokens.append(ngram_text)
             return collections.Counter(
-                [token for token, tag in extractor.extract_ngrams(text)]
+#                [token for token, tag in extractor.extract_ngrams(text)]
+                tokens
             )
         else:
             return dict()
@@ -93,7 +99,7 @@ class FileParser:
 #            return None
         # create the document itself
         childNode = Node(
-            user        = parentNode.pk,
+            user        = parentNode.user,
             type        = self._document_nodetype,
             name        = title,
             language    = language,
@@ -101,6 +107,7 @@ class FileParser:
             #resource    = resource,
             parent      = parentNode
         )
+        childNode.save()
             
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
@@ -116,7 +123,7 @@ class FileParser:
             ).save()
                 
         # return the created document
-        return document
+        return childNode
     
     """Useful method to detect the document encoding.
     Not sure it should be here actually.

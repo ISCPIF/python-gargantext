@@ -5,7 +5,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
-from documents.models import Project, Corpus, Document
+#from documents.models import Project, Corpus, Document
 from node.models import Node, NodeType
 
 from django.contrib.auth.models import User
@@ -151,13 +151,14 @@ def corpus(request, project_id, corpus_id):
     number = corpus.children.count()
 
     try:
-        sources = query_to_dicts('''select count(*), source 
-                            from node_node as t1
-                            INNER JOIN documents_document_corpus as t2
-                            ON (  t1.id = t2.document_id )
-                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                            GROUP BY source
-                            order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
+        sources = dict()
+#        query_to_dicts('''select count(*), source 
+#                            from node_node as t1
+#                            INNER JOIN documents_document_corpus as t2
+#                            ON (  t1.id = t2.document_id )
+#                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
+#                            GROUP BY source
+#                            order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
     except:
         pass
 
@@ -190,13 +191,14 @@ def corpus(request, project_id, corpus_id):
             date_form = 'days'
 
         try:
-            dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
-                                from documents_document as t1
-                                INNER JOIN documents_document_corpus as t2
-                                ON (  t1.id = t2.document_id )
-                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                                group by to_char(t1.date, '%s') 
-                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
+            dates = dict()
+#            query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
+#                                from documents_document as t1
+#                                INNER JOIN documents_document_corpus as t2
+#                                ON (  t1.id = t2.document_id )
+#                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
+#                                group by to_char(t1.date, '%s') 
+#                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
         except:
             pass
     

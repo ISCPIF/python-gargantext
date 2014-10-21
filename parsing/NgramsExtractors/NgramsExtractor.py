@@ -17,9 +17,8 @@ class NgramsExtractor:
     def __del__(self):
         self.stop()
         
-        
     def start(self):
-        self.tagger = Tagger
+        self.tagger = Tagger()
         
     def stop(self):
         pass

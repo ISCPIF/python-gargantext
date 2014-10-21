@@ -1,9 +1,11 @@
 import collections
 
 
-# This allows the fast retrieval of ngram ids
-# from the cache instead of using the database for every call
 class NgramCache:
+    """
+    This allows the fast retrieval of ngram ids
+    from the cache instead of using the database for every call
+    """
     
     def __init__(self, language):
         self._cache = dict()
@@ -47,8 +49,7 @@ class FileParser:
         with Language.objects.all() as languages:
             self._languages_iso2 = {language.iso2.lower(): language for language in Language}
             self._languages_iso3 = {language.iso3.lower(): language for language in Language}
-        # ...and parse!
-        self.parse()
+        #self.parse()
     
     """Extract the ngrams from a given text.
     """
@@ -71,6 +72,10 @@ class FileParser:
         else:
             return dict()
     
+#TODO
+#   * make it possible to tag and parse separately
+#   * only tags some data (only titles, titles & abstracts, some chapters...)
+
     """Add a document to the database.
     """
     def create_document(self, parentNode, title, contents, language, metadata, guid=None):

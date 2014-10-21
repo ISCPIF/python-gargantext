@@ -4,7 +4,7 @@ from parsing.FileParsers.FileParser import FileParser
 
 class PubmedFileParser(FileParser):
     
-    def parse(self, parentNode):
+    def parse(self, parentNode, tag=True):
         # open the file as XML
         xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
         xml = etree.parse(self._file, parser=xml_parser)

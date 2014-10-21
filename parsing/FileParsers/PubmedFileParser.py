@@ -29,8 +29,6 @@ class PubmedFileParser(FileParser):
                 }
                 contents    = xml_article.find('MedlineCitation/Article/Abstract/AbstractText').text
                 # create the document in the database
-                yield self.create_document(
-                    parentNode  = parentNode,
                 document    = self.create_document(
                     parentNode  = parentNode,
                     title       = metadata["title"],

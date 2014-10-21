@@ -1,5 +1,5 @@
-from NgramsExtractors.NgramsExtractor import NgramsExtractor
-from Taggers import TreeTagger
+from parsing.NgramsExtractors.NgramsExtractor import NgramsExtractor
+from parsing.Taggers import TreeTagger
 
 
 class FrenchNgramsExtractor(NgramsExtractor):

@@ -1,9 +1,12 @@
 import collections
+from node.models import Node, NodeType, Language, Ngram, Node_Ngram
+from parsing.NgramsExtractors import *
 
-
-# This allows the fast retrieval of ngram ids
-# from the cache instead of using the database for every call
 class NgramCache:
+    """
+    This allows the fast retrieval of ngram ids
+    from the cache instead of using the database for every call
+    """
     
     def __init__(self, language):
         self._cache = dict()
@@ -13,9 +16,9 @@ class NgramCache:
         terms = terms.strip().lower()
         if terms not in self._cache:
             try:
-                ngram = NGram.get(terms=terms, language=self._language)
+                ngram = Ngram.get(terms=terms, language=self._language)
             except:
-                ngram = NGram(terms=terms, n=len(terms), language=self._language)
+                ngram = Ngram(terms=terms, n=len(terms), language=self._language)
                 ngram.save()
             self._cache[terms] = ngram
         return self._cache[terms]
@@ -43,12 +46,11 @@ class FileParser:
         self._ngramcaches = NgramCaches()
         # extractors
         self._extractors = dict()
-        self._document_nodetype = NodeType.get(name='Document')
-        with Language.objects.all() as languages:
-            self._languages_iso2 = {language.iso2.lower(): language for language in Language}
-            self._languages_iso3 = {language.iso3.lower(): language for language in Language}
-        # ...and parse!
-        self.parse()
+        self._document_nodetype = NodeType.objects.get(name='Document')
+        languages = Language.objects.all()
+        self._languages_iso2 = {language.iso2.lower(): language for language in languages}
+        self._languages_iso3 = {language.iso3.lower(): language for language in languages}
+        #self.parse()
     
     """Extract the ngrams from a given text.
     """
@@ -65,37 +67,47 @@ class FileParser:
             extractor = self._extractors[language]
         # Extract the ngrams
         if extractor:
+            tokens = []
+            for ngram in extractor.extract_ngrams(text):
+                ngram_text = ' '.join([token for token, tag in ngram])
+                tokens.append(ngram_text)
             return collections.Counter(
-                [token for token, tag in extractor.extract_ngrams(text)]
+#                [token for token, tag in extractor.extract_ngrams(text)]
+                tokens
             )
         else:
             return dict()
     
+#TODO
+#   * make it possible to tag and parse separately
+#   * only tags some data (only titles, titles & abstracts, some chapters...)
+
     """Add a document to the database.
     """
     def create_document(self, parentNode, title, contents, language, metadata, guid=None):
         # create or retrieve a resource for that document, based on its user id
-        if guid is None:
-            resource = Resource(guid=guid)
-        else:
-            try:
-                resource = Resource.get(guid=guid)
-            except:
-                resource = Resource(guid=guid)
-        # If the parent node already has a child with this resource, pass
-        # (is it a good thing?)
-        if parentNode.descendants().filter(resource=resource).exists():
-            return None
+#        if guid is None:
+#            resource = Resource(guid=guid)
+#        else:
+#            try:
+#                resource = Resource.get(guid=guid)
+#            except:
+#                resource = Resource(guid=guid)
+#        # If the parent node already has a child with this resource, pass
+#        # (is it a good thing?)
+#        if parentNode.descendants().filter(resource=resource).exists():
+#            return None
         # create the document itself
         childNode = Node(
-            user        = parentNode.pk,
+            user        = parentNode.user,
             type        = self._document_nodetype,
             name        = title,
             language    = language,
             metadata    = metadata,
-            resource    = resource,
+            #resource    = resource,
             parent      = parentNode
         )
+        childNode.save()
             
         # parse it!
         ngrams = self.extract_ngrams(contents, language)
@@ -111,7 +123,7 @@ class FileParser:
             ).save()
                 
         # return the created document
-        return document
+        return childNode
     
     """Useful method to detect the document encoding.
     Not sure it should be here actually.

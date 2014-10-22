@@ -84,18 +84,18 @@ class FileParser:
                 resource = Resource(guid=guid)
         # If the parent node already has a child with this resource, pass
         # (is it a good thing?)
-        if parentNode.get_descendants().filter(resource=resource).exists():
+        if parentNode.descendants().filter(resource=resource).exists():
             return None
         # create the document itself
-            childNode = Node(
-                user        = parentNode.pk,
-                type        = self._document_nodetype,
-                name        = title,
-                language    = language,
-                metadata    = metadata,
-                resource    = resource
-            )
-            parentNode.add_child(childNode)
+        childNode = Node(
+            user        = parentNode.pk,
+            type        = self._document_nodetype,
+            name        = title,
+            language    = language,
+            metadata    = metadata,
+            resource    = resource,
+            parent      = parentNode
+        )
             
         # parse it!
         ngrams = self.extract_ngrams(contents, language)

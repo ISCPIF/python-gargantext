@@ -18,6 +18,8 @@ from django import forms
 
 from collections import defaultdict
 
+from parsing.FileParsers import *
+
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -245,14 +247,14 @@ def add_corpus(request):
         form = CorpusForm(request.POST, request.FILES)
         # check whether it's valid:
         if form.is_valid():
-            form.save()
-            # process the data in form.cleaned_data as required
-#            corpus.user = request.user
+            node = form.save()
 #            print(form.cleaned_data['name'])
             
             try:
-                print(type(form.cleaned_data['fichier']))
-                print("here we parse" + str(form.cleaned_data['fichier']))
+                for resource in node.resource.all():
+                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+                    fileparser.parse(node)
+
             except Exception as error:
                 print(error)
 

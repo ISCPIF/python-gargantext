@@ -1,7 +1,12 @@
 from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
+from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType
+from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType, Resource
+
+class ResourceInLine(admin.TabularInline):
+    model = Resource
+    extra = 0
 
 class NodeAdmin(admin.ModelAdmin):
     exclude = ('user', 'path', 'depth', 'numchild')
@@ -9,7 +14,7 @@ class NodeAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     # list_filter = ('type',)
     # date_hierarchy
-    # inlines = [CorpusInLine,]
+    #inlines = [ResourceInLine,]
 
     #_nodetype_name = 'Project'
     #_parent_nodetype_name = 'Root'
@@ -109,11 +114,11 @@ class LanguageAdmin(admin.ModelAdmin):
     class Meta:
         ordering = ['fullname',]
 
-
+admin.site.register(Resource)
 admin.site.register(DatabaseType)
-admin.site.register(NodeType)
 admin.site.register(Language, LanguageAdmin)
 
+admin.site.register(NodeType)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)

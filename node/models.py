@@ -39,6 +39,7 @@ class Ngram(models.Model):
     terms       = models.CharField(max_length=255)
 
 class Resource(models.Model):
+    user        = models.ForeignKey(User)
     guid        = models.CharField(max_length=255)
     bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
     file        = models.FileField(upload_to=upload_to, blank=True)

@@ -1,10 +1,17 @@
 from node.models import NodeType
 
 #NodeType.objects.all().delete()
-NodeType(name="Root").save()
-NodeType(name="Project").save()
+type_root = NodeType(name="Root")
+type_root.save()
+
+type_project = NodeType(name="Project")
+type_project.save()
+
 NodeType(name="Corpus").save()
 NodeType(name="Document").save()
+
+from node.models import Project
+Project(name="Projet sur les abeilles", type=type_project).save()
 
 from node.models import DatabaseType
 for bdd in ['Europresse', 'PubMed', 'Web Of Science (WOS), ISI format']:

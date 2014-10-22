@@ -60,8 +60,8 @@ class Node(CTENode):
     date        = models.DateField(default=timezone.now, blank=True)
     metadata    = hstore.DictionaryField(blank=True)
     
-    resource    = models.ForeignKey(Resource, blank=True, null=True)
-    ngrams      = models.ManyToManyField(NGram)
+    resource    = models.ManyToManyField(Resource, blank=True)
+    ngrams      = models.ManyToManyField(Ngram, blank=True)
     
     
     def __str__(self):

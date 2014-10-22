@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document
+from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType
 
 class NodeAdmin(admin.ModelAdmin):
     exclude = ('user', 'path', 'depth', 'numchild')
@@ -50,7 +50,8 @@ class NodeAdmin(admin.ModelAdmin):
                                                 parent  = nodeParent,\
                                                 user    = request.user,\
                                                 name    = obj.name,\
-                                                metadata= obj.metadata)
+                                                metadata= obj.metadata,\
+                                                resource = obj.resource)
             
             #nodeParent.save()
             #node.save()
@@ -109,6 +110,7 @@ class LanguageAdmin(admin.ModelAdmin):
         ordering = ['fullname',]
 
 
+admin.site.register(DatabaseType)
 admin.site.register(NodeType)
 admin.site.register(Language, LanguageAdmin)
 

@@ -46,7 +46,6 @@ class Resource(models.Model):
     def __str__(self):
         return "%s => %s" % (self.bdd_type, self.file)
 
-
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)
     def __str__(self):

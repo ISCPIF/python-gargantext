@@ -84,7 +84,10 @@ class CorpusForm(ModelForm):
             super(CorpusForm, self).__init__(*args, **kwargs)
             parent_type = NodeType.objects.get(name="Project")
             #parent_type = NodeType.objects.get(name=self._parent_nodetype_name)
-            self.fields['parent'].queryset = Node.objects.filter(user_id=self.request.user.id, type_id=parent_type.id)
+            self.fields['parent'].queryset = Node.objects.filter(
+                    user_id=self.request.user.id, 
+                    type_id=parent_type.id
+                    )
         except:
             pass
     

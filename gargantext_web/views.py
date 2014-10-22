@@ -193,6 +193,7 @@ def corpus(request, project_id, corpus_id):
 
         try:
             dates = dict()
+
 #            query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
 #                                from documents_document as t1
 #                                INNER JOIN documents_document_corpus as t2
@@ -266,5 +267,4 @@ def add_corpus(request):
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})
-    print("5")
 

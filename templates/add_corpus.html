@@ -17,8 +17,33 @@
 				<h1>Title</h1>
 		<form enctype="multipart/form-data" action="/add/corpus/" method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Save" />
+		{{ form.non_field_errors }}
+		
+		{{ form.name.errors }}
+		<div class="fieldWrapper">
+		<label for="id_name">Corpus name:</label>
+		{{ form.name }}
+		</div>
+
+		{{ form.parent.errors }}
+		<div class="fieldWrapper">
+		<label for="id_name">Projet:</label>
+		<p>{{ form.parent }}</p>
+		</div>
+		
+		{{ form.language.errors }}
+		<div class="fieldWrapper">
+		<label for="id_name">Language:</label>
+		<p>{{ form.language }}</p>
+		</div>
+		
+		{{ form.resource.errors }}
+		<div class="fieldWrapper">
+		<label for="id_name">Files:</label>
+		<p>{{ form.resource }}</p>
+		</div>
+    
+		<input type="submit" value="Save" />
 </form>
 </div>
 </div>

@@ -7,7 +7,7 @@ import datetime
 
 class PubmedFileParser(FileParser):
     
-    def parse(self, parentNode, tag=True):
+    def parse(self, parentNode=None, tag=True):
         # open the file as XML
         xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
         documents = []

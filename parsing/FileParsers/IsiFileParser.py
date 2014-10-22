@@ -1,43 +1,32 @@
 from django.db import transaction
-from FileParser import FileParser
+from parsing.FileParsers.FileParser import FileParser
 
 
 class IsiFileParser(FileParser):
     
-    def parse(self, parentNode):
-        # read the file, line by line
-        for line in self.__file:
-            
-        
-        
-        # open the file as XML
-        xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
-        xml = etree.parse(self._file, parser=xml_parser)
-        # parse all the articles, one by one
-        # all database operations should be performed within one transaction
-        xml_articles = xml.findall('PubmedArticle')
-        with transaction.atomic():
-            for xml_article in xml_articles:
-                # extract data from the document
-                date_year   = int(xml_article.find('MedlineCitation/DateCreated/Year').text)
-                date_month  = int(xml_article.find('MedlineCitation/DateCreated/Month').text)
-                date_day    = int(xml_article.find('MedlineCitation/DateCreated/Day').text)
-                metadata    = {
-                    # other metadata should also be included:
-                    # authors, submission date, etc.
-                    "date_pub":      datetime.date(year, month, day),
-                    "journal":       xml_article.find('MedlineCitation/Article/Journal/Title').text
-                    "title":         xml_article.find('MedlineCitation/Article/ArticleTitle').text
-                    "language_iso3": xml_article.find('MedlineCitation/Article/Language').text
-                    "doi":           xml_article.find('PubmedData/ArticleIdList/ArticleId[type=doi]').text
-                }
-                contents    = xml_article.find('MedlineCitation/Article/Abstract/AbstractText').text
-                # create the document in the database
-                yield self.create_document(
-                    parentNode  = parentNode
-                    title       = metadata["title"],
-                    contents    = contents,
-                    language    = self._languages_iso3[metadata["language"].lower()]
-                    metadata    = metadata,
-                    guid        = metadata["doi"],
-                )
+    _parameters = {
+        "ER":   {"type": "delimiter"},
+        "AU":   {"type": "metadata", "key": "authors", "concatenate": False},
+        "AB":   {"type": "metadata", "key": "abstract", "concatenate": True},
+    }
+    
+    def parse(self, parentNode=None, tag=True):
+        metadata = {}
+        last_key = None
+        last_values = []
+        for line in self.file:
+            if len(line) > 2:
+                parameter_key = line[:2]
+                if parameter_key != last_key:
+                    if last_key is not None:
+                        parameter = self._parameters[last_key]
+                        if parameter["type"] == "metadata":
+                            metadata[parameter["key"]] = ' '.join(last_values) if parameter["concatenate"] else last_values
+                        elif parameter["type"] == "metadata":
+                            print(metadata)
+                            metadata = {}
+                            break
+                    parameter = self._parameters[last_key]
+                    last_key = parameter_key
+                    last_values = []
+                last_values.append(line[3:-1])

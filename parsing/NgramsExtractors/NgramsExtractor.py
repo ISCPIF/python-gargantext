@@ -1,4 +1,4 @@
-from Taggers import Tagger
+from parsing.Taggers import Tagger
 import nltk
 
 
@@ -17,9 +17,8 @@ class NgramsExtractor:
     def __del__(self):
         self.stop()
         
-        
     def start(self):
-        self.tagger = Tagger
+        self.tagger = Tagger()
         
     def stop(self):
         pass
@@ -40,7 +39,7 @@ class NgramsExtractor:
         except:
             print("Problem while parsing rule '%s'" % (self._rule, ))
             pass
-        return iter(result)
+        return result
         
         
     

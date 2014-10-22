@@ -1,2 +1,5 @@
-from NgramsExtractors.FrenchNgramsExtractor import FrenchNgramsExtractor
-from NgramsExtractors.EnglishNgramsExtractor import EnglishNgramsExtractor
+#from NgramsExtractors.FrenchNgramsExtractor import FrenchNgramsExtractor
+#from NgramsExtractors.EnglishNgramsExtractor import EnglishNgramsExtractor
+
+from parsing.NgramsExtractors.FrenchNgramsExtractor import FrenchNgramsExtractor
+from parsing.NgramsExtractors.EnglishNgramsExtractor import EnglishNgramsExtractor

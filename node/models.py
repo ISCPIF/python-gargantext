@@ -43,6 +43,9 @@ class Resource(models.Model):
     guid        = models.CharField(max_length=255)
     bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
     file        = models.FileField(upload_to=upload_to, blank=True)
+    def __str__(self):
+        return "%s => %s" % (self.bdd_type, self.file)
+
 
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)

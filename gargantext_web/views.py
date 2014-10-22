@@ -15,6 +15,9 @@ from itertools import *
 from django.db import connection
 
 from django import forms
+
+from collections import defaultdict
+
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -151,29 +154,25 @@ def corpus(request, project_id, corpus_id):
     number = corpus.children.count()
 
     try:
-        sources = dict()
-#        query_to_dicts('''select count(*), source 
-#                            from node_node as t1
-#                            INNER JOIN documents_document_corpus as t2
-#                            ON (  t1.id = t2.document_id )
-#                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-#                            GROUP BY source
-#                            order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
+        sources = defaultdict(int)
+        for document in documents.all():
+            sources[document.metadata['journal']] += 1
+        
+        sources_donut = []
+        
+        for source in sources.keys():
+            source_count = dict()
+            source_count['count'] = source['count']
+            try:
+                source_count['part'] = round(source_count['count'] * 100 / number)
+            except:
+                source_count['part'] = None
+            source_count['source'] = source['source']
+            sources_donut.append(source_count)
+    
     except:
         pass
 
-    sources_donut = []
-    for s in sources:
-        ss = dict()
-        ss['count'] = s['count']
-        try:
-            ss['part'] = round(ss['count'] * 100 / number)
-        except:
-            ss['part'] = None
-        ss['source'] = s['source']
-        sources_donut.append(ss)
-    
-    
     try:
         first = documents.first().date 
         last  = documents.last().date

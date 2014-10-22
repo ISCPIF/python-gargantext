@@ -39,9 +39,10 @@ class Ngram(models.Model):
     terms       = models.CharField(max_length=255)
 
 class Resource(models.Model):
+    user        = models.ForeignKey(User)
     guid        = models.CharField(max_length=255)
     bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
-    #file        = models.FileField(upload_to=upload_to, blank=True)
+    file        = models.FileField(upload_to=upload_to, blank=True)
 
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)
@@ -60,9 +61,8 @@ class Node(CTENode):
     date        = models.DateField(default=timezone.now, blank=True)
     metadata    = hstore.DictionaryField(blank=True)
     
-    fichier      = models.FileField(upload_to=upload_to, blank=True)
-    #resource    = models.ForeignKey(Resource, blank=True, null=True)
-    #ngrams      = models.ManyToManyField(NGrams)
+    resource    = models.ManyToManyField(Resource, blank=True)
+    ngrams      = models.ManyToManyField(Ngram, blank=True)
     
     
     def __str__(self):

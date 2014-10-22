@@ -114,8 +114,7 @@ class FileParser:
         # we are already in a transaction, so no use doing another one (or is there?)
         ngramcache = self._ngramcaches[language]
         for terms, occurences in ngrams.items():
-            ngram_text = ' '.join([term[0] for term in terms])
-            ngram = ngramcache[ngram_text]
+            ngram = ngramcache[terms]
             Node_Ngram(
                 node       = childNode,
                 ngram      = ngram,

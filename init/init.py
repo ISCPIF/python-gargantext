@@ -1,5 +1,7 @@
 from node.models import NodeType
+from django.contrib.auth.models import User
 
+user = User.objects.get(username="alexandre")
 #NodeType.objects.all().delete()
 type_root = NodeType(name="Root")
 type_root.save()
@@ -11,7 +13,7 @@ NodeType(name="Corpus").save()
 NodeType(name="Document").save()
 
 from node.models import Project
-Project(name="Projet sur les abeilles", type=type_project).save()
+Project(name="Projet sur les abeilles", user=user, type=type_project).save()
 
 from node.models import DatabaseType
 for bdd in ['Europresse', 'PubMed', 'Web Of Science (WOS), ISI format']:

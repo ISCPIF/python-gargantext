@@ -24,7 +24,6 @@
     {% csrf_token %}
 		{{ form.non_field_errors }}
 		{{ form.as_p}}
-
 		<input type="submit" value="Add project" />
 </form>
         </div>
@@ -40,6 +39,8 @@
 										<!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
 										<div class="col-md-3 content">
 												<h3><a href="/project/{{ project.id }}">{{ project.name }}</a></h3>
+														<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/delete">Yes, I am sure!</a>'>Delete</button>
+
 												<h4>{{ project.subtitle }}<h4>
 												<h5>Completed:</h5>
 												<div class="chart" barColor="#fffff" data-percent="75">75%</div>

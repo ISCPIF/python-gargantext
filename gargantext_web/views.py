@@ -301,5 +301,8 @@ def add_project(request):
 
     return render(request, 'add_project.html', {'form': form})
 
+def delete_project(request, node_id):
+    Node.objects.filter(id=node_id).all().delete()
+    return HttpResponseRedirect('/projects/')
 
 

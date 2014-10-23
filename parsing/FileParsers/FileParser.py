@@ -89,6 +89,7 @@ class FileParser:
     """Add a document to the database.
     """
     def create_document(self, parentNode, title, contents, language, metadata, guid=None):
+        metadata = self.format_metadata(metadata)
         # create or retrieve a resource for that document, based on its user id
 #        if guid is None:
 #            resource = Resource(guid=guid)

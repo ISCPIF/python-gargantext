@@ -17,70 +17,12 @@
 				<h1>Title</h1>
 		<form enctype="multipart/form-data" action="/add/corpus/" method="post">
     {% csrf_token %}
-
 		{{ form.non_field_errors }}
-
-		<div class="fieldWrapper">
-		<label for="id_date">Date :</label>
-		{{ form.date.errors }}
-		{{ form.date }}
-		</div>
-
-		<div class="fieldWrapper">
-		<label for="id_type">Type :</label>
-		{{ form.type.errors }}
-		{{ form.type }}
-		</div>
-
-		<div class="fieldWrapper">
-		<label for="id_user">User :</label>
-		{{ form.user.errors }}
-		{{ form.user }}
-		</div>
-
-		<div class="fieldWrapper">
-		<label for="id_name">Corpus name :</label>
-		{{ form.name.errors }}
-		{{ form.name }}
-		</div>
-
-		<div class="fieldWrapper">
-		<label for="id_parent">Parent :</label>
-		{{ form.parent.errors }}
-		<p>{{ form.parent }}</p>
-		</div>
-		
-		<div class="fieldWrapper">
-		<label for="id_language">Language:</label>
-		{{ form.language.errors }}
-		<p>{{ form.language }}</p>
-		</div>
-			
-		<div class="fieldWrapper">
-		<label for="id_metadata">Metadata:</label>
-		{{ form.metadata.errors }}
-		<p>{{ form.metadata }}</p>
-		</div>
-		
-		<div class="fieldWrapper">
-		<label for="id_resource">Files :</label>
-		{{ form.resource.errors }}
-		<p>{{ form.resource }}</p>
-		</div>
-
-		<div class="fieldWrapper">
-		<label for="id_ngrams">Ngrams :</label>
-		{{ form.ngrams.errors }}
-		<p>{{ form.ngrams }}</p>
-		</div>
-
-
+		{{ form.as_p}}
 
 		<input type="submit" value="Save" />
 </form>
 </div>
 </div>
-
-
 
 {% endblock %}

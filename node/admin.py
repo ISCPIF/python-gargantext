@@ -75,9 +75,13 @@ class ProjectAdmin(NodeAdmin):
 
 from django.db.models.query import EmptyQuerySet
 
+class ProjectForm(ModelForm):
+    class Meta:
+        model = Project
+        exclude = ['ngrams', 'metadata', 'resource', 'parent', 'user', 'type', 'language', 'date']
+
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)
-    
     def __init__(self, *args, **kwargs):
         try:
             self.request = kwargs.pop('request', None)

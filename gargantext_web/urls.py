@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 from gargantext_web.views import home, projects, project, corpus
-from gargantext_web.views import add_corpus
+from gargantext_web.views import add_corpus, add_project
 
 admin.autodiscover()
 
@@ -16,9 +16,14 @@ urlpatterns = patterns('',
     url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
     
     url(r'^$', home),
-    url(r'^add/corpus/$', add_corpus),
+    
     url(r'^projects/$', projects),
+    url(r'^projects/add/$', add_project),
+    
     url(r'^project/(\d+)/$', project),
+    url(r'^project/(\d+)/add/$', add_corpus),
+    url(r'^add/corpus/$', add_corpus), # removed soon
+    
     url(r'^project/(\d+)/corpus/(\d+)/$', corpus),
 )
 

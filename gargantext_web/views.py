@@ -6,7 +6,7 @@ from django.template.loader import get_template
 from django.template import Context
 
 #from documents.models import Project, Corpus, Document
-from node.models import Node, NodeType
+from node.models import Node, NodeType, Project
 
 from django.contrib.auth.models import User
 
@@ -84,18 +84,26 @@ def projects(request):
     user = request.user
     date = datetime.datetime.now()
     
-    project = NodeType.objects.get(name='Project')
-    projects = Node.objects.filter(user=user, type_id = project.id).order_by("-date")
+    project_type = NodeType.objects.get(name='Project')
+    projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
     number = len(projects)
+ 
+    if request.method == 'POST':
+        # form = ProjectForm(request.POST)
+        # TODO : protect from sql injection here
+        name = str(request.POST['name'])
+        if name != "" :
+            Project(name=name, type=project_type, user=user).save()
+            return HttpResponseRedirect('/projects/')
+    else:
+        form = ProjectForm()
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'projects': projects,\
-            'number': number,\
-            }))
-    
-    return HttpResponse(html)
+    return render(request, 'projects.html', {
+        'date': date,
+        'form': form, 
+        'number': number,
+        'projects': projects
+        })
 
 def project(request, project_id):
     if not request.user.is_authenticated():
@@ -231,7 +239,7 @@ def corpus(request, project_id, corpus_id):
     return HttpResponse(html)
 
 
-from node.admin import CorpusForm
+from node.admin import CorpusForm, ProjectForm
 
 class NameForm(forms.Form):
     your_name = forms.CharField(label='Your name', max_length=100)
@@ -242,7 +250,7 @@ class NameForm(forms.Form):
 
 def add_corpus(request):
     # if this is a POST request we need to process the form data
-    #print(request.method)
+    # print(request.method)
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
         form = CorpusForm(request.POST, request.FILES)
@@ -274,4 +282,24 @@ def add_corpus(request):
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})
+
+
+def add_project(request):
+    if request.method == 'POST':
+        
+        print(request.POST)
+        
+        #request.POST['user'] = request.user
+
+        form = ProjectForm(request.POST)
+        print(form)
+        if form.is_valid():
+            node = form.save()
+            return HttpResponseRedirect('/projects/')
+    else:
+        form = ProjectForm()
+
+    return render(request, 'add_project.html', {'form': form})
+
+
 

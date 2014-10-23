@@ -246,6 +246,7 @@ def add_corpus(request):
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
         form = CorpusForm(request.POST, request.FILES)
+        print(form)
         # check whether it's valid:
         if form.is_valid():
             node = form.save()

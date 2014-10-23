@@ -64,7 +64,7 @@ class Node(CTENode):
     metadata    = hstore.DictionaryField(blank=True)
     
     resource    = models.ManyToManyField(Resource, blank=True)
-    ngrams      = models.ManyToManyField(Ngram, blank=True)
+    ngrams      = models.ManyToManyField(Ngram, blank=True, help_text="Hold down")
     
     
     def __str__(self):

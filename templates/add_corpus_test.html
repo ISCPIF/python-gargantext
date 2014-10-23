@@ -69,9 +69,11 @@
 		</div>
 
 		<div class="fieldWrapper">
-		<label for="id_ngrams">Ngrams :</label>
+				<label for="id_ngrams">{{ form.ngrams.label }}</label>
+		<p>
 		{{ form.ngrams.errors }}
-		<p>{{ form.ngrams }}</p>
+		{{ form.ngrams.help_text }}
+		{{ form.ngrams }}</p>
 		</div>
 
 

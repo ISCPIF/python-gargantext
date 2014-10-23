@@ -96,8 +96,8 @@ class CorpusForm(ModelForm):
             pass
     
     class Meta:
-        model = Corpus
-        exclude = ['ngrams', 'metadata']
+        model   = Corpus
+        exclude = ['parent', 'user', 'type', 'ngrams', 'metadata', 'resource', 'date']
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'

@@ -15,13 +15,24 @@
 
 <div class="container theme-showcase" role="main">
         <div class="jumbotron">
+				<div class="row">
+        <div class="col-md-3">
             {% if project %}
             <h1>{{ project.name }}</h1>
             <h3> {{number}} corpora </h3>
             <p>
+        </div>
             <a class="btn btn-primary btn-lg" role="button" href="/add/corpus/">Add a corpus</a></p>
+    <div class="col-md-4">
+				<form enctype="multipart/form-data" action="/project/{{project.id}}/" method="post">
+    {% csrf_token %}
+		{{ form.non_field_errors }}
+		{{ form.as_p}}
+		<input type="submit" value="Add Corpus" />
+</form>
 
             {% endif %}
+        </div>
         </div>
 </div>
 <!-- Add jumbotron container for each type of coprus (presse, science etc.) --!>

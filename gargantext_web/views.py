@@ -6,7 +6,10 @@ from django.template.loader import get_template
 from django.template import Context
 
 #from documents.models import Project, Corpus, Document
-from node.models import Node, NodeType, Project
+
+from node.models import Language, DatabaseType, Resource
+from node.models import Node, NodeType, Project, Corpus
+from node.admin import CorpusForm, ProjectForm
 
 from django.contrib.auth.models import User
 
@@ -114,9 +117,7 @@ def project(request, project_id):
     except ValueError:
         raise Http404()
 
-    t = get_template('project.html')
     user = request.user
-
     date = datetime.datetime.now()
     
     project = Node.objects.get(id=project_id)
@@ -131,15 +132,46 @@ def project(request, project_id):
         dashboard['count']  = corpus.children.count()
         board.append(dashboard)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'board' : board,\
-            'number': number,\
-            }))
 
-    return HttpResponse(html)
+    form = CorpusForm(request=request)
+    if request.method == 'POST':
+        #form = CorpusForm(request.POST, request.FILES)
+        name        = str(request.POST['name'])
+        
+        try:
+            #language    = Language.objects.get(name=str(request.POST['language']))
+            language    = Language.objects.get(name='French')
+        except Exception as e:
+            print(e)
+            language = None
+        
+        if name != "" :
+            project_id  = 1047
+            node_type   = NodeType.objects.get(name='Corpus')
+            parent      = Node.objects.get(id=project_id)
+            Node(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
+#            try:
+#                for resource in node.resource.all():
+#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+#                    fileparser.parse(node)
+#
+#            except Exception as error:
+#                print(error)
+
+            return HttpResponseRedirect('/project/' + str(project_id))
+
+    else:
+        form = CorpusForm(request=request)
+
+    return render(request, 'project.html', {
+            'form': form, 
+            'user': user,
+            'date': date,
+            'project': project,
+            'board' : board,
+            'number': number,
+        })
+
 
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
@@ -239,67 +271,40 @@ def corpus(request, project_id, corpus_id):
     return HttpResponse(html)
 
 
-from node.admin import CorpusForm, ProjectForm
-
-class NameForm(forms.Form):
-    your_name = forms.CharField(label='Your name', max_length=100)
-    sender = forms.EmailField()
-    message = forms.CharField(widget=forms.Textarea)
-    fichier = forms.FileField()
-
-
 def add_corpus(request):
-    # if this is a POST request we need to process the form data
-    # print(request.method)
+    form = CorpusForm(request=request)
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
-        form = CorpusForm(request.POST, request.FILES)
-        print(form)
-        # check whether it's valid:
-        if form.is_valid():
-            node = form.save()
-#            print(form.cleaned_data['name'])
-            
-            try:
-                for resource in node.resource.all():
-                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-                    fileparser.parse(node)
-
-            except Exception as error:
-                print(error)
-
-            # redirect to a new URL:
-            return HttpResponseRedirect('/projects/')
-#        else:
-#            print('Not valid')
-#            print(request.POST)
-#            form = CorpusForm(request=request)
+        #form = CorpusForm(request.POST, request.FILES)
+        name        = str(request.POST['name'])
+        
+        try:
+            #language    = Language.objects.get(name=str(request.POST['language']))
+            language    = Language.objects.get(name='French')
+        except Exception as e:
+            print(e)
+            language = None
+        
+        if name != "" :
+            project_id  = 1047
+            node_type   = NodeType.objects.get(name='Corpus')
+            parent      = Node.objects.get(id=project_id)
+            Corpus(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
+#            try:
+#                for resource in node.resource.all():
+#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+#                    fileparser.parse(node)
 #
-    # if a GET (or any other method) we'll create a blank form
+#            except Exception as error:
+#                print(error)
+
+            return HttpResponseRedirect('/project/' + str(project_id))
+
     else:
-        print('Not valid')
-        print(request.POST)
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})
 
 
-def add_project(request):
-    if request.method == 'POST':
-        
-        print(request.POST)
-        
-        #request.POST['user'] = request.user
-
-        form = ProjectForm(request.POST)
-        print(form)
-        if form.is_valid():
-            node = form.save()
-            return HttpResponseRedirect('/projects/')
-    else:
-        form = ProjectForm()
-
-    return render(request, 'add_project.html', {'form': form})
 
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()

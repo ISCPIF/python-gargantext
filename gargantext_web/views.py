@@ -137,16 +137,12 @@ def project(request, project_id):
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
         name        = str(request.POST['name'])
-        
         try:
-            #language    = Language.objects.get(name=str(request.POST['language']))
-            language    = Language.objects.get(name='French')
-        except Exception as e:
-            print(e)
+            language    = Language.objects.get(id=str(request.POST['language']))
+        except:
             language = None
         
-        if name != "" :
-            project_id  = 1047
+        if language is not None and name != "" :
             node_type   = NodeType.objects.get(name='Corpus')
             parent      = Node.objects.get(id=project_id)
             Node(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
@@ -171,7 +167,6 @@ def project(request, project_id):
             'board' : board,
             'number': number,
         })
-
 
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
@@ -270,7 +265,6 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
-
 def add_corpus(request):
     form = CorpusForm(request=request)
     if request.method == 'POST':
@@ -303,8 +297,6 @@ def add_corpus(request):
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})
-
-
 
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()

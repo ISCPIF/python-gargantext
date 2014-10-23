@@ -13,9 +13,24 @@
 
 <div class="container theme-showcase" role="main">
         <div class="jumbotron">
+				<div class="row">
+        <div class="col-md-3">
 						<h1>My {{number}} projects</h1>
 						<p>Template showing my working space</p>
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/node/project/add/">Add a project</a>
+        </div>
+						<div class="col-md-4"></div>
+						<div class="col-md-4"></div>
+						<div class="col-md-4"></div>
+        <div class="col-md-4">
+		<form enctype="multipart/form-data" action="/projects/" method="post">
+    {% csrf_token %}
+		{{ form.non_field_errors }}
+		{{ form.as_p}}
+		<input type="submit" value="Add project" />
+</form>
+        </div>
+        </div>
+        </div>
         </div>
 </div>
 
@@ -25,7 +40,10 @@
 										{% for project in projects %}
 										<!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
 										<div class="col-md-3 content">
-												<h3><a href="/project/{{ project.id }}">{{ project.name }}</a></h3>
+												<h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
+														<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/delete">Delete it!</a>'>Manage</button>
+												</h3>
+
 												<h4>{{ project.subtitle }}<h4>
 												<h5>Completed:</h5>
 												<div class="chart" barColor="#fffff" data-percent="75">75%</div>

@@ -43,6 +43,8 @@ class Resource(models.Model):
     guid        = models.CharField(max_length=255)
     bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
     file        = models.FileField(upload_to=upload_to, blank=True)
+    def __str__(self):
+        return "%s => %s" % (self.bdd_type, self.file)
 
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)
@@ -62,7 +64,7 @@ class Node(CTENode):
     metadata    = hstore.DictionaryField(blank=True)
     
     resource    = models.ManyToManyField(Resource, blank=True)
-    ngrams      = models.ManyToManyField(Ngram, blank=True)
+    ngrams      = models.ManyToManyField(Ngram, blank=True, help_text="Hold down")
     
     
     def __str__(self):
@@ -81,7 +83,14 @@ class Project(Node):
     class Meta:
         proxy=True
 
+class CorpusManager(models.Manager):
+    def get_query_set(self):
+        corpus_type = NodeType.objects.get(name='Corpus')
+        return super(CorpusManager, self).get_query_set().filter(type=corpus_type)
+
 class Corpus(Node):
+    objects = CorpusManager()
+    
     class Meta:
         proxy=True
         verbose_name_plural = 'Corpora'

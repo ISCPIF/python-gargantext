@@ -6,9 +6,11 @@ class IsiFileParser(FileParser):
     
     _parameters = {
         b"ER":  {"type": "delimiter"},
-        b"TI":  {"type": "metadata", "key": "title", "concatenate": b" "},
-        b"AU":  {"type": "metadata", "key": "authors", "concatenate": b", "},
-        b"AB":  {"type": "metadata", "key": "abstract", "concatenate": b" "},
+        b"TI":  {"type": "metadata", "key": "title", "separator": b" "},
+        b"AU":  {"type": "metadata", "key": "authors", "separator": b", "},
+        b"DI":  {"type": "metadata", "key": "doi"},
+        b"LA":  {"type": "metadata", "key": "language"},
+        b"AB":  {"type": "metadata", "key": "abstract", "separator": b" "},
     }
     
     def parse(self, parentNode=None, tag=True):
@@ -22,12 +24,23 @@ class IsiFileParser(FileParser):
                     if last_key in self._parameters:
                         parameter = self._parameters[last_key]
                         if parameter["type"] == "metadata":
-                            metadata[parameter["key"]] = parameter["concatenate"].join(last_values)
+                            separator = parameter["separator"] if "separator" in parameter else b""
+                            metadata[parameter["key"]] = separator.join(last_values)
                         elif parameter["type"] == "delimiter":
+                            language = self._languages_fullname[metadata["language"].lower().decode()]
+                            # self.create_document(
+                                # parentNode  = parentNode,
+                                # title       = metadata["title"],
+                                # contents    = metadata["abstract"],
+                                # language    = language,
+                                # metadata    = metadata,
+                                # guid        = metadata["guid"]
+                            # )
                             print(metadata)
+                            print()
                             metadata = {}
-                            break
                     last_key = parameter_key
                     last_values = []
                 last_values.append(line[3:-1])
-        self.file.close()
+        self._file.close()
+

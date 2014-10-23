@@ -30,7 +30,7 @@
 								data-container="body" 
 								data-toggle="popover" 
 								data-placement="bottom"
-				>Add corpus</button>
+				>Add a corpus</button>
 								<div id="popover-content" class="hide">
 
 					<form enctype="multipart/form-data" action="/project/{{project.id}}/" method="post">
@@ -40,7 +40,7 @@
 		
 		{{ formResource.non_field_errors }}
 		{{ formResource.as_p}}
-		<input type="submit" value="Add Corpus" />
+		<input type="submit" class="btn" value="Add this corpus" />
 </form>
 
 

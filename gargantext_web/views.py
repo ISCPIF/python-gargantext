@@ -21,7 +21,7 @@ from django import forms
 
 from collections import defaultdict
 
-#from parsing.FileParsers import *
+from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
@@ -162,13 +162,20 @@ def project(request, project_id):
             node.save()
             node.resource.add(resource)
 
-#            try:
-#                for resource in node.resource.all():
-#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-#                    fileparser.parse(node)
-#
-#            except Exception as error:
-#                print(error)
+            try:
+                for resource in node.resource.all():
+                    print(resource.bdd_type.name)
+                    if resource.bdd_type.name == "PubMed":
+                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+                        fileparser.parse(node)
+                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
+                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
+                        fileparser.parse(node)
+                    elif node.bdd_type.name == "Europresse":
+                        pass
+
+            except Exception as error:
+                print(error)
 
             return HttpResponseRedirect('/project/' + str(project_id))
         else:

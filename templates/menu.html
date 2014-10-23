@@ -75,7 +75,15 @@ $(function() {
 </script>
 
 <script src="{% static "js/bootstrap.min.js" %}"></script>
-<script>$(function () { $("[data-toggle='popover']").popover({html:true});});</script>
+<script>$(function () { $("[data-toggle='popover']").popover({
+		html:true,
+		title: function() {
+				return $("#popover-head").html();
+		},
+		content: function() {
+				return $("#popover-content").html();
+		}
+});});</script>
 
 </body>
 </html>

@@ -55,7 +55,8 @@ python manage.py syncdb
 Start the Python Notebook server
 --------------------------------
 
-1)  In Pyvenv: python manage.py shell_plus --notebook
+1)  In Pyvenv:
+    python manage.py shell_plus --notebook
 
 2)  Work from your browser!
 
@@ -63,4 +64,5 @@ Start the Python Notebook server
 Start the Django server
 -----------------------
 
+In Pyvenv:
 python manage.py runserver

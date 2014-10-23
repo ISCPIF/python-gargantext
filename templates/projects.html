@@ -19,16 +19,18 @@
 						<p>Template showing my working space</p>
         </div>
 						<div class="col-md-4"></div>
-						<div class="col-md-4"></div>
-						<div class="col-md-4"></div>
         <div class="col-md-4">
-		<form enctype="multipart/form-data" action="/projects/" method="post">
-    {% csrf_token %}
-		{{ form.non_field_errors }}
-		{{ form.as_p}}
-		<input type="submit" value="Add project" />
-</form>
-        </div>
+				<button 
+								type="button" 
+								class="btn btn-primary btn-lg" 
+								data-container="body" 
+								data-toggle="popover" 
+								data-placement="bottom"
+				>Add a project</button>
+								<div id="popover-content" class="hide">
+										<form enctype='multipart/form-data' action='/projects/' method='post'>{% csrf_token %}{{ form.non_field_errors }}{{ form.as_p}}<input type='submit' class="btn" value='Add this project !'/></form>
+								</div>
+		        </div>
         </div>
         </div>
         </div>

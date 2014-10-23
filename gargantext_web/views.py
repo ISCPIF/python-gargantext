@@ -21,7 +21,7 @@ from django import forms
 
 from collections import defaultdict
 
-from parsing.FileParsers import *
+#from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
@@ -91,6 +91,7 @@ def projects(request):
     projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
     number = len(projects)
  
+    form = ProjectForm()
     if request.method == 'POST':
         # form = ProjectForm(request.POST)
         # TODO : protect from sql injection here
@@ -103,7 +104,7 @@ def projects(request):
 
     return render(request, 'projects.html', {
         'date': date,
-        'form': form, 
+        'form': form,
         'number': number,
         'projects': projects
         })
@@ -156,8 +157,11 @@ def project(request, project_id):
             resource.save()
             node_type   = NodeType.objects.get(name='Corpus')
             parent      = Node.objects.get(id=project_id)
-            Node(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
-            #Node(parent=parent, type=node_type, name=name, user=request.user, language=language, resource=[resource,]).save()
+            
+            node = Node(parent=parent, type=node_type, name=name, user=request.user, language=language)
+            node.save()
+            node.resource.add(resource)
+
 #            try:
 #                for resource in node.resource.all():
 #                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))

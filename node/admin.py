@@ -9,7 +9,7 @@ class ResourceInLine(admin.TabularInline):
     extra = 0
 
 class NodeAdmin(admin.ModelAdmin):
-    exclude = ('user', 'path', 'depth', 'numchild')
+    exclude = ('user', 'path', 'depth', 'numchild', 'ngrams')
     list_display = ('name', 'date')
     search_fields = ('name',)
     # list_filter = ('type',)
@@ -93,6 +93,7 @@ class CorpusForm(ModelForm):
     
     class Meta:
         model = Corpus
+        exclude = ['ngrams', 'metadata']
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'

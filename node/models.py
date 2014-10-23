@@ -83,7 +83,14 @@ class Project(Node):
     class Meta:
         proxy=True
 
+class CorpusManager(models.Manager):
+    def get_query_set(self):
+        corpus_type = NodeType.objects.get(name='Corpus')
+        return super(CorpusManager, self).get_query_set().filter(type=corpus_type)
+
 class Corpus(Node):
+    objects = CorpusManager()
+    
     class Meta:
         proxy=True
         verbose_name_plural = 'Corpora'

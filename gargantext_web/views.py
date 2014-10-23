@@ -261,9 +261,15 @@ def add_corpus(request):
 
             # redirect to a new URL:
             return HttpResponseRedirect('/projects/')
-
+#        else:
+#            print('Not valid')
+#            print(request.POST)
+#            form = CorpusForm(request=request)
+#
     # if a GET (or any other method) we'll create a blank form
     else:
+        print('Not valid')
+        print(request.POST)
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})

@@ -91,6 +91,7 @@ def projects(request):
     projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
     number = len(projects)
  
+    form = ProjectForm()
     if request.method == 'POST':
         # form = ProjectForm(request.POST)
         # TODO : protect from sql injection here
@@ -103,7 +104,7 @@ def projects(request):
 
     return render(request, 'projects.html', {
         'date': date,
-        'form': form, 
+        'form': form,
         'number': number,
         'projects': projects
         })

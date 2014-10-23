@@ -28,6 +28,9 @@
     {% csrf_token %}
 		{{ form.non_field_errors }}
 		{{ form.as_p}}
+		
+		{{ formResource.non_field_errors }}
+		{{ formResource.as_p}}
 		<input type="submit" value="Add Corpus" />
 </form>
 
@@ -35,14 +38,19 @@
         </div>
         </div>
 </div>
-<!-- Add jumbotron container for each type of coprus (presse, science etc.) --!>
+<!-- Add jumbotron container for each type of corpus (presse, science etc.) --!>
 
 <div class="container">
     <div class="row">
 								{% if board  %}
 										{% for corpus in board %}
 										<div class="col-md-4">
-                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></h3>
+                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
+												<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Delete it!</a>'>Manage</button>
+
+												
+												
+												</h3>
 												<h4>{{ corpus.count }} Documents </h4>
                         <p>{{ corpus.language }} {{ corpus.database}}</p>
 												<h5>Activity:</h5>

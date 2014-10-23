@@ -9,7 +9,7 @@ from django.template import Context
 
 from node.models import Language, DatabaseType, Resource
 from node.models import Node, NodeType, Project, Corpus
-from node.admin import CorpusForm, ProjectForm
+from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
 
@@ -133,7 +133,6 @@ def project(request, project_id):
         board.append(dashboard)
 
 
-    form = CorpusForm(request=request)
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
         name        = str(request.POST['name'])
@@ -141,11 +140,24 @@ def project(request, project_id):
             language    = Language.objects.get(id=str(request.POST['language']))
         except:
             language = None
+
+        try:
+            bdd_type = DatabaseType.objects.get(id=str(request.POST['bdd_type']))
+        except:
+            bdd_type = None
         
-        if language is not None and name != "" :
+        try:
+            file = request.FILES['file']
+        except:
+            file = None
+
+        if language is not None and name != "" and bdd_type != None and file != None :
+            resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
+            resource.save()
             node_type   = NodeType.objects.get(name='Corpus')
             parent      = Node.objects.get(id=project_id)
             Node(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
+            #Node(parent=parent, type=node_type, name=name, user=request.user, language=language, resource=[resource,]).save()
 #            try:
 #                for resource in node.resource.all():
 #                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
@@ -155,12 +167,17 @@ def project(request, project_id):
 #                print(error)
 
             return HttpResponseRedirect('/project/' + str(project_id))
+        else:
+            form = CorpusForm(request=request)
+            formResource = ResourceForm()
 
     else:
         form = CorpusForm(request=request)
+        formResource = ResourceForm()
 
     return render(request, 'project.html', {
             'form': form, 
+            'formResource': formResource, 
             'user': user,
             'date': date,
             'project': project,
@@ -301,5 +318,9 @@ def add_corpus(request):
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
     return HttpResponseRedirect('/projects/')
+
+def delete_corpus(request, project_id, corpus_id):
+    Node.objects.filter(id=corpus_id).all().delete()
+    return HttpResponseRedirect('/project/' + project_id)
 
 

@@ -80,6 +80,11 @@ class ProjectForm(ModelForm):
         model = Project
         exclude = ['ngrams', 'metadata', 'resource', 'parent', 'user', 'type', 'language', 'date']
 
+class ResourceForm(ModelForm):
+    class Meta:
+        model = Resource
+        exclude = ['user', 'guid']
+
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)
     def __init__(self, *args, **kwargs):

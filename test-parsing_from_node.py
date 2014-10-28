@@ -38,6 +38,11 @@ except:
             parent      = corpus
         ).save()
 
+corpus.add_resource(file='/path/to/file')
+corpus.parse()
+
+exit()
+
 cache = Cache()
 for child in corpus.children.all():
     print(child.id)

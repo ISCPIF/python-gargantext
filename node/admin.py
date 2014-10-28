@@ -93,12 +93,13 @@ class CorpusForm(ModelForm):
             super(CorpusForm, self).__init__(*args, **kwargs)
             parent_type = NodeType.objects.get(name="Project")
             #parent_type = NodeType.objects.get(name=self._parent_nodetype_name)
-            self.fields['parent'].queryset = Node.objects.filter(
-                    user_id=self.request.user.id, 
-                    type_id=parent_type.id
-                    )
-        except:
-            pass
+#            self.fields['parent'].queryset = Node.objects.filter(
+#                    user_id=self.request.user.id, 
+#                    type_id=parent_type.id
+#                    )
+            self.fields['language'].queryset = Language.objects.filter(implemented=1)
+        except Exception as error:
+            print("Error with", error)
     
     class Meta:
         model   = Corpus

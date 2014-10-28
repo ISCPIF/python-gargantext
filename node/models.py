@@ -46,6 +46,15 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
+
+class Ngram(models.Model):
+    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    n           = models.IntegerField()
+    terms       = models.CharField(max_length=255)
+    def __str__(self):
+        return "[%d] %s" % (self.pk, self.terms)
+
+
 class Node(CTENode):
     objects     = Manager()
 
@@ -92,13 +101,6 @@ class Document(Node):
 ############################
 # NGRAMS 
 ############################
-
-class Ngram(models.Model):
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
-    n           = models.IntegerField()
-    terms       = models.CharField(max_length=255)
-    def __str__(self):
-        return "[%d] %s" % (self.pk, self.terms)
 
 class Node_Ngram(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)

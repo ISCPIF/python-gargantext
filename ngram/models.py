@@ -3,12 +3,12 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 
-from node.models import Node
-
+from node.models import Node, Language
 
 class Ngram(models.Model):
-    terms    = models.TextField(unique=True)
-    n        = models.IntegerField()
+    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    n           = models.IntegerField()
+    terms       = models.CharField(max_length=255)
     def __str__(self):
         return "[%d] %s" % (self.pk, self.terms)
 

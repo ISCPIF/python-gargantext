@@ -72,10 +72,34 @@ class Node(CTENode):
         for noeud in Node.objects.filter(user=user):
             print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
 
+    def extract_ngrams(self, keys, cache):
+        # TODO: instanciate the ngrams extractors
+        # WHERE TO PUT THEIR CACHE?
+        extractor = extractor_cache[self.language.iso2]
+        ngrams = ngrams_cache[self.language.iso2]
+        # find & count all the occurrences
+        associations = defaultdict(float) # float or int?
+        if isinstance(keys, dict):
+            for key, weight in keys.items():
+                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                    associations[key] += weight
+        else:
+            for key in keys:
+                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                    associations[key] += 1
+        # insert the occurrences in the database
+        for ngram_text, weight in associations.items():
+            Node_Ngram(
+                node   = self,
+                ngram  = ngrams[ngram_text],
+                weight = weight
+            )
+                    
+            
 class Node_Ngram(models.Model):
-    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
-    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
-    occurences  = models.IntegerField()
+    node   = models.ForeignKey(Node, on_delete=models.CASCADE)
+    ngram  = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    weight = models.IntegerField()
 
 class Project(Node):
     class Meta:

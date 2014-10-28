@@ -75,8 +75,8 @@ class Node(CTENode):
     def extract_ngrams(self, keys, cache):
         # TODO: instanciate the ngrams extractors
         # WHERE TO PUT THEIR CACHE?
-        extractor = extractor_cache[self.language.iso2]
-        ngrams = ngrams_cache[self.language.iso2]
+        extractor = cache.extractors[self.language.iso2]
+        ngrams = cache.ngrams[self.language]
         # find & count all the occurrences
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):

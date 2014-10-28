@@ -1,5 +1,4 @@
 from node.models import Node, NodeType, User, Language
-from parsing.NgramsExtractors import NgramsExtractorsCache
 from parsing.Caches import Cache
 
 try:
@@ -39,8 +38,7 @@ except:
             parent      = corpus
         ).save()
 
-extractor_cache = NgramsExtractorsCache()
-ngrams_cache = NgramsCache()
+cache = Cache()
 for child in corpus.children.all():
     print(child.id)
-    child.extract_ngrams(['title'], extractor_cache)
+    child.extract_ngrams(['title'], cache)

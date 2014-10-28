@@ -33,10 +33,10 @@ class DatabaseType(models.Model):
     def __str__(self):
         return self.name
 
-class Ngram(models.Model):
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
-    n           = models.IntegerField()
-    terms       = models.CharField(max_length=255)
+#class Ngram(models.Model):
+#    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+#    n           = models.IntegerField()
+#    terms       = models.CharField(max_length=255)
 
 class Resource(models.Model):
     user        = models.ForeignKey(User)

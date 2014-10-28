@@ -33,11 +33,6 @@ class DatabaseType(models.Model):
     def __str__(self):
         return self.name
 
-#class Ngram(models.Model):
-#    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
-#    n           = models.IntegerField()
-#    terms       = models.CharField(max_length=255)
-
 class Resource(models.Model):
     user        = models.ForeignKey(User)
     guid        = models.CharField(max_length=255)
@@ -74,11 +69,6 @@ class Node(CTENode):
         for noeud in Node.objects.filter(user=user):
             print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
 
-class Node_Ngram(models.Model):
-    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
-    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
-    occurences  = models.IntegerField()
-
 class Project(Node):
     class Meta:
         proxy=True
@@ -98,5 +88,36 @@ class Corpus(Node):
 class Document(Node):
     class Meta:
         proxy=True
+
+############################
+# NGRAMS 
+############################
+
+class Ngram(models.Model):
+    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    n           = models.IntegerField()
+    terms       = models.CharField(max_length=255)
+    def __str__(self):
+        return "[%d] %s" % (self.pk, self.terms)
+
+class Node_Ngram(models.Model):
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
+    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    occurences  = models.IntegerField()
+    def __str__(self):
+        return "%s: %s" % (self.node.name, self.ngram.terms)
+
+class NodeNgramNgram(models.Model):
+    node        = models.ForeignKey(Node)
+    
+    ngramX      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
+    ngramY      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s" % (self.node.name, self.ngramX.terms, self.ngramY.terms)
+
+
 
 

@@ -21,7 +21,7 @@ class NgramCache:
             try:
                 ngram = Ngram.get(terms=terms, language=self._language)
             except:
-                ngram = Ngram(terms=terms, n=len(terms), language=self._language)
+                ngram = Ngram(terms=terms, n=len(terms.split()), language=self._language)
                 ngram.save()
             self._cache[terms] = ngram
         return self._cache[terms]

@@ -103,6 +103,10 @@ class FileParser:
 #        if parentNode.descendants().filter(resource=resource).exists():
 #            return None
         # create the document itself
+        
+        if len(title) > 200:
+            title = title[:200]
+
         childNode = Node(
             user        = parentNode.user,
             type        = self._document_nodetype,

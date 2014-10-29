@@ -1,10 +1,10 @@
-import collections
-from node.models import Ngram
+import node.models
 from parsing.NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor
 
+from collections import defaultdict
 
 
-class NgramsCache(collections.defaultdict):
+class NgramsCache(defaultdict):
     """This allows the fast retrieval of ngram ids
     from a cache instead of calling the database every time.
     This class is language-specific."""    
@@ -17,14 +17,14 @@ class NgramsCache(collections.defaultdict):
         """If the terms are not yet present in the dictionary,
         retrieve it from the database or insert it."""
         try:
-            ngram = Ngram.get(terms=terms, language=self.language)
+            ngram = node.models.Ngram.get(terms=terms, language=self.language)
         except:
-            ngram = Ngram(terms=terms, n=len(terms.split()), language=self.language)
+            ngram = node.models.Ngram(terms=terms, n=len(terms.split()), language=self.language)
             ngram.save()
         self[terms] = ngram
         return self[terms]
         
-class NgramsCaches(collections.defaultdict):
+class NgramsCaches(defaultdict):
     """This allows the fast retrieval of ngram ids
     from a cache instead of calling the database every time."""
     def __missing__(self, language):
@@ -33,7 +33,7 @@ class NgramsCaches(collections.defaultdict):
         self[language] = NgramsCache(language)
         return self[language]
    
-class NgramsExtractorsCache(collections.defaultdict):
+class NgramsExtractorsCache(defaultdict):
     """This allows the fast retrieval of ngram ids
     from a cache instead of calling the database every time."""    
     def __missing__(self, key):
@@ -64,11 +64,25 @@ class NgramsExtractorsCache(collections.defaultdict):
         # return the proper extractor
         return self[key]
 
-   
+class LanguagesCache(defaultdict):
+    
+    def __init__(self):
+        for language in node.models.Language.objects.all():
+            self[language.iso2.lower()] = language
+            self[language.iso3.lower()] = language
+            self[language.fullname.lower()] = language
+    
+    def __missing__(self, key):
+        betterKey = key.strip().lower()
+        self[key] = self[betterKey] if betterKey in self else None
+        return self[betterKey]
 
-class Cache:
+
+
+class Caches:
     """This is THE cache of the caches.
     See NgramsCaches and NgramsExtractorsCache for better understanding."""
     def __init__(self):
         self.ngrams = NgramsCaches()
         self.extractors = NgramsExtractorsCache()
+        self.languages = LanguagesCache()

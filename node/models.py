@@ -1,15 +1,18 @@
 from django.db import models
 from django.utils import timezone
 
+from django.contrib.auth.models import User
+
 from django_hstore import hstore
 from cte_tree.models import CTENode, Manager
 #from cte_tree.fields import DepthField, PathField, OrderingField
 
+from parsing.Caches import LanguagesCache
+from parsing.FileParsers import *
 from time import time
-
-from django.contrib.auth.models import User
-
 from collections import defaultdict
+
+
 
 # Some usefull functions
 # TODO: start the function name with an underscore (private)
@@ -28,7 +31,7 @@ class Language(models.Model):
     def __str__(self):
         return self.fullname
 
-class DatabaseType(models.Model):
+class ResourceType(models.Model):
     name    = models.CharField(max_length=255)
     def __str__(self):
         return self.name
@@ -40,7 +43,7 @@ class Ngram(models.Model):
 
 class Resource(models.Model):
     guid        = models.CharField(max_length=255)
-    bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
+    type        = models.ForeignKey(ResourceType, blank=True, null=True)
     file        = models.FileField(upload_to=upload_to, blank=True)
     digest      = models.CharField(max_length=32) # MD5 digest
 
@@ -89,12 +92,33 @@ class Node(CTENode):
         node_resource.save()
         return resource
     
-    def parse(self):
-        # TODO: that's not very pretty...
-        # can't we make a simple join in Django?
+    def parse_resources(self):
+        # parse all resources into a list of metadata
+        metadata_list = []
         for node_resource in self.node_resource.filter(parsed=False):
-            # TODO: call parsers here
-            print(node_resource.resource.file)
+            resource = node_resource.resource
+            parser = defaultdict(lambda:FileParser.FileParser, {
+                'pubmed'    : PubmedFileParser,
+                'isi'       : IsiFileParser,
+                'ris'       : RisFileParser,
+                'europress' : EuropressFileParser,
+            })[resource.type.name]()
+            print(parser)
+            metadata_list += parser.parse(str(resource.file))
+        # insert in the database!
+        type = NodeType.objects.get(name='Document')
+        langages_cache = LanguagesCache()
+        Node.objects.bulk_create([
+            Node(
+                user        = self.user,
+                type        = type,
+                name        = metadata['title'] if 'title' in metadata else '',
+                parent      = self,
+                language    = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
+                metadata    = metadata,
+            )
+            for metadata in metadata_list
+        ])
     
     def extract_ngrams(self, keys, cache):
         # what do we want from the cache?
@@ -118,6 +142,7 @@ class Node(CTENode):
                 weight = weight
             )
 
+
 class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource')
     resource = models.ForeignKey(Resource)
@@ -126,7 +151,7 @@ class Node_Resource(models.Model):
 class Node_Ngram(models.Model):
     node   = models.ForeignKey(Node)
     ngram  = models.ForeignKey(Ngram)
-    weight = models.IntegerField()
+    weight = models.FloatField()
 
 class Project(Node):
     class Meta:

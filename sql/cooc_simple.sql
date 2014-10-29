@@ -1,5 +1,5 @@
 SELECT 
-x.ngram_id, y.ngram_id, COUNT(*) AS c
+x.ngram_id, y.ngram_id, COUNT(*) AS score
 
 FROM
 node_node_ngram AS x
@@ -13,3 +13,5 @@ x.ngram_id <> y.ngram_id
 
 GROUP BY
 x.ngram_id, y.ngram_id
+
+LIMIT 10

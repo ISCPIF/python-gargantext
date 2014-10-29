@@ -1,5 +1,7 @@
+INSERT INTO node_nodengramngram (node_id, "ngramX_id", "ngramY_id", score)
+
 SELECT 
-177 as node_id, x.ngram_id as ngramX_id, y.ngram_id as ngramY_id, COUNT(*) AS score
+177 as node_id, x.ngram_id, y.ngram_id, COUNT(*) AS score
 
 FROM
 node_node_ngram AS x
@@ -21,4 +23,4 @@ x.ngram_id <> y.ngram_id
 GROUP BY
 x.ngram_id, y.ngram_id
 
-LIMIT 10
+LIMIT 1000

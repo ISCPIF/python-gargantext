@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType, Resource
+from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType, Resource, Node_Ngram
 
 class ResourceInLine(admin.TabularInline):
     model = Resource
@@ -137,4 +137,5 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
 
+admin.site.register(Node_Ngram)
 

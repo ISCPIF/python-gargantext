@@ -31,18 +31,7 @@ try:
 except:
     corpus = Node(name='My first corpus', type=typeCorpus, user=me)
     corpus.save()
-    # for i in range(64):
-        # title = 'Document #%d' % i
-        # Node(
-            # user        = me,
-            # # type        = self._document_nodetype,
-            # name        = title,
-            # language    = english,
-            # metadata    = {'title':title},
-            # #resource    = resource,
-            # type        = typeDoc,
-            # parent      = corpus
-        # ).save()
+    
 
 corpus.children.all().delete()
 corpus.add_resource(file='./data_samples/pubmed.zip', type=typePubmed)
@@ -50,5 +39,11 @@ corpus.parse_resources()
 
 cache = Caches()
 for child in corpus.children.all():
-    print('#%d\t%s\n%s\n\n' % (child.id, child.name, child.metadata['abstract']))
-    # child.extract_ngrams(['title'], cache)
+    if child.language:
+        print('#%d\t%s\n%s\n' % (child.id, child.name, child.language.fullname))
+    else:
+        print('#%d\t%s\n\n' % (child.id, child.name))
+    # print(child.metadata)
+    # print()
+    child.extract_ngrams(['title', 'abstract'], cache)
+    # child.extract_ngrams({'title':1., 'abstract':.2}, cache)

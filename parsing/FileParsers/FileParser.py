@@ -69,8 +69,9 @@ class FileParser:
         """format the languages found in the metadata."""
         language = None
         for key in ["fullname", "iso3", "iso2"]:
-            if key in metadata:
-                language_symbol = metadata["language_" + key]
+            language_key = "language_" + key
+            if language_key in metadata:
+                language_symbol = metadata[language_key]
                 language = self._languages_cache[language_symbol]
                 if language:
                     break

@@ -129,18 +129,21 @@ class Node(CTENode):
         if isinstance(keys, dict):
             for key, weight in keys.items():
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
-                    associations[key] += weight
+                    terms = ' '.join([token for token, tag in ngram])
+                    associations[ngram] += weight
         else:
             for key in keys:
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
-                    associations[key] += 1
+                    terms = ' '.join([token for token, tag in ngram])
+                    associations[terms] += 1
         # insert the occurrences in the database
+        # TODO: use bulk_create instead
         for ngram_text, weight in associations.items():
             Node_Ngram(
                 node   = self,
                 ngram  = ngrams[ngram_text],
                 weight = weight
-            )
+            ).save()
 
 
 class Node_Resource(models.Model):

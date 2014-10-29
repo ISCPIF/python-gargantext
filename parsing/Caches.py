@@ -42,8 +42,10 @@ class NgramsExtractorsCache(defaultdict):
         # format the language
         if isinstance(key, str):
             language = key.strip().lower()
-        else:
+        elif key:
             language = key.iso2
+        else:
+            language = None
         # find the proper extractor
         if language in ["en", "eng", "english"]:
             Extractor = EnglishNgramsExtractor
@@ -66,15 +68,14 @@ class NgramsExtractorsCache(defaultdict):
 
 class LanguagesCache(defaultdict):
     
-    def __init__(self):
-        for language in node.models.Language.objects.all():
-            self[language.iso2.lower()] = language
-            self[language.iso3.lower()] = language
-            self[language.fullname.lower()] = language
-    
     def __missing__(self, key):
+        if len(self) == 0:
+            for language in node.models.Language.objects.all():
+                self[str(language.iso2.lower())] = language
+                self[str(language.iso3.lower())] = language
+                self[str(language.fullname.lower())] = language
         betterKey = key.strip().lower()
-        self[key] = self[betterKey] if betterKey in self else None
+        self[key] = self[betterKey] if betterKey in self.keys() else None
         return self[betterKey]
 
 

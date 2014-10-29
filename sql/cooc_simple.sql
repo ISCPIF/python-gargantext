@@ -1,5 +1,5 @@
 SELECT 
-100 as "CoocType Node", x.ngram_id, y.ngram_id, COUNT(*) AS score
+100 as "NodeType Cooc", x.ngram_id, y.ngram_id, COUNT(*) AS score
 
 FROM
 node_node_ngram AS x

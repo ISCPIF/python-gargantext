@@ -7,3 +7,4 @@ class EnglishNgramsExtractor(NgramsExtractor):
     def start(self):
         self.tagger = NltkTagger()
         
+    

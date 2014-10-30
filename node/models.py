@@ -132,8 +132,8 @@ class Node(CTENode):
             )
             for metadata in metadata_list
         ])
-        # update resources status: say they are now parsed
-        self.node_resource.filter(parsed=False).update(parsed=True)
+        # mark the resources as parsed for this node
+        self.node_resource.update(parsed=True)
     
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...

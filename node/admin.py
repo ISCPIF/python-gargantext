@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document, ResourceType, Resource, Node_Ngram
+from node.models import NodeType, Language, Node, Project, Corpus, Document, ResourceType, Resource, Node_Ngram, Node_Resource
 
 class ResourceInLine(admin.TabularInline):
     model = Resource
@@ -78,7 +78,7 @@ from django.db.models.query import EmptyQuerySet
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
-        exclude = ['ngrams', 'metadata', 'resource', 'parent', 'user', 'type', 'language', 'date']
+        exclude = ['ngrams', 'metadata', 'parent', 'user', 'type', 'language', 'date']
 
 class ResourceForm(ModelForm):
     class Meta:
@@ -103,7 +103,7 @@ class CorpusForm(ModelForm):
     
     class Meta:
         model   = Corpus
-        exclude = ['parent', 'user', 'type', 'ngrams', 'metadata', 'resource', 'date']
+        exclude = ['parent', 'user', 'type', 'ngrams', 'metadata', 'date']
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'
@@ -137,5 +137,6 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
 
+admin.site.register(Node_Resource)
 admin.site.register(Node_Ngram)
 

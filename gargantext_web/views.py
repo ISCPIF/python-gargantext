@@ -7,7 +7,7 @@ from django.template import Context
 
 #from documents.models import Project, Corpus, Document
 
-from node.models import Language, DatabaseType, Resource
+from node.models import Language, ResourceType, Resource
 from node.models import Node, NodeType, Project, Corpus
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
@@ -143,7 +143,7 @@ def project(request, project_id):
             language = None
 
         try:
-            bdd_type = DatabaseType.objects.get(id=str(request.POST['bdd_type']))
+            bdd_type = ResourceType.objects.get(id=str(request.POST['bdd_type']))
         except:
             bdd_type = None
         

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document, DatabaseType, Resource, Node_Ngram
+from node.models import NodeType, Language, Node, Project, Corpus, Document, ResourceType, Resource, Node_Ngram
 
 class ResourceInLine(admin.TabularInline):
     model = Resource
@@ -129,7 +129,7 @@ class LanguageAdmin(admin.ModelAdmin):
         ordering = ['fullname',]
 
 admin.site.register(Resource)
-admin.site.register(DatabaseType)
+admin.site.register(ResourceType)
 admin.site.register(Language, LanguageAdmin)
 
 admin.site.register(NodeType)

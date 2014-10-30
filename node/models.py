@@ -33,21 +33,27 @@ class DatabaseType(models.Model):
     def __str__(self):
         return self.name
 
-class Ngram(models.Model):
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
-    n           = models.IntegerField()
-    terms       = models.CharField(max_length=255)
-
 class Resource(models.Model):
     user        = models.ForeignKey(User)
     guid        = models.CharField(max_length=255)
     bdd_type    = models.ForeignKey(DatabaseType, blank=True, null=True)
     file        = models.FileField(upload_to=upload_to, blank=True)
+    def __str__(self):
+        return "%s => %s" % (self.bdd_type, self.file)
 
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)
     def __str__(self):
         return self.name
+
+
+class Ngram(models.Model):
+    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    n           = models.IntegerField()
+    terms       = models.CharField(max_length=255)
+    def __str__(self):
+        return "[%d] %s" % (self.pk, self.terms)
+
 
 class Node(CTENode):
     objects     = Manager()
@@ -62,7 +68,7 @@ class Node(CTENode):
     metadata    = hstore.DictionaryField(blank=True)
     
     resource    = models.ManyToManyField(Resource, blank=True)
-    ngrams      = models.ManyToManyField(Ngram, blank=True)
+    ngrams      = models.ManyToManyField(Ngram, blank=True, help_text="Hold down")
     
     
     def __str__(self):
@@ -72,16 +78,18 @@ class Node(CTENode):
         for noeud in Node.objects.filter(user=user):
             print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
 
-class Node_Ngram(models.Model):
-    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
-    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
-    occurences  = models.IntegerField()
-
 class Project(Node):
     class Meta:
         proxy=True
 
+class CorpusManager(models.Manager):
+    def get_query_set(self):
+        corpus_type = NodeType.objects.get(name='Corpus')
+        return super(CorpusManager, self).get_query_set().filter(type=corpus_type)
+
 class Corpus(Node):
+    objects = CorpusManager()
+    
     class Meta:
         proxy=True
         verbose_name_plural = 'Corpora'
@@ -89,5 +97,29 @@ class Corpus(Node):
 class Document(Node):
     class Meta:
         proxy=True
+
+############################
+# NGRAMS 
+############################
+
+class Node_Ngram(models.Model):
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
+    ngram       = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    occurences  = models.IntegerField()
+    def __str__(self):
+        return "%s: %s" % (self.node.name, self.ngram.terms)
+
+class NodeNgramNgram(models.Model):
+    node        = models.ForeignKey(Node)
+    
+    ngramX      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
+    ngramY      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s" % (self.node.name, self.ngramX.terms, self.ngramY.terms)
+
+
 
 

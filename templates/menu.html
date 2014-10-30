@@ -22,7 +22,7 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li><a href="/admin/">Admin</a></li>
-            <li><a href="/projects/">Projects</a></li>
+            <li><a href="/projects/">My Projects</a></li>
             <li><a href="/contact/">Contact</a></li>
           </ul>
 
@@ -75,6 +75,16 @@ $(function() {
 </script>
 
 <script src="{% static "js/bootstrap.min.js" %}"></script>
+<script>$(function () { $("[data-toggle='popover']").popover({
+		html:true,
+		title: function() {
+				return $("#popover-head").html();
+		},
+		content: function() {
+				return $("#popover-content").html();
+		}
+});});</script>
+
 </body>
 </html>
 

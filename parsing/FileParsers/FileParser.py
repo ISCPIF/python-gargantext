@@ -1,6 +1,9 @@
-import collections
 from node.models import Node, NodeType, Language, Ngram, Node_Ngram
 from parsing.NgramsExtractors import *
+
+import collections
+import dateutil.parser
+
 
 class NgramCache:
     """
@@ -18,7 +21,7 @@ class NgramCache:
             try:
                 ngram = Ngram.get(terms=terms, language=self._language)
             except:
-                ngram = Ngram(terms=terms, n=len(terms), language=self._language)
+                ngram = Ngram(terms=terms, n=len(terms.split()), language=self._language)
                 ngram.save()
             self._cache[terms] = ngram
         return self._cache[terms]
@@ -48,6 +51,7 @@ class FileParser:
         self._extractors = dict()
         self._document_nodetype = NodeType.objects.get(name='Document')
         languages = Language.objects.all()
+        self._languages_fullname = {language.fullname.lower(): language for language in languages}
         self._languages_iso2 = {language.iso2.lower(): language for language in languages}
         self._languages_iso3 = {language.iso3.lower(): language for language in languages}
         #self.parse()
@@ -85,6 +89,7 @@ class FileParser:
     """Add a document to the database.
     """
     def create_document(self, parentNode, title, contents, language, metadata, guid=None):
+        metadata = self.format_metadata(metadata)
         # create or retrieve a resource for that document, based on its user id
 #        if guid is None:
 #            resource = Resource(guid=guid)
@@ -98,6 +103,10 @@ class FileParser:
 #        if parentNode.descendants().filter(resource=resource).exists():
 #            return None
         # create the document itself
+        
+        if len(title) > 200:
+            title = title[:200]
+
         childNode = Node(
             user        = parentNode.user,
             type        = self._document_nodetype,
@@ -137,3 +146,51 @@ class FileParser:
     def parse(self):
         return list()
 
+
+    def format_metadata_dates(self, metadata):
+        """Format the dates found in the metadata.
+        Example: {"publication_date": "2014-10-23 09:57:42"} -> {...}
+        """
+        
+        # First, check the split dates...
+        prefixes = [key[:-5] for key in metadata.keys() if key[-5:] == "_year"]
+        for prefix in prefixes:
+            date_string = metadata[prefix + "_year"]
+            key = prefix + "_month"
+            if key in metadata:
+                date_string += " " + metadata[key]
+                key = prefix + "_day"
+                if key in metadata:
+                    date_string += " " + metadata[key]
+                    key = prefix + "_hour"
+                    if key in metadata:
+                        date_string += " " + metadata[key]
+                        key = prefix + "_minute"
+                        if key in metadata:
+                            date_string += ":" + metadata[key]
+                            key = prefix + "_second"
+                            if key in metadata:
+                                date_string += ":" + metadata[key]
+            try:
+                metadata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
+            except:
+                pass
+        
+        # ...then parse all the "date" fields, to parse it into separate elements
+        prefixes = [key[:-5] for key in metadata.keys() if key[-5:] == "_date"]
+        for prefix in prefixes:
+            date = dateutil.parser.parse(metadata[prefix + "_date"])
+            metadata[prefix + "_year"]      = date.strftime("%Y")
+            metadata[prefix + "_month"]     = date.strftime("%m")
+            metadata[prefix + "_day"]       = date.strftime("%d")
+            metadata[prefix + "_hour"]      = date.strftime("%H")
+            metadata[prefix + "_minute"]    = date.strftime("%M")
+            metadata[prefix + "_second"]    = date.strftime("%S")
+                
+        # finally, return the result!
+        return metadata
+    
+    def format_metadata(self, metadata):
+        """Format the metadata."""
+        metadata = self.format_metadata_dates(metadata)
+        return metadata

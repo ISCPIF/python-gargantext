@@ -15,23 +15,56 @@
 
 <div class="container theme-showcase" role="main">
         <div class="jumbotron">
+				<div class="row">
+        <div class="col-md-3">
             {% if project %}
             <h1>{{ project.name }}</h1>
             <h3> {{number}} corpora </h3>
-            <p>
-            <a class="btn btn-primary btn-lg" role="button" href="/add/corpus/">Add a corpus</a></p>
-
             {% endif %}
         </div>
+
+        <div class="col-md-4">
+				<button 
+								type="button" 
+								class="btn btn-primary btn-lg" 
+								data-container="body" 
+								data-toggle="popover" 
+								data-placement="bottom"
+				>Add a corpus</button>
+								<div id="popover-content" class="hide">
+
+					<form enctype="multipart/form-data" action="/project/{{project.id}}/" method="post">
+    {% csrf_token %}
+		{{ form.non_field_errors }}
+		{{ form.as_p}}
+		
+		{{ formResource.non_field_errors }}
+		{{ formResource.as_p}}
+		<input type="submit" class="btn" value="Add this corpus" />
+</form>
+
+
+								</div>
+		        </div>
+        </div>
+
+
+        </div>
+        </div>
 </div>
-<!-- Add jumbotron container for each type of coprus (presse, science etc.) --!>
+<!-- Add jumbotron container for each type of corpus (presse, science etc.) --!>
 
 <div class="container">
     <div class="row">
 								{% if board  %}
 										{% for corpus in board %}
 										<div class="col-md-4">
-                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></h3>
+                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
+												<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Delete it!</a>'>Manage</button>
+
+												
+												
+												</h3>
 												<h4>{{ corpus.count }} Documents </h4>
                         <p>{{ corpus.language }} {{ corpus.database}}</p>
 												<h5>Activity:</h5>

@@ -5,8 +5,11 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
-from documents.models import Project, Corpus, Document
-from node.models import Node, NodeType
+#from documents.models import Project, Corpus, Document
+
+from node.models import Language, ResourceType, Resource
+from node.models import Node, NodeType, Project, Corpus
+from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
 
@@ -15,6 +18,11 @@ from itertools import *
 from django.db import connection
 
 from django import forms
+
+from collections import defaultdict
+
+from parsing.FileParsers import *
+
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -79,18 +87,27 @@ def projects(request):
     user = request.user
     date = datetime.datetime.now()
     
-    project = NodeType.objects.get(name='Project')
-    projects = Node.objects.filter(user=user, type_id = project.id).order_by("-date")
+    project_type = NodeType.objects.get(name='Project')
+    projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
     number = len(projects)
+ 
+    form = ProjectForm()
+    if request.method == 'POST':
+        # form = ProjectForm(request.POST)
+        # TODO : protect from sql injection here
+        name = str(request.POST['name'])
+        if name != "" :
+            Project(name=name, type=project_type, user=user).save()
+            return HttpResponseRedirect('/projects/')
+    else:
+        form = ProjectForm()
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'projects': projects,\
-            'number': number,\
-            }))
-    
-    return HttpResponse(html)
+    return render(request, 'projects.html', {
+        'date': date,
+        'form': form,
+        'number': number,
+        'projects': projects
+        })
 
 def project(request, project_id):
     if not request.user.is_authenticated():
@@ -101,9 +118,7 @@ def project(request, project_id):
     except ValueError:
         raise Http404()
 
-    t = get_template('project.html')
     user = request.user
-
     date = datetime.datetime.now()
     
     project = Node.objects.get(id=project_id)
@@ -118,15 +133,68 @@ def project(request, project_id):
         dashboard['count']  = corpus.children.count()
         board.append(dashboard)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'board' : board,\
-            'number': number,\
-            }))
 
-    return HttpResponse(html)
+    if request.method == 'POST':
+        #form = CorpusForm(request.POST, request.FILES)
+        name        = str(request.POST['name'])
+        try:
+            language    = Language.objects.get(id=str(request.POST['language']))
+        except:
+            language = None
+
+        try:
+            bdd_type = ResourceType.objects.get(id=str(request.POST['bdd_type']))
+        except:
+            bdd_type = None
+        
+        try:
+            file = request.FILES['file']
+        except:
+            file = None
+
+        if language is not None and name != "" and bdd_type != None and file != None :
+            resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
+            resource.save()
+            node_type   = NodeType.objects.get(name='Corpus')
+            parent      = Node.objects.get(id=project_id)
+            
+            node = Node(parent=parent, type=node_type, name=name, user=request.user, language=language)
+            node.save()
+            node.resource.add(resource)
+
+            try:
+                for resource in node.resource.all():
+                    print(resource.bdd_type.name)
+                    if resource.bdd_type.name == "PubMed":
+                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+                        fileparser.parse(node)
+                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
+                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
+                        fileparser.parse(node)
+                    elif node.bdd_type.name == "Europresse":
+                        pass
+
+            except Exception as error:
+                print(error)
+
+            return HttpResponseRedirect('/project/' + str(project_id))
+        else:
+            form = CorpusForm(request=request)
+            formResource = ResourceForm()
+
+    else:
+        form = CorpusForm(request=request)
+        formResource = ResourceForm()
+
+    return render(request, 'project.html', {
+            'form': form, 
+            'formResource': formResource, 
+            'user': user,
+            'date': date,
+            'project': project,
+            'board' : board,
+            'number': number,
+        })
 
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
@@ -151,28 +219,25 @@ def corpus(request, project_id, corpus_id):
     number = corpus.children.count()
 
     try:
-        sources = query_to_dicts('''select count(*), source 
-                            from node_node as t1
-                            INNER JOIN documents_document_corpus as t2
-                            ON (  t1.id = t2.document_id )
-                            WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                            GROUP BY source
-                            order by 1 DESC limit %d;''' % (request.user.pk, int(corpus_id), int(15)))
+        sources = defaultdict(int)
+        for document in documents.all():
+            sources[document.metadata['journal']] += 1
+        
+        sources_donut = []
+        
+        for source in sources.keys():
+            source_count = dict()
+            source_count['count'] = source['count']
+            try:
+                source_count['part'] = round(source_count['count'] * 100 / number)
+            except:
+                source_count['part'] = None
+            source_count['source'] = source['source']
+            sources_donut.append(source_count)
+    
     except:
         pass
 
-    sources_donut = []
-    for s in sources:
-        ss = dict()
-        ss['count'] = s['count']
-        try:
-            ss['part'] = round(ss['count'] * 100 / number)
-        except:
-            ss['part'] = None
-        ss['source'] = s['source']
-        sources_donut.append(ss)
-    
-    
     try:
         first = documents.first().date 
         last  = documents.last().date
@@ -190,13 +255,15 @@ def corpus(request, project_id, corpus_id):
             date_form = 'days'
 
         try:
-            dates = query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
-                                from documents_document as t1
-                                INNER JOIN documents_document_corpus as t2
-                                ON (  t1.id = t2.document_id )
-                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-                                group by to_char(t1.date, '%s') 
-                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
+            dates = dict()
+
+#            query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
+#                                from documents_document as t1
+#                                INNER JOIN documents_document_corpus as t2
+#                                ON (  t1.id = t2.document_id )
+#                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
+#                                group by to_char(t1.date, '%s') 
+#                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
         except:
             pass
     
@@ -226,42 +293,45 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
-
-from node.admin import CorpusForm
-
-class NameForm(forms.Form):
-    your_name = forms.CharField(label='Your name', max_length=100)
-    sender = forms.EmailField()
-    message = forms.CharField(widget=forms.Textarea)
-    fichier = forms.FileField()
-
-
 def add_corpus(request):
-    # if this is a POST request we need to process the form data
-    #print(request.method)
+    form = CorpusForm(request=request)
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
-        form = CorpusForm(request.POST, request.FILES)
-        # check whether it's valid:
-        if form.is_valid():
-            form.save()
-            # process the data in form.cleaned_data as required
-#            corpus.user = request.user
-#            print(form.cleaned_data['name'])
-            
-            try:
-                print(type(form.cleaned_data['fichier']))
-                print("here we parse" + str(form.cleaned_data['fichier']))
-            except Exception as error:
-                print(error)
+        #form = CorpusForm(request.POST, request.FILES)
+        name        = str(request.POST['name'])
+        
+        try:
+            #language    = Language.objects.get(name=str(request.POST['language']))
+            language    = Language.objects.get(name='French')
+        except Exception as e:
+            print(e)
+            language = None
+        
+        if name != "" :
+            project_id  = 1047
+            node_type   = NodeType.objects.get(name='Corpus')
+            parent      = Node.objects.get(id=project_id)
+            Corpus(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
+#            try:
+#                for resource in node.resource.all():
+#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+#                    fileparser.parse(node)
+#
+#            except Exception as error:
+#                print(error)
 
-            # redirect to a new URL:
-            return HttpResponseRedirect('/projects/')
+            return HttpResponseRedirect('/project/' + str(project_id))
 
-    # if a GET (or any other method) we'll create a blank form
     else:
         form = CorpusForm(request=request)
 
     return render(request, 'add_corpus.html', {'form': form})
-    print("5")
+
+def delete_project(request, node_id):
+    Node.objects.filter(id=node_id).all().delete()
+    return HttpResponseRedirect('/projects/')
+
+def delete_corpus(request, project_id, corpus_id):
+    Node.objects.filter(id=corpus_id).all().delete()
+    return HttpResponseRedirect('/project/' + project_id)
+
 

@@ -46,7 +46,7 @@ Shall be used for french texts.
 """
 class TreeTagger(Tagger):
     
-    def start(self, treeTaggerPath = "./Taggers/treetagger"):
+    def start(self, treeTaggerPath = "./parsing/Taggers/treetagger"):
         binaryFile = "%s/bin/tree-tagger" % treeTaggerPath
         tagcmdlist = [
             binaryFile,

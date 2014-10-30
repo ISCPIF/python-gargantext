@@ -32,18 +32,11 @@ except:
     corpus = Node(name='My first corpus', type=typeCorpus, user=me)
     corpus.save()
     
-
+print('Remove previously existing children of the corpus...')
 corpus.children.all().delete()
+print('Adding a resource to the corpus...')
 corpus.add_resource(file='./data_samples/pubmed.zip', type=typePubmed)
+print('Adding the corpus resources...')
 corpus.parse_resources()
-
-cache = Caches()
-for child in corpus.children.all():
-    if child.language:
-        print('#%d\t%s\n%s\n' % (child.id, child.name, child.language.fullname))
-    else:
-        print('#%d\t%s\n\n' % (child.id, child.name))
-    # print(child.metadata)
-    # print()
-    child.extract_ngrams(['title', 'abstract'], cache)
-    # child.extract_ngrams({'title':1., 'abstract':.2}, cache)
+print('Extracting ngrams from the documents...')
+corpus.children.all().extract_ngrams(['title', 'abstract'])

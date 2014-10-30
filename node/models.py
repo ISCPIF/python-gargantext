@@ -7,7 +7,7 @@ from django_hstore import hstore
 from cte_tree.models import CTENode, Manager
 #from cte_tree.fields import DepthField, PathField, OrderingField
 
-from parsing.Caches import LanguagesCache
+from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
 from parsing.FileParsers import *
 from time import time
 from collections import defaultdict
@@ -52,8 +52,29 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
+        
+class NodeQuerySet(models.query.QuerySet):
+    """Methods available from Node querysets."""
+    def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
+        if ngramsextractorscache is None:
+            ngramsextractorscache = NgramsExtractorsCache()
+        if ngramscaches is None:
+            ngramscaches = NgramsCaches()
+        for node in self:
+            node.extract_ngrams(keys, ngramsextractorscache, ngramscaches)
+    
+class NodeManager(models.Manager):
+    """Methods available from Node.object."""
+    def get_queryset(self):
+        return NodeQuerySet(self.model)
+    def __getattr__(self, name, *args):
+        if name.startswith("_"): 
+            raise AttributeError
+        return getattr(self.get_queryset(), name, *args)
+        
 class Node(CTENode):
-    objects     = Manager()
+    """The node."""
+    objects     = NodeManager()
 
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
@@ -72,13 +93,6 @@ class Node(CTENode):
     
     def __str__(self):
         return self.name
-    
-    # TODO: voir à quoi sert cette méthode
-    def liste(self, user):
-        for noeud in Node.objects.filter(user=user):
-            print(noeud.depth * "    " + "[%d] %d" % (noeud.pk, noeud.name))
-    
-    
     
     
     def add_resource(self, **kwargs):
@@ -103,9 +117,8 @@ class Node(CTENode):
                 'ris'       : RisFileParser,
                 'europress' : EuropressFileParser,
             })[resource.type.name]()
-            print(parser)
             metadata_list += parser.parse(str(resource.file))
-        # insert in the database!
+        # insert the new resources in the database!
         type = NodeType.objects.get(name='Document')
         langages_cache = LanguagesCache()
         Node.objects.bulk_create([
@@ -119,11 +132,18 @@ class Node(CTENode):
             )
             for metadata in metadata_list
         ])
+        # update resources status: say they are now parsed
+        self.node_resource.filter(parsed=False).update(parsed=True)
     
-    def extract_ngrams(self, keys, cache):
+    def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
+        # if there is no cache...
+        if ngramsextractorscache is None:
+            ngramsextractorscache = NgramsExtractorsCache()
+        if ngramscaches is None:
+            ngramscaches = NgramsCaches()
         # what do we want from the cache?
-        extractor = cache.extractors[self.language]
-        ngrams = cache.ngrams[self.language]
+        extractor = ngramsextractorscache[self.language]
+        ngrams = ngramscaches[self.language]
         # find & count all the occurrences
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):
@@ -137,13 +157,14 @@ class Node(CTENode):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
         # insert the occurrences in the database
-        # TODO: use bulk_create instead
-        for ngram_text, weight in associations.items():
+        Node_Ngram.objects.bulk_create([
             Node_Ngram(
                 node   = self,
                 ngram  = ngrams[ngram_text],
                 weight = weight
-            ).save()
+            )
+            for ngram_text, weight in associations.items()
+        ])
 
 
 class Node_Resource(models.Model):

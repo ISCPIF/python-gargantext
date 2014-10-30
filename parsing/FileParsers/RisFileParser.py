@@ -22,7 +22,7 @@ class RisFileParser(FileParser):
                             separator = parameter["separator"] if "separator" in parameter else ""
                             metadata[parameter["key"]] = separator.join(last_values)
                         elif parameter["type"] == "delimiter":
-                            language = self._languages_fullname[metadata["language"].lower()]
+                            #language = self._languages_fullname[metadata["language"].lower()]
                             metadata_list.append(metadata)
                     last_key = parameter_key
                     last_values = []

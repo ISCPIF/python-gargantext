@@ -12,7 +12,7 @@ class RisFileParser(FileParser):
         metadata = {}
         last_key = None
         last_values = []
-        for line in self._file:
+        for line in file:
             if len(line) > 2:
                 parameter_key = line[:2]
                 if parameter_key != b'  ' and parameter_key != last_key:

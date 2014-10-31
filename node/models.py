@@ -99,7 +99,7 @@ class Node(CTENode):
         # only for tests
         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
         
-        # TODO: vérifier si tous ces 'save' sont réellement utiles
+        # TODO: verifier si tous ces 'save' sont reellement utiles
         resource.save()
         node_resource = Node_Resource(
             node     = self,

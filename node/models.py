@@ -178,6 +178,9 @@ class Node_Ngram(models.Model):
     node   = models.ForeignKey(Node)
     ngram  = models.ForeignKey(Ngram)
     weight = models.FloatField()
+    def __str__(self):
+        return "%s: %s" % (self.node.name, self.ngram.terms)
+
 
 class Project(Node):
     class Meta:
@@ -191,5 +194,17 @@ class Corpus(Node):
 class Document(Node):
     class Meta:
         proxy=True
+
+class NodeNgramNgram(models.Model):
+    node        = models.ForeignKey(Node)
+    
+    ngramX      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
+    ngramY      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s" % (self.node.name, self.ngramX.terms, self.ngramY.terms)
+
 
 

@@ -52,7 +52,9 @@ class NgramsExtractorsCache(defaultdict):
         elif language in ["fr", "fra", "fre", "french"]:
             Extractor = FrenchNgramsExtractor
         else:
-            Extractor = NgramsExtractor
+            # TODO : 
+            #Extractor = NgramsExtractor
+            Extractor = EnglishNgramsExtractor
         # try to see if already instanciated with another key
         found = False
         for extractor in self.values():

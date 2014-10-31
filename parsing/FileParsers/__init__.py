@@ -1,3 +1,4 @@
+from parsing.FileParsers.RisFileParser import RisFileParser
 from parsing.FileParsers.IsiFileParser import IsiFileParser
 from parsing.FileParsers.PubmedFileParser import PubmedFileParser
 from parsing.FileParsers.EuropressFileParser import EuropressFileParser

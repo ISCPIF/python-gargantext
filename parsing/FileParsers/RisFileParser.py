@@ -3,10 +3,19 @@ from parsing.FileParsers.FileParser import FileParser
 
 
 class RisFileParser(FileParser):
-    
+
     _parameters = {
+        b"TY":  {"type": "delimiter"},
+        b"TI":  {"type": "metadata", "key": "title", "separator": " "},
+        b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
+        b"DI":  {"type": "metadata", "key": "doi"},
+        b"PY":  {"type": "metadata", "key": "publication_year"},
+        b"PD":  {"type": "metadata", "key": "publication_month"},
+        b"LA":  {"type": "metadata", "key": "language"},
+        b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
+        b"WC":  {"type": "metadata", "key": "fields"},
     }
-    
+
     def _parse(self, file):
         metadata_list = []
         metadata = {}

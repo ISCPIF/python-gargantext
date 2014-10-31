@@ -11,16 +11,13 @@ from parsing.NgramsExtractors import *
 
 
 class EuropressFileParser(FileParser):
-   def __init__(self):
-       # Encoding
-       self.codif      = "UTF-8"
-       self.localeEncoding = "fr_FR"
-
   
-   def _parse(self, file):
+   def _parse(self, file, lang='en'):
+       localeEncoding = "fr_FR"
+       codif      = "UTF-8"
        count = 0
        
-       html_parser = etree.HTMLParser(encoding=self.codif)
+       html_parser = etree.HTMLParser(encoding=codif)
        html = etree.parse(file, html_parser)
        html_articles = html.xpath('/html/body/table')
 
@@ -41,7 +38,7 @@ class EuropressFileParser(FileParser):
                            metadata['source'] = test_journal.group(1)
                            metadata['volume'] = test_journal.group(2)
                        else:
-                           metadata['source'] = name.text.encode(self.codif)
+                           metadata['source'] = name.text.encode(codif)
 
                for header in html_article.xpath("./tr/td/span[@class = 'DocHeader']"):
                    text = header.text
@@ -62,7 +59,7 @@ class EuropressFileParser(FileParser):
                    
                    if test_date_fr is not None:
                        self.localeEncoding = "fr_FR"
-                       locale.setlocale(locale.LC_ALL, self.localeEncoding)
+                       locale.setlocale(locale.LC_ALL, localeEncoding)
                        try :
                            metadata['date'] = datetime.strptime(text, '%d %B %Y')
                        except :
@@ -72,8 +69,8 @@ class EuropressFileParser(FileParser):
                                pass
                    
                    if test_date_en is not None:
-                       self.localeEncoding = "en_GB.UTF-8"
-                       locale.setlocale(locale.LC_ALL, self.localeEncoding)
+                       localeEncoding = "en_GB.UTF-8"
+                       locale.setlocale(locale.LC_ALL, localeEncoding)
                        try :
                            metadata['date'] = datetime.strptime(text, '%B %d, %Y')
                        except :
@@ -83,12 +80,12 @@ class EuropressFileParser(FileParser):
                                pass
 
                    if test_sect is not None:
-                       metadata['section'] = test_sect.group(1).encode(self.codif)
+                       metadata['section'] = test_sect.group(1).encode(codif)
                    
                    if test_page is not None:
-                       metadata['page'] = test_page.group(1).encode(self.codif)
+                       metadata['page'] = test_page.group(1).encode(codif)
 
-               metadata['title'] = html_article.xpath("string(./tr/td/span[@class = 'TitreArticleVisu'])").encode(self.codif)
+               metadata['title'] = html_article.xpath("string(./tr/td/span[@class = 'TitreArticleVisu'])").encode(codif)
                metadata['text']  = html_article.xpath("./tr/td/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()")
               
                line = 0
@@ -104,7 +101,7 @@ class EuropressFileParser(FileParser):
                        br_tag -= 1
                    if line == 1 and br_tag == 0:
                        try:
-                           metadata['authors'] = str.title(etree.tostring(i, method="text", encoding=self.codif)).encode(self.codif)#.split(';')
+                           metadata['authors'] = str.title(etree.tostring(i, method="text", encoding=codif)).encode(codif)#.split(';')
                        except:
                            metadata['authors'] = 'not found'
                        line = 0
@@ -126,14 +123,24 @@ class EuropressFileParser(FileParser):
                except :
                    metadata['date'] = datetime.now()
 
+               #if lang == 'fr':
+               metadata['language_iso2'] = 'fr'
+               #elif lang == 'en':
+               #    metadata['language_iso2'] = 'en'
+               
+               
+               metadata['publication_year']  = metadata['date'].strftime('%Y')
+               metadata['publication_month'] = metadata['date'].strftime('%m')
+               metadata['publication_day']  = metadata['date'].strftime('%d')
+               metadata['date'] = ""
 
-               metadata['object_id'] = metadata['text'][-9]
+               metadata['object_id'] = str(metadata['text'][-9])
                metadata['text'].pop()
-               metadata['text'] = ' '.join(metadata['text'])
-               metadata['text'] = re.sub('Tous droits réservés.*$', '', metadata['text'])
+               metadata['text'] = str(' '.join(metadata['text']))
+               metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
 
-               metadata['bdd']  = 'europresse'
-               metadata['url']  = ''
+               metadata['bdd']  = u'europresse'
+               metadata['url']  = u''
                
                metadata_list.append(metadata)
                count += 1

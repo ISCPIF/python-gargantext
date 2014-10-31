@@ -23,7 +23,9 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/add/$', add_corpus),
     
     url(r'^project/(\d+)/corpus/(\d+)/$', corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/delete$$', delete_corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/delete/$', delete_corpus),
+    
+    url(r'^explorer$', explorer),
 )
 
 from django.conf import settings

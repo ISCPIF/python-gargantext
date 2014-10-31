@@ -15,9 +15,9 @@ NodeType(name="Document").save()
 from node.models import Project
 Project(name="Projet sur les abeilles", user=user, type=type_project).save()
 
-from node.models import DatabaseType
+from node.models import ResourceType
 for bdd in ['Europresse', 'PubMed', 'Web Of Science (WOS), ISI format']:
-    DatabaseType(name=bdd).save()
+    ResourceType(name=bdd).save()
 
 from node.models import Language
 import pycountry

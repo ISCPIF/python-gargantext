@@ -127,7 +127,7 @@ class Node(CTENode):
             Node(
                 user        = self.user,
                 type        = type,
-                name        = metadata['title'] if 'title' in metadata else '',
+                name        = metadata['title'][0:199] if 'title' in metadata else '',
                 parent      = self,
                 language    = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
                 metadata    = metadata,

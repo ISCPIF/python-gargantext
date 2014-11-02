@@ -45,9 +45,9 @@ var Graph = function(container, width, height) {
     };
     __methods__.canvas.text = function(x, y, text, options) {
         options = options || {};
-        var size = (options.size || __options__.size) / 45;
-        if (scale) {
-            size *= scale.size;
+        var size = 20 * (options.size || __options__.size);
+        if (scales && scales.size) {
+            size *= scales.size;
         }
         size = Math.round(10 * size) / 10;
         context.font = size + 'px sans-serif';
@@ -93,25 +93,33 @@ var Graph = function(container, width, height) {
         __this__._clear();
     };
     
-    var scale = null;
+    var scales = [];
     var getX = function(x) {
-        if (scale) {
-            return (x - scale.left) * __options__.width / scale.width;
-        } else {
-            return x;
+        var scale = scales[0];
+        switch (scale.type) {
+            case 'numeric':
+                return (x - scale.min) * __options__.width / scale.span;
+            case 'discrete':
+                return scale.values[x];
+            default:
+                return x;
         }
     };
     var getY = function(y) {
-        if (scale) {
-            return (y - scale.top) * __options__.height / scale.height;
-        } else {
-            return y;
+        var scale = scales[1];
+        switch (scale.type) {
+            case 'numeric':
+                return (scale.max - y) * __options__.height / scale.span;
+            case 'discrete':
+                return scale.values[y];
+            default:
+                return y;
         }
     };
     var getSize = function(size) {
-        return size * scale.size / 1000;
+        return size * scales.size;
     };
-    this.scale = function(left, top, right, bottom) {
+    /*this.scale = function(left, top, right, bottom) {
         if (left === undefined) {
             // for clearing purpose
             scale = null;
@@ -130,7 +138,7 @@ var Graph = function(container, width, height) {
         // repaint everything
         __this__.draw();
         return __this__;
-    };
+    };*/
     
     this.set = function(options) {
         cache.push({
@@ -158,13 +166,9 @@ var Graph = function(container, width, height) {
         return __this__;
     };
     this.text = function(x, y, text, options) {
-        _options = {};
-        for (var key in options) {
-            _options[key] = options[key];
-        }
         cache.push({
             method: 'text',
-            arguments: [x, y, text, _options]
+            arguments: [x, y, text, options]
         });
         __this__._text(x, y, text, options);
         return __this__;
@@ -193,161 +197,99 @@ var Graph = function(container, width, height) {
         return __this__;
     };
     
-    var plottingData = null;
-    var plotMethods = {
-        'segments': function(point, previousPoint, options) {
-            if (previousPoint) {
-                __this__.line(
-                    previousPoint[0],
-                    previousPoint[1],
-                    point[0],
-                    point[1],
-                    options
-                );
-            }
+    var __datasets__ = {};
+    var plotMethods = {};
+    plotMethods.segments = function(point, previousPoint, options) {
+    }
+    this.feed = function(datasets) {
+        // get the dimensions & types
+        __datasets__.dimensions = datasets[0].data[0].length;
+        __datasets__.types = [];
+        for (var k=0; k<__datasets__.dimensions; k++) {
+            __datasets__.types.push(typeof(datasets[0].data[0][k]));
         }
-    };
-    this.plot = function(data, options) {
-        // find extremas
-        var extrema = plottingData.extrema;
-        for (var i=0; i<data.length; i++) {
-            var point = data[i];
-            var x = point[0];
-            var y = point[1];
-            if (extrema.xMax < x) {
-                extrema.xMax = x;
+        // extract values
+        __datasets__.values = [];
+        for (var k=0; k<__datasets__.dimensions; k++) {
+            values = [];
+            for (var i=0; i<datasets.length; i++) {
+                var data = datasets[i].data;
+                for (var j=0; j<data.length; j++) {
+                    var value = data[j][k];
+                    if (values.indexOf(value) == -1) {
+                        values.push(value);
+                    }
+                }
             }
-            if (extrema.xMin > x) {
-                extrema.xMin = x;
-            }
-            if (extrema.yMax < y) {
-                extrema.yMax = y;
-            }
-            if (extrema.yMin > y) {
-                extrema.yMin = y;
-            }
+            __datasets__.values.push(values);
         }
-        // rescale
-        extrema.xStep = .2 * (extrema.xMax - extrema.xMin);
-        extrema.yStep = .2 * (extrema.yMax - extrema.yMin);
-        __this__.scale(
-            extrema.xMin - extrema.xStep,
-            extrema.yMax + extrema.yStep,
-            extrema.xMax + extrema.xStep,
-            extrema.yMin - extrema.yStep
-        );
-        // add to existing datasets
-        plottingData.datasets.push({
-            data: data,
-            options: options
-        });
-        // initialize options
-        options || (options = {});
-        options.method || (options.method = 'segments');
-        options.color || (options.color = __options__.color)
-        // show the points
-        var datasets = plottingData.datasets;
-        var plotMethod = plotMethods[options.method];
-        for (var i=0; i<datasets.length; i++) {
-            var dataset = datasets[i];
-            var data = dataset.data;
-            var options = dataset.options;
-            var previousPoint = null;
-            for (var j=0; j<data.length; j++) {
-                var point = data[j];
-                plotMethod(point, previousPoint, options);
-                previousPoint = point;
-            }
+        // sort values        
+        for (var i=0; i<__datasets__.values.length; i++) {
+            __datasets__.values[i].sort();
         }
+        //
+        __datasets__.list = datasets;
         return __this__;
     };
-    this.axisX = function(label, xGrad, options) {
+    this.axisY = function(label, grads) {
         var extrema = plottingData.extrema;
-        options.align = 'right';
-        this.text(
-            extrema.xMax + .85*extrema.xStep,
-            extrema.yMin - .15*extrema.yStep,
-            label,
-            options
-        );
-        this.line(
-            extrema.xMin - .5*extrema.xStep,
-            extrema.yMin - extrema.yStep,
-            extrema.xMin - .5*extrema.xStep,
-            extrema.yMax + extrema.yStep,
-            options
-        );
-        var xMin = extrema.xMin;
-        xMin -= xMin % xGrad;
-        if (xMin < extrema.xMin) {
-            xMin += xGrad;
-        }
-        var xMax = extrema.xMax;
-        xMax -= xMax % xGrad;
-        while (xMax < extrema.xMax) {
-            xMax += xGrad;
-        }
-        options.align = 'center';
-        for (var x=xMin; x<=xMax; x+=xGrad) {
-            __this__.line(
-                x,
-                extrema.yMin - .6*extrema.yStep,
-                x,
-                extrema.yMin - .4*extrema.yStep,
-                options
-            );
-            __this__.text(
-                x,
-                extrema.yMin - .75*extrema.yStep,
-                x,
-                options
-            );
-        }
-        return __this__;
-    };
-    this.axisY = function(label, yGrad, options) {
-        var extrema = plottingData.extrema;
-        options.align = 'left';
-        this.text(
-            extrema.xMin - .45*extrema.xStep,
-            extrema.yMax + .85*extrema.yStep,
-            label,
-            options
-        );
+        var valuesX = __datasets__.values[0];
+        var valuesY = __datasets__.values[1];
+        // main components
         __this__.line(
-            extrema.xMin - extrema.xStep,
-            extrema.yMin - .5*extrema.yStep,
-            extrema.xMax + extrema.xStep,
-            extrema.yMin - .5*extrema.yStep,
-            options
+            valuesX[0],
+            scales[1].min,
+            valuesX[0],
+            scales[1].max,
+            {size:1, color:'#000'}
         );
-        var yMin = extrema.yMin;
-        yMin -= yMin % yGrad;
-        if (yMin < extrema.yMin) {
-            yMin += yGrad;
+        __this__.text(
+            valuesX[0] + .0125*scales[0].span,
+            scales[1].max - .04*scales[1].span,
+            label,
+            {align:'left', size:1, color:'#000'}
+        );
+        // graduations
+        for (var i=0; i<grads.length; i++) {
+            var opacity = Math.pow(.5, i+1);
+            var grad = grads[i];
+            // extrema
+            var min = valuesY[0];
+            min -= min % grad;
+            if (min < valuesY[0]) {
+                min += grad;
+            }
+            var max = valuesY[valuesY.length - 1];
+            max -= max % grad;
+            while (max < valuesY[valuesY.length - 1]) {
+                max += grad;
+            }
+            // draw
+            for (var y=min; y<max; y+=grad) {
+                __this__.line(
+                    valuesX[0] - .0125*scales[0].span,
+                    y,
+                    valuesX[0] + .0125*scales[0].span,
+                    y,
+                    {size:1, color:'rgba(0,0,0,' + (2*opacity) + ')'}
+                );
+                __this__.line(
+                    valuesX[0],
+                    y,
+                    valuesX[valuesX.length - 1],
+                    y,
+                    {size:1, color:'rgba(0,0,0,' + opacity + ')'}
+                );
+                if (i == 0) {
+                    __this__.text(
+                        valuesX[0] - .025*scales[0].span,
+                        y,
+                        y,
+                        {align:'left', size:1, color:'#000'}
+                    );
+                }
+            }
         }
-        var yMax = extrema.yMax;
-        yMax -= yMax % yGrad;
-        while (yMax < extrema.yMax) {
-            yMax += yGrad;
-        }
-        options.align = 'right';
-        for (var y=yMin; y<=yMax; y+=yGrad) {
-            __this__.line(
-                extrema.xMin - .4*extrema.xStep,
-                y,
-                extrema.xMin - .6*extrema.xStep,
-                y,
-                options
-            );
-            __this__.text(
-                extrema.xMin - .6*extrema.xStep,
-                y,
-                yGrad * Math.round(y / yGrad),
-                options
-            );
-        }
-        return __this__;
     };
     this.grid = function(xGrad, yGrad, options) {
         var extrema = plottingData.extrema;
@@ -359,7 +301,7 @@ var Graph = function(container, width, height) {
         }
         var xMax = extrema.xMax;
         xMax -= xMax % xGrad;
-        while (xMax < extrema.xMax) {
+        while (xMax <= extrema.xMax) {
             xMax += xGrad;
         }
         var yMin = extrema.yMin;
@@ -369,7 +311,7 @@ var Graph = function(container, width, height) {
         }
         var yMax = extrema.yMax;
         yMax -= yMax % yGrad;
-        while (yMax < extrema.yMax) {
+        while (yMax <= extrema.yMax) {
             yMax += yGrad;
         }
         //
@@ -393,8 +335,67 @@ var Graph = function(container, width, height) {
         }
         return __this__;
     };
-    this.axis = function(xGrad, yGrad, options) {
-        return __this__.axisX(xGrad, options).axisY(yGrad, options);
+   
+    this.viewLine = function(labels) {
+        __this__.clear();
+        // compute the scales
+        scales = [];
+        for (var i=0; i<__datasets__.dimensions; i++) {
+            var values = __datasets__.values[i];
+            if (__datasets__.types[i] == 'number') {
+                var min = values[0];
+                var max = values[values.length - 1];
+                var span = max - min;
+                scales.push({
+                    type:   'numeric',
+                    min:    min - .1 * span,
+                    max:    max + .1 * span,
+                    span:   1.2 * span
+                });
+            } else {
+                var positions = {};
+                for (var j=0; j<values.length; j++) {
+                    positions[values[j]] = 0;
+                }
+                scales.push({
+                    type:       'discrete',
+                    positions:  positions
+                });
+            }
+        }
+        scales.size = Math.sqrt(__options__.width * __options__.height) / 800;
+        // draw the things!
+        for (var i=0; i<__datasets__.list.length; i++) {
+            var dataset = __datasets__.list[i];
+            var options = dataset.options;
+            var previousPoint = dataset.data[0];
+            for (var j=1; j<dataset.data.length; j++) {
+                var point = dataset.data[j];
+                __this__.line(
+                    previousPoint[0],
+                    previousPoint[1],
+                    point[0],
+                    point[1],
+                    options
+                );
+                previousPoint = point;
+            }
+        }
+        // base for X- and Y-axis
+        var valuesY = __datasets__.values[0];
+        var grad = Math.log(valuesY[valuesY.length-1] - valuesY[0]);
+        grad /= Math.log(10);
+        grad = Math.floor(grad);
+        __this__.axisY(labels[1], [grad, .1*grad]);
+        
+    };
+    this.view = function(name, labels) {
+        name = name
+            .toLowerCase()
+            .replace(/s+$/, '')
+            .replace(/^\w/, function(match){return match.toUpperCase()});
+        __this__['view' + name](labels);
+        return __this__;
     };
     
     (function() {
@@ -433,11 +434,66 @@ for (var i=0; i<4; i++) {
 
 var graph = (new Graph(document.getElementById('graph'), 800, 400))
     .fill('#FFF')
-    .plot(dataList[0], {color:'#FC0', size:5})
-    .plot(dataList[1], {color:'#CF0', size:5})
-    .grid(1, .2, {color:'rgba(0,0,0,.25)', size:1})
-    .grid(5, 1, {color:'rgba(0,0,0,.25)', size:1})
-    .axisX('Year of publication', 5, {color:'black', size:1})
-    .axisY('Term frequency', 1, {color:'black', size:1})
-    .draw()
+    .feed([
+        {name:'bees', data: dataList[0], options: {color:'#FC0', size:4}},
+        {name:'honey', data: dataList[1], options: {color:'#CF0', size:4}}
+    ])
+    .view('lines', ['Year of publication', 'Term frequency'])
     
+    // .feed([
+        // {name:'bees', data: [[2010,0.123], [2011,0.214], [2012,0.157]], options: {color:'#FC0', size:5}},
+        // {name:'honey', data: [[2010,0.123], [2011,0.214], [2012,0.157]], options: {color:'#CF0', size:5}}
+    // ])
+    // .view('histograms', ['Year of publication', 'Term frequency'])
+    
+    // .feed([
+        // {name:'bees', data: [[312]], options: {color:'#FC0', size:5}},
+        // {name:'honey', data: [[564]], options: {color:'#CF0', size:5}}
+    // ])
+    // .view('sectors', ['Terms occurences'])
+    
+    // .grid(1, .2, {color:'rgba(0,0,0,.25)', size:1})
+    // .grid(5, 1, {color:'rgba(0,0,0,.25)', size:1})
+    // .axisX('Year of publication', 5, {color:'black', size:1})
+    // .axisY('Term frequency', 1, {color:'black', size:1})
+    // .view('histogram', [])
+    
+/**
+ *
+ *  TODO:
+ *
+ *  -   change .plot().plot() into .feed([])
+ *
+ *  -   implement .view()
+ *
+ *  -   add legend, based on data.name
+ *
+ *  -   automatically identify if numeric/discrete,
+ *      automatically generate a list of all the possible keys
+ *      automatically generate axis & grid
+ *
+ *  -   when 'data' is called, check if strings are encountered
+ *      as the first member of points (or second?)
+ *
+ *  -   check if points have 2 or 3 members
+ *
+ *  -   implement viewing modes for 2D data:
+ *      -   sectors (only average)
+ *      -   histograms (with average & std)
+ *
+ *      -   points
+ *      -   lines
+ *      -   curves
+ *      -   areas
+ *      -   stacked areas
+ *
+ *      -   bars
+ *      -   stacked bars
+ *
+ *  -   implement viewing modes for 3D data:
+ *      -   heatmaps
+ *
+ *  -   data can be:
+ *      -   something rather histogrammy: [['bee', 1]], []
+ *
+**/

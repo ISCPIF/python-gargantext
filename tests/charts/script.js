@@ -198,9 +198,6 @@ var Graph = function(container, width, height) {
     };
     
     var __datasets__ = {};
-    var plotMethods = {};
-    plotMethods.segments = function(point, previousPoint, options) {
-    }
     this.feed = function(datasets) {
         // get the dimensions & types
         __datasets__.dimensions = datasets[0].data[0].length;
@@ -230,6 +227,66 @@ var Graph = function(container, width, height) {
         //
         __datasets__.list = datasets;
         return __this__;
+    };
+    this.axisX = function(label, grads) {
+        var extrema = plottingData.extrema;
+        var valuesX = __datasets__.values[0];
+        var valuesY = __datasets__.values[1];
+        // main components
+        __this__.line(
+            scales[0].min,
+            valuesY[0],
+            scales[0].max,
+            valuesY[0],
+            {size:1, color:'#000'}
+        );
+        __this__.text(
+            scales[0].max - .0125*scales[0].span,
+            valuesY[0] + .025*scales[1].span,
+            label,
+            {align:'right', size:1, color:'#000'}
+        );
+        // graduations
+        for (var i=0; i<grads.length; i++) {
+            var opacity = Math.pow(.5, i+1);
+            var grad = grads[i];
+            // extrema
+            var min = valuesX[0];
+            min -= min % grad;
+            if (min < valuesX[0]) {
+                min += grad;
+            }
+            var max = valuesX[valuesX.length - 1];
+            max -= max % grad;
+            while (max < valuesX[valuesX.length - 1]) {
+                max += grad;
+            }
+            // draw
+            for (var x=min; x<max; x+=grad) {
+                __this__.line(
+                    x,
+                    valuesY[0] - .0125*scales[1].span,
+                    x,
+                    valuesY[0] + .0125*scales[1].span,
+                    {size:1, color:'rgba(0,0,0,' + (2*opacity) + ')'}
+                );
+                __this__.line(
+                    x,
+                    valuesY[valuesY.length - 1],
+                    x,
+                    valuesY[0],
+                    {size:1, color:'rgba(0,0,0,' + opacity + ')'}
+                );
+                if (i == 0) {
+                    __this__.text(
+                        x,
+                        valuesY[0] - .05*scales[1].span,
+                        x,
+                        {align:'center', size:1, color:'#000'}
+                    );
+                }
+            }
+        }
     };
     this.axisY = function(label, grads) {
         var extrema = plottingData.extrema;
@@ -291,52 +348,8 @@ var Graph = function(container, width, height) {
             }
         }
     };
-    this.grid = function(xGrad, yGrad, options) {
-        var extrema = plottingData.extrema;
-        //
-        var xMin = extrema.xMin;
-        xMin -= xMin % xGrad;
-        if (xMin < extrema.xMin) {
-            xMin += xGrad;
-        }
-        var xMax = extrema.xMax;
-        xMax -= xMax % xGrad;
-        while (xMax <= extrema.xMax) {
-            xMax += xGrad;
-        }
-        var yMin = extrema.yMin;
-        yMin -= yMin % yGrad;
-        if (yMin < extrema.yMin) {
-            yMin += yGrad;
-        }
-        var yMax = extrema.yMax;
-        yMax -= yMax % yGrad;
-        while (yMax <= extrema.yMax) {
-            yMax += yGrad;
-        }
-        //
-        for (var y=yMin; y<yMax; y+=yGrad) {
-            __this__.line(
-                extrema.yMin - extrema.xStep,
-                y,
-                scale.right,
-                y,
-                options
-            );
-        }
-        for (var x=xMin; x<xMax; x+=xGrad) {
-            __this__.line(
-                x,
-                scale.top,
-                x,
-                scale.bottom,
-                options
-            );
-        }
-        return __this__;
-    };
-   
-    this.viewLine = function(labels) {
+    
+    this.viewLine = function(labels, options) {
         __this__.clear();
         // compute the scales
         scales = [];
@@ -381,15 +394,23 @@ var Graph = function(container, width, height) {
                 previousPoint = point;
             }
         }
-        // base for X- and Y-axis
-        var valuesY = __datasets__.values[0];
-        var grad = Math.log(valuesY[valuesY.length-1] - valuesY[0]);
+        // Y axis
+        var values = __datasets__.values[1];
+        var grad = Math.log(values[values.length-1] - values[0]);
         grad /= Math.log(10);
         grad = Math.floor(grad);
+        grad = Math.pow(10, grad);
         __this__.axisY(labels[1], [grad, .1*grad]);
+        // X axis
+        var values = __datasets__.values[0];
+        var grad = values[values.length-1] - values[0];
+        grad = Math.log(grad) / Math.log(10);
+        grad = Math.floor(grad);
+        grad = Math.pow(10, grad);
+        __this__.axisX(labels[0], [grad, .1*grad]);
         
     };
-    this.view = function(name, labels) {
+    this.view = function(name, labels, options) {
         name = name
             .toLowerCase()
             .replace(/s+$/, '')

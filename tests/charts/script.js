@@ -10,7 +10,7 @@ var Graph = function(container, width, height) {
     var data;
     
     var __this__ = this;
-    var __defaultoptions__ = {color:'#000', size:1, background:'rgba(0,0,0,0.5)'};
+    var __defaultoptions__ = {color:'#000', size:1, background:'rgba(0,0,0,0.5)', align:'center'};
     var __options__ = {};
     var __methods__ = {canvas:{}, raphael:{}};
     
@@ -38,16 +38,24 @@ var Graph = function(container, width, height) {
         context.lineWidth = getSize(options.size || __options__.size);
         context.strokeStyle = options.color || __options__.color;
         context.beginPath();
-        context.moveTo(x1, y1);
-        context.lineTo(x2, y2);
+        context.moveTo(getX(x1), getY(y1));
+        context.lineTo(getX(x2), getY(y2));
         context.stroke();
         return __this__;
     };
     __methods__.canvas.text = function(x, y, text, options) {
-        if (options) {
-            options.size && (context.fillStyle = options.size);
-            options.color && (context.fillStyle = options.color);
+        options = options || {};
+        var size = (options.size || __options__.size) / 45;
+        if (scale) {
+            size *= scale.size;
         }
+        size = Math.round(10 * size) / 10;
+        context.font = size + 'px sans-serif';
+        context.fillStyle = options.color || __options__.color;
+        context.textAlign = options.align || __options__.align;
+        context.textAlign = options.align || __options__.align;
+        context.textBaseline = 'middle';
+        context.fillText(text, getX(x), getY(y));
         return __this__;
     };
     __methods__.canvas.fill = function(background) {
@@ -62,17 +70,21 @@ var Graph = function(container, width, height) {
     
     
     this.size = function(width, height) {
-        this._size(width, height);
-        return __this__.set(__defaultoptions__).refresh();
+        container.style.width = width + 'px';
+        container.style.height = height + 'px';
+        __this__._size(width, height);
+        __this__.draw();
+        return __this__;
     };
-    this.refresh = function() {
+    this.draw = function() {
         // clear the canvas
-        __this__.clear(true);
+        __this__._clear();
         // redraw what is in the cache
         for (var i=0; i<cache.length; i++) {
             var item = cache[i];
             __this__['_' + item.method].apply(__this__, item.arguments);
         }
+        return __this__;
     };
     this.clear = function(keepCaches) {
         if (!keepCaches) {
@@ -116,11 +128,15 @@ var Graph = function(container, width, height) {
             };
         }
         // repaint everything
-        __this__.refresh();
+        __this__.draw();
         return __this__;
     };
     
     this.set = function(options) {
+        cache.push({
+            method: 'set',
+            arguments: [options]
+        });
         for (var key in options) {
             __options__[key] = options[key];
         }
@@ -130,21 +146,25 @@ var Graph = function(container, width, height) {
     this.line = function(x1, y1, x2, y2, options) {
         cache.push({
             method: 'line',
-            arguments: [x1, y1, x2, y2]
+            arguments: [x1, y1, x2, y2, options]
         });
         __this__._line(
-            getX(x1),
-            getY(y1),
-            getX(x2),
-            getY(y2),
+            x1,
+            y1,
+            x2,
+            y2,
             options
         );
         return __this__;
     };
     this.text = function(x, y, text, options) {
+        _options = {};
+        for (var key in options) {
+            _options[key] = options[key];
+        }
         cache.push({
             method: 'text',
-            arguments: [x, y, text, options]
+            arguments: [x, y, text, _options]
         });
         __this__._text(x, y, text, options);
         return __this__;
@@ -160,12 +180,6 @@ var Graph = function(container, width, height) {
     };
     this.clear = function() {
         cache = [];
-        __this__._clear();
-        return __this__;
-    };
-    
-    var plottingData = null;
-    this.clearData = function() {
         plottingData = {
             extrema: {
                 xMin:  +Number.MAX_VALUE,
@@ -175,9 +189,25 @@ var Graph = function(container, width, height) {
             },
             datasets: []
         };
+        __this__._clear();
         return __this__;
     };
-    this.addData = function(data, options) {
+    
+    var plottingData = null;
+    var plotMethods = {
+        'segments': function(point, previousPoint, options) {
+            if (previousPoint) {
+                __this__.line(
+                    previousPoint[0],
+                    previousPoint[1],
+                    point[0],
+                    point[1],
+                    options
+                );
+            }
+        }
+    };
+    this.plot = function(data, options) {
         // find extremas
         var extrema = plottingData.extrema;
         for (var i=0; i<data.length; i++) {
@@ -211,23 +241,6 @@ var Graph = function(container, width, height) {
             data: data,
             options: options
         });
-        return __this__;
-    };
-    
-    var plotMethods = {
-        'segments': function(point, previousPoint, options) {
-            if (previousPoint) {
-                __this__.line(
-                    previousPoint[0],
-                    previousPoint[1],
-                    point[0],
-                    point[1],
-                    options
-                );
-            }
-        }
-    };
-    this.plot = function(options) {
         // initialize options
         options || (options = {});
         options.method || (options.method = 'segments');
@@ -248,8 +261,15 @@ var Graph = function(container, width, height) {
         }
         return __this__;
     };
-    this.axisX = function(xGrad, options) {
+    this.axisX = function(label, xGrad, options) {
         var extrema = plottingData.extrema;
+        options.align = 'right';
+        this.text(
+            extrema.xMax + .85*extrema.xStep,
+            extrema.yMin - .15*extrema.yStep,
+            label,
+            options
+        );
         this.line(
             extrema.xMin - .5*extrema.xStep,
             extrema.yMin - extrema.yStep,
@@ -257,7 +277,18 @@ var Graph = function(container, width, height) {
             extrema.yMax + extrema.yStep,
             options
         );
-        for (var x=(extrema.xMin-extrema.xStep)%xGrad; x<extrema.xMax+extrema.xStep/2; x+=xGrad) {
+        var xMin = extrema.xMin;
+        xMin -= xMin % xGrad;
+        if (xMin < extrema.xMin) {
+            xMin += xGrad;
+        }
+        var xMax = extrema.xMax;
+        xMax -= xMax % xGrad;
+        while (xMax < extrema.xMax) {
+            xMax += xGrad;
+        }
+        options.align = 'center';
+        for (var x=xMin; x<=xMax; x+=xGrad) {
             __this__.line(
                 x,
                 extrema.yMin - .6*extrema.yStep,
@@ -265,11 +296,24 @@ var Graph = function(container, width, height) {
                 extrema.yMin - .4*extrema.yStep,
                 options
             );
+            __this__.text(
+                x,
+                extrema.yMin - .75*extrema.yStep,
+                x,
+                options
+            );
         }
         return __this__;
     };
-    this.axisY = function(yGrad, options) {
+    this.axisY = function(label, yGrad, options) {
         var extrema = plottingData.extrema;
+        options.align = 'left';
+        this.text(
+            extrema.xMin - .45*extrema.xStep,
+            extrema.yMax + .85*extrema.yStep,
+            label,
+            options
+        );
         __this__.line(
             extrema.xMin - extrema.xStep,
             extrema.yMin - .5*extrema.yStep,
@@ -277,7 +321,18 @@ var Graph = function(container, width, height) {
             extrema.yMin - .5*extrema.yStep,
             options
         );
-        for (var y=(extrema.yMin-extrema.yStep)%yGrad; y<extrema.yMax+extrema.yStep/2; y+=yGrad) {
+        var yMin = extrema.yMin;
+        yMin -= yMin % yGrad;
+        if (yMin < extrema.yMin) {
+            yMin += yGrad;
+        }
+        var yMax = extrema.yMax;
+        yMax -= yMax % yGrad;
+        while (yMax < extrema.yMax) {
+            yMax += yGrad;
+        }
+        options.align = 'right';
+        for (var y=yMin; y<=yMax; y+=yGrad) {
             __this__.line(
                 extrema.xMin - .4*extrema.xStep,
                 y,
@@ -285,12 +340,40 @@ var Graph = function(container, width, height) {
                 y,
                 options
             );
+            __this__.text(
+                extrema.xMin - .6*extrema.xStep,
+                y,
+                yGrad * Math.round(y / yGrad),
+                options
+            );
         }
         return __this__;
     };
     this.grid = function(xGrad, yGrad, options) {
         var extrema = plottingData.extrema;
-        for (var y=(extrema.yMin-extrema.yStep)%yGrad; y<extrema.yMax+extrema.yStep/2; y+=yGrad) {
+        //
+        var xMin = extrema.xMin;
+        xMin -= xMin % xGrad;
+        if (xMin < extrema.xMin) {
+            xMin += xGrad;
+        }
+        var xMax = extrema.xMax;
+        xMax -= xMax % xGrad;
+        while (xMax < extrema.xMax) {
+            xMax += xGrad;
+        }
+        var yMin = extrema.yMin;
+        yMin -= yMin % yGrad;
+        if (yMin < extrema.yMin) {
+            yMin += yGrad;
+        }
+        var yMax = extrema.yMax;
+        yMax -= yMax % yGrad;
+        while (yMax < extrema.yMax) {
+            yMax += yGrad;
+        }
+        //
+        for (var y=yMin; y<yMax; y+=yGrad) {
             __this__.line(
                 extrema.yMin - extrema.xStep,
                 y,
@@ -299,7 +382,7 @@ var Graph = function(container, width, height) {
                 options
             );
         }
-        for (var x=(extrema.xMin-extrema.xStep)%xGrad; x<extrema.xMax+extrema.xStep/2; x+=xGrad) {
+        for (var x=xMin; x<xMax; x+=xGrad) {
             __this__.line(
                 x,
                 scale.top,
@@ -329,7 +412,7 @@ var Graph = function(container, width, height) {
             __this__['_' + key] = __methods__[contextType][key];
         }
         __this__.size(width, height);
-        __this__.clearData();
+        __this__.clear();
     })();
 };
 
@@ -337,9 +420,9 @@ var Graph = function(container, width, height) {
 var dataList = [];
 for (var i=0; i<4; i++) {
     var data = [];
-    var y = .1 * Math.random();
+    var y = Math.random();
     for (var x=1964; x<2014; x++) {
-        y += .01 * Math.random() - .005;
+        y += 1 * (Math.random() - .5);
         if (y < 0) {
             y = 0;
         }
@@ -348,11 +431,13 @@ for (var i=0; i<4; i++) {
     dataList.push(data);
 }
 
-(new Graph(document.body, 800, 400))
+var graph = (new Graph(document.getElementById('graph'), 800, 400))
     .fill('#FFF')
-    .addData(dataList[0], {color:'#FC0', size:5})
-    .addData(dataList[1], {color:'#CF0', size:5})
-    .plot()
-    .grid(1, .001, {color:'#CCC'})
-    .axis(5, .005, {color:'black'})
+    .plot(dataList[0], {color:'#FC0', size:5})
+    .plot(dataList[1], {color:'#CF0', size:5})
+    .grid(1, .2, {color:'rgba(0,0,0,.25)', size:1})
+    .grid(5, 1, {color:'rgba(0,0,0,.25)', size:1})
+    .axisX('Year of publication', 5, {color:'black', size:1})
+    .axisY('Term frequency', 1, {color:'black', size:1})
+    .draw()
     

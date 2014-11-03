@@ -372,5 +372,17 @@ def explorer_matrix(request):
     
     return HttpResponse(html)
 
+def exploration(request):
+    t = get_template('exploration.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
+
 
 

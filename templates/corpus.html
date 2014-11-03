@@ -28,7 +28,7 @@
 
 					{% if corpus %}
 						<h2>{{ corpus.name }} </h2>
-						<p>Created on {{ corpus.date }}, ({{ number}} docs)</p>
+						<p>Created on {{ corpus.date }} <br> ({{ number}} docs)</p>
 					{% endif %}
 
 					{% if number > 0 %}
@@ -53,7 +53,7 @@
     <div class="row">
         <div class="col-md-4">
         <div class="jumbotron">
-						<h3>Exploration</h3>
+						<h3><a href="/exploration">Exploration</a></h3>
 						<ol>
 								<li>Count frequency</li>
 								<li>Configurable Charts</li>

@@ -4,6 +4,7 @@ from django.contrib import admin
 
 from gargantext_web.views import home, projects, project, corpus
 from gargantext_web.views import add_corpus, delete_project, delete_corpus
+from gargantext_web.views import exploration
 from gargantext_web.views import explorer_graph, explorer_matrix
 
 admin.autodiscover()
@@ -28,6 +29,8 @@ urlpatterns = patterns('',
     
     url(r'^graph$', explorer_graph),
     url(r'^matrix$', explorer_matrix),
+    
+    url(r'^exploration$', exploration),
 )
 
 from django.conf import settings

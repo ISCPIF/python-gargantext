@@ -334,7 +334,7 @@ def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
 
-def explorer(request):
+def explorer_graph(request):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -345,5 +345,18 @@ def explorer(request):
             }))
     
     return HttpResponse(html)
+
+def explorer_matrix(request):
+    t = get_template('matrix.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
+
 
 

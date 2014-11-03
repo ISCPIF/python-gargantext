@@ -15,13 +15,16 @@ from django.contrib.auth.models import User
 
 import datetime
 from itertools import *
-from django.db import connection
+from dateutil.parser import parse
 
+from django.db import connection
 from django import forms
 
 from collections import defaultdict
 
 from parsing.FileParsers import *
+
+
 
 # SOME FUNCTIONS
 
@@ -185,13 +188,21 @@ def project(request, project_id):
     else:
         form = CorpusForm(request=request)
         formResource = ResourceForm()
-
+    
+    camembert = [
+            {'source': 'Science', 'count': 33, 'part': 3},
+            {'source': 'Press', 'count': 23, 'part': 3},
+            {'source': 'Web', 'count': 50, 'part': 3},
+            
+            ]
+    
     return render(request, 'project.html', {
             'form': form, 
             'formResource': formResource, 
             'user': user,
             'date': date,
             'project': project,
+            'camembert' : camembert,
             'board' : board,
             'number': number,
         })
@@ -215,7 +226,7 @@ def corpus(request, project_id, corpus_id):
     corpus  = Node.objects.get(id=corpus_id)
     
     #print(Document.objects.filter(corpus=c_id, user=request.user.pk).query)
-    documents  = corpus.children
+    documents  = corpus.children.all()
     number = corpus.children.count()
 
     try:
@@ -234,18 +245,23 @@ def corpus(request, project_id, corpus_id):
                 source_count['part'] = None
             source_count['source'] = source['source']
             sources_donut.append(source_count)
-    
     except:
         sources_donut = []
 
     try:
-        first = documents.first().date 
-        last  = documents.last().date
+        histo = [{'2001':12}, {'2002': 13}]
+        
+        first = parse(documents.first().metadata['publication_date'])
+        last  = parse(documents.last().metadata['publication_date'])
         duree = first - last
         
         if duree.days > 365:
             date_format = 'YYYY'
             date_form = 'years'
+
+            for document in documents:
+                pass
+
 
         elif duree.days > 60:
             date_format = 'YYYY-MM'
@@ -257,28 +273,27 @@ def corpus(request, project_id, corpus_id):
         try:
             dates = dict()
 
-#            query_to_dicts('''select to_char(t1.date, '%s'), count(*) 
-#                                from documents_document as t1
-#                                INNER JOIN documents_document_corpus as t2
-#                                ON (  t1.id = t2.document_id )
-#                                WHERE ( t1.user_id = %d AND t2.corpus_id = %d )
-#                                group by to_char(t1.date, '%s') 
-#                                order by 1 DESC;''' %  (date_format, request.user.pk, int(corpus_id), date_format))
         except:
             pass
     
         
-        histo = []
 #        for e in date_range('1990-01', '1992-02', format=date_form):
 #            print(e)
 #        if date_format = 'YYYY':
 #            while True:
 #                if d -histo.append(d)
-        for d in dates:
-            histo.append(d)
+#        for d in dates:
+#            histo.append(d)
          
     except:
-        histo = None
+        histo = [
+                {'to_char': 2000, 'count': 13},
+                {'to_char': 2001, 'count': 20},
+                {'to_char': 2002, 'count': 5},
+                {'to_char': 2003, 'count': 130},
+                {'to_char': 2004, 'count': 300},
+                ]
+        #histo = None
        
     html = t.render(Context({\
             'user': user,\
@@ -287,7 +302,6 @@ def corpus(request, project_id, corpus_id):
             'corpus' : corpus,\
             'documents': documents,\
             'number' : number,\
-            'sources_donut' : sources_donut,\
             'dates' : histo,\
             }))
     

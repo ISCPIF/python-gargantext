@@ -6,6 +6,13 @@
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
 
+<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
+
+<script src="{% static "js/jquery/jquery-1.9.1.min.js"%}"></script>
+<script src="{% static "js/raphael-min.js"%}"></script>
+<script src="{% static "js/morris.min.js"%}"></script>
+
 
 {% endblock %}
 
@@ -25,8 +32,9 @@
 
         <div class="col-md-4">
 				<p>
-				<br>
-				<button 
+	  		<div id="hero-donut" style="height: 200px;"></div>
+        <center>
+            <button 
 								type="button" 
 								class="btn btn-primary btn-lg" 
 								data-container="body" 
@@ -44,11 +52,12 @@
 		{{ formResource.as_p}}
 		<input type="submit" class="btn" value="Add this corpus" />
 </form>
-
+    </center>
 				</p>
 
 								</div>
 		        </div>
+
         </div>
 
 
@@ -79,5 +88,27 @@
         
     </div>
 </div>
+
+
+<script>
+        // Morris Donut Chart
+        Morris.Donut({
+            element: 'hero-donut',
+            data: [
+            {% if camembert %}
+            {% for part in camembert %}
+						{label: '{{ part.source }}, {{part.count}} docs', value: {{ part.part }} },
+            {% endfor %}
+            {% endif %}
+
+            ],
+            colors: ["#939393", "#939555"],
+            //colors: ["#30a1ec", "#76bdee"],
+            formatter: function (y) { return y + "%" }
+        });
+</script>
+
+
+
 
 {% endblock %}

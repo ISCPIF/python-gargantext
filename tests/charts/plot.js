@@ -545,6 +545,9 @@ var Graph = function(container, width, height) {
     };
     
     (function() {
+        if (typeof(container) != 'object') {
+            console.error('The first parameter of the Graph class constructor should be a valid DOM object.');
+        }
         var canvas = document.createElement('canvas');
         var canvasContext = canvas.getContext && canvas.getContext('2d');
         if (!!canvasContext) {

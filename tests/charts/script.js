@@ -35,17 +35,29 @@ var Graph = function(container, width, height) {
     __methods__.canvas.line = function(x1, y1, x2, y2, options) {
         options || (options = {});
         context.lineCap = 'round';
-        context.lineWidth = getSize(options.size || __options__.size);
+        context.lineWidth = getSize(options.size || 1);
         context.strokeStyle = options.color || __options__.color;
         context.beginPath();
         context.moveTo(getX(x1), getY(y1));
         context.lineTo(getX(x2), getY(y2));
         context.stroke();
+    };
+    __methods__.canvas.rect = function(x1, y1, x2, y2, options) {
+        options || (options = {});
+        context.lineCap = 'round';
+        context.lineWidth = getSize(options.size || __options__.size);
+        context.fillStyle = options.color || __options__.color;
+        context.fillRect(
+            getX(x1),
+            getY(y1),
+            getX(x2)-getX(x1),
+            getY(y2)-getY(y1)
+        );
         return __this__;
     };
     __methods__.canvas.text = function(x, y, text, options) {
         options = options || {};
-        var size = 20 * (options.size || __options__.size);
+        var size = 16 * (options.size || __options__.size);
         if (scales && scales.size) {
             size *= scales.size;
         }
@@ -70,6 +82,9 @@ var Graph = function(container, width, height) {
     
     
     this.size = function(width, height) {
+        __options__.width = width;
+        __options__.height = height;
+        __options__.size = Math.sqrt(__options__.width * __options__.height) / 800;
         container.style.width = width + 'px';
         container.style.height = height + 'px';
         __this__._size(width, height);
@@ -117,7 +132,7 @@ var Graph = function(container, width, height) {
         }
     };
     var getSize = function(size) {
-        return size * scales.size;
+        return size * __options__.size;
     };
     /*this.scale = function(left, top, right, bottom) {
         if (left === undefined) {
@@ -173,6 +188,14 @@ var Graph = function(container, width, height) {
         __this__._text(x, y, text, options);
         return __this__;
     };
+    this.rect = function(x1, y1, x2, y2, options) {
+        cache.push({
+            method: 'rect',
+            arguments: [x1, y1, x2, y2, options]
+        });
+        __this__._rect(x1, y1, x2, y2, options);
+        return __this__;
+    };
     this.fill = function(background) {
         __this__.clear();
         cache.push({
@@ -222,7 +245,13 @@ var Graph = function(container, width, height) {
         }
         // sort values        
         for (var i=0; i<__datasets__.values.length; i++) {
-            __datasets__.values[i].sort();
+            __datasets__.values[i] = __datasets__.values[i].sort(function(a, b) {
+                if (a < b)
+                    return -1;
+                if (a > b)
+                    return 1;
+                return 0;
+            });
         }
         //
         __datasets__.list = datasets;
@@ -288,20 +317,24 @@ var Graph = function(container, width, height) {
             }
         }
     };
-    this.axisY = function(label, grads) {
-        var extrema = plottingData.extrema;
+    this.axisY = function(label, grads, extrema) {
+        extrema = extrema || {};
         var valuesX = __datasets__.values[0];
         var valuesY = __datasets__.values[1];
+        var Xmin = (extrema.Xmin != undefined) ? extrema.Xmin : valuesX[0];
+        var Xmax = (extrema.Xmax != undefined) ? extrema.Xmax : valuesX[valuesX.length - 1];
+        var Ymin = (extrema.Ymin != undefined) ? extrema.Ymin : valuesY[0];
+        var Ymax = (extrema.Ymax != undefined) ? extrema.Ymax : valuesY[valuesY.length - 1];
         // main components
         __this__.line(
-            valuesX[0],
+            Xmin,
             scales[1].min,
-            valuesX[0],
+            Xmin,
             scales[1].max,
             {size:1, color:'#000'}
         );
         __this__.text(
-            valuesX[0] + .0125*scales[0].span,
+            Xmin + .0125*scales[0].span,
             scales[1].max - .04*scales[1].span,
             label,
             {align:'left', size:1, color:'#000'}
@@ -311,46 +344,135 @@ var Graph = function(container, width, height) {
             var opacity = Math.pow(.5, i+1);
             var grad = grads[i];
             // extrema
-            var min = valuesY[0];
+            var min = Ymin;
             min -= min % grad;
             if (min < valuesY[0]) {
                 min += grad;
             }
-            var max = valuesY[valuesY.length - 1];
-            max -= max % grad;
-            while (max < valuesY[valuesY.length - 1]) {
-                max += grad;
-            }
+            var max = Ymax + grads[grads.length - 1];
             // draw
             for (var y=min; y<max; y+=grad) {
                 __this__.line(
-                    valuesX[0] - .0125*scales[0].span,
+                    Xmin - .0125*scales[0].span,
                     y,
-                    valuesX[0] + .0125*scales[0].span,
+                    Xmin + .0125*scales[0].span,
                     y,
                     {size:1, color:'rgba(0,0,0,' + (2*opacity) + ')'}
                 );
                 __this__.line(
-                    valuesX[0],
+                    Xmin,
                     y,
-                    valuesX[valuesX.length - 1],
+                    Xmax,
                     y,
                     {size:1, color:'rgba(0,0,0,' + opacity + ')'}
                 );
                 if (i == 0) {
                     __this__.text(
-                        valuesX[0] - .025*scales[0].span,
+                        Xmin - .025*scales[0].span,
                         y,
                         y,
-                        {align:'left', size:1, color:'#000'}
+                        {align:'right', size:1, color:'#000'}
                     );
                 }
             }
         }
     };
     
+    this.viewHistogram = function(labels, options) {// draw the things!
+        // compute average & std
+        var statistics = [];
+        var min = 0;
+        var max = 0;
+        for (var i=0; i<__datasets__.list.length; i++) {
+            var dataset = __datasets__.list[i];
+            var options = dataset.options;
+            var previousPoint = dataset.data[0];
+            // compute average
+            var average = 0;
+            var k = __datasets__.dimensions - 1;
+            for (var j=0; j<dataset.data.length; j++) {
+                average += dataset.data[j][k];
+            }
+            average /= dataset.data.length;
+            // compute standard deviation
+            var k = __datasets__.dimensions - 1;
+            var std = 0;
+            for (var j=0; j<dataset.data.length; j++) {
+                var value = average - dataset.data[j][k];
+                std += value * value;
+            }
+            std = Math.sqrt(std);
+            // store it for later
+            statistics.push({
+                average: average,
+                std: std
+            });
+            var d1 = average - std;
+            var d2 = average + std;
+            if (average < 0) {
+                min = Math.min(d1, min);
+            } else {
+                max = Math.max(d2, max);
+            }
+        }
+        // compute the scales
+        var span = max - min;
+        scales = [{
+            type:   'numeric',
+            min:    -.5,
+            max:    __datasets__.list.length + 1,
+            span:   __datasets__.list.length + 1.5
+        }, {
+            type:   'numeric',
+            min:    min - .1*span,
+            max:    max + .1*span,
+            span:   1.2 * span
+        }];
+        // graphs
+        for (var i=0; i<__datasets__.list.length; i++) {
+            var dataset = __datasets__.list[i];
+            var average = statistics[i].average;
+            var options = dataset.options;
+            var std = statistics[i].std;
+            __this__.rect(
+                i + .7,
+                0,
+                i + 1.3,
+                average,
+                options
+            );
+            var y = (average>0) ? (average+std) : (average-std);
+            __this__.line(
+                i + 1,
+                0,
+                i + 1,
+                y,
+                options
+            );
+            __this__.line(
+                i + .9,
+                y,
+                i + 1.1,
+                y,
+                options
+            );
+        }
+        // X axis
+        this.line(0, min, __datasets__.list.length + .5, min, {size:1, color:'rgba(0,0,0,.75)'});
+        // Y axis
+        var values = __datasets__.values[1];
+        var grad = Math.log(max - min);
+        grad /= Math.log(10);
+        grad = Math.floor(grad);
+        grad = Math.pow(10, grad);
+        __this__.axisY(labels[1], [grad, .1*grad], {
+            Xmin: 0,
+            Xmax: __datasets__.list.length + .5,
+            Ymin: min,
+            Ymax: max,
+        });
+    };
     this.viewLine = function(labels, options) {
-        __this__.clear();
         // compute the scales
         scales = [];
         for (var i=0; i<__datasets__.dimensions; i++) {
@@ -376,7 +498,6 @@ var Graph = function(container, width, height) {
                 });
             }
         }
-        scales.size = Math.sqrt(__options__.width * __options__.height) / 800;
         // draw the things!
         for (var i=0; i<__datasets__.list.length; i++) {
             var dataset = __datasets__.list[i];
@@ -394,13 +515,6 @@ var Graph = function(container, width, height) {
                 previousPoint = point;
             }
         }
-        // Y axis
-        var values = __datasets__.values[1];
-        var grad = Math.log(values[values.length-1] - values[0]);
-        grad /= Math.log(10);
-        grad = Math.floor(grad);
-        grad = Math.pow(10, grad);
-        __this__.axisY(labels[1], [grad, .1*grad]);
         // X axis
         var values = __datasets__.values[0];
         var grad = values[values.length-1] - values[0];
@@ -408,13 +522,20 @@ var Graph = function(container, width, height) {
         grad = Math.floor(grad);
         grad = Math.pow(10, grad);
         __this__.axisX(labels[0], [grad, .1*grad]);
-        
-    };
+        // Y axis
+        var values = __datasets__.values[1];
+        var grad = Math.log(values[values.length-1] - values[0]);
+        grad /= Math.log(10);
+        grad = Math.floor(grad);
+        grad = Math.pow(10, grad);
+        __this__.axisY(labels[1], [grad, .1*grad]);
+            };
     this.view = function(name, labels, options) {
         name = name
             .toLowerCase()
             .replace(/s+$/, '')
             .replace(/^\w/, function(match){return match.toUpperCase()});
+        __this__.clear();
         __this__['view' + name](labels);
         return __this__;
     };
@@ -442,9 +563,11 @@ var Graph = function(container, width, height) {
 var dataList = [];
 for (var i=0; i<4; i++) {
     var data = [];
-    var y = Math.random();
+    var y = 3 + 1.5 * Math.random();
+    var dy = 0;
     for (var x=1964; x<2014; x++) {
-        y += 1 * (Math.random() - .5);
+        dy += .01 * (Math.random() - .5);
+        y += dy;
         if (y < 0) {
             y = 0;
         }
@@ -459,51 +582,37 @@ var graph = (new Graph(document.getElementById('graph'), 800, 400))
         {name:'bees', data: dataList[0], options: {color:'#FC0', size:4}},
         {name:'honey', data: dataList[1], options: {color:'#CF0', size:4}}
     ])
-    .view('lines', ['Year of publication', 'Term frequency'])
-    
-    // .feed([
-        // {name:'bees', data: [[2010,0.123], [2011,0.214], [2012,0.157]], options: {color:'#FC0', size:5}},
-        // {name:'honey', data: [[2010,0.123], [2011,0.214], [2012,0.157]], options: {color:'#CF0', size:5}}
-    // ])
-    // .view('histograms', ['Year of publication', 'Term frequency'])
-    
-    // .feed([
-        // {name:'bees', data: [[312]], options: {color:'#FC0', size:5}},
-        // {name:'honey', data: [[564]], options: {color:'#CF0', size:5}}
-    // ])
+    // .view('lines', ['Year of publication', 'Term frequency'])
+    .view('histograms', ['Term', 'Term frequency'])
     // .view('sectors', ['Terms occurences'])
-    
-    // .grid(1, .2, {color:'rgba(0,0,0,.25)', size:1})
-    // .grid(5, 1, {color:'rgba(0,0,0,.25)', size:1})
-    // .axisX('Year of publication', 5, {color:'black', size:1})
-    // .axisY('Term frequency', 1, {color:'black', size:1})
-    // .view('histogram', [])
+
+// graph.rect(1970, 1, 1980, 2.2, {color:'red'});
     
 /**
  *
  *  TODO:
  *
- *  -   change .plot().plot() into .feed([])
+ *  +   change .plot().plot() into .feed([])
  *
- *  -   implement .view()
+ *  +   implement .view()
  *
- *  -   add legend, based on data.name
+ *  +   add legend, based on data.name
  *
  *  -   automatically identify if numeric/discrete,
- *      automatically generate a list of all the possible keys
- *      automatically generate axis & grid
+ *  +   automatically generate a list of all the possible values
+ *  +   automatically generate axis & grid
  *
- *  -   when 'data' is called, check if strings are encountered
+ *  +   when 'data' is called, check if strings are encountered
  *      as the first member of points (or second?)
  *
- *  -   check if points have 2 or 3 members
+ *  +   check if points have 2 or 3 members (number of dimension)
  *
  *  -   implement viewing modes for 2D data:
  *      -   sectors (only average)
  *      -   histograms (with average & std)
  *
  *      -   points
- *      -   lines
+ *      +   lines
  *      -   curves
  *      -   areas
  *      -   stacked areas

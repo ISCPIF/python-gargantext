@@ -249,8 +249,14 @@ def corpus(request, project_id, corpus_id):
         sources_donut = []
 
     try:
-        histo = [{'2001':12}, {'2002': 13}]
-        
+        histo = [
+                {'to_char': 2000, 'count': 13},
+                {'to_char': 2001, 'count': 20},
+                {'to_char': 2002, 'count': 5},
+                {'to_char': 2003, 'count': 130},
+                {'to_char': 2004, 'count': 300},
+                ]
+
         first = parse(documents.first().metadata['publication_date'])
         last  = parse(documents.last().metadata['publication_date'])
         duree = first - last

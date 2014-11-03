@@ -545,8 +545,14 @@ var Graph = function(container, width, height) {
     };
     
     (function() {
-        if (typeof(container) != 'object') {
+        if (typeof(container) != 'object' || !container.style) {
             console.error('The first parameter of the Graph class constructor should be a valid DOM object.');
+        }
+        if (!width) {
+            width = container.style.width;
+        }
+        if (!height) {
+            height = container.style.height;
         }
         var canvas = document.createElement('canvas');
         var canvasContext = canvas.getContext && canvas.getContext('2d');

@@ -1,0 +1,8 @@
+*   {margin:0;outline:0;padding:0;border:0;font-family:sans serif}
+
+.graphWidget   {position:fixed;top:0;left:0;width:100%;height:100%}
+    h1, .graph, select  {margin:2%;width:96%;margin-bottom:0;background:#FDFEFF}
+    h1  {font-size:32px}
+    .graph  {box-shadow:inset 3px 3px 10px rgba(0,0,0,.33);height:60%}
+    select  {box-shadow:3px 3px 10px rgba(0,0,0,.33);height:5%;padding:0 2.5%;font-size:16px;cursor:pointer}
+    select:hover    {background:#EEE}

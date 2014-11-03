@@ -83,7 +83,7 @@ class ProjectForm(ModelForm):
 class ResourceForm(ModelForm):
     class Meta:
         model = Resource
-        exclude = ['user', 'guid']
+        exclude = ['user', 'guid', 'digest']
 
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)
@@ -103,7 +103,7 @@ class CorpusForm(ModelForm):
     
     class Meta:
         model   = Corpus
-        exclude = ['parent', 'user', 'type', 'ngrams', 'metadata', 'date']
+        exclude = ['parent', 'user', 'language', 'type', 'ngrams', 'metadata', 'date']
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'

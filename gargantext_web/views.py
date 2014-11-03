@@ -236,7 +236,7 @@ def corpus(request, project_id, corpus_id):
             sources_donut.append(source_count)
     
     except:
-        pass
+        sources_donut = []
 
     try:
         first = documents.first().date 

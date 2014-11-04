@@ -1,5 +1,5 @@
 import node.models
-from parsing.NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor
+from parsing.NgramsExtractors import *
 
 from collections import defaultdict
 
@@ -52,9 +52,7 @@ class NgramsExtractorsCache(defaultdict):
         elif language in ["fr", "fra", "fre", "french"]:
             Extractor = FrenchNgramsExtractor
         else:
-            # TODO : 
-            #Extractor = NgramsExtractor
-            Extractor = EnglishNgramsExtractor
+            Extractor = NgramsExtractor
         # try to see if already instanciated with another key
         found = False
         for extractor in self.values():

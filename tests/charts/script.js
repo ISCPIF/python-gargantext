@@ -1,4 +1,6 @@
-/**
+/** 
+ *
+ *  (cf. http://bl.ocks.org/mbostock/1256572)
  *
  *  TODO:
  *
@@ -19,7 +21,9 @@
  *
  *  -   implement viewing modes for 2D data:
  *      -   sectors (only average)
+ *      -   donuts
  *      +   histograms (with average & std)
+ *      -   box plots
  *
  *      -   points
  *      +   lines
@@ -32,6 +36,8 @@
  *
  *  -   implement viewing modes for 3D data:
  *      -   heatmaps
+ *
+ *  -   order axis by specific criteria
  *
 **/
 

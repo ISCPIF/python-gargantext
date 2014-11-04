@@ -10,7 +10,7 @@ class IsiFileParser(RisFileParser):
         b"DI":  {"type": "metadata", "key": "doi"},
         b"PY":  {"type": "metadata", "key": "publication_year"},
         b"PD":  {"type": "metadata", "key": "publication_month"},
-        b"LA":  {"type": "metadata", "key": "language"},
+        b"LA":  {"type": "metadata", "key": "language_fullname"},
         b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
         b"WC":  {"type": "metadata", "key": "fields"},
     }

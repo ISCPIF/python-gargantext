@@ -11,7 +11,7 @@ class RisFileParser(FileParser):
         b"UR":  {"type": "metadata", "key": "doi"},
         b"PY":  {"type": "metadata", "key": "publication_year"},
         b"PD":  {"type": "metadata", "key": "publication_month"},
-        b"LA":  {"type": "metadata", "key": "language"},
+        b"LA":  {"type": "metadata", "key": "language_iso2"},
         b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
         b"WC":  {"type": "metadata", "key": "fields"},
     }
@@ -48,7 +48,7 @@ class RisFileParser(FileParser):
                 except Exception as error:
                     print(error)
                     pass
-        print(len(metadata_list))
-        print(metadata_list)
+        #print(len(metadata_list))
+        #print(metadata_list)
 
         return metadata_list

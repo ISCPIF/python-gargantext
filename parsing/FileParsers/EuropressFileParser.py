@@ -12,7 +12,7 @@ from parsing.NgramsExtractors import *
 
 class EuropressFileParser(FileParser):
   
-   def _parse(self, file, lang='en'):
+   def _parse(self, file):
        localeEncoding = "fr_FR"
        codif      = "UTF-8"
        count = 0
@@ -124,7 +124,7 @@ class EuropressFileParser(FileParser):
                    metadata['date'] = datetime.now()
 
                #if lang == 'fr':
-               metadata['language_iso2'] = 'fr'
+               #metadata['language_iso2'] = 'fr'
                #elif lang == 'en':
                #    metadata['language_iso2'] = 'en'
                
@@ -142,12 +142,17 @@ class EuropressFileParser(FileParser):
                metadata['bdd']  = u'europresse'
                metadata['url']  = u''
                
+             #metadata_str = {}
+               for key, value in metadata.items():
+                   metadata[key] = value.decode() if isinstance(value, bytes) else value
                metadata_list.append(metadata)
                count += 1
         
-
+#       from pprint import pprint
+#       pprint(metadata_list)
+#       return []
        return metadata_list
-
+#
 
 
 

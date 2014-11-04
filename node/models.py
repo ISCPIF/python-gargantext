@@ -144,8 +144,10 @@ class Node(CTENode):
         if ngramscaches is None:
             ngramscaches = NgramsCaches()
         # what do we want from the cache?
-        extractor = ngramsextractorscache[self.language]
-        ngrams = ngramscaches[self.language]
+        language = self.language if self.language else self.parent.language
+        #print(language.fullname)
+        extractor = ngramsextractorscache[language]
+        ngrams = ngramscaches[language]
         # find & count all the occurrences
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):
@@ -158,6 +160,7 @@ class Node(CTENode):
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
+        print(associations)
         # insert the occurrences in the database
         Node_Ngram.objects.bulk_create([
             Node_Ngram(

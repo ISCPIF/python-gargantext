@@ -160,7 +160,7 @@ class Node(CTENode):
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
-        print(associations)
+        #print(associations)
         # insert the occurrences in the database
         Node_Ngram.objects.bulk_create([
             Node_Ngram(
@@ -201,8 +201,8 @@ class Document(Node):
 class NodeNgramNgram(models.Model):
     node        = models.ForeignKey(Node)
     
-    ngramX      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
-    ngramY      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
+    ngramx      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
+    ngramy      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
 
     score       = models.FloatField(default=0)
 

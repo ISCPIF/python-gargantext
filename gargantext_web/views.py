@@ -24,8 +24,6 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 
-from gargantext_web.settings import MEDIA_ROOT
-from time import time
 
 # SOME FUNCTIONS
 
@@ -140,8 +138,8 @@ def project(request, project_id):
 
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
-        name        = str(request.POST['name'])
         #print(str(request.POST))
+        name        = str(request.POST['name'])
 
         try:
             resource_type = ResourceType.objects.get(id=str(request.POST['type']))
@@ -159,18 +157,35 @@ def project(request, project_id):
         try:
             parent      = Node.objects.get(id=project_id)
             node_type   = NodeType.objects.get(name='Corpus')
-            #language    = Language.objects.get(iso2='fr')
-            corpus = Node(parent=parent, type=node_type, name=name, user=request.user)
+
+            if resource_type.name == "europresse_french":
+                language    = Language.objects.get(iso2='fr')
+            elif resource_type.name == "europresse_english":
+                language    = Language.objects.get(iso2='en')
+            
+            try:
+                corpus = Node(
+                        user=request.user,
+                        parent=parent,
+                        type=node_type,
+                        name=name,
+                        )
+            except:
+                corpus = Node(
+                        user=request.user,
+                        parent=parent,
+                        type=node_type,
+                        language=language,
+                        name=name,
+                        )
+
             corpus.save()
             
-            #file_path = str(MEDIA_ROOT + '/corpora/' + request.user.username + '/' + str(file))
-            #corpus.add_resource(type=resource_type, file=str(file))
-            resource = Resource(user=request.user, guid=str(time()), type=resource_type, file=file, digest=str(time()))
-            resource.save()
-#
-            node_resource = Node_Resource(node=corpus, resource=resource)
-            node_resource.save()
-
+            corpus.add_resource(
+                    user=request.user, 
+                    type=resource_type,
+                    file=file
+                    )
 
             try:
                 corpus.parse_resources()

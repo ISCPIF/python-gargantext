@@ -111,6 +111,8 @@ class Node(CTENode):
                 'isi'       : IsiFileParser,
                 'ris'       : RisFileParser,
                 'europress' : EuropressFileParser,
+                'europress_french'  : EuropressFileParser,
+                'europress_english' : EuropressFileParser,
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
         # insert the new resources in the database!

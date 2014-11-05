@@ -8,7 +8,7 @@ from django.template import Context
 #from documents.models import Project, Corpus, Document
 
 from node.models import Language, ResourceType, Resource
-from node.models import Node, NodeType, Project, Corpus
+from node.models import Node, NodeType, Node_Resource, Project, Corpus
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -24,7 +24,8 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 
-
+from gargantext_web.settings import MEDIA_ROOT
+from time import time
 
 # SOME FUNCTIONS
 
@@ -140,48 +141,45 @@ def project(request, project_id):
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
         name        = str(request.POST['name'])
-        try:
-            language    = Language.objects.get(id=str(request.POST['language']))
-        except:
-            language = None
+        #print(str(request.POST))
 
         try:
-            bdd_type = ResourceType.objects.get(id=str(request.POST['bdd_type']))
-        except:
-            bdd_type = None
+            resource_type = ResourceType.objects.get(id=str(request.POST['type']))
+        except Exception as error:
+            print(error)
+            resource_type = None
         
         try:
             file = request.FILES['file']
-        except:
+        except Exception as error:
+            print(error)
             file = None
 
-        if language is not None and name != "" and bdd_type != None and file != None :
-            resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
-            resource.save()
-            node_type   = NodeType.objects.get(name='Corpus')
+        #if name != "" and resource_type is not None and file is not None:
+        try:
             parent      = Node.objects.get(id=project_id)
+            node_type   = NodeType.objects.get(name='Corpus')
+            #language    = Language.objects.get(iso2='fr')
+            corpus = Node(parent=parent, type=node_type, name=name, user=request.user)
+            corpus.save()
             
-            node = Node(parent=parent, type=node_type, name=name, user=request.user, language=language)
-            node.save()
-            node.resource.add(resource)
+            #file_path = str(MEDIA_ROOT + '/corpora/' + request.user.username + '/' + str(file))
+            #corpus.add_resource(type=resource_type, file=str(file))
+            resource = Resource(user=request.user, guid=str(time()), type=resource_type, file=file, digest=str(time()))
+            resource.save()
+#
+            node_resource = Node_Resource(node=corpus, resource=resource)
+            node_resource.save()
+
 
             try:
-                for resource in node.resource.all():
-                    print(resource.bdd_type.name)
-                    if resource.bdd_type.name == "PubMed":
-                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
-                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif node.bdd_type.name == "Europresse":
-                        pass
-
+                corpus.parse_resources()
             except Exception as error:
                 print(error)
 
             return HttpResponseRedirect('/project/' + str(project_id))
-        else:
+        except Exception as error:
+            print('ee', error)
             form = CorpusForm(request=request)
             formResource = ResourceForm()
 
@@ -313,38 +311,6 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
-def add_corpus(request):
-    form = CorpusForm(request=request)
-    if request.method == 'POST':
-        #form = CorpusForm(request.POST, request.FILES)
-        name        = str(request.POST['name'])
-        
-        try:
-            #language    = Language.objects.get(name=str(request.POST['language']))
-            language    = Language.objects.get(name='French')
-        except Exception as e:
-            print(e)
-            language = None
-        
-        if name != "" :
-            project_id  = 1047
-            node_type   = NodeType.objects.get(name='Corpus')
-            parent      = Node.objects.get(id=project_id)
-            Corpus(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
-#            try:
-#                for resource in node.resource.all():
-#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-#                    fileparser.parse(node)
-#
-#            except Exception as error:
-#                print(error)
-
-            return HttpResponseRedirect('/project/' + str(project_id))
-
-    else:
-        form = CorpusForm(request=request)
-
-    return render(request, 'add_corpus.html', {'form': form})
 
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()

@@ -140,10 +140,6 @@ def project(request, project_id):
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
         name        = str(request.POST['name'])
-        try:
-            language    = Language.objects.get(id=str(request.POST['language']))
-        except:
-            language = None
 
         try:
             bdd_type = ResourceType.objects.get(id=str(request.POST['bdd_type']))
@@ -155,30 +151,36 @@ def project(request, project_id):
         except:
             file = None
 
-        if language is not None and name != "" and bdd_type != None and file != None :
-            resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
-            resource.save()
-            node_type   = NodeType.objects.get(name='Corpus')
-            parent      = Node.objects.get(id=project_id)
-            
-            node = Node(parent=parent, type=node_type, name=name, user=request.user, language=language)
-            node.save()
-            node.resource.add(resource)
-
+        if  name != "" and bdd_type != None and file != None :
             try:
-                for resource in node.resource.all():
-                    print(resource.bdd_type.name)
-                    if resource.bdd_type.name == "PubMed":
-                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
-                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif node.bdd_type.name == "Europresse":
-                        pass
-
+                node_type   = NodeType.objects.get(name='Corpus')
+                parent      = Node.objects.get(id=project_id)
+                corpus = Node(parent=parent, name=name, type=node_type, user=request.user)
+                corpus.save()
+                #corpus.add_ressource(file=file)
             except Exception as error:
                 print(error)
+            #resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
+            #language    = Language.objects.get(iso2='fr')
+
+            node = Node(parent=parent, type=node_type, name=name, user=request.user)#, language=language)
+            node.save()
+            #node.resource.add(resource)
+
+#            try:
+#                for resource in node.resource.all():
+#                    print(resource.bdd_type.name)
+#                    if resource.bdd_type.name == "PubMed":
+#                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
+#                        fileparser.parse(node)
+#                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
+#                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
+#                        fileparser.parse(node)
+#                    elif node.bdd_type.name == "Europresse":
+#                        pass
+#
+#            except Exception as error:
+#                print(error)
 
             return HttpResponseRedirect('/project/' + str(project_id))
         else:
@@ -321,9 +323,9 @@ def add_corpus(request):
         
         try:
             #language    = Language.objects.get(name=str(request.POST['language']))
-            language    = Language.objects.get(name='French')
+            language    = Language.objects.get(iso2='fr')
         except Exception as e:
-            print(e)
+            print('line 323', e)
             language = None
         
         if name != "" :

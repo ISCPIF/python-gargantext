@@ -126,6 +126,20 @@ def project(request, project_id):
     project = Node.objects.get(id=project_id)
     corpora = project.children.all()
     number  = project.children.count()
+    
+    total = 0
+    donut = list()
+    donut_part = dict()
+    for corpus in corpora:
+        count =  corpus.children.count()
+        total += count
+        for node_resource in Node_Resource.objects.filter(node=corpus):
+
+            print(node_resource.resource.type,
+                    count,
+                    total,
+                    )
+
 
     board = list()
     for corpus in corpora:

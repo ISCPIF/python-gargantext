@@ -56,7 +56,7 @@ class NodeAdmin(admin.ModelAdmin):
                                                 user    = request.user,\
                                                 name    = obj.name,\
                                                 metadata= obj.metadata,\
-                                                resource = obj.resource)
+                                                )
             
             #nodeParent.save()
             #node.save()

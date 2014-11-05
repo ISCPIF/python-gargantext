@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 from gargantext_web.views import home, projects, project, corpus
-from gargantext_web.views import add_corpus, delete_project, delete_corpus
+from gargantext_web.views import delete_project, delete_corpus
 from gargantext_web.views import exploration
 from gargantext_web.views import explorer_graph, explorer_matrix
 
@@ -22,7 +22,6 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/delete/$', delete_project),
     
     url(r'^project/(\d+)/$', project),
-    url(r'^project/(\d+)/add/$', add_corpus),
     
     url(r'^project/(\d+)/corpus/(\d+)/$', corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', delete_corpus),

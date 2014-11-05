@@ -96,13 +96,9 @@ class Node(CTENode):
     
     
     def add_resource(self, **kwargs):
-<<<<<<< HEAD
         # only for tests
         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
         
-=======
-        resource = Resource(**kwargs)
->>>>>>> 00f422e66ce8fcb7f534fdb51a21500042c8b6f9
         # TODO: verifier si tous ces 'save' sont reellement utiles
         resource.save()
         node_resource = Node_Resource(

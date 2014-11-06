@@ -69,6 +69,11 @@ def date_range(start_dt, end_dt = None, format=None):
 # SOME VIEWS
 
 def home(request):
+    '''
+    Home describes the platform.
+    A video draws the narratives.
+    If not logged a project test is shown.
+    '''
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
@@ -81,6 +86,11 @@ def home(request):
     return HttpResponse(html)
 
 def projects(request):
+    '''
+    This view show all projects for each user.
+    Each project is described with metadata that are updateded on each following view.
+    To each project, we can link a resource that can be an image.
+    '''
     if not request.user.is_authenticated():
         return redirect('/admin/logout/?next=%s' % request.path)
     
@@ -112,6 +122,13 @@ def projects(request):
         })
 
 def project(request, project_id):
+    '''
+    This view represents all corpora in a panoramic way.
+    The title sums all corpora
+    The donut summerizes composition of the project.
+    The list of lists enalbles to navigate throw it.
+    '''
+
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -126,28 +143,34 @@ def project(request, project_id):
     project = Node.objects.get(id=project_id)
     corpora = project.children.all()
     number  = project.children.count()
+
+
+    # DONUT corpora representation
     
-    total = 0
-    donut = list()
-    donut_part = dict()
+    donut_part = defaultdict(int)
+    docs_total = 0
+    list_corpora = defaultdict(list)
+    
     for corpus in corpora:
-        count =  corpus.children.count()
-        total += count
+        docs_count =  corpus.children.count()
+        docs_total += docs_count
+        
+        corpus_view = dict()
+        corpus_view['id']       = corpus.pk
+        corpus_view['name']     = corpus.name
+        corpus_view['count']      = corpus.children.count()
+
         for node_resource in Node_Resource.objects.filter(node=corpus):
+            donut_part[node_resource.resource.type] += docs_count
+            list_corpora[node_resource.resource.type.name].append(corpus_view)
+    list_corpora = dict(list_corpora)
 
-            print(node_resource.resource.type,
-                    count,
-                    total,
-                    )
+    donut = [ {'source': key, 
+                'count': donut_part[key] , 
+                'part' : round(donut_part[key] * 100 / docs_total) } \
+                        for key in donut_part.keys() ]
 
 
-    board = list()
-    for corpus in corpora:
-        dashboard = dict()
-        dashboard['id']     = corpus.pk
-        dashboard['name']   = corpus.name
-        dashboard['count']  = corpus.children.count()
-        board.append(dashboard)
 
 
     if request.method == 'POST':
@@ -182,6 +205,7 @@ def project(request, project_id):
                         user=request.user,
                         parent=parent,
                         type=node_type,
+                        language=language,
                         name=name,
                         )
             except:
@@ -189,7 +213,6 @@ def project(request, project_id):
                         user=request.user,
                         parent=parent,
                         type=node_type,
-                        language=language,
                         name=name,
                         )
 
@@ -215,22 +238,15 @@ def project(request, project_id):
     else:
         form = CorpusForm(request=request)
         formResource = ResourceForm()
-    
-    camembert = [
-            {'source': 'Science', 'count': 33, 'part': 3},
-            {'source': 'Press', 'count': 23, 'part': 3},
-            {'source': 'Web', 'count': 50, 'part': 3},
-            
-            ]
-    
+       
     return render(request, 'project.html', {
             'form': form, 
             'formResource': formResource, 
             'user': user,
             'date': date,
             'project': project,
-            'camembert' : camembert,
-            'board' : board,
+            'donut' : donut,
+            'list_corpora' : list_corpora,
             'number': number,
         })
 

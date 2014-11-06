@@ -69,6 +69,11 @@ def date_range(start_dt, end_dt = None, format=None):
 # SOME VIEWS
 
 def home(request):
+    '''
+    Home describes the platform.
+    A video draws the narratives.
+    If not logged a project test is shown.
+    '''
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
@@ -81,6 +86,11 @@ def home(request):
     return HttpResponse(html)
 
 def projects(request):
+    '''
+    This view show all projects for each user.
+    Each project is described with metadata that are updateded on each following view.
+    To each project, we can link a resource that can be an image.
+    '''
     if not request.user.is_authenticated():
         return redirect('/admin/logout/?next=%s' % request.path)
     
@@ -112,6 +122,13 @@ def projects(request):
         })
 
 def project(request, project_id):
+    '''
+    This view represents all corpora in a panoramic way.
+    The title sums all corpora
+    The donut summerizes composition of the project.
+    The list of lists enalbles to navigate throw it.
+    '''
+
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -126,6 +143,9 @@ def project(request, project_id):
     project = Node.objects.get(id=project_id)
     corpora = project.children.all()
     number  = project.children.count()
+
+
+    # DONUT corpora representation
     
     donut_part = defaultdict(int)
     docs_total = 0

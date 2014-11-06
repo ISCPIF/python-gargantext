@@ -23,49 +23,38 @@
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-	<div class="jumbotron">
-    <div class="row">
-        <div class="col-md-4">
-				{% if project %}
-						<h1>{{ project.name }} </h1>
-					{% endif %}
+		<div class="jumbotron">
+								{% if project %}
+								<h1>{{ project.name }} </h1>
+								{% endif %}
 
-					{% if corpus %}
-						<h2>{{ corpus.name }} </h2>
-						<p>Created on {{ corpus.date }} <br> ({{ number}} docs)</p>
-					{% endif %}
-
-			</div>
-
-
-<div class="container">
-
-	<div class="row">
-	    <div id="monthly-move-chart">
-	        <strong>Title</strong> (Blue Line: Avg Index, Green Line: Index
-	        Fluctuation)
-	        <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-	           style="display: none;">reset</a>
-
-	        <div class="clearfix"></div>
-	    </div>
-	</div>
-
-	<div class="row">
-	    <div id="monthly-volume-chart">
-	    </div>
-	    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
-	</div>
-
-
-
-</div>
-
-			</div>
-
-			</div>
+							{% if corpus %}
+								{{ corpus.name }}
+								, Created on {{ corpus.date }} ({{ number}} docs)</p>
+							{% endif %}
 	</div>
 </div>
+
+				<div class="container">
+						<div class="container">
+
+							<div class="row">
+									<div id="monthly-move-chart">
+											<strong>Title</strong> (Blue Line: Avg Index, Green Line: Index Fluctuation)
+											<a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
+													style="display: none;">reset</a>
+											<div class="clearfix"></div>
+									</div>
+							</div>
+
+							<div class="row">
+									<div id="monthly-volume-chart"></div>
+									<p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
+							</div>
+					</div>
+
+
+
 
 <div class="container">
 
@@ -79,58 +68,53 @@
 						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export corpus</a></p>
 					{% endif %}
 
-				{% if number == 0 %}
+						{% if number == 0 %}
 						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add documents</a></p>
-					{% endif %}
-
+						{% endif %}
 		</div>
-		</div>
+</div>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-4">
-        <div class="jumbotron">
-						<h3><a href="/exploration">Exploration</a></h3>
+		<div class="row">
+				<div class="col-md-4">
+						<div class="jumbotron">
+								<h3><a href="/exploration">Exploration</a></h3>
 						<ol>
 								<li>Count frequency</li>
 								<li>Configurable Charts</li>
 								<li>Explore Matrix</li>
 						</ol>
-				</div>
+					</div>
 				</div>
 
 				<div class="col-md-4">
-        <div class="jumbotron">
+						<div class="jumbotron">
 						<h3>Cartography</h3>
 						<ol>
 								<li>Socio-Semantic</li>
 								<li>Graphs</li>
 								<li>Feature</li>
 						</ol>
-        </div>
-        </div>
+						</div>
+				</div>
 
 				<div class="col-md-4">
-        <div class="jumbotron">
+						<div class="jumbotron">
 						<h3>Dynamics</h3>
 						<ol>
 								<li>Dynamic maps</li>
 								<li>Phylomemy</li>
 								<li>Feature</li>
 						</ol>
-        </div>
-        </div>
-
-    </div>
-
+						</div>
+				</div>
+		</div>
 </div>
-
 
 
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://jun9.github.io/dc.js/js/bootstrap.min.js"></script>
 <script src="{% static "js/d3/DC.js"%}"></script>
-
 
 
 

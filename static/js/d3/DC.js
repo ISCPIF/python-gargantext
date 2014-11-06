@@ -15,7 +15,7 @@ d3.selectAll("#version").text(dc.version);
 //
 //
 //
-d3.csv("data.csv", function (data) {
+d3.csv("/data.csv", function (data) {
             // since its a csv file we need to format the data a bit
             var dateFormat = d3.time.format("%m/%d/%Y");
             var numberFormat = d3.format(".2f");

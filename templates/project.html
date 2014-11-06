@@ -32,7 +32,9 @@
 
         <div class="col-md-4">
 				<p>
+				{% if donut %}
 	  		<div id="hero-donut" style="height: 200px;"></div>
+				{% endif %}
         <center>
             <button 
 								type="button" 
@@ -94,8 +96,8 @@
         Morris.Donut({
             element: 'hero-donut',
             data: [
-            {% if camembert %}
-            {% for part in camembert %}
+            {% if donut %}
+            {% for part in donut %}
 						{label: '{{ part.source }}, {{part.count}} docs', value: {{ part.part }} },
             {% endfor %}
             {% endif %}

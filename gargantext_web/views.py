@@ -127,18 +127,20 @@ def project(request, project_id):
     corpora = project.children.all()
     number  = project.children.count()
     
-    total = 0
-    donut = list()
-    donut_part = dict()
+    donut_part = defaultdict(int)
+    docs_total = 0
+    
     for corpus in corpora:
-        count =  corpus.children.count()
-        total += count
-        for node_resource in Node_Resource.objects.filter(node=corpus):
+        docs_count =  corpus.children.count()
+        docs_total += docs_count
 
-            print(node_resource.resource.type,
-                    count,
-                    total,
-                    )
+        for node_resource in Node_Resource.objects.filter(node=corpus):
+            donut_part[node_resource.resource.type] += docs_count
+    
+    donut = [ {'source': key, 
+                'count': donut_part[key] , 
+                'part': round(donut_part[key] * 100 / docs_total) } \
+                        for key in donut_part.keys() ]
 
 
     board = list()
@@ -182,6 +184,7 @@ def project(request, project_id):
                         user=request.user,
                         parent=parent,
                         type=node_type,
+                        language=language,
                         name=name,
                         )
             except:
@@ -189,7 +192,6 @@ def project(request, project_id):
                         user=request.user,
                         parent=parent,
                         type=node_type,
-                        language=language,
                         name=name,
                         )
 
@@ -215,21 +217,14 @@ def project(request, project_id):
     else:
         form = CorpusForm(request=request)
         formResource = ResourceForm()
-    
-    camembert = [
-            {'source': 'Science', 'count': 33, 'part': 3},
-            {'source': 'Press', 'count': 23, 'part': 3},
-            {'source': 'Web', 'count': 50, 'part': 3},
-            
-            ]
-    
+       
     return render(request, 'project.html', {
             'form': form, 
             'formResource': formResource, 
             'user': user,
             'date': date,
             'project': project,
-            'camembert' : camembert,
+            'donut' : donut,
             'board' : board,
             'number': number,
         })

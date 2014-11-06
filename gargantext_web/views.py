@@ -149,27 +149,28 @@ def project(request, project_id):
     
     donut_part = defaultdict(int)
     docs_total = 0
+    list_corpora = defaultdict(list)
     
     for corpus in corpora:
         docs_count =  corpus.children.count()
         docs_total += docs_count
+        
+        corpus_view = dict()
+        corpus_view['id']       = corpus.pk
+        corpus_view['name']     = corpus.name
+        corpus_view['count']      = corpus.children.count()
 
         for node_resource in Node_Resource.objects.filter(node=corpus):
             donut_part[node_resource.resource.type] += docs_count
-    
+            list_corpora[node_resource.resource.type.name].append(corpus_view)
+    list_corpora = dict(list_corpora)
+
     donut = [ {'source': key, 
                 'count': donut_part[key] , 
-                'part': round(donut_part[key] * 100 / docs_total) } \
+                'part' : round(donut_part[key] * 100 / docs_total) } \
                         for key in donut_part.keys() ]
 
 
-    board = list()
-    for corpus in corpora:
-        dashboard = dict()
-        dashboard['id']     = corpus.pk
-        dashboard['name']   = corpus.name
-        dashboard['count']  = corpus.children.count()
-        board.append(dashboard)
 
 
     if request.method == 'POST':
@@ -245,7 +246,7 @@ def project(request, project_id):
             'date': date,
             'project': project,
             'donut' : donut,
-            'board' : board,
+            'list_corpora' : list_corpora,
             'number': number,
         })
 

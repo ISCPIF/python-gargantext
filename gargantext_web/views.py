@@ -401,5 +401,60 @@ def exploration(request):
     
     return HttpResponse(html)
 
+def explorer_chart(request):
+    t = get_template('chart.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
+
+import csv
+
+def send_csv(request):
+    '''
+    Create the HttpResponse object with the appropriate CSV header.
+    '''
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    writer = csv.writer(response)
+
+#    file = open('/srv/gargantext/static/js/d3/ndx.csv', 'r')
+#    for line in file.readlines():
+#        writer.writerow(line)
+    
+    writer.writerow(['date','open','high','low','close','volume','oi'])
+    writer.writerow(['12/19/2001','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2001','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2001','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2001','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2001','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2001','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2002','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2002','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2002','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2002','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2002','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2002','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2003','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2003','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2003','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2003','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2003','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2003','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2004','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2004','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2004','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2004','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2004','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2004','125.27','125.27','120.25','125.27','100','0'])
 
 
+
+
+    return response

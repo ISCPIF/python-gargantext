@@ -1,0 +1,57 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+
+<link rel="stylesheet" type="text/css" href="http://jun9.github.io/dc.js/css/dc.css"/>
+
+<script type="text/javascript" src="http://jun9.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="http://jun9.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="http://jun9.github.io/dc.js/js/dc.js"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+<div class="container">
+
+	<div class="row">
+	    <div id="monthly-move-chart">
+	        <strong>Title</strong> (Blue Line: Avg Index, Green Line: Index
+	        Fluctuation)
+	        <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
+	           style="display: none;">reset</a>
+
+	        <div class="clearfix"></div>
+	    </div>
+	</div>
+
+	<div class="row">
+	    <div id="monthly-volume-chart">
+	    </div>
+	    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
+	</div>
+
+
+
+</div>
+</div>
+
+
+</div>
+
+
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="http://jun9.github.io/dc.js/js/bootstrap.min.js"></script>
+<script src="{% static "js/d3/DC.js"%}"></script>
+
+
+{% endblock %}

@@ -12,9 +12,9 @@
 
 <link rel="stylesheet" type="text/css" href="http://jun9.github.io/dc.js/css/dc.css"/>
 
-<script type="text/javascript" src="http://jun9.github.io/dc.js/js/d3.js"></script>
-<script type="text/javascript" src="http://jun9.github.io/dc.js/js/crossfilter.js"></script>
-<script type="text/javascript" src="http://jun9.github.io/dc.js/js/dc.js"></script>
+<script type="text/javascript" src="{% static "js/charts/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
+<script type="text/javascript" src="{% static "js/charts/dc.js"%}"></script>
 
 
 {% endblock %}
@@ -67,8 +67,6 @@
 					</div>
 
 
-
-
 <div class="container">
 
 		<div class="jumbotron">
@@ -117,8 +115,8 @@
 </div>
 
 
-<script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="http://jun9.github.io/dc.js/js/bootstrap.min.js"></script>
+<script src="{% static "js/charts/jquery-latest.js"%}"></script>
+<script src="{% static "js/charts/bootstrap.min.js"%}></script>
 <script src="{% static "js/d3/DC.js"%}"></script>
 
 

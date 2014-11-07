@@ -219,7 +219,7 @@ def project(request, project_id):
             corpus.save()
             
             corpus.add_resource(
-                    user=request.user, 
+                    user=request.user,
                     type=resource_type,
                     file=file
                     )
@@ -442,9 +442,9 @@ def send_csv(request):
         day, month, year
     ORDER BY
         year, month, day ASC
-    """, [5013])
+    """, [45044])
 
-    writer.writerow(['date','data'])
+    writer.writerow(['date','volume'])
 
     while True:
         row = cursor.fetchone()

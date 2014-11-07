@@ -76,7 +76,8 @@ d3.csv("/data.csv", function (data) {
 
             //moveChart:(3)
             var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-                return Math.abs(+d.close - +d.open);
+                return d.volume;
+                //return Math.abs(+d.close - +d.open);
             });
 
             //volumeChart:(2)

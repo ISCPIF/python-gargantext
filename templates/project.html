@@ -78,6 +78,7 @@
 																<li> 
 																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
 																		, {{ corpus.count }} Documents 
+																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Yes, I am sure!</a>'>Delete</button>
 																</li>
 														{% endfor %}
 												</ul>
@@ -89,7 +90,6 @@
 								{% if list_corporax  %}
 										<div class="col-md-4">
                         <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
-												<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Yes, I am sure!</a>'>Delete</button>
 												</h3>
 												<h4>{{ corpus.count }} Documents </h4>
 												<h5>Activity:</h5>

@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from gargantext_web.views import home, projects, project, corpus
 from gargantext_web.views import delete_project, delete_corpus
-from gargantext_web.views import exploration, send_csv
+from gargantext_web.views import exploration, send_csv, send_graph
 from gargantext_web.views import explorer_graph, explorer_matrix, explorer_chart
 
 admin.autodiscover()
@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     url(r'^exploration$', exploration),
 
     url(r'^data.csv$', send_csv),
+    url(r'^graph.json$', send_graph),
 )
 
 from django.conf import settings

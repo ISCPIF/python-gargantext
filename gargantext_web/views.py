@@ -414,49 +414,67 @@ def explorer_chart(request):
     return HttpResponse(html)
 
 import csv
+from django.db import connection
+cursor = connection.cursor()
 
 def send_csv(request):
     '''
     Create the HttpResponse object with the appropriate CSV header.
     '''
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+    response['Content-Disposition'] = 'attachment; filename="data.csv"'
 
     writer = csv.writer(response)
 
 #    file = open('/srv/gargantext/static/js/d3/ndx.csv', 'r')
 #    for line in file.readlines():
 #        writer.writerow(line)
-
-    writer.writerow(['date','open','high','low','close','volume','oi'])
-    
+#    writer.writerow(['date','open','high','low','close','volume','oi'])
 #    writer.writerow(['12/19/2001','96.05','99.98','95.79','99.98','1260','0'])
-#    writer.writerow(['12/20/2001','104.3','104.39','99.98','104.39','197','0'])
-#    writer.writerow(['12/21/2001','109.07','109.13','103.73','109.13','28','0'])
-#    writer.writerow(['12/24/2001','113.57','114.55','109.13','114.55','32','0'])
-#    writer.writerow(['12/25/2001','120.09','120.25','114.55','120.25','15','0'])
-#    writer.writerow(['12/26/2001','125.27','125.27','120.25','125.27','100','0'])
-#    writer.writerow(['12/19/2002','96.05','99.98','95.79','99.98','1260','0'])
-#    writer.writerow(['12/20/2002','104.3','104.39','99.98','104.39','197','0'])
-#    writer.writerow(['12/21/2002','109.07','109.13','103.73','109.13','28','0'])
-#    writer.writerow(['12/24/2002','113.57','114.55','109.13','114.55','32','0'])
-#    writer.writerow(['12/25/2002','120.09','120.25','114.55','120.25','15','0'])
-#    writer.writerow(['12/26/2002','125.27','125.27','120.25','125.27','100','0'])
-#    writer.writerow(['12/19/2003','96.05','99.98','95.79','99.98','1260','0'])
-#    writer.writerow(['12/20/2003','104.3','104.39','99.98','104.39','197','0'])
-#    writer.writerow(['12/21/2003','109.07','109.13','103.73','109.13','28','0'])
-#    writer.writerow(['12/24/2003','113.57','114.55','109.13','114.55','32','0'])
-#    writer.writerow(['12/25/2003','120.09','120.25','114.55','120.25','15','0'])
-#    writer.writerow(['12/26/2003','125.27','125.27','120.25','125.27','100','0'])
-#    writer.writerow(['12/19/2004','96.05','99.98','95.79','99.98','1260','0'])
-#    writer.writerow(['12/20/2004','104.3','104.39','99.98','104.39','197','0'])
-#    writer.writerow(['12/21/2004','109.07','109.13','103.73','109.13','28','0'])
-#    writer.writerow(['12/24/2004','113.57','114.55','109.13','114.55','32','0'])
-#    writer.writerow(['12/25/2004','120.09','120.25','114.55','120.25','15','0'])
-#    writer.writerow(['12/26/2004','125.27','125.27','120.25','125.27','100','0'])
-#
 
 
+    cursor.execute("""
+    SELECT
+        metadata -> 'publication_year' as year,
+        metadata -> 'publication_month' as month, 
+        metadata -> 'publication_day' as day,
+        COUNT(*)
+    FROM
+        node_node AS n
+    WHERE
+        n.parent_id = %s
+    GROUP BY
+        day, month, year
+    ORDER BY
+        year, month, day ASC
+    LIMIT
+        20
+    """, [5102])
 
+    writer.writerow(['date','data'])
+
+    while True:
+        row = cursor.fetchone()
+        if row is None:
+            break
+        writer.writerow([ row[0] + '/' + row[1] + '/' + row[2] + ',' 
+            + str(row[3]) ])
 
     return response
+
+
+def send_graph(request):
+    '''
+    Create the HttpResponse object with the graph dataset.
+    '''
+    response = HttpResponse(content_type='text/json')
+    response['Content-Disposition'] = 'attachment; filename="graph.json"'
+
+    writer = csv.writer(response)
+
+    file = open('/srv/gargantext/tests/graphsam/randomgraphgen.json', 'r')
+    for line in file.readlines():
+        writer.writerow(line)
+
+    return response
+

@@ -1,0 +1,280 @@
+
+.loader{
+    text-align:center;
+    transform: translate(0, 50%) !important;
+    -ms-transform: translate(0, 50%) !important;  /*IE 9*/ 
+    -webkit-transform: translate(0, 50%) !important;  /*Safari and Chrome */
+}
+
+
+
+.navbar { 
+	margin-bottom:1px;
+}
+
+#defaultop{	
+    min-height: 5%;
+    max-height: 10%;
+}
+
+#sigma-example {
+    width: 100%;
+    height: 300px;
+    position:relative;
+    float:left;
+}
+
+
+/*.btn-sm[normal] {*/
+/*  background-image: -webkit-linear-gradient(#5f8ab9, #3e648d 50%, #385a7f);*/
+/*  background-image: linear-gradient(#5f8ab9, #3e648d 50%, #385a7f);*/
+/*  background-repeat: no-repeat;*/
+/*  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5f8ab9', endColorstr='#ff385a7f', GradientType=0);*/
+/*  filter: none;*/
+/*  border: 1px solid #2e4b69;*/
+/*}*/
+
+#left{
+  display: inline-block;
+}
+
+
+/*.modal-vertical-centered {*/
+
+#selectionsBox{
+    text-align:center;
+    background-color:white;
+    color:#250587;
+    margin: 7px;
+    padding: 3px;
+    border: 1px solid #666;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -border-radius: 3px;
+    -moz-box-shadow: 0px 2px 6px #000;
+    -webkit-box-shadow: 0px 2px 6px #000;
+    box-shadow: 0px 2px 6px #000;
+}
+
+
+/*.selection-item{
+    display:inline-block;
+    border:solid 1px;
+    -moz-border-radius: 6px; 
+    -webkit-border-radius: 6px; 
+    -khtml-border-radius: 6px;'+
+    border-color:#BDBDBD; 
+    padding:0px 2px 0px 2px;
+    margin:1px 0px 1px 0px;
+    cursor: pointer;
+}*/
+
+
+#opossitesBox{
+    margin: 7px;
+    padding: 10px;
+    border-style:solid;
+    background-color:white;
+    margin: 7px;
+    border: 1px solid #666;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -border-radius: 3px;
+    -moz-box-shadow: 0px 2px 6px #000;
+    -webkit-box-shadow: 0px 2px 6px #000;
+    box-shadow: 0px 2px 6px #000;
+}
+
+
+.tagcloud-item{
+    display:inline-block;
+    border:solid 1px;
+    /*box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.3); */
+    -moz-border-radius: 6px; 
+    -webkit-border-radius: 6px; 
+    -khtml-border-radius: 6px;'+
+    border-color:#BDBDBD; 
+    padding:0px 2px 0px 2px;
+    margin:1px 0px 1px 0px;
+    cursor: pointer;
+}
+
+
+#topPapers{
+    margin: 7px;
+    padding: 10px 0px 10px 10px;
+    border-style:solid;
+    background-color:white;
+    color:black;
+    margin: 7px;
+    border: 1px solid #666;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -border-radius: 3px;
+    -moz-box-shadow: 0px 2px 6px #000;
+    -webkit-box-shadow: 0px 2px 6px #000;
+    box-shadow: 0px 2px 6px #000;
+}
+
+
+.grey {
+    color: #cccccc; font-style: italic;
+}
+
+.gradient {
+    background-color: #f0f0f8; 
+    background-image: -webkit-radial-gradient(#ffffff, #d8d8e0); background-image: -moz-radial-gradient(#ffffff, #d8d8e0);
+    /*background-color: #434343;*/
+    /*background-image: linear-gradient(#434343, #282828);*/
+    background-image: linear-gradient(0deg, transparent 24%, rgba(0, 0, 0, .02) 25%, rgba(0, 0, 0, .02) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .02) 75%, rgba(0, 0, 0, .02) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 0, 0, .02) 25%, rgba(0, 0, 0, .02) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .02) 75%, rgba(0, 0, 0, .02) 76%, transparent 77%, transparent);
+    background-size: 50px 50px;
+}
+/* ZOOM IN OUT */
+
+#ctlzoom {
+    position: absolute; right: 300px; bottom: 5px; list-style: none; padding: 0; margin: 0;/*EDIT*/
+}
+
+#ctlzoom li {
+    padding: 0; margin: 10px 0; width: 36px; text-align: center;
+}
+
+#zoomSliderzone {
+    height: 120px;
+}
+
+#zoomMinusButton, #zoomPlusButton {
+    display: block; width: 24px; height: 24px; background:url("../img2/plusmoins.png");  margin: 0 auto;
+}
+
+#zoomMinusButton {
+    background-position: 0 -24px;
+}
+
+#zoomMinusButton:hover {
+    background-position: -24px -24px;
+}
+
+#zoomPlusButton {
+    background-position: 0 0;
+}
+
+#zoomPlusButton:hover {
+    background-position: -24px 0;
+}
+
+
+#lensButton {
+    display: block; width: 36px; height: 36px; background:url("../img2/loupe-edges2.png"); margin: 0 auto;
+}
+
+#lensButton {
+    background-position: -72px 0;
+}
+
+#lensButton:hover {
+    background-position: -36px 0;
+}
+
+#lensButton.off {
+    background-position: 0 0;
+}
+
+#lensButton.off:hover {
+    background-position: -108px 0;
+}
+
+#edgesButton {
+    display: block; width: 36px; height: 36px; background:url("../img2/loupe-edges.png"); margin: 0 auto;
+}
+
+#edgesButton {
+    background-position: -72px -36px;
+}
+
+#edgesButton:hover {
+    background-position: -36px -36px;
+}
+
+#edgesButton.off {
+    background-position: 0 -36px;
+}
+
+#edgesButton.off:hover {
+    background-position: -108px -36px;
+}
+
+#unfold {
+    width: 12px; height: 12px; background: rgb(250, 250, 252); padding: 2px 2px 2px 0; border-top-right-radius: 5px; border-bottom-right-radius: 5px; box-shadow: 1px 1px 2px #808090;
+}
+
+#aUnfold {
+    display: block; width: 12px; height: 12px; background-image: url("../img2/fleches-horiz.png");  margin: 0 auto;
+}
+/*
+#saveAs {
+    display: block; width: 30px; height: 30px; background:url("../img2/Save.png"); margin: 0 auto;
+}
+*/
+
+#zoomSlider {
+    background:#fff;
+    border:1px solid #aaa;
+    height: 120px; margin: 0 auto;
+}
+
+
+#showChat{
+    position: absolute; top: 16px; right: -14px; width: 20px; height: 100px; background: rgb(250, 250, 252); padding: 2px 2px 2px 0; border-top-left-radius: 5px; border-bottom-left-radius: 5px; box-shadow: 1px 1px 2px #808090;
+}
+
+#aShowChat {
+    float: right; width: 100%; height: 100%; background-image: url("../img2/chat.png");
+}
+
+
+
+/* GESTION DE LA BARRE DE GAUCHE */
+
+
+.leftarrow {
+    background-position: -12px 0;
+}
+
+.rightarrow {
+    background-position: 0 0;
+}
+
+.leftarrow:hover {
+    background-position: -12px -12px;
+}
+
+.rightarrow:hover {
+    background-position: 0 -12px;
+}
+
+
+#tips{
+    padding-left: 5%;
+    padding-right: 5%;
+    font-size:80%;
+}
+#tips ul{
+    /*list-style:none;*/
+    padding-left:10%;    
+}
+
+
+
+#information {
+    font-size:80%;
+}
+
+#information ul {
+    list-style:none;
+    padding-left:5%;
+}​
+
+.btn-sm:hover {
+	font-weight: bold;
+}

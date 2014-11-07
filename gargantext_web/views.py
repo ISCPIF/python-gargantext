@@ -415,7 +415,6 @@ def explorer_chart(request):
 
 import csv
 from django.db import connection
-cursor = connection.cursor()
 
 def send_csv(request):
     '''
@@ -425,18 +424,14 @@ def send_csv(request):
     response['Content-Disposition'] = 'attachment; filename="data.csv"'
 
     writer = csv.writer(response)
-
-#    file = open('/srv/gargantext/static/js/d3/ndx.csv', 'r')
-#    for line in file.readlines():
-#        writer.writerow(line)
-#    writer.writerow(['date','open','high','low','close','volume','oi'])
-#    writer.writerow(['12/19/2001','96.05','99.98','95.79','99.98','1260','0'])
-
+    #writer = csv.writer(response, delimiter=',', quotechar=' ', quoting=csv.QUOTE_NONE)
+    
+    cursor = connection.cursor()
 
     cursor.execute("""
     SELECT
         metadata -> 'publication_year' as year,
-        metadata -> 'publication_month' as month, 
+        metadata -> 'publication_month' as month,
         metadata -> 'publication_day' as day,
         COUNT(*)
     FROM
@@ -447,9 +442,7 @@ def send_csv(request):
         day, month, year
     ORDER BY
         year, month, day ASC
-    LIMIT
-        20
-    """, [5102])
+    """, [5013])
 
     writer.writerow(['date','data'])
 
@@ -457,11 +450,11 @@ def send_csv(request):
         row = cursor.fetchone()
         if row is None:
             break
-        writer.writerow([ row[0] + '/' + row[1] + '/' + row[2] + ',' 
-            + str(row[3]) ])
+        writer.writerow([ row[0] + '/' + row[1] + '/' + row[2]  , str(row[3]) ])
+
+    cursor.close()
 
     return response
-
 
 def send_graph(request):
     '''

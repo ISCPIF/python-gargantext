@@ -32,7 +32,20 @@
 								{{ corpus.name }}
 								, Created on {{ corpus.date }} ({{ number}} docs)</p>
 							{% endif %}
-	</div>
+
+						{% if number > 0 %}
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add</a>
+						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Cut</a> 
+						-------
+						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export</a>
+						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Delete</a></p>
+					{% endif %}
+
+						{% if number == 0 %}
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add documents</a></p>
+						{% endif %}
+	
+		</div>
 </div>
 
 				<div class="container">
@@ -60,17 +73,9 @@
 
 		<div class="jumbotron">
 				<center>
-						<a class="btn btn-primary btn-lg" role="button" href="#">Filter and show documents !</a></p>
+						<a class="btn btn-primary btn-lg" role="button" href="#">Filter and show documents</a></p>
 				</center>
 
-					{% if number > 0 %}
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Modify corpus</a>
-						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export corpus</a></p>
-					{% endif %}
-
-						{% if number == 0 %}
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add documents</a></p>
-						{% endif %}
 		</div>
 </div>
 
@@ -78,7 +83,7 @@
 		<div class="row">
 				<div class="col-md-4">
 						<div class="jumbotron">
-								<h3><a href="/exploration">Exploration</a></h3>
+								<h3><a href="/exploration">1) Exploration</a></h3>
 						<ol>
 								<li>Count frequency</li>
 								<li>Configurable Charts</li>
@@ -89,7 +94,7 @@
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-						<h3>Cartography</h3>
+						<h3>2) Cartography</h3>
 						<ol>
 								<li>Socio-Semantic</li>
 								<li>Graphs</li>
@@ -100,7 +105,7 @@
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-						<h3>Dynamics</h3>
+						<h3>3) Dynamics</h3>
 						<ol>
 								<li>Dynamic maps</li>
 								<li>Phylomemy</li>

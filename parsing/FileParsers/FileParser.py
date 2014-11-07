@@ -3,7 +3,6 @@ import dateutil.parser
 import zipfile
 
 from parsing.Caches import LanguagesCache
-        
     
 
 class FileParser:

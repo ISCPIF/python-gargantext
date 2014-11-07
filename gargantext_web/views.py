@@ -8,7 +8,7 @@ from django.template import Context
 #from documents.models import Project, Corpus, Document
 
 from node.models import Language, ResourceType, Resource
-from node.models import Node, NodeType, Project, Corpus
+from node.models import Node, NodeType, Node_Resource, Project, Corpus
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -23,7 +23,6 @@ from django import forms
 from collections import defaultdict
 
 from parsing.FileParsers import *
-
 
 
 # SOME FUNCTIONS
@@ -70,6 +69,11 @@ def date_range(start_dt, end_dt = None, format=None):
 # SOME VIEWS
 
 def home(request):
+    '''
+    Home describes the platform.
+    A video draws the narratives.
+    If not logged a project test is shown.
+    '''
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
@@ -82,6 +86,11 @@ def home(request):
     return HttpResponse(html)
 
 def projects(request):
+    '''
+    This view show all projects for each user.
+    Each project is described with metadata that are updateded on each following view.
+    To each project, we can link a resource that can be an image.
+    '''
     if not request.user.is_authenticated():
         return redirect('/admin/logout/?next=%s' % request.path)
     
@@ -113,6 +122,13 @@ def projects(request):
         })
 
 def project(request, project_id):
+    '''
+    This view represents all corpora in a panoramic way.
+    The title sums all corpora
+    The donut summerizes composition of the project.
+    The list of lists enalbles to navigate throw it.
+    '''
+
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -128,82 +144,109 @@ def project(request, project_id):
     corpora = project.children.all()
     number  = project.children.count()
 
-    board = list()
+
+    # DONUT corpora representation
+    
+    donut_part = defaultdict(int)
+    docs_total = 0
+    list_corpora = defaultdict(list)
+    
     for corpus in corpora:
-        dashboard = dict()
-        dashboard['id']     = corpus.pk
-        dashboard['name']   = corpus.name
-        dashboard['count']  = corpus.children.count()
-        board.append(dashboard)
+        docs_count =  corpus.children.count()
+        docs_total += docs_count
+        
+        corpus_view = dict()
+        corpus_view['id']       = corpus.pk
+        corpus_view['name']     = corpus.name
+        corpus_view['count']      = corpus.children.count()
+
+        for node_resource in Node_Resource.objects.filter(node=corpus):
+            donut_part[node_resource.resource.type] += docs_count
+            list_corpora[node_resource.resource.type.name].append(corpus_view)
+    list_corpora = dict(list_corpora)
+
+    donut = [ {'source': key, 
+                'count': donut_part[key] , 
+                'part' : round(donut_part[key] * 100 / docs_total) } \
+                        for key in donut_part.keys() ]
+
+
 
 
     if request.method == 'POST':
         #form = CorpusForm(request.POST, request.FILES)
+        #print(str(request.POST))
         name        = str(request.POST['name'])
-        try:
-            language    = Language.objects.get(id=str(request.POST['language']))
-        except:
-            language = None
 
         try:
-            bdd_type = ResourceType.objects.get(id=str(request.POST['bdd_type']))
-        except:
-            bdd_type = None
+            resource_type = ResourceType.objects.get(id=str(request.POST['type']))
+        except Exception as error:
+            print(error)
+            resource_type = None
         
         try:
             file = request.FILES['file']
-        except:
+        except Exception as error:
+            print(error)
             file = None
 
-        if language is not None and name != "" and bdd_type != None and file != None :
-            resource = Resource(user=request.user, guid=str(date), bdd_type=bdd_type, file=file)
-            resource.save()
-            node_type   = NodeType.objects.get(name='Corpus')
+        #if name != "" and resource_type is not None and file is not None:
+        try:
             parent      = Node.objects.get(id=project_id)
+            node_type   = NodeType.objects.get(name='Corpus')
+
+            if resource_type.name == "europresse_french":
+                language    = Language.objects.get(iso2='fr')
+            elif resource_type.name == "europresse_english":
+                language    = Language.objects.get(iso2='en')
             
-            node = Node(parent=parent, type=node_type, name=name, user=request.user, language=language)
-            node.save()
-            node.resource.add(resource)
+            try:
+                corpus = Node(
+                        user=request.user,
+                        parent=parent,
+                        type=node_type,
+                        language=language,
+                        name=name,
+                        )
+            except:
+                corpus = Node(
+                        user=request.user,
+                        parent=parent,
+                        type=node_type,
+                        name=name,
+                        )
+
+            corpus.save()
+            
+            corpus.add_resource(
+                    user=request.user, 
+                    type=resource_type,
+                    file=file
+                    )
 
             try:
-                for resource in node.resource.all():
-                    print(resource.bdd_type.name)
-                    if resource.bdd_type.name == "PubMed":
-                        fileparser = PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif resource.bdd_type.name == "Web Of Science (WOS), ISI format":
-                        fileparser = IsiParser(file='/var/www/gargantext/media/' + str(resource.file))
-                        fileparser.parse(node)
-                    elif node.bdd_type.name == "Europresse":
-                        pass
-
+                corpus.parse_resources()
             except Exception as error:
                 print(error)
 
             return HttpResponseRedirect('/project/' + str(project_id))
-        else:
+        except Exception as error:
+            print('ee', error)
             form = CorpusForm(request=request)
             formResource = ResourceForm()
 
     else:
         form = CorpusForm(request=request)
         formResource = ResourceForm()
-    
-    camembert = [
-            {'source': 'Science', 'count': 33, 'part': 3},
-            {'source': 'Press', 'count': 23, 'part': 3},
-            {'source': 'Web', 'count': 50, 'part': 3},
-            
-            ]
-    
+       
     return render(request, 'project.html', {
             'form': form, 
             'formResource': formResource, 
             'user': user,
             'date': date,
             'project': project,
-            'camembert' : camembert,
-            'board' : board,
+            'donut' : donut,
+            'list_corpora' : list_corpora,
             'number': number,
         })
 
@@ -313,38 +356,6 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
-def add_corpus(request):
-    form = CorpusForm(request=request)
-    if request.method == 'POST':
-        #form = CorpusForm(request.POST, request.FILES)
-        name        = str(request.POST['name'])
-        
-        try:
-            #language    = Language.objects.get(name=str(request.POST['language']))
-            language    = Language.objects.get(name='French')
-        except Exception as e:
-            print(e)
-            language = None
-        
-        if name != "" :
-            project_id  = 1047
-            node_type   = NodeType.objects.get(name='Corpus')
-            parent      = Node.objects.get(id=project_id)
-            Corpus(parent=parent, type=node_type, name=name, user=request.user, language=language).save()
-#            try:
-#                for resource in node.resource.all():
-#                    fileparser = PubmedFileParser.PubmedFileParser(file='/var/www/gargantext/media/' + str(resource.file))
-#                    fileparser.parse(node)
-#
-#            except Exception as error:
-#                print(error)
-
-            return HttpResponseRedirect('/project/' + str(project_id))
-
-    else:
-        form = CorpusForm(request=request)
-
-    return render(request, 'add_corpus.html', {'form': form})
 
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
@@ -390,5 +401,57 @@ def exploration(request):
     
     return HttpResponse(html)
 
+def explorer_chart(request):
+    t = get_template('chart.html')
+    user = request.user
+    date = datetime.datetime.now()
 
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
 
+import csv
+
+def send_csv(request):
+    '''
+    Create the HttpResponse object with the appropriate CSV header.
+    '''
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    writer = csv.writer(response)
+
+#    file = open('/srv/gargantext/static/js/d3/ndx.csv', 'r')
+#    for line in file.readlines():
+#        writer.writerow(line)
+    
+    writer.writerow(['date','open','high','low','close','volume','oi'])
+    writer.writerow(['12/19/2001','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2001','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2001','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2001','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2001','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2001','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2002','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2002','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2002','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2002','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2002','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2002','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2003','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2003','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2003','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2003','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2003','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2003','125.27','125.27','120.25','125.27','100','0'])
+    writer.writerow(['12/19/2004','96.05','99.98','95.79','99.98','1260','0'])
+    writer.writerow(['12/20/2004','104.3','104.39','99.98','104.39','197','0'])
+    writer.writerow(['12/21/2004','109.07','109.13','103.73','109.13','28','0'])
+    writer.writerow(['12/24/2004','113.57','114.55','109.13','114.55','32','0'])
+    writer.writerow(['12/25/2004','120.09','120.25','114.55','120.25','15','0'])
+    writer.writerow(['12/26/2004','125.27','125.27','120.25','125.27','100','0'])
+
+    return response

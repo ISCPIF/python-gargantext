@@ -12,13 +12,12 @@ from parsing.FileParsers import *
 from time import time
 from collections import defaultdict
 
-
+from gargantext_web.settings import MEDIA_ROOT
 
 # Some usefull functions
 # TODO: start the function name with an underscore (private)
-def upload_to(instance, filename):
-    return 'corpora/%s/%s' % (instance.user.username, filename)
-    #return 'corpora/%s/%f/%s' % (instance.user.username, time(), filename)
+def _upload_to(instance, filename):
+    return MEDIA_ROOT + '/corpora/%s/%s' % (instance.user.username, filename)
 
 # All classes here
 
@@ -42,9 +41,10 @@ class Ngram(models.Model):
     terms       = models.CharField(max_length=255)
 
 class Resource(models.Model):
+    user        = models.ForeignKey(User)
     guid        = models.CharField(max_length=255)
     type        = models.ForeignKey(ResourceType, blank=True, null=True)
-    file        = models.FileField(upload_to=upload_to, blank=True)
+    file        = models.FileField(upload_to=_upload_to, blank=True)
     digest      = models.CharField(max_length=32) # MD5 digest
 
 class NodeType(models.Model):
@@ -52,7 +52,6 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
-        
 class NodeQuerySet(models.query.QuerySet):
     """Methods available from Node querysets."""
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
@@ -85,12 +84,6 @@ class Node(CTENode):
     date        = models.DateField(default=timezone.now, blank=True)
     metadata    = hstore.DictionaryField(blank=True)
 
-    # TODO: remove the three following fields
-    #fichier      = models.FileField(upload_to=upload_to, blank=True)
-    #resource    = models.ForeignKey(Resource, blank=True, null=True)
-    #ngrams      = models.ManyToManyField(NGrams)
-    
-    
     def __str__(self):
         return self.name
     
@@ -122,6 +115,8 @@ class Node(CTENode):
                 'isi'       : IsiFileParser,
                 'ris'       : RisFileParser,
                 'europress' : EuropressFileParser,
+                'europress_french'  : EuropressFileParser,
+                'europress_english' : EuropressFileParser,
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
         # insert the new resources in the database!
@@ -174,7 +169,6 @@ class Node(CTENode):
             )
             for ngram_text, weight in associations.items()
         ])
-
 
 class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource')

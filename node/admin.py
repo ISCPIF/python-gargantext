@@ -56,7 +56,7 @@ class NodeAdmin(admin.ModelAdmin):
                                                 user    = request.user,\
                                                 name    = obj.name,\
                                                 metadata= obj.metadata,\
-                                                resource = obj.resource)
+                                                )
             
             #nodeParent.save()
             #node.save()
@@ -97,7 +97,7 @@ class CorpusForm(ModelForm):
 #                    user_id=self.request.user.id, 
 #                    type_id=parent_type.id
 #                    )
-            self.fields['language'].queryset = Language.objects.filter(implemented=1)
+            #self.fields['language'].queryset = Language.objects.filter(implemented=1)
         except Exception as error:
             print("Error with", error)
     

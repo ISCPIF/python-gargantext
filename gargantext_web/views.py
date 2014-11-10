@@ -268,90 +268,44 @@ def corpus(request, project_id, corpus_id):
     project = Node.objects.get(id=project_id)
     corpus  = Node.objects.get(id=corpus_id)
     
-    #print(Document.objects.filter(corpus=c_id, user=request.user.pk).query)
-    documents  = corpus.children.all()
-    number = corpus.children.count()
+    #documents  = corpus.children.all()
+    #number = corpus.children.count()
+
+#    try:
+#        sources = defaultdict(int)
+#        for document in documents.all():
+#            sources[document.metadata['journal']] += 1
+#        
+#        sources_donut = []
+#        
+#        for source in sources.keys():
+#            source_count = dict()
+#            source_count['count'] = source['count']
+#            try:
+#                source_count['part'] = round(source_count['count'] * 100 / number)
+#            except:
+#                source_count['part'] = None
+#            source_count['source'] = source['source']
+#            sources_donut.append(source_count)
+#    except:
+#        sources_donut = []
 
     try:
-        sources = defaultdict(int)
-        for document in documents.all():
-            sources[document.metadata['journal']] += 1
-        
-        sources_donut = []
-        
-        for source in sources.keys():
-            source_count = dict()
-            source_count['count'] = source['count']
-            try:
-                source_count['part'] = round(source_count['count'] * 100 / number)
-            except:
-                source_count['part'] = None
-            source_count['source'] = source['source']
-            sources_donut.append(source_count)
-    except:
-        sources_donut = []
-
-    try:
-        histo = [
-                {'to_char': 2000, 'count': 13},
-                {'to_char': 2001, 'count': 20},
-                {'to_char': 2002, 'count': 5},
-                {'to_char': 2003, 'count': 130},
-                {'to_char': 2004, 'count': 300},
-                ]
-
-        first = parse(documents.first().metadata['publication_date'])
-        last  = parse(documents.last().metadata['publication_date'])
-        duree = first - last
-        
-        if duree.days > 365:
-            date_format = 'YYYY'
-            date_form = 'years'
-
-            for document in documents:
-                pass
-
-
-        elif duree.days > 60:
-            date_format = 'YYYY-MM'
-            date_form = 'months'
-        else:
-            date_format = 'YYYY-MM-DD'
-            date_form = 'days'
-
-        try:
-            dates = dict()
-
-        except:
-            pass
-    
-        
-#        for e in date_range('1990-01', '1992-02', format=date_form):
-#            print(e)
-#        if date_format = 'YYYY':
-#            while True:
-#                if d -histo.append(d)
-#        for d in dates:
-#            histo.append(d)
-         
-    except:
-        histo = [
-                {'to_char': 2000, 'count': 13},
-                {'to_char': 2001, 'count': 20},
-                {'to_char': 2002, 'count': 5},
-                {'to_char': 2003, 'count': 130},
-                {'to_char': 2004, 'count': 300},
-                ]
-        #histo = None
+        chart = dict()
+        chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
+        chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
+        print(chart)
+    except Exception as error:
+        print(error)
        
     html = t.render(Context({\
             'user': user,\
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
-            'documents': documents,\
-            'number' : number,\
-            'dates' : histo,\
+    #        'documents': documents,\
+    #        'number' : number,\
+            'dates' : chart,\
             }))
     
     return HttpResponse(html)
@@ -416,7 +370,7 @@ def explorer_chart(request):
 import csv
 from django.db import connection
 
-def send_csv(request):
+def send_csv(request, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
     '''
@@ -424,8 +378,6 @@ def send_csv(request):
     response['Content-Disposition'] = 'attachment; filename="data.csv"'
 
     writer = csv.writer(response)
-    #writer = csv.writer(response, delimiter=',', quotechar=' ', quoting=csv.QUOTE_NONE)
-    
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -442,7 +394,7 @@ def send_csv(request):
         day, month, year
     ORDER BY
         year, month, day ASC
-    """, [45044])
+    """, [corpus_id])
 
     writer.writerow(['date','volume'])
 
@@ -451,6 +403,7 @@ def send_csv(request):
         if row is None:
             break
         writer.writerow([ row[0] + '/' + row[1] + '/' + row[2]  , str(row[3]) ])
+        #dates['last']['day'] = documents.last().metadata['publication_day'])
 
     cursor.close()
 

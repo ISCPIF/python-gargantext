@@ -33,7 +33,7 @@ urlpatterns = patterns('',
     
     url(r'^exploration$', exploration),
 
-    url(r'^data.csv$', send_csv),
+    url(r'^chart/corpus/(\d+)/data.csv$', send_csv),
     url(r'^graph.json$', send_graph),
 )
 

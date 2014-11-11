@@ -11,6 +11,7 @@ from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
 from parsing.FileParsers import *
 from time import time
 from collections import defaultdict
+from hashlib import md5
 
 from gargantext_web.settings import MEDIA_ROOT
 
@@ -90,10 +91,23 @@ class Node(CTENode):
     
     def add_resource(self, **kwargs):
         # only for tests
-        resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
+        # resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
         
-        # TODO: verifier si tous ces 'save' sont reellement utiles
+        # Compute the hash
+        m = md5()
+        m.update(open(str(resource.file)).read())
+        resource.digest = m.hexdigest()
         resource.save()
+        # check if a resource on this node already has this hash
+        try:
+            node_resource = Node_Resource.objects.get(
+                node__id = self.id,
+                resource__digest = resource.digest
+            )
+            resource = node_resource.resource
+        except:
+            pass
+        # link with the resource
         node_resource = Node_Resource(
             node     = self,
             resource = resource

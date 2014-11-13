@@ -405,7 +405,8 @@ def send_csv(request, corpus_id):
         row = cursor.fetchone()
         if row is None:
             break
-        writer.writerow([ row[0] + '/' + row[1] + '/' + row[2]  , str(row[3]) ])
+        if row[0] is not None and row[1] is not None and row[2] is not None and row[3] is not None:
+            writer.writerow([ str(row[0]) + '/' + str(row[1]) + '/' + str(row[2])  , str(row[3]) ])
         #dates['last']['day'] = documents.last().metadata['publication_day'])
 
     cursor.close()

@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
+from django.contrib.auth.views import login
 
 from gargantext_web.views import home, projects, project, corpus
 from gargantext_web.views import delete_project, delete_corpus

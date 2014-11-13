@@ -93,9 +93,10 @@ class Node(CTENode):
 
     def add_resource(self, **kwargs):
         # only for tests
-        # resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
+        resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
 
-        resource = Resource(**kwargs)
+        #resource = Resource(**kwargs)
+        resource.save()
         # User
         if 'user' not in kwargs and 'user_id' not in kwargs:
             resource.user = self.user

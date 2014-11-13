@@ -165,6 +165,9 @@ def project(request, project_id):
             list_corpora[node_resource.resource.type.name].append(corpus_view)
     list_corpora = dict(list_corpora)
 
+    if docs_total == 0 or docs_total is None:
+        docs_total = 1
+
     donut = [ {'source': key, 
                 'count': donut_part[key] , 
                 'part' : round(donut_part[key] * 100 / docs_total) } \

@@ -1,26 +1,103 @@
-from node.models import NodeType
-from django.contrib.auth.models import User
 
-user = User.objects.get(username="alexandre")
 #NodeType.objects.all().delete()
-type_root = NodeType(name="Root")
-type_root.save()
 
-type_project = NodeType(name="Project")
-type_project.save()
 
-NodeType(name="Corpus").save()
-NodeType(name="Document").save()
+from node.models import Node, NodeType, Project, Corpus, Document, Ngram, Node_Ngram, User, Language, ResourceType
 
-from node.models import Project
-Project(name="Projet sur les abeilles", user=user, type=type_project).save()
 
-from node.models import ResourceType
-for bdd in ['Europresse', 'PubMed', 'Web Of Science (WOS), ISI format']:
-    ResourceType(name=bdd).save()
-
-from node.models import Language
 import pycountry
-for iso in ['fr', 'en', ]:
-    lang = pycountry.languages.get(alpha2=iso)
-    Language(iso2=lang.alpha2, iso3=lang.terminology, fullname=lang.name, implemented=1).save()
+
+for language in pycountry.languages:
+    try:
+        implemented = 1 if language.alpha2 in ['en', 'fr'] else 0
+        Language(iso2=language.alpha2, iso3=language.terminology, fullname=language.name, implemented=implemented).save()
+    except:
+        pass
+
+
+
+english = Language.objects.get(iso2='en')
+french  = Language.objects.get(iso2='fr')
+
+
+
+try:
+    me = User.objects.get(username='alexandre')
+except:
+    me = User(username='alexandre')
+    me.save()
+
+
+
+try:
+    typeProject = NodeType.objects.get(name='Root')
+except Exception as error:
+    print(error)
+    typeProject = NodeType(name='Root')
+    typeProject.save()  
+
+
+try:
+    typeProject = NodeType.objects.get(name='Project')
+except Exception as error:
+    print(error)
+    typeProject = NodeType(name='Project')
+    typeProject.save()  
+
+try:
+    typeCorpus  = NodeType.objects.get(name='Corpus')
+except Exception as error:
+    print(error)
+    typeCorpus  = NodeType(name='Corpus')
+    typeCorpus.save()
+    
+try:
+    typeDoc     = NodeType.objects.get(name='Document')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='Document')
+    typeDoc.save()
+
+
+# In[33]:
+
+try:
+    typePubmed = ResourceType.objects.get(name='pubmed')
+    typeIsi    = ResourceType.objects.get(name='isi')
+    typeRis    = ResourceType.objects.get(name='ris')
+    typePresseFrench = ResourceType.objects.get(name='europress_french')
+    typePresseEnglish = ResourceType.objects.get(name='europress_english')
+
+except Exception as error:
+    print(error)
+    
+    typePubmed = ResourceType(name='pubmed')
+    typePubmed.save()  
+    
+    typeIsi    = ResourceType(name='isi')
+    typeIsi.save()
+    
+    typeRis    = ResourceType(name='ris')
+    typeRis.save()
+    
+    typePresseFrench = ResourceType(name='europress_french')
+    typePresseFrench.save()
+    
+    typePresseEnglish = ResourceType(name='europress_english')
+    typePresseEnglish.save()
+
+
+# In[34]:
+
+Node.objects.all().delete()
+
+
+# In[9]:
+
+try:
+    project = Node.objects.get(name='Bees project')
+except:
+    project = Node(name='Bees project', type=typeProject, user=me)
+    project.save()
+
+

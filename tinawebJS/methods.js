@@ -386,9 +386,9 @@ function htmlfied_nodesatts(elems){
 
             if(node.type==catSem){
                 information += '<li><b>' + node.label + '</b></li>';
-                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+twjs+'img/google.png"></img></a>';
-                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+twjs+'img/wikipedia.png"></img></a>';
-                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+twjs+'img/flickr.png"></img></a>';
+                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+'img/google.png"></img></a>';
+                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+'img/wikipedia.png"></img></a>';
+                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+'img/flickr.png"></img></a>';
                 information += '<li>'+google+"&nbsp;"+wiki+"&nbsp;"+flickr+'</li><br>';
                 semnodes.push(information)
             }
@@ -1583,9 +1583,9 @@ function changeToMeso(iwannagraph) {
             socsemFlag=true;
         }
         
-        // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-        // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
-        // EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
+        $("#category-B").show();
+        EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
+        NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
         $("#colorGraph").hide();
     }
      
@@ -1691,6 +1691,9 @@ function changeToMeso(iwannagraph) {
             }
         }
         
+        $("#category-B").show();
+        EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
+        NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
         // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
         // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
         $("#colorGraph").hide();
@@ -1737,6 +1740,11 @@ function changeToMacro(iwannagraph) {
         createEdgesForExistingNodes(iwannagraph);
 
         if(iwannagraph=="social") showMeSomeLabels(6);
+        else {
+            $("#category-B").show();
+            EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
+            NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
+        }
         swMacro=true;
 
         if (!is_empty(selections))

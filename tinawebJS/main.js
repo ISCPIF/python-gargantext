@@ -80,9 +80,8 @@ function sigmaLimits(){
     altototal=$('#leftcolumn').height();
     altofixtop=$('#fixedtop').height()
     altodeftop=$('#defaultop').height()
-    if((anchototal-sidebar)>0)
-        $('#sigma-example').width(anchototal-sidebar);
-    $('#sigma-example').height(altototal-altofixtop-altodeftop-40);
+    $('#sigma-example').width(anchototal-sidebar);
+    $('#sigma-example').height(altototal-altofixtop-altodeftop-4);
     
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();
@@ -112,7 +111,7 @@ function bringTheNoise(pathfile,type){
 
     //  ===  resize topbar and tweakbar  === //
     var body=document.getElementsByTagName('body')[0];
-    body.style.paddingTop=$("#dafixedtop").height()+"px";
+    body.style.paddingTop="41px";
 
 
     $("#changetype").click(function(){
@@ -700,7 +699,7 @@ function SigmaLayouting( URL, DATA, NAME) {
         dataType: 'jsonp',
         async: true,
         success : function(data) {
-        	pr(data)
+        	        pr(data)
                     if(!isUndef(getUrlParam.seed))seed=getUrlParam.seed;
                     extractFromJson(data,seed);
 
@@ -810,9 +809,10 @@ function SigmaLayouting( URL, DATA, NAME) {
                                 // $("#sliderBEdgeWeight").html("");
                                 // $("#sliderBNodeWeight").html("");
                                 $("#category-B").show();
-                                $("#colorGraph").hide();
                                 EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
                                 NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
+                                $("#colorGraph").hide();
+                            
                                 
                             }
     

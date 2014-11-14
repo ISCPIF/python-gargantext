@@ -182,7 +182,6 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 	// criteria = "size"
 
     if(partialGraph._core.graph.edges.length==0) {
-
         $(sliderDivID).freshslider({
             range: true,
             step:1,
@@ -192,11 +191,10 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
                 console.log(low, high);
             }
         });
-
         return;
     }
 
-    var filterparams = AlgorithmForSliders ( partialGraph._core.graph.edges , type_attrb , type , criteria) 
+    var filterparams = AlgorithmForSliders ( Edges , type_attrb , type , criteria) 
     var steps = filterparams["steps"]
     var finalarray = filterparams["finalarray"]
     
@@ -204,7 +202,7 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
     var lastvalue=("0-"+(steps-1));
 
     pushFilterValue( sliderDivID , lastvalue )
-
+    
     //finished
     $(sliderDivID).freshslider({
         range: true,
@@ -330,6 +328,7 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
             
         }
     });
+    
 }
 
 
@@ -343,7 +342,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 		pr("\t\t\t\t\t\t[[ algorithm not applied "+sliderDivID+" ]]")
 		return;
 	}
-
+    
 	// sliderDivID = "#sliderAEdgeWeight"
 	// type = "nodes1"
 	// type_attrb = "label"
@@ -369,7 +368,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
         return;
     }
 
-    var filterparams = AlgorithmForSliders ( partialGraph._core.graph.nodes , type_attrb , type , criteria) 
+    var filterparams = AlgorithmForSliders ( Nodes , type_attrb , type , criteria) 
     var steps = filterparams["steps"]
     var finalarray = filterparams["finalarray"]
     
@@ -430,6 +429,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
             
         }
     });
+
 }
 
 //   Execution modes:
@@ -440,9 +440,16 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 function AlgorithmForSliders( elements , type_attrb , type , criteria) {
 	// //  ( 1 )
     // // get visible sigma nodes|edges
-    elems=elements.filter(function(e) {
+    var elems = [];/*=elements.filter(function(e) {
                 return e[type_attrb]==type;
-    });
+    });*/
+
+    for(var e in elements) {
+        // pr(elements[e])
+        // pr("\t"+type_attrb)
+        if( elements[e][type_attrb]==type )
+            elems.push(elements[e]) 
+    }
 
     // //  ( 2 )
     // // extract [ "edgeID" : edgeWEIGHT ] | [ "nodeID" : nodeSIZE ] 

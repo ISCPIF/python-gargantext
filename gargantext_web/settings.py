@@ -14,6 +14,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROJECT_PATH = os.path.join(BASE_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+CELERY_IMPORTS=("node.models","celerytest.tasks")
 
 
 # Quick-start development settings - unsuitable for production
@@ -64,6 +68,7 @@ INSTALLED_APPS = (
     'node',
     'ngram',
     'django_hstore',
+    'djcelery',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -141,8 +146,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.request",
     "django.core.context_processors.static",
 )
-
-
 
 
 # grappelli custom

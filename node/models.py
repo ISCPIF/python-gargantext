@@ -15,7 +15,9 @@ import hashlib
 
 from gargantext_web.settings import MEDIA_ROOT
 
-from celery.contrib.methods import task
+from celery.contrib.methods import task_method
+from celery import current_app
+
 
 # Some usefull functions
 # TODO: start the function name with an underscore (private)
@@ -122,7 +124,7 @@ class Node(CTENode):
         node_resource.save()
         return resource
     
-    @task()
+    @current_app.task(filter=task_method)
     def parse_resources(self):
         # parse all resources into a list of metadata
         metadata_list = []

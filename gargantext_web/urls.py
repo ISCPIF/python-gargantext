@@ -8,6 +8,9 @@ from gargantext_web.views import delete_project, delete_corpus
 from gargantext_web.views import exploration, send_csv, send_graph
 from gargantext_web.views import explorer_graph, explorer_matrix, explorer_chart
 
+import gargantext_web.api
+
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -36,6 +39,8 @@ urlpatterns = patterns('',
 
     url(r'^chart/corpus/(\d+)/data.csv$', send_csv),
     url(r'^graph.json$', send_graph),
+
+    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.ngrams),
 )
 
 from django.conf import settings

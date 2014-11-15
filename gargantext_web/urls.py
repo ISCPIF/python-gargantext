@@ -42,6 +42,7 @@ urlpatterns = patterns('',
 
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.corpus_ngrams),
     url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.corpus_metadata),
+    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.corpus_data),
 )
 
 from django.conf import settings

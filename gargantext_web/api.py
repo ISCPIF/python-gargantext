@@ -36,6 +36,8 @@ class CorpusController:
         except:
             raise ValidationError('Corpora are identified by an integer.', 400)
         corpusQuery = Node.objects.filter(id = corpus_id)
+        # print(str(corpusQuery))
+        # raise Http404("C'est toujours ça de pris.")
         if not corpusQuery:
             raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()
@@ -44,23 +46,14 @@ class CorpusController:
         return corpus
 
     @classmethod
-    def get_children(cls, corpus_id):
+    def get_descendants(cls, corpus_id):
         corpus = cls.get(corpus_id)
-        children = Node.objects.descendants(corpus)
-        # children = Node.objects.filter(id=corpus_id).descendants()
-        
-
-        # children = cls.get(corpus_id).descendants()
-        # childrenQuery = (cls.get(corpus_id)
-        #     .children
-        #     # .children()
-        #     # .filter()
-        #     .all()
-        # )
-        return HttpResponse("str(children.query)")
-        return HttpResponse(str(children.query))
-        # return childrenQuery
-
+        children = corpus.descendants().filter(type__name = "Document")
+        test = []
+        for child in children:
+            test.append(child.name)
+        return JsonHttpResponse(test)
+        return HttpResponse(str(children.count() ))
 
     @classmethod
     def ngrams(cls, request, corpus_id):
@@ -113,7 +106,7 @@ class CorpusController:
     @classmethod
     def data(cls, request, corpus_id):
         # parameters retrieval and validation
-        return cls.get_children(corpus_id)
+        return cls.get_descendants(corpus_id)
         corpus = cls.get(corpus_id)
         # query building: initialization
         columns     = []

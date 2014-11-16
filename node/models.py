@@ -4,7 +4,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from django_hstore import hstore
-from cte_tree.models import CTENode, CTENodeManager 
+from cte_tree.models import CTENode, CTENodeManager
+# from cte_tree.query import CTEQuerySet
 #from cte_tree.fields import DepthField, PathField, OrderingField
 
 from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
@@ -58,7 +59,7 @@ class NodeType(models.Model):
     def __str__(self):
         return self.name
 
-class NodeQuerySet(models.query.QuerySet):
+class NodeQuerySet(CTENodeManager.CTEQuerySet):
     """Methods available from Node querysets."""
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         if ngramsextractorscache is None:
@@ -71,7 +72,8 @@ class NodeQuerySet(models.query.QuerySet):
 class NodeManager(CTENodeManager):
     """Methods available from Node.object."""
     def get_queryset(self):
-        return NodeQuerySet(self.model)
+        self._ensure_parameters()
+        return NodeQuerySet(self.model, using=self._db)
     def __getattr__(self, name, *args):
         if name.startswith("_"): 
             raise AttributeError

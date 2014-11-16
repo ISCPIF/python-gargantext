@@ -29,15 +29,43 @@ _ngrams_order_columns = {
 
 class CorpusController:
 
-    @staticmethod
-    def ngrams(request, corpus_id):
-        # parameters retrieval and control
+    @classmethod
+    def get(cls, corpus_id):
+        try:
+            corpus_id = int(corpus_id)
+        except:
+            raise ValidationError('Corpora are identified by an integer.', 400)
         corpusQuery = Node.objects.filter(id = corpus_id)
         if not corpusQuery:
-            raise Http404("No such corpus.")
+            raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()
         if corpus.type.name != 'Corpus':
-            raise Http404("No such corpus.")
+            raise Http404("No such corpus. %d" % (corpus_id, ))
+        return corpus
+
+    @classmethod
+    def get_children(cls, corpus_id):
+        corpus = cls.get(corpus_id)
+        children = Node.objects.descendants(corpus)
+        # children = Node.objects.filter(id=corpus_id).descendants()
+        
+
+        # children = cls.get(corpus_id).descendants()
+        # childrenQuery = (cls.get(corpus_id)
+        #     .children
+        #     # .children()
+        #     # .filter()
+        #     .all()
+        # )
+        return HttpResponse("str(children.query)")
+        return HttpResponse(str(children.query))
+        # return childrenQuery
+
+
+    @classmethod
+    def ngrams(cls, request, corpus_id):
+        # parameters retrieval and validation
+        corpus = cls.get(corpus_id)
         order = request.GET.get('order', 'frequency')
         if order not in _ngrams_order_columns:
             raise ValidationError('The order parameter should take one of the following values: ' +  ', '.join(_ngrams_order_columns), 400)
@@ -58,15 +86,10 @@ class CorpusController:
             "list" : [ngram.terms for ngram in ngramsQuery],
         })
 
-    @staticmethod
-    def metadata(request, corpus_id):
-        # parameters retrieval and control
-        corpusQuery = Node.objects.filter(id = corpus_id)
-        if not corpusQuery:
-            raise Http404("No such corpus.")
-        corpus = corpusQuery.first()
-        if corpus.type.name != 'Corpus':
-            raise Http404("No such corpus.")
+    @classmethod
+    def metadata(cls, request, corpus_id):
+        # parameters retrieval and validation
+        corpus = cls.get(corpus_id)
         # query building
         cursor = connection.cursor()
         cursor.execute(
@@ -87,15 +110,11 @@ class CorpusController:
             "list" : [row[0] for row in cursor.fetchall()],
         })
         
-    @staticmethod
-    def data(request, corpus_id):
-        # parameters retrieval and control
-        corpusQuery = Node.objects.filter(id = corpus_id)
-        if not corpusQuery:
-            raise Http404("No such corpus.")
-        corpus = corpusQuery.first()
-        if corpus.type.name != 'Corpus':
-            raise Http404("No such corpus.")
+    @classmethod
+    def data(cls, request, corpus_id):
+        # parameters retrieval and validation
+        return cls.get_children(corpus_id)
+        corpus = cls.get(corpus_id)
         # query building: initialization
         columns     = []
         conditions  = []

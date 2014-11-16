@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from django_hstore import hstore
-from cte_tree.models import CTENode, Manager
+from cte_tree.models import CTENode, CTENodeManager 
 #from cte_tree.fields import DepthField, PathField, OrderingField
 
 from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
@@ -68,7 +68,7 @@ class NodeQuerySet(models.query.QuerySet):
         for node in self:
             node.extract_ngrams(keys, ngramsextractorscache, ngramscaches)
     
-class NodeManager(models.Manager):
+class NodeManager(CTENodeManager):
     """Methods available from Node.object."""
     def get_queryset(self):
         return NodeQuerySet(self.model)

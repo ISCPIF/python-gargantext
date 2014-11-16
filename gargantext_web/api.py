@@ -2,7 +2,7 @@ from django.http import HttpResponseNotFound, HttpResponse, Http404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 
-from django.db.models import Avg, Max, Min, Count
+from django.db.models import Avg, Max, Min, Count, Sum
 from node.models import NodeType, Node, Node_Ngram, Ngram
 
 from django.db import connection
@@ -10,6 +10,9 @@ from django.db import connection
 # from node.models import Language, ResourceType, Resource
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
 # from node.admin import CorpusForm, ProjectForm, ResourceForm
+
+def DebugHttpResponse(data):
+    return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 
 import json
 def JsonHttpResponse(data, status=200):
@@ -45,16 +48,7 @@ class CorpusController:
             raise Http404("No such corpus. %d" % (corpus_id, ))
         return corpus
 
-    @classmethod
-    def get_descendants(cls, corpus_id):
-        corpus = cls.get(corpus_id)
-        children = corpus.descendants().filter(type__name = "Document")
-        test = []
-        for child in children:
-            test.append(child.name)
-        return JsonHttpResponse(test)
-        return HttpResponse(str(children.count() ))
-
+    
     @classmethod
     def ngrams(cls, request, corpus_id):
         # parameters retrieval and validation
@@ -106,7 +100,6 @@ class CorpusController:
     @classmethod
     def data(cls, request, corpus_id):
         # parameters retrieval and validation
-        return cls.get_descendants(corpus_id)
         corpus = cls.get(corpus_id)
         # query building: initialization
         columns     = []
@@ -123,9 +116,8 @@ class CorpusController:
             origin = parameter_array[0]
             key = parameter_array[1]
             if origin == "metadata":
-                key = key.replace('\'', '\\\'')
-                columns.append("node.metadata->'%s' AS c%d" % (key, c, ))
-                conditions.append("node.metadata ? '%s'" % (key, ))
+                columns.append("%s.metadata->'%s' AS c%d" % (Node._meta.db_table, key, c, ))
+                conditions.append("%s.metadata ? '%s'" % (Node._meta.db_table, key, ))
                 group.append("c%d" % (c, ))
                 order.append("c%d" % (c, ))
             else:
@@ -134,9 +126,10 @@ class CorpusController:
         mesured = request.GET.get('mesured', '')
         c = len(columns)
         if mesured == "documents.count":
-            columns.append("COUNT(node.id) AS c%d " % (c, ))
+            columns.append("COUNT(%s.id) AS c%d " % (Node._meta.db_table, c, ))
         elif mesured == "ngrams.count":
-            columns.append("COUNT(ngram.id) AS c%d " % (c, ))
+            columns.append("COUNT(%s.id) AS c%d " % (Ngram._meta.db_table, c, ))
+            # return HttpResponse(query)
             join_ngrams = True
         else:
             raise ValidationError('The "mesured" parameter should take one of the following values: "documents.count", "ngrams.count"')
@@ -147,27 +140,59 @@ class CorpusController:
                 key = filter_array[0]
                 values = filter_array[1].replace("'", "\\'").split(",")
                 if key == 'ngram.terms':
-                    conditions.append("ngram.terms IN ('%s')" % ("', '".join(values), ))
+                    conditions.append("%s.terms IN ('%s')" % (Ngram._meta.db_table, "', '".join(values), ))
                     join_ngrams = True
             else:
                 raise ValidationError('Unrecognized "filter[]=%s"' % (filter, ))
-        # query building: assembling
-        sql = "SELECT %s FROM %s AS node" % (', '.join(columns), Node._meta.db_table, )
+        # query building: initializing SQL
+        sql = str(corpus.descendants().query)
+        sql_array_select = sql.split('SELECT')
+        sql_array_from = sql_array_select[-1].split('FROM')
+        sql_array_where = sql_array_from[-1].split('WHERE')
+        sql_array_order = sql_array_where[-1].split('ORDER')
+        sql_0 = ''' WITH RECURSIVE cte (
+            "depth", "path", "ordering", "id") AS (
+                
+            SELECT 1 AS depth,
+            array[T."id"] AS path,
+            array[T."id"] AS ordering,
+            T."id"
+            FROM  node_node T
+            WHERE T."parent_id" IS NULL
+
+            UNION ALL
+
+            SELECT cte.depth + 1 AS depth,
+            cte.path || T."id",
+            cte.ordering || array[T."id"],
+            T."id"
+            FROM  node_node T
+            JOIN  cte ON T."parent_id" = cte."id")
+        '''
+        sql_1 = '\nSELECT '
+        sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
+        sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )
+        # query building: assembling SQL
+        sql_1 += ", ".join(columns)
+        sql_2 += "\nINNER JOIN %s ON %s.id = %s.type_id" % (NodeType._meta.db_table, NodeType._meta.db_table, Node._meta.db_table, )
         if join_ngrams:
-            sql += " INNER JOIN %s AS node_ngram ON node_ngram.node_id = node.id" % (Node_Ngram._meta.db_table, )
-            sql += " INNER JOIN %s AS ngram ON ngram.id = node_ngram.ngram_id" % (Ngram._meta.db_table, )
+            sql_2 += "\nINNER JOIN %s ON %s.node_id = cte.id" % (Node_Ngram._meta.db_table, Node_Ngram._meta.db_table, )
+            sql_2 += "\nINNER JOIN %s ON %s.id = %s.ngram_id" % (Ngram._meta.db_table, Ngram._meta.db_table, Node_Ngram._meta.db_table, )
+        sql_3 += "\nAND %s.name = 'Document'" % (NodeType._meta.db_table, )
         if conditions:
-            sql += " WHERE %s" % (" AND ".join(conditions), )
+            sql_3 += "\nAND (%s)" % (" AND ".join(conditions), )
         if group:
-            sql += " GROUP BY %s" % (", ".join(group), )
+            sql_3 += "\nGROUP BY %s" % (", ".join(group), )
         if order:
-            sql += " ORDER BY %s" % (", ".join(order), )
+            sql_3 += "\nORDER BY %s" % (", ".join(order), )
+        sql = sql_0 + sql_1 + sql_2 + sql_3
         # query execution
-        # return HttpResponse(sql)
+        # return DebugHttpResponse(sql)
         cursor = connection.cursor()
         cursor.execute(sql)
         # response building
         return JsonHttpResponse({
+            # "list": [{key:value for key, value in row.items() if isinstance(value, (str, int, float))} for row in query[:20].values()],
             "list": [row for row in cursor.fetchall()],
         })
 

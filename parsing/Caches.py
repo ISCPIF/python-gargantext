@@ -16,6 +16,7 @@ class NgramsCache(defaultdict):
     def __missing__(self, terms):
         """If the terms are not yet present in the dictionary,
         retrieve it from the database or insert it."""
+        terms = terms.strip().lower()
         try:
             ngram = node.models.Ngram.get(terms=terms, language=self.language)
         except:

@@ -40,9 +40,9 @@ urlpatterns = patterns('',
     url(r'^chart/corpus/(\d+)/data.csv$', send_csv),
     url(r'^graph.json$', send_graph),
 
-    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.corpus_ngrams),
-    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.corpus_metadata),
-    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.corpus_data),
+    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
+    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
 )
 
 from django.conf import settings

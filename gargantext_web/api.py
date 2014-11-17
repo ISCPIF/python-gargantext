@@ -11,6 +11,26 @@ from django.db import connection
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
 # from node.admin import CorpusForm, ProjectForm, ResourceForm
 
+_sql_cte = '''
+    WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
+        SELECT 1 AS depth,
+        array[T."id"] AS path,
+        array[T."id"] AS ordering,
+        T."id"
+        FROM  %s T
+        WHERE T."parent_id" IS NULL
+
+        UNION ALL
+
+        SELECT cte.depth + 1 AS depth,
+        cte.path || T."id",
+        cte.ordering || array[T."id"],
+        T."id"
+        FROM  %s T
+        JOIN  cte ON T."parent_id" = cte."id"
+    )
+''' % (Node._meta.db_table, Node._meta.db_table, )
+
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 
@@ -58,19 +78,28 @@ class CorpusController:
             raise ValidationError('The order parameter should take one of the following values: ' +  ', '.join(_ngrams_order_columns), 400)
         order_column = _ngrams_order_columns[order]
         # query building
-        ngramsQuery = Ngram.objects.filter(
-            nodes__parent     = corpus,
-            terms__startswith = request.GET.get('startswith', '')
-        ).annotate(count=Count('id'))
-        # how should we order this?
-        orderColumn = {
-            "frequency" : "-count",
-            "alphabetical" : "terms"
-        }.get(request.GET.get('order', 'frequency'), '-count')
-        ngramsQuery = ngramsQuery.order_by(orderColumn)
+        cursor = connection.cursor()
+        cursor.execute(_sql_cte + '''
+            SELECT ngram.terms
+            FROM cte
+            INNER JOIN %s AS node ON node.id = cte.id
+            INNER JOIN %s AS nodetype ON nodetype.id = node.type_id
+            INNER JOIN %s AS node_ngram ON node_ngram.node_id = node.id
+            INNER JOIN %s AS ngram ON ngram.id = node_ngram.ngram_id
+            WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
+            AND nodetype.name = 'Document'
+            AND ngram.terms LIKE '%s%%'
+            GROUP BY ngram.terms
+            ORDER BY SUM(node_ngram.weight) DESC
+        ''' % (Node._meta.db_table, NodeType._meta.db_table, Node_Ngram._meta.db_table, Ngram._meta.db_table, corpus.id, corpus.id, request.GET.get('startwith', '').replace("'", "\\'"), ))
+        # # how should we order this?
+        # orderColumn = {
+        #     "frequency" : "-count",
+        #     "alphabetical" : "terms"
+        # }.get(request.GET.get('order', 'frequency'), '-count')
         # response building
         return JsonHttpResponse({
-            "list" : [ngram.terms for ngram in ngramsQuery],
+            "list" : [row[0] for row in cursor.fetchall()],
         })
 
     @classmethod
@@ -79,19 +108,17 @@ class CorpusController:
         corpus = cls.get(corpus_id)
         # query building
         cursor = connection.cursor()
-        cursor.execute(
-        ''' SELECT
-                key,
-                COUNT(*) AS count
+        cursor.execute(_sql_cte + '''
+            SELECT key
             FROM (
                 SELECT skeys(metadata) AS key
-                FROM %s
+                FROM cte
+                INNER JOIN %s AS node ON node.id = cte.id
+                WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
             ) AS keys
-            GROUP BY 
-                key
-            ORDER BY
-                count DESC
-        ''' % (Node._meta.db_table, ))
+            GROUP BY key
+            ORDER BY COUNT(*) DESC
+        ''' % (Node._meta.db_table, corpus.id, corpus.id, ))
         # response building
         return JsonHttpResponse({
             "list" : [row[0] for row in cursor.fetchall()],
@@ -145,30 +172,7 @@ class CorpusController:
             else:
                 raise ValidationError('Unrecognized "filter[]=%s"' % (filter, ))
         # query building: initializing SQL
-        sql = str(corpus.descendants().query)
-        sql_array_select = sql.split('SELECT')
-        sql_array_from = sql_array_select[-1].split('FROM')
-        sql_array_where = sql_array_from[-1].split('WHERE')
-        sql_array_order = sql_array_where[-1].split('ORDER')
-        sql_0 = ''' WITH RECURSIVE cte (
-            "depth", "path", "ordering", "id") AS (
-                
-            SELECT 1 AS depth,
-            array[T."id"] AS path,
-            array[T."id"] AS ordering,
-            T."id"
-            FROM  node_node T
-            WHERE T."parent_id" IS NULL
-
-            UNION ALL
-
-            SELECT cte.depth + 1 AS depth,
-            cte.path || T."id",
-            cte.ordering || array[T."id"],
-            T."id"
-            FROM  node_node T
-            JOIN  cte ON T."parent_id" = cte."id")
-        '''
+        sql_0 = _sql_cte
         sql_1 = '\nSELECT '
         sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
         sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )

@@ -44,6 +44,22 @@ def JsonHttpResponse(data, status=200):
 Http400 = SuspiciousOperation
 Http403 = PermissionDenied
 
+import csv
+def CsvHttpResponse(data, headers=None, status=200):
+    response = HttpResponse(
+        content_type = "text/csv",
+        status       = status
+    )
+    writer = csv.writer(response)
+    if headers:
+        writer.writerow(headers)
+    for row in data:
+        writer.writerow(row)
+    return response
+
+Http400 = SuspiciousOperation
+Http403 = PermissionDenied
+
 _ngrams_order_columns = {
     "frequency" : "-count",
     "alphabetical" : "terms"
@@ -161,7 +177,6 @@ class CorpusController:
             columns.append("COUNT(%s.id) AS c%d " % (Node._meta.db_table, c, ))
         elif mesured == "ngrams.count":
             columns.append("COUNT(%s.id) AS c%d " % (Ngram._meta.db_table, c, ))
-            # return HttpResponse(query)
             join_ngrams = True
         else:
             raise ValidationError('The "mesured" parameter should take one of the following values: "documents.count", "ngrams.count"')
@@ -177,15 +192,19 @@ class CorpusController:
             else:
                 raise ValidationError('Unrecognized "filter[]=%s"' % (filter, ))
         # query building: initializing SQL
-        sql_0 = _sql_cte
+        sql_0 = ''
         sql_1 = '\nSELECT '
-        sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
-        sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )
+        sql_2 = '\nFROM %s' % (Node._meta.db_table, )
+        sql_3 = '\nWHERE (%s.parent_id = %d)' % (Node._meta.db_table, corpus.id, )
+        # sql_0 = _sql_cte
+        # sql_1 = '\nSELECT '
+        # sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
+        # sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )
         # query building: assembling SQL
         sql_1 += ", ".join(columns)
         sql_2 += "\nINNER JOIN %s ON %s.id = %s.type_id" % (NodeType._meta.db_table, NodeType._meta.db_table, Node._meta.db_table, )
         if join_ngrams:
-            sql_2 += "\nINNER JOIN %s ON %s.node_id = cte.id" % (Node_Ngram._meta.db_table, Node_Ngram._meta.db_table, )
+            sql_2 += "\nINNER JOIN %s ON %s.node_id = %s.id" % (Node_Ngram._meta.db_table, Node_Ngram._meta.db_table, Node._meta.db_table, )
             sql_2 += "\nINNER JOIN %s ON %s.id = %s.ngram_id" % (Ngram._meta.db_table, Ngram._meta.db_table, Node_Ngram._meta.db_table, )
         sql_3 += "\nAND %s.name = 'Document'" % (NodeType._meta.db_table, )
         if conditions:
@@ -200,7 +219,13 @@ class CorpusController:
         cursor = connection.cursor()
         cursor.execute(sql)
         # response building
-        return JsonHttpResponse({
-            "list": [row for row in cursor.fetchall()],
-        })
+        format = request.GET.get('format', 'json')
+        if format == 'json':
+            return JsonHttpResponse({
+                "list": [row for row in cursor.fetchall()],
+            })
+        elif format == 'csv':
+            return CsvHttpResponse(row for row in cursor.fetchall())
+        else:
+            raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
 

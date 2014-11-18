@@ -66,7 +66,7 @@ class CorpusController:
         corpus = corpusQuery.first()
         if corpus.type.name != 'Corpus':
             raise Http404("No such corpus: %d" % (corpus_id, ))
-        # if corpus.user != {currentUser}:
+        # if corpus.user != request.user:
         #     raise Http403("Unauthorized access.")
         return corpus
 

@@ -428,3 +428,14 @@ def send_graph(request):
 
     return response
 
+
+def graph_it(request):
+    '''The new multimodal graph.'''
+    t = get_template('graph-it.html')
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+    }))    
+    return HttpResponse(html)

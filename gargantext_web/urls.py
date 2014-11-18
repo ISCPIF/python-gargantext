@@ -41,7 +41,7 @@ urlpatterns = patterns('',
     url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
-    # url(r'^graph-it$', gargantext_web.api.CorpusController.data),
+    url(r'^graph-it$', views.graph_it),
 )
 
 from django.conf import settings

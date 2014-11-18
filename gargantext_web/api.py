@@ -65,7 +65,9 @@ class CorpusController:
             raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()
         if corpus.type.name != 'Corpus':
-            raise Http404("No such corpus. %d" % (corpus_id, ))
+            raise Http404("No such corpus: %d" % (corpus_id, ))
+        # if corpus.user != {currentUser}:
+        #     raise Http403("Unauthorized access.")
         return corpus
 
     
@@ -91,12 +93,15 @@ class CorpusController:
             AND ngram.terms LIKE '%s%%'
             GROUP BY ngram.terms
             ORDER BY SUM(node_ngram.weight) DESC
-        ''' % (Node._meta.db_table, NodeType._meta.db_table, Node_Ngram._meta.db_table, Ngram._meta.db_table, corpus.id, corpus.id, request.GET.get('startwith', '').replace("'", "\\'"), ))
-        # # how should we order this?
-        # orderColumn = {
-        #     "frequency" : "-count",
-        #     "alphabetical" : "terms"
-        # }.get(request.GET.get('order', 'frequency'), '-count')
+        ''' % (
+            Node._meta.db_table,
+            NodeType._meta.db_table,
+            Node_Ngram._meta.db_table,
+            Ngram._meta.db_table,
+            corpus.id,
+            corpus.id,
+            request.GET.get('startwith', '').replace("'", "\\'"),
+        ))
         # response building
         return JsonHttpResponse({
             "list" : [row[0] for row in cursor.fetchall()],
@@ -196,7 +201,6 @@ class CorpusController:
         cursor.execute(sql)
         # response building
         return JsonHttpResponse({
-            # "list": [{key:value for key, value in row.items() if isinstance(value, (str, int, float))} for row in query[:20].values()],
             "list": [row for row in cursor.fetchall()],
         })
 

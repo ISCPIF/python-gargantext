@@ -3,10 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth.views import login
 
-from gargantext_web.views import home, projects, project, corpus
-from gargantext_web.views import delete_project, delete_corpus
-from gargantext_web.views import exploration, send_csv, send_graph
-from gargantext_web.views import explorer_graph, explorer_matrix, explorer_chart
+from gargantext_web import views
 
 import gargantext_web.api
 
@@ -20,29 +17,31 @@ urlpatterns = patterns('',
     url(r'^login/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')),
     
-    url(r'^$', home),
+    url(r'^$', views.home),
     
-    url(r'^projects/$', projects),
-    url(r'^project/(\d+)/delete/$', delete_project),
+    url(r'^projects/$', views.projects),
+    url(r'^project/(\d+)/delete/$', views.delete_project),
     
-    url(r'^project/(\d+)/$', project),
+    url(r'^project/(\d+)/$', views.project),
     
-    url(r'^project/(\d+)/corpus/(\d+)/$', corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/delete/$', delete_corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/data.csv$', send_csv),
+    url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/data.csv$', views.send_csv),
     
-    url(r'^graph$', explorer_graph),
-    url(r'^chart$', explorer_chart),
-    url(r'^matrix$', explorer_matrix),
+    url(r'^graph$', views.explorer_graph),
+    url(r'^chart$', views.explorer_chart),
+    url(r'^matrix$', views.explorer_matrix),
     
-    url(r'^exploration$', exploration),
+    url(r'^exploration$', views.exploration),
 
-    url(r'^chart/corpus/(\d+)/data.csv$', send_csv),
-    url(r'^graph.json$', send_graph),
+    url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
+    url(r'^graph.json$', views.send_graph),
 
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
     url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
+
+    # url(r'^graph-it$', gargantext_web.api.CorpusController.data),
 )
 
 from django.conf import settings

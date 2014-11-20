@@ -16,7 +16,11 @@
         container.resize = function(_width, _height) {
             width = _width;
             height = _height;
+            dcChart.width(width).height(height);
             container.width(width).height(height);
+        // .dimension(fluctuation)
+        // .group(fluctuationGroup)
+        // .elasticY(true)
             return container;
         };
         container.plot = function(_method) {
@@ -24,9 +28,21 @@
             container.empty();
         };
 
-        container.css('background', '#FFF').text("graphIt");
+        container.css('background', '#FFF');
+        dcChart = dc.barChart(container.get(0));
+            .centerBar(true)
+            .dimension(function(d){return d[0]})
+            // .gap(1)
+            // .round(dc.round.floor)
+            // .alwaysUseRounding(true)
+            // .x(d3.scale.linear().domain([-25, 25]))
+            // .renderHorizontalGridLines(true)
+            // .filterPrinter(function (filters) {
+            //     var filter = filters[0], s = "";
+            //     s += numberFormat(filter[0]) + "% -> " + numberFormat(filter[1]) + "%";
+            //     return s;
+            // });
         container.resize(_width, _height);
-        var dcChart = dc.barChart(container.get(0));
         return container;
     };
 

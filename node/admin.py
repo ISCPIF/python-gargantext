@@ -2,11 +2,18 @@ from django.contrib import admin
 from django.forms import ModelForm, ModelChoiceField
 from nested_inlines.admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
-from node.models import NodeType, Language, Node, Project, Corpus, Document, ResourceType, Resource, Node_Ngram, Node_Resource
+from node.models import NodeType, Language, Node, \
+        Project, Corpus, Document, \
+        ResourceType, Resource, \
+        Ngram, Node_Ngram, Node_Resource
 
 class ResourceInLine(admin.TabularInline):
     model = Resource
     extra = 0
+
+class NgramAdmin(admin.ModelAdmin):
+    list_display = ('N', 'Terms')
+    search_fields = ('Terms',)
 
 class NodeAdmin(admin.ModelAdmin):
     exclude = ('user', 'path', 'depth', 'numchild', 'ngrams')
@@ -137,6 +144,8 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
 admin.site.register(Document, DocumentAdmin)
 
+
 admin.site.register(Node_Resource)
+admin.site.register(Ngram)
 admin.site.register(Node_Ngram)
 

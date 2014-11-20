@@ -210,8 +210,6 @@ class Node_Ngram(models.Model):
     def __str__(self):
         return "%s: %s" % (self.node.name, self.ngram.terms)
 
-
-
 class Project(Node):
     class Meta:
         proxy=True

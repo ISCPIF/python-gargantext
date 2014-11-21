@@ -9,7 +9,7 @@ var getAdditionalInfo=false;//for topPapers div
 
 
 var mainfile=false;
-getUrlParam.file = "data/testgraph.json";
+getUrlParam.file = $("#graphid").html();
 
 var dataFolderTree = {};
 var gexfDict={};

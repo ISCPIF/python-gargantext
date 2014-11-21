@@ -21,16 +21,6 @@
 {% block content %}
 
 
-
-    <link rel="stylesheet" href="{% static "js/libs/css2/freshslider.css" %} media="screen">
-    <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %} media="screen">
-    <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %} media="screen">
-
-
-
-
-
-
     <!-- this is the tweakbar -->
     <div id="defaultop" class="navbar navbar-default">
         <div class="navbar-collapse collapse navbar-responsive-collapse">
@@ -70,7 +60,7 @@
 
                         <li>
                           <a>
-                            <div id="graphid" style="visibility: hidden;">data/testgraph.json</div>
+                            <div id="graphid" style="visibility: hidden;">/graph.json</div>
                           </a>
                         </li>
 
@@ -173,7 +163,10 @@
 
     <div id="wrapper">
 
-
+    <!--just-->
+    <!--for-->
+    <!--the-->
+    <!--commit-->
       <div id="zonecentre">
           
 
@@ -183,7 +176,7 @@
           <div style="visibility: hidden;" id="sigma-othergraph"></div>
 
           <div id="semLoader" style="position:absolute; top:50%; left:40%; width:80px; visibility: hidden;">
-            <img src="libs/img2/loading-bar.gif"></img>
+							<img src="{% static "js/libs/img2/loading-bar.gif" %}"></img>
           </div>
 
           <ul id="ctlzoom">
@@ -363,7 +356,6 @@
 
 
 
-
     <script src="{% static "js/libs/jquery/jquery-1.10.2.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/jquery/jquery-ui.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
@@ -380,7 +372,6 @@
 
     <script src="{% static "js/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
 
-    
     <script src="{% static "js/tinawebJS/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
@@ -393,6 +384,15 @@
     <script src="{% static "js/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/DataScanner.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
+
+    <script type="text/javascript">
+        $('#tab-container').easytabs({updateHash:false});
+        // Popup window code
+        function newPopup(url) {
+          popupWindow = window.open(
+            url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
+        }
+    </script>
 
 
     <script type="text/javascript">

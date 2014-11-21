@@ -140,9 +140,11 @@ def project(request, project_id):
     user = request.user
     date = datetime.datetime.now()
     
+    type_corpus = NodeType.objects.get(name='Corpus')
+
     project = Node.objects.get(id=project_id)
-    corpora = project.children.all()
-    number  = project.children.count()
+    corpora = project.children.filter(type=type_corpus)
+    number  = len(corpora)
 
 
     # DONUT corpora representation
@@ -430,7 +432,7 @@ def json_node_link(request):
 
     matrix = defaultdict(lambda : defaultdict(float))
     
-    cooc = Node.objects.get(id=61311)
+    cooc = Node.objects.get(id=61314)
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
         matrix[cooccurrence.ngramx.terms][cooccurrence.ngramy.terms] = cooccurrence.score

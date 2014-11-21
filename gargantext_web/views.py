@@ -8,7 +8,7 @@ from django.template import Context
 #from documents.models import Project, Corpus, Document
 
 from node.models import Language, ResourceType, Resource
-from node.models import Node, NodeType, Node_Resource, Project, Corpus
+from node.models import Node, NodeType, Node_Resource, Project, Corpus, NodeNgramNgram
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -414,20 +414,45 @@ def send_csv(request, corpus_id):
 
     return response
 
-def send_graph(request):
+def json_node_link(request):
     '''
     Create the HttpResponse object with the graph dataset.
     '''
     response = HttpResponse(content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="graph.json"'
 
-    writer = csv.writer(response)
+#    writer = csv.writer(response)
+#
+#    file = open('/srv/gargantext/tests/graphsam/randomgraphgen.json', 'r')
+#    for line in file.readlines():
+#        writer.writerow(line)
 
-    file = open('/srv/gargantext/tests/graphsam/randomgraphgen.json', 'r')
-    for line in file.readlines():
-        writer.writerow(line)
 
-    return response
+    matrix = defaultdict(lambda : defaultdict(float))
+    
+    cooc = Node.objects.get(id=61311)
+
+    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
+        matrix[cooccurrence.ngramx.terms][cooccurrence.ngramy.terms] = cooccurrence.score
+        matrix[cooccurrence.ngramy.terms][cooccurrence.ngramx.terms] = cooccurrence.score
+    import pandas as pd
+    from copy import copy
+    import numpy as np
+    import networkx as nx
+
+    from gargantext_web.api import JsonHttpResponse
+    #from analysis.louvain import *
+    df = pd.DataFrame(matrix).T.fillna(0)
+    x = copy(df.values)
+    x = x / x.sum(axis=1)
+
+    matrix_filtered = np.where(x > .2, 1, 0)
+    G = nx.from_numpy_matrix(matrix_filtered)
+    G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
+    from networkx.readwrite import json_graph
+    data = json_graph.node_link_data(G)
+    return JsonHttpResponse(data)
+
 
 
 def graph_it(request):

@@ -21,7 +21,6 @@ if (mainfile) {
                 bringTheNoise( filename , "mono");
                 
             } else {
-                listGexfs();
         		parse(getUrlParam.file);
         		nb_cats = scanCategories();  
         		pr("nb_cats: "+nb_cats);
@@ -33,8 +32,7 @@ if (mainfile) {
         		    if(!isUndef(gexfDict[getUrlParam.file])){
         		        $("#currentGraph").html(gexfDict[getUrlParam.file]);
         		    } else $("#currentGraph").html(getUrlParam.file);
-        		    scanDataFolder();
-                    listGexfs();
+        		    // scanDataFolder();
         		});            
             }
 	    });
@@ -82,8 +80,9 @@ function sigmaLimits(){
     altototal=$('#leftcolumn').height();
     altofixtop=$('#fixedtop').height()
     altodeftop=$('#defaultop').height()
-    $('#sigma-example').width(anchototal-sidebar);
-    $('#sigma-example').height(altototal-altofixtop-altodeftop-4);
+    if((anchototal-sidebar)>0)
+        $('#sigma-example').width(anchototal-sidebar);
+    $('#sigma-example').height(altototal-altofixtop-altodeftop-40);
     
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();
@@ -93,6 +92,7 @@ function sigmaLimits(){
 function bringTheNoise(pathfile,type){
     
     $("#semLoader").hide();
+    $('#modalloader').modal('show');
 
 
     // $('.selectpicker').selectpicker();
@@ -112,15 +112,8 @@ function bringTheNoise(pathfile,type){
 
     //  ===  resize topbar and tweakbar  === //
     var body=document.getElementsByTagName('body')[0];
-    body.style.paddingTop="41px";
+    body.style.paddingTop=$("#dafixedtop").height()+"px";
 
-
-    $('.etabs').click(function(){
-        $.doTimeout(500,function (){
-            $("#opossiteNodes").readmore({maxHeight:200}); 
-            $("#sameNodes").readmore({maxHeight:200}); 
-        });
-    });
 
     $("#changetype").click(function(){
     	pr("")
@@ -129,9 +122,6 @@ function bringTheNoise(pathfile,type){
 
         changeType();
 
-        $.doTimeout(500,function (){
-            $('.etabs a[href="#tabs1"]').trigger('click');
-        });
 
 		printStates()
     	pr(" ############  / changeTYPE click");
@@ -145,7 +135,6 @@ function bringTheNoise(pathfile,type){
     	printStates()
 
         changeLevel();
-        // $("#tabs1").click()
 
         printStates()
     	pr(" ############  / changeLEVEL click");
@@ -215,16 +204,11 @@ function bringTheNoise(pathfile,type){
     // < === EXTRACTING DATA === >
     if(mainfile) {
         pr("mainfile: "+mainfile)
-
-        if(gexfDict[pathfile]) $("#network").html(gexfDict[pathfile]);
-        else $("#network").html(pathfile);
-
-    	// $('#modalloader').modal('show');
 	    parse(decodeURIComponent(pathfile));
 
 	    if(type=="mono") {
-
 	    	$("#changetype").hide();
+
 
             if( pathfile.indexOf(".json") > -1 ) {
                 JSONFile( pathfile )
@@ -233,12 +217,6 @@ function bringTheNoise(pathfile,type){
             }
 
             pushSWClick("social");
-
-            $("#taboppos").remove();
-            $.doTimeout(500,function (){
-                $('.etabs a[href="#tabs2"]').trigger('click');
-            });
-
             pr(partialGraph._core.graph.nodes.length)
             pr(partialGraph._core.graph.edges.length)
 	    } 
@@ -253,7 +231,6 @@ function bringTheNoise(pathfile,type){
             pr(partialGraph._core.graph.edges.length)
         }
 
-
         partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
         theListeners(); 
         $("#closeloader").click(); 
@@ -262,8 +239,6 @@ function bringTheNoise(pathfile,type){
       // 
         var theurl,thedata,thename;
 
-    	$('#modalloader').modal('show');
-    	
 	    if(type=="unique_id") {
 		    pr("bring the noise, case: unique_id");
             pr(getClientTime()+" : DataExt Ini");
@@ -725,7 +700,7 @@ function SigmaLayouting( URL, DATA, NAME) {
         dataType: 'jsonp',
         async: true,
         success : function(data) {
-        	        pr(data)
+        	pr(data)
                     if(!isUndef(getUrlParam.seed))seed=getUrlParam.seed;
                     extractFromJson(data,seed);
 
@@ -835,10 +810,9 @@ function SigmaLayouting( URL, DATA, NAME) {
                                 // $("#sliderBEdgeWeight").html("");
                                 // $("#sliderBNodeWeight").html("");
                                 $("#category-B").show();
+                                $("#colorGraph").hide();
                                 EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
                                 NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
-                                $("#colorGraph").hide();
-                            
                                 
                             }
     

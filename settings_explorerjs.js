@@ -9,8 +9,7 @@ var getAdditionalInfo=false;//for topPapers div
 
 
 var mainfile=false;
-getUrlParam.file = $("#graphid").html();
-//http://docs.delanoe.org/explorer_data.json
+getUrlParam.file = "data/testgraph.json";
 
 var dataFolderTree = {};
 var gexfDict={};

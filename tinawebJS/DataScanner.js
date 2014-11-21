@@ -2,7 +2,7 @@
 function scanDataFolder(){
         $.ajax({
             type: 'GET',
-            url: 'php/DirScan_main.php',
+            url: twjs+'php/DirScan_main.php',
             //data: "type="+type+"&query="+jsonparams,
             //contentType: "application/json",
             //dataType: 'json',
@@ -31,12 +31,12 @@ function jsActionOnGexfSelector(gexfLegend){
 }
 
 function listGexfs(){
-    divlen=$("#gexfs").length;
+    divlen=$("#gexf").length;
     if(divlen>0) {
         param = JSON.stringify(gexfDict);
         $.ajax({
             type: 'GET',
-            url: 'php/listFiles.php',
+            url: twjs+'php/listFiles.php',
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 
@@ -44,7 +44,7 @@ function listGexfs(){
                 javs='onchange="'+'jsActionOnGexfSelector(this.value);'+'"';
                 html+=javs;
                 html+=">";
-                html+='<option selected>[More Graphs]</option>';
+                html+='<option selected>[Select your Graph]</option>';
                 for(var i in data){
                     //pr("path: "+data[i]);
                     //pr("legend: "+getGexfLegend(data[i]));

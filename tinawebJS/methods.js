@@ -30,7 +30,7 @@ function cancelSelection (fromTagCloud) {
     if(fromTagCloud==false){
         $("#names").html(""); 
         $("#topPapers").html(""); $("#topPapers").hide();
-        $("#opossiteNodes").html(""); $("#tab-container").hide();
+        $("#opossiteNodes").html("");
         $("#information").html("");
         $("#searchinput").val("");
         $("#switchbutton").hide();
@@ -153,10 +153,7 @@ function RefreshState(newNOW){
                 NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
                 
             });
-        } else {
-            $("#semLoader").css('visibility', 'visible');
-            $("#semLoader").show();
-        }
+        } else $("#semLoader").show();
 
     }
     if(NOW=="AaBb"){
@@ -356,28 +353,6 @@ function htmlfied_alternodes(elems) {
     return oppositesNodes
 }
 
-function manualForceLabel(nodeid,active) {
-	// pr("manual|"+nodeid+"|"+active)
-	partialGraph._core.graph.nodesIndex[nodeid].active=active;
-	partialGraph.draw();
-}
-
-function htmlfied_samenodes(elems) {
-    var sameNodes=[]
-    js1=' onmouseover="manualForceLabel(this.id,true);" ';
-    js2=' onmouseout="manualForceLabel(this.id,true);" ';
-    if(elems.length>0) {
-        var A = getVisibleNodes()
-        for (var a in A){
-            n = A[a]
-            if(!n.active && n.color.charAt(0)=="#" ) {
-                sameNodes.push('<li onmouseover="manualForceLabel(\''+n.id+'\',true)"  onmouseout="manualForceLabel(\''+n.id+'\',false)" >'+ n.label+ '</li>')
-            }
-        }
-    }
-    return sameNodes
-}
-
 // nodes information div
 function htmlfied_nodesatts(elems){
 
@@ -411,9 +386,9 @@ function htmlfied_nodesatts(elems){
 
             if(node.type==catSem){
                 information += '<li><b>' + node.label + '</b></li>';
-                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+'img/google.png"></img></a>';
-                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+'img/wikipedia.png"></img></a>';
-                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+'img/flickr.png"></img></a>';
+                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+twjs+'img/google.png"></img></a>';
+                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+twjs+'img/wikipedia.png"></img></a>';
+                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+twjs+'img/flickr.png"></img></a>';
                 information += '<li>'+google+"&nbsp;"+wiki+"&nbsp;"+flickr+'</li><br>';
                 semnodes.push(information)
             }
@@ -443,33 +418,17 @@ function updateLeftPanel_fix() {
 	    alterNodesDIV+= '</div>';
 	}
 
-    sameNodesDIV = "";
-    sameNodesDIV+='<div id="sameNodes"><ul style="list-style: none;">';//tagcloud
-    sameNodesDIV += htmlfied_samenodes( getNodeIDs(selections) ).join("\n") ;
-    sameNodesDIV+= '</ul></div>';
-
         // getTopPapers("semantic");
 
     informationDIV += '<br><h4>Information:</h4><ul>';
     informationDIV += htmlfied_nodesatts( getNodeIDs(selections) ).join("<br>\n")
     informationDIV += '</ul><br>';
 
-    //using the readmore.js
-    // ive put a limit for nodes-name div
-    // and opposite-nodes div aka tagcloud div
-    // and im commenting now because github is not 
-    // pushing my commit
-    // because i need more lines, idk
-    $("#names").html(namesDIV).readmore({maxHeight:100}); 
-    $("#tab-container").show();
-    $("#opossiteNodes").html(alterNodesDIV).readmore({maxHeight:200}); 
-    $("#sameNodes").html(sameNodesDIV).readmore({maxHeight:200}); 
+    $("#names").html(namesDIV); 
+    $("#opossiteNodes").html(alterNodesDIV); 
     $("#information").html(informationDIV);
     $("#tips").html("");
-
-    if(categoriesIndex.length==1) getTopPapers("semantic");
-    else getTopPapers(swclickActual);
-    
+    // $("#topPapers").show();
 }
 
 function printStates() {
@@ -623,19 +582,17 @@ function markAsSelected(n_id,sel) {
                     for(var i in neigh){
 
                         vec = partialGraph._core.graph.nodesIndex[neigh[i]];
-                        if(vec) {
-                            vec.color = vec.attr['true_color'];
-                            vec.attr['grey'] = 0;
-                            an_edge=partialGraph._core.graph.edgesIndex[vec.id+";"+nodeSel.id];
-                            if(!isUndef(an_edge) && !an_edge.hidden){
-                                an_edge.color = an_edge.attr['true_color'];
-                                an_edge.attr['grey'] = 0;
-                            }
-                            an_edge=partialGraph._core.graph.edgesIndex[nodeSel.id+";"+vec.id];
-                            if(!isUndef(an_edge) && !an_edge.hidden){
-                                an_edge.color = an_edge.attr['true_color'];
-                                an_edge.attr['grey'] = 0;
-                            }
+                        vec.color = vec.attr['true_color'];
+                        vec.attr['grey'] = 0;
+                        an_edge=partialGraph._core.graph.edgesIndex[vec.id+";"+nodeSel.id];
+                        if(!isUndef(an_edge) && !an_edge.hidden){
+                            an_edge.color = an_edge.attr['true_color'];
+                            an_edge.attr['grey'] = 0;
+                        }
+                        an_edge=partialGraph._core.graph.edgesIndex[nodeSel.id+";"+vec.id];
+                        if(!isUndef(an_edge) && !an_edge.hidden){
+                            an_edge.color = an_edge.attr['true_color'];
+                            an_edge.attr['grey'] = 0;
                         }
                     }
                 }
@@ -1626,9 +1583,9 @@ function changeToMeso(iwannagraph) {
             socsemFlag=true;
         }
         
-        $("#category-B").show();
-        EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-        NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
+        // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
+        // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
+        // EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
         $("#colorGraph").hide();
     }
      
@@ -1734,9 +1691,6 @@ function changeToMeso(iwannagraph) {
             }
         }
         
-        $("#category-B").show();
-        EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-        NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
         // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
         // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
         $("#colorGraph").hide();
@@ -1762,7 +1716,6 @@ function changeToMacro(iwannagraph) {
         partialGraph.draw();
         partialGraph.refresh();
         
-        $("#semLoader").css('visibility', 'visible');
         $("#semLoader").show();
 
         return;
@@ -1784,11 +1737,6 @@ function changeToMacro(iwannagraph) {
         createEdgesForExistingNodes(iwannagraph);
 
         if(iwannagraph=="social") showMeSomeLabels(6);
-        else {
-            $("#category-B").show();
-            EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-            NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size");
-        }
         swMacro=true;
 
         if (!is_empty(selections))

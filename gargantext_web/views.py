@@ -437,13 +437,14 @@ def json_node_link(request):
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
         matrix[cooccurrence.ngramx.terms][cooccurrence.ngramy.terms] = cooccurrence.score
         matrix[cooccurrence.ngramy.terms][cooccurrence.ngramx.terms] = cooccurrence.score
+    
     import pandas as pd
     from copy import copy
     import numpy as np
     import networkx as nx
-
     from gargantext_web.api import JsonHttpResponse
     #from analysis.louvain import *
+    
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
@@ -451,6 +452,11 @@ def json_node_link(request):
     matrix_filtered = np.where(x > .2, 1, 0)
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
+    
+    outdeg = G.degree()
+    to_remove = [n for n in outdeg if outdeg[n] <= 1]
+    G.remove_nodes_from(to_remove)
+    
     from networkx.readwrite import json_graph
     data = json_graph.node_link_data(G)
     return JsonHttpResponse(data)

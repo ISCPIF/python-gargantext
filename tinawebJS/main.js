@@ -21,6 +21,7 @@ if (mainfile) {
                 bringTheNoise( filename , "mono");
                 
             } else {
+                listGexfs();
         		parse(getUrlParam.file);
         		nb_cats = scanCategories();  
         		pr("nb_cats: "+nb_cats);
@@ -32,7 +33,8 @@ if (mainfile) {
         		    if(!isUndef(gexfDict[getUrlParam.file])){
         		        $("#currentGraph").html(gexfDict[getUrlParam.file]);
         		    } else $("#currentGraph").html(getUrlParam.file);
-        		    // scanDataFolder();
+        		    scanDataFolder();
+                    listGexfs();
         		});            
             }
 	    });
@@ -91,7 +93,6 @@ function sigmaLimits(){
 function bringTheNoise(pathfile,type){
     
     $("#semLoader").hide();
-    $('#modalloader').modal('show');
 
 
     // $('.selectpicker').selectpicker();
@@ -114,6 +115,13 @@ function bringTheNoise(pathfile,type){
     body.style.paddingTop="41px";
 
 
+    $('.etabs').click(function(){
+        $.doTimeout(500,function (){
+            $("#opossiteNodes").readmore({maxHeight:200}); 
+            $("#sameNodes").readmore({maxHeight:200}); 
+        });
+    });
+
     $("#changetype").click(function(){
     	pr("")
     	pr(" ############  changeTYPE click");
@@ -121,6 +129,9 @@ function bringTheNoise(pathfile,type){
 
         changeType();
 
+        $.doTimeout(500,function (){
+            $('.etabs a[href="#tabs1"]').trigger('click');
+        });
 
 		printStates()
     	pr(" ############  / changeTYPE click");
@@ -134,6 +145,7 @@ function bringTheNoise(pathfile,type){
     	printStates()
 
         changeLevel();
+        // $("#tabs1").click()
 
         printStates()
     	pr(" ############  / changeLEVEL click");
@@ -203,11 +215,16 @@ function bringTheNoise(pathfile,type){
     // < === EXTRACTING DATA === >
     if(mainfile) {
         pr("mainfile: "+mainfile)
+
+        if(gexfDict[pathfile]) $("#network").html(gexfDict[pathfile]);
+        else $("#network").html(pathfile);
+
+    	// $('#modalloader').modal('show');
 	    parse(decodeURIComponent(pathfile));
 
 	    if(type=="mono") {
-	    	$("#changetype").hide();
 
+	    	$("#changetype").hide();
 
             if( pathfile.indexOf(".json") > -1 ) {
                 JSONFile( pathfile )
@@ -216,6 +233,12 @@ function bringTheNoise(pathfile,type){
             }
 
             pushSWClick("social");
+
+            $("#taboppos").remove();
+            $.doTimeout(500,function (){
+                $('.etabs a[href="#tabs2"]').trigger('click');
+            });
+
             pr(partialGraph._core.graph.nodes.length)
             pr(partialGraph._core.graph.edges.length)
 	    } 
@@ -230,6 +253,7 @@ function bringTheNoise(pathfile,type){
             pr(partialGraph._core.graph.edges.length)
         }
 
+
         partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
         theListeners(); 
         $("#closeloader").click(); 
@@ -238,6 +262,8 @@ function bringTheNoise(pathfile,type){
       // 
         var theurl,thedata,thename;
 
+    	$('#modalloader').modal('show');
+    	
 	    if(type=="unique_id") {
 		    pr("bring the noise, case: unique_id");
             pr(getClientTime()+" : DataExt Ini");

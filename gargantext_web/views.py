@@ -228,7 +228,8 @@ def project(request, project_id):
                     )
 
             try:
-                corpus.parse_resources.apply_async((), countdown=1)
+                #corpus.parse_resources.apply_async((), countdown=1)
+                corpus.parse_resources()
             except Exception as error:
                 print(error)
 

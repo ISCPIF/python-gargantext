@@ -669,8 +669,8 @@ function parseSimpleJSON( data , seed ) {
     for(var i in nodesNodes) {
 
         var color, label;
-        if(isUndef(nodesNodes[i].color)) color = "#800000";
-        if(isUndef(nodesNodes[i].label)) label = "node_"+i;
+        color = (isUndef(nodesNodes[i].color))?"#800000":nodesNodes[i].color;
+        label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         
         var node = ({
             id: i ,

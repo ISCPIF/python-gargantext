@@ -420,45 +420,62 @@ def json_node_link(request):
     '''
     Create the HttpResponse object with the graph dataset.
     '''
-    response = HttpResponse(content_type='text/json')
-    response['Content-Disposition'] = 'attachment; filename="graph.json"'
 
-#    writer = csv.writer(response)
-#
-#    file = open('/srv/gargantext/tests/graphsam/randomgraphgen.json', 'r')
-#    for line in file.readlines():
-#        writer.writerow(line)
-
-
-    matrix = defaultdict(lambda : defaultdict(float))
-    
-    cooc = Node.objects.get(id=61314)
-
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
-        matrix[cooccurrence.ngramx.terms][cooccurrence.ngramy.terms] = cooccurrence.score
-        matrix[cooccurrence.ngramy.terms][cooccurrence.ngramx.terms] = cooccurrence.score
-    
     import pandas as pd
     from copy import copy
     import numpy as np
     import networkx as nx
+    from networkx.readwrite import json_graph
     from gargantext_web.api import JsonHttpResponse
     #from analysis.louvain import *
-    
+
+    matrix = defaultdict(lambda : defaultdict(float))
+    labels = dict()
+    cooc = Node.objects.get(id=61314)
+
+    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
+        labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
+        labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
+        
+        matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
+        matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
+
+
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
 
-    matrix_filtered = np.where(x > .2, 1, 0)
-    G = nx.from_numpy_matrix(matrix_filtered)
-    G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
+
+    # Removing unconnected nodes
+    threshold = min(x.max(axis=1))
+    matrix_filtered = np.where(x > threshold, 1, 0)
+    #matrix_filtered = np.where(x > threshold, x, 0)
     
+    G = nx.from_numpy_matrix(matrix_filtered)
+    G = nx.relabel_nodes(G, dict(enumerate([ labels[x] for x in list(df.columns)])))
+    #G = nx.relabel_nodes(G, dict(enumerate(list(df.columns))))
+    
+    # Removing too connected nodes (find automatic way to do it)
     outdeg = G.degree()
-    to_remove = [n for n in outdeg if outdeg[n] <= 1]
+    to_remove = [n for n in outdeg if outdeg[n] >= 10]
     G.remove_nodes_from(to_remove)
     
-    from networkx.readwrite import json_graph
-    data = json_graph.node_link_data(G)
+#    for node in G.nodes():
+#        try:
+#            G.node[node]['label'] = 'label' #labels[node]
+#            G.node[node]['color'] = '19,180,300'
+#        except Exception as error:
+#            print(error)
+    
+#    data = json_graph.node_link_data(G)
+    data = json_graph.node_link_data(G, attrs={\
+            'source':'source',\
+            'target':'target',\
+            'weight':'weight',\
+            #'label':'label',\
+            #'color':'color',\
+            'id':'id',})
+    #print(data)
     return JsonHttpResponse(data)
 
 

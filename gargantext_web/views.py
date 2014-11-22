@@ -453,28 +453,29 @@ def json_node_link(request):
     
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate([ labels[x] for x in list(df.columns)])))
-    #G = nx.relabel_nodes(G, dict(enumerate(list(df.columns))))
+    #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
     
     # Removing too connected nodes (find automatic way to do it)
     outdeg = G.degree()
     to_remove = [n for n in outdeg if outdeg[n] >= 10]
     G.remove_nodes_from(to_remove)
     
-#    for node in G.nodes():
-#        try:
-#            G.node[node]['label'] = 'label' #labels[node]
+    for node in G.nodes():
+        try:
+            #node,type(labels[node])
+            G.node[node]['label'] = node
 #            G.node[node]['color'] = '19,180,300'
-#        except Exception as error:
-#            print(error)
+        except Exception as error:
+            print(error)
     
-#    data = json_graph.node_link_data(G)
-    data = json_graph.node_link_data(G, attrs={\
-            'source':'source',\
-            'target':'target',\
-            'weight':'weight',\
-            #'label':'label',\
-            #'color':'color',\
-            'id':'id',})
+    data = json_graph.node_link_data(G)
+#    data = json_graph.node_link_data(G, attrs={\
+#            'source':'source',\
+#            'target':'target',\
+#            'weight':'weight',\
+#            #'label':'label',\
+#            #'color':'color',\
+#            'id':'id',})
     #print(data)
     return JsonHttpResponse(data)
 

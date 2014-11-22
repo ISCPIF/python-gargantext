@@ -50,7 +50,7 @@ def CsvHttpResponse(data, headers=None, status=200):
         content_type = "text/csv",
         status       = status
     )
-    writer = csv.writer(response)
+    writer = csv.writer(response, delimiter=',')
     if headers:
         writer.writerow(headers)
     for row in data:
@@ -98,7 +98,7 @@ class CorpusController:
         # query building
         cursor = connection.cursor()
         cursor.execute(_sql_cte + '''
-            SELECT ngram.terms
+            SELECT ngram.terms, COUNT(*) AS occurrences
             FROM cte
             INNER JOIN %s AS node ON node.id = cte.id
             INNER JOIN %s AS nodetype ON nodetype.id = node.type_id
@@ -108,7 +108,7 @@ class CorpusController:
             AND nodetype.name = 'Document'
             AND ngram.terms LIKE '%s%%'
             GROUP BY ngram.terms
-            ORDER BY SUM(node_ngram.weight) DESC
+            ORDER BY occurrences DESC
         ''' % (
             Node._meta.db_table,
             NodeType._meta.db_table,
@@ -118,10 +118,26 @@ class CorpusController:
             corpus.id,
             request.GET.get('startwith', '').replace("'", "\\'"),
         ))
+        # # response building
+        # return JsonHttpResponse({
+        #     "list" : [row[0] for row in cursor.fetchall()],
+        # })
+
         # response building
-        return JsonHttpResponse({
-            "list" : [row[0] for row in cursor.fetchall()],
-        })
+        format = request.GET.get('format', 'json')
+        if format == 'json':
+            return JsonHttpResponse({
+                "list": [{
+                    'terms': row[0],
+                    'occurrences': row[1]
+                } for row in cursor.fetchall()],
+            })
+        elif format == 'csv':
+            return CsvHttpResponse(
+                [['terms', 'occurences']] + [row for row in cursor.fetchall()]
+            )
+        else:
+            raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
 
     @classmethod
     def metadata(cls, request, corpus_id):
@@ -154,9 +170,11 @@ class CorpusController:
         conditions  = []
         group       = []
         order       = []
+        having      = []
         join_ngrams = False
         # query building: parameters
-        for parameter in request.GET.getlist('parameters[]'):
+        parameters = request.GET.getlist('parameters[]')
+        for parameter in parameters:
             c = len(columns)
             parameter_array = parameter.split('.')
             if len(parameter_array) != 2:
@@ -166,6 +184,7 @@ class CorpusController:
             if origin == "metadata":
                 columns.append("%s.metadata->'%s' AS c%d" % (Node._meta.db_table, key, c, ))
                 conditions.append("%s.metadata ? '%s'" % (Node._meta.db_table, key, ))
+                # conditions.append("c%d IS NOT NULL" % (c, ))
                 group.append("c%d" % (c, ))
                 order.append("c%d" % (c, ))
             else:
@@ -220,12 +239,26 @@ class CorpusController:
         cursor.execute(sql)
         # response building
         format = request.GET.get('format', 'json')
+        keys = parameters + [mesured]
+        rows = cursor.fetchall()
         if format == 'json':
+            dimensions = []
+            for key in keys:
+                suffix = key.split('_')[-1]
+                dimensions.append({
+                    'key': key,
+                    'type': 'date' if suffix == 'date' else 'numeric'
+                })
             return JsonHttpResponse({
-                "list": [row for row in cursor.fetchall()],
+                "collection": [
+                    {key: value for key, value in zip(keys, row)}
+                    for row in rows
+                ],
+                "list": [row for row in rows],
+                "dimensions" : dimensions
             })
         elif format == 'csv':
-            return CsvHttpResponse(row for row in cursor.fetchall())
+            return CsvHttpResponse([keys] + [row for row in rows])
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
 

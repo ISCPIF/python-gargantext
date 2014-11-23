@@ -247,7 +247,7 @@ class CorpusController:
                 suffix = key.split('_')[-1]
                 dimensions.append({
                     'key': key,
-                    'type': 'date' if suffix == 'date' else 'numeric'
+                    'type': 'datetime' if suffix == 'date' else 'numeric'
                 })
             return JsonHttpResponse({
                 "collection": [

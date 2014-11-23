@@ -2,12 +2,47 @@
 
 
     $.fn.graphIt = function(_width, _height) {
+
+        // Settings: ways to group data
+        var groupings = this.groupings = {
+            datetime: {
+                century: {
+                    truncate: function(x) {return x.substr(0, 2)},
+                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return x;},                
+                },
+                decade: {
+                    truncate: function(x) {return x.substr(0, 3)},
+                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return x;},                
+                },
+                year: {
+                    truncate: function(x) {return x.substr(0, 4)},
+                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+1); return x;},                
+                },
+                month: {
+                    truncate: function(x) {return x.substr(0, 7)},
+                    next: function(x) {x = new Date(x); x.setMonth(x.getMonth()+1); return x;},                
+                },
+                day: {
+                    truncate: function(x) {return x.substr(0, 10)},
+                    next: function(x) {x = new Date(x); x.setDate(x.getDate()+1); return x;},                
+                },
+            },
+            numeric: {
+                unit: {
+                    truncate: function(x) {return Math.round(x)},
+                    next: function(x) {return x+1;},
+                },
+            },
+        };
         
+        // Main container
         var container = $('<div>').addClass('graphit-container').appendTo( this.first() );
-        var container2 = $('<div>').addClass('graphit-container-2').appendTo( this.first() );
+
+
         var data;
+
         var method;
-        var _chartObject;
+        var chartObject;
 
         var width, height;
 
@@ -61,31 +96,7 @@
             });
         }
         
-        // different types of grouping
-        var groupings = {
-            datetime: {
-                century: {
-                    truncate: function(x) {return x.substr(0, 2)},
-                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return x;},                
-                },
-                decade: {
-                    truncate: function(x) {return x.substr(0, 3)},
-                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return x;},                
-                },
-                year: {
-                    truncate: function(x) {return x.substr(0, 4)},
-                    next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+1); return x;},                
-                },
-                month: {
-                    truncate: function(x) {return x.substr(0, 7)},
-                    next: function(x) {x = new Date(x); x.setMonth(x.getMonth()+1); return x;},                
-                },
-                day: {
-                    truncate: function(x) {return x.substr(0, 10)},
-                    next: function(x) {x = new Date(x); x.setDate(x.getDate()+1); return x;},                
-                },
-            },
-        };
+        
 
         var grouping = groupings.datetime.year;
 
@@ -163,11 +174,23 @@
         // do the graph!
         var labels = [dimensions[0].key];
         for (var k=0; k<keywordsList.length; k++) {
-            labels.push(dimensions[1].key + ' (' + keywordsList[k] + ')');
+            labels.push(keywordsList[k]);
         }
         // var _chartObject = new Dygraph(container[0], linearData);
-        var _chartObject = new Dygraph(container[0], linearData, {
+        chartObject = new Dygraph(container[0], linearData, {
+            // legends
+            legend: 'always',
+            xlabel: dimensions[0].key,
+            ylabel: dimensions[1].key,
             labels: labels,
+            axisLabelColor: 'black',
+
+            // appearance
+            fillGraph: true,
+
+            // smoothing
+            showRoller: false,
+            rollPeriod: 5,
         });
 
         // console.log(associativeData);
@@ -180,6 +203,39 @@
 
 })(jQuery);
 
+var projectId = 13409;
+$('.tree').jstree({
+    'core' : {
+        'data' : {
+            'url' : function(node) {
+                var url = '/api/nodes?' + ((node.id === '#')
+                    ? 'type=Project'
+                    : ('parent=' + node.id)
+                );
+                console.log(url);
+                return url;
+            },
+        },
+    },
+    "plugins" : ["types"],
+    "types" : {
+        "#" : {
+          "max_children" : 1, 
+          "max_depth" : 4, 
+          "valid_children" : ["root"]
+        },
+        "Project" : {
+          "icon" : "http://www.jstree.com/static/3.0.8/assets/images/tree_icon.png",
+          "valid_children" : ["default"]
+        },
+        "Corpus" : {
+          "valid_children" : ["default","file"]
+        },
+        "Document" : {
+          "icon" : "glyphicon glyphicon-file",
+          "valid_children" : []
+        }
+  },
+});
 
-
-var graph = $('.graph-it').graphIt(640, 480);
+// var graph = $('.graph-it').graphIt(640, 480);

@@ -66,6 +66,29 @@ _ngrams_order_columns = {
 }
 
 
+class NodesController:
+
+    @classmethod
+    def get(cls, request):
+        query = Node.objects
+        if 'type' in request.GET:
+            query = query.filter(type__name=request.GET['type'])
+        if 'parent' in request.GET:
+            query = query.filter(parent_id=int(request.GET['parent']))
+
+        collection = []
+        for child in query.all():
+            type_name = child.type.name
+            collection.append({
+                'id': child.id,
+                'text': child.name,
+                'type': type_name,
+                'children': type_name is not 'Document',
+            })
+        return JsonHttpResponse(collection)
+
+
+
 class CorpusController:
 
     @classmethod

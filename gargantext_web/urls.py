@@ -37,6 +37,7 @@ urlpatterns = patterns('',
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^graph.json$', views.send_graph),
 
+    url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
     url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),

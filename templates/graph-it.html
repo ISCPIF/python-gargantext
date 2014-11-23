@@ -1,11 +1,7 @@
-{% extends "menu.html" %}
-
-
 {% block css %}
-    {% load staticfiles %}
+    <!-- {% load staticfiles %} -->
     <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
     <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="http://jun9.github.io/dc.js/css/dc.css" />
 {% endblock %}
 
 
@@ -17,16 +13,28 @@
                 <p>A web platform to explore text-mining</p>
             </div>
     </div>
+    <div class="container visualization"></div>
     <div class="container tree"></div>
     <div class="container graph-it"></div>
 
-    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+    <!-- <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script> -->
+    
+<!-- 
+    <script type="text/javascript" src="{% static "js/jquery/jquery-1.9.1.min.js" %}"></script>
+    <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/xdan/datetimepicker/master/jquery.datetimepicker.css"/ >
+    <script type="text/javascript" src="{% static "js/jquery/jquery.datetimepicker.js" %}"></script>
+ -->
 
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+
+
+<!-- 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.0.4/themes/default/style.min.css" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.0.4/jstree.min.js"></script>
-    
-    <script type="text/javascript" src="http://dygraphs.com/dygraph-combined.js"></script>
-    
+ -->
+    <script type="text/javascript" src="{% static "js/charts/dygraph-combined.js" %}"></script>
     <script type="text/javascript" src="{% static "js/graph-it.js" %}"></script>
         
 

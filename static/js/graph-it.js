@@ -203,39 +203,143 @@
 
 })(jQuery);
 
-var projectId = 13409;
-$('.tree').jstree({
-    'core' : {
-        'data' : {
-            'url' : function(node) {
-                var url = '/api/nodes?' + ((node.id === '#')
-                    ? 'type=Project'
-                    : ('parent=' + node.id)
-                );
-                console.log(url);
-                return url;
-            },
-        },
-    },
-    "plugins" : ["types"],
-    "types" : {
-        "#" : {
-          "max_children" : 1, 
-          "max_depth" : 4, 
-          "valid_children" : ["root"]
-        },
-        "Project" : {
-          "icon" : "http://www.jstree.com/static/3.0.8/assets/images/tree_icon.png",
-          "valid_children" : ["default"]
-        },
-        "Corpus" : {
-          "valid_children" : ["default","file"]
-        },
-        "Document" : {
-          "icon" : "glyphicon glyphicon-file",
-          "valid_children" : []
-        }
-  },
+
+
+
+var selectProject = $('<select>').appendTo('.visualization');
+var selectCorpus = $('<select>').appendTo('.visualization');
+var divFilter = $('<div>').appendTo('.visualization');
+
+// Load projects
+$.get('/api/nodes', {type:'Project'}, function(collection) {
+    selectProject.empty();
+    for (var i=0; i<collection.length; i++) {
+        var node = collection[i];
+        $('<option>').val(node.id).text(node.text).appendTo(selectProject);
+    }
+    selectProject.change();
 });
+
+// Load corpora
+selectProject.change(function() {
+    var projectId = selectProject.val();
+    selectCorpus.empty();
+    $.get('/api/nodes', {type:'Corpus', parent:projectId}, function(collection) {
+        $.each(collection, function(i, node) {
+            $('<option>').val(node.id).text(node.text).appendTo(selectCorpus);
+        });
+        selectCorpus.change();
+    });
+});
+
+// Load metadata
+selectCorpus.change(function() {
+    var corpusId = selectCorpus.val();
+    // alert(corpusId);
+    divFilter.empty();
+    //
+    $.get('/api/corpus/' + corpusId + '/metadata', function(collection) {
+        var selectType = $('<select>').appendTo(divFilter);
+        //
+        $('<option>').text('ngrams').appendTo(selectType);
+        var spanNgrams = $('<span>').appendTo(divFilter).hide();
+        var inputNgrams = $('<input>').appendTo(spanNgrams);
+        //
+        $('<option>').text('metadata').appendTo(selectType);
+        var spanMetadata = $('<span>').appendTo(divFilter).hide();
+        var selectMetadata = $('<select>').appendTo(spanMetadata);
+        var spanMetadataValue = $('<span>').appendTo(spanMetadata);
+        $.each(collection, function(i, metadata) {
+            $('<option>')
+                .data(metadata)
+                .text(metadata.text)
+                .appendTo(selectMetadata);
+        });
+        //
+        selectMetadata.change(function() {
+            var metadata = selectMetadata.find(':selected').data();
+            spanMetadataValue.empty();
+            if (metadata.type == 'datetime') {
+                $('<span>').text(' between: ').appendTo(spanMetadataValue);
+                $('<input>').appendTo(spanMetadataValue)
+                    .blur(function() {
+                        var input = $(this);
+                        var date = input.val();
+                        date += '2000-01-01'.substr(date.length);
+                        input.val(date);
+                    }).datepicker({dateFormat: 'yy-mm-dd'});
+                $('<span>').text(' and: ').appendTo(spanMetadataValue);
+                $('<input>').appendTo(spanMetadataValue)
+                    .blur(function() {
+                        var input = $(this);
+                        var date = input.val();
+                        date += '2000-01-01'.substr(date.length);
+                        input.val(date);
+                    }).datepicker({dateFormat: 'yy-mm-dd'});
+            } else if (metadata.values) {
+                $('<span>').text(' is: ').appendTo(spanMetadataValue);
+                var selectMetadataValue = $('<select>').appendTo(spanMetadataValue);
+                $.each(metadata.values, function(i, value) {
+                    $('<option>').text(value).appendTo(selectMetadataValue);
+                });
+                selectMetadataValue.change().focus();
+            } else {
+                $('<span>').text(' contains: ').appendTo(spanMetadataValue);
+                $('<input>').appendTo(spanMetadataValue).focus();
+            }
+        });
+        //
+        selectType.change(function() {
+            divFilter.children().filter('span').hide();
+            switch (selectType.val()) {
+                case 'ngrams':
+                    spanNgrams.show();
+                    break;
+                case 'metadata':
+                    spanMetadata.show();
+                    break;
+            }
+        }).change();
+    });
+});
+
+
+
+
+
+
+// $('.tree').jstree({
+//     'core' : {
+//         'data' : {
+//             'url' : function(node) {
+//                 var url = '/api/nodes?' + ((node.id === '#')
+//                     ? 'type=Project'
+//                     : ('parent=' + node.id)
+//                 );
+//                 console.log(url);
+//                 return url;
+//             },
+//         },
+//     },
+//     "plugins" : ["types"],
+//     "types" : {
+//         "#" : {
+//           "max_children" : 1, 
+//           "max_depth" : 4, 
+//           "valid_children" : ["root"]
+//         },
+//         "Project" : {
+//           "icon" : "http://www.jstree.com/static/3.0.8/assets/images/tree_icon.png",
+//           "valid_children" : ["default"]
+//         },
+//         "Corpus" : {
+//           "valid_children" : ["default","file"]
+//         },
+//         "Document" : {
+//           "icon" : "glyphicon glyphicon-file",
+//           "valid_children" : []
+//         }
+//   },
+// });
 
 // var graph = $('.graph-it').graphIt(640, 480);

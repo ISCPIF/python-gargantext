@@ -168,21 +168,64 @@ class CorpusController:
         corpus = cls.get(corpus_id)
         # query building
         cursor = connection.cursor()
-        cursor.execute(_sql_cte + '''
-            SELECT key
+        # cursor.execute(_sql_cte + '''
+        #     SELECT key
+        #     FROM (
+        #         SELECT skeys(metadata) AS key, COUNT(*)
+        #         FROM cte
+        #         INNER JOIN %s AS node ON node.id = cte.id
+        #         WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
+        #     ) AS keys
+        #     GROUP BY key
+        #     ORDER BY COUNT(*) DESC
+        # ''' % (Node._meta.db_table, corpus.id, corpus.id, ))
+        cursor.execute('''
+            SELECT key, COUNT(*) AS count, (
+                SELECT COUNT(DISTINCT metadata->key) FROM %s
+            ) AS values
             FROM (
                 SELECT skeys(metadata) AS key
-                FROM cte
-                INNER JOIN %s AS node ON node.id = cte.id
-                WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
+                FROM %s
+                WHERE parent_id = \'%d\'
             ) AS keys
             GROUP BY key
-            ORDER BY COUNT(*) DESC
-        ''' % (Node._meta.db_table, corpus.id, corpus.id, ))
+            ORDER BY count DESC
+        ''' % (Node._meta.db_table, Node._meta.db_table, corpus.id, ))
         # response building
-        return JsonHttpResponse({
-            "list" : [row[0] for row in cursor.fetchall()],
-        })
+        collection = []
+        for row in cursor.fetchall():
+            type = 'string'
+            key = row[0]
+            split_key = key.split('_')
+            name = split_key[0]
+            if len(split_key) == 2:
+                if split_key[1] == 'date':
+                    name = split_key[0]
+                    type = 'datetime'
+                elif row[0] == 'language_fullname':
+                    name = 'language'
+                    type = 'string'
+                else:
+                    continue
+            values = None
+            if row[2] < 32:
+                cursor.execute('''
+                    SELECT DISTINCT metadata->'%s'
+                    FROM %s
+                    WHERE parent_id = %s
+                    AND metadata ? '%s'
+                    ORDER BY metadata->'%s'
+                ''' % (key, Node._meta.db_table, corpus.id, key, key, ))
+                values = [row[0] for row in cursor.fetchall()]
+            collection.append({
+                'key': key,
+                'text': name,
+                'documents': row[1],
+                'valuesCount': row[2],
+                'values': values,
+                'type': type,
+            })
+        return JsonHttpResponse(collection)
         
     @classmethod
     def data(cls, request, corpus_id):

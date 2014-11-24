@@ -627,11 +627,7 @@ function JSONFile( URL ) {
         contentType: "application/json",
         async: true,
         success : function(data) {
-            pr("nodes:")
-            pr(data.nodes)
-            pr("---------")
-            pr("links: ")
-            pr(data.links)
+            
             if(!isUndef(getUrlParam.seed))seed=getUrlParam.seed;
 
             parseSimpleJSON(data,seed)
@@ -682,7 +678,7 @@ function parseSimpleJSON( data , seed ) {
             htmlCont:"",
             color:color
         });  // The graph node
-        pr(node)
+        
         Nodes[i] = node;
         partialGraph.addNode( i , node );  
     }

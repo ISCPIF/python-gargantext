@@ -357,7 +357,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
         $(sliderDivID).freshslider({
             range: true,
             step:1,
-            value:[10, 60],
+            value:[10, 70],
             enabled: false,
             onchange:function(low, high){
                 console.log(low, high);
@@ -378,7 +378,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
         step: 1,
         min:0,
         max:steps-1,
-        bgcolor:(type_attrb=="Document")?"#27c470":"#FFA500" ,
+        bgcolor:(type=="Document")?"#27c470":"#FFA500" ,
         value:[0,steps-1],
         onchange:function(low, high){    
             var filtervalue = low+"-"+high

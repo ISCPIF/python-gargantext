@@ -1,6 +1,11 @@
 /*
  * Customize as you want ;)
  */
+
+function newPopup(url) {
+	popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
+}
+
 function callGeomap(){
     db=JSON.stringify('community.db');
     if(is_empty(selections)){
@@ -157,20 +162,22 @@ function getTopPapers(type){
         dbsPaths=JSON.stringify(dbsPaths);
         thisgexf=JSON.stringify(decodeURIComponent(getUrlParam.file));
         image='<img style="display:block; margin: 0px auto;" src="'+twjs+'img/ajax-loader.gif"></img>';
+        $("#topPapers").show();
         $("#topPapers").html(image);
         bi=(Object.keys(categories).length==2)?1:0;
         $.ajax({
             type: 'GET',
-            url: twjs+'php/info_div.php',
+            url: 'php/info_div.php',
             data: "type="+type+"&bi="+bi+"&query="+jsonparams+"&dbs="+dbsPaths+"&gexf="+thisgexf,
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 
-                pr(twjs+'php/info_div.php?'+"type="+type+"&bi="+bi+"&query="+jsonparams+"&dbs="+dbsPaths+"&gexf="+thisgexf);
+                pr('php/info_div.php?'+"type="+type+"&bi="+bi+"&query="+jsonparams+"&dbs="+dbsPaths+"&gexf="+thisgexf);
                 $("#topPapers").html(data);
+                $("#topPapers").show();
             },
             error: function(){ 
-                pr('Page Not found: updateLeftPanel_uni()');
+                pr('Page Not found: getTopPapers()');
             }
         });
     }
@@ -303,6 +310,7 @@ function getTips(){
         "<li>To explore the neighborhood of a selection, either double click on the selected nodes, either click on the macro/meso level button. Zoom out in meso view return to macro view.</li>"+
         "<li>Click on the 'all nodes' tab below to view the full clickable list of nodes.</li>"+
         "</ul>";
+    $("#tab-container").hide();
     return text;
 }
 

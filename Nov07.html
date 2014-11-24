@@ -102,6 +102,7 @@
                             <div id="graphid" style="visibility: hidden;">./graph.json</div>
                           </a>
                         </li>
+
                       <!--
                       <li>
                          <a>
@@ -156,7 +157,7 @@
                               <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
                      </a></li>
                   </ul>
-
+                  <!--
                   <ul id="colorGraph" class="nav navbar-nav navbar-right">
                      <li class="dropdown">
                      	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -171,6 +172,7 @@
       				        </ul>
                      </li>
                   </ul>
+                  -->
 
 
 
@@ -221,12 +223,13 @@
 	                        <a href="#" id="aUnfold" class="rightarrow"></a>
 	                    </div>
 	                </li> 
-
+                  <!--
                    <li>
                       <a href="#" id="geomapicon" onclick="$('#geomapmodal').modal('show'); callGeomap();">
                         <img title="World Map Distribution" width="34px" src="libs/img2/world.png"></img>
                       </a>
                   </li> 
+                  -->
 
 
                    <li>
@@ -358,7 +361,7 @@
         <div class="geomapCont"></div>
       </div>
     <!-- </div> -->
-  <!-- <div class="geomapCont"></div> -->
+    <!-- <div class="geomapCont"></div> -->
       <div id="closegeomap" data-dismiss="modal"></div>
 </div>
     
@@ -368,6 +371,8 @@
     <script src="libs/jquery/jquery.mousewheel.min.js" type="text/javascript"></script>
 
     <script type="text/javascript" src="libs/freshslider.1.0.js"></script>
+    <script src="libs/readmore.js" type="text/javascript"></script>
+    <script src="libs/jquery/jquery.easytabs.min.js" type="text/javascript"></script>
     
     <script src="libs/bootstrap/js/bootstrap.min.js"></script>
     <!--<script src="libs/bootswatch/js/bootswatch.js"></script>-->
@@ -393,6 +398,9 @@
     <script src="tinawebJS/main.js" type="text/javascript" language="javascript"></script>
 
 
+    <script type="text/javascript">
+        $('#tab-container').easytabs({updateHash:false});
+    </script>
 
 
 

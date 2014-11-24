@@ -112,6 +112,13 @@ function bringTheNoise(pathfile,type){
     body.style.paddingTop=$("#dafixedtop").height()+"px";
 
 
+    $('.etabs').click(function(){
+        $.doTimeout(500,function (){
+            $("#opossiteNodes").readmore({maxHeight:200}); 
+            $("#sameNodes").readmore({maxHeight:200}); 
+        });
+    });
+
     $("#changetype").click(function(){
     	pr("")
     	pr(" ############  changeTYPE click");
@@ -119,6 +126,9 @@ function bringTheNoise(pathfile,type){
 
         changeType();
 
+        $.doTimeout(500,function (){
+            $('.etabs a[href="#tabs1"]').trigger('click');
+        });
 
 		printStates()
     	pr(" ############  / changeTYPE click");
@@ -204,8 +214,8 @@ function bringTheNoise(pathfile,type){
 	    parse(decodeURIComponent(pathfile));
 
 	    if(type=="mono") {
-	    	$("#changetype").hide();
 
+	    	$("#changetype").hide();
 
             if( pathfile.indexOf(".json") > -1 ) {
                 JSONFile( pathfile )
@@ -214,6 +224,12 @@ function bringTheNoise(pathfile,type){
             }
 
             pushSWClick("social");
+
+            $("#taboppos").remove();
+            $.doTimeout(500,function (){
+                $('.etabs a[href="#tabs2"]').trigger('click');
+            });
+
             pr(partialGraph._core.graph.nodes.length)
             pr(partialGraph._core.graph.edges.length)
 	    } 
@@ -597,22 +613,13 @@ function theListeners(){
     
 
 
-    //  finished but not used
-    //  NodeWeightFilter ( "#sliderANodeWeight" ,  "Document" , "type" , "size")
-    $("#sliderANodeWeight").freshslider({
-        range: true,
-        step:1,
-        value:[10, 60],
-        enabled: false,
-        onchange:function(low, high){
-            console.log(low, high);
-        }
-    });
+    // i've to put a timeout, idkwhy
+    $.doTimeout(100,function (){
+        
+        NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
 
-    //  finished
-    //this should be available at start!!
-    // pr("applying edge weith filter")
-    EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
+        EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
+    });
 
 
     //finished

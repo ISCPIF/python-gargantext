@@ -29,37 +29,37 @@ function trackMouse() {
             ctx.globalAlpha = 0.5;  
             ctx.beginPath();
             
-            // if(partialGraph._core.mousecaptor.ratio>showLabelsIfZoom){
-            //     for(var i in partialGraph._core.graph.nodesIndex){
-            //             n=partialGraph._core.graph.nodesIndex[i];
-            //             if(n.hidden==false){
-            //                 distance = Math.sqrt(
-            //                     Math.pow((x-parseInt(n.displayX)),2) +
-            //                     Math.pow((y-parseInt(n.displayY)),2)
-            //                     );
-            //                 if(parseInt(distance)<=cursor_size) {
-            //                     partialGraph._core.graph.nodesIndex[i].forceLabel=true;
-            //                 } else {
-            //                     if(typeof(n.neighbour)!=="undefined") {
-            //                         if(!n.neighbour) partialGraph._core.graph.nodesIndex[i].forceLabel=false;
-            //                     } else partialGraph._core.graph.nodesIndex[i].forceLabel=false;
-            //                 }
-            //             }
-            //     }
-            //     partialGraph.draw(2,2,2);
-            // } else {
-            //     for(var i in partialGraph._core.graph.nodesIndex){
-            //         n=partialGraph._core.graph.nodesIndex[i];
-            //         if(!n.hidden){
-            //             partialGraph._core.graph.nodesIndex[i].forceLabel=false;
-            //             if(typeof(n.neighbour)!=="undefined") {
-            //                 if(!n.neighbour) partialGraph._core.graph.nodesIndex[i].forceLabel=false;
-            //                 else partialGraph._core.graph.nodesIndex[i].forceLabel=true;
-            //             } else partialGraph._core.graph.nodesIndex[i].forceLabel=false;
-            //         }
-            //     }
-            //     partialGraph.draw(2,2,2);
-            // }          
+            if(partialGraph._core.mousecaptor.ratio>showLabelsIfZoom){
+                for(var i in partialGraph._core.graph.nodesIndex){
+                        n=partialGraph._core.graph.nodesIndex[i];
+                        if(n.hidden==false){
+                            distance = Math.sqrt(
+                                Math.pow((x-parseInt(n.displayX)),2) +
+                                Math.pow((y-parseInt(n.displayY)),2)
+                                );
+                            if(parseInt(distance)<=cursor_size) {
+                                partialGraph._core.graph.nodesIndex[i].forceLabel=true;
+                            } else {
+                                if(typeof(n.neighbour)!=="undefined") {
+                                    if(!n.neighbour) partialGraph._core.graph.nodesIndex[i].forceLabel=false;
+                                } else partialGraph._core.graph.nodesIndex[i].forceLabel=false;
+                            }
+                        }
+                }
+                partialGraph.draw(2,2,2);
+            } else {
+                for(var i in partialGraph._core.graph.nodesIndex){
+                    n=partialGraph._core.graph.nodesIndex[i];
+                    if(!n.hidden){
+                        partialGraph._core.graph.nodesIndex[i].forceLabel=false;
+                        if(typeof(n.neighbour)!=="undefined") {
+                            if(!n.neighbour) partialGraph._core.graph.nodesIndex[i].forceLabel=false;
+                            else partialGraph._core.graph.nodesIndex[i].forceLabel=true;
+                        } else partialGraph._core.graph.nodesIndex[i].forceLabel=false;
+                    }
+                }
+                partialGraph.draw(2,2,2);
+            }          
             ctx.arc(x, y, cursor_size, 0, Math.PI * 2, true);
             //ctx.arc(partialGraph._core.width/2, partialGraph._core.height/2, 4, 0, 2 * Math.PI, true);/*todel*/
             ctx.closePath();

@@ -35,13 +35,13 @@ urlpatterns = patterns('',
     url(r'^exploration$', views.exploration),
 
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
-    url(r'^graph.json$', views.send_graph),
+    url(r'^graph.json$', views.json_node_link),
 
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
     url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
-    # url(r'^graph-it$', gargantext_web.api.CorpusController.data),
+    url(r'^graph-it$', views.graph_it),
 )
 
 from django.conf import settings

@@ -46,6 +46,9 @@ class Ngram(models.Model):
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
+    def __str__(self):
+        return self.terms
+
 
 class Resource(models.Model):
     user        = models.ForeignKey(User)
@@ -206,8 +209,6 @@ class Node_Ngram(models.Model):
     weight = models.FloatField()
     def __str__(self):
         return "%s: %s" % (self.node.name, self.ngram.terms)
-
-
 
 class Project(Node):
     class Meta:

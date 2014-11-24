@@ -66,7 +66,7 @@ class CorpusController:
         corpus = corpusQuery.first()
         if corpus.type.name != 'Corpus':
             raise Http404("No such corpus: %d" % (corpus_id, ))
-        # if corpus.user != {currentUser}:
+        # if corpus.user != request.user:
         #     raise Http403("Unauthorized access.")
         return corpus
 
@@ -177,10 +177,13 @@ class CorpusController:
             else:
                 raise ValidationError('Unrecognized "filter[]=%s"' % (filter, ))
         # query building: initializing SQL
-        sql_0 = _sql_cte
+        #sql_0 = _sql_cte
+        sql_0 = ''
         sql_1 = '\nSELECT '
-        sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
-        sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )
+        #sql_2 = '\nFROM %s\nINNER JOIN cte ON cte."id" = %s.id' % (Node._meta.db_table, Node._meta.db_table, )
+        sql_2 = '\nFROM %s' % (Node._meta.db_table, )
+        #sql_3 = '\nWHERE ((NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path")))' % (corpus.id, corpus.id, )
+        sql_3 = '\nWHERE (%s.parent_id = %d)' % (Node._meta.db_table, corpus.id, )
         # query building: assembling SQL
         sql_1 += ", ".join(columns)
         sql_2 += "\nINNER JOIN %s ON %s.id = %s.type_id" % (NodeType._meta.db_table, NodeType._meta.db_table, Node._meta.db_table, )

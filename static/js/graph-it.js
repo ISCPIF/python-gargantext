@@ -1,8 +1,11 @@
-// Über graph container
-var divChart = $('<div>').appendTo('.visualization');
+// General container
+var container = $('.visualization');
+
+// Graph container
+var divChart = $('<div>').appendTo(container);
 
 // Settings: ways to group data
-var groupings = this.groupings = {
+var groupings = {
     datetime: {
         century: {
             truncate: function(x) {return x.substr(0, 2)},
@@ -35,7 +38,7 @@ var groupings = this.groupings = {
 
 
 
-var graphIt = function(corpusId, getDataCollection) {
+var graphIt = function(corpusId, getDataCollection, groupingKey, smoothing) {
 
     divChart.empty();
 
@@ -57,7 +60,7 @@ var graphIt = function(corpusId, getDataCollection) {
         });
     });
 
-    var grouping = groupings.datetime.year;
+    var grouping = groupings.datetime[groupingKey];
 
     // generate associative data
     var associativeData = {};
@@ -149,7 +152,11 @@ var graphIt = function(corpusId, getDataCollection) {
 
         // smoothing
         showRoller: false,
-        rollPeriod: 1,
+        rollPeriod: +smoothing,
+
+        // dimensions
+        width: container.width(),
+        height: container.width() / 3,
     });
 
     // console.log(associativeData);
@@ -160,15 +167,38 @@ var graphIt = function(corpusId, getDataCollection) {
 
 
 
-
-var ulDatasets = $('<ul>').prependTo('.visualization');
-var selectProject = $('<select>').prependTo('.visualization');
-var selectCorpus = $('<select>').prependTo('.visualization');
+var ulDatasets = $('<ul>').prependTo(container);
+var inputSmoothing = $('<input>').prependTo(container).blur(function() {
+    var val = $(this).val();
+    if (isNaN(val)) {
+        val = 1;
+    }
+    val = Math.round(val);
+    if (val < 1) {
+        val = 1;
+    }
+    $(this).val(val);
+}).val(1);
+container.prepend(' with a smoothing of ');
+var selectGrouping = $('<select>').prependTo(container);
+container.prepend(', view by publication ');
+var selectCorpus = $('<select>').prependTo(container);
+container.prepend(', corpus ');
+var selectProject = $('<select>').prependTo(container);
+container.prepend('In the project ');
 
 var metadataCollection;
 var corpusId;
 
-var buttonAddDataset = $('<button>').text('Add a dataset').insertAfter(ulDatasets);
+// how shall we group the data?
+$.each(groupings.datetime, function(text, grouping) {
+    $('<option>').text(text).val(text).appendTo(selectGrouping);
+});
+selectGrouping.val('year');
+
+
+var emWait = $('<em>').text('Loading, please wait...').insertAfter(ulDatasets);
+var buttonAddDataset = $('<button>').text('Add a dataset').insertAfter(ulDatasets).hide();
 var buttonView = $('<button>').text('Graph it!').click(function(e) {
     var getDataCollection = [];
     ulDatasets.children().filter('li').each(function(i, liDataset) {
@@ -186,17 +216,25 @@ var buttonView = $('<button>').text('Graph it!').click(function(e) {
         });
         getDataCollection.push(getData);
     });
-    graphIt(selectCorpus.val(), getDataCollection);
-    console.log(getDataCollection);
-}).insertAfter(ulDatasets);
+    graphIt(
+        selectCorpus.val(),
+        getDataCollection,
+        selectGrouping.val(),
+        inputSmoothing.val()
+    );
+}).insertAfter(ulDatasets).hide();
 
 
 // Load metadata
 selectCorpus.change(function() {
     corpusId = selectCorpus.val();
+    emWait.show();
     ulDatasets.empty();
     $.get('/api/corpus/' + corpusId + '/metadata', function(collection) {
         // Unleash the power of the filter!
+        emWait.hide();
+        buttonAddDataset.show();
+        buttonView.show();
         metadataCollection = collection;
         buttonAddDataset.click();
     });

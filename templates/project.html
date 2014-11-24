@@ -68,6 +68,8 @@
 <!-- Add jumbotron container for each type of corpus (presse, science etc.) --!>
 
 <div class="container">
+				<h1>Resources</h1>
+				<h2>Corpora</h2>
 								{% if list_corpora  %}
 										<ul>
 										{% for key, corpora in list_corpora.items %}
@@ -95,7 +97,38 @@
 												<div class="chart" data-percent="73">73%</div>
 										</div>
 								{% endif %}
-        
+				
+				<h2>Lists of Ngrams</h2>
+						{% if whitelists  %}
+						<h3>White Lists</h2>
+								{% for list in whitelists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+						
+            {% if whitelists  %}
+						<h3>Black Lists</h2>
+								{% for list in blacklists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+						
+
+				
+				<h2>Results (graphs)</h2>
+             {% if cooclists  %}
+						<h3>Cooccurrences Lists</h2>
+								{% for list in cooclists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+			  
 </div>
 
 

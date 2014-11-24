@@ -140,18 +140,25 @@ def project(request, project_id):
     user = request.user
     date = datetime.datetime.now()
     
-    type_corpus = NodeType.objects.get(name='Corpus')
+    type_corpus     = NodeType.objects.get(name='Corpus')
+    type_whitelist  = NodeType.objects.get(name='WhiteList')
+    type_blacklist  = NodeType.objects.get(name='BlackList')
+    type_cooclist   = NodeType.objects.get(name='Cooccurrence')
 
     project = Node.objects.get(id=project_id)
     corpora = project.children.filter(type=type_corpus)
     number  = len(corpora)
 
-
     # DONUT corpora representation
+    list_corpora    = defaultdict(list)
+    donut_part      = defaultdict(int)
+    docs_total      = 0
     
-    donut_part = defaultdict(int)
-    docs_total = 0
-    list_corpora = defaultdict(list)
+    # List of resources
+    # filter for each project here
+    whitelists      = Node.objects.filter( type=type_whitelist)
+    blacklists      = Node.objects.filter( type=type_blacklist)
+    cooclists       = Node.objects.filter( type=type_cooclist)
     
     for corpus in corpora:
         docs_count =  corpus.children.count()
@@ -161,6 +168,7 @@ def project(request, project_id):
         corpus_view['id']       = corpus.pk
         corpus_view['name']     = corpus.name
         corpus_view['count']      = corpus.children.count()
+        
 
         for node_resource in Node_Resource.objects.filter(node=corpus):
             donut_part[node_resource.resource.type] += docs_count
@@ -246,14 +254,17 @@ def project(request, project_id):
         formResource = ResourceForm()
        
     return render(request, 'project.html', {
-            'form': form, 
-            'formResource': formResource, 
-            'user': user,
-            'date': date,
-            'project': project,
-            'donut' : donut,
-            'list_corpora' : list_corpora,
-            'number': number,
+            'form'          : form,
+            'formResource'  : formResource,
+            'user'          : user,
+            'date'          : date,
+            'project'       : project,
+            'donut'         : donut,
+            'list_corpora'  : list_corpora,
+            'whitelists'    : whitelists,
+            'blacklists'    : blacklists,
+            'cooclists'     : cooclists,
+            'number'        : number,
         })
 
 def corpus(request, project_id, corpus_id):

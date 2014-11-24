@@ -163,10 +163,7 @@
 
     <div id="wrapper">
 
-    <!--just-->
-    <!--for-->
-    <!--the-->
-    <!--commit-->
+
       <div id="zonecentre">
           
 
@@ -238,7 +235,7 @@
         <div id="tips"></div>
         <div id="names"></div>
 
-        <!--
+        
         <br>
         <div id="tab-container" class='tab-container' style="display: none;">
 
@@ -257,8 +254,8 @@
            </div>
 
         </div>
-        -->
-        <div id="opossiteNodes"></div>
+        
+        
         <!-- <div id="topPapers"></div> -->
         <div id="information"></div>
       </div>
@@ -335,8 +332,6 @@
 </div>
 
 
-
-
 <div id="geomapmodal" class="modal fade">
 
     <!-- <div class="modal-content"> -->
@@ -348,7 +343,7 @@
         <div class="geomapCont"></div>
       </div>
     <!-- </div> -->
-  <!-- <div class="geomapCont"></div> -->
+      <!-- <div class="geomapCont"></div> -->
       <div id="closegeomap" data-dismiss="modal"></div>
 </div>
 
@@ -362,11 +357,10 @@
     <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
 
-    <script type="text/javascript" src="{% static "js/libs/freshslider.1.0.js" %}"></script>
-    <!--
+    <script type="text/javascript" src="{% static "js/libs/freshslider.1.0.js" %}"></script>    
     <script type="text/javascript" src="{% static "js/libs/readmore.js" %}"></script>
     <script type="text/javascript" src="{% static "js/libs/jquery/jquery.easytabs.min.js" %}"></script>
-    -->
+    
     
     <script src="{% static "js/libs/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
@@ -391,10 +385,11 @@
     <script type="text/javascript">
         // $('#tab-container').easytabs({updateHash:false});
         // Popup window code
-        function newPopup(url) {
-          popupWindow = window.open(
-            url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
-        }
+      $('#tab-container').easytabs({updateHash:false});
+      function newPopup(url) {
+        popupWindow = window.open(
+          url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
+      }
     </script>
 
 

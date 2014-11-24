@@ -182,7 +182,6 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 	// criteria = "size"
 
     if(partialGraph._core.graph.edges.length==0) {
-
         $(sliderDivID).freshslider({
             range: true,
             step:1,
@@ -192,11 +191,10 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
                 console.log(low, high);
             }
         });
-
         return;
     }
 
-    var filterparams = AlgorithmForSliders ( partialGraph._core.graph.edges , type_attrb , type , criteria) 
+    var filterparams = AlgorithmForSliders ( Edges , type_attrb , type , criteria) 
     var steps = filterparams["steps"]
     var finalarray = filterparams["finalarray"]
     
@@ -369,7 +367,8 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
         return;
     }
 
-    var filterparams = AlgorithmForSliders ( partialGraph._core.graph.nodes , type_attrb , type , criteria) 
+    var filterparams = AlgorithmForSliders ( Nodes , type_attrb , type , criteria) //swap
+
     var steps = filterparams["steps"]
     var finalarray = filterparams["finalarray"]
     
@@ -440,13 +439,22 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 function AlgorithmForSliders( elements , type_attrb , type , criteria) {
 	// //  ( 1 )
     // // get visible sigma nodes|edges
-    elems=elements.filter(function(e) {
-                return e[type_attrb]==type;
-    });
+
+
+    var elems = [];
 
     // //  ( 2 )
     // // extract [ "edgeID" : edgeWEIGHT ] | [ "nodeID" : nodeSIZE ] 
     // // and save this into edges_weight | nodes_size
+
+
+    for(var e in elements) {
+        // pr(elements[e])
+        // pr("\t"+type_attrb)
+        if( elements[e][type_attrb]==type )
+            elems.push(elements[e]) 
+    }
+
     var elem_attrb=[]
     for (var i in elems) {
         e = elems[i]
@@ -458,7 +466,7 @@ function AlgorithmForSliders( elements , type_attrb , type , criteria) {
     // pr(elem_attrb)
 
     // //  ( 3 )
-    // // order dict edges_weight by edge weight | nodes_size by node size
+    // // order dict edges_weight by edge weight | nodes_size by node size    
     var result = ArraySortByValue(elem_attrb, function(a,b){
         return a-b
         //ASCENDENT

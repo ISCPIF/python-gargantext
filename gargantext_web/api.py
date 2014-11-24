@@ -189,7 +189,7 @@ class CorpusController:
                 WHERE parent_id = \'%d\'
             ) AS keys
             GROUP BY key
-            ORDER BY count DESC
+            ORDER BY count
         ''' % (Node._meta.db_table, Node._meta.db_table, corpus.id, ))
         # response building
         collection = []
@@ -267,13 +267,41 @@ class CorpusController:
             raise ValidationError('The "mesured" parameter should take one of the following values: "documents.count", "ngrams.count"')
         # query building: filters
         for filter in request.GET.getlist('filters[]', ''):
-            if '|' in filter:
-                filter_array = filter.split("|")
-                key = filter_array[0]
-                values = filter_array[1].replace("'", "\\'").split(",")
-                if key == 'ngram.terms':
-                    conditions.append("%s.terms IN ('%s')" % (Ngram._meta.db_table, "', '".join(values), ))
+            splitFilter = filter.split('.')
+            origin = splitFilter[0]
+            # 127.0.0.1:8000/api/corpus/13410/data
+            #     ?mesured=ngrams.count
+            #     &parameters[]=metadata.publication_date
+            #     &format=json
+            #     &filters[]=ngrams.in.bee,bees
+            #     &filters[]=metadata.language_fullname.eq.English
+            #     &filters[]=metadata.publication_date.gt.1950-01-01
+            #     &filters[]=metadata.publication_date.lt.2000-01-01
+            #     &filters[]=metadata.title.contains.e
+            if origin == 'ngrams':
+                if splitFilter[1] == 'in':
+                    ngrams = '.'.join(splitFilter[2:]).split(',')
+                    map(str.strip, ngrams)
+                    map(lambda ngram: ngram.replace("'", "''"), ngrams)
+                    conditions.append(
+                        "%s.terms IN ('%s')" % (Ngram._meta.db_table, "', '".join(ngrams), )
+                    )
                     join_ngrams = True
+            elif origin == 'metadata':
+                key = splitFilter[1].replace("'", "''")
+                operator = splitFilter[2]
+                value = '.'.join(splitFilter[3:]).replace("'", "''")
+                condition = "%s.metadata->'%s' " % (Node._meta.db_table, key, )
+                if operator == 'contains':
+                    condition += "LIKE '%%%s%%'" % (value, )
+                else:
+                    condition += {
+                        'eq': '=',
+                        'lt': '<=',
+                        'gt': '>=',
+                    }[operator]
+                    condition += " '%s'" % (value, )
+                conditions.append(condition)
             else:
                 raise ValidationError('Unrecognized "filter[]=%s"' % (filter, ))
         # query building: initializing SQL

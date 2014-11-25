@@ -141,6 +141,7 @@ def project(request, project_id):
     date = datetime.datetime.now()
     
     type_corpus     = NodeType.objects.get(name='Corpus')
+    type_document   = NodeType.objects.get(name='Document')
     type_whitelist  = NodeType.objects.get(name='WhiteList')
     type_blacklist  = NodeType.objects.get(name='BlackList')
     type_cooclist   = NodeType.objects.get(name='Cooccurrence')
@@ -240,6 +241,10 @@ def project(request, project_id):
             try:
                 #corpus.parse_resources.apply_async((), countdown=1)
                 corpus.parse_resources()
+                
+                # async
+                corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+
             except Exception as error:
                 print(error)
 

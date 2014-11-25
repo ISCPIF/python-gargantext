@@ -80,7 +80,7 @@
 				{% if documents %}
 				<ul>
 						{% for doc in documents %}
-						<li> <b>{{ doc.date }}</b>, <a href="#">{{ doc.title}}</a></li>
+						<li> <b>{{ doc.date }}</b>, <a href="/admin/node/document/{{doc.id}}">{{ doc.title}}</a></li>
 						{% endfor %}
 				</ul>
 				{% endif %}

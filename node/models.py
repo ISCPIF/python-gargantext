@@ -38,6 +38,7 @@ class Language(models.Model):
 
 class ResourceType(models.Model):
     name    = models.CharField(max_length=255)
+    
     def __str__(self):
         return self.name
 
@@ -46,6 +47,7 @@ class Ngram(models.Model):
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
+    
     def __str__(self):
         return self.terms
 
@@ -56,6 +58,8 @@ class Resource(models.Model):
     type        = models.ForeignKey(ResourceType, blank=True, null=True)
     file        = models.FileField(upload_to=_upload_to, blank=True)
     digest      = models.CharField(max_length=32) # MD5 digest
+    def __str__(self):
+        return self.file
 
 class NodeType(models.Model):
     name        = models.CharField(max_length=200)

@@ -80,7 +80,7 @@
 				{% if documents %}
 				<ul>
 						{% for doc in documents %}
-						<li> {{ doc.date }}, {{ doc.title}} </li>
+						<li> <b>{{ doc.date }}</b>, <a href="#">{{ doc.title}}</a></li>
 						{% endfor %}
 				</ul>
 				{% endif %}

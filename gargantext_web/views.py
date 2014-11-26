@@ -208,10 +208,10 @@ def project(request, project_id):
         try:
             parent      = Node.objects.get(id=project_id)
             node_type   = NodeType.objects.get(name='Corpus')
-
-            if resource_type.name == "europresse_french":
+            
+            if resource_type.name == "europress_french":
                 language    = Language.objects.get(iso2='fr')
-            elif resource_type.name == "europresse_english":
+            elif resource_type.name == "europress_english":
                 language    = Language.objects.get(iso2='en')
             
             try:
@@ -231,7 +231,7 @@ def project(request, project_id):
                         )
 
             corpus.save()
-            
+            print(corpus.language)
             corpus.add_resource(
                     user=request.user,
                     type=resource_type,
@@ -479,7 +479,7 @@ def json_node_link(request):
     import networkx as nx
     from networkx.readwrite import json_graph
     from gargantext_web.api import JsonHttpResponse
-    #from analysis.louvain import *
+    from analysis.louvain import best_partition
 
     matrix = defaultdict(lambda : defaultdict(float))
     labels = dict()
@@ -497,7 +497,6 @@ def json_node_link(request):
     x = copy(df.values)
     x = x / x.sum(axis=1)
 
-
     # Removing unconnected nodes
     threshold = min(x.max(axis=1))
     matrix_filtered = np.where(x > threshold, 1, 0)
@@ -508,9 +507,11 @@ def json_node_link(request):
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
     
     # Removing too connected nodes (find automatic way to do it)
-    outdeg = G.degree()
-    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-    G.remove_nodes_from(to_remove)
+#    outdeg = G.degree()
+#    to_remove = [n for n in outdeg if outdeg[n] >= 10]
+#    G.remove_nodes_from(to_remove)
+
+    partition = best_partition(G)
     
     for node in G.nodes():
         try:

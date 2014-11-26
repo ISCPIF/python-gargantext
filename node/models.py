@@ -223,6 +223,18 @@ class Corpus(Node):
         proxy=True
         verbose_name_plural = 'Corpora'
 
+#class WhiteList(Node):
+#    class Meta:
+#        proxy=True
+#
+#class BlackList(Node):
+#    class Meta:
+#        proxy=True
+#
+#class Synonyms(Node):
+#    class Meta:
+#        proxy=True
+
 class Document(Node):
     class Meta:
         proxy=True

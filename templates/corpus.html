@@ -65,14 +65,24 @@
 									<p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
 							</div>
 					</div>
+						<p align="center">
+						<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
 
-						<a class="btn btn-primary btn-lg" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
 
 <div class="container">
-
 		<div class="jumbotron">
-				<center>
-						<a class="btn btn-primary btn-lg" role="button" href="#">Filter and show documents</a></p>
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-body">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						<p align="center">Filter and show documents</p>
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
+      <div class="panel-body">
 				<p align="right">
 				Page <a href="#">2</a> sur 100
 				</p>
@@ -84,8 +94,14 @@
 						{% endfor %}
 				</ul>
 				{% endif %}
-		</div>
+
+      </div>
+    </div>
+  </div>
 </div>
+</div>
+</div>
+
 
 <div class="container">
 		<div class="row">

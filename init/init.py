@@ -79,7 +79,7 @@ try:
     typeDoc     = NodeType.objects.get(name='Synonyme')
 except Exception as error:
     print(error)
-    typeDoc     = NodeType(name='Synonyms')
+    typeDoc     = NodeType(name='Synonyme')
     typeDoc.save()
 
 
@@ -97,7 +97,7 @@ except Exception as error:
     print(error)
     
     typePubmed = ResourceType(name='pubmed')
-    typePubmed.save()  
+    typePubmed.save()
     
     typeIsi    = ResourceType(name='isi')
     typeIsi.save()
@@ -114,7 +114,7 @@ except Exception as error:
 
 # In[34]:
 
-Node.objects.all().delete()
+#Node.objects.all().delete()
 
 
 # In[9]:

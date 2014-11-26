@@ -26,7 +26,6 @@ urlpatterns = patterns('',
     
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/data.csv$', views.send_csv),
     
     url(r'^graph$', views.explorer_graph),
     url(r'^chart$', views.explorer_chart),

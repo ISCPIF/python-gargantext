@@ -7,8 +7,9 @@ from django.template import Context
 
 #from documents.models import Project, Corpus, Document
 
-from node.models import Language, ResourceType, Resource
-from node.models import Node, NodeType, Node_Resource, Project, Corpus, NodeNgramNgram
+from node.models import Language, ResourceType, Resource, \
+        Node, NodeType, Node_Resource, Project, Corpus, \
+        Node_Ngram, NodeNgramNgram
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -19,6 +20,7 @@ from dateutil.parser import parse
 
 from django.db import connection
 from django import forms
+
 
 from collections import defaultdict
 
@@ -483,7 +485,7 @@ def json_node_link(request):
 
     matrix = defaultdict(lambda : defaultdict(float))
     labels = dict()
-    cooc = Node.objects.get(id=61314)
+    cooc = Node.objects.get(id=81249)
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
@@ -544,3 +546,6 @@ def graph_it(request):
         'date': date,
     }))    
     return HttpResponse(html)
+
+
+

@@ -31,13 +31,9 @@
 								, Created on {{ corpus.date }} ({{ number}} docs)</p>
 							{% endif %}
 
-						{% if number > 0 %}
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add</a>
-						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Cut</a> 
-						-------
-						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export</a>
-						<a class="btn btn-default btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Delete</a></p>
-					{% endif %}
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Import</a> 
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export</a>
+						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Delete</a></p>
 
 						{% if number == 0 %}
 						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add documents</a></p>

@@ -1,4 +1,9 @@
 
+# to be executed like this:
+# ./manage.py shell < init.py
+
+
+
 #NodeType.objects.all().delete()
 
 
@@ -20,13 +25,11 @@ english = Language.objects.get(iso2='en')
 french  = Language.objects.get(iso2='fr')
 
 
-
 try:
     me = User.objects.get(username='alexandre')
 except:
     me = User(username='alexandre')
     me.save()
-
 
 
 try:
@@ -57,6 +60,28 @@ except Exception as error:
     print(error)
     typeDoc     = NodeType(name='Document')
     typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='WhiteList')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='WhiteList')
+    typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='BlackList')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='BlackList')
+    typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='Synonyme')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='Synonyms')
+    typeDoc.save()
+
 
 
 # In[33]:

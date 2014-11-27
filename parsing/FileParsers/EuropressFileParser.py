@@ -16,10 +16,21 @@ class EuropressFileParser(FileParser):
        localeEncoding = "fr_FR"
        codif      = "UTF-8"
        count = 0
-       
-       html_parser = etree.HTMLParser(encoding=codif)
-       html = etree.parse(file, html_parser)
-       html_articles = html.xpath('/html/body/table')
+
+       if isinstance(file, str):
+           file = open(file, 'rb')
+       print(file)
+       contents = file.read()
+       print(len(contents))
+       #return []
+       encoding = self.detect_encoding(contents)
+
+       try:
+           html_parser = etree.HTMLParser(encoding=encoding)
+           html = etree.fromstring(contents, html_parser)
+           html_articles = html.xpath('/html/body/table')
+       except:
+           return []
 
        # initialize the list of metadata
        metadata_list = []
@@ -43,7 +54,7 @@ class EuropressFileParser(FileParser):
                for header in html_article.xpath("./tr/td/span[@class = 'DocHeader']"):
                    text = header.text
                    if isinstance(text, bytes):
-                       text = text.decode()
+                       text = text.decode(encoding)
 
                    format_date_fr = re.compile('\d+\s*\w+\s+\d{4}', re.UNICODE)
                    test_date_fr = format_date_fr.match(text)

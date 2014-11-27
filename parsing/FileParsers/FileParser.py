@@ -1,6 +1,7 @@
 import collections
 import dateutil.parser
 import zipfile
+import chardet
 
 from parsing.Caches import LanguagesCache
     
@@ -14,7 +15,8 @@ class FileParser:
     def detect_encoding(self, string):
         """Useful method to detect the document encoding.
         """
-        pass
+        encoding = chardet.detect(string)
+        return encoding.get('encoding', 'UTF-8')
     
     
     def format_metadata_dates(self, metadata):

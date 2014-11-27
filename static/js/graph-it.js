@@ -379,38 +379,38 @@ buttonAddDataset.click(function() {
 
 
 
-// $('.tree').jstree({
-//     'core' : {
-//         'data' : {
-//             'url' : function(node) {
-//                 var url = '/api/nodes?' + ((node.id === '#')
-//                     ? 'type=Project'
-//                     : ('parent=' + node.id)
-//                 );
-//                 console.log(url);
-//                 return url;
-//             },
-//         },
-//     },
-//     "plugins" : ["types"],
-//     "types" : {
-//         "#" : {
-//           "max_children" : 1, 
-//           "max_depth" : 4, 
-//           "valid_children" : ["root"]
-//         },
-//         "Project" : {
-//           "icon" : "http://www.jstree.com/static/3.0.8/assets/images/tree_icon.png",
-//           "valid_children" : ["default"]
-//         },
-//         "Corpus" : {
-//           "valid_children" : ["default","file"]
-//         },
-//         "Document" : {
-//           "icon" : "glyphicon glyphicon-file",
-//           "valid_children" : []
-//         }
-//   },
-// });
+ $('.tree').jstree({
+     'core' : {
+         'data' : {
+             'url' : function(node) {
+                 var url = '/api/nodes?' + ((node.id === '#')
+                     ? 'type=Project'
+                     : ('parent=' + node.id)
+                 );
+                 console.log(url);
+                 return url;
+             },
+         },
+     },
+     "plugins" : ["types"],
+     "types" : {
+         "#" : {
+           "max_children" : 1, 
+           "max_depth" : 4, 
+           "valid_children" : ["root"]
+         },
+         "Project" : {
+           "icon" : "http://www.jstree.com/static/3.0.8/assets/images/tree_icon.png",
+           "valid_children" : ["default"]
+         },
+         "Corpus" : {
+           "valid_children" : ["default","file"]
+         },
+         "Document" : {
+           "icon" : "glyphicon glyphicon-file",
+           "valid_children" : []
+         }
+   },
+ });
 
 // var graph = $('.graph-it').graphIt(640, 480);

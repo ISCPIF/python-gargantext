@@ -3,7 +3,6 @@
 {% block css %}
     <!-- {% load staticfiles %} -->
     <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
 {% endblock %}
 
 
@@ -11,13 +10,25 @@
 {% block content %}
     <div class="container theme-showcase" role="main">
             <div class="jumbotron">
-                <h1>Exploration</h1>
-                <p>Compute your own charts</p>
+                <h1>Ngrams selection</h1>
+                <p>Remove the words</p>
             </div>
     </div>
-    <div class="container visualization"></div>
-    <div class="container tree"></div>
-    <div class="container graph-it"></div>
+
+
+
+<div class="container">
+		{% if ngrams %}
+		<form>
+		{% for ngram in ngrams %}
+		<INPUT type="checkbox" name="{{ ngram }}" value="{{ ngram }}"> {{ ngram }} <br>
+		{% endfor %}
+		</form>
+		{% endif %}
+		<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Save</a> 
+</div>
+
+
 
 		
 		<div class="container">
@@ -58,15 +69,6 @@
 </div>
 
 
-    <!-- <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script> -->
-    
-<!-- 
-    <script type="text/javascript" src="{% static "js/jquery/jquery-1.9.1.min.js" %}"></script>
-    <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/xdan/datetimepicker/master/jquery.datetimepicker.css"/ >
-    <script type="text/javascript" src="{% static "js/jquery/jquery.datetimepicker.js" %}"></script>
- -->
-
-
 <!-- 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
     <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
@@ -75,15 +77,6 @@
 
     <link rel="stylesheet" href="{% static "css/jquery-ui.css" %}">
     <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/jquery/jquery-ui.js" %}"></script>
-
-<!-- 
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.0.4/themes/default/style.min.css" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.0.4/jstree.min.js"></script>
- -->
-    <script type="text/javascript" src="{% static "js/charts/dygraph-combined.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/graph-it.js" %}"></script>
-        
 
 {% endblock %}
 

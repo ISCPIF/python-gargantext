@@ -548,4 +548,21 @@ def graph_it(request):
     return HttpResponse(html)
 
 
+def ngrams(request):
+    '''The ngrams list.'''
+    t = get_template('ngrams.html')
+    ngrams_list = list()
+    
+    for node_ngram in Node_Ngram.objects.filter(node_id=81246)[:20]:
+        ngrams_list.append(node_ngram.ngram)
 
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'ngrams' : ngrams_list,
+    }))    
+    return HttpResponse(html)
+
+    

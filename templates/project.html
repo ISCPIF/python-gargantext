@@ -79,7 +79,14 @@
 																<li> 
 																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
 																		, {{ corpus.count }} Documents 
-																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Yes, I am sure!</a>'>Delete</button>
+																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+																		data-content='
+																		<ul>
+																		<li> Add documents </li>
+																		<li> Rename </li>
+																		<li><a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Delete</a></li>
+																		</ul>
+																		'>Manage</button>
 																</li>
 														{% endfor %}
 												</ul>

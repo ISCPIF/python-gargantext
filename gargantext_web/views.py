@@ -172,7 +172,6 @@ def project(request, project_id):
         corpus_view['name']     = corpus.name
         corpus_view['count']      = corpus.children.count()
         
-
         for node_resource in Node_Resource.objects.filter(node=corpus):
             donut_part[node_resource.resource.type] += docs_count
             list_corpora[node_resource.resource.type.name].append(corpus_view)
@@ -185,8 +184,6 @@ def project(request, project_id):
                 'count': donut_part[key] , 
                 'part' : round(donut_part[key] * 100 / docs_total) } \
                         for key in donut_part.keys() ]
-
-
 
 
     if request.method == 'POST':
@@ -379,14 +376,16 @@ def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
 
-def explorer_graph(request):
+def explorer_graph(request, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
+    corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'corpus': corpus,\
             }))
     
     return HttpResponse(html)
@@ -470,7 +469,7 @@ def send_csv(request, corpus_id):
 
     return response
 
-def json_node_link(request):
+def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the graph dataset.
     '''
@@ -481,11 +480,22 @@ def json_node_link(request):
     import networkx as nx
     from networkx.readwrite import json_graph
     from gargantext_web.api import JsonHttpResponse
+    
     from analysis.louvain import best_partition
+    from analysis.functions import create_whitelist, create_cooc
 
     matrix = defaultdict(lambda : defaultdict(float))
     labels = dict()
-    cooc = Node.objects.get(id=81249)
+    corpus = Node.objects.get(id=corpus_id)
+    type_cooc = NodeType.objects.get(name="Cooccurrence")
+
+    if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
+        print("Coocurrences do not exist yet, create it.")
+        whitelist = create_whitelist(request.user, corpus)
+        cooc = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
+        print(cooc.id, "Cooc created")
+    else:
+        cooc = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
@@ -493,7 +503,6 @@ def json_node_link(request):
         
         matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
         matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
-
 
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
@@ -535,7 +544,6 @@ def json_node_link(request):
     return JsonHttpResponse(data)
 
 
-
 def graph_it(request):
     '''The new multimodal graph.'''
     t = get_template('graph-it.html')
@@ -565,4 +573,3 @@ def ngrams(request):
     }))    
     return HttpResponse(html)
 
-    

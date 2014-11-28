@@ -13,15 +13,10 @@
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-				<div class="row">
-        <div class="col-md-6">
+  <div class="jumbotron">
 						<h1>My {{number}} projects</h1>
 						<p>Template showing my working space</p>
-        </div>
-        <div class="col-md-1 content">
 				<p>
-				<br>
 				<button 
 								type="button" 
 								class="btn btn-primary btn-lg" 
@@ -31,12 +26,9 @@
 				>Add a project</button>
 								<div id="popover-content" class="hide">
 										<form enctype='multipart/form-data' action='/projects/' method='post'>{% csrf_token %}{{ form.non_field_errors }}{{ form.as_p}}<input type='submit' class="btn" value='Add this project !'/></form>
-				</p>
 								</div>
-		        </div>
-        </div>
-        </div>
-        </div>
+				</p>
+  </div>
 </div>
 
 <div class="container">

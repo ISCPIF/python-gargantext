@@ -27,14 +27,15 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     
-    url(r'^graph$', views.explorer_graph),
+    url(r'^corpus/(\d+)/explorer$', views.explorer_graph),
     url(r'^chart$', views.explorer_chart),
     url(r'^matrix$', views.explorer_matrix),
     
-    url(r'^exploration$', views.exploration),
+    #url(r'^exploration$', views.exploration),
 
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
-    url(r'^graph.json$', views.json_node_link),
+    url(r'^corpus/(\d+)/node_link.json$', views.node_link),
+    url(r'^corpus/(\d+)/adjancy_matrix$', views.node_link),
 
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),

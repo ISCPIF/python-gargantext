@@ -48,7 +48,7 @@ def create_whitelist(user, corpus):
         WHERE
             n.parent_id = %d
         AND
-            n.type_id = 4
+            n.type_id = %d
         AND
             ngX.n >= 1
 
@@ -61,7 +61,7 @@ def create_whitelist(user, corpus):
         LIMIT
             100
         ;
-    """  % (white_list.id, corpus.id)
+    """  % (white_list.id, corpus.id, whitelist_type.id)
     
     cursor.execute(query_whitelist)
 
@@ -122,6 +122,7 @@ def create_cooc(user=None, corpus=None, whitelist=None):
         ngX.terms,
         ngY.id,
         ngY.terms
+    
     ORDER BY
         score DESC
     LIMIT

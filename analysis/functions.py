@@ -14,9 +14,10 @@ def create_synonymes(user, corpus):
 def create_whitelist(user, corpus):
     cursor = connection.cursor()
     
-    try: 
+    try:
         whitelist_type = NodeType.objects.get(name='WhiteList')
         blacklist_type = NodeType.objects.get(name='BlackList')
+        type_document  = NodeType.objects.get(name='Document')
     except:
         whitelist_type = NodeType(name='WhiteList')
         whitelist_type.save()
@@ -24,8 +25,8 @@ def create_whitelist(user, corpus):
         blacklist_type = NodeType(name='BlackList')
         blacklist_type.save()
 
-    white_list = Node.objects.create(name='WhiteList Corpus' + str(corpus.id), user=user, parent=corpus, type=whitelist_type)
-    black_list = Node.objects.create(name='BlackList Corpus' + str(corpus.id), user=user, parent=corpus, type=blacklist_type)
+    white_list = Node.objects.create(name='WhiteList Corpus ' + str(corpus.id), user=user, parent=corpus, type=whitelist_type)
+    black_list = Node.objects.create(name='BlackList Corpus ' + str(corpus.id), user=user, parent=corpus, type=blacklist_type)
 
     # delete avant pour éviter les doublons
 #    try:
@@ -61,8 +62,8 @@ def create_whitelist(user, corpus):
         LIMIT
             100
         ;
-    """  % (white_list.id, corpus.id, whitelist_type.id)
-    
+    """  % (white_list.id, corpus.id, type_document.id)
+
     cursor.execute(query_whitelist)
 
     return white_list
@@ -70,7 +71,7 @@ def create_whitelist(user, corpus):
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
 def create_cooc(user=None, corpus=None, whitelist=None):
     cursor = connection.cursor()
-    
+
     try:
         cooc_type  = NodeType.objects.get(name='Cooccurrence')
     except:
@@ -131,4 +132,6 @@ def create_cooc(user=None, corpus=None, whitelist=None):
 
     cursor.execute(query_cooc)
     return cooc
+
+
 

@@ -3,33 +3,39 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 
 from django.db.models import Avg, Max, Min, Count, Sum
-from node.models import NodeType, Node, Node_Ngram, Ngram
-
-from django.db import connection
-
 # from node.models import Language, ResourceType, Resource
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
-# from node.admin import CorpusForm, ProjectForm, ResourceForm
 
-_sql_cte = '''
-    WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
-        SELECT 1 AS depth,
-        array[T."id"] AS path,
-        array[T."id"] AS ordering,
-        T."id"
-        FROM  %s T
-        WHERE T."parent_id" IS NULL
+from sqlalchemy.sql import func
+from sqlalchemy.orm import aliased
 
-        UNION ALL
+import node.models
+NodeType = node.models.NodeType.sa
+Node = node.models.Node.sa
+Node_Ngram = node.models.Node_Ngram.sa
+Ngram = node.models.Ngram.sa
 
-        SELECT cte.depth + 1 AS depth,
-        cte.path || T."id",
-        cte.ordering || array[T."id"],
-        T."id"
-        FROM  %s T
-        JOIN  cte ON T."parent_id" = cte."id"
-    )
-''' % (Node._meta.db_table, Node._meta.db_table, )
+
+# _sql_cte = '''
+#     WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
+#         SELECT 1 AS depth,
+#         array[T."id"] AS path,
+#         array[T."id"] AS ordering,
+#         T."id"
+#         FROM  %s T
+#         WHERE T."parent_id" IS NULL
+
+#         UNION ALL
+
+#         SELECT cte.depth + 1 AS depth,
+#         cte.path || T."id",
+#         cte.ordering || array[T."id"],
+#         T."id"
+#         FROM  %s T
+#         JOIN  cte ON T."parent_id" = cte."id"
+#     )
+# ''' % (Node._meta.db_table, Node._meta.db_table, )
+
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -111,59 +117,56 @@ class CorpusController:
 
     
     @classmethod
-    def ngrams(cls, request, corpus_id):
+    def ngrams(cls, request, node_id):
+
         # parameters retrieval and validation
-        corpus = cls.get(corpus_id)
-        order = request.GET.get('order', 'frequency')
-        if order not in _ngrams_order_columns:
-            raise ValidationError('The order parameter should take one of the following values: ' +  ', '.join(_ngrams_order_columns), 400)
-        order_column = _ngrams_order_columns[order]
-        # query building
-        cursor = connection.cursor()
-        cursor.execute(_sql_cte + '''
-            SELECT ngram.terms, COUNT(*) AS occurrences
-            FROM cte
-            INNER JOIN %s AS node ON node.id = cte.id
-            INNER JOIN %s AS nodetype ON nodetype.id = node.type_id
-            INNER JOIN %s AS node_ngram ON node_ngram.node_id = node.id
-            INNER JOIN %s AS ngram ON ngram.id = node_ngram.ngram_id
-            WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
-            AND nodetype.name = 'Document'
-            AND ngram.terms LIKE '%s%%'
-            GROUP BY ngram.terms
-            ORDER BY occurrences DESC
-        ''' % (
-            Node._meta.db_table,
-            NodeType._meta.db_table,
-            Node_Ngram._meta.db_table,
-            Ngram._meta.db_table,
-            corpus.id,
-            corpus.id,
-            request.GET.get('startwith', '').replace("'", "\\'"),
-        ))
-        # # response building
-        # return JsonHttpResponse({
-        #     "list" : [row[0] for row in cursor.fetchall()],
-        # })
+        startwith = request.GET.get('startwith', '').replace("'", "\\'")
+
+        # build query
+        ParentNode = aliased(Node)
+        query = (Ngram
+            .query(Ngram.terms, func.count('*'))
+            .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
+            .join(Node, Node.id == Node_Ngram.node_id)
+            .join(ParentNode, ParentNode.id == Node.parent_id)
+            .filter(ParentNode.id == node_id)
+            .filter(Ngram.terms.like('%s%%' % (startwith, )))
+            .group_by(Ngram.terms)
+            .order_by(func.count('*').desc())
+        )
 
         # response building
         format = request.GET.get('format', 'json')
         if format == 'json':
             return JsonHttpResponse({
-                "list": [{
+                "collection": [{
                     'terms': row[0],
                     'occurrences': row[1]
-                } for row in cursor.fetchall()],
+                } for row in query.all()],
             })
         elif format == 'csv':
             return CsvHttpResponse(
-                [['terms', 'occurences']] + [row for row in cursor.fetchall()]
+                [['terms', 'occurences']] + [row for row in query.all()]
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
 
     @classmethod
-    def metadata(cls, request, corpus_id):
+    def metadata(cls, request, node_id):
+        
+        ParentNode = aliased(Node)
+        query = (Ngram
+            .query(Ngram.metadata[''], func.count('*'))
+            .join(Node, Node.id == Node_Ngram.node_id)
+            .join(ParentNode, ParentNode.id == Node.parent_id)
+            .filter(ParentNode.id == node_id)
+            .group_by(Ngram.terms)
+            .order_by(func.count('*').desc())
+        )
+
+        collection = query.all()
+        return JsonHttpResponse(collection)
+
         # parameters retrieval and validation
         corpus = cls.get(corpus_id)
         # query building

@@ -69,7 +69,7 @@ def create_whitelist(user, corpus):
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None):
+def create_cooc(user=None, corpus=None, whitelist=None, size=200):
     cursor = connection.cursor()
 
     try:
@@ -127,8 +127,8 @@ def create_cooc(user=None, corpus=None, whitelist=None):
     ORDER BY
         score DESC
     LIMIT
-        150
-    """ % (cooc.pk, corpus.id, whitelist.id, whitelist.id)
+        %d
+    """ % (cooc.pk, corpus.id, whitelist.id, whitelist.id, size)
 
     cursor.execute(query_cooc)
     return cooc

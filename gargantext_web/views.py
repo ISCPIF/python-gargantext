@@ -242,7 +242,8 @@ def project(request, project_id):
                 corpus.parse_resources()
                 
                 # async
-                corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+                #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+                #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
 
             except Exception as error:
                 print(error)

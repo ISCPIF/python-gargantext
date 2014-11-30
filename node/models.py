@@ -168,6 +168,7 @@ class Node(CTENode):
         # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
     
+    @current_app.task(filter=task_method)
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...
         if ngramsextractorscache is None:

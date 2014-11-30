@@ -6,6 +6,7 @@ from django.db.models import Avg, Max, Min, Count, Sum
 # from node.models import Language, ResourceType, Resource
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
 
+from sqlalchemy import text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
@@ -14,7 +15,65 @@ NodeType = node.models.NodeType.sa
 Node = node.models.Node.sa
 Node_Ngram = node.models.Node_Ngram.sa
 Ngram = node.models.Ngram.sa
+Metadata = node.models.Metadata.sa
+Node_Metadata = node.models.Node_Metadata.sa
 
+def literalquery(statement, dialect=None):
+    """Generate an SQL expression string with bound parameters rendered inline
+    for the given SQLAlchemy statement.
+
+    WARNING: This method of escaping is insecure, incomplete, and for debugging
+    purposes only. Executing SQL statements with inline-rendered user values is
+    extremely insecure.
+    """
+    from datetime import datetime
+    import sqlalchemy.orm
+    if isinstance(statement, sqlalchemy.orm.Query):
+        if dialect is None:
+            dialect = statement.session.get_bind(
+                statement._mapper_zero_or_none()
+            ).dialect
+        statement = statement.statement
+    if dialect is None:
+        dialect = getattr(statement.bind, 'dialect', None)
+    if dialect is None:
+        from sqlalchemy.dialects import mysql
+        dialect = mysql.dialect()
+
+    Compiler = type(statement._compiler(dialect))
+
+    class LiteralCompiler(Compiler):
+        visit_bindparam = Compiler.render_literal_bindparam
+
+        def render_literal_value(self, value, type_):
+            return str(value)
+            # if isinstance(value, (float, int)):
+            #     return str(value)
+            # elif isinstance(value, datetime):
+            #     return repr(str(value))
+            # else:  # fallback
+            #     value = super(LiteralCompiler, self).render_literal_value(
+            #         value, type_,
+            #     )
+            #     if isinstance(value, unicode):
+            #         return value.encode('UTF-8')
+            #     else:
+            #         return value
+
+    return LiteralCompiler(dialect, statement)
+
+def get_connection():
+    import sqlalchemy.orm
+    from django.db import connections
+    from aldjemy.core import get_engine
+    alias = 'default'
+    connection = connections[alias]
+    session = sqlalchemy.orm.create_session()
+    engine = get_engine()
+    return engine.connect()
+
+
+# connection = engine.connect()
 
 # _sql_cte = '''
 #     WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
@@ -154,81 +213,48 @@ class CorpusController:
     @classmethod
     def metadata(cls, request, node_id):
         
+        # query metadata keys
         ParentNode = aliased(Node)
-        query = (Ngram
-            .query(Ngram.metadata[''], func.count('*'))
-            .join(Node, Node.id == Node_Ngram.node_id)
-            .join(ParentNode, ParentNode.id == Node.parent_id)
-            .filter(ParentNode.id == node_id)
-            .group_by(Ngram.terms)
-            .order_by(func.count('*').desc())
+        metadata_query = (Metadata
+            .query(Metadata)
+            .join(Node_Metadata, Node_Metadata.metadata_id == Metadata.id)
+            .join(Node, Node.id == Node_Metadata.node_id)
+            .filter(Node.parent_id == node_id)
+            .group_by(Metadata)
         )
 
-        collection = query.all()
-        return JsonHttpResponse(collection)
-
-        # parameters retrieval and validation
-        corpus = cls.get(corpus_id)
-        # query building
-        cursor = connection.cursor()
-        # cursor.execute(_sql_cte + '''
-        #     SELECT key
-        #     FROM (
-        #         SELECT skeys(metadata) AS key, COUNT(*)
-        #         FROM cte
-        #         INNER JOIN %s AS node ON node.id = cte.id
-        #         WHERE (NOT cte.id = \'%d\') AND (\'%d\' = ANY(cte."path"))
-        #     ) AS keys
-        #     GROUP BY key
-        #     ORDER BY COUNT(*) DESC
-        # ''' % (Node._meta.db_table, corpus.id, corpus.id, ))
-        cursor.execute('''
-            SELECT key, COUNT(*) AS count, (
-                SELECT COUNT(DISTINCT metadata->key) FROM %s
-            ) AS values
-            FROM (
-                SELECT skeys(metadata) AS key
-                FROM %s
-                WHERE parent_id = \'%d\'
-            ) AS keys
-            GROUP BY key
-            ORDER BY count
-        ''' % (Node._meta.db_table, Node._meta.db_table, corpus.id, ))
-        # response building
+        # build a collection with the metadata ekys
         collection = []
-        for row in cursor.fetchall():
-            type = 'string'
-            key = row[0]
-            split_key = key.split('_')
-            name = split_key[0]
-            if len(split_key) == 2:
-                if split_key[1] == 'date':
-                    name = split_key[0]
-                    type = 'datetime'
-                elif row[0] == 'language_fullname':
-                    name = 'language'
-                    type = 'string'
-                else:
-                    continue
+        for metadata in metadata_query:
+            # count values
+            value_column = getattr(Node_Metadata, 'value_' + metadata.type)
+            node_metadata_query = (Node_Metadata
+                .query(value_column)
+                .join(Node, Node.id == Node_Metadata.node_id)
+                .filter(Node.parent_id == node_id)
+                .filter(Node_Metadata.metadata_id == metadata.id)
+                .group_by(value_column)
+                .order_by(value_column)
+            )
+            valuesCount = node_metadata_query.count()
+            # if there is less than 32 values, retrieve them
             values = None
-            if row[2] < 32:
-                cursor.execute('''
-                    SELECT DISTINCT metadata->'%s'
-                    FROM %s
-                    WHERE parent_id = %s
-                    AND metadata ? '%s'
-                    ORDER BY metadata->'%s'
-                ''' % (key, Node._meta.db_table, corpus.id, key, key, ))
-                values = [row[0] for row in cursor.fetchall()]
+            if valuesCount <= 32:
+                values = [row[0] for row in node_metadata_query.all()]
+                if metadata.type == 'datetime':
+                    values = []
+                    values = map(lambda x: x.isoformat(), values)
+
             collection.append({
-                'key': key,
-                'text': name,
-                'documents': row[1],
-                'valuesCount': row[2],
+                'key': metadata.name,
                 'values': values,
-                'type': type,
+                'valuesCount': valuesCount,
             })
-        return JsonHttpResponse(collection)
+
+        return JsonHttpResponse({
+            'test' : 123,
+            'collection': collection,
+        })
         
     @classmethod
     def data(cls, request, corpus_id):

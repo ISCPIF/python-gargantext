@@ -75,6 +75,23 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
             ngramscaches = NgramsCaches()
         for node in self:
             node.extract_ngrams(keys, ngramsextractorscache, ngramscaches)
+
+    def make_metadata_filterable(self):
+        metadata_cache = {metadata.name: metadata for metadata in Metadata.objects.all()}
+        data = []
+        for node in self:
+            print(node.id)
+            for key, value in node.metadata.items():
+                if key in metadata_cache:
+                    metadata = metadata_cache[key]
+                    if metadata.type == 'string':
+                        value = value[:255]
+                    data.append(Node_Metadata(**{
+                        'node_id' : node.id,
+                        'metadata_id' : metadata.id,
+                        ('value_'+metadata.type) : value,
+                    }))
+        Node_Metadata.objects.bulk_create(data)
     
 class NodeManager(CTENodeManager):
     """Methods available from Node.object."""
@@ -85,6 +102,10 @@ class NodeManager(CTENodeManager):
         if name.startswith("_"): 
             raise AttributeError
         return getattr(self.get_queryset(), name, *args)
+
+class Metadata(models.Model):
+    name        = models.CharField(max_length=32, db_index=True)
+    type        = models.CharField(max_length=16, db_index=True)
         
 class Node(CTENode):
     """The node."""
@@ -137,7 +158,7 @@ class Node(CTENode):
         return resource
     
     @current_app.task(filter=task_method)
-    def parse_resources(self):
+    def parse_resources(self, verbose=False):
         # parse all resources into a list of metadata
         metadata_list = []
         for node_resource in self.node_resource.filter(parsed=False):
@@ -151,22 +172,33 @@ class Node(CTENode):
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
-        # insert the new resources in the database!
-        type = NodeType.objects.get(name='Document')
+        # retrieve info from the database
+        type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()
-        Node.objects.bulk_create([
+        user_id = self.user.id
+        # insert the new resources in the database!
+        for i, metadata_values in enumerate(metadata_list):
+            if verbose:
+                print(i, end='\r', flush=True)
+            name = metadata_values.get('title', '')[:200]
+            language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
+            if isinstance(language, tuple):
+                language = language[0]
             Node(
-                user        = self.user,
-                type        = type,
-                name        = metadata['title'][0:199] if 'title' in metadata else '',
-                parent      = self,
-                language    = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
-                metadata    = metadata,
-            )
-            for metadata in metadata_list
-        ])
+                user_id  = user_id,
+                type_id  = type_id,
+                name     = name,
+                parent   = self,
+                language_id = language.id if language else None,
+                metadata = metadata_values
+            ).save()
+
+        # make metadata filterable
+        self.children.all().make_metadata_filterable()
+
         # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
+
     
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...
@@ -201,6 +233,15 @@ class Node(CTENode):
             )
             for ngram_text, weight in associations.items()
         ])
+
+class Node_Metadata(models.Model):
+    node        = models.ForeignKey(Node)
+    metadata    = models.ForeignKey(Metadata)
+    value_int   = models.IntegerField(null=True, db_index=True)
+    value_float = models.FloatField(null=True, db_index=True)
+    value_string = models.CharField(max_length=255, null=True, db_index=True)
+    value_datetime  = models.DateTimeField(null=True, db_index=True)
+    value_text  = models.TextField(null=True)
 
 class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource')

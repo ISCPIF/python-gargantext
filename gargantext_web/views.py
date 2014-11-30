@@ -543,7 +543,6 @@ def node_link(request, corpus_id):
     #print(data)
     return JsonHttpResponse(data)
 
-
 def graph_it(request):
     '''The new multimodal graph.'''
     t = get_template('graph-it.html')
@@ -554,7 +553,6 @@ def graph_it(request):
         'date': date,
     }))    
     return HttpResponse(html)
-
 
 def ngrams(request):
     '''The ngrams list.'''

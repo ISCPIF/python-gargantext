@@ -6,7 +6,7 @@ from django.db.models import Avg, Max, Min, Count, Sum
 # from node.models import Language, ResourceType, Resource
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
 
-from sqlalchemy import text
+from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
@@ -18,6 +18,7 @@ Ngram = node.models.Ngram.sa
 Metadata = node.models.Metadata.sa
 Node_Metadata = node.models.Node_Metadata.sa
 
+# for debugging only
 def literalquery(statement, dialect=None):
     """Generate an SQL expression string with bound parameters rendered inline
     for the given SQLAlchemy statement.
@@ -62,6 +63,7 @@ def literalquery(statement, dialect=None):
 
     return LiteralCompiler(dialect, statement)
 
+# this one should prove itself useless quite soon
 def get_connection():
     import sqlalchemy.orm
     from django.db import connections
@@ -72,9 +74,7 @@ def get_connection():
     engine = get_engine()
     return engine.connect()
 
-
-# connection = engine.connect()
-
+# for recursive queries
 # _sql_cte = '''
 #     WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
 #         SELECT 1 AS depth,
@@ -103,7 +103,7 @@ import json
 def JsonHttpResponse(data, status=200):
     return HttpResponse(
         content      = json.dumps(data, indent=4),
-        content_type = "application/json",
+        content_type = 'application/json; charset=utf-8',
         status       = status
     )
 Http400 = SuspiciousOperation
@@ -121,9 +121,6 @@ def CsvHttpResponse(data, headers=None, status=200):
     for row in data:
         writer.writerow(row)
     return response
-
-Http400 = SuspiciousOperation
-Http403 = PermissionDenied
 
 _ngrams_order_columns = {
     "frequency" : "-count",
@@ -223,30 +220,38 @@ class CorpusController:
             .group_by(Metadata)
         )
 
-        # build a collection with the metadata ekys
+        # build a collection with the metadata keys
         collection = []
         for metadata in metadata_query:
-            # count values
-            value_column = getattr(Node_Metadata, 'value_' + metadata.type)
-            node_metadata_query = (Node_Metadata
-                .query(value_column)
-                .join(Node, Node.id == Node_Metadata.node_id)
-                .filter(Node.parent_id == node_id)
-                .filter(Node_Metadata.metadata_id == metadata.id)
-                .group_by(value_column)
-                .order_by(value_column)
-            )
-            valuesCount = node_metadata_query.count()
-            # if there is less than 32 values, retrieve them
+            valuesCount = 0
             values = None
-            if valuesCount <= 32:
+
+            # count values
+            valuesCount = None
+            if metadata.type != 'text':
+                value_column = getattr(Node_Metadata, 'value_' + metadata.type)
+                node_metadata_query = (Node_Metadata
+                    .query(value_column)
+                    .join(Node, Node.id == Node_Metadata.node_id)
+                    .filter(Node.parent_id == node_id)
+                    .filter(Node_Metadata.metadata_id == metadata.id)
+                    .group_by(value_column)
+                    .order_by(value_column)
+                )
+                valuesCount = node_metadata_query.count()
+
+            # if there is less than 32 values, give them
+            values = None
+            if isinstance(valuesCount, int) and valuesCount <= 32:
                 values = [row[0] for row in node_metadata_query.all()]
                 if metadata.type == 'datetime':
                     values = []
                     values = map(lambda x: x.isoformat(), values)
 
+            # adding this metadata to the collection
             collection.append({
                 'key': metadata.name,
+                'type': metadata.type,
                 'values': values,
                 'valuesCount': valuesCount,
             })

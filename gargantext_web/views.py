@@ -511,7 +511,7 @@ def node_link(request, corpus_id):
 
     # Removing unconnected nodes
     threshold = min(x.max(axis=1))
-    matrix_filtered = np.where(x > threshold, 1, 0)
+    matrix_filtered = np.where(x >= threshold, 1, 0)
     #matrix_filtered = np.where(x > threshold, x, 0)
     
     G = nx.from_numpy_matrix(matrix_filtered)

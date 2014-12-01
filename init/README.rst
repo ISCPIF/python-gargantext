@@ -82,6 +82,10 @@ Warning: for ln, path has to be absolute!
 5) patch CTE
 patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
 
+6) init nodetypes and main variables
+/srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+
+
 Extras:
 ======
 

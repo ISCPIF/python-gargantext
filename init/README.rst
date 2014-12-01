@@ -96,6 +96,6 @@ Start the Python Notebook server
 
 Start the Django server
 -----------------------
-
+in bash to launch python env : /srv/gargantext_env/bin/activate
 In Pyvenv:
 python manage.py runserver

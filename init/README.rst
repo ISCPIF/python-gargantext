@@ -68,6 +68,9 @@ Populate the database
 python manage.py syncdb
 
 
+Extras:
+======
+
 Start the Python Notebook server
 --------------------------------
 

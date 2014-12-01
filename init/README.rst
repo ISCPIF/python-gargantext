@@ -4,7 +4,23 @@ Install the requirements
 1)  Install all the Debian packages listed in dependances.deb
     (also: sudo apt-get install postgresql-contrib)
 
-2)  Create a virtual enironnement with pyvenv: apt-get install python-virtualenv
+2)  Create a Pythton virtual enironnement
+
+    On Debian:
+    ---------
+    sudo apt-get install python3.4-venv
+    pyvenv3 /srv/gargantext_env
+
+    On ubuntu:
+    ---------
+    sudo apt-get install python-pip
+    sudo pip install -U pip
+    sudo pip install -U virtualenv
+
+    ensuite tu peux créer ton virtualenv dans le dossier de travail ou à un
+    endroit choisi :
+
+    virtualenv -p python3 /srv/gargantext_env
 
 3)  Type: source [your virtual environment directory]/bin/activate
 

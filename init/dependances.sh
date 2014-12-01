@@ -1,3 +1,5 @@
+sudo apt-get install postgresql
+sudo apt-get install postgresql-contrib
 sudo apt-get install python-virtualenv
 sudo apt-get install libpng12-dev
 sudo apt-get install libpng-dev
@@ -8,9 +10,9 @@ sudo apt-get install python-dev
 sudo apt-get install libpq-dev
 sudo apt-get postgresql-contrib
 sudo aptèget install libpq-dev
-# rajouter david
-#
-#
+
+# Pour avoir toutes les dependences de matpolotlib (c'est sale, trouver
+sudo apt-get build-dep python-matplotlib
 #Paquets Debian a installer
 # easy_install -U distribute (matplotlib)
 #lxml

@@ -4,13 +4,16 @@ Jinja2==2.7.3
 MarkupSafe==0.23
 Pillow==2.5.3
 Pygments==1.6
+SQLAlchemy==0.9.8
 South==1.0
+aldjemy==0.3.51
 amqp==1.4.6
 anyjson==0.3.3
 billiard==3.3.0.18
 celery==3.1.15
 certifi==14.05.14
 cffi==0.8.6
+chardet==2.3.0
 cryptography==0.6
 decorator==3.4.0
 django-autoslug==1.7.2

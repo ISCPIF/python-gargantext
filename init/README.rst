@@ -79,7 +79,8 @@ git clone git@github.com:PkSM3/garg.git
 ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
 Warning: for ln, path has to be absolute!
 
-
+5) patch CTE
+patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
 
 Extras:
 ======

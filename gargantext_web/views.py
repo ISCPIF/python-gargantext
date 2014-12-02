@@ -487,6 +487,8 @@ def node_link(request, corpus_id):
 
     matrix = defaultdict(lambda : defaultdict(float))
     labels = dict()
+    weight = dict()
+
     corpus = Node.objects.get(id=corpus_id)
     type_cooc = NodeType.objects.get(name="Cooccurrence")
 
@@ -505,6 +507,11 @@ def node_link(request, corpus_id):
         matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
         matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
 
+        weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
+        weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
+
+
+
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
@@ -515,7 +522,7 @@ def node_link(request, corpus_id):
     #matrix_filtered = np.where(x > threshold, x, 0)
     
     G = nx.from_numpy_matrix(matrix_filtered)
-    G = nx.relabel_nodes(G, dict(enumerate([ labels[x] for x in list(df.columns)])))
+    G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
     
     # Removing too connected nodes (find automatic way to do it)
@@ -529,6 +536,7 @@ def node_link(request, corpus_id):
         try:
             #node,type(labels[node])
             G.node[node]['label'] = node
+            G.node[node]['weight'] = weight[node]
 #            G.node[node]['color'] = '19,180,300'
         except Exception as error:
             print(error)

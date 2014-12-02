@@ -493,12 +493,12 @@ def node_link(request, corpus_id):
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
         whitelist = create_whitelist(request.user, corpus)
-        cooc = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
-        print(cooc.id, "Cooc created")
+        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
+        print(cooccurrence_matrix.id, "Cooc created")
     else:
-        cooc = Node.objects.filter(type=type_cooc, parent=corpus).first()
+        cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
+    for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
         labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
         

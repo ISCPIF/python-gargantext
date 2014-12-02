@@ -4,7 +4,9 @@ Jinja2==2.7.3
 MarkupSafe==0.23
 Pillow==2.5.3
 Pygments==1.6
+SQLAlchemy==0.9.8
 South==1.0
+aldjemy==0.3.51
 amqp==1.4.6
 anyjson==0.3.3
 billiard==3.3.0.18

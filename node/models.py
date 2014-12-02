@@ -168,6 +168,7 @@ class Node(CTENode):
         # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
     
+    @current_app.task(filter=task_method)
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...
         if ngramsextractorscache is None:
@@ -222,6 +223,18 @@ class Corpus(Node):
     class Meta:
         proxy=True
         verbose_name_plural = 'Corpora'
+
+#class WhiteList(Node):
+#    class Meta:
+#        proxy=True
+#
+#class BlackList(Node):
+#    class Meta:
+#        proxy=True
+#
+#class Synonyms(Node):
+#    class Meta:
+#        proxy=True
 
 class Document(Node):
     class Meta:

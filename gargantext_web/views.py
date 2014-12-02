@@ -243,6 +243,7 @@ def project(request, project_id):
                 
                 # async
                 corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+                #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
 
             except Exception as error:
                 print(error)
@@ -486,23 +487,30 @@ def node_link(request, corpus_id):
 
     matrix = defaultdict(lambda : defaultdict(float))
     labels = dict()
+    weight = dict()
+
     corpus = Node.objects.get(id=corpus_id)
     type_cooc = NodeType.objects.get(name="Cooccurrence")
 
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
         whitelist = create_whitelist(request.user, corpus)
-        cooc = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
-        print(cooc.id, "Cooc created")
+        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
+        print(cooccurrence_matrix.id, "Cooc created")
     else:
-        cooc = Node.objects.filter(type=type_cooc, parent=corpus).first()
+        cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
+    for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
         labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
         
         matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
         matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
+
+        weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
+        weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
+
+
 
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
@@ -514,7 +522,7 @@ def node_link(request, corpus_id):
     #matrix_filtered = np.where(x > threshold, x, 0)
     
     G = nx.from_numpy_matrix(matrix_filtered)
-    G = nx.relabel_nodes(G, dict(enumerate([ labels[x] for x in list(df.columns)])))
+    G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
     
     # Removing too connected nodes (find automatic way to do it)
@@ -528,6 +536,7 @@ def node_link(request, corpus_id):
         try:
             #node,type(labels[node])
             G.node[node]['label'] = node
+            G.node[node]['weight'] = weight[node]
 #            G.node[node]['color'] = '19,180,300'
         except Exception as error:
             print(error)

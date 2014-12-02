@@ -82,6 +82,13 @@ except Exception as error:
     typeDoc     = NodeType(name='Synonyme')
     typeDoc.save()
 
+try:
+    typeDoc     = NodeType.objects.get(name='Cooccurrence')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='Cooccurrence')
+    typeDoc.save()
+
 
 
 # In[33]:

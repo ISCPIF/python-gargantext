@@ -536,7 +536,7 @@ def node_link(request, corpus_id):
         try:
             #node,type(labels[node])
             G.node[node]['label'] = node
-            G.node[node]['weight'] = weight[node]
+            G.node[node]['size'] = weight[node]
 #            G.node[node]['color'] = '19,180,300'
         except Exception as error:
             print(error)

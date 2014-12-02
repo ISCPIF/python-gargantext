@@ -641,7 +641,6 @@ function JSONFile( URL ) {
 
 
 function parseSimpleJSON( data , seed ) {
-minNodeSize
 
     var i, j, k;
     rand=new RVUniformC(seed);                     
@@ -694,10 +693,9 @@ minNodeSize
 
         partialGraph.addNode(i,Nodes[i]);  
         updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
-        
     }
 
-    
+
     var edgeId = 0;
     var edgesNodes = data.links;
     for(var i in edgesNodes) {
@@ -747,6 +745,7 @@ minNodeSize
         }
     }
 
+    partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
 
 }
 

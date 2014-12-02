@@ -251,7 +251,6 @@ function bringTheNoise(pathfile,type){
             pr(partialGraph._core.graph.edges.length)
         }
 
-        partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
         theListeners(); 
         $("#closeloader").click(); 
 

@@ -1111,6 +1111,12 @@ sigma.publicPrototype.startForceAtlas2 = function() {
   //if(!this.forceatlas2) {
   if(fa2enabled) {
 
+    pr("starting forceatlas2")
+    pr("nodes.length:")
+    pr(this._core.graph.nodes.length)
+    pr("edges.length:")
+    pr(this._core.graph.edges.length)
+
     var V = 10;
     var E = 100;
 

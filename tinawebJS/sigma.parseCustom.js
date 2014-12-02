@@ -641,6 +641,7 @@ function JSONFile( URL ) {
 
 
 function parseSimpleJSON( data , seed ) {
+minNodeSize
 
     var i, j, k;
     rand=new RVUniformC(seed);                     
@@ -664,14 +665,15 @@ function parseSimpleJSON( data , seed ) {
 
     for(var i in nodesNodes) {
 
-        var color, label;
+        var color, label, size;
         color = (isUndef(nodesNodes[i].color))?"#800000":nodesNodes[i].color;
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
+        size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         
         var node = ({
             id: i ,
             label:label, 
-            size:1, 
+            size:size, 
             x:rand.getRandom(), 
             y:rand.getRandom(), 
             type:catSoc,
@@ -680,9 +682,22 @@ function parseSimpleJSON( data , seed ) {
         });  // The graph node
         
         Nodes[i] = node;
-        partialGraph.addNode( i , node );  
+
+        if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
+        if(parseInt(node.size) > parseInt(maxNodeSize)) maxNodeSize= node.size; 
     }
 
+    for(var i in Nodes){
+
+        normalizedSize=desirableNodeSizeMIN+(Nodes[i].size-1)*((desirableNodeSizeMAX-desirableNodeSizeMIN)/(parseInt(maxNodeSize)-parseInt(minNodeSize)));
+        Nodes[i].size = ""+normalizedSize;
+
+        partialGraph.addNode(i,Nodes[i]);  
+        updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
+        
+    }
+
+    
     var edgeId = 0;
     var edgesNodes = data.links;
     for(var i in edgesNodes) {

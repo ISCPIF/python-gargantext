@@ -218,6 +218,7 @@ function bringTheNoise(pathfile,type){
 	    	$("#changetype").hide();
 
             if( pathfile.indexOf(".json") > -1 ) {
+            	pr("it is a json")
                 JSONFile( pathfile )
             } else {
                 onepartiteExtract(); 
@@ -229,9 +230,15 @@ function bringTheNoise(pathfile,type){
             $.doTimeout(500,function (){
                 $('.etabs a[href="#tabs2"]').trigger('click');
             });
-
+            pr("graph sizes")
             pr(partialGraph._core.graph.nodes.length)
             pr(partialGraph._core.graph.edges.length)
+
+            $.doTimeout(2000,function (){
+	            pr("graph sizes")
+	            pr(partialGraph._core.graph.nodes.length)
+	            pr(partialGraph._core.graph.edges.length)
+            });
 	    } 
 
         if(type=="bi")  {
@@ -682,9 +689,9 @@ function theListeners(){
     });
 
 
-    $.doTimeout(5,function (){
+    $.doTimeout(100,function (){
         fa2enabled=true; partialGraph.startForceAtlas2();
-        $.doTimeout(5,function (){
+        $.doTimeout(200,function (){
             partialGraph.stopForceAtlas2();
         });
     });

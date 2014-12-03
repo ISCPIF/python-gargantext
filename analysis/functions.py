@@ -133,7 +133,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=200):
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, type="node_link"):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
     import pandas as pd
     from copy import copy
     import numpy as np
@@ -192,13 +192,19 @@ def get_cooc(request=None, corpus_id=None, type="node_link"):
     for node in G.nodes():
         try:
             #node,type(labels[node])
-            G.node[node]['label'] = node
-            G.node[node]['size'] = weight[node]
+            G.node[node]['label']   = node
+            G.node[node]['name']    = node
+            G.node[node]['size']    = weight[node]
+            G.node[node]['group']   = partition[node]
 #            G.node[node]['color'] = '19,180,300'
+            G.add_edge(node, partition[node], weight=2)
         except Exception as error:
             print(error)
     
-    data = json_graph.node_link_data(G)
+    if type == "node_link":
+        data = json_graph.node_link_data(G)
+    elif type == "adjacency":
+        data = json_graph.adjacency_data(G)
 #    data = json_graph.node_link_data(G, attrs={\
 #            'source':'source',\
 #            'target':'target',\

@@ -26,7 +26,6 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 
-
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -391,14 +390,16 @@ def explorer_graph(request, corpus_id):
     
     return HttpResponse(html)
 
-def explorer_matrix(request):
+def explorer_matrix(request, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
+    corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'corpus': corpus,\
             }))
     
     return HttpResponse(html)
@@ -470,15 +471,29 @@ def send_csv(request, corpus_id):
 
     return response
 
+
+
+# To get the data
+from gargantext_web.api import JsonHttpResponse
+from analysis.functions import get_cooc
+
+
 def node_link(request, corpus_id):
     '''
-    Create the HttpResponse object with the graph dataset.
+    Create the HttpResponse object with the node_link dataset.
     '''
 
-    from gargantext_web.api import JsonHttpResponse
-    from analysis.functions import get_cooc
+   
     data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
+
+def adjacency(request, corpus_id):
+    '''
+    Create the HttpResponse object with the adjacency dataset.
+    '''
+    data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
+    return JsonHttpResponse(data)
+
 
 def graph_it(request):
     '''The new multimodal graph.'''

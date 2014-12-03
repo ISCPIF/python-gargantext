@@ -46,12 +46,16 @@ def create_whitelist(user, corpus):
             node_node_ngram AS nngX ON nngX.node_id = n.id
         INNER JOIN
             node_ngram AS ngX ON ngX.id = nngX.ngram_id
+        LEFT JOIN
+            node_ngram AS black ON ngX.terms = black.terms
+        WHERE
+            black.terms IS NULL
         WHERE
             n.parent_id = %d
         AND
             n.type_id = %d
         AND
-            ngX.n >= 1
+        ngX.n >= 2
 
         GROUP BY
             ngX.id

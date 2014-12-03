@@ -26,7 +26,6 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 
-
 # SOME FUNCTIONS
 
 def query_to_dicts(query_string, *query_args):
@@ -391,14 +390,16 @@ def explorer_graph(request, corpus_id):
     
     return HttpResponse(html)
 
-def explorer_matrix(request):
+def explorer_matrix(request, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
+    corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'corpus': corpus,\
             }))
     
     return HttpResponse(html)
@@ -470,79 +471,29 @@ def send_csv(request, corpus_id):
 
     return response
 
+
+
+# To get the data
+from gargantext_web.api import JsonHttpResponse
+from analysis.functions import get_cooc
+
+
 def node_link(request, corpus_id):
     '''
-    Create the HttpResponse object with the graph dataset.
+    Create the HttpResponse object with the node_link dataset.
     '''
 
-    import pandas as pd
-    from copy import copy
-    import numpy as np
-    import networkx as nx
-    from networkx.readwrite import json_graph
-    from gargantext_web.api import JsonHttpResponse
-    
-    from analysis.louvain import best_partition
-    from analysis.functions import create_whitelist, create_cooc
-
-    matrix = defaultdict(lambda : defaultdict(float))
-    labels = dict()
-    corpus = Node.objects.get(id=corpus_id)
-    type_cooc = NodeType.objects.get(name="Cooccurrence")
-
-    if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
-        print("Coocurrences do not exist yet, create it.")
-        whitelist = create_whitelist(request.user, corpus)
-        cooc = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
-        print(cooc.id, "Cooc created")
-    else:
-        cooc = Node.objects.filter(type=type_cooc, parent=corpus).first()
-
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooc):
-        labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
-        labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
-        
-        matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
-        matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
-
-    df = pd.DataFrame(matrix).T.fillna(0)
-    x = copy(df.values)
-    x = x / x.sum(axis=1)
-
-    # Removing unconnected nodes
-    threshold = min(x.max(axis=1))
-    matrix_filtered = np.where(x >= threshold, 1, 0)
-    #matrix_filtered = np.where(x > threshold, x, 0)
-    
-    G = nx.from_numpy_matrix(matrix_filtered)
-    G = nx.relabel_nodes(G, dict(enumerate([ labels[x] for x in list(df.columns)])))
-    #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
-    
-    # Removing too connected nodes (find automatic way to do it)
-#    outdeg = G.degree()
-#    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-#    G.remove_nodes_from(to_remove)
-
-    partition = best_partition(G)
-    
-    for node in G.nodes():
-        try:
-            #node,type(labels[node])
-            G.node[node]['label'] = node
-#           G.node[node]['color'] = '19,180,300'
-        except Exception as error:
-            print(error)
-    
-    data = json_graph.node_link_data(G)
-#    data = json_graph.node_link_data(G, attrs={\
-#            'source':'source',\
-#            'target':'target',\
-#            'weight':'weight',\
-#            #'label':'label',\
-#            #'color':'color',\
-#            'id':'id',})
-    #print(data)
+   
+    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
+
+def adjacency(request, corpus_id):
+    '''
+    Create the HttpResponse object with the adjacency dataset.
+    '''
+    data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
+    return JsonHttpResponse(data)
+
 
 def graph_it(request):
     '''The new multimodal graph.'''

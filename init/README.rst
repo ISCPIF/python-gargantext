@@ -71,7 +71,11 @@ Last steps of configuration:
     sudo tar xvjf gargantext_lib.tar.bz2
     sudo chown user:user /srv/gargantext_lib
 
-3) Explorer: 
+3) Explorer:
+
+create mkdir /srv/gargantext_lib/js
+sudo chown -R user:user /srv/gargantext_lib/
+
 cd /srv/gargantext_lib/js
 git clone git@github.com:PkSM3/garg.git
 

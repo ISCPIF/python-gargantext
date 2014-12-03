@@ -370,6 +370,8 @@ class NodesChildrenQueries(APIView):
             }
         """
 
+        metadata_aliases = {}
+
         # validate query
         query_fields = {'pagination', 'retrieve', 'sort', 'filters'}
         for key in request.DATA:
@@ -389,17 +391,40 @@ class NodesChildrenQueries(APIView):
             raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve["type"], '", "'.join(retrieve_types), ), 400)
         fields_names = ['id'] + list(set(retrieve['list']) - {'id'})
         fields_list = []
-        if retrieve['type'] == 'fields':
-            for field_name in fields_names:
-                split_field_name = field_name.split('.')
-                if split_field_name[0] == 'metadata':
-                    field = Node.metadata[split_field_name[1]]
+
+        for field_name in fields_names:
+            split_field_name = field_name.split('.')
+            if split_field_name[0] == 'metadata':
+                metadata = Metadata.query(Metadata).filter(Metadata.name == split_field_name[1]).first()
+                if metadata is None:
+                    metadata_query = Metadata.query(Metadata.name).order_by(Metadata.name)
+                    metadata_names = [metadata.name for metadata in metadata_query.all()]
+                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)
+                # check or create Node_Metadata alias; join if necessary
+                if metadata.id in metadata_aliases:
+                    metadata_alias = metadata_aliases[metadata.id]
                 else:
-                    authorized_field_names = {'id', 'name', }
-                    if field_name not in authorized_field_names:
-                        raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
-                    field = getattr(Node, field_name)
-                fields_list.append(field.label(field_name))
+                    metadata_alias = metadata_aliases[metadata.id] = aliased(Node_Metadata)
+                field = getattr(metadata_alias, 'value_' + metadata.type)
+                # operation on field
+                if len(split_field_name) > 2:
+                    # datetime truncation
+                    if metadata.type == 'datetime':
+                        datepart = split_field_name[2]
+                        accepted_dateparts = ['year', 'month', 'day', 'hour', 'minute']
+                        if datepart not in accepted_dateparts:
+                            raise APIException('Invalid date truncation for "%s": "%s". Accepted values are: "%s".' % (split_field_name[1], split_field_name[2], '", "'.join(accepted_dateparts), ), 400)
+                        # field = extract(datepart, field)
+                        field = func.date_trunc(datepart, field)
+                        # field = func.date_trunc(text('"%s"'% (datepart,)), field)
+            else:
+                authorized_field_names = {'id', 'name', }
+                if field_name not in authorized_field_names:
+                    raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
+                field = getattr(Node, field_name)
+            fields_list.append(
+                field.label(field_name)
+            )
 
         # starting the query!
         document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
@@ -409,8 +434,14 @@ class NodesChildrenQueries(APIView):
             .filter(Node.parent_id == node_id)
         )
 
+        # join aliases
+        for metadata_id, metadata_alias in metadata_aliases.items():
+            query = (query
+                .join(metadata_alias, metadata_alias.node_id == Node.id)
+                .filter(metadata_alias.metadata_id == metadata_id)
+            )
+
         # filtering
-        metadata_aliases = {}
         for filter in request.DATA.get('filters', []):
             # parameters extraction & validation
             field, operator, value = self._parse_filter(filter)
@@ -422,16 +453,15 @@ class NodesChildrenQueries(APIView):
                     metadata_query = Metadata.query(Metadata.name).order_by(Metadata.name)
                     metadata_names = [metadata.name for metadata in metadata_query.all()]
                     raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)                
-                # check or create metadata tables; join if necessary
-                ParentNode = aliased(Node)
-                if field[1] not in metadata_aliases:
-                    metadata_alias = metadata_aliases[field[1]] = aliased(Node_Metadata)
+                # check or create Node_Metadata alias; join if necessary
+                if metadata.id in metadata_aliases:
+                    metadata_alias = metadata_aliases[metadata.id]
+                else:
+                    metadata_alias = metadata_aliases[metadata.id] = aliased(Node_Metadata)
                     query = (query
                         .join(metadata_alias, metadata_alias.node_id == Node.id)
                         .filter(metadata_alias.metadata_id == metadata.id)
                     )
-                else:
-                    metadata_alias = metadata_aliases[field[1]]
                 # filter query
                 query = query.filter(operator(
                     getattr(metadata_alias, 'value_' + metadata.type),

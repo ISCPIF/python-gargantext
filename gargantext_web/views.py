@@ -511,7 +511,6 @@ def node_link(request, corpus_id):
         weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
 
 
-
     df = pd.DataFrame(matrix).T.fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
@@ -531,25 +530,18 @@ def node_link(request, corpus_id):
 #    G.remove_nodes_from(to_remove)
 
     partition = best_partition(G)
-    
+    #print(partition.items())
     for node in G.nodes():
         try:
             #node,type(labels[node])
             G.node[node]['label'] = node
-            G.node[node]['size'] = weight[node]
-#            G.node[node]['color'] = '19,180,300'
+            G.node[node]['size']  = weight[node]
+            G.node[node]['group'] = partition[node]
+            G.add_edge(node, partition[node], weight=2)
         except Exception as error:
             print(error)
     
     data = json_graph.node_link_data(G)
-#    data = json_graph.node_link_data(G, attrs={\
-#            'source':'source',\
-#            'target':'target',\
-#            'weight':'weight',\
-#            #'label':'label',\
-#            #'color':'color',\
-#            'id':'id',})
-    #print(data)
     return JsonHttpResponse(data)
 
 def graph_it(request):

@@ -146,7 +146,7 @@
             data: [
             {% if donut %}
             {% for part in donut %}
-						{label: '{{ part.source }}, {{part.count}} docs', value: {{ part.part }} },
+						{label: '{{ part.source }}', value: {{ part.part }} },
             {% endfor %}
             {% endif %}
 

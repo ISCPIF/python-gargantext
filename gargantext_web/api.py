@@ -290,7 +290,7 @@ class NodesChildrenMetatadata(APIView):
 
 
 
-class NodesChildrenQuery(APIView):
+class NodesChildrenQueries(APIView):
 
     def _parse_filter(self, filter):
             
@@ -342,7 +342,6 @@ class NodesChildrenQuery(APIView):
                     "offset": 0,
                     "limit": 10
                 },
-                "resultsFirstIndex": 40,
                 "retrieve": {
                     "type": "fields",
                     "list": ["name", "metadata.publication_date"]
@@ -350,13 +349,20 @@ class NodesChildrenQuery(APIView):
                 "filters": [
                     {"field": "metadata.publication_date", "operator": ">", "value": "2010-01-01 00:00:00"},
                     {"field": "ngrams.terms", "operator": "in", "value": ["bee", "bees"]}
-                ]
+                ],
+                "sort": ["name"]
             }
 
             Output:
             {
-                "resultsCount": 421,
-                "resultsFirstIndex": 40,
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10
+                },
+                "retrieve": {
+                    "type": "fields",
+                    "list": ["name", "metadata.publication_date"]
+                },
                 "results": [
                     {"id": 12, "name": "A document about bees", "publication_date": "2014-12-03 10:00:00"},
                     ...,
@@ -364,18 +370,24 @@ class NodesChildrenQuery(APIView):
             }
         """
 
+        # validate query
+        query_fields = {'pagination', 'retrieve', 'sort', 'filters'}
+        for key in request.DATA:
+            if key not in query_fields:
+                raise APIException('Unrecognized field "%s" in query object. Accepted fields are: "%s"' % (key, '", "'.join(query_fields)), 400)
+
         # selecting info
         if 'retrieve' not in request.DATA:
-            raise APIException('The query should have a "retrieve" parameter.')
-        retrieve = request.DATA["retrieve"]
+            raise APIException('The query should have a "retrieve" parameter.', 400)
+        retrieve = request.DATA['retrieve']
         retrieve_types = {'fields', 'aggregates'}
         if 'type' not in retrieve:
-            raise APIException('In the query\'s "retrieve" parameter, a "type" should be specified. Possible values are: "%s".' % ('", "'.join(retrieve_types), ))
-        if 'list' not in retrieve:
-            raise APIException('In the query\'s "retrieve" parameter, a "list".')
+            raise APIException('In the query\'s "retrieve" parameter, a "type" should be specified. Possible values are: "%s".' % ('", "'.join(retrieve_types), ), 400)
+        if 'list' not in retrieve or not isinstance(retrieve['list'], list):
+            raise APIException('In the query\'s "retrieve" parameter, a "list" should be provided as an array', 400)
         if retrieve['type'] not in retrieve_types:
-            raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve["type"], '", "'.join(retrieve_types), ))
-        fields_names = list({'id'} | set(retrieve['list']))
+            raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve["type"], '", "'.join(retrieve_types), ), 400)
+        fields_names = ['id'] + list(set(retrieve['list']) - {'id'})
         fields_list = []
         if retrieve['type'] == 'fields':
             for field_name in fields_names:
@@ -389,6 +401,7 @@ class NodesChildrenQuery(APIView):
                     field = getattr(Node, field_name)
                 fields_list.append(field.label(field_name))
 
+        # starting the query!
         document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
         query = (Node
             .query(*fields_list)
@@ -438,6 +451,24 @@ class NodesChildrenQuery(APIView):
 
         # TODO: date_trunc (psql) -> index also
 
+        # sorting
+        sort_fields_names = request.DATA.get('sort', ['id'])
+        if not isinstance(sort_fields_names, list):
+            raise APIException('The query\'s "sort" parameter should be an array', 400)
+        sort_fields_list = []
+        for sort_field_name in sort_fields_names:
+            try:
+                desc = sort_field_name[0] == '-'
+                if sort_field_name[0] in {'-', '+'}:
+                    sort_field_name = sort_field_name[1:]
+                field = fields_list[fields_names.index(sort_field_name)]
+                if desc:
+                    field = field.desc()
+                sort_fields_list.append(field)
+            except:
+                raise APIException('Unrecognized field "%s" in the query\'s "sort" parameter. Accepted values are: "%s"' % (sort_field_name, '", "'.join(fields_names)), 400)
+        query = query.order_by(*sort_fields_list)
+
         # pagination
         pagination = request.DATA.get('pagination', {})
         for key, value in pagination.items():
@@ -464,7 +495,8 @@ class NodesChildrenQuery(APIView):
         pagination["total"] = query.count()
         return Response({
             "pagination": pagination,
-            "retrieved": fields_names,
+            "retrieve": fields_names,
+            "sorted": sort_fields_names,
             "results": results,
         }, 201)
 

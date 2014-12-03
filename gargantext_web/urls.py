@@ -39,7 +39,7 @@ urlpatterns = patterns('',
 
     url(r'^api$', gargantext_web.api.Root),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
-    url(r'^api/nodes/(\d+)/children/query$', gargantext_web.api.NodesChildrenQuery.as_view()),
+    url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),

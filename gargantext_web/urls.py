@@ -37,12 +37,13 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjancy_matrix$', views.node_link),
 
-    url(r'^api/test$', gargantext_web.api.Test.as_view()),
+    url(r'^api$', gargantext_web.api.Root),
+    url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
+    url(r'^api/nodes/(\d+)/children/query$', gargantext_web.api.NodesChildrenQuery.as_view()),
+    
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
-    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.NodesMetatadata.as_view()),
-    # url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
-    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
+    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+    url(r'^api/nodes/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
     url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),

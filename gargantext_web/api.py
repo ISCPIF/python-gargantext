@@ -47,7 +47,7 @@ def literalquery(statement, dialect=None):
         visit_bindparam = Compiler.render_literal_bindparam
 
         def render_literal_value(self, value, type_):
-            return str(value)
+            return "'" + str(value) + "'"
             # if isinstance(value, (float, int)):
             #     return str(value)
             # elif isinstance(value, datetime):
@@ -206,23 +206,30 @@ class APIException(_APIException):
         self.status_code = code
         self.detail = message
 
-class Test(APIView):
-
-    def get(self, request, format=None):
-        get = {}
-        for key in request.GET:
-            if key[-2:] == '[]':
-                get[key[:-2]] = request.GET.getlist(key)
-            else:
-                get[key] = request.GET[key]
-        return Response(get, 201)
-        raise APIException('This cannot happen!', 777)
-    def post(self, request):
-        return Response(['boo', 'yeah'], 400)
 
 
+_operators = {
+    "=":            lambda field, value: (field == value),
+    "!=":           lambda field, value: (field != value),
+    "<":            lambda field, value: (field < value),
+    ">":            lambda field, value: (field > value),
+    "<=":           lambda field, value: (field <= value),
+    ">=":           lambda field, value: (field >= value),
+    "in":           lambda field, value: (field.in_(value)),
+    "contains":     lambda field, value: (field.contains(value)),
+    "startswith":   lambda field, value: (field.startswith(value)),
+}
 
-class NodesMetatadata(APIView):
+from rest_framework.decorators import api_view
+@api_view(('GET',))
+def Root(request, format=None):
+    return Response({
+        'users': reverse('user-list', request=request, format=format),
+        'snippets': reverse('snippet-list', request=request, format=format)
+    })
+
+
+class NodesChildrenMetatadata(APIView):
 
     def get(self, request, node_id):
         
@@ -283,38 +290,183 @@ class NodesMetatadata(APIView):
 
 
 
-# class ApiHttpResponse(HttpResponse):
+class NodesChildrenQuery(APIView):
 
-#     def __init__(self, request, *args, **kwargs):
-#         self.status = 200
-#         self.message = None
-#         # try to execute the corresponding method
-#         try:
-#             method = getattr(self, request.method.lower())
-#         except:
-#             method = None
-#             self.status = 405
-#             self.message = 'Method not allowed'
-#         if method is not None:
-#             response = method(self, request, *args, **kwargs)
-#         # special output
-#         if self.message is not None:
-#             response = {"code":self.status, "message":self.message}
-#         # format the output
-#         format = request.GET.get('format', '')
-#         collection = response
-#         if format == 'csv':
-#             self.content_type = 'text/csv'
-#             writer = csv.writer(response, delimiter=',')
-#             writer.writerow(collection[0].keys)
-#             for row in response:
-#                 if headers:
-                    
-#                 for row in data:
-#                     writer.writerow(row)
-#         else:
-#             pass
+    def _parse_filter(self, filter):
+            
+        # validate filter keys
+        filter_keys = {'field', 'operator', 'value'}
+        if set(filter) != filter_keys:
+            raise APIException('Every filter should have exactly %d keys: "%s"'% (len(filter_keys), '", "'.join(filter_keys)), 400)
+        field, operator, value = filter['field'], filter['operator'], filter['value']
 
+        # validate operator
+        if operator not in _operators:
+            raise APIException('Invalid operator: "%s"'% (operator, ), 400)
+
+        # validate value, depending on the operator
+        if operator == 'in':
+            if not isinstance(value, list):
+                raise APIException('Parameter "value" should be an array when using operator "%s"'% (operator, ), 400)
+            for v in value:
+                if not isinstance(v, (int, float, str)):
+                    raise APIException('Parameter "value" should be an array of numbers or strings when using operator "%s"'% (operator, ), 400)
+        else:
+            if not isinstance(value, (int, float, str)):
+                raise APIException('Parameter "value" should be a number or string when using operator "%s"'% (operator, ), 400)
+
+        # parse field
+        field_objects = {
+            'metadata': None,
+            'ngrams': ['terms', 'n'],
+        }
+        field = field.split('.')
+        if len(field) < 2 or field[0] not in field_objects:
+            raise APIException('Parameter "field" should be a in the form "object.key", where "object" takes one of the following values: "%s". "%s" was found instead' % ('", "'.join(field_objects), '.'.join(field)), 400)
+        if field_objects[field[0]] is not None and field[1] not in field_objects[field[0]]:
+            raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(field_objects[field[0]]), field[1]), 400)
+
+        # return value
+        return field, _operators[operator], value
+
+
+    def post(self, request, node_id):
+        """ Query the children of the given node.
+
+            Example #1
+            ----------
+
+            Input:
+            {
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10
+                },
+                "resultsFirstIndex": 40,
+                "retrieve": {
+                    "type": "fields",
+                    "list": ["name", "metadata.publication_date"]
+                },
+                "filters": [
+                    {"field": "metadata.publication_date", "operator": ">", "value": "2010-01-01 00:00:00"},
+                    {"field": "ngrams.terms", "operator": "in", "value": ["bee", "bees"]}
+                ]
+            }
+
+            Output:
+            {
+                "resultsCount": 421,
+                "resultsFirstIndex": 40,
+                "results": [
+                    {"id": 12, "name": "A document about bees", "publication_date": "2014-12-03 10:00:00"},
+                    ...,
+                ]
+            }
+        """
+
+        # selecting info
+        if 'retrieve' not in request.DATA:
+            raise APIException('The query should have a "retrieve" parameter.')
+        retrieve = request.DATA["retrieve"]
+        retrieve_types = {'fields', 'aggregates'}
+        if 'type' not in retrieve:
+            raise APIException('In the query\'s "retrieve" parameter, a "type" should be specified. Possible values are: "%s".' % ('", "'.join(retrieve_types), ))
+        if 'list' not in retrieve:
+            raise APIException('In the query\'s "retrieve" parameter, a "list".')
+        if retrieve['type'] not in retrieve_types:
+            raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve["type"], '", "'.join(retrieve_types), ))
+        fields_names = list({'id'} | set(retrieve['list']))
+        fields_list = []
+        if retrieve['type'] == 'fields':
+            for field_name in fields_names:
+                split_field_name = field_name.split('.')
+                if split_field_name[0] == 'metadata':
+                    field = Node.metadata[split_field_name[1]]
+                else:
+                    authorized_field_names = {'id', 'name', }
+                    if field_name not in authorized_field_names:
+                        raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
+                    field = getattr(Node, field_name)
+                fields_list.append(field.label(field_name))
+
+        document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
+        query = (Node
+            .query(*fields_list)
+            .filter(Node.type_id == document_type_id)
+            .filter(Node.parent_id == node_id)
+        )
+
+        # filtering
+        metadata_aliases = {}
+        for filter in request.DATA.get('filters', []):
+            # parameters extraction & validation
+            field, operator, value = self._parse_filter(filter)
+            # 
+            if field[0] == 'metadata':
+                # which metadata?
+                metadata = Metadata.query(Metadata).filter(Metadata.name == field[1]).first()
+                if metadata is None:
+                    metadata_query = Metadata.query(Metadata.name).order_by(Metadata.name)
+                    metadata_names = [metadata.name for metadata in metadata_query.all()]
+                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)                
+                # check or create metadata tables; join if necessary
+                ParentNode = aliased(Node)
+                if field[1] not in metadata_aliases:
+                    metadata_alias = metadata_aliases[field[1]] = aliased(Node_Metadata)
+                    query = (query
+                        .join(metadata_alias, metadata_alias.node_id == Node.id)
+                        .filter(metadata_alias.metadata_id == metadata.id)
+                    )
+                else:
+                    metadata_alias = metadata_aliases[field[1]]
+                # filter query
+                query = query.filter(operator(
+                    getattr(metadata_alias, 'value_' + metadata.type),
+                    value
+                ))
+            elif field[0] == 'ngrams': 
+                query = query.filter(
+                    Node.id.in_(Node_Metadata
+                        .query(Node_Ngram.node_id)
+                        .filter(Node_Ngram.ngram_id == Ngram.id)
+                        .filter(operator(
+                            getattr(Ngram, field[1]),
+                            value
+                        ))
+                    )
+                )
+
+        # TODO: date_trunc (psql) -> index also
+
+        # pagination
+        pagination = request.DATA.get('pagination', {})
+        for key, value in pagination.items():
+            if key not in {'limit', 'offset'}:
+                raise APIException('Unrecognized parameter in "pagination": "%s"' % (key, ), 400)
+            if not isinstance(value, int):
+                raise APIException('In "pagination", "%s" should be an integer.' % (key, ), 400)
+        if 'offset' not in pagination:
+            pagination['offset'] = 0
+        if 'limit' not in pagination:
+            pagination['limit'] = 0
+
+
+        # respond to client!
+        # return DebugHttpResponse(literalquery(query))
+        results = [
+            dict(zip(fields_names, row))
+            for row in (
+                query[pagination["offset"]:pagination["offset"]+pagination["limit"]]
+                if pagination['limit']
+                else query[pagination["offset"]:]
+            )
+        ]
+        pagination["total"] = query.count()
+        return Response({
+            "pagination": pagination,
+            "retrieved": fields_names,
+            "results": results,
+        }, 201)
 
 
 
@@ -397,64 +549,7 @@ class CorpusController:
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
 
-    @classmethod
-    def metadata(cls, request, node_id):
-        
-        # query metadata keys
-        ParentNode = aliased(Node)
-        metadata_query = (Metadata
-            .query(Metadata)
-            .join(Node_Metadata, Node_Metadata.metadata_id == Metadata.id)
-            .join(Node, Node.id == Node_Metadata.node_id)
-            .filter(Node.parent_id == node_id)
-            .group_by(Metadata)
-        )
-
-        # build a collection with the metadata keys
-        collection = []
-        for metadata in metadata_query:
-            valuesCount = 0
-            values = None
-
-            # count values and determine their span
-            values_count = None
-            values_from = None
-            values_to = None
-            if metadata.type != 'text':
-                value_column = getattr(Node_Metadata, 'value_' + metadata.type)
-                node_metadata_query = (Node_Metadata
-                    .query(value_column)
-                    .join(Node, Node.id == Node_Metadata.node_id)
-                    .filter(Node.parent_id == node_id)
-                    .filter(Node_Metadata.metadata_id == metadata.id)
-                    .group_by(value_column)
-                    .order_by(value_column)
-                )
-                values_count = node_metadata_query.count()
-                # values_count, values_from, values_to = node_metadata_query.first()
-
-            # if there is less than 32 values, retrieve them
-            values = None
-            if isinstance(values_count, int) and values_count <= 48:
-                values = [row[0] for row in node_metadata_query.all()]
-                if metadata.type == 'datetime':
-                    values = []
-                    values = map(lambda x: x.isoformat(), values)
-
-            # adding this metadata to the collection
-            collection.append({
-                'key': metadata.name,
-                'type': metadata.type,
-                'values': values,
-                'valuesFrom': values_from,
-                'valuesTo': values_to,
-                'valuesCount': values_count,
-            })
-
-        return JsonHttpResponse({
-            'collection': collection,
-        })
-        
+   
     @classmethod
     def data(cls, request, corpus_id):
         # parameters retrieval and validation

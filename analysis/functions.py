@@ -51,7 +51,7 @@ def create_whitelist(user, corpus):
         AND
             n.type_id = %d
         AND
-            ngX.n >= 1
+        ngX.n >= 2
 
         GROUP BY
             ngX.id
@@ -69,7 +69,7 @@ def create_whitelist(user, corpus):
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=200):
+def create_cooc(user=None, corpus=None, whitelist=None, size=400):
     cursor = connection.cursor()
 
     try:
@@ -197,7 +197,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
             G.node[node]['size']    = weight[node]
             G.node[node]['group']   = partition[node]
 #            G.node[node]['color'] = '19,180,300'
-            G.add_edge(node, partition[node], weight=2)
+            G.add_edge(node, partition[node], weight=3)
         except Exception as error:
             print(error)
     

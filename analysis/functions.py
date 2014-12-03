@@ -11,7 +11,7 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-def create_whitelist(user, corpus):
+def create_whitelist(user, corpus, number=200):
     cursor = connection.cursor()
     
     try:
@@ -60,16 +60,16 @@ def create_whitelist(user, corpus):
         ORDER BY
             occurrences DESC
         LIMIT
-            100
+            %d
         ;
-    """  % (white_list.id, corpus.id, type_document.id)
+    """  % (white_list.id, corpus.id, type_document.id, number)
 
     cursor.execute(query_whitelist)
 
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=400):
+def create_cooc(user=None, corpus=None, whitelist=None, size=600):
     cursor = connection.cursor()
 
     try:

@@ -664,10 +664,11 @@ function parseSimpleJSON( data , seed ) {
 
     for(var i in nodesNodes) {
 
-        var color, label, size;
+        var color, label, size, group;
         color = (isUndef(nodesNodes[i].color))?"#800000":nodesNodes[i].color;
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
+        group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
         
         var node = ({
             id: i ,
@@ -677,6 +678,7 @@ function parseSimpleJSON( data , seed ) {
             y:rand.getRandom(), 
             type:catSoc,
             htmlCont:"",
+            group:group,
             color:color
         });  // The graph node
         

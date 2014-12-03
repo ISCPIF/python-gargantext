@@ -215,6 +215,21 @@ function getAcronyms() {
     return ( Object.keys(acrs) );
 }
 
+function getClass(daclass) {
+    var nodes = getVisibleNodes();
+    var acrs = {}
+    pr("in get"+daclass)
+    for(var i in nodes) {
+        theid = nodes[i].id;
+        // pr(i)
+        // pr(nodes[i].id+" : "+nodes[i].attr["CC"]+" , "+nodes[i].attr["ACR"])
+        if (Nodes[theid][daclass]!="-")
+            acrs[Nodes[theid][daclass]]=1
+        // pr("")
+    }
+    return ( Object.keys(acrs) );
+}
+
 function clustersBy(daclass) {
     if (daclass=="country") {
 
@@ -239,6 +254,9 @@ function clustersBy(daclass) {
                 nodes[i].color = colorList[ CCxID[cc] ];
             }
         }
+        partialGraph.refresh()
+        partialGraph.draw();
+        return;
     }
 
     if (daclass=="acronym") {
@@ -264,7 +282,9 @@ function clustersBy(daclass) {
                 nodes[i].color = colorList[ CCxID[cc] ];
             }
         }
-
+        partialGraph.refresh()
+        partialGraph.draw();
+        return;
     }
 
 
@@ -273,10 +293,37 @@ function clustersBy(daclass) {
         for(var i in nodes) {
             nodes[i].color = Nodes[ nodes[i].id ].color;            
         }
+        partialGraph.refresh()
+        partialGraph.draw();
+        return;
+    } else {
+
+        CCs = getClass(daclass)
+        CCxID = {}
+        for(var i in CCs) { 
+            code = CCs[i]
+            CCxID[code]=parseInt(i);
+        }
+        pr(CCxID)
+        
+        var nodes = getVisibleNodes();
+        for(var i in nodes) {
+            nodes[i].color = Nodes[ nodes[i].id ].color;            
+        }
+
+        colorList.sort(function(){ return Math.random()-0.5; }); 
+        // pr(colorList);
+        for(var i in nodes) {
+            cc = Nodes[nodes[i].id][daclass]
+            if( !isUndef( cc ) && cc!="-" ) {
+                nodes[i].color = colorList[ CCxID[cc] ];
+            }
+        }
+        partialGraph.refresh()
+        partialGraph.draw();
+        return;
     }
 
-    partialGraph.refresh()
-    partialGraph.draw();
 }
 
 

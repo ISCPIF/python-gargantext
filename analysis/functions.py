@@ -133,5 +133,85 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=200):
     cursor.execute(query_cooc)
     return cooc
 
+def get_cooc(request=None, corpus_id=None, type="node_link"):
+    import pandas as pd
+    from copy import copy
+    import numpy as np
+    import networkx as nx
+    from networkx.readwrite import json_graph
+    from gargantext_web.api import JsonHttpResponse
+    
+    from analysis.louvain import best_partition
+
+    matrix = defaultdict(lambda : defaultdict(float))
+    labels = dict()
+    weight = dict()
+
+    corpus = Node.objects.get(id=corpus_id)
+    type_cooc = NodeType.objects.get(name="Cooccurrence")
+
+    if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
+        print("Coocurrences do not exist yet, create it.")
+        whitelist = create_whitelist(request.user, corpus)
+        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
+        print(cooccurrence_matrix.id, "Cooc created")
+    else:
+        cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
+
+    for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
+        labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
+        labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
+        
+        matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
+        matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
+
+        weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
+        weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
+
+
+    df = pd.DataFrame(matrix).T.fillna(0)
+    x = copy(df.values)
+    x = x / x.sum(axis=1)
+
+    # Removing unconnected nodes
+    threshold = min(x.max(axis=1))
+    matrix_filtered = np.where(x >= threshold, 1, 0)
+    #matrix_filtered = np.where(x > threshold, x, 0)
+    
+    G = nx.from_numpy_matrix(matrix_filtered)
+    G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
+    #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
+    
+    # Removing too connected nodes (find automatic way to do it)
+#    outdeg = G.degree()
+#    to_remove = [n for n in outdeg if outdeg[n] >= 10]
+#    G.remove_nodes_from(to_remove)
+
+    partition = best_partition(G)
+    
+    for node in G.nodes():
+        try:
+            #node,type(labels[node])
+            G.node[node]['label'] = node
+            G.node[node]['size'] = weight[node]
+#            G.node[node]['color'] = '19,180,300'
+        except Exception as error:
+            print(error)
+    
+    data = json_graph.node_link_data(G)
+#    data = json_graph.node_link_data(G, attrs={\
+#            'source':'source',\
+#            'target':'target',\
+#            'weight':'weight',\
+#            #'label':'label',\
+#            #'color':'color',\
+#            'id':'id',})
+    #print(data)
+    return data
+
+
+
+
+
 
 

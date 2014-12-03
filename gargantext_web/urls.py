@@ -37,14 +37,17 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjancy_matrix$', views.node_link),
 
+    url(r'^api/test$', gargantext_web.api.Test.as_view()),
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
+    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.NodesMetatadata.as_view()),
+    # url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
     url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),
 )
+
 
 from django.conf import settings
 if settings.DEBUG:

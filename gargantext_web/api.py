@@ -63,14 +63,20 @@ def literalquery(statement, dialect=None):
 
     return LiteralCompiler(dialect, statement)
 
-# this one should prove itself useless quite soon
-def get_connection():
+# these might be used for SQLAlchemy
+def get_session():
     import sqlalchemy.orm
     from django.db import connections
+    from sqlalchemy.orm import sessionmaker
     from aldjemy.core import get_engine
     alias = 'default'
     connection = connections[alias]
-    session = sqlalchemy.orm.create_session()
+    engine = get_engine()
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+def get_connection():
+    from aldjemy.core import get_engine
     engine = get_engine()
     return engine.connect()
 
@@ -126,6 +132,190 @@ _ngrams_order_columns = {
     "frequency" : "-count",
     "alphabetical" : "terms"
 }
+
+
+# class HttpError(Exception):
+    
+#     def __init__(self, message, code):
+#         self.message = message
+#         self.code = code
+
+
+# class RestHttpResponse(HttpResponse):
+
+#     def __init__(self, request, *args, **kwargs):
+#         message = None
+#         method = None
+#         try:
+#             method = getattr(self, request.method.lower())
+#         except:
+#             status = 405
+#             message = 'Method not allowed.'
+#             return
+
+#         # get input data
+#         data = {}
+#         data.update(request.GET)
+#         data.update(request.POST)
+
+#         # get the generated response
+#         headers = {}
+#         if method:
+#             try:
+#                 result = method(self, request, *args, **kwargs)
+#                 if isinstance(result, tuple):
+#                     data = result[0]
+#                     status = result[1]
+#                     if len(result) > 2:
+#                         headers = result[2]
+#                 else:
+#                     data = result
+#                     status = 200
+#             except HttpError as e:
+#                 message = e.message
+#                 status = e.code
+
+#         # generate the HTTP response
+#         HttpResponse.__init__(self,
+#             status=status,
+#         )
+#         for key, value in headers.items():
+#             self[key] = value
+
+
+#     def options(self, request, *args, **kwargs):
+#         # methods = [name for name in list(vars(cls)) if callable(getattr(cls, name))]
+#         # return '', 200, {'Allow': ','.join([
+#         #     method.upper()
+#         #     for method in methods
+#         #     if method[0] != '_' and (method not in dir(RestHttpResponse) or method == 'options') and callable(RestHttpResponse, method)
+#         # ])}
+#         return '', 200, {'Allow': ','.join([method.upper() for method in dir(self) if method[0] != '_' and method in ['get', 'post', 'put', 'delete', 'options']])}
+
+
+# delattr(RestHttpResponse, 'get')
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import APIException
+
+_APIException = APIException
+class APIException(_APIException):
+    def __init__(self, message, code=500):
+        self.status_code = code
+        self.detail = message
+
+class Test(APIView):
+
+    def get(self, request, format=None):
+        get = {}
+        for key in request.GET:
+            if key[-2:] == '[]':
+                get[key[:-2]] = request.GET.getlist(key)
+            else:
+                get[key] = request.GET[key]
+        return Response(get, 201)
+        raise APIException('This cannot happen!', 777)
+    def post(self, request):
+        return Response(['boo', 'yeah'], 400)
+
+
+
+class NodesMetatadata(APIView):
+
+    def get(self, request, node_id):
+        
+        # query metadata keys
+        ParentNode = aliased(Node)
+        metadata_query = (Metadata
+            .query(Metadata)
+            .join(Node_Metadata, Node_Metadata.metadata_id == Metadata.id)
+            .join(Node, Node.id == Node_Metadata.node_id)
+            .filter(Node.parent_id == node_id)
+            .group_by(Metadata)
+        )
+
+        # build a collection with the metadata keys
+        collection = []
+        for metadata in metadata_query:
+            valuesCount = 0
+            values = None
+
+            # count values and determine their span
+            values_count = None
+            values_from = None
+            values_to = None
+            if metadata.type != 'text':
+                value_column = getattr(Node_Metadata, 'value_' + metadata.type)
+                node_metadata_query = (Node_Metadata
+                    .query(value_column)
+                    .join(Node, Node.id == Node_Metadata.node_id)
+                    .filter(Node.parent_id == node_id)
+                    .filter(Node_Metadata.metadata_id == metadata.id)
+                    .group_by(value_column)
+                    .order_by(value_column)
+                )
+                values_count = node_metadata_query.count()
+                # values_count, values_from, values_to = node_metadata_query.first()
+
+            # if there is less than 32 values, retrieve them
+            values = None
+            if isinstance(values_count, int) and values_count <= 48:
+                values = [row[0] for row in node_metadata_query.all()]
+                if metadata.type == 'datetime':
+                    values = []
+                    values = map(lambda x: x.isoformat(), values)
+
+            # adding this metadata to the collection
+            collection.append({
+                'key': metadata.name,
+                'type': metadata.type,
+                'values': values,
+                'valuesFrom': values_from,
+                'valuesTo': values_to,
+                'valuesCount': values_count,
+            })
+
+        return JsonHttpResponse({
+            'collection': collection,
+        })
+
+
+
+# class ApiHttpResponse(HttpResponse):
+
+#     def __init__(self, request, *args, **kwargs):
+#         self.status = 200
+#         self.message = None
+#         # try to execute the corresponding method
+#         try:
+#             method = getattr(self, request.method.lower())
+#         except:
+#             method = None
+#             self.status = 405
+#             self.message = 'Method not allowed'
+#         if method is not None:
+#             response = method(self, request, *args, **kwargs)
+#         # special output
+#         if self.message is not None:
+#             response = {"code":self.status, "message":self.message}
+#         # format the output
+#         format = request.GET.get('format', '')
+#         collection = response
+#         if format == 'csv':
+#             self.content_type = 'text/csv'
+#             writer = csv.writer(response, delimiter=',')
+#             writer.writerow(collection[0].keys)
+#             for row in response:
+#                 if headers:
+                    
+#                 for row in data:
+#                     writer.writerow(row)
+#         else:
+#             pass
+
+
 
 
 class NodesController:
@@ -226,8 +416,10 @@ class CorpusController:
             valuesCount = 0
             values = None
 
-            # count values
-            valuesCount = None
+            # count values and determine their span
+            values_count = None
+            values_from = None
+            values_to = None
             if metadata.type != 'text':
                 value_column = getattr(Node_Metadata, 'value_' + metadata.type)
                 node_metadata_query = (Node_Metadata
@@ -238,11 +430,12 @@ class CorpusController:
                     .group_by(value_column)
                     .order_by(value_column)
                 )
-                valuesCount = node_metadata_query.count()
+                values_count = node_metadata_query.count()
+                # values_count, values_from, values_to = node_metadata_query.first()
 
-            # if there is less than 32 values, give them
+            # if there is less than 32 values, retrieve them
             values = None
-            if isinstance(valuesCount, int) and valuesCount <= 32:
+            if isinstance(values_count, int) and values_count <= 48:
                 values = [row[0] for row in node_metadata_query.all()]
                 if metadata.type == 'datetime':
                     values = []
@@ -253,11 +446,12 @@ class CorpusController:
                 'key': metadata.name,
                 'type': metadata.type,
                 'values': values,
-                'valuesCount': valuesCount,
+                'valuesFrom': values_from,
+                'valuesTo': values_to,
+                'valuesCount': values_count,
             })
 
         return JsonHttpResponse({
-            'test' : 123,
             'collection': collection,
         })
         

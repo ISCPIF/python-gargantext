@@ -153,7 +153,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
         if type == "node_link":
-            n = 100
+            n = 150
         elif type == "adjacency":
             n = 50
 

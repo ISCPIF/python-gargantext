@@ -134,68 +134,6 @@ _ngrams_order_columns = {
 }
 
 
-# class HttpError(Exception):
-    
-#     def __init__(self, message, code):
-#         self.message = message
-#         self.code = code
-
-
-# class RestHttpResponse(HttpResponse):
-
-#     def __init__(self, request, *args, **kwargs):
-#         message = None
-#         method = None
-#         try:
-#             method = getattr(self, request.method.lower())
-#         except:
-#             status = 405
-#             message = 'Method not allowed.'
-#             return
-
-#         # get input data
-#         data = {}
-#         data.update(request.GET)
-#         data.update(request.POST)
-
-#         # get the generated response
-#         headers = {}
-#         if method:
-#             try:
-#                 result = method(self, request, *args, **kwargs)
-#                 if isinstance(result, tuple):
-#                     data = result[0]
-#                     status = result[1]
-#                     if len(result) > 2:
-#                         headers = result[2]
-#                 else:
-#                     data = result
-#                     status = 200
-#             except HttpError as e:
-#                 message = e.message
-#                 status = e.code
-
-#         # generate the HTTP response
-#         HttpResponse.__init__(self,
-#             status=status,
-#         )
-#         for key, value in headers.items():
-#             self[key] = value
-
-
-#     def options(self, request, *args, **kwargs):
-#         # methods = [name for name in list(vars(cls)) if callable(getattr(cls, name))]
-#         # return '', 200, {'Allow': ','.join([
-#         #     method.upper()
-#         #     for method in methods
-#         #     if method[0] != '_' and (method not in dir(RestHttpResponse) or method == 'options') and callable(RestHttpResponse, method)
-#         # ])}
-#         return '', 200, {'Allow': ','.join([method.upper() for method in dir(self) if method[0] != '_' and method in ['get', 'post', 'put', 'delete', 'options']])}
-
-
-# delattr(RestHttpResponse, 'get')
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
@@ -388,8 +326,12 @@ class NodesChildrenQueries(APIView):
         if 'list' not in retrieve or not isinstance(retrieve['list'], list):
             raise APIException('In the query\'s "retrieve" parameter, a "list" should be provided as an array', 400)
         if retrieve['type'] not in retrieve_types:
-            raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve["type"], '", "'.join(retrieve_types), ), 400)
-        fields_names = ['id'] + list(set(retrieve['list']) - {'id'})
+            raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve['type'], '", "'.join(retrieve_types), ), 400)
+        
+        if retrieve['type'] == 'fields':
+            fields_names = ['id'] + list(set(retrieve['list']) - {'id'})
+        elif retrieve['type'] == 'aggregates':
+            fields_names = list(set(retrieve['list']))
         fields_list = []
 
         for field_name in fields_names:
@@ -419,17 +361,21 @@ class NodesChildrenQueries(APIView):
                         # field = func.date_trunc(text('"%s"'% (datepart,)), field)
             else:
                 authorized_field_names = {'id', 'name', }
-                if field_name not in authorized_field_names:
+                if retrieve['type'] == 'aggregates' and field_name == 'count':
+                    field = func.count(Node.id)
+                elif field_name not in authorized_field_names:
                     raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
-                field = getattr(Node, field_name)
+                else:
+                    field = getattr(Node, field_name)
             fields_list.append(
                 field.label(field_name)
             )
 
         # starting the query!
         document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
-        query = (Node
+        query = (get_session()
             .query(*fields_list)
+            .select_from(Node)
             .filter(Node.type_id == document_type_id)
             .filter(Node.parent_id == node_id)
         )
@@ -481,6 +427,13 @@ class NodesChildrenQueries(APIView):
 
         # TODO: date_trunc (psql) -> index also
 
+        # groupping
+        authorized_aggregates = {'count': func.count(Node.id)}
+        for field_name in fields_names:
+            if field_name not in authorized_aggregates:
+                # query = query.group_by(text(field_name))
+                query = query.group_by('"%s"' % (field_name, ))
+
         # sorting
         sort_fields_names = request.DATA.get('sort', ['id'])
         if not isinstance(sort_fields_names, list):
@@ -513,6 +466,7 @@ class NodesChildrenQueries(APIView):
 
 
         # respond to client!
+        # return DebugHttpResponse(str(query))
         # return DebugHttpResponse(literalquery(query))
         results = [
             dict(zip(fields_names, row))

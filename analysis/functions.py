@@ -11,7 +11,7 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-def create_whitelist(user, corpus, number=200):
+def create_whitelist(user, corpus, number=100):
     cursor = connection.cursor()
     
     try:
@@ -69,7 +69,7 @@ def create_whitelist(user, corpus, number=200):
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=600):
+def create_cooc(user=None, corpus=None, whitelist=None, size=150):
     cursor = connection.cursor()
 
     try:

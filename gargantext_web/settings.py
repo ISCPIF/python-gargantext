@@ -68,6 +68,8 @@ INSTALLED_APPS = (
     'ngram',
     'django_hstore',
     'djcelery',
+    'aldjemy',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (

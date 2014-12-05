@@ -10,10 +10,6 @@ os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 from node.models import *
 
 
-# Node.objects.get(id=26514).children.all().make_metadata_filterable()
-# exit()
-
-
 # Reset: all data
 
 tables_to_empty = [

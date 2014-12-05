@@ -428,11 +428,11 @@ class NodesChildrenQueries(APIView):
         # TODO: date_trunc (psql) -> index also
 
         # groupping
-        authorized_aggregates = {'count': func.count(Node.id)}
-        for field_name in fields_names:
-            if field_name not in authorized_aggregates:
-                # query = query.group_by(text(field_name))
-                query = query.group_by('"%s"' % (field_name, ))
+        if retrieve['type'] == 'aggregates':
+            authorized_aggregates = {'count': func.count(Node.id)}
+            for field_name in fields_names:
+                if field_name not in authorized_aggregates:
+                    query = query.group_by('"%s"' % (field_name, ))
 
         # sorting
         sort_fields_names = request.DATA.get('sort', ['id'])

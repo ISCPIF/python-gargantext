@@ -133,7 +133,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150):
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150):
     import pandas as pd
     from copy import copy
     import numpy as np
@@ -152,11 +152,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
 
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
-        if type == "node_link":
-            n = 150
-        elif type == "adjacency":
-            n = 50
-
         whitelist = create_whitelist(request.user, corpus, size=n)
         cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
         print(cooccurrence_node.id, "Cooc created")

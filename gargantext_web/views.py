@@ -367,7 +367,6 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
-
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
     return HttpResponseRedirect('/projects/')

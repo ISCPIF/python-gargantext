@@ -35,18 +35,20 @@ urlpatterns = patterns('',
     # Getting data
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
-    url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
+    url(r'^corpus/(\d+)/adjacency.json$', views.node_link),
+
+    url(r'^api$', gargantext_web.api.Root),
+    url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
+    url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     
-    # REST views
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
-    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
-    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
-    
-    # Tests (to be removed soon)
+    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+    url(r'^api/nodes/(\d+)/data$', gargantext_web.api.CorpusController.data),
+
     url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),
 )
+
 
 from django.conf import settings
 if settings.DEBUG:

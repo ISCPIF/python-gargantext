@@ -30,3 +30,5 @@ sudo apt-get install libopenblas-dev
 sudo apt-get install liblapack-dev
 
 
+source /srv/gargantext_env/bin/activate
+pip install git+https://github.com/mathieurodic/aldjemy.git

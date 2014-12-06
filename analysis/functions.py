@@ -11,7 +11,7 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-def create_whitelist(user, corpus):
+def create_whitelist(user, corpus, size=100):
     cursor = connection.cursor()
     
     try:
@@ -60,16 +60,16 @@ def create_whitelist(user, corpus):
         ORDER BY
             occurrences DESC
         LIMIT
-            100
+            %d
         ;
-    """  % (white_list.id, corpus.id, type_document.id)
+    """  % (white_list.id, corpus.id, type_document.id, size)
 
     cursor.execute(query_whitelist)
 
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=400):
+def create_cooc(user=None, corpus=None, whitelist=None, size=150):
     cursor = connection.cursor()
 
     try:
@@ -133,7 +133,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=400):
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150):
     import pandas as pd
     from copy import copy
     import numpy as np
@@ -152,9 +152,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
 
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
-        whitelist = create_whitelist(request.user, corpus)
-        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist)
-        print(cooccurrence_matrix.id, "Cooc created")
+        whitelist = create_whitelist(request.user, corpus, size=n)
+        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
+        print(cooccurrence_node.id, "Cooc created")
     else:
         cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
@@ -177,7 +177,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
     threshold = min(x.max(axis=1))
     matrix_filtered = np.where(x >= threshold, 1, 0)
     #matrix_filtered = np.where(x > threshold, x, 0)
-    
+    #matrix_filtered = matrix_filtered.resize((90,90))
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
@@ -189,22 +189,37 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
 
     partition = best_partition(G)
     
-    for node in G.nodes():
-        try:
-            #node,type(labels[node])
-            G.node[node]['label']   = node
-            G.node[node]['name']    = node
-            G.node[node]['size']    = weight[node]
-            G.node[node]['group']   = partition[node]
-#            G.node[node]['color'] = '19,180,300'
-            G.add_edge(node, partition[node], weight=3)
-        except Exception as error:
-            print(error)
-    
+        
     if type == "node_link":
+        for node in G.nodes():
+            try:
+                #node,type(labels[node])
+                G.node[node]['label']   = node
+                G.node[node]['name']    = node
+                G.node[node]['size']    = weight[node]
+                G.node[node]['group']   = partition[node]
+                #G.add_edge(node, partition[node], weight=3)
+#            G.node[node]['color'] = '19,180,300'
+            except Exception as error:
+                print(error)
+
         data = json_graph.node_link_data(G)
+    
     elif type == "adjacency":
-        data = json_graph.adjacency_data(G)
+        for node in G.nodes():
+            try:
+                #node,type(labels[node])
+                #G.node[node]['label']   = node
+                G.node[node]['name']    = node
+                #G.node[node]['size']    = weight[node]
+                G.node[node]['group']   = partition[node]
+                #G.add_edge(node, partition[node], weight=3)
+#            G.node[node]['color'] = '19,180,300'
+            except Exception as error:
+                print(error)
+        data = json_graph.node_link_data(G)
+     
+
 #    data = json_graph.node_link_data(G, attrs={\
 #            'source':'source',\
 #            'target':'target',\

@@ -75,9 +75,10 @@ class LanguagesCache(defaultdict):
                 self[str(language.iso2.lower())] = language
                 self[str(language.iso3.lower())] = language
                 self[str(language.fullname.lower())] = language
-        betterKey = key.strip().lower()
-        self[key] = self[betterKey] if betterKey in self.keys() else None
-        return self[betterKey]
+        if key not in self.keys():
+            betterKey = key.strip().lower()
+            self[key] = self[betterKey] if betterKey in self.keys() else None
+        return self[key]
 
 
 

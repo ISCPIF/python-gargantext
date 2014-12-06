@@ -1,4 +1,4 @@
-from parsing.FileParsers.RisFileParser import RisFileParser
+from .RisFileParser import RisFileParser
 
 
 class IsiFileParser(RisFileParser):

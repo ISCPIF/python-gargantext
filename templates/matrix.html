@@ -5,6 +5,22 @@
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+<link rel="stylesheet" href="{% static "css/d3matrix.css" %}">
+
+<style>
+.background {
+  fill: #eee;
+}
+
+line {
+  stroke: #fff;
+}
+
+text.active {
+  fill: red;
+}
+</style>
+
 {% endblock %}
 
 
@@ -17,7 +33,11 @@
         </div>
 </div>
 
-<script src="{% static "js/d3/d3.v2.min.js" %}></script>
+<div id="graphid" style="visibility: hidden;">/corpus/{{ corpus.id }}/adjacency.json</div>
+
+
+<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+<script src="{% static "js/d3/d3.v2.min.js" %}"></script>
 
 <p>Order: <select id="order">
   <option value="name">by Name</option>
@@ -39,11 +59,12 @@ var x = d3.scale.ordinal().rangeBands([0, width]),
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .style("margin-left", -margin.left + "px")
+    //.style("margin-left", -margin.left + "px")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-		d3.json("{% static "img/miserables.json" %}, function(miserables) {
+    var filename = document.getElementById("graphid").innerHTML
+		d3.json(filename, function(miserables) {
   var matrix = [],
       nodes = miserables.nodes,
       n = nodes.length;
@@ -57,12 +78,12 @@ var svg = d3.select("body").append("svg")
 
   // Convert links to matrix; count character occurrences.
   miserables.links.forEach(function(link) {
-    matrix[link.source][link.target].z += link.value;
-    matrix[link.target][link.source].z += link.value;
-    matrix[link.source][link.source].z += link.value;
-    matrix[link.target][link.target].z += link.value;
-    nodes[link.source].count += link.value;
-    nodes[link.target].count += link.value;
+    matrix[link.source][link.target].z += link.weight;
+    matrix[link.target][link.source].z += link.weight;
+    matrix[link.source][link.source].z += link.weight;
+    matrix[link.target][link.target].z += link.weight;
+    nodes[link.source].count += link.weight;
+    nodes[link.target].count += link.weight;
   });
 
   // Precompute the orders.

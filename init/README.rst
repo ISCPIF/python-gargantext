@@ -4,23 +4,30 @@ Install the requirements
 1)  Install all the Debian packages listed in dependances.deb
     (also: sudo apt-get install postgresql-contrib)
 
-2)  Create a virtual enironnement with pyvenv: apt-get install python-virtualenv
+2)  Create a Pythton virtual enironnement
+
+    On Debian:
+    ---------
+    sudo apt-get install python3.4-venv
+    pyvenv3 /srv/gargantext_env
+
+    On ubuntu:
+    ---------
+    sudo apt-get install python-pip
+    sudo pip install -U pip
+    sudo pip install -U virtualenv
+
+    ensuite tu peux créer ton virtualenv dans le dossier de travail ou à un
+    endroit choisi :
+
+    sudo virtualenv -p python3 /srv/gargantext_env
 
 3)  Type: source [your virtual environment directory]/bin/activate
 
-4)  Do your work!
+4)  sudo chown -R user:user /srv/gargantext_env
+    pip install -r /srv/gargantext/init/requirements.txt
 
 5)  Type: deactivate
-
-
-Configure stuff
----------------
-
-1)  ln -s [the project folder] /srv/gargantext
-
-2)  ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
-
-Warning: for ln, path has to be absolute!
 
 
 In PostreSQL
@@ -51,6 +58,36 @@ Populate the database
 
 python manage.py syncdb
 
+
+Last steps of configuration:
+----------------------------
+
+1) If your project is not in /srv/gargantext:
+    ln -s [the project folder] /srv/gargantext
+
+2) build gargantext_lib
+    wget http://docs.delanoe.org/gargantext_lib.tar.bz2
+    cd /srv/
+    sudo tar xvjf gargantext_lib.tar.bz2
+    sudo chown user:user /srv/gargantext_lib
+
+3) Explorer: 
+cd /srv/gargantext_lib/js
+git clone git@github.com:PkSM3/garg.git
+
+4)  Adapt all symlinks:
+ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
+Warning: for ln, path has to be absolute!
+
+5) patch CTE
+patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
+
+6) init nodetypes and main variables
+/srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+
+
+Extras:
+======
 
 Start the Python Notebook server
 --------------------------------

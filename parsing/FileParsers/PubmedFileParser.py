@@ -1,7 +1,7 @@
 from django.db import transaction
 from lxml import etree
-from parsing.FileParsers.FileParser import FileParser
-from parsing.NgramsExtractors import *
+from .FileParser import FileParser
+from ..NgramsExtractors import *
 
 class PubmedFileParser(FileParser):
     

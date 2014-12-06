@@ -198,7 +198,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150
                 G.node[node]['name']    = node
                 G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
-                #G.add_edge(node, partition[node], weight=3)
+                G.add_edge(node, partition[node], weight=3)
 #            G.node[node]['color'] = '19,180,300'
             except Exception as error:
                 print(error)

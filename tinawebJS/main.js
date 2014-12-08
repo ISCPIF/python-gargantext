@@ -688,9 +688,9 @@ function theListeners(){
     });
 
 
-    $.doTimeout(100,function (){
+    $.doTimeout(1000,function (){
         fa2enabled=true; partialGraph.startForceAtlas2();
-        $.doTimeout(200,function (){
+        $.doTimeout(10000,function (){
             partialGraph.stopForceAtlas2();
         });
     });

@@ -236,8 +236,8 @@ def project(request, project_id):
                     )
 
             try:
-                #corpus.parse_and_extract_ngrams(keys=['title',])
-                corpus.parse_and_extract_ngrams.apply_async((), countdown=1)
+                corpus.parse_and_extract_ngrams()
+                #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
 
             except Exception as error:
                 print(error)

@@ -68,9 +68,9 @@
 <!-- Add jumbotron container for each type of corpus (presse, science etc.) --!>
 
 <div class="container">
-				<h1>Resources</h1>
-				<h2>Corpora</h2>
-								{% if list_corpora  %}
+				{% if list_corpora  %}
+								<h1>Resources</h1>
+								<h2>Corpora</h2>
 										<ul>
 										{% for key, corpora in list_corpora.items %}
 										<li>{{ key }}</li>
@@ -92,7 +92,7 @@
 												</ul>
 										{% endfor %}
 										</ul>
-								{% endif %}
+				{% endif %}
 
 
 								{% if list_corporax  %}

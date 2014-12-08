@@ -1,0 +1,163 @@
+{% extends "menu.html" %}
+
+{% block css %}
+    <!-- {% load staticfiles %} -->
+    <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+            <h1>MVC testing</h1>
+            <p>Implementation of the MVC architecture with various javascript frameworks.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="test-container"></div>
+    </div>
+
+    <!-- All the templates used by the Javascript framework -->
+    {% verbatim %}
+    
+    <script type="text/template" id="filter-template">
+        <span>...where</span>
+        <select name="entity">
+            <option value="metadata">metadata</option>
+            <option value="ngrams">ngrams</option>
+        </select>
+
+        <span class="entity metadata">
+            <select name="key"><% _.each(metadataList, function(metadata){ %>
+                <option><%= metadata.name %></option>
+            <% }); %></select>
+        </span>
+        <span class="entity ngrams">
+            <select name="key">
+                <option value="terms">terms</option>
+                <option value="n">terms count</option>
+            </select>
+        </span>
+
+        <select name="operator"></select>
+        <input name="value" />
+
+        <button class="remove">X</button>
+    </script>
+ 
+    <script type="text/template" id="filterlist-template">
+        <ul class="filters"></ul>
+        <button class="add">Add a filter...</button>
+    </script>
+    
+
+<!-- 
+    <script type="text/ejs" id="FilterView">
+        <li>
+            <span>...where the</span>
+            <select name="entity">
+                <option>metadata</option>
+                <option>ngrams</option>
+            </select>
+            <span class="entity metadata">
+                <select name="key"></select>
+            </span>
+            <span class="entity ngrams">
+                <select name="key">
+                    <option value="terms">terms</option>
+                    <option value="n">terms count</option>
+                </select>
+            </span>
+        </li>
+    </script>
+
+    <script type="text/ejs" id="FilterListView">
+        <div class="filters">
+            <ul class="filters"></ul>
+            <button class="create">Add a filter</button>
+        </div>
+    </script>
+ -->
+
+    {% endverbatim %}
+
+    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+    
+
+    {% verbatim %}
+    <div ng-app="Gargantext" ng-controller="FilterListController">
+        <ul>
+            <li ng-repeat="(filterIndex, filter) in filters">
+                <span>...where the </span>
+                <select ng-model="filter.entity">
+                    <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
+                </select>
+                <span ng-if="filter.entity">
+                    <select ng-model="filter.column">
+                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+                    </select>
+                    <span ng-if="filter.column">
+                        <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
+                            <select ng-model="filter.operator">
+                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
+                            </select>
+                            <input type="text" ng-model="filter.value">
+                        </span>
+                    </span>
+                </span>
+                <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
+            </li>
+        </ul>
+        <button ng-click="addFilter()">Add a filter...</button>
+    </div>
+<!-- 
+    <div ng-app="Gargantext" ng-controller="FilterController">
+        <span>...where the </span>
+        <select ng-model="entityName">
+            <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
+        </select>
+        <span ng-if="entityName">
+            <select ng-model="entityColumn.key">
+                <option ng-repeat="entityColumn in entities[entityName] | orderBy:'key'" value="{{entityColumn.key}}">{{entityColumn.key}}</option>
+            </select>
+            <span ng-if="entityColumn.key">
+                <span ng-repeat="entityColumn in entities[entityName] | filter : entityColumn : strict">
+                    <select ng-model="operator.key">
+                        <option ng-repeat="operator in operators[entityColumn.type]" value="{{operator.key}}">{{operator.label}}</option>
+                    </select>
+                    <input type="text">
+                </span>
+            </span>
+        </span>
+    </div>
+     -->
+    {% endverbatim %}
+    <script type="text/javascript" src="{% static "js/angular.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/gargantext.angular.js" %}"></script>
+
+<!-- 
+    <script type="text/javascript" src="{% static "js/underscore-min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/backbone.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/gargantext.backbone.js" %}"></script>
+    <script type="text/javascript">
+        var filterList = new FilterListView({nodeId: 39576});
+        filterList.render().$el.appendTo('#test-container');
+    </script>
+ -->   
+<!-- 
+    <script type="text/javascript" src="{% static "js/can.custom.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/gargantext.can.js" %}"></script>
+    <script type="text/javascript">
+        var f = new FilterListController('#test-container', {parent: 39576});
+    </script>
+         -->
+
+{% endblock %}
+
+
+
+

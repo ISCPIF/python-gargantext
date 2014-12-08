@@ -39,9 +39,13 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
 
 
-    """RESTful API
-    These URLs allow operations on the database in a RESTful way.
-    """
+    # TEST
+    
+    # first steps with AngularJS
+    url(r'^tests/mvc$', views.tests_mvc),
+
+
+    # RESTful API
 
     # retrieve all the metadata from a given node's children
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
@@ -55,7 +59,7 @@ urlpatterns = patterns('',
     # other (DEPRECATED, TO BE REMOVED)
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
+    # url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
     url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
 )
 

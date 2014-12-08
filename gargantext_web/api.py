@@ -181,8 +181,8 @@ class NodesChildrenMetatadata(APIView):
             .group_by(Metadata)
         )
 
-        # build a collection with the metadata keys
-        collection = []
+        # build a data with the metadata keys
+        data = []
         for metadata in metadata_query:
             valuesCount = 0
             values = None
@@ -212,8 +212,8 @@ class NodesChildrenMetatadata(APIView):
                     values = []
                     values = map(lambda x: x.isoformat(), values)
 
-            # adding this metadata to the collection
-            collection.append({
+            # adding this metadata to the data
+            data.append({
                 'key': metadata.name,
                 'type': metadata.type,
                 'values': values,
@@ -223,7 +223,7 @@ class NodesChildrenMetatadata(APIView):
             })
 
         return JsonHttpResponse({
-            'collection': collection,
+            'data': data,
         })
 
 
@@ -468,7 +468,7 @@ class NodesChildrenQueries(APIView):
         # respond to client!
         # return DebugHttpResponse(str(query))
         # return DebugHttpResponse(literalquery(query))
-        results = [
+        data = [
             dict(zip(fields_names, row))
             for row in (
                 query[pagination["offset"]:pagination["offset"]+pagination["limit"]]
@@ -481,7 +481,7 @@ class NodesChildrenQueries(APIView):
             "pagination": pagination,
             "retrieve": fields_names,
             "sorted": sort_fields_names,
-            "results": results,
+            "data": data,
         }, 201)
 
 

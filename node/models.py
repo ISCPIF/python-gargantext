@@ -157,7 +157,6 @@ class Node(CTENode):
         node_resource.save()
         return resource
     
-    @current_app.task(filter=task_method)
     def parse_resources(self, verbose=False):
         # parse all resources into a list of metadata
         metadata_list = []
@@ -200,7 +199,6 @@ class Node(CTENode):
         self.node_resource.update(parsed=True)
 
     
-    @current_app.task(filter=task_method)
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...
         if ngramsextractorscache is None:
@@ -234,6 +232,13 @@ class Node(CTENode):
             )
             for ngram_text, weight in associations.items()
         ])
+
+    @current_app.task(filter=task_method)
+    def parse_and_extract_ngrams(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+        self.parse_resources()
+        type_document   = NodeType.objects.get(name='Document')
+        self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+
 
 class Node_Metadata(models.Model):
     node        = models.ForeignKey(Node)

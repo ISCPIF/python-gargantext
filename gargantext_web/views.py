@@ -5,11 +5,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
-#from documents.models import Project, Corpus, Document
-
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Node_Ngram, NodeNgramNgram
+
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -237,12 +236,8 @@ def project(request, project_id):
                     )
 
             try:
-                #corpus.parse_resources.apply_async((), countdown=1)
-                corpus.parse_resources()
-                
-                # async
-                corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-                #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+                #corpus.parse_and_extract_ngrams(keys=['title',])
+                corpus.parse_and_extract_ngrams.apply_async((), countdown=1)
 
             except Exception as error:
                 print(error)

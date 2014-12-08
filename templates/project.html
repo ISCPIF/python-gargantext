@@ -105,9 +105,9 @@
 										</div>
 								{% endif %}
 				
-				<h2>Lists of Ngrams</h2>
 						{% if whitelists  %}
-						<h3>White Lists</h2>
+						<h2>Lists of Ngrams</h2>
+								<h3>White Lists</h2>
 								{% for list in whitelists %}
 										<ul>
                     <li> {{list.name }}
@@ -126,8 +126,8 @@
 						
 
 				
-				<h2>Results (graphs)</h2>
-             {% if cooclists  %}
+        {% if cooclists  %}
+						<h2>Results (graphs)</h2>
 						<h3>Cooccurrences Lists</h2>
 								{% for list in cooclists %}
 										<ul>

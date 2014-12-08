@@ -76,9 +76,12 @@
 										<li>{{ key }}</li>
 												<ul>
 														{% for corpus in corpora %}
-																<li> 
+														<li> {% ifnotequal corpus.count 0 %}
 																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
-																		, {{ corpus.count }} Documents (test version: wait and refresh the page if 0 documents) 
+																		, {{ corpus.count }} Documents 
+																 {% else %}
+																 Processing... refresh the page.
+																 {% endifnotequal %}
 																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='
 																		<ul>

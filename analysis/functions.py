@@ -133,7 +133,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150):
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
     import pandas as pd
     from copy import copy
     import numpy as np
@@ -189,8 +189,11 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150
 
     partition = best_partition(G)
     
-        
     if type == "node_link":
+        for community in set(partition.values()):
+            #print(community)
+            G.add_node("cluster " + str(community), hidden=1)
+
         for node in G.nodes():
             try:
                 #node,type(labels[node])
@@ -198,7 +201,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link", n=150
                 G.node[node]['name']    = node
                 G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
-                G.add_edge(node, partition[node], weight=3)
+                G.add_edge(node, "cluster " + str(partition[node]), weight=3)
 #            G.node[node]['color'] = '19,180,300'
             except Exception as error:
                 print(error)

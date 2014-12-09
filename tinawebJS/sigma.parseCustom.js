@@ -669,6 +669,7 @@ function parseSimpleJSON( data , seed ) {
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
+        ishidden = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
         
         var node = ({
             id: i ,
@@ -679,7 +680,8 @@ function parseSimpleJSON( data , seed ) {
             type:catSoc,
             htmlCont:"",
             group:group,
-            color:color
+            color:color,
+            hidden: ishidden
         });  // The graph node
         
         Nodes[i] = node;

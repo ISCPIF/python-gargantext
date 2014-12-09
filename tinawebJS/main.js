@@ -619,13 +619,13 @@ function theListeners(){
     
 
 
-    // i've to put a timeout, idkwhy
-    $.doTimeout(100,function (){
+    // // i've to put a timeout, idkwhy
+    // $.doTimeout(100,function (){
         
-        NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
+    //     NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
 
-        EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
-    });
+    //     EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
+    // });
 
 
     //finished
@@ -687,12 +687,18 @@ function theListeners(){
         }
     });
 
+        NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
+
+        EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
 
     
     $.doTimeout(1000,function (){
         clustersBy("group");
+
+        
         fa2enabled=true; partialGraph.startForceAtlas2();
-        $.doTimeout(10000,function (){
+
+        $.doTimeout(9000,function (){
             partialGraph.stopForceAtlas2();
         });
     });

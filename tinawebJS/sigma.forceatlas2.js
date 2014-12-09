@@ -1111,7 +1111,7 @@ sigma.publicPrototype.startForceAtlas2 = function() {
   //if(!this.forceatlas2) {
   if(fa2enabled) {
 
-    pr("starting forceatlas2")
+    pr("\t\t\t\t\tFA2 started")
     pr("nodes.length:")
     pr(this._core.graph.nodes.length)
     pr("edges.length:")
@@ -1158,10 +1158,12 @@ sigma.publicPrototype.startForceAtlas2 = function() {
 
 sigma.publicPrototype.stopForceAtlas2 = function() {
 
-  // pr("\t\t\t\t\tFA2 Stopped")
+  pr("\t\t\t\t\tFA2 Stopped")
   this.removeGenerator('forceatlas2');
-  this.forceatlas2.active=false;
-  this.forceatlas2.count=0;
+  if(this.forceatlas2) {
+    this.forceatlas2.active=false;
+    this.forceatlas2.count=0;
+  }
   updateMap();
   partialGraph.refresh();
   if(minimap) $("#overviewzone").show();

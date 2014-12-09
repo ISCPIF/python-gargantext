@@ -688,7 +688,9 @@ function theListeners(){
     });
 
 
+    
     $.doTimeout(1000,function (){
+        clustersBy("group");
         fa2enabled=true; partialGraph.startForceAtlas2();
         $.doTimeout(10000,function (){
             partialGraph.stopForceAtlas2();

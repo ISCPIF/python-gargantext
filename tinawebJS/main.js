@@ -687,10 +687,6 @@ function theListeners(){
         }
     });
 
-        NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
-
-        EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
-
     
     $.doTimeout(1000,function (){
         clustersBy("group");

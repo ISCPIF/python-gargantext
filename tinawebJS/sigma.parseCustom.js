@@ -670,7 +670,8 @@ function parseSimpleJSON( data , seed ) {
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
         ishidden = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
-        
+        if (ishidden==1) ishidden=true;
+
         var node = ({
             id: i ,
             label:label, 
@@ -695,8 +696,10 @@ function parseSimpleJSON( data , seed ) {
         normalizedSize=desirableNodeSizeMIN+(Nodes[i].size-1)*((desirableNodeSizeMAX-desirableNodeSizeMIN)/(parseInt(maxNodeSize)-parseInt(minNodeSize)));
         Nodes[i].size = ""+normalizedSize;
 
-        partialGraph.addNode(i,Nodes[i]);  
-        updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
+        partialGraph.addNode(i,Nodes[i]); 
+
+        if(!Nodes[i].hidden)
+            updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
     }
 
 
@@ -748,6 +751,11 @@ function parseSimpleJSON( data , seed ) {
             partialGraph.addEdge(indice,source,target,edge);
         }
     }
+
+
+    NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
+
+    EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
 
     partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
 

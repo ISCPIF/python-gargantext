@@ -279,8 +279,8 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
                                             sid = Edges[ID].sourceID
                                             tid = Edges[ID].targetID
                                             if (sid==n || tid==n) {
-                                                if(isUndef(getn(sid))) unHide(sid)
-                                                if(isUndef(getn(tid))) unHide(tid)
+                                                if(isUndef(getn(sid))  && !Nodes[sid].hidden ) unHide(sid)
+                                                if(isUndef(getn(tid))  && !Nodes[tid].hidden ) unHide(tid)
                                                 add1Edge(ID)
                                                 // pr("\tADD "+ID)
                                             }
@@ -388,7 +388,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
                     pushFilterValue( sliderDivID , filtervalue )
                     return false
                 }
-
+                pr("inside of the onchangeeeeeeeee")
                 // [ Stopping FA2 ]
                 partialGraph.stopForceAtlas2();
                 // [ / Stopping FA2 ]
@@ -399,7 +399,7 @@ function NodeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
                         for(var id in ids) {
                             ID = ids[id]
                             Nodes[ID].lock = false;
-                            if(partialGraph._core.graph.nodesIndex[ID])
+                            if(partialGraph._core.graph.nodesIndex[ID] && !Nodes[ID].hidden)
                                 partialGraph._core.graph.nodesIndex[ID].hidden = false;
                         }
                     } else {

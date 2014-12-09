@@ -23,7 +23,7 @@
 
     <!-- All the templates used by the Javascript framework -->
     {% verbatim %}
-    
+    <!-- 
     <script type="text/template" id="filter-template">
         <span>...where</span>
         <select name="entity">
@@ -53,7 +53,11 @@
         <ul class="filters"></ul>
         <button class="add">Add a filter...</button>
     </script>
-    
+ 
+    <script type="text/template" id="nodesquery-template">
+        <div ng-include="'filterlist-template'"></div>
+    </script>
+     -->
 
 <!-- 
     <script type="text/ejs" id="FilterView">
@@ -89,7 +93,8 @@
     
 
     {% verbatim %}
-    <div ng-app="Gargantext" ng-controller="FilterListController">
+<!--
+    <div ng-app="Gargantext" ng-controller="FilterListController">        
         <ul>
             <li ng-repeat="(filterIndex, filter) in filters">
                 <span>...where the </span>
@@ -114,6 +119,73 @@
         </ul>
         <button ng-click="addFilter()">Add a filter...</button>
     </div>
+-->
+    <div class="container">
+    <div ng-app="Gargantext" ng-controller="QueryController">        
+        <div class="corpus">
+            <select ng-model="corpusId">
+                <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
+            </select>
+        </div>
+        <div class="filters">
+            <hr/>
+            <ul>
+                <li ng-repeat="(filterIndex, filter) in query.filters">
+                    <span>...where the </span>
+                    <select ng-model="filter.entity">
+                        <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
+                    </select>
+                    <span ng-if="filter.entity">
+                        <select ng-model="filter.column">
+                            <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+                        </select>
+                        <span ng-if="filter.column">
+                            <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
+                                <select ng-model="filter.operator">
+                                    <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
+                                </select>
+                                <input type="text" ng-model="filter.value">
+                            </span>
+                        </span>
+                    </span>
+                    <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
+                </li>
+            </ul>
+            <button ng-click="addFilter()">Add a filter...</button>
+        </div>
+        <div class="pagination">
+            <hr/>
+            <select ng-model="query.pagination.limit">
+                <option ng-repeat="limit in [5, 10, 20, 50, 100]" value="{{limit}}">{{limit}}</option>
+            </select>
+            results per page <span ng-if="query.pagination.total !== undefined">
+                out of
+                <strong>{{query.pagination.total}}</strong>
+            </span>,
+             sorted by
+            <select ng-model="query.sort[0]">
+                <option ng-repeat="field in query.retrieve.list" value="{{field}}">{{field}}</option>
+            </select>
+            <button ng-click="postQuery()">(refresh results)</button>
+        </div>
+        <div class="results" ng-if="results.length">
+            <hr/>
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-repeat="(key, value) in results[0]">{{key}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="result in results">
+                        <td ng-repeat="(key, value) in result">{{value}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
 <!-- 
     <div ng-app="Gargantext" ng-controller="FilterController">
         <span>...where the </span>

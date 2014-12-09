@@ -457,7 +457,9 @@ class NodesChildrenQueries(APIView):
         for key, value in pagination.items():
             if key not in {'limit', 'offset'}:
                 raise APIException('Unrecognized parameter in "pagination": "%s"' % (key, ), 400)
-            if not isinstance(value, int):
+            try:
+                pagination[key] = int(value)
+            except:
                 raise APIException('In "pagination", "%s" should be an integer.' % (key, ), 400)
         if 'offset' not in pagination:
             pagination['offset'] = 0
@@ -490,22 +492,23 @@ class NodesController:
 
     @classmethod
     def get(cls, request):
-        query = Node.objects
+        nodes_query = (Node
+            .query(Node.id, Node.name, NodeType.name)
+            .join(NodeType)
+        )
         if 'type' in request.GET:
-            query = query.filter(type__name=request.GET['type'])
+            nodes_query = nodes_query.filter(NodeType.name == request.GET['type'])
         if 'parent' in request.GET:
-            query = query.filter(parent_id=int(request.GET['parent']))
+            nodes_query = nodes_query.filter(Node.parent_id == request.GET['parent'])
 
         collection = []
-        for child in query.all():
-            type_name = child.type.name
+        for row in nodes_query:
             collection.append({
-                'id': child.id,
-                'text': child.name,
-                'type': type_name,
-                'children': type_name is not 'Document',
+                'id': row[0],
+                'name': row[1],
+                'type': row[2]
             })
-        return JsonHttpResponse(collection)
+        return JsonHttpResponse({'data': collection})
 
 
 

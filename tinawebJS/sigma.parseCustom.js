@@ -682,7 +682,7 @@ function parseSimpleJSON( data , seed ) {
             htmlCont:"",
             group:group,
             color:color,
-            hidden: ishidden
+            hidden: false
         });  // The graph node
         
         Nodes[i] = node;

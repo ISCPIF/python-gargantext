@@ -63,7 +63,7 @@ var seed=999999999;//defaultseed
 var semanticConverged=false;
 
 
-var showLabelsIfZoom=2.0;
+var showLabelsIfZoom=1.0;
 var greyColor = "#9b9e9e";
 
 // ============ < SIGMA.JS PROPERTIES > ============

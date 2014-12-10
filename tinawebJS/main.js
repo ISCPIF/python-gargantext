@@ -1,4 +1,7 @@
 //  === monitor windows resize === //
+
+$("footer").remove();
+
 var counterrrr=0;
 $( window ).resize(function() {
   counterrrr++;
@@ -76,17 +79,18 @@ function sigmaLimits(){
     pr("\t\tprevsigma:("+pw+","+ph+")");
     
     sidebar=$('#leftcolumn').width();
-    anchototal=$('#fixedtop').width();
+    anchototal=$('#dafixedtop').width();
     altototal=$('#leftcolumn').height();
-    altofixtop=$('#fixedtop').height()
+    altofixtop=$('#dafixedtop').height()
     altodeftop=$('#defaultop').height()
     if((anchototal-sidebar)>0)
         $('#sigma-example').width(anchototal-sidebar);
-    $('#sigma-example').height(altototal-altofixtop-altodeftop-40);
+    $('#sigma-example').height(altototal-altofixtop-altodeftop);
     
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();
     pr("\t\tnowsigma:("+pw+","+ph+")");
+    $("footer").remove();
 }
 
 function bringTheNoise(pathfile,type){
@@ -155,7 +159,7 @@ function bringTheNoise(pathfile,type){
         fullwidth=$('#fixedtop').width();
         e.preventDefault();
         // $("#wrapper").toggleClass("active");
-        if(parseFloat(sidebar.css("right"))<0){            
+        if(parseFloat(sidebar.css("right"))<0){
             $("#aUnfold").attr("class","rightarrow"); 
             sidebar.animate({
                 "right" : sidebar.width()+"px"
@@ -170,6 +174,7 @@ function bringTheNoise(pathfile,type){
                     "width": fullwidth-sidebar.width()+"px"
             }, { duration: 400, queue: false }); 
             setTimeout(function() {
+                  sigmaLimits();
                   partialGraph.resize();
                   partialGraph.refresh();
             }, 400);
@@ -190,6 +195,7 @@ function bringTheNoise(pathfile,type){
                     "width": fullwidth+"px"
             },{ duration: 400, queue: false });
             setTimeout(function() {
+                  sigmaLimits();
                   partialGraph.resize();
                   partialGraph.refresh();
             }, 400);
@@ -687,17 +693,6 @@ function theListeners(){
         }
     });
 
-    
-    $.doTimeout(1000,function (){
-        clustersBy("group");
-
-        
-        fa2enabled=true; partialGraph.startForceAtlas2();
-
-        $.doTimeout(9000,function (){
-            partialGraph.stopForceAtlas2();
-        });
-    });
 
 }
 

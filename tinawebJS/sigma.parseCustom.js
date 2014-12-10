@@ -752,12 +752,20 @@ function parseSimpleJSON( data , seed ) {
         }
     }
 
+    clustersBy("group");
 
     NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
 
     EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
 
     partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
+
+    $.doTimeout(100,function (){
+        fa2enabled=true; partialGraph.startForceAtlas2();
+        $.doTimeout(9000,function (){
+            partialGraph.stopForceAtlas2();
+        });
+    });
 
 }
 

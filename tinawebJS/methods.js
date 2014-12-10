@@ -1399,7 +1399,7 @@ function unHide(id){
     if(id.split(";").length==1) {
     // i've received a NODE
         if(!isUndef(getn(id))) return;
-        if(Nodes[id]) {
+        if(Nodes[id] && !Nodes[id].hidden) {
             var tt = Nodes[id].type
             var anode = ({
                 id:id,
@@ -1426,18 +1426,19 @@ function unHide(id){
         //visibleEdges.push(id);
         if(!isUndef(gete(id))) return;
         if(Edges[id] && !Edges[id].lock){
+            if (!Nodes[Edges[id].sourceID].hidden && !Nodes[Edges[id].targetID].hidden) {
+                var anedge = {
+                    id:         id,
+                    sourceID:   Edges[id].sourceID,
+                    targetID:   Edges[id].targetID,
+                    lock : false,
+                    label:      Edges[id].label,
+                    weight: (swMacro && (iwantograph=="sociosemantic"))?Edges[id].bweight:Edges[id].weight
+                };
 
-            var anedge = {
-                id:         id,
-                sourceID:   Edges[id].sourceID,
-                targetID:   Edges[id].targetID,
-                lock : false,
-                label:      Edges[id].label,
-                weight: (swMacro && (iwantograph=="sociosemantic"))?Edges[id].bweight:Edges[id].weight
-            };
-
-        	partialGraph.addEdge(id , anedge.sourceID , anedge.targetID , anedge);
-            return;
+            	partialGraph.addEdge(id , anedge.sourceID , anedge.targetID , anedge);
+                return;
+            }
         }
     }
 }

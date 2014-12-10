@@ -142,6 +142,7 @@ def project(request, project_id):
     
     type_corpus     = NodeType.objects.get(name='Corpus')
     type_document   = NodeType.objects.get(name='Document')
+    
     type_whitelist  = NodeType.objects.get(name='WhiteList')
     type_blacklist  = NodeType.objects.get(name='BlackList')
     type_cooclist   = NodeType.objects.get(name='Cooccurrence')
@@ -157,17 +158,17 @@ def project(request, project_id):
     
     # List of resources
     # filter for each project here
-    whitelists      = Node.objects.filter( type=type_whitelist)
-    blacklists      = Node.objects.filter( type=type_blacklist)
-    cooclists       = Node.objects.filter( type=type_cooclist)
+    whitelists      = ""#.children.filter(type=type_whitelist)
+    blacklists      = ""#.children.filter(type=type_blacklist)
+    cooclists       = ""#.children.filter(type=type_cooclist)
     
     for corpus in corpora:
         docs_count =  corpus.children.count()
         docs_total += docs_count
         
         corpus_view = dict()
-        corpus_view['id']       = corpus.pk
-        corpus_view['name']     = corpus.name
+        corpus_view['id']         = corpus.pk
+        corpus_view['name']       = corpus.name
         corpus_view['count']      = corpus.children.count()
         
         for node_resource in Node_Resource.objects.filter(node=corpus):
@@ -464,7 +465,6 @@ def send_csv(request, corpus_id):
     cursor.close()
 
     return response
-
 
 
 # To get the data

@@ -1163,6 +1163,14 @@ sigma.publicPrototype.stopForceAtlas2 = function() {
   if(this.forceatlas2) {
     this.forceatlas2.active=false;
     this.forceatlas2.count=0;
+    if(swMacro) {
+      for(var n in partialGraph._core.graph.nodesIndex) {
+        var x = partialGraph._core.graph.nodesIndex[n].x;
+        var y = partialGraph._core.graph.nodesIndex[n].y;
+        Nodes[n].x = x;
+        Nodes[n].y = y;
+      }
+    }
   }
   updateMap();
   partialGraph.refresh();

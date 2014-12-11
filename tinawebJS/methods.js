@@ -1426,19 +1426,20 @@ function unHide(id){
         //visibleEdges.push(id);
         if(!isUndef(gete(id))) return;
         if(Edges[id] && !Edges[id].lock){
-            if (!Nodes[Edges[id].sourceID].hidden && !Nodes[Edges[id].targetID].hidden) {
+            //if (!Nodes[Edges[id].sourceID].hidden && !Nodes[Edges[id].targetID].hidden) {
                 var anedge = {
                     id:         id,
                     sourceID:   Edges[id].sourceID,
                     targetID:   Edges[id].targetID,
                     lock : false,
+                    iscluster: (!Nodes[Edges[id].sourceID].iscluster && !Nodes[Edges[id].targetID].iscluster)?false:true ,
                     label:      Edges[id].label,
                     weight: (swMacro && (iwantograph=="sociosemantic"))?Edges[id].bweight:Edges[id].weight
                 };
 
             	partialGraph.addEdge(id , anedge.sourceID , anedge.targetID , anedge);
                 return;
-            }
+            //}
         }
     }
 }

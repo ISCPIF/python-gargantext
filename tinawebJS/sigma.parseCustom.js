@@ -669,8 +669,8 @@ function parseSimpleJSON( data , seed ) {
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
-        ishidden = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
-        if (ishidden==1) ishidden=true;
+        iscluster = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
+        if (iscluster==1) iscluster=true;
 
         var node = ({
             id: i ,
@@ -682,7 +682,7 @@ function parseSimpleJSON( data , seed ) {
             htmlCont:"",
             group:group,
             color:color,
-            hidden: false
+            iscluster: iscluster
         });  // The graph node
         
         Nodes[i] = node;
@@ -698,7 +698,7 @@ function parseSimpleJSON( data , seed ) {
 
         partialGraph.addNode(i,Nodes[i]); 
 
-        if(!Nodes[i].hidden)
+        if(!Nodes[i].iscluster)
             updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
     }
 
@@ -716,6 +716,7 @@ function parseSimpleJSON( data , seed ) {
                 targetID:   target,
                 lock : false,
                 label:      "",
+                iscluster:(!Nodes[source].iscluster && !Nodes[target].iscluster)?false:true ,
                 weight: (edgesNodes[i].w)?edgesNodes[i].w:1
         };
 

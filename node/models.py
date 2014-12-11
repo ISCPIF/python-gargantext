@@ -295,7 +295,7 @@ class NodeNgramNgram(models.Model):
     score       = models.FloatField(default=0)
 
     def __str__(self):
-        return "%s: %s / %s" % (self.node.name, self.ngramX.terms, self.ngramY.terms)
+        return "%s: %s / %s" % (self.node.name, self.ngramx.terms, self.ngramy.terms)
 
 
 

@@ -69,7 +69,7 @@ def create_whitelist(user, corpus):
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=400):
+def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=None, year_end=None):
     cursor = connection.cursor()
 
     try:
@@ -169,7 +169,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type="node_link"):
         weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
 
 
-    df = pd.DataFrame(matrix).T.fillna(0)
+    df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
 

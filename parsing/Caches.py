@@ -18,8 +18,9 @@ class NgramsCache(defaultdict):
         retrieve it from the database or insert it."""
         terms = terms.strip().lower()
         try:
-            ngram = node.models.Ngram.get(terms=terms, language=self.language)
-        except:
+            ngram = node.models.Ngram.objects.get(terms=terms, language=self.language)
+        except Exception as error:
+            print(error)
             ngram = node.models.Ngram(terms=terms, n=len(terms.split()), language=self.language)
             ngram.save()
         self[terms] = ngram

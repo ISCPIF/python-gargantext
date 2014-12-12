@@ -22,7 +22,7 @@ external="";
 bridge["forFilteredQuery"] = external+"php/bridgeClientServer_filter.php";
 bridge["forNormalQuery"] = external+"php/bridgeClientServer.php";
 
-
+var clusters = [];
 
 
 ircNick="";

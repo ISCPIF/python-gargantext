@@ -83,9 +83,11 @@ function sigmaLimits(){
     altototal=$('#leftcolumn').height();
     altofixtop=$('#dafixedtop').height()
     altodeftop=$('#defaultop').height()
-    if((anchototal-sidebar)>0)
-        $('#sigma-example').width(anchototal-sidebar);
-    $('#sigma-example').height(altototal-altofixtop-altodeftop);
+    if((anchototal-sidebar)>0) {
+        if($('#leftcolumn').css('right')>0)
+            $('#sigma-example').width(anchototal-sidebar);
+    }
+    $('#sigma-example').height(altototal-altofixtop-altodeftop-10);
     
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();

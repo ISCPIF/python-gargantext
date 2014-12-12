@@ -1120,6 +1120,11 @@ sigma.publicPrototype.startForceAtlas2 = function() {
     var V = 10;
     var E = 100;
 
+    // for(var c in clusters) {
+    //   cid = ""+clusters[c]
+    //   if(isUndef(getn("c"+cid)))
+    //     partialGraph.dropNode("c"+cid)
+    // }
     this.forceatlas2 = new sigma.forceatlas2.ForceAtlas2(this._core.graph , V, E);
     this.forceatlas2.setAutoSettings();
     this.forceatlas2.init();
@@ -1172,8 +1177,58 @@ sigma.publicPrototype.stopForceAtlas2 = function() {
       }
     }
   }
+
+
   updateMap();
   partialGraph.refresh();
   if(minimap) $("#overviewzone").show();
 
+
+  // $.doTimeout(1000,function (){
+  //   for(var c in clusters) {
+  //     cid = ""+clusters[c]
+  //     neighs = nodes1[cid].neighbours
+  //     pr(cid)
+  //     pr(neighs)
+  //     var min_x=9999.0, max_x=-9999.0, min_y=9999.0, max_y=-9999.0;
+  //     for(var n in neighs) {
+  //       nid = neighs[n]+"";
+  //       pr(nid)
+  //       var x = partialGraph._core.graph.nodesIndex[nid].x
+  //       var y = partialGraph._core.graph.nodesIndex[nid].y
+
+  //       if(parseFloat(x) < parseFloat(min_x)) min_x= x;
+  //       if(parseFloat(x) > parseFloat(max_x)) max_x= x; 
+  //       if(parseFloat(y) < parseFloat(min_y)) min_y= y;
+  //       if(parseFloat(y) > parseFloat(max_y)) max_y= y; 
+  //     }
+  //     pr("min_x: "+min_x + " | max_x: " + max_x + " | min_y: " + min_y + " | max_y: " + max_y)
+  //     pr("")
+
+  //     var Ox = (min_x+max_x)/2;
+  //     var Oy = (min_y+max_y)/2;
+
+  //     var Px = min_x;
+  //     var Py = min_y;
+
+
+  //     var R = Math.sqrt( Math.pow((Ox-Px), 2) + Math.pow((Oy-Py), 2) );
+  //     R = R * 1.2;
+
+
+  //     pr(hex2rga(colorList[c]))
+  //     var node = ({
+  //         id: "c"+cid ,
+  //         label:"", 
+  //         size:R, 
+  //         x:getn(cid).x, 
+  //         y:getn(cid).y,
+  //         color: colorList[c]
+  //     });  // The graph node
+  //     partialGraph.addNode("c"+cid,node); 
+
+
+  //   }
+  // });
+  partialGraph.draw()
 };

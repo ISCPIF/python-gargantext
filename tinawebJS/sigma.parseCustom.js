@@ -670,7 +670,10 @@ function parseSimpleJSON( data , seed ) {
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
         iscluster = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
-        if (iscluster==1) iscluster=true;
+        if (iscluster==1) {
+        	iscluster=true;
+        	clusters.push(i)
+        }
 
         var node = ({
             id: i ,

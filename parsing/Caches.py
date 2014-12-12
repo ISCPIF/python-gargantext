@@ -3,6 +3,13 @@ from parsing.NgramsExtractors import *
 
 from collections import defaultdict
 
+from nltk.stem.porter import PorterStemmer
+st = PorterStemmer()
+
+def stem_all(ngram):
+    return " ".join(map(lambda x: st.stem(x), ngram.split(" ")))
+
+
 
 class NgramsCache(defaultdict):
     """This allows the fast retrieval of ngram ids
@@ -16,13 +23,31 @@ class NgramsCache(defaultdict):
     def __missing__(self, terms):
         """If the terms are not yet present in the dictionary,
         retrieve it from the database or insert it."""
+        
         terms = terms.strip().lower()
+        
         try:
             ngram = node.models.Ngram.objects.get(terms=terms, language=self.language)
         except Exception as error:
-            print(error)
             ngram = node.models.Ngram(terms=terms, n=len(terms.split()), language=self.language)
             ngram.save()
+        
+        stem_terms = stem_all(ngram.terms)
+
+        try:
+            stem = node.models.Ngram.objects.get(terms=stem_terms, language=ngram.language, n=ngram.n)
+        except:
+            stem = node.models.Ngram(terms=stem_terms, language=ngram.language, n=ngram.n)
+            stem.save()
+
+        type_stem = node.models.NodeType.objects.get(name='Stem')
+        node_stem = node.models.Node.objects.get(name='Stem', type=type_stem)
+        
+        try:
+            node.models.NodeNgramNgram.objects.get(node=node_stem, ngramx=stem, ngramy=ngram)
+        except:
+            node.models.NodeNgramNgram(node=node_stem, ngramx=stem, ngramy=ngram, score=1).save()
+
         self[terms] = ngram
         return self[terms]
         

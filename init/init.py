@@ -61,6 +61,14 @@ except Exception as error:
     typeDoc     = NodeType(name='Document')
     typeDoc.save()
 
+
+try:
+    typeStem     = NodeType.objects.get(name='Stem')
+except Exception as error:
+    print(error)
+    typeStem     = NodeType(name='Stem')
+    typeStem.save()
+
 try:
     typeDoc     = NodeType.objects.get(name='WhiteList')
 except Exception as error:
@@ -131,5 +139,11 @@ try:
 except:
     project = Node(name='Bees project', type=typeProject, user=me)
     project.save()
+
+try:
+    stem = Node.objects.get(name='Stem')
+except:
+    stem = Node(name='Stem', type=typeStem, user=me)
+    stem.save()
 
 

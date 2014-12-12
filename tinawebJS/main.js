@@ -86,8 +86,9 @@ function sigmaLimits(){
     if((anchototal-sidebar)>0) {
         if($('#leftcolumn').css('right')>0)
             $('#sigma-example').width(anchototal-sidebar);
+        else  $('#sigma-example').css('width', '100%');
     }
-    $('#sigma-example').height(altototal-altofixtop-altodeftop-10);
+    $('#sigma-example').height(altototal-altofixtop-altodeftop);
     
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();

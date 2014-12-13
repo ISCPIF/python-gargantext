@@ -409,9 +409,12 @@ class NodesChildrenQueries(APIView):
                         .filter(metadata_alias.metadata_id == metadata.id)
                     )
                 # filter query
+                if metadata.type == 'datetime':
+                    datetime_base = '2000-01-01 00:00:00'
+                    value = value[:len(datetime_base)]
+                    value = value + datetime_base[len(value):]
                 query = query.filter(operator(
-                    getattr(metadata_alias, 'value_' + metadata.type),
-                    value
+                    getattr(metadata_alias, 'value_' + metadata.type), value
                 ))
             elif field[0] == 'ngrams': 
                 query = query.filter(
@@ -433,6 +436,13 @@ class NodesChildrenQueries(APIView):
             for field_name in fields_names:
                 if field_name not in authorized_aggregates:
                     query = query.group_by('"%s"' % (field_name, ))
+        else:
+            for field_name in fields_names:
+                if '.' in field_name:
+                    field = '"%s"' % (field_name, )
+                else:
+                    field = getattr(Node, field_name)
+                query = query.group_by(field)
 
         # sorting
         sort_fields_names = request.DATA.get('sort', ['id'])

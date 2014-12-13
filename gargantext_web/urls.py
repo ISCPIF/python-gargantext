@@ -57,6 +57,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
 
     # other (DEPRECATED, TO BE REMOVED)
+    url(r'^graph-it$', gargantext_web.views.graph_it),
     url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
     # url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),

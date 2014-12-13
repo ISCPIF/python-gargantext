@@ -378,7 +378,7 @@ buttonAddDataset.click(function() {
 
 
 
-
+/*
  $('.tree').jstree({
      'core' : {
          'data' : {
@@ -412,5 +412,5 @@ buttonAddDataset.click(function() {
          }
    },
  });
-
-// var graph = $('.graph-it').graphIt(640, 480);
+*/
+var graph = $('.graph-it').graphIt(640, 480);

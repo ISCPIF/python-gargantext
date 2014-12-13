@@ -89,8 +89,7 @@
 
     {% endverbatim %}
 
-    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
-    
+    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>    
 
     {% verbatim %}
 <!--
@@ -120,70 +119,152 @@
         <button ng-click="addFilter()">Add a filter...</button>
     </div>
 -->
+    
+    <style type="text/css">
+        div.list-results table {border-collapse: collapse;}
+        div.list-results th, div.list-results td {border: solid 1px #888; padding: 0.5em;}
+        div.list-results th {background: #444; color: #FFF}
+        div.list-results tr:nth-child(even) td {background: #FFF; color: #111}
+        div.list-results tr:nth-child(odd) td {background: #EEE; color: #000}
+    </style>
+
+    <!--
+
+        TODO: use inclusions
+
+        SEE: http://stackoverflow.com/questions/17801988/dynamically-loading-controllers-and-ng-include
+
+    -->
+
     <div class="container">
-    <div ng-app="Gargantext" ng-controller="QueryController">        
-        <div class="corpus">
-            <select ng-model="corpusId">
-                <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
-            </select>
-        </div>
-        <div class="filters">
-            <hr/>
-            <ul>
-                <li ng-repeat="(filterIndex, filter) in query.filters">
-                    <span>...where the </span>
-                    <select ng-model="filter.entity">
-                        <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-                    </select>
-                    <span ng-if="filter.entity">
-                        <select ng-model="filter.column">
-                            <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+
+        <!--
+        <div ng-app="Gargantext" ng-controller="QueryController">
+            <div class="corpus">
+                Chosen corpus:
+                <select ng-model="corpusId" ng-change="updateEntities()">
+                    <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
+                </select>
+            </div>
+            <div class="filters" ng-if="corpusId">
+                <hr/>
+                <ul>
+                    <li ng-repeat="(filterIndex, filter) in filters">
+                        <span>...where the </span>
+                        <select ng-model="filter.entity">
+                            <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
                         </select>
-                        <span ng-if="filter.column">
-                            <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
-                                <select ng-model="filter.operator">
-                                    <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
-                                </select>
-                                <input type="text" ng-model="filter.value">
+                        <span ng-if="filter.entity">
+                            <select ng-model="filter.column">
+                                <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+                            </select>
+                            <span ng-if="filter.column">
+                                <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
+                                    <select ng-model="filter.operator">
+                                        <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
+                                    </select>
+                                    <input type="text" ng-model="filter.value">
+                                </span>
                             </span>
                         </span>
-                    </span>
-                    <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
+                        <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
+                    </li>
+                </ul>
+                <button ng-click="addFilter()">Add a filter...</button>
+            </div>
+            <div class="results" ng-if="corpusId">
+                <hr/>
+                <button ng-if="corpusId" ng-click="postQuery()">Refresh results</button>
+                <div class="list">
+                    <div class="list-pagination">
+                        <select ng-model="pagination.limit">
+                            <option ng-repeat="limit in [5, 10, 20, 50, 100]" value="{{limit}}">{{limit}}</option>
+                        </select>
+                        results per page
+                        <span ng-if="resultsCount != undefined">
+                            showing page
+                            <select ng-model="pagination.offset">
+                                <option ng-repeat="x in range(0, resultsCount+1, pagination.limit)" value="{{ x }}">{{ Math.round(1+x/pagination.limit) }}</option>
+                            </select>
+                            out of
+                            {{ Math.ceil(resultsCount / pagination.limit) }}
+                            <strong>({{resultsCount}}</strong> results found)
+                        </span>
+                    </div>
+                    <div class="list-wait" ng-if="loading">
+                        <em>Loading, please wait...</em>
+                    </div>
+                    <div class="list-results" ng-if="!loading &amp;&amp; resultsCount != undefined">
+                        <div ng-if="!results.length">
+                            <em>No results were found.</em>
+                        </div>
+                        <table ng-if="results.length">
+                            <thead>
+                                <tr>
+                                    <th ng-repeat="(key, value) in results[0]">{{key}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="result in results">
+                                    <td ng-repeat="(key, value) in result">{{value}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    -->
+
+        <div ng-app="Gargantext" ng-controller="GraphController">        
+            
+            <ul class="datasets">
+                <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
+                    <div class="corpus">
+                        <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
+                        Documents count in the corpus
+                        <select ng-model="corpusId" ng-change="updateEntities()">
+                            <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
+                        </select>
+                    </div>                    
+                    <div class="filters" ng-if="entities">
+                        <ul>
+                            <li ng-repeat="filter in filters">
+                                <button ng-click="removeFilter($index)" title="remove this filter">x</button>
+                                <span>...where the </span>
+                                <select ng-model="filter.entity">
+                                    <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
+                                </select>
+                                <span ng-if="filter.entity">
+                                    <select ng-model="filter.column">
+                                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+                                    </select>
+                                    <span ng-if="filter.column" ng-repeat="column in entities[filter.entity]">
+                                        <span ng-if="column.key == filter.column">
+                                            <select ng-model="filter.operator">
+                                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
+                                            </select>
+                                            <input type="text" ng-model="filter.value" ng-change="updateQuery()">
+                                        </span>
+                                    </span>
+                                </span>
+                            </li>
+                        </ul>
+                        <button ng-click="addFilter()">Add a filter...</button>
+                    </div>
+                    <hr/>                
                 </li>
             </ul>
-            <button ng-click="addFilter()">Add a filter...</button>
-        </div>
-        <div class="pagination">
+        
+            <button ng-click="query()">Refresh results</button>
+            <button ng-click="addDataset()">Add a dataset...</button>
             <hr/>
-            <select ng-model="query.pagination.limit">
-                <option ng-repeat="limit in [5, 10, 20, 50, 100]" value="{{limit}}">{{limit}}</option>
-            </select>
-            results per page <span ng-if="query.pagination.total !== undefined">
-                out of
-                <strong>{{query.pagination.total}}</strong>
-            </span>,
-             sorted by
-            <select ng-model="query.sort[0]">
-                <option ng-repeat="field in query.retrieve.list" value="{{field}}">{{field}}</option>
-            </select>
-            <button ng-click="postQuery()">(refresh results)</button>
+            <div class="graph">
+                <linechart data="graph.data" options="graph.options" mode="" width="" height=""></linechart>
+                <!-- <ng-dygraphs ng-if="graph.data.length" data="graph.data" options="graph.options" legend="graph.legend"></ng-dygraphs> -->
+            </div>
         </div>
-        <div class="results" ng-if="results.length">
-            <hr/>
-            <table>
-                <thead>
-                    <tr>
-                        <th ng-repeat="(key, value) in results[0]">{{key}}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="result in results">
-                        <td ng-repeat="(key, value) in result">{{value}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+
     </div>
 
 <!-- 
@@ -209,6 +290,10 @@
      -->
     {% endverbatim %}
     <script type="text/javascript" src="{% static "js/angular.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/d3/d3.v2.min.js" %}"></script>
+    <script type="text/javascript" src="https://raw.githubusercontent.com/n3-charts/line-chart/master/build/line-chart.min.js"></script>
+    <!-- <script type="text/javascript" src="{% static "js/d3/angular-charts.js" %}"></script> -->
+
     <script type="text/javascript" src="{% static "js/gargantext.angular.js" %}"></script>
 
 <!-- 

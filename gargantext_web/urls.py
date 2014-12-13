@@ -32,36 +32,22 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/explorer$', views.explorer_graph),
     url(r'^corpus/(\d+)/matrix$', views.explorer_matrix),
     
-    # Getting data [which?]
+    # Getting data
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
-    url(r'^corpus/(\d+)/adjancy_matrix$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
 
-
-    # TEST
-    
-    # first steps with AngularJS
-    url(r'^tests/mvc$', views.tests_mvc),
-
-
-    # RESTful API
-
-    # retrieve all the metadata from a given node's children
+    url(r'^api$', gargantext_web.api.Root),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
-    # retrieve the ngrams from a given node's children
-    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    # perform a query on a given node's children
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
-    # get all the nodes
-    url(r'^api/nodes$', gargantext_web.api.NodesController.get),
+    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
+    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
+    
+    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+    url(r'^api/nodes/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
-    # other (DEPRECATED, TO BE REMOVED)
-    url(r'^graph-it$', gargantext_web.views.graph_it),
-    url(r'^api/nodes$', gargantext_web.api.NodesController.get),
-    url(r'^api/corpus/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    # url(r'^api/corpus/(\d+)/metadata$', gargantext_web.api.CorpusController.metadata),
-    url(r'^api/corpus/(\d+)/data$', gargantext_web.api.CorpusController.data),
+    url(r'^graph-it$', views.graph_it),
+    url(r'^ngrams$', views.ngrams),
 )
 
 

@@ -10,13 +10,13 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-import node.models
-NodeType = node.models.NodeType.sa
-Node = node.models.Node.sa
-Node_Ngram = node.models.Node_Ngram.sa
-Ngram = node.models.Ngram.sa
-Metadata = node.models.Metadata.sa
-Node_Metadata = node.models.Node_Metadata.sa
+from node import models
+NodeType = models.NodeType.sa
+Node = models.Node.sa
+Node_Ngram = models.Node_Ngram.sa
+Ngram = models.Ngram.sa
+Metadata = models.Metadata.sa
+Node_Metadata = models.Node_Metadata.sa
 
 # for debugging only
 def literalquery(statement, dialect=None):
@@ -181,8 +181,8 @@ class NodesChildrenMetatadata(APIView):
             .group_by(Metadata)
         )
 
-        # build a data with the metadata keys
-        data = []
+        # build a collection with the metadata keys
+        collection = []
         for metadata in metadata_query:
             valuesCount = 0
             values = None
@@ -212,8 +212,8 @@ class NodesChildrenMetatadata(APIView):
                     values = []
                     values = map(lambda x: x.isoformat(), values)
 
-            # adding this metadata to the data
-            data.append({
+            # adding this metadata to the collection
+            collection.append({
                 'key': metadata.name,
                 'type': metadata.type,
                 'values': values,
@@ -223,7 +223,7 @@ class NodesChildrenMetatadata(APIView):
             })
 
         return JsonHttpResponse({
-            'data': data,
+            'collection': collection,
         })
 
 
@@ -368,7 +368,9 @@ class NodesChildrenQueries(APIView):
                 else:
                     field = getattr(Node, field_name)
             fields_list.append(
-                field.label(field_name)
+                field.label(
+                    field_name if '.' in field_name else 'node.' + field_name
+                )
             )
 
         # starting the query!
@@ -409,12 +411,9 @@ class NodesChildrenQueries(APIView):
                         .filter(metadata_alias.metadata_id == metadata.id)
                     )
                 # filter query
-                if metadata.type == 'datetime':
-                    datetime_base = '2000-01-01 00:00:00'
-                    value = value[:len(datetime_base)]
-                    value = value + datetime_base[len(value):]
                 query = query.filter(operator(
-                    getattr(metadata_alias, 'value_' + metadata.type), value
+                    getattr(metadata_alias, 'value_' + metadata.type),
+                    value
                 ))
             elif field[0] == 'ngrams': 
                 query = query.filter(
@@ -431,18 +430,13 @@ class NodesChildrenQueries(APIView):
         # TODO: date_trunc (psql) -> index also
 
         # groupping
-        if retrieve['type'] == 'aggregates':
-            authorized_aggregates = {'count': func.count(Node.id)}
-            for field_name in fields_names:
-                if field_name not in authorized_aggregates:
-                    query = query.group_by('"%s"' % (field_name, ))
-        else:
-            for field_name in fields_names:
-                if '.' in field_name:
-                    field = '"%s"' % (field_name, )
-                else:
-                    field = getattr(Node, field_name)
-                query = query.group_by(field)
+        authorized_aggregates = {'count': func.count(Node.id)}
+        for field_name in fields_names:
+            if field_name not in authorized_aggregates:
+                # query = query.group_by(text(field_name))
+                query = query.group_by('"%s"' % (
+                    field_name if '.' in field_name else 'node.' + field_name
+                , ))
 
         # sorting
         sort_fields_names = request.DATA.get('sort', ['id'])
@@ -467,9 +461,7 @@ class NodesChildrenQueries(APIView):
         for key, value in pagination.items():
             if key not in {'limit', 'offset'}:
                 raise APIException('Unrecognized parameter in "pagination": "%s"' % (key, ), 400)
-            try:
-                pagination[key] = int(value)
-            except:
+            if not isinstance(value, int):
                 raise APIException('In "pagination", "%s" should be an integer.' % (key, ), 400)
         if 'offset' not in pagination:
             pagination['offset'] = 0
@@ -480,7 +472,7 @@ class NodesChildrenQueries(APIView):
         # respond to client!
         # return DebugHttpResponse(str(query))
         # return DebugHttpResponse(literalquery(query))
-        data = [
+        results = [
             dict(zip(fields_names, row))
             for row in (
                 query[pagination["offset"]:pagination["offset"]+pagination["limit"]]
@@ -493,32 +485,44 @@ class NodesChildrenQueries(APIView):
             "pagination": pagination,
             "retrieve": fields_names,
             "sorted": sort_fields_names,
-            "data": data,
+            "results": results,
         }, 201)
 
 
 
-class NodesController:
+class NodesList(APIView):
 
-    @classmethod
-    def get(cls, request):
-        nodes_query = (Node
-            .query(Node.id, Node.name, NodeType.name)
-            .join(NodeType)
-        )
+    def get(self, request):
+        query = Node
         if 'type' in request.GET:
-            nodes_query = nodes_query.filter(NodeType.name == request.GET['type'])
+            query = query.filter(type__name=request.GET['type'])
         if 'parent' in request.GET:
-            nodes_query = nodes_query.filter(Node.parent_id == request.GET['parent'])
+            query = query.filter(parent_id=int(request.GET['parent']))
 
         collection = []
-        for row in nodes_query:
+        for child in query.all():
+            type_name = child.type.name
             collection.append({
-                'id': row[0],
-                'name': row[1],
-                'type': row[2]
+                'id': child.id,
+                'text': child.name,
+                'type': type_name,
+                'children': type_name is not 'Document',
             })
-        return JsonHttpResponse({'data': collection})
+        return JsonHttpResponse(collection)
+
+
+class Nodes(APIView):
+
+    def get(self, request, node_id):
+        node = models.Node.objects.filter(id = node_id).first()
+        if node is None:
+            raise APIException('This node does not exist', 404)
+        return JsonHttpResponse({
+            'id': node.id,
+            'name': node.name,
+            'type': '',
+            'metadata': dict(node.metadata),
+        })
 
 
 

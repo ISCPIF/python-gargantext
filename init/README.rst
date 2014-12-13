@@ -59,34 +59,40 @@ Populate the database
 python manage.py syncdb
 
 
-Last steps of configuration:
-----------------------------
+Last steps of configuration
+---------------------------
 
-1) If your project is not in /srv/gargantext:
+1)  If your project is not in /srv/gargantext:
     ln -s [the project folder] /srv/gargantext
 
-2) build gargantext_lib
-    wget http://docs.delanoe.org/gargantext_lib.tar.bz2
+2)  build gargantext_lib:
     cd /srv/
+    wget http://docs.delanoe.org/gargantext_lib.tar.bz2
     sudo tar xvjf gargantext_lib.tar.bz2
     sudo chown user:user /srv/gargantext_lib
 
-3) Explorer: 
-cd /srv/gargantext_lib/js
-git clone git@github.com:PkSM3/garg.git
+3)  Explorer: 
+    cd /srv/gargantext_lib/js
+    git clone git@github.com:PkSM3/garg.git
 
 4)  Adapt all symlinks:
-ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
-Warning: for ln, path has to be absolute!
+    ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
+    Warning: for ln, path has to be absolute!
 
-5) patch CTE
-patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
+5)  patch CTE:
+    patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
 
-6) init nodetypes and main variables
-/srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+6)  init nodetypes and main variables
+    /srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+
+7)  DO NOT use the default aldjemy package:
+    cd /tmp
+    git clone https://github.com/mathieurodic/aldjemy
+    cd aldjemy
+    python3 setup.py install
 
 
-Extras:
+Extras
 ======
 
 Start the Python Notebook server

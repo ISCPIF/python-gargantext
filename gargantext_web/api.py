@@ -368,7 +368,9 @@ class NodesChildrenQueries(APIView):
                 else:
                     field = getattr(Node, field_name)
             fields_list.append(
-                field.label(field_name)
+                field.label(
+                    field_name if '.' in field_name else 'node.' + field_name
+                )
             )
 
         # starting the query!
@@ -432,7 +434,9 @@ class NodesChildrenQueries(APIView):
         for field_name in fields_names:
             if field_name not in authorized_aggregates:
                 # query = query.group_by(text(field_name))
-                query = query.group_by('"%s"' % (field_name, ))
+                query = query.group_by('"%s"' % (
+                    field_name if '.' in field_name else 'node.' + field_name
+                , ))
 
         # sorting
         sort_fields_names = request.DATA.get('sort', ['id'])

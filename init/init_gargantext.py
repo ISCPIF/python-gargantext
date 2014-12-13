@@ -26,7 +26,6 @@ from gargantext_web.db import *
 #    print('Empty table "%s"...' % (table._meta.db_table, ))
 #    table.objects.all().delete()
 
-
 # Integration: hyperdata types
 
 print('Initialize hyperdata...')
@@ -43,8 +42,8 @@ hyperdata = {
     'doi': 'string',
     'journal': 'string',
 }
-for name, type in hyperdata.items():
-    models.Hyperdata(name=name, type=type).save()
+for name, type_name in hyperdata.items():
+    models.Hyperdata(name=name, type=type_name).save()
 
 
 # Integration: languages
@@ -66,7 +65,7 @@ for language in pycountry.languages:
 
 print('Initialize users...')
 me = models.User.objects.get_or_create(username='alexandre')
-gargantua = models.User.objects.get_or_create(username='gargantua')
+gargantua, created = models.User.objects.get_or_create(username='gargantua')
 node_root = Node(user_id=gargantua.id, type_id=cache.NodeType['Root'].id, name='Root')
 node_stem = Node(user_id=gargantua.id, type_id=cache.NodeType['Stem'].id, name='Stem', parent_id=node_root.id)
 node_lem = Node(user_id=gargantua.id, type_id=cache.NodeType['Lem'].id, name='Lem', parent_id=node_root.id)
@@ -82,9 +81,9 @@ print('Initialize node types...')
 
 node_types = [
         'Root', 'Trash',
-        'Project', 'Corpus', 'Document', 
-        'Stem', 'Lem', 'Tfidf', 
-        'Synonym', 
+        'Project', 'Corpus', 'Document',
+        'Stem', 'Lem', 'Tfidf',
+        'Synonym',
         'MiamList', 'StopList',
         'Cooccurrence', 'WhiteList', 'BlackList'
         ]

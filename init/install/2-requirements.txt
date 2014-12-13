@@ -7,7 +7,7 @@ Pygments==1.6
 RandomWords==0.1.12
 SQLAlchemy==0.9.9
 South==1.0
-aldjemy==0.3.10
+-e git+https://github.com/mathieurodic/aldjemy.git@master#egg=aldjemy
 amqp==1.4.6
 anyjson==0.3.3
 bibtexparser==0.6.0

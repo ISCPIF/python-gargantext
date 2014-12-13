@@ -1,0 +1,16 @@
+{
+  "name": "annotations",
+  "description": "Annotations for Gargantext",
+  "version": "0.0.1",
+  "license": "GPLv3",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.2.x",
+    "angular-loader": "~1.2.x",
+    "angular-resource": "~1.2.x",
+    "bootstrap": "~3.x"
+  },
+  "resolutions": {
+    "angular": "~1.2.x"
+  }
+}

@@ -3,9 +3,7 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from django.db.models import Avg, Max, Min, Count, Sum
-# from node.models import Language, ResourceType, Resource
-# from node.models import Node, NodeType, Node_Resource, Project, Corpus
+from gargantext_web.db import session, cache
 
 from sqlalchemy import text, distinct, or_
 from sqlalchemy.sql import func

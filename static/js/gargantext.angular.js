@@ -260,7 +260,7 @@ gargantext.controller("DatasetController", function($scope, $http) {
 
 gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
-    $scope.datasets = [{color: '#FFF'}];
+    $scope.datasets = [{}];
     $scope.resultsList = [];
     $scope.queries = {};
     $scope.graph = {
@@ -290,7 +290,11 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     };
     // add a dataset
     $scope.addDataset = function() {
-        $scope.datasets.push({color: '#FFF'});
+        $scope.datasets.push({});
+    };
+    // remove a dataset
+    $scope.removeDataset = function(datasetIndex) {
+        $scope.datasets.shift(datasetIndex);
     };
     // show results on the graph
     $scope.showResults = function(keys) {

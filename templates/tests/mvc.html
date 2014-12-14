@@ -262,6 +262,12 @@
             <button class="refresh" ng-click="query()">Refresh results</button>
             <button class="add" ng-click="addDataset()">Add a dataset...</button>
             <hr/>
+            <div class="graph-parameters">
+                <select ng-model="graph.options.axes.y.type">
+                    <option ng-repeat="(key, value) in {linear: 'linear', logarithmic: 'log'}" value="{{ value }}">{{ key }}</option>
+                </select>
+                scale
+            </div>
             <div class="graph">
                 <linechart data="graph.data" options="graph.options"></linechart>
             </div>

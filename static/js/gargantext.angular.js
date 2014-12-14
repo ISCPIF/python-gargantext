@@ -27,27 +27,36 @@ var operators = {
         {'label': 'is after',       'key': '>'}
     ],
 };
+
+var strDate = function(date) {
+    return date.getUTCFullYear() + '-' +
+            ('00' + (date.getUTCMonth() + 1)).slice(-2) + '-' +
+            ('00' + date.getUTCDate()).slice(-2) + 'T' +
+            ('00' + date.getUTCHours()).slice(-2) + ':' +
+            ('00' + date.getUTCMinutes()).slice(-2) + ':' +
+            ('00' + date.getUTCSeconds()).slice(-2) + 'Z';
+}
 var groupings = {
     datetime: {
         century: {
-            truncate: function(x) {return x.substr(0, 2)},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return x;},                
+            truncate: function(x) {return x.substr(0, 2) + '00-01-01T00:00:00Z';},
+            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return strDate(x);},
         },
         decade: {
-            truncate: function(x) {return x.substr(0, 3)},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return x;},                
+            truncate: function(x) {return x.substr(0, 3) + '0-01-01T00:00:00Z';},
+            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return strDate(x);},
         },
         year: {
-            truncate: function(x) {return x.substr(0, 4)},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+1); return x;},                
+            truncate: function(x) {return x.substr(0, 4) + '-01-01T00:00:00Z';},
+            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+1); return strDate(x);},
         },
         month: {
-            truncate: function(x) {return x.substr(0, 7)},
-            next: function(x) {x = new Date(x); x.setMonth(x.getMonth()+1); return x;},                
+            truncate: function(x) {return x.substr(0, 7) + '-01T00:00:00Z';},
+            next: function(x) {x = new Date(x); x.setMonth(x.getMonth()+1); return strDate(x);},
         },
         day: {
-            truncate: function(x) {return x.substr(0, 10)},
-            next: function(x) {x = new Date(x); x.setDate(x.getDate()+1); return x;},                
+            truncate: function(x) {return x.substr(0, 10) + 'T00:00:00Z';},
+            next: function(x) {x = new Date(x); x.setDate(x.getDate()+1); return strDate(x);},
         },
     },
     numeric: {
@@ -65,6 +74,30 @@ var gargantext = angular.module('Gargantext', ['n3-charts.linechart']);
 // tuning the application's scope
 angular.module('Gargantext').run(['$rootScope', function($rootScope){
     $rootScope.Math = Math;
+    $rootScope.getColor = function(i, n){
+        var h = .5 + (i / n) % 1;
+        var s = .8;
+        var v = .8;
+        var i = Math.floor(h * 6);
+        var f = h * 6 - i;
+        var p = v * (1 - s);
+        var q = v * (1 - f * s);
+        var t = v * (1 - (1 - f) * s);
+        var r, g, b;
+        switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+        r = Math.round(255 * r);
+        g = Math.round(255 * g);
+        b = Math.round(255 * b);
+        var color = 'rgb(' + r + ',' + g + ',' + b + ')';
+        return color;
+    };
     $rootScope.range = function(min, max, step){
         if (max == undefined){
             max = min;
@@ -94,22 +127,6 @@ gargantext.controller("QueryController", function($scope, $http) {
         $scope.corpora = response.data;
         $scope.$apply();
     });
-    // update entities depending on the selected corpus
-    $scope.updateEntities = function() {
-        return true;
-        var url = '/api/nodes/' + $scope.corpusId + '/children/metadata';
-        $scope.entities = undefined;
-        $scope.filters = [];
-        $http.get(url).success(function(response){
-            $scope.entities = {
-                metadata: response.data,
-                ngrams: [
-                    {key:'terms', type:'string'},
-                    {key:'terms count', type:'integer'}
-                ]
-            };
-        });
-    };
     // filtering informations retrieval
     $scope.operators = operators;
     // add a filter
@@ -243,78 +260,136 @@ gargantext.controller("DatasetController", function($scope, $http) {
 
 gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
-    $scope.datasets = [{}];
+    $scope.datasets = [{color: '#FFF'}];
+    $scope.resultsList = [];
     $scope.queries = {};
     $scope.graph = {
-        data: [
-            {x: 0, value: 4, otherValue: 14},
-            {x: 1, value: 8, otherValue: 1},
-            {x: 2, value: 15, otherValue: 11},
-            {x: 3, value: 16, otherValue: 147},
-            {x: 4, value: 23, otherValue: 87},
-            {x: 5, value: 42, otherValue: 45}
-        ],
+        data: [],
         options: {
             axes: {
-                x: {key: 'x', labelFunction: function(value) {return value;}, type: 'linear', min: 0, max: 10, ticks: 2},
-                y: {type: 'linear', min: 0, max: 1, ticks: 5},
-                y2: {type: 'linear', min: 0, max: 1, ticks: [1, 2, 3, 4]}
+                x: {key: 'x', type: 'date'},
+                y: {type: 'log'},
+                // x: {key: 'x', labelFunction: function(value) {return value;}, type: 'linear', min: 0, max: 10, ticks: 2},
+                // y: {type: 'linear', min: 0, max: 1, ticks: 5},
+                // y2: {type: 'linear'}
+                // y2: {type: 'linear', min: 0, max: 1, ticks: [1, 2, 3, 4]}
             },
-            series: [
-                {y: 'value', color: 'steelblue', thickness: '2px', type: 'area', striped: true, label: 'Pouet'},
-                {y: 'otherValue', axis: 'y2', color: 'lightsteelblue', visible: false, drawDots: true, dotSize: 2}
-            ],
+            // series: [
+            //     {y: 'y0'},
+            //     // {y: 'y1'},
+            //     // {y: 'y0', color: 'steelblue', thickness: '2px', type: 'area', striped: true, label: 'Pouet'},
+            //     // {y: 'y1', axis: 'y2', color: 'orange', visible: true, drawDots: true, dotSize: 2}
+            // ],
             lineMode: 'linear',
             tension: 0.7,
-            tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return 'pouet';}},
-            drawLegend: true,
+            tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return x + ' → ' + y;}},
+            drawLegend: false,
             drawDots: true,
             columnsHGap: 5
         }
     };
     // add a dataset
     $scope.addDataset = function() {
-        $scope.datasets.push({});
+        $scope.datasets.push({color: '#FFF'});
+    };
+    // show results on the graph
+    $scope.showResults = function(keys) {
+        // Format specifications
+        var xKey = keys[0];
+        var yKey = keys[1];
+        var grouping = groupings.datetime.year;
+        var convert = function(x) {return new Date(x);};
+        // Find extrema for X
+        var xMin, xMax;
+        angular.forEach($scope.resultsList, function(results){
+            if (results.length == 0) {
+                return false;
+            }
+            var xMinTmp = results[0][xKey];
+            var xMaxTmp = results[results.length - 1][xKey];
+            if (xMin === undefined || xMinTmp < xMin) {
+                xMin = xMinTmp;
+            }
+            if (xMax === undefined || xMaxTmp < xMax) {
+                xMax = xMaxTmp;
+            }
+        });
+        // Create the dataObject for interpolation
+        var dataObject = {};
+        xMin = grouping.truncate(xMin);
+        xMax = grouping.truncate(xMax);
+        for (var x=xMin; x<=xMax; x=grouping.next(x)) {
+            var row = [];
+            angular.forEach($scope.resultsList, function(results){
+                row.push(0);
+            });
+            dataObject[x] = row;
+        }
+        // Fill the dataObject with results
+        angular.forEach($scope.resultsList, function(results, resultsIndex){
+            angular.forEach(results, function(result, r){
+                var x = grouping.truncate(result[xKey]);
+                var y = result[yKey];
+                dataObject[x][resultsIndex] += parseFloat(y);
+            });
+        });
+        // Convert this object back to a sorted array
+        var linearData = [];
+        for (var x in dataObject) {
+            var row = {x: convert(x)};
+            var yList = dataObject[x];
+            for (var i=0; i<yList.length; i++) {
+                row['y' + i] = yList[i];
+            }
+            linearData.push(row);
+        }
+        // Finally, update the graph
+        var series = [];
+        for (var i=0, n=$scope.resultsList.length; i<n; i++) {
+            series.push({
+                y: 'y'+i,
+                axis: 'y',
+                color: $scope.getColor(i, n)
+            });
+        }
+        $scope.graph.options.lineMode = 'bundle';
+        $scope.graph.options.tension = .7;
+        $scope.graph.options.series = series;
+        $scope.graph.data = linearData;
     };
     // perform a query on the server
     $scope.query = function() {
-        // reinitialize graph
+        // reinitialize data
+        $scope.resultsList = new Array($scope.datasets.length);
+        $scope.indexById = {};
         $scope.graph.data = [];
         // add all the server request to the queue
-        for (var datasetId in $scope.queries) {
-            var query = $scope.queries[datasetId];
+        var index = 0;
+        angular.forEach($scope.queries, function(query, datasetId) {
+            $scope.indexById[datasetId] = index++;
             var data = {
                 filters: query.filters,
                 sort: ['metadata.publication_date.day'],
                 retrieve: {
                     type: 'aggregates',
-                    list: ['count', 'metadata.publication_date.day']
+                    list: ['metadata.publication_date.day', 'count']
                 }
             };
             $http.post(query.url, data, {cache: true}).success(function(response) {
-                // values initialization
-                var dataset = [];
-                var keyX = response.retrieve[0];
-                var keyY = response.retrieve[1];
-                // data interpolation & transformation
-                var xPrev = undefined;
-                var rows = response.data;
-                for (var i=0, n=rows.length; i<n; i++) {
-                    var row = rows[i];
-                    var x = row[keyX];
-                    var y = new Date(row[keyY]);
-                    dataset.push([x, y]);
+                var index = $scope.indexById[datasetId];
+                $scope.resultsList[index] = response.results;
+                for (var i=0, n=$scope.resultsList.length; i<n; i++) {
+                    if ($scope.resultsList[i] == undefined) {
+                        return;
+                    }
                 }
-                // add data to the graph
-                // $scope.graph.data.push(dataset);
-                $scope.graph.data = dataset;
+                $scope.showResults(response.retrieve);
             }).error(function(response) {
-                console.error(response);
+                console.error('An error occurred while retrieving the query response');
             });
-        }
-        dbg = $scope;
+        });
     };
-    // update the queries
+    // update the queries (catches the vent thrown by children dataset controllers)
     $scope.$on('updateDataset', function(e, data) {
         $scope.queries[data.datasetId] = {
             url: data.url,
@@ -322,3 +397,26 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         };
     });
 });
+
+
+
+// For debugging only!
+setTimeout(function(){
+    var corpusId = $('div.corpus select option').last().val();
+    // first dataset
+    $('div.corpus select').val(corpusId).change();
+    setTimeout(function(){
+        // second dataset
+        $('button.add').first().click();
+        var d = $('li.dataset').last();
+        d.find('select').change();
+        // second dataset's filter
+        d.find('div.filters button').last().click();
+        d.find('select').last().val('metadata').change();
+        d.find('select').last().val('abstract').change();
+        d.find('select').last().val('contains').change();
+        d.find('input').last().val('dea').change();
+        // refresh
+        $('button.refresh').first().click();
+    }, 500);
+}, 500);

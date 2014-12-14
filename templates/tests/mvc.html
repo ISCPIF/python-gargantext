@@ -222,7 +222,10 @@
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
-                        Documents count in the corpus
+                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}">
+                            <option ng-repeat="(key, value) in {'Documents count': 'count', 'Ngrams count': 'ngrams.count'}" value="{{ value }}">{{ key }}</option>
+                        </select>
+                        in the corpus
                         <select ng-model="corpusId" ng-change="updateEntities()">
                             <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
                         </select>
@@ -256,12 +259,11 @@
                 </li>
             </ul>
         
-            <button ng-click="query()">Refresh results</button>
-            <button ng-click="addDataset()">Add a dataset...</button>
+            <button class="refresh" ng-click="query()">Refresh results</button>
+            <button class="add" ng-click="addDataset()">Add a dataset...</button>
             <hr/>
             <div class="graph">
-                <linechart data="graph.data" options="graph.options" mode="" width="" height=""></linechart>
-                <!-- <ng-dygraphs ng-if="graph.data.length" data="graph.data" options="graph.options" legend="graph.legend"></ng-dygraphs> -->
+                <linechart data="graph.data" options="graph.options"></linechart>
             </div>
         </div>
 
@@ -291,7 +293,7 @@
     {% endverbatim %}
     <script type="text/javascript" src="{% static "js/angular.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/d3/d3.v2.min.js" %}"></script>
-    <script type="text/javascript" src="https://raw.githubusercontent.com/n3-charts/line-chart/master/build/line-chart.min.js"></script>
+    <script type="text/javascript" src="{% static "js/d3/n3.line-chart.min.js" %}"></script>
     <!-- <script type="text/javascript" src="{% static "js/d3/angular-charts.js" %}"></script> -->
 
     <script type="text/javascript" src="{% static "js/gargantext.angular.js" %}"></script>

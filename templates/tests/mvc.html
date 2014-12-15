@@ -266,7 +266,7 @@
             </div>
             <div class="graph-parameters">
                 X-axis: groups the results by
-                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']">
+                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']" ng-change="showResults()">
                 </select>
                 <br/>
 

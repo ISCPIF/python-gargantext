@@ -47,11 +47,11 @@ var groupings = {
     datetime: {
         century: {
             truncate: function(x) {return x.substr(0, 2) + '00-01-01T00:00:00Z';},
-            next: function(x) {addZeros((parseInt(x.substr(0, 2) + 1) % 100), 2) + x.substr(2);},
+            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return strDate(x);},
         },
         decade: {
             truncate: function(x) {return x.substr(0, 3) + '0-01-01T00:00:00Z';},
-            next: function(x) {addZeros((parseInt(x.substr(0, 3) + 1) % 1000), 2) + x.substr(3);},
+            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return strDate(x);},
         },
         year: {
             truncate: function(x) {return x.substr(0, 4) + '-01-01T00:00:00Z';},
@@ -408,7 +408,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             filters: data.filters,
             mesured: data.mesured
         };
-        // $scope.query();
+        $scope.query();
     });
 });
 

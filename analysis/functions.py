@@ -133,7 +133,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=Non
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150):
     import pandas as pd
     from copy import copy
     import numpy as np

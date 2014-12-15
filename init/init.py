@@ -70,6 +70,15 @@ except Exception as error:
     typeStem.save()
 
 try:
+    typeTfidf     = NodeType.objects.get(name='Tfidf')
+except Exception as error:
+    print(error)
+    typeTfidf     = NodeType(name='Tfidf')
+    typeTfidf.save()
+
+
+
+try:
     typeDoc     = NodeType.objects.get(name='WhiteList')
 except Exception as error:
     print(error)
@@ -145,5 +154,7 @@ try:
 except:
     stem = Node(name='Stem', type=typeStem, user=me)
     stem.save()
+
+
 
 

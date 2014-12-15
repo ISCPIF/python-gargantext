@@ -234,7 +234,7 @@ class Node(CTENode):
         ])
 
     @current_app.task(filter=task_method)
-    def parse_and_extract_ngrams(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+    def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
         self.parse_resources()
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
@@ -297,5 +297,27 @@ class NodeNgramNgram(models.Model):
     def __str__(self):
         return "%s: %s / %s" % (self.node.name, self.ngramx.terms, self.ngramy.terms)
 
+
+class NodeNodeNgram(models.Model):
+    nodex        = models.ForeignKey(Node, related_name="nodex")
+    nodey        = models.ForeignKey(Node, related_name="nodey")
+    
+    ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
+
+class NodeNodeNgram(models.Model):
+    nodex        = models.ForeignKey(Node, related_name="nodex")
+    nodey        = models.ForeignKey(Node, related_name="nodey")
+    
+    ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
 

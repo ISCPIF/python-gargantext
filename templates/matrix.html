@@ -18,6 +18,14 @@ line {
 
 text.active {
   fill: red;
+  font-weight: bold;
+  font-size: medium;
+}
+
+text.inactive {
+  fill: #e3e4e1;
+  font-weight: normal;
+  font-size: small;
 }
 </style>
 
@@ -57,15 +65,15 @@ var margin = {top: 80, right: 0, bottom: 10, left: 80},
     height = 720;
 
 var x = d3.scale.ordinal().rangeBands([0, width]),
-    z = d3.scale.linear().domain([0, 4]).clamp(true),
+    z = d3.scale.linear().domain([0, 4]).clamp(true), //alpha for color-cells
     c = d3.scale.category10().domain(d3.range(10));
 
 var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    //.style("margin-left", -margin.left + "px")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .style("margin-left", "25%")
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + "300" + "," + "300" + ")");//challenge: to calculate both parameters! maybe do something with the labels length
 
     var filename = document.getElementById("graphid").innerHTML
 		d3.json(filename, function(miserables) {
@@ -117,7 +125,7 @@ var svg = d3.select("body").append("svg")
       .attr("x2", width);
 
   row.append("text")
-      .attr("x", -6)
+      .attr("x", -6)//distance between row-label and matrix
       .attr("y", x.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "end")
@@ -154,12 +162,25 @@ var svg = d3.select("body").append("svg")
   }
 
   function mouseover(p) {
-    d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-    d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+
+    d3.selectAll(".row text")
+    .classed("active", function(d, i) {
+      return i == p.y;
+    }).classed("inactive", function(d, i) {
+      return i != p.y;
+    });
+
+    d3.selectAll(".column text")
+    .classed("active", function(d, i) {
+      return i == p.x;
+    }).classed("inactive", function(d, i) {
+      return i != p.x;
+    });
+
   }
 
   function mouseout() {
-    d3.selectAll("text").classed("active", false);
+    d3.selectAll("text").classed("active", false).classed("inactive", false);
   }
 
   d3.select("#order").on("change", function() {

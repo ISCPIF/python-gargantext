@@ -36,23 +36,41 @@ var strDate = function(date) {
             ('00' + date.getUTCMinutes()).slice(-2) + ':' +
             ('00' + date.getUTCSeconds()).slice(-2) + 'Z';
 }
+var addZero = function(x) {
+    return (x<10) ? ('0'+x) : x;
+};
+var addZeros = function(x, n) {
+    x = x.toString();
+    return '0000'.substr(0, n - x.length) + x;
+};
 var groupings = {
     datetime: {
         century: {
             truncate: function(x) {return x.substr(0, 2) + '00-01-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return strDate(x);},
+            next: function(x) {addZeros((parseInt(x.substr(0, 2) + 1) % 100), 2) + x.substr(2);},
         },
         decade: {
             truncate: function(x) {return x.substr(0, 3) + '0-01-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return strDate(x);},
+            next: function(x) {addZeros((parseInt(x.substr(0, 3) + 1) % 1000), 2) + x.substr(3);},
         },
         year: {
             truncate: function(x) {return x.substr(0, 4) + '-01-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+1); return strDate(x);},
+            next: function(x) {
+                var y = parseInt(x.substr(0, 4));
+                return addZeros(y + 1, 4) + x.substr(4);
+            },
         },
         month: {
             truncate: function(x) {return x.substr(0, 7) + '-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setMonth(x.getMonth()+1); return strDate(x);},
+            next: function(x) {
+                var m = parseInt(x.substr(5, 2));
+                if (m == 12) {
+                    var y = parseInt(x.substr(0, 4));
+                    return addZeros(y + 1, 4) + '-01' + x.substr(7);
+                } else {
+                    return x.substr(0, 5) + addZero(m + 1) + x.substr(7);
+                }
+            },
         },
         day: {
             truncate: function(x) {return x.substr(0, 10) + 'T00:00:00Z';},
@@ -75,8 +93,8 @@ var gargantext = angular.module('Gargantext', ['n3-charts.linechart']);
 angular.module('Gargantext').run(['$rootScope', function($rootScope){
     $rootScope.Math = Math;
     $rootScope.getColor = function(i, n){
-        var h = .5 + (i / n) % 1;
-        var s = .8;
+        var h = .3 + (i / n) % 1;
+        var s = .7;
         var v = .8;
         var i = Math.floor(h * 6);
         var f = h * 6 - i;
@@ -135,7 +153,6 @@ gargantext.controller("QueryController", function($scope, $http) {
     };
     // remove a filter
     $scope.removeFilter = function(filterIndex) {
-        var filter = $scope.filters[filterIndex];
         $scope.filters.splice(filterIndex, 1);
     };
     // perform a query
@@ -188,6 +205,7 @@ gargantext.controller("QueryController", function($scope, $http) {
 
 gargantext.controller("DatasetController", function($scope, $http) {
     // query-specific information
+    $scope.mesured = 'nodes.count';
     $scope.filters = [];
     $scope.pagination = {offset:0, limit: 20};
     // results information
@@ -223,8 +241,8 @@ gargantext.controller("DatasetController", function($scope, $http) {
     };
     // remove a filter
     $scope.removeFilter = function(filterIndex) {
-        var filter = $scope.filters[filterIndex];
         $scope.filters.splice(filterIndex, 1);
+        $scope.updateQuery();
     };
     // transmit query parameters to parent elements
     $scope.updateQuery = function() {
@@ -252,6 +270,7 @@ gargantext.controller("DatasetController", function($scope, $http) {
                 datasetId: $scope.$id,
                 url: url,
                 filters: filters,
+                mesured: $scope.mesured
             });
         }
     }
@@ -263,25 +282,16 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     $scope.datasets = [{}];
     $scope.resultsList = [];
     $scope.queries = {};
+    $scope.groupingKey = 'year';
     $scope.graph = {
         data: [],
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
                 y: {type: 'log'},
-                // x: {key: 'x', labelFunction: function(value) {return value;}, type: 'linear', min: 0, max: 10, ticks: 2},
-                // y: {type: 'linear', min: 0, max: 1, ticks: 5},
-                // y2: {type: 'linear'}
-                // y2: {type: 'linear', min: 0, max: 1, ticks: [1, 2, 3, 4]}
             },
-            // series: [
-            //     {y: 'y0'},
-            //     // {y: 'y1'},
-            //     // {y: 'y0', color: 'steelblue', thickness: '2px', type: 'area', striped: true, label: 'Pouet'},
-            //     // {y: 'y1', axis: 'y2', color: 'orange', visible: true, drawDots: true, dotSize: 2}
-            // ],
-            lineMode: 'linear',
-            tension: 0.7,
+            tension: 1.0,
+            lineMode: 'bundle',
             tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return x + ' → ' + y;}},
             drawLegend: false,
             drawDots: true,
@@ -299,9 +309,9 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     // show results on the graph
     $scope.showResults = function(keys) {
         // Format specifications
-        var xKey = keys[0];
-        var yKey = keys[1];
-        var grouping = groupings.datetime.year;
+        var xKey = 0;
+        var yKey = 1;
+        var grouping = groupings.datetime[$scope.groupingKey];
         var convert = function(x) {return new Date(x);};
         // Find extrema for X
         var xMin, xMax;
@@ -356,8 +366,6 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 color: $scope.getColor(i, n)
             });
         }
-        $scope.graph.options.lineMode = 'bundle';
-        $scope.graph.options.tension = .7;
         $scope.graph.options.series = series;
         $scope.graph.data = linearData;
     };
@@ -376,7 +384,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 sort: ['metadata.publication_date.day'],
                 retrieve: {
                     type: 'aggregates',
-                    list: ['metadata.publication_date.day', 'count']
+                    list: ['metadata.publication_date.day', query.mesured]
                 }
             };
             $http.post(query.url, data, {cache: true}).success(function(response) {
@@ -397,30 +405,39 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     $scope.$on('updateDataset', function(e, data) {
         $scope.queries[data.datasetId] = {
             url: data.url,
-            filters: data.filters
+            filters: data.filters,
+            mesured: data.mesured
         };
+        // $scope.query();
     });
 });
 
 
 
-// For debugging only!
-setTimeout(function(){
-    var corpusId = $('div.corpus select option').last().val();
-    // first dataset
-    $('div.corpus select').val(corpusId).change();
-    setTimeout(function(){
-        // second dataset
-        $('button.add').first().click();
-        var d = $('li.dataset').last();
-        d.find('select').change();
-        // second dataset's filter
-        d.find('div.filters button').last().click();
-        d.find('select').last().val('metadata').change();
-        d.find('select').last().val('abstract').change();
-        d.find('select').last().val('contains').change();
-        d.find('input').last().val('dea').change();
-        // refresh
-        $('button.refresh').first().click();
-    }, 500);
-}, 500);
+// // For debugging only!
+// setTimeout(function(){
+//     var corpusId = $('div.corpus select option').last().val();
+//     // first dataset
+//     $('div.corpus select').val(corpusId).change();
+//     setTimeout(function(){
+//         $('div.filters button').last().click();
+//         var d = $('li.dataset').last();
+//         d.find('select').last().val('metadata').change();
+//         d.find('select').last().val('publication_date').change();
+//         d.find('select').last().val('>').change();
+//         d.find('input').last().val('2010').change();
+        
+//         // second dataset
+//         // $('button.add').first().click();
+//         // var d = $('li.dataset').last();
+//         // d.find('select').change();
+//         // // second dataset's filter
+//         // d.find('div.filters button').last().click();
+//         // d.find('select').last().val('metadata').change();
+//         // d.find('select').last().val('abstract').change();
+//         // d.find('select').last().val('contains').change();
+//         // d.find('input').last().val('dea').change();
+//         // refresh
+//         $('button.refresh').first().click();
+//     }, 500);
+// }, 500);

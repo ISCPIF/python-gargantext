@@ -361,12 +361,16 @@ class NodesChildrenQueries(APIView):
                         # field = func.date_trunc(text('"%s"'% (datepart,)), field)
             else:
                 authorized_field_names = {'id', 'name', }
-                if retrieve['type'] == 'aggregates' and field_name == 'count':
-                    field = func.count(Node.id)
-                elif field_name not in authorized_field_names:
-                    raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
-                else:
+                authorized_aggregates = {
+                    'nodes.count': func.count(Node.id),
+                    'ngrams.count': func.count(Ngram.id),
+                }
+                if retrieve['type'] == 'aggregates' and field_name in authorized_aggregates:
+                    field = authorized_aggregates[field_name]
+                elif field_name in authorized_field_names:
                     field = getattr(Node, field_name)
+                else:
+                    raise APIException('Unrecognized "field": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (field_name, '", "'.join(authorized_field_names), ))
             fields_list.append(
                 field.label(
                     field_name if '.' in field_name else 'node.' + field_name
@@ -382,7 +386,14 @@ class NodesChildrenQueries(APIView):
             .filter(Node.parent_id == node_id)
         )
 
-        # join aliases
+        # join ngrams if necessary
+        if 'ngrams.count' in fields_names:
+            query = (query
+                .join(Node_Ngram, Node_Ngram.node_id == Node.id)
+                .join(Ngram, Ngram.id == Node_Ngram.ngram_id)
+            )
+
+        # join metadata aliases
         for metadata_id, metadata_alias in metadata_aliases.items():
             query = (query
                 .join(metadata_alias, metadata_alias.node_id == Node.id)
@@ -433,7 +444,6 @@ class NodesChildrenQueries(APIView):
         # TODO: date_trunc (psql) -> index also
 
         # groupping
-        authorized_aggregates = {'count': func.count(Node.id)}
         for field_name in fields_names:
             if field_name not in authorized_aggregates:
                 # query = query.group_by(text(field_name))
@@ -476,7 +486,8 @@ class NodesChildrenQueries(APIView):
         # return DebugHttpResponse(str(query))
         # return DebugHttpResponse(literalquery(query))
         results = [
-            dict(zip(fields_names, row))
+            list(row)
+            # dict(zip(fields_names, row))
             for row in (
                 query[pagination["offset"]:pagination["offset"]+pagination["limit"]]
                 if pagination['limit']

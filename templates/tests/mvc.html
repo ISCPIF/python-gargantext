@@ -219,12 +219,12 @@
         <div ng-app="Gargantext" ng-controller="GraphController">        
             
             <ul class="datasets">
+                <button class="add" ng-click="addDataset()">Add a dataset...</button>
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
+                    <hr/>                
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
-                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}">
-                            <option ng-repeat="(key, value) in {'Documents count': 'count', 'Ngrams count': 'ngrams.count'}" value="{{ value }}">{{ key }}</option>
-                        </select>
+                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
                         in the corpus
                         <select ng-model="corpusId" ng-change="updateEntities()">
                             <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
@@ -255,21 +255,35 @@
                         </ul>
                         <button ng-click="addFilter()">Add a filter...</button>
                     </div>
-                    <hr/>                
                 </li>
             </ul>
         
-            <button class="refresh" ng-click="query()">Refresh results</button>
-            <button class="add" ng-click="addDataset()">Add a dataset...</button>
             <hr/>
-            <div class="graph-parameters">
-                <select ng-model="graph.options.axes.y.type">
-                    <option ng-repeat="(key, value) in {linear: 'linear', logarithmic: 'log'}" value="{{ value }}">{{ key }}</option>
-                </select>
-                scale
-            </div>
+
+            <button style="width:100%" class="refresh" ng-click="query()">Refresh results</button>
             <div class="graph">
                 <linechart data="graph.data" options="graph.options"></linechart>
+            </div>
+            <div class="graph-parameters">
+                X-axis: groups the results by
+                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']">
+                </select>
+                <br/>
+
+                Y-axis: use a
+                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['log', 'linear']"></select>
+                scale
+                <br/>
+
+                Interpolation:
+                <select ng-model="graph.options.lineMode">
+                    <option ng-repeat="mode in ['bundle', 'linear']" value="{{ mode }}">{{ mode }}</option>
+                </select>
+                <span ng-if="graph.options.lineMode != 'linear'">
+                    with a smoothing of smoothing:
+                    <input type="text" disabled="disabled" ng-model="graph.options.tension" />
+                    <input type="range" min="0" max="2" step=".1" ng-model="graph.options.tension" />
+                </span>
             </div>
         </div>
 

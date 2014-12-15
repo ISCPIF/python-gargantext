@@ -61,6 +61,7 @@ var stopcriteria = false;
 var iterationsFA2=1000;
 var seed=999999999;//defaultseed
 var semanticConverged=false;
+var fa2seconds = 4;
 
 
 var showLabelsIfZoom=1.0;

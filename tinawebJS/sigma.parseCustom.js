@@ -766,7 +766,7 @@ function parseSimpleJSON( data , seed ) {
 
     $.doTimeout(100,function (){
         fa2enabled=true; partialGraph.startForceAtlas2();
-        $.doTimeout(9000,function (){
+        $.doTimeout(fa2seconds*1000,function (){
             partialGraph.stopForceAtlas2();
         });
     });

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-PROJECT_PATH = BASE_DIR
+PROJECT_PATH = os.path.join(BASE_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 
 import djcelery
@@ -36,7 +36,13 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_PATH, 'templates'),
+    '/srv/gargantext/templates',
+
+#import os.path
+#
+#TEMPLATE_DIRS = (
+#    os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
+#)
 )
 
 
@@ -115,10 +121,11 @@ USE_TZ = True
 
 ROOT_URLCONF = 'gargantext_web.urls'
 
-# STATIC_ROOT = os.path.join(PROJECT_PATH, '')
+STATIC_ROOT = '/var/www/gargantext/static/'
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
+MEDIA_ROOT = '/var/www/gargantext/media'
+#MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 MEDIA_URL   = '/media/'
 
 
@@ -129,8 +136,11 @@ STATICFILES_FINDERS = (
 
 
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_PATH, 'static'),
-)
+            #os.path.join(BASE_DIR, "static"),
+                '/srv/gargantext/static',
+                #'/var/www/www/alexandre/media',
+                #'/var/www/alexandre.delanoe.org/',
+                )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",

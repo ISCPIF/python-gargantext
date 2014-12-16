@@ -5,11 +5,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
-#from documents.models import Project, Corpus, Document
-
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Node_Ngram, NodeNgramNgram
+
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
 from django.contrib.auth.models import User
@@ -143,6 +142,7 @@ def project(request, project_id):
     
     type_corpus     = NodeType.objects.get(name='Corpus')
     type_document   = NodeType.objects.get(name='Document')
+    
     type_whitelist  = NodeType.objects.get(name='WhiteList')
     type_blacklist  = NodeType.objects.get(name='BlackList')
     type_cooclist   = NodeType.objects.get(name='Cooccurrence')
@@ -158,17 +158,17 @@ def project(request, project_id):
     
     # List of resources
     # filter for each project here
-    whitelists      = Node.objects.filter( type=type_whitelist)
-    blacklists      = Node.objects.filter( type=type_blacklist)
-    cooclists       = Node.objects.filter( type=type_cooclist)
+    whitelists      = ""#.children.filter(type=type_whitelist)
+    blacklists      = ""#.children.filter(type=type_blacklist)
+    cooclists       = ""#.children.filter(type=type_cooclist)
     
     for corpus in corpora:
         docs_count =  corpus.children.count()
         docs_total += docs_count
         
         corpus_view = dict()
-        corpus_view['id']       = corpus.pk
-        corpus_view['name']     = corpus.name
+        corpus_view['id']         = corpus.pk
+        corpus_view['name']       = corpus.name
         corpus_view['count']      = corpus.children.count()
         
         for node_resource in Node_Resource.objects.filter(node=corpus):
@@ -237,12 +237,17 @@ def project(request, project_id):
                     )
 
             try:
+<<<<<<< HEAD
                 #corpus.parse_resources.apply_async((), countdown=1)
                 corpus.parse_resources()
                 
                 # async
                 corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
                 #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+=======
+                corpus.parse_and_extract_ngrams()
+                #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+>>>>>>> master
 
             except Exception as error:
                 print(error)
@@ -471,7 +476,10 @@ def send_csv(request, corpus_id):
     return response
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
@@ -505,6 +513,7 @@ def graph_it(request):
     }))    
     return HttpResponse(html)
 
+<<<<<<< HEAD
 def tests_mvc(request):
     '''Just a test page for Javascript MVC.'''
     t = get_template('tests/mvc.html')
@@ -516,6 +525,8 @@ def tests_mvc(request):
     }))    
     return HttpResponse(html)
 
+=======
+>>>>>>> master
 def ngrams(request):
     '''The ngrams list.'''
     t = get_template('ngrams.html')

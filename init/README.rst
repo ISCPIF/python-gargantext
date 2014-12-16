@@ -59,6 +59,7 @@ Populate the database
 python manage.py syncdb
 
 
+<<<<<<< HEAD
 Last steps of configuration
 ---------------------------
 
@@ -93,6 +94,40 @@ Last steps of configuration
 
 
 Extras
+=======
+Last steps of configuration:
+----------------------------
+
+1) If your project is not in /srv/gargantext:
+    ln -s [the project folder] /srv/gargantext
+
+2) build gargantext_lib
+    wget http://docs.delanoe.org/gargantext_lib.tar.bz2
+    cd /srv/
+    sudo tar xvjf gargantext_lib.tar.bz2
+    sudo chown user:user /srv/gargantext_lib
+
+3) Explorer:
+
+create mkdir /srv/gargantext_lib/js
+sudo chown -R user:user /srv/gargantext_lib/
+
+cd /srv/gargantext_lib/js
+git clone git@github.com:PkSM3/garg.git
+
+4)  Adapt all symlinks:
+ln -s [your folder for tree tagger] [the project folder]/parsing/Tagger/treetagger
+Warning: for ln, path has to be absolute!
+
+5) patch CTE
+patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
+
+6) init nodetypes and main variables
+/srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+
+
+Extras:
+>>>>>>> master
 ======
 
 Start the Python Notebook server
@@ -106,6 +141,6 @@ Start the Python Notebook server
 
 Start the Django server
 -----------------------
-
+in bash to launch python env : /srv/gargantext_env/bin/activate
 In Pyvenv:
 python manage.py runserver

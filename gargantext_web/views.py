@@ -237,17 +237,8 @@ def project(request, project_id):
                     )
 
             try:
-<<<<<<< HEAD
-                #corpus.parse_resources.apply_async((), countdown=1)
-                corpus.parse_resources()
-                
-                # async
-                corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-                #corpus.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-=======
                 corpus.parse_and_extract_ngrams()
                 #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
->>>>>>> master
 
             except Exception as error:
                 print(error)
@@ -476,10 +467,6 @@ def send_csv(request, corpus_id):
     return response
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
@@ -513,7 +500,6 @@ def graph_it(request):
     }))    
     return HttpResponse(html)
 
-<<<<<<< HEAD
 def tests_mvc(request):
     '''Just a test page for Javascript MVC.'''
     t = get_template('tests/mvc.html')
@@ -525,8 +511,6 @@ def tests_mvc(request):
     }))    
     return HttpResponse(html)
 
-=======
->>>>>>> master
 def ngrams(request):
     '''The ngrams list.'''
     t = get_template('ngrams.html')

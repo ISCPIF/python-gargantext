@@ -59,7 +59,6 @@ Populate the database
 python manage.py syncdb
 
 
-<<<<<<< HEAD
 Last steps of configuration
 ---------------------------
 
@@ -95,6 +94,7 @@ Last steps of configuration
 
 Extras
 =======
+
 Last steps of configuration:
 ----------------------------
 
@@ -125,10 +125,6 @@ patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/ga
 6) init nodetypes and main variables
 /srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
 
-
-Extras:
->>>>>>> master
-======
 
 Start the Python Notebook server
 --------------------------------

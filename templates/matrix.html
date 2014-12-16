@@ -5,11 +5,7 @@
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
-<<<<<<< HEAD
-<link rel="stylesheet" href="{% static "css/d3matrix.css" %}">
-=======
 <!-- <link rel="stylesheet" href="{% static "css/d3matrix.css" %}"> -->
->>>>>>> master
 
 <style>
 .background {
@@ -37,23 +33,19 @@ text.active {
         </div>
 </div>
 
-<<<<<<< HEAD
-=======
-
 <div class="container">
->>>>>>> master
-<div id="graphid" style="visibility: hidden;">/corpus/{{ corpus.id }}/adjacency.json</div>
+  <div id="graphid" style="visibility: hidden;">/corpus/{{ corpus.id }}/adjacency.json</div>
 
 
-<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
-<script src="{% static "js/d3/d3.v2.min.js" %}"></script>
+  <script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "js/d3/d3.v2.min.js" %}"></script>
 
-<p>Order: <select id="order">
-  <option value="name">by Name</option>
-  <option value="count">by Frequency</option>
-  <option value="group">by Cluster</option>
-</select>
-</p>
+  <p>Order: <select id="order">
+    <option value="name">by Name</option>
+    <option value="count">by Frequency</option>
+    <option value="group">by Cluster</option>
+  </select>
+  </p>
 
 </div>
 
@@ -70,20 +62,13 @@ var x = d3.scale.ordinal().rangeBands([0, width]),
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-<<<<<<< HEAD
-    //.style("margin-left", -margin.left + "px")
-=======
     .style("margin-left", "25%")
->>>>>>> master
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     var filename = document.getElementById("graphid").innerHTML
 		d3.json(filename, function(miserables) {
-<<<<<<< HEAD
-=======
-      
->>>>>>> master
+
   var matrix = [],
       nodes = miserables.nodes,
       n = nodes.length;

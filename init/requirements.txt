@@ -6,11 +6,7 @@ Pillow==2.5.3
 Pygments==1.6
 SQLAlchemy==0.9.8
 South==1.0
-<<<<<<< HEAD
 # aldjemy==0.3.51
-=======
-aldjemy==0.3.10
->>>>>>> master
 amqp==1.4.6
 anyjson==0.3.3
 billiard==3.3.0.18

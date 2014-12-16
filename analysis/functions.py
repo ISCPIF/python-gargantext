@@ -146,6 +146,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     from analysis.louvain import best_partition
 
     matrix = defaultdict(lambda : defaultdict(float))
+    ids    = dict()
     labels = dict()
     weight = dict()
 
@@ -161,9 +162,13 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
         cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
+        
+        ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
+        ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
+
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
         labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
-        
+
         matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
         matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
 
@@ -200,6 +205,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 #node,type(labels[node])
                 G.node[node]['label']   = node
                 G.node[node]['name']    = node
+                G.node[node]['pk']      = ids[str(node)]
                 G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
                 G.add_edge(node, "cluster " + str(partition[node]), weight=3)

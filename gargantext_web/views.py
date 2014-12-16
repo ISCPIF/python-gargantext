@@ -537,7 +537,16 @@ def tfidf(request, corpus_id, ngram_id):
     ngram  = Ngram.objects.get(id=ngram_id)
     
     node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram=ngram).order_by('-score')
-    tfidf_list = [ dict(id=x.nodey.id, title=x.nodey.metadata['title']) for x in node_node_ngrams]
+    
+# only for tests
+# TODO add test if metadata present
+    tfidf_list = [ dict(
+        id=x.nodey.id,
+        title=x.nodey.metadata['title'],
+        publication_date=x.nodey.metadata['publication_date'],
+        journal=x.nodey.metadata['journal'],
+        abstract=x.nodey.metadata['abstract'])
+        for x in node_node_ngrams]
     
     data = json.dumps(tfidf_list)
     return JsonHttpResponse(data)

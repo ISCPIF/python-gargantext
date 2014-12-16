@@ -7,7 +7,7 @@ from django.template import Context
 
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
-        Node_Ngram, NodeNgramNgram
+        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
@@ -470,7 +470,7 @@ def send_csv(request, corpus_id):
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
-
+import json
 
 def node_link(request, corpus_id):
     '''
@@ -487,7 +487,6 @@ def adjacency(request, corpus_id):
     '''
     data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
     return JsonHttpResponse(data)
-
 
 def graph_it(request):
     '''The new multimodal graph.'''
@@ -527,4 +526,22 @@ def ngrams(request):
         'ngrams' : ngrams_list,
     }))    
     return HttpResponse(html)
+
+def tfidf(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    
+    corpus = Node.objects.get(id=corpus_id)
+    ngram  = Ngram.objects.get(id=ngram_id)
+    
+    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram=ngram).order_by('-score')
+    tfidf_list = [ dict(id=x.nodey.id, title=x.nodey.metadata['title']) for x in node_node_ngrams]
+    
+    data = json.dumps(tfidf_list)
+    return JsonHttpResponse(data)
+
+
+
 

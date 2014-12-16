@@ -239,7 +239,8 @@ class Node(CTENode):
         self.parse_resources()
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-
+        from analysis.functions import do_tfidf
+        do_tfidf(self)
 
 class Node_Metadata(models.Model):
     node        = models.ForeignKey(Node)

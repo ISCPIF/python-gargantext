@@ -3,7 +3,7 @@ import dateutil.parser
 import zipfile
 import chardet
 
-from parsing.Caches import LanguagesCache
+from ..Caches import LanguagesCache
     
 
 class FileParser:

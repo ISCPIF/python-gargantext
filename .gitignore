@@ -1,3 +1,6 @@
 __pycache__/
 parsing/Taggers/treetagger/
 .ipynb_checkpoints/
+*.pyc
+data_samples
+VENV

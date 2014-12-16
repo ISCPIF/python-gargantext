@@ -41,20 +41,19 @@ text.inactive {
         </div>
 </div>
 
-
 <div class="container">
-<div id="graphid" style="visibility: hidden;">/corpus/{{ corpus.id }}/adjacency.json</div>
+  <div id="graphid" style="visibility: hidden;">/corpus/{{ corpus.id }}/adjacency.json</div>
 
 
-<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
-<script src="{% static "js/d3/d3.v2.min.js" %}"></script>
+  <script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "js/d3/d3.v2.min.js" %}"></script>
 
-<p>Order: <select id="order">
-  <option value="name">by Name</option>
-  <option value="count">by Frequency</option>
-  <option value="group">by Cluster</option>
-</select>
-</p>
+  <p>Order: <select id="order">
+    <option value="name">by Name</option>
+    <option value="count">by Frequency</option>
+    <option value="group">by Cluster</option>
+  </select>
+  </p>
 
 </div>
 
@@ -77,7 +76,7 @@ var svg = d3.select("body").append("svg")
 
     var filename = document.getElementById("graphid").innerHTML
 		d3.json(filename, function(miserables) {
-      
+
   var matrix = [],
       nodes = miserables.nodes,
       n = nodes.length;

@@ -1,7 +1,7 @@
 from django.db import transaction
 from lxml import etree
-from parsing.FileParsers.FileParser import FileParser
-from parsing.NgramsExtractors import *
+from .FileParser import FileParser
+from ..NgramsExtractors import *
 
 class PubmedFileParser(FileParser):
     
@@ -25,13 +25,20 @@ class PubmedFileParser(FileParser):
                 "publication_year"  : 'MedlineCitation/DateCreated/Year',
                 "publication_month" : 'MedlineCitation/DateCreated/Month',
                 "publication_day"   : 'MedlineCitation/DateCreated/Day',
+                "authors"           : 'MedlineCitation/Article/AuthorList',
             }
             for key, path in metadata_path.items():
                 try:
-                    node = xml_article.find(path)
-                    metadata[key] = node.text
+                    xml_node = xml_article.find(path)
+                    if key == 'authors':
+                        metadata[key] = ', '.join([
+                            xml_author.find('ForeName').text + ' ' + xml_author.find('LastName').text
+                            for xml_author in xml_node
+                        ])
+                    else:
+                        metadata[key] = xml_node.text
                 except:
-                    metadata[key] = ""
+                    pass
             metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

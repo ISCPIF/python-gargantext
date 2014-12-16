@@ -40,13 +40,14 @@ urlpatterns = patterns('',
     url(r'^api$', gargantext_web.api.Root),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
+    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
+    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     
-    url(r'^api/nodes$', gargantext_web.api.NodesController.get),
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/nodes/(\d+)/data$', gargantext_web.api.CorpusController.data),
 
     url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),
+    url(r'^tests/mvc$', views.tests_mvc),
 )
 
 

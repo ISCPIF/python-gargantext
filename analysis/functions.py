@@ -193,7 +193,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
         for community in set(partition.values()):
             #print(community)
             G.add_node("cluster " + str(community), hidden=1)
-
         for node in G.nodes():
             try:
                 #node,type(labels[node])

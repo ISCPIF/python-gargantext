@@ -1,12 +1,10 @@
-
-
 import re
 import locale
 from lxml import etree
 from datetime import datetime, date
 
-from parsing.FileParsers.FileParser import FileParser
-from parsing.NgramsExtractors import *
+from .FileParser import FileParser
+from ..NgramsExtractors import *
 
 
 

@@ -1,5 +1,5 @@
 from django.db import transaction
-from parsing.FileParsers.FileParser import FileParser
+from .FileParser import FileParser
 
 
 class RisFileParser(FileParser):

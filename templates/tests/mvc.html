@@ -280,7 +280,7 @@
                     <option ng-repeat="mode in ['bundle', 'linear']" value="{{ mode }}">{{ mode }}</option>
                 </select>
                 <span ng-if="graph.options.lineMode != 'linear'">
-                    with a smoothing of smoothing:
+                    with a tension of
                     <input type="text" disabled="disabled" ng-model="graph.options.tension" />
                     <input type="range" min="0" max="2" step=".1" ng-model="graph.options.tension" />
                 </span>

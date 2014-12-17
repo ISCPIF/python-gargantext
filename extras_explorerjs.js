@@ -154,14 +154,6 @@ function getGlobalDBs(){
 //DataFolderMode
 function getTopPapers(type){
     if(getAdditionalInfo){
-        // jsonparams=JSON.stringify(getSelections());
-        // //jsonparams = jsonparams.replaceAll("&","__and__");
-        // jsonparams = jsonparams.split('&').join('__and__');
-        // dbsPaths=getCurrentDBforCurrentGexf();
-        // //dbsPaths.push(getGlobalDBs());
-        // dbsPaths=JSON.stringify(dbsPaths);
-        // thisgexf=JSON.stringify(decodeURIComponent(getUrlParam.file));
-        // bi=(Object.keys(categories).length==2)?1:0;
 
         var pageurl = window.location.href.split("/")
         var cid;
@@ -171,7 +163,6 @@ function getTopPapers(type){
         		break;
         	}
         } 
-
         var corpus_id = pageurl[cid+1];
 
         pr("corpus_id: "+ corpus_id);
@@ -187,14 +178,25 @@ function getTopPapers(type){
 
         $.ajax({
             type: 'GET',
-            url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids[0],
+            url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 
-            	pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids[0])
+            	pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
             	var arraydata = $.parseJSON(data)
-            	pr(arraydata)
-                $("#topPapers").html(arraydata);
+            	var output = "<ul style='padding: 0px; margin: 13px;'>"
+            	for(var i in arraydata) {
+            		var pub = arraydata[i]
+            		var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+            		output += "<li><a href='"+gquery+"' target=_blank>"+pub["title"]+"</a>. Published in <a>"+pub["journal"]+"</a>, "+pub["publication_date"].split(" ")[0]+"</li>\n";
+            		// for(var j in pub) {
+            		// 	if(j!="abstract")
+            		// 		output += "<li><b>"+j+"</b>: "+pub[j]+"</li>\n";
+            		// }
+            		output += "<br>"
+            	}
+            	output += "</ul>"
+                $("#topPapers").html(output);
                 $("#topPapers").show();
             },
             error: function(){ 

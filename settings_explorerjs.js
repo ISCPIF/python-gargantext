@@ -5,7 +5,7 @@
 // ============ < DEVELOPER OPTIONS > ============
 var geomap=false;
 var minimap=false;
-var getAdditionalInfo=false;//for topPapers div
+var getAdditionalInfo=true;//for topPapers div
 
 
 var mainfile=false;

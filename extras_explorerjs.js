@@ -154,26 +154,47 @@ function getGlobalDBs(){
 //DataFolderMode
 function getTopPapers(type){
     if(getAdditionalInfo){
-        jsonparams=JSON.stringify(getSelections());
-        //jsonparams = jsonparams.replaceAll("&","__and__");
-        jsonparams = jsonparams.split('&').join('__and__');
-        dbsPaths=getCurrentDBforCurrentGexf();
-        //dbsPaths.push(getGlobalDBs());
-        dbsPaths=JSON.stringify(dbsPaths);
-        thisgexf=JSON.stringify(decodeURIComponent(getUrlParam.file));
-        image='<img style="display:block; margin: 0px auto;" src="'+twjs+'img/ajax-loader.gif"></img>';
-        $("#topPapers").show();
-        $("#topPapers").html(image);
-        bi=(Object.keys(categories).length==2)?1:0;
+        // jsonparams=JSON.stringify(getSelections());
+        // //jsonparams = jsonparams.replaceAll("&","__and__");
+        // jsonparams = jsonparams.split('&').join('__and__');
+        // dbsPaths=getCurrentDBforCurrentGexf();
+        // //dbsPaths.push(getGlobalDBs());
+        // dbsPaths=JSON.stringify(dbsPaths);
+        // thisgexf=JSON.stringify(decodeURIComponent(getUrlParam.file));
+        // bi=(Object.keys(categories).length==2)?1:0;
+
+        var pageurl = window.location.href.split("/")
+        var cid;
+        for(var i in pageurl) {
+        	if(pageurl[i]=="corpus") {
+        		cid=parseInt(i);
+        		break;
+        	}
+        } 
+
+        var corpus_id = pageurl[cid+1];
+
+        pr("corpus_id: "+ corpus_id);
+
+        var theids = []
+        for(var i in selections) {
+        	if(!Nodes[i].iscluster) {
+        		theids.push(parseInt(Nodes[i].pk))
+        	}
+        }
+        pr("the IDs of the selectioons")
+        pr(theids)
+
         $.ajax({
             type: 'GET',
-            url: 'php/info_div.php',
-            data: "type="+type+"&bi="+bi+"&query="+jsonparams+"&dbs="+dbsPaths+"&gexf="+thisgexf,
+            url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids[0],
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 
-                pr('php/info_div.php?'+"type="+type+"&bi="+bi+"&query="+jsonparams+"&dbs="+dbsPaths+"&gexf="+thisgexf);
-                $("#topPapers").html(data);
+            	pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids[0])
+            	var arraydata = $.parseJSON(data)
+            	pr(arraydata)
+                $("#topPapers").html(arraydata);
                 $("#topPapers").show();
             },
             error: function(){ 

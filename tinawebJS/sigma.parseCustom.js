@@ -664,7 +664,9 @@ function parseSimpleJSON( data , seed ) {
 
     for(var i in nodesNodes) {
 
-        var color, label, size, group;
+        var color, label, size, group, pk;
+
+        pk = (isUndef(nodesNodes[i].pk))?"":nodesNodes[i].pk;
         color = (isUndef(nodesNodes[i].color))?"#800000":nodesNodes[i].color;
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
@@ -685,6 +687,7 @@ function parseSimpleJSON( data , seed ) {
             htmlCont:"",
             group:group,
             color:color,
+            pk:pk,
             iscluster: iscluster
         });  // The graph node
         

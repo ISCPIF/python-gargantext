@@ -532,11 +532,16 @@ def tfidf(request, corpus_id, ngram_id):
     Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
     """
-    
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    ngramsids = ngram_id.split("a")
+
     corpus = Node.objects.get(id=corpus_id)
-    ngram  = Ngram.objects.get(id=ngram_id)
+    ngram  = Ngram.objects.get(id=ngramsids[0])#not used
     
-    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram=ngram).order_by('-score')
+    # print("********-1*******")
+    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
+    # print(node_node_ngrams)
+    # print("********-1*******")
     
 # only for tests
 # TODO add test if metadata present
@@ -548,7 +553,7 @@ def tfidf(request, corpus_id, ngram_id):
         abstract=x.nodey.metadata['abstract'])
         for x in node_node_ngrams]
     
-    data = json.dumps(tfidf_list)
+    data = json.dumps(tfidf_list[:6]) # max 6 papers
     return JsonHttpResponse(data)
 
 

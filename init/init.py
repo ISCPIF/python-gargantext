@@ -26,9 +26,9 @@ french  = Language.objects.get(iso2='fr')
 
 
 try:
-    me = User.objects.get(username='alexandre')
+    me = User.objects.get(username='pksm3')
 except:
-    me = User(username='alexandre')
+    me = User(username='pksm3')
     me.save()
 
 

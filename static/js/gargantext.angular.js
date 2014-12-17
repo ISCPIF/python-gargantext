@@ -281,6 +281,15 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
     $scope.datasets = [{}];
     $scope.groupingKey = 'year';
+    $scope.options = {
+        stacking: false
+    };
+    $scope.seriesOptions = {
+        thicknessNumber: 3,
+        thickness: '3px',
+        type: 'area',
+        striped: false
+    };
     $scope.graph = {
         data: [],
         options: {
@@ -359,14 +368,32 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         // Finally, update the graph
         var series = [];
         for (var i=0, n=$scope.datasets.length; i<n; i++) {
-            series.push({
-                y: 'y'+i,
+            var seriesElement = {
+                id: 'series_'+ i,
+                y: 'y'+ i,
                 axis: 'y',
                 color: $scope.getColor(i, n)
+            };
+            angular.forEach($scope.seriesOptions, function(value, key) {
+                seriesElement[key] = value;
             });
+            series.push(seriesElement);
         }
         $scope.graph.options.series = series;
         $scope.graph.data = linearData;
+        // shall we stack?
+        if ($scope.options.stacking) {
+            var stack = {
+                axis: 'y',
+                series: []
+            };
+            angular.forEach(series, function(seriesElement) {
+                stack.series.push(seriesElement.id);
+            });
+            $scope.graph.options.stacks = [stack];
+        } else {
+            delete $scope.graph.options.stacks;
+        }
     };
     // perform a query on the server
     $scope.query = function() {
@@ -428,7 +455,9 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
 setTimeout(function(){
     // first dataset
     $('div.corpus select').change();
-    // setTimeout(function(){
+    $('button.add').first().click();
+    setTimeout(function(){
+        $('div.corpus select').change();
     //     $('div.filters button').last().click();
     //     var d = $('li.dataset').last();
     //     d.find('select').last().val('metadata').change();
@@ -448,5 +477,5 @@ setTimeout(function(){
     //     // d.find('input').last().val('dea').change();
     //     // refresh
     //     // $('button.refresh').first().click();
-    // }, 500);
+    }, 500);
 }, 250);

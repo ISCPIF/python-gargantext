@@ -4,6 +4,7 @@
     <!-- {% load staticfiles %} -->
     <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
     <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+    <title>GarganText: Analyze your data with graphs</title>
 {% endblock %}
 
 
@@ -121,6 +122,7 @@
 -->
     
     <style type="text/css">
+        div.corpus button:first-child+select {color:#FFF;}
         div.list-results table {border-collapse: collapse;}
         div.list-results th, div.list-results td {border: solid 1px #888; padding: 0.5em;}
         div.list-results th {background: #444; color: #FFF}
@@ -266,7 +268,7 @@
             </div>
             <div class="graph-parameters">
                 X-axis: groups the results by
-                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']" ng-change="showResults()">
+                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']" ng-change="query()">
                 </select>
                 <br/>
 
@@ -274,15 +276,32 @@
                 <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['log', 'linear']"></select>
                 scale
                 <br/>
+                
+                <hr/>
 
-                Interpolation:
-                <select ng-model="graph.options.lineMode">
-                    <option ng-repeat="mode in ['bundle', 'linear']" value="{{ mode }}">{{ mode }}</option>
-                </select>
-                <span ng-if="graph.options.lineMode != 'linear'">
-                    with a tension of
-                    <input type="text" disabled="disabled" ng-model="graph.options.tension" />
-                    <input type="range" min="0" max="2" step=".1" ng-model="graph.options.tension" />
+                Represent data with
+                <select ng-model="seriesOptions.type" ng-options="type for type in ['line', 'area', 'column']" ng-change="query()"></select>
+                <span ng-show="seriesOptions.type == 'area'">
+                    (<select ng-model="seriesOptions.striped" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stripes)
+                </span>
+                <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
+                    (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stacking)
+                </span>
+                <br/>
+
+                <span ng-hide="seriesOptions.type == 'column'">
+                    Line thickness:
+                    <input ng-model="seriesOptions.thicknessNumber" type="range" min="1" max="8" ng-change="seriesOptions.thickness = seriesOptions.thicknessNumber + 'px'; query()" />
+                    <br/>
+                    Interpolation:
+                    <select ng-model="graph.options.lineMode">
+                        <option ng-repeat="mode in ['bundle', 'linear']" value="{{ mode }}">{{ mode }}</option>
+                    </select>
+                    <span ng-if="graph.options.lineMode != 'linear'">
+                        with a tension of
+                        <input type="text" disabled="disabled" ng-model="graph.options.tension" />
+                        <input type="range" min="0" max="2" step=".1" ng-model="graph.options.tension" />
+                    </span>
                 </span>
             </div>
         </div>

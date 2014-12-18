@@ -538,50 +538,34 @@ def tfidf(request, corpus_id, ngram_id):
     corpus = Node.objects.get(id=corpus_id)
     ngram  = Ngram.objects.get(id=ngramsids[0])#not used
     
-    print("********-1 01*******")
+    print("********web/views.tfidf*******")
     print("first ngram:")
     print(ngram)
     node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
     # print(node_node_ngrams)
     goodDict = {}
     for x in node_node_ngrams:
-        # print(x.nodey)
-        # print("\t",x.nodey.id)
-        # print
         goodDict[x.nodey.id] = x.nodey
-    print("imma here")
-    print("arguments... nodes ids:")
-    print(ngramsids)
-    print ("with tfidf:")
-    print(node_node_ngrams)
-    print("corpus:")
-    print(NodeNodeNgram.objects.filter(nodex=corpus))
+    # print("imma here")
+    # print("arguments... nodes ids:")
+    # print(ngramsids)
+    # print ("with tfidf:")
+    # print(node_node_ngrams)
+    # print("corpus:")
+    # print(NodeNodeNgram.objects.filter(nodex=corpus))
     tfidf_list = []
     for x in goodDict:
-        print(goodDict[x].metadata.keys())
-        print
-        pub = { "id":goodDict[x].id, 
-                 "title":goodDict[x].metadata['title'], 
-                 "publication_date":goodDict[x].metadata['publication_date'], 
-                 "journal":goodDict[x].metadata['journal'] 
-               }
-        # tel = {'id': goodDict[x].id, "title":goodDict[x].metadata['title'], 'sape': 4139}
-        # print(elem)
-        tfidf_list.append(pub)
-    print("********-1 02*******")
+        pub = goodDict[x] # getting the unique publication
+        finalpub = {}
+        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
+        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
+        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
+        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
+        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
     
-# only for tests
-# TODO add test if metadata present
-    # tfidf_list = [ dict(
-    #     id=x.nodey.id,
-    #     title=x.nodey.metadata['title'],
-    #     publication_date=x.nodey.metadata['publication_date'],
-    #     journal=x.nodey.metadata['journal'],
-    #     #abstract=x.nodey.metadata['abstract'],
-    #     )
-    #     for x in node_node_ngrams]
-    
-    data = json.dumps(tfidf_list[:6]) # max 6 papers
+    data = json.dumps(tfidf_list) 
     return JsonHttpResponse(data)
 
 

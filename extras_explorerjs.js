@@ -155,6 +155,9 @@ function getGlobalDBs(){
 function getTopPapers(type){
     if(getAdditionalInfo){
 
+        $("#topPapers").show();
+    	var img = '<center><img src="'+window.location.origin+'/static/img/ajax-loader.gif" width="30%"></img></center>';
+    	$("#topPapers").html(img);
         var pageurl = window.location.href.split("/")
         var cid;
         for(var i in pageurl) {

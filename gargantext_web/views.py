@@ -550,7 +550,8 @@ def tfidf(request, corpus_id, ngram_id):
         title=x.nodey.metadata['title'],
         publication_date=x.nodey.metadata['publication_date'],
         journal=x.nodey.metadata['journal'],
-        abstract=x.nodey.metadata['abstract'])
+        #abstract=x.nodey.metadata['abstract'],
+        )
         for x in node_node_ngrams]
     
     data = json.dumps(tfidf_list[:6]) # max 6 papers

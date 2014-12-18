@@ -539,6 +539,8 @@ def tfidf(request, corpus_id, ngram_id):
     ngram  = Ngram.objects.get(id=ngramsids[0])#not used
     
     print("********-1 01*******")
+    print("first ngram:")
+    print(ngram)
     node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
     # print(node_node_ngrams)
     goodDict = {}
@@ -547,10 +549,17 @@ def tfidf(request, corpus_id, ngram_id):
         # print("\t",x.nodey.id)
         # print
         goodDict[x.nodey.id] = x.nodey
-
+    print("imma here")
+    print("arguments... nodes ids:")
+    print(ngramsids)
+    print ("with tfidf:")
+    print(node_node_ngrams)
+    print("corpus:")
+    print(NodeNodeNgram.objects.filter(nodex=corpus))
     tfidf_list = []
-    tel = {'jack': 4098, 'sape': 4139}
     for x in goodDict:
+        print(goodDict[x].metadata.keys())
+        print
         pub = { "id":goodDict[x].id, 
                  "title":goodDict[x].metadata['title'], 
                  "publication_date":goodDict[x].metadata['publication_date'], 

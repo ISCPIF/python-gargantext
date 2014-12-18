@@ -569,5 +569,7 @@ def tfidf(request, corpus_id, ngram_id):
     return JsonHttpResponse(data)
 
 
+def getpub(request, corpus_id, pub_id):
+    return JsonHttpResponse(["holamundo"])
 
 

@@ -557,6 +557,7 @@ def tfidf(request, corpus_id, ngram_id):
     for x in goodDict:
         pub = goodDict[x] # getting the unique publication
         finalpub = {}
+        finalpub["id"] = pub.id
         if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
         if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
         if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
@@ -567,9 +568,3 @@ def tfidf(request, corpus_id, ngram_id):
     
     data = json.dumps(tfidf_list) 
     return JsonHttpResponse(data)
-
-
-def getpub(request, corpus_id, pub_id):
-    return JsonHttpResponse(["holamundo"])
-
-

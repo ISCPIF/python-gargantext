@@ -538,21 +538,39 @@ def tfidf(request, corpus_id, ngram_id):
     corpus = Node.objects.get(id=corpus_id)
     ngram  = Ngram.objects.get(id=ngramsids[0])#not used
     
-    # print("********-1*******")
+    print("********-1 01*******")
     node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
     # print(node_node_ngrams)
-    # print("********-1*******")
+    goodDict = {}
+    for x in node_node_ngrams:
+        # print(x.nodey)
+        # print("\t",x.nodey.id)
+        # print
+        goodDict[x.nodey.id] = x.nodey
+
+    tfidf_list = []
+    tel = {'jack': 4098, 'sape': 4139}
+    for x in goodDict:
+        pub = { "id":goodDict[x].id, 
+                 "title":goodDict[x].metadata['title'], 
+                 "publication_date":goodDict[x].metadata['publication_date'], 
+                 "journal":goodDict[x].metadata['journal'] 
+               }
+        # tel = {'id': goodDict[x].id, "title":goodDict[x].metadata['title'], 'sape': 4139}
+        # print(elem)
+        tfidf_list.append(pub)
+    print("********-1 02*******")
     
 # only for tests
 # TODO add test if metadata present
-    tfidf_list = [ dict(
-        id=x.nodey.id,
-        title=x.nodey.metadata['title'],
-        publication_date=x.nodey.metadata['publication_date'],
-        journal=x.nodey.metadata['journal'],
-        #abstract=x.nodey.metadata['abstract'],
-        )
-        for x in node_node_ngrams]
+    # tfidf_list = [ dict(
+    #     id=x.nodey.id,
+    #     title=x.nodey.metadata['title'],
+    #     publication_date=x.nodey.metadata['publication_date'],
+    #     journal=x.nodey.metadata['journal'],
+    #     #abstract=x.nodey.metadata['abstract'],
+    #     )
+    #     for x in node_node_ngrams]
     
     data = json.dumps(tfidf_list[:6]) # max 6 papers
     return JsonHttpResponse(data)

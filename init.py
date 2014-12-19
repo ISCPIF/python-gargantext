@@ -37,7 +37,6 @@ metadata = {
     'source': 'string',
     'volume': 'string',
     'text': 'text',
-    'date': 'datetime',
     'page': 'string',
     'doi': 'string',
     'journal': 'string',

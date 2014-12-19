@@ -527,6 +527,22 @@ def ngrams(request):
     }))    
     return HttpResponse(html)
 
+
+def nodeinfo(request , node_id):
+    '''Structure of the popUp for topPapers div '''
+    t = get_template('node-info.html')
+    ngrams_list = ["hola","mundo"]
+    
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'node_id' : node_id,
+    }))    
+    return HttpResponse(html)
+
+
 def tfidf(request, corpus_id, ngram_id):
     """
     Takes IDs of corpus and ngram and returns list of relevent documents in json format

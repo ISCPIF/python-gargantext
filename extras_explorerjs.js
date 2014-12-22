@@ -191,7 +191,7 @@ function getTopPapers(type){
             	for(var i in arraydata) {
             		var pub = arraydata[i]
             		var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
-            		var getpubAPI = window.location.origin+"/api/nodes/"+pub["id"]
+            		var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
             		output += "<li><a href='Javascript:newPopup(\""+getpubAPI+"\")' target=_blank>"+pub["title"]+"</a>. Published in <a>"+pub["journal"]+"</a>, "+pub["publication_date"].split(" ")[0]+"\n";
             		output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
             		output +="</li>\n";

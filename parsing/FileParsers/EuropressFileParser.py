@@ -70,10 +70,10 @@ class EuropressFileParser(FileParser):
                        self.localeEncoding = "fr_FR"
                        locale.setlocale(locale.LC_ALL, localeEncoding)
                        try :
-                           metadata['date'] = datetime.strptime(text, '%d %B %Y')
+                           metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                        except :
                            try:
-                               metadata['date'] = datetime.strptime(text, '%B %Y')
+                               metadata['publication_date'] = datetime.strptime(text, '%B %Y')
                            except :
                                pass
                    
@@ -81,10 +81,10 @@ class EuropressFileParser(FileParser):
                        localeEncoding = "en_GB.UTF-8"
                        locale.setlocale(locale.LC_ALL, localeEncoding)
                        try :
-                           metadata['date'] = datetime.strptime(text, '%B %d, %Y')
+                           metadata['publication_date'] = datetime.strptime(text, '%B %d, %Y')
                        except :
                            try :
-                               metadata['date'] = datetime.strptime(text, '%B %Y')
+                               metadata['publication_date'] = datetime.strptime(text, '%B %Y')
                            except :
                                pass
 
@@ -118,19 +118,19 @@ class EuropressFileParser(FileParser):
                
                
                try:
-                   if metadata['date'] is not None or metadata['date'] != '':
+                   if metadata['publication_date'] is not None or metadata['publication_date'] != '':
                        try:
-                           back = metadata['date']
+                           back = metadata['publication_date']
                        except Exception as e: 
                            print(e)
                            pass
                    else:
                        try:
-                           metadata['date'] = back
+                           metadata['publication_date'] = back
                        except Exception as e:
                            print(e)
                except :
-                   metadata['date'] = datetime.now()
+                   metadata['publication_date'] = datetime.now()
 
                #if lang == 'fr':
                #metadata['language_iso2'] = 'fr'
@@ -138,10 +138,10 @@ class EuropressFileParser(FileParser):
                #    metadata['language_iso2'] = 'en'
                
                
-               metadata['publication_year']  = metadata['date'].strftime('%Y')
-               metadata['publication_month'] = metadata['date'].strftime('%m')
-               metadata['publication_day']  = metadata['date'].strftime('%d')
-               metadata['date'] = ""
+#               metadata['publication_year']  = metadata['date'].strftime('%Y')
+#               metadata['publication_month'] = metadata['date'].strftime('%m')
+#               metadata['publication_day']  = metadata['date'].strftime('%d')
+               metadata['publication_date'] = ""
 
                metadata['object_id'] = str(metadata['text'][-9])
                metadata['text'].pop()

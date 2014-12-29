@@ -48,6 +48,7 @@ urlpatterns = patterns('',
 
     url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),
+    url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
 )
 

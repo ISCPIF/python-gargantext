@@ -1,0 +1,61 @@
+
+{% block css %}
+{% load staticfiles %}
+
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+<link rel="stylesheet" href="{% static "js/libs/jquery/jquery-ui.css" %}" media="screen">
+
+{% endblock %}
+
+
+
+{% block content %}
+{% if node_id %}
+<div id="nodeid" style="visibility: hidden;" >{{node_id}}</div>
+<div id="metadata"></div>
+{% endif %}
+
+	<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "js/libs/jquery/jquery-ui.js" %}" type="text/javascript"></script>
+
+    <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>    
+    
+    <!--<script src="{% static "js/libs/bootstrap/js/bootstrap.min.js" %}"></script>-->
+    <script src="{% static "js/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
+
+
+
+
+    <script type="text/javascript">
+
+    var node_id = $("#nodeid").html()
+	var img = '<center><img src="'+window.location.origin+'/static/img/ajax-loader.gif" width="30%"></img></center>';
+	$("#metadata").html(img);
+
+    $.ajax({
+        type: 'GET',
+        url: window.location.origin+'/api/nodes/'+node_id,
+        //contentType: "application/json",
+        //dataType: 'json',
+        success : function(data){
+        	console.log( window.location.origin+'/api/nodes/'+node_id )
+        	jsondata = data.metadata
+        	console.log(jsondata)
+        	var output = ""
+        	if(jsondata.title) output += "Title:<br>"+jsondata.title+"<br>";
+        	if(jsondata.publication_date) output += jsondata.publication_date.split(" ")[0]+"<br><br>";
+        	if(jsondata.authors) output += "Authors:<br>"+jsondata.authors+"<br><br>";
+        	if(jsondata.fields) output += "Keywords:<br>"+jsondata.fields+"<br><br>";
+        	if(jsondata.abstract) output += "Abstract:<br>"+jsondata.abstract+"<br><br>";
+
+            $("#metadata").html(output);
+        },
+        error: function(){ 
+            console.log('Page Not found: getTopPapers()');
+        }
+    });
+    </script>
+
+{% endblock %}

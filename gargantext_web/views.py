@@ -527,6 +527,22 @@ def ngrams(request):
     }))    
     return HttpResponse(html)
 
+
+def nodeinfo(request , node_id):
+    '''Structure of the popUp for topPapers div '''
+    t = get_template('node-info.html')
+    ngrams_list = ["hola","mundo"]
+    
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'node_id' : node_id,
+    }))    
+    return HttpResponse(html)
+
+
 def tfidf(request, corpus_id, ngram_id):
     """
     Takes IDs of corpus and ngram and returns list of relevent documents in json format
@@ -538,25 +554,33 @@ def tfidf(request, corpus_id, ngram_id):
     corpus = Node.objects.get(id=corpus_id)
     ngram  = Ngram.objects.get(id=ngramsids[0])#not used
     
-    # print("********-1*******")
+    print("********web/views.tfidf*******")
+    print("first ngram:")
+    print(ngram)
     node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
     # print(node_node_ngrams)
-    # print("********-1*******")
+    goodDict = {}
+    for x in node_node_ngrams:
+        goodDict[x.nodey.id] = x.nodey
+    # print("imma here")
+    # print("arguments... nodes ids:")
+    # print(ngramsids)
+    # print ("with tfidf:")
+    # print(node_node_ngrams)
+    # print("corpus:")
+    # print(NodeNodeNgram.objects.filter(nodex=corpus))
+    tfidf_list = []
+    for x in goodDict:
+        pub = goodDict[x] # getting the unique publication
+        finalpub = {}
+        finalpub["id"] = pub.id
+        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
+        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
+        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
+        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
+        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
     
-# only for tests
-# TODO add test if metadata present
-    tfidf_list = [ dict(
-        id=x.nodey.id,
-        title=x.nodey.metadata['title'],
-        publication_date=x.nodey.metadata['publication_date'],
-        journal=x.nodey.metadata['journal'],
-        #abstract=x.nodey.metadata['abstract'],
-        )
-        for x in node_node_ngrams]
-    
-    data = json.dumps(tfidf_list[:6]) # max 6 papers
+    data = json.dumps(tfidf_list) 
     return JsonHttpResponse(data)
-
-
-
-

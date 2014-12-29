@@ -243,9 +243,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 
 def tfidf(corpus, document, ngram):
     try:
-        x = Node_Ngram.objects.get(node=document, ngram=ngram).weight
-        y = Node_Ngram.objects.filter(node=document).count()
-        tf = x/y
+        occurences_of_ngram = Node_Ngram.objects.get(node=document, ngram=ngram).weight
+        ngrams_by_document = sum([ x.weight for x in Node_Ngram.objects.filter(node=document)])
+        term_frequency = occurences_of_ngram / ngrams_by_document
     
         xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
         yy = Node_Ngram.objects.filter(ngram=ngram).count()

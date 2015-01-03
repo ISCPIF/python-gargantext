@@ -138,9 +138,9 @@ class EuropressFileParser(FileParser):
                #    metadata['language_iso2'] = 'en'
                
                
-#               metadata['publication_year']  = metadata['date'].strftime('%Y')
-#               metadata['publication_month'] = metadata['date'].strftime('%m')
-#               metadata['publication_day']  = metadata['date'].strftime('%d')
+               metadata['publication_year']  = metadata['publication_date'].strftime('%Y')
+               metadata['publication_month'] = metadata['publication_date'].strftime('%m')
+               metadata['publication_day']  = metadata['publication_date'].strftime('%d')
                metadata['publication_date'] = ""
 
                metadata['object_id'] = str(metadata['text'][-9])

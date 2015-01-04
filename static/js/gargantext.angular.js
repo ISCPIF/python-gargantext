@@ -86,12 +86,15 @@ var groupings = {
 };
 
 
-// application definition
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart']);
+// Define the application
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies'])
 
-// tuning the application's scope
-angular.module('Gargantext').run(['$rootScope', function($rootScope){
+
+// Customize the application's scope
+angular.module('Gargantext').run(function($rootScope, $http, $cookies){
+    // Access Math library from anywhere in the scope of the application
     $rootScope.Math = Math;
+    // Access to an HSB to RGB converter
     $rootScope.getColor = function(i, n){
         var h = .3 + (i / n) % 1;
         var s = .7;
@@ -116,6 +119,7 @@ angular.module('Gargantext').run(['$rootScope', function($rootScope){
         var color = 'rgb(' + r + ',' + g + ',' + b + ')';
         return color;
     };
+    // Access to a range function, very similar to the one available in Python
     $rootScope.range = function(min, max, step){
         if (max == undefined){
             max = min;
@@ -128,9 +132,12 @@ angular.module('Gargantext').run(['$rootScope', function($rootScope){
         }
         return output;
     };
-}]);
+    // For CSRF token compatibility with Django
+    $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
+});
 
 
+// Controller for queries
 gargantext.controller("QueryController", function($scope, $http) {
     // query-specific information
     $scope.filters = [];
@@ -202,7 +209,7 @@ gargantext.controller("QueryController", function($scope, $http) {
     }
 });
 
-
+// Controller for datasets
 gargantext.controller("DatasetController", function($scope, $http) {
     // query-specific information
     $scope.mesured = 'nodes.count';
@@ -267,7 +274,7 @@ gargantext.controller("DatasetController", function($scope, $http) {
             }
             // event firing to parent(s)
             $scope.$emit('updateDataset', {
-                datasetId: $scope.$id,
+                datasetIndex: $scope.$index,
                 url: url,
                 filters: filters,
                 mesured: $scope.mesured
@@ -276,13 +283,20 @@ gargantext.controller("DatasetController", function($scope, $http) {
     }
 });
 
-
+// Controller for graphs
 gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
     $scope.datasets = [{}];
-    $scope.resultsList = [];
-    $scope.queries = {};
     $scope.groupingKey = 'year';
+    $scope.options = {
+        stacking: false
+    };
+    $scope.seriesOptions = {
+        thicknessNumber: 3,
+        thickness: '3px',
+        type: 'area',
+        striped: false
+    };
     $scope.graph = {
         data: [],
         options: {
@@ -305,22 +319,22 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     // remove a dataset
     $scope.removeDataset = function(datasetIndex) {
         $scope.datasets.shift(datasetIndex);
+        $scope.query();
     };
     // show results on the graph
-    $scope.showResults = function(keys) {
+    $scope.showResults = function() {
         // Format specifications
-        var xKey = 0;
-        var yKey = 1;
         var grouping = groupings.datetime[$scope.groupingKey];
         var convert = function(x) {return new Date(x);};
         // Find extrema for X
         var xMin, xMax;
-        angular.forEach($scope.resultsList, function(results){
-            if (results.length == 0) {
+        angular.forEach($scope.datasets, function(dataset){
+            if (!dataset.results) {
                 return false;
             }
-            var xMinTmp = results[0][xKey];
-            var xMaxTmp = results[results.length - 1][xKey];
+            var results = dataset.results;
+            var xMinTmp = results[0][0];
+            var xMaxTmp = results[results.length - 1][0];
             if (xMin === undefined || xMinTmp < xMin) {
                 xMin = xMinTmp;
             }
@@ -334,17 +348,18 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         xMax = grouping.truncate(xMax);
         for (var x=xMin; x<=xMax; x=grouping.next(x)) {
             var row = [];
-            angular.forEach($scope.resultsList, function(results){
+            angular.forEach($scope.datasets, function(){
                 row.push(0);
             });
             dataObject[x] = row;
         }
         // Fill the dataObject with results
-        angular.forEach($scope.resultsList, function(results, resultsIndex){
+        angular.forEach($scope.datasets, function(dataset, datasetIndex){
+            var results = dataset.results;
             angular.forEach(results, function(result, r){
-                var x = grouping.truncate(result[xKey]);
-                var y = result[yKey];
-                dataObject[x][resultsIndex] += parseFloat(y);
+                var x = grouping.truncate(result[0]);
+                var y = result[1];
+                dataObject[x][datasetIndex] += parseFloat(y);
             });
         });
         // Convert this object back to a sorted array
@@ -359,26 +374,48 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         }
         // Finally, update the graph
         var series = [];
-        for (var i=0, n=$scope.resultsList.length; i<n; i++) {
-            series.push({
-                y: 'y'+i,
+        for (var i=0, n=$scope.datasets.length; i<n; i++) {
+            var seriesElement = {
+                id: 'series_'+ i,
+                y: 'y'+ i,
                 axis: 'y',
                 color: $scope.getColor(i, n)
+            };
+            angular.forEach($scope.seriesOptions, function(value, key) {
+                seriesElement[key] = value;
             });
+            series.push(seriesElement);
         }
         $scope.graph.options.series = series;
         $scope.graph.data = linearData;
+        // shall we stack?
+        if ($scope.options.stacking) {
+            var stack = {
+                axis: 'y',
+                series: []
+            };
+            angular.forEach(series, function(seriesElement) {
+                stack.series.push(seriesElement.id);
+            });
+            $scope.graph.options.stacks = [stack];
+        } else {
+            delete $scope.graph.options.stacks;
+        }
     };
     // perform a query on the server
     $scope.query = function() {
-        // reinitialize data
-        $scope.resultsList = new Array($scope.datasets.length);
-        $scope.indexById = {};
+        // number of requests made to the server
+        var requestsCount = 0;
+        // reinitialize graph data
         $scope.graph.data = [];
-        // add all the server request to the queue
-        var index = 0;
-        angular.forEach($scope.queries, function(query, datasetId) {
-            $scope.indexById[datasetId] = index++;
+        // queue all the server requests
+        angular.forEach($scope.datasets, function(dataset, datasetIndex) {
+            // if the results are already present, don't send a query
+            if (dataset.results !== undefined) {
+                return;
+            }
+            // format data to be sent as a query
+            var query = dataset.query;
             var data = {
                 filters: query.filters,
                 sort: ['metadata.publication_date.day'],
@@ -387,57 +424,66 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                     list: ['metadata.publication_date.day', query.mesured]
                 }
             };
+            // request to the server
             $http.post(query.url, data, {cache: true}).success(function(response) {
-                var index = $scope.indexById[datasetId];
-                $scope.resultsList[index] = response.results;
-                for (var i=0, n=$scope.resultsList.length; i<n; i++) {
-                    if ($scope.resultsList[i] == undefined) {
+                dataset.results = response.results;
+                for (var i=0, n=$scope.datasets.length; i<n; i++) {
+                    if ($scope.datasets[i].results == undefined) {
                         return;
                     }
                 }
-                $scope.showResults(response.retrieve);
+                $scope.showResults();
             }).error(function(response) {
                 console.error('An error occurred while retrieving the query response');
             });
+            requestsCount++;
         });
+        // if no request have been made at all, refresh the chart
+        if (requestsCount == 0) {
+            $scope.showResults();
+        }
     };
-    // update the queries (catches the vent thrown by children dataset controllers)
+    // update the datasets (catches the vent thrown by children dataset controllers)
     $scope.$on('updateDataset', function(e, data) {
-        $scope.queries[data.datasetId] = {
+        var dataset = $scope.datasets[data.datasetIndex]
+        dataset.query = {
             url: data.url,
             filters: data.filters,
             mesured: data.mesured
         };
+        dataset.results = undefined;
         $scope.query();
     });
 });
 
 
-
-// // For debugging only!
-// setTimeout(function(){
-//     var corpusId = $('div.corpus select option').last().val();
-//     // first dataset
-//     $('div.corpus select').val(corpusId).change();
-//     setTimeout(function(){
-//         $('div.filters button').last().click();
-//         var d = $('li.dataset').last();
-//         d.find('select').last().val('metadata').change();
-//         d.find('select').last().val('publication_date').change();
-//         d.find('select').last().val('>').change();
-//         d.find('input').last().val('2010').change();
+// Only for debugging!
+/*
+setTimeout(function(){
+    // first dataset
+    $('div.corpus select').change();
+    $('button.add').first().click();
+    setTimeout(function(){
+        $('div.corpus select').change();
+    //     $('div.filters button').last().click();
+    //     var d = $('li.dataset').last();
+    //     d.find('select').last().val('metadata').change();
+    //     d.find('select').last().val('publication_date').change();
+    //     d.find('select').last().val('>').change();
+    //     d.find('input').last().val('2010').change();
         
-//         // second dataset
-//         // $('button.add').first().click();
-//         // var d = $('li.dataset').last();
-//         // d.find('select').change();
-//         // // second dataset's filter
-//         // d.find('div.filters button').last().click();
-//         // d.find('select').last().val('metadata').change();
-//         // d.find('select').last().val('abstract').change();
-//         // d.find('select').last().val('contains').change();
-//         // d.find('input').last().val('dea').change();
-//         // refresh
-//         $('button.refresh').first().click();
-//     }, 500);
-// }, 500);
+    //     // second dataset
+    //     // $('button.add').first().click();
+    //     // var d = $('li.dataset').last();
+    //     // d.find('select').change();
+    //     // // second dataset's filter
+    //     // d.find('div.filters button').last().click();
+    //     // d.find('select').last().val('metadata').change();
+    //     // d.find('select').last().val('abstract').change();
+    //     // d.find('select').last().val('contains').change();
+    //     // d.find('input').last().val('dea').change();
+    //     // refresh
+    //     // $('button.refresh').first().click();
+    }, 500);
+}, 250);
+*/

@@ -119,7 +119,8 @@ function getNodeLabels(elems){
     var labelss=[]
     for(var i in elems){
         var id=(!isUndef(elems[i].key))?elems[i].key:i
-        labelss.push(Nodes[id].label)
+        if(!Nodes[id].iscluster)
+            labelss.push(Nodes[id].label)
     }
     return labelss
 }

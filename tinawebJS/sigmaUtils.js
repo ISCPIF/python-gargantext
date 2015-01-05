@@ -308,7 +308,7 @@ function clustersBy(daclass) {
         
         var nodes = getVisibleNodes();
         for(var i in nodes) {
-            nodes[i].color = Nodes[ nodes[i].id ].color;            
+            nodes[i].color = Nodes[ nodes[i].id ].color;
         }
 
         colorList.sort(function(){ return Math.random()-0.5; }); 
@@ -317,6 +317,7 @@ function clustersBy(daclass) {
             cc = Nodes[nodes[i].id][daclass]
             if( !isUndef( cc ) && cc!="-" ) {
                 nodes[i].color = colorList[ CCxID[cc] ];
+                Nodes[ nodes[i].id ].color = colorList[ CCxID[cc] ];
             }
         }
         partialGraph.refresh()

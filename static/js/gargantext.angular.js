@@ -86,12 +86,15 @@ var groupings = {
 };
 
 
-// application definition
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart']);
+// Define the application
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies'])
 
-// tuning the application's scope
-angular.module('Gargantext').run(['$rootScope', function($rootScope){
+
+// Customize the application's scope
+angular.module('Gargantext').run(function($rootScope, $http, $cookies){
+    // Access Math library from anywhere in the scope of the application
     $rootScope.Math = Math;
+    // Access to an HSB to RGB converter
     $rootScope.getColor = function(i, n){
         var h = .3 + (i / n) % 1;
         var s = .7;
@@ -116,6 +119,7 @@ angular.module('Gargantext').run(['$rootScope', function($rootScope){
         var color = 'rgb(' + r + ',' + g + ',' + b + ')';
         return color;
     };
+    // Access to a range function, very similar to the one available in Python
     $rootScope.range = function(min, max, step){
         if (max == undefined){
             max = min;
@@ -128,9 +132,12 @@ angular.module('Gargantext').run(['$rootScope', function($rootScope){
         }
         return output;
     };
-}]);
+    // For CSRF token compatibility with Django
+    $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
+});
 
 
+// Controller for queries
 gargantext.controller("QueryController", function($scope, $http) {
     // query-specific information
     $scope.filters = [];
@@ -202,7 +209,7 @@ gargantext.controller("QueryController", function($scope, $http) {
     }
 });
 
-
+// Controller for datasets
 gargantext.controller("DatasetController", function($scope, $http) {
     // query-specific information
     $scope.mesured = 'nodes.count';
@@ -276,7 +283,7 @@ gargantext.controller("DatasetController", function($scope, $http) {
     }
 });
 
-
+// Controller for graphs
 gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
     $scope.datasets = [{}];
@@ -450,8 +457,8 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
 });
 
 
-
-// For debugging only!
+// Only for debugging!
+/*
 setTimeout(function(){
     // first dataset
     $('div.corpus select').change();
@@ -479,3 +486,4 @@ setTimeout(function(){
     //     // $('button.refresh').first().click();
     }, 500);
 }, 250);
+*/

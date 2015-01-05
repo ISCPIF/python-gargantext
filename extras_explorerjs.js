@@ -3,6 +3,7 @@
  */
 
 function newPopup(url) {
+    pr("newPopup : "+url)
 	popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
 }
 
@@ -199,7 +200,10 @@ function getTopPapers(type){
                     if(pub["authors"]) ifauthors = "By "+pub["authors"]+"";
                     if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
                     if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
-            		output += "<li><a href='Javascript:newPopup(\""+getpubAPI+"\")' target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
+                    
+                    var jsstuff = "window.open('"+getpubAPI+"','popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')"
+                    
+            		output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
             		output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
             		output +="</li>\n";
             		// for(var j in pub) {

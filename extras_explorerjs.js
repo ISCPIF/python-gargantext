@@ -192,7 +192,14 @@ function getTopPapers(type){
             		var pub = arraydata[i]
             		var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
             		var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
-            		output += "<li><a href='Javascript:newPopup(\""+getpubAPI+"\")' target=_blank>"+pub["title"]+"</a>. Published in <a>"+pub["journal"]+"</a>, "+pub["publication_date"].split(" ")[0]+"\n";
+
+                    var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
+
+                    if(pub["journal"]) ifjournal = "<br>Published in <a>"+pub["journal"]+"</a>";
+                    if(pub["authors"]) ifauthors = "By "+pub["authors"]+"";
+                    if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
+                    if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
+            		output += "<li><a href='Javascript:newPopup(\""+getpubAPI+"\")' target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
             		output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
             		output +="</li>\n";
             		// for(var j in pub) {

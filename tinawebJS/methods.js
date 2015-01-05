@@ -343,7 +343,7 @@ function htmlfied_alternodes(elems) {
             (frec-1)*
             ((desirableTagCloudFont_MAX-desirableTagCloudFont_MIN)/(frecMAX-1));
         }
-        if(!isUndef(Nodes[id])){
+        if(!isUndef(Nodes[id]) && !Nodes[id].iscluster ){
             //          js1            js2
             // onclick="graphNGrams('  ');
             htmlfied_alternode = '<span class="tagcloud-item" style="font-size:'+fontSize+'px;" '+js1+id+js2+'>'+ Nodes[id].label+ '</span>';
@@ -368,7 +368,7 @@ function htmlfied_samenodes(elems) {
         var A = getVisibleNodes()
         for (var a in A){
             n = A[a]
-            if(!n.active && n.color.charAt(0)=="#" ) {
+            if(!n.active && n.color.charAt(0)=="#" && !n.iscluster) {
                 sameNodes.push('<li onmouseover="manualForceLabel(\''+n.id+'\',true)"  onmouseout="manualForceLabel(\''+n.id+'\',false)" >'+ n.label+ '</li>')
             }
         }
@@ -389,34 +389,36 @@ function htmlfied_nodesatts(elems){
         var id=elems[i]
         var node = Nodes[id]
 
-        if (mainfile) {
-            information += '<li><b>' + node.label + '</b></li>';
-            for (var i in node.attributes) {
-                information += '<li>&nbsp;&nbsp;'+i +" : " + node.attributes[i] + '</li>';
-            }
-            socnodes.push(information);
-        } else {
-            if(node.type==catSoc){
-                information += '<li><b>' + node.label + '</b></li>';
-                if(node.htmlCont==""){
-                    if (!isUndef(node.level)) {
-                        information += '<li>' + node.level + '</li>';
-                    }
-                } else {
-                    information += '<li>' + $("<div/>").html(node.htmlCont).text() + '</li>';
-                }        
-                socnodes.push(information)
-            }
+        if(!node.iscluster) {
+	        if (mainfile) {
+	            information += '<li><b>' + node.label + '</b></li>';
+	            for (var i in node.attributes) {
+	                information += '<li>&nbsp;&nbsp;'+i +" : " + node.attributes[i] + '</li>';
+	            }
+	            socnodes.push(information);
+	        } else {
+	            if(node.type==catSoc){
+	                information += '<li><b>' + node.label + '</b></li>';
+	                if(node.htmlCont==""){
+	                    if (!isUndef(node.level)) {
+	                        information += '<li>' + node.level + '</li>';
+	                    }
+	                } else {
+	                    information += '<li>' + $("<div/>").html(node.htmlCont).text() + '</li>';
+	                }        
+	                socnodes.push(information)
+	            }
 
-            if(node.type==catSem){
-                information += '<li><b>' + node.label + '</b></li>';
-                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+'img/google.png"></img></a>';
-                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+'img/wikipedia.png"></img></a>';
-                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+'img/flickr.png"></img></a>';
-                information += '<li>'+google+"&nbsp;"+wiki+"&nbsp;"+flickr+'</li><br>';
-                semnodes.push(information)
-            }
-        }
+	            if(node.type==catSem){
+	                information += '<li><b>' + node.label + '</b></li>';
+	                google='<a href=http://www.google.com/#hl=en&source=hp&q=%20'+node.label.replace(" ","+")+'%20><img src="'+'img/google.png"></img></a>';
+	                wiki = '<a href=http://en.wikipedia.org/wiki/'+node.label.replace(" ","_")+'><img src="'+'img/wikipedia.png"></img></a>';
+	                flickr= '<a href=http://www.flickr.com/search/?w=all&q='+node.label.replace(" ","+")+'><img src="'+'img/flickr.png"></img></a>';
+	                information += '<li>'+google+"&nbsp;"+wiki+"&nbsp;"+flickr+'</li><br>';
+	                semnodes.push(information)
+	            }
+	        }
+    	}
     }
     return socnodes.concat(semnodes)
 }
@@ -1408,6 +1410,7 @@ function unHide(id){
                 x: Nodes[id].x, 
                 y: Nodes[id].y,
                 hidden:  (Nodes[id].lock)?true:false,
+                iscluster:  (Nodes[id].iscluster)?true:false,
                 type: Nodes[id].type,
                 color: Nodes[id].color,
                 shape: Nodes[id].shape
@@ -1791,8 +1794,9 @@ function changeToMacro(iwannagraph) {
         		MultipleSelection(Object.keys(chosenones) , false)//false-> dont apply deselection algorithm
         	});
 
+    //iwantograph socio-semantic
     } else {
-        //iwantograph socio-semantic
+        
         for(var n in Nodes) unHide(n);
 
         for(var e in Edges) {  

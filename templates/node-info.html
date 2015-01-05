@@ -8,24 +8,28 @@
 
 <style>
 
-	.nodeinfo {
+	.nodeinfo-container {
 		margin: 25px;
 		padding: 25px;		
 	}
 
+	.nodeinfo-elem {
+	    border-style: solid;
+	    border-width: 1px;	
+		margin: 5px;
+		padding: 5px;	
+	}
+
 	.nodeinfo-head {
+		font-size: large;
 		margin: 5px;
 		padding: 5px;
-	    border-style: solid;
-	    border-width: 1px;
 	}
 
 
 	.nodeinfo-content {
 		margin: 5px;
 		padding: 5px;
-	    border-style: solid;
-	    border-width: 1px;
 	}
 </style>
 
@@ -73,12 +77,13 @@
         	// if(jsondata.authors) output += "Authors:<br>"+jsondata.authors+"<br><br>";
         	// if(jsondata.fields) output += "Keywords:<br>"+jsondata.fields+"<br><br>";
         	// if(jsondata.abstract) output += "Abstract:<br>"+jsondata.abstract+"<br><br>";
-        	output += "<div class='nodeinfo'>"
-        	if(jsondata.title) output += "<div class='nodeinfo-head'>Title</div> <div class='nodeinfo-content'>"+jsondata.title+"</div>";
-        	if(jsondata.publication_date) output += "<div class='nodeinfo-head'>Publication Date</div> <div class='nodeinfo-content'>"+jsondata.publication_date.split(" ")[0]+"</div>";
-        	if(jsondata.authors) output += "<div class='nodeinfo-head'>Authors</div> <div class='nodeinfo-content'>"+jsondata.authors+"</div>";
-        	if(jsondata.fields) output += "<div class='nodeinfo-head'>Keywords</div> <div class='nodeinfo-content'>"+jsondata.fields+"</div>";
-        	if(jsondata.abstract) output += "<div class='nodeinfo-head'>Abstract</div> <div class='nodeinfo-content'>"+jsondata.abstract+"</div>";
+        	// <div class='jumbotron'>
+        	output += "<div class='nodeinfo-container'>"
+        	if(jsondata.title) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Title</div> <div class='nodeinfo-content'>"+jsondata.title+"</div> </div>";
+        	if(jsondata.publication_date) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Publication Date</div> <div class='nodeinfo-content'>"+jsondata.publication_date.split(" ")[0]+"</div> </div>";
+        	if(jsondata.authors) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Authors</div> <div class='nodeinfo-content'>"+jsondata.authors+"</div> </div>";
+        	if(jsondata.fields) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Keywords</div> <div class='nodeinfo-content'>"+jsondata.fields+"</div> </div>";
+        	if(jsondata.abstract) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Abstract</div> <div class='nodeinfo-content'>"+jsondata.abstract+"</div> </div>";
         	output += "</div>"
 
             $("#metadata").html(output);

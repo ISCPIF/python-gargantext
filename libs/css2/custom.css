@@ -38,6 +38,10 @@
   display: inline-block;
 }
 
+@-moz-document url-prefix() {
+    #category-A ul li { margin: 0 12px 12px 0; }
+    #category-B ul li { margin: 0 12px 12px 0; }
+}
 
 /*.modal-vertical-centered {*/
 

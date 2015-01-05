@@ -103,7 +103,7 @@ var ircUrl="http://webchat.freenode.net/?nick="+ircNick+"&channels="+ircCHN;
 var twjs="tinawebJS/";
 var categories = {};
 var categoriesIndex = [];
-
+var wnws_buffer = null;
 var gexf;
 //var zoom=0;
 

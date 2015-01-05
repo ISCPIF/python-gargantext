@@ -197,12 +197,21 @@ function getTopPapers(type){
                     var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 
                     if(pub["journal"]) ifjournal = "<br>Published in <a>"+pub["journal"]+"</a>";
-                    if(pub["authors"]) ifauthors = "By "+pub["authors"]+"";
+                    if(pub["authors"]) {
+                        ifauthors = "By "+pub["authors"]+"";
+                        if(pub["authors"] == "not found") {
+                            if(pub["source"])
+                                ifauthors = "By "+pub["source"]+"";
+                            else ifauthors = ""
+                        } else  ifauthors = ""
+                    }
                     if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
                     if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
                     
-                    var jsstuff = "window.open('"+getpubAPI+"','popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')"
-                    
+                    var jsstuff = "if(wnws_buffer!=null) {wnws_buffer.close();} "
+                    var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
+                    jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
+
             		output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
             		output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
             		output +="</li>\n";

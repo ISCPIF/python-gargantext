@@ -409,7 +409,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .valueAccessor(function (d) {
                         return d.value.avg;
                     })
-										.x(d3.time.scale().domain([new Date(1950,01,01), new Date(2014,12,31)]))
+										.x(d3.time.scale().domain([new Date(1990,01,01), new Date(2015,01,31)]))
                     .round(d3.time.month.round)
                     .xUnits(d3.time.months)
                     .elasticY(true)
@@ -439,7 +439,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .group(volumeByMonthGroup)
                     .centerBar(true)
                     .gap(0)
-                    .x(d3.time.scale().domain([new Date(1950, 01, 01), new Date(2015, 01, 01)]))
+                    .x(d3.time.scale().domain([new Date(1990, 01, 01), new Date(2015, 01, 11)]))
                     .round(d3.time.month.round)
                     .xUnits(d3.time.months)
                     .renderlet(function (chart) {

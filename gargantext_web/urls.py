@@ -28,6 +28,8 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     
+    url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
+
     # Visualizations
     url(r'^corpus/(\d+)/explorer$', views.explorer_graph),
     url(r'^corpus/(\d+)/matrix$', views.explorer_matrix),

@@ -81,9 +81,15 @@
         	output += "<div class='nodeinfo-container'>"
         	if(jsondata.title) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Title</div> <div class='nodeinfo-content'>"+jsondata.title+"</div> </div>";
         	if(jsondata.publication_date) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Publication Date</div> <div class='nodeinfo-content'>"+jsondata.publication_date.split(" ")[0]+"</div> </div>";
-        	if(jsondata.authors) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Authors</div> <div class='nodeinfo-content'>"+jsondata.authors+"</div> </div>";
+        	if(jsondata.authors && jsondata.authors!="not found") output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Authors</div> <div class='nodeinfo-content'>"+jsondata.authors+"</div> </div>";
+       		else {
+        		if(jsondata.source) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Published in</div> <div class='nodeinfo-content'>"+jsondata.source+"</div> </div>";
+       		}
         	if(jsondata.fields) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Keywords</div> <div class='nodeinfo-content'>"+jsondata.fields+"</div> </div>";
         	if(jsondata.abstract) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Abstract</div> <div class='nodeinfo-content'>"+jsondata.abstract+"</div> </div>";
+        	else {
+        		if(jsondata.text) output += "<div class='nodeinfo-elem'> <div class='nodeinfo-head'>Abstract</div> <div class='nodeinfo-content'>"+jsondata.text+"</div> </div>";
+        	}
         	output += "</div>"
 
             $("#metadata").html(output);

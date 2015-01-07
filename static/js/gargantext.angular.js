@@ -323,7 +323,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {type: 'log'},
+                y: {type: 'linear', type: 'numeric'},
             },
             tension: 1.0,
             lineMode: 'bundle',
@@ -384,15 +384,27 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             });
         });
         // Convert this object back to a sorted array
+        var yMin, yMax;
         var linearData = [];
         for (var x in dataObject) {
             var row = {x: convert(x)};
             var yList = dataObject[x];
             for (var i=0; i<yList.length; i++) {
-                row['y' + i] = yList[i];
+                y = yList[i];
+                row['y' + i] = y;
+                if (yMax == undefined || y > yMax) {
+                    yMax = y;
+                }
+                if (yMin == undefined || y < yMin) {
+                    yMin = y;
+                }
             }
             linearData.push(row);
         }
+        // Update the axis
+        $scope.graph.options.axes.y.min = yMin;
+        $scope.graph.options.axes.y.max = yMax;
+        $scope.graph.options.axes.y.ticks = 100;
         // Finally, update the graph
         var series = [];
         for (var i=0, n=$scope.datasets.length; i<n; i++) {

@@ -224,10 +224,31 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             var dateFormat = d3.time.format("%Y/%m/%d");
             var numberFormat = d3.format(".2f");
 
+            var justdates = {}
             data.forEach(function (e) {
                 e.dd = dateFormat.parse(e.date);
                 e.month = d3.time.month(e.dd); // pre-calculate month for better performance
+                justdates[e.date] = true;
             });
+
+            var orderDates = Object.keys(justdates).reverse();
+            
+            var latest = orderDates[0].split("/")
+            var oldest = orderDates[orderDates.length-1].split("/")
+
+            pr("latest:")
+            pr(latest)
+            pr("oldest:")
+            pr(oldest)
+
+            var t0_year = oldest[0]
+            var t0_month = oldest[1]
+            var t0_day = oldest[2]
+
+
+            var t1_year = latest[0]
+            var t1_month = latest[1]
+            var t1_day = latest[2]
 
             // feed it through crossfilter
             var ndx = crossfilter(data);
@@ -280,7 +301,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .valueAccessor(function (d) {
                         return d.value.avg;
                     })
-										.x(d3.time.scale().domain([new Date(1990,01,01), new Date(2015,01,31)]))
+					.x(d3.time.scale().domain([new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)]))
                     .round(d3.time.month.round)
                     .xUnits(d3.time.months)
                     .elasticY(true)
@@ -310,7 +331,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .group(volumeByMonthGroup)
                     .centerBar(true)
                     .gap(0)
-                    .x(d3.time.scale().domain([new Date(1990, 01, 01), new Date(2015, 01, 11)]))
+                    .x(d3.time.scale().domain([new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)]))
                     .round(d3.time.month.round)
                     .xUnits(d3.time.months)
                     .renderlet(function (chart) {

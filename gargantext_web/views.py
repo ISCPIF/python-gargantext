@@ -285,8 +285,8 @@ def corpus(request, project_id, corpus_id):
     project = Node.objects.get(id=project_id)
     corpus  = Node.objects.get(id=corpus_id)
     
-    #documents  = corpus.children.all()
-    #number = corpus.children.count()
+    type_doc = NodeType.objects.get(name="Document")
+    number = Node.objects.filter(parent=corpus, type=type_doc).count()
 
 #    try:
 #        sources = defaultdict(int)
@@ -357,7 +357,7 @@ def corpus(request, project_id, corpus_id):
             'project': project,\
             'corpus' : corpus,\
             'documents': documents,\
-    #        'number' : number,\
+            'number' : number,\
             'dates' : chart,\
             }))
     
@@ -371,7 +371,35 @@ def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
 
-def explorer_graph(request, corpus_id):
+
+def chart(request, project_id, corpus_id):
+    ''' Charts to compare, filter, count'''
+    t = get_template('chart.html')
+    user = request.user
+    date = datetime.datetime.now()
+    project = Node.objects.get(id=project_id)
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'project' : project,
+    }))    
+    return HttpResponse(html)
+
+def matrix(request, corpus_id):
+    t = get_template('matrix.html')
+    user = request.user
+    date = datetime.datetime.now()
+    corpus = Node.objects.get(id=corpus_id)
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'corpus': corpus,\
+            }))
+    
+    return HttpResponse(html)
+
+def graph(request, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -385,19 +413,9 @@ def explorer_graph(request, corpus_id):
     
     return HttpResponse(html)
 
-def explorer_matrix(request, corpus_id):
-    t = get_template('matrix.html')
-    user = request.user
-    date = datetime.datetime.now()
-    corpus = Node.objects.get(id=corpus_id)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
-            }))
-    
-    return HttpResponse(html)
+
+
 
 def exploration(request):
     t = get_template('exploration.html')

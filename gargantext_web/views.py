@@ -27,7 +27,7 @@ from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
-
+from gargantext_web.settings import DEBUG
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -263,9 +263,11 @@ def project(request, project_id):
 
             try:
                 #corpus.parse_and_extract_ngrams()
-                corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
-                #corpus.workflow()
-                #corpus.workflow((), countdown=3)
+                #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                if DEBUG is True:
+                    corpus.workflow()
+                else:
+                    corpus.workflow.apply_async((), countdown=3)
 
             except Exception as error:
                 print(error)

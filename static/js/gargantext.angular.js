@@ -234,10 +234,17 @@ gargantext.controller("DatasetController", function($scope, $http) {
     $scope.results = [];
     $scope.resultsCount = undefined;
     // corpus retrieval
+    $scope.projects = [];
     $scope.corpora = [];
-    $http.get('/api/nodes?type=Corpus', {cache: true}).success(function(response){
-        $scope.corpora = response.data;
+    $http.get('/api/nodes?type=Project', {cache: true}).success(function(response){
+        $scope.projects = response.data;
     });
+    // update corpora according to the select parent project
+    $scope.updateCorpora = function() {
+        $http.get('/api/nodes?type=Corpus&parent=' + $scope.projectId, {cache: true}).success(function(response){
+            $scope.corpora = response.data;
+        });
+    };
     // update entities depending on the selected corpus
     $scope.updateEntities = function() {
         var url = '/api/nodes/' + $scope.corpusId + '/children/metadata';

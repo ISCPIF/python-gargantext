@@ -227,10 +227,10 @@
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
                         <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
-                        in the corpus
-                        <select ng-model="corpusId" ng-change="updateEntities()">
-                            <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
-                        </select>
+                        in the project
+                        <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
+                        corpus
+                        <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
                     </div>                    
                     <div class="filters" ng-if="entities">
                         <ul>

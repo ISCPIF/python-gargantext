@@ -31,8 +31,8 @@
 								, Created on {{ corpus.date }} ({{ number}} docs)</p>
 							{% endif %}
 
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Import</a> 
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Export</a>
+							<!--						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add file</a> --!>
+						<a class="btn btn-primary btn-lg" role="button" href="/project/{{project.pk}}/corpus/{{ corpus.pk }}/corpus.csv">Save as</a>
 						<a class="btn btn-primary btn-lg" role="button" href="/project/{{project.pk}}/corpus/{{ corpus.pk }}/delete">Delete</a></p>
 
 						{% if number == 0 %}

@@ -426,6 +426,36 @@ def explorer_chart(request):
 import csv
 from django.db import connection
 
+def corpus_csv(request, project_id, corpus_id):
+    '''
+    Create the HttpResponse object with the appropriate CSV header.
+    '''
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="corpus.csv"'
+
+    writer = csv.writer(response)
+
+    corpus = Node.objects.get(id=corpus_id)
+    type_document = NodeType.objects.get(name="Document")
+    documents = Node.objects.filter(parent=corpus, type=type_document)
+
+    keys = list(documents[0].metadata.keys())
+    writer.writerow(keys)
+
+    for doc in documents:
+        data = list()
+        for key in keys:
+            try:
+                data.append(doc.metadata[key])
+            except:
+                data.append("")
+        writer.writerow(data)
+
+
+    return response
+
+
+
 def send_csv(request, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.

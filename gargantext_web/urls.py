@@ -17,27 +17,30 @@ urlpatterns = patterns('',
     url(r'^login/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')),
     
-    # User views
+    # User Home view
     url(r'^$', views.home),
     
+    # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/delete/$', views.delete_project),
-    
     url(r'^project/(\d+)/$', views.project),
     
+    # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     
     # Visualizations
     url(r'^corpus/(\d+)/explorer$', views.explorer_graph),
     url(r'^corpus/(\d+)/matrix$', views.explorer_matrix),
     
-    # Getting data
+    # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
     url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
 
+    # Data management
     url(r'^api$', gargantext_web.api.Root),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
@@ -46,7 +49,6 @@ urlpatterns = patterns('',
     
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
-    url(r'^graph-it$', views.graph_it),
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),

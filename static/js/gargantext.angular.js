@@ -87,7 +87,7 @@ var groupings = {
 
 
 // Define the application
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies'])
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies']);
 
 
 // Customize the application's scope
@@ -168,7 +168,7 @@ gargantext.controller("QueryController", function($scope, $http) {
             // change view to loading mode
             $scope.loading = true;
             // query parameters: columns
-            var retrieve = {type: 'fields', list: ['id', 'name']};
+            var retrieve = {type: 'fields', list: ['id', 'name', 'metadata.publication_date']};
             // query parameters: pagination
             var pagination = $scope.pagination;
             // query parameters: sort
@@ -200,13 +200,27 @@ gargantext.controller("QueryController", function($scope, $http) {
             // send query to the server
             $http.post(url, query).success(function(response){
                 $scope.resultsCount = response.pagination.total;
-                $scope.results = response.data;
+                $scope.results = response.results;
+                $scope.columns = response.retrieve;
                 $scope.loading = false;
             }).error(function(response){
                 console.error(response);
             });
         }
     }
+    // change current page
+    $scope.decrement = function() {
+        if ($scope.pagination.offset > 0) {
+            $scope.pagination.offset--;
+        }
+        $scope.postQuery();
+    };
+    $scope.increment = function() {
+        if ($scope.pagination.offset < $scope.resultsCount) {
+            $scope.pagination.offset += $scope.pagination.limit;
+        }
+        $scope.postQuery();
+    };
 });
 
 // Controller for datasets

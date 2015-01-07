@@ -717,6 +717,17 @@ def tests_mvc(request):
     }))    
     return HttpResponse(html)
 
+def tests_mvc_listdocuments(request):
+    '''Just a test page for Javascript MVC.'''
+    t = get_template('tests/mvc-listdocuments.html')
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+    }))    
+    return HttpResponse(html)
+
 def ngrams(request):
     '''The ngrams list.'''
     t = get_template('ngrams.html')

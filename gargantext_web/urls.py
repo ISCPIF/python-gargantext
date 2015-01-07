@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
+    url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
     
     url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
 
@@ -57,6 +58,7 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
+    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
 )
 
 

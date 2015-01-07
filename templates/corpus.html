@@ -23,12 +23,14 @@
 <div class="container theme-showcase" role="main">
 		<div class="jumbotron">
 								{% if project %}
-								<h1>{{ project.name }} </h1>
+								<h1>{{ project.name }}, {{ corpus.name }}
+							 	</h1>
 								{% endif %}
 
 							{% if corpus %}
-								{{ corpus.name }}
-								, Created on {{ corpus.date }} ({{ number}} docs)</p>
+							<p>
+							{{ number}} docs, Created on {{ corpus.date }} 
+							</p>
 							{% endif %}
 
 							<!--						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add file</a> --!>
@@ -48,7 +50,7 @@
 							<div class="row">
 									<div id="monthly-move-chart">
 									<center>
-											<strong>Title</strong> (Blue Line: Publications by months, Green Line: Zoomable publications)
+									<strong>Title</strong> (Blue bars: all,  Green line: zoom)
 											<a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
 													style="display: none;">reset</a>
 											<div class="clearfix"></div>
@@ -103,34 +105,37 @@
 		<div class="row">
 				<div class="col-md-4">
 						<div class="jumbotron">
-								<h3><a href="/graph-it">Documents</a></h3>
+						<h3><a href="/corpus/{{corpus.id}}/charts">Advanced charts</a></h3>
 						<ol>
-								<li>Read</li> <!-- write -->
-								<li>Count</li> <!-- compute -->
-								<li>Select</li> <!-- cut -->
+								<li>Count</li> <!-- read, compute -->
+								<li>Filter</li> <!-- count, compute -->
+								<li>Compare</li> <!-- select, cut -->
 						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
 					</div>
 				</div>
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-								<h3><a href="/ngrams">Dictionaries</a></h3>
+								<h3><a href="/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
 						<ol>
-								<li>Synonyms</li>
-								<li>Black Lists</li>
-								<li>White Lists</li>
+								<li>Sort</li>
+								<li>Group</li>
+								<li>Cluster</li>
 						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
 						</div>
 				</div>
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-						<h3><a href="/corpus/{{ corpus.id }}/explorer">Visualizations</a></h3>
+						<h3><a href="/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
 						<ol>
-								<li><a href="/corpus/{{ corpus.id }}/matrix">Adjacency matrix</a></li>
-								<li><a href="/corpus/{{ corpus.id }}/explorer">Static maps</a></li>
-								<li>Dynamic maps</li>
+								<li>Visualize</li>
+								<li>Explore</li>
+								<li>Read</li>
 						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
 						</div>
 				</div>
 		</div>

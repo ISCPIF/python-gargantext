@@ -80,16 +80,9 @@
     <div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
       <div class="panel-body">
 				<p align="right">
-				Page <a href="#">2</a> sur 100
-				</p>
-				</center>
-				{% if documents %}
-				<ul>
-						{% for doc in documents %}
-						<li> <b>{{ doc.date }}</b>, <a href="/admin/node/document/{{doc.id}}">{{ doc.title}}</a></li>
-						{% endfor %}
-				</ul>
-				{% endif %}
+				
+                <!--{% include "subcorpus.html" %}-->
+                <div id="subcorpusdiv"></div>
 
       </div>
     </div>
@@ -161,14 +154,47 @@ function dateToInt(todayTime) {
 }
 
 
-function updateDocuments() {
-    if(!datesbuffer) return;
+// I've clicked "Read Documents":
+function updateDocuments(pagenumber,pagenav) {
 
-    var dataini = dateToInt(datesbuffer[0])
-    var datafin = dateToInt(datesbuffer[1])
+    pagenav = (pagenav)?pagenav:true;
+    pagenumber = (pagenumber)?pagenumber:1;
+    pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
+    pr($( "#collapseOne" ).height())
+    // if "Read Documents" collapsible is close, then... show some me pubs!
+    if ( pagenav || $( "#collapseOne" ).height() < 50) {
 
-    //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
-    pr("make_ajax_query"+window.location.href+"timerange/"+dataini+"/"+datafin+"?page=1")
+        // Here u ask for the server some paginated results (pubs)
+        // if u havent select a timerange from the blue chart, then show me all pubs
+        if(!datesbuffer) {
+            console.log("nothing cause dont wanna")
+        } 
+        // there's some timerange selected in the blue chart, so show me the pubs of that period
+        else {
+            var dataini = dateToInt(datesbuffer[0])
+            var datafin = dateToInt(datesbuffer[1])
+            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
+
+            var base = window.location.href;
+            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
+            pr("theurl:   "+theurl)
+
+            $.ajax({
+              url: theurl,
+              success: function(data) {
+                // console.log(data)
+                $('#subcorpusdiv').html(data);
+              }
+            });
+
+        }
+
+    }
+    //else: "Read Documents" collapsible is open!, so do nothing 
+    
+
+
+
 }
 
 

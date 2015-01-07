@@ -4,6 +4,21 @@
 <p>Today: {{date}}</p>
 {% endif %}
 
+<div class="pagination">
+    <span class="step-links">
+        {% if documents.has_previous %}
+            <a onclick="updateDocuments({{ documents.previous_page_number }},true);">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ documents.number }} of {{ documents.paginator.num_pages }}.
+        </span>
+
+        {% if documents.has_next %}
+            <a onclick="updateDocuments({{ documents.next_page_number }},true);">next</a>
+        {% endif %}
+    </span>
+</div>
 
 {% if documents %}
 
@@ -15,24 +30,5 @@
     {% endif %}
 {% endfor %}
 </ul>
-
-
-<div class="pagination">
-    <span class="step-links">
-        {% if documents.has_previous %}
-            <a href="?page={{ documents.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ documents.number }} of {{ documents.paginator.num_pages }}.
-        </span>
-
-        {% if documents.has_next %}
-            <a href="?page={{ documents.next_page_number }}">next</a>
-        {% endif %}
-    </span>
-</div>
-
-
 
 {% endif %}

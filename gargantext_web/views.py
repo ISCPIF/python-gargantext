@@ -503,6 +503,22 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     return HttpResponse( serializer.data , content_type='application/json')
 
 
+# for pagexample.html
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+def get_pagination_page(page=1):
+    items = range(0, 100)
+    paginator = Paginator(items, 10)
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+
+    try:
+        items = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        items = paginator.page(paginator.num_pages)
+
+    return items
 
 
 

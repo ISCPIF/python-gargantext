@@ -54,7 +54,7 @@ class EuropressFileParser(FileParser):
                    if isinstance(text, bytes):
                        text = text.decode(encoding)
 
-                   format_date_fr = re.compile('\d+\s*\w+\s+\d{4}', re.UNICODE)
+                   format_date_fr = re.compile('\d*\s*\w+\s+\d{4}', re.UNICODE)
                    test_date_fr = format_date_fr.match(text)
                    
                    format_date_en = re.compile('\w+\s+\d+,\s+\d{4}', re.UNICODE)

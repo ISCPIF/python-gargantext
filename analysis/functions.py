@@ -249,9 +249,10 @@ def tfidf(corpus, document, ngram):
     
         xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
         yy = Node_Ngram.objects.filter(ngram=ngram).count()
-        idf= log(xx/yy)
+        inverse_d_frequency= log(xx/yy)
         
-        result = tf * idf
+        # result = tf * idf
+        result = term_frequency * inverse_d_frequency
     except Exception as error:
         print(error)
         result = 0

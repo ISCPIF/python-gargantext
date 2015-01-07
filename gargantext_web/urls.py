@@ -30,6 +30,8 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     
+    url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
+
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
     url(r'^corpus/(\d+)/explorer$', views.graph),
@@ -48,6 +50,8 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     
+    url(r'^api/project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpusJSON),
+
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
     url(r'^ngrams$', views.ngrams),

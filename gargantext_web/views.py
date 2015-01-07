@@ -363,6 +363,165 @@ def corpus(request, project_id, corpus_id):
     
     return HttpResponse(html)
 
+
+
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+def subcorpus(request, project_id, corpus_id, start , end ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    try:
+        offset = str(project_id)
+        offset = str(corpus_id)
+        offset = str(start)
+        offset = str(end)
+    except ValueError:
+        raise Http404()
+
+    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
+    import datetime
+    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
+    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
+
+    t = get_template('subcorpus.html')
+    
+    user = request.user
+    date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
+    corpus = Node.objects.get(id=corpus_id)
+    
+    # retrieving all the documents
+    documents  = corpus.children.all()
+    number = corpus.children.count()
+
+    filtered_docs = []
+    # filtering documents by range-date
+    for doc in documents:
+        if "publication_date" in doc.metadata:
+            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+            if dateini <= realdate <= datefin:
+                doc.date = realdate
+                filtered_docs.append(doc)
+
+    # ordering from most recent to the older.
+    ordered = sorted(filtered_docs, key=lambda x: x.date, reverse=True)
+
+    # pages of 10 elements. Like a sir.
+    paginator = Paginator(ordered, 10)
+
+    page = request.GET.get('page')
+    try:
+        results = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        results = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        results = paginator.page(paginator.num_pages)
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'project': project,\
+            'corpus' : corpus,\
+            'documents': results,\
+            # 'number' : len(filtered_docs),\
+            # 'dates' : chart,\
+            }))
+    
+    return HttpResponse(html)
+
+
+import json
+def subcorpusJSON(request, project_id, corpus_id, start , end ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    try:
+        offset = str(project_id)
+        offset = str(corpus_id)
+        offset = str(start)
+        offset = str(end)
+    except ValueError:
+        raise Http404()
+
+    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
+    import datetime
+    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
+    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
+
+    t = get_template('subcorpus.html')
+    
+    user = request.user
+    date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
+    corpus = Node.objects.get(id=corpus_id)
+    
+    # retrieving all the documents
+    documents  = corpus.children.all()
+    number = corpus.children.count()
+
+    filtered_docs = []
+    # filtering documents by range-date
+    for doc in documents:
+        if "publication_date" in doc.metadata:
+            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+            if dateini <= realdate <= datefin:
+                doc.date = realdate
+                filtered_docs.append(doc)
+
+    # ordering from most recent to the older.
+    ordered = sorted(filtered_docs, key=lambda x: x.date, reverse=True)
+
+    # pages of 10 elements. Like a sir.
+    paginator = Paginator(ordered, 10)
+
+    page = request.GET.get('page')
+    try:
+        results = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        results = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        results = paginator.page(paginator.num_pages)
+
+    from rest_framework.pagination import PaginationSerializer
+
+    serializer = PaginationSerializer(instance=results)
+    print(serializer.data)
+ 
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'corpus': corpus,\
+            }))
+    # return HttpResponse(html)
+    return HttpResponse( serializer.data , content_type='application/json')
+
+
+# for pagexample.html
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+def get_pagination_page(page=1):
+    items = range(0, 100)
+    paginator = Paginator(items, 10)
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+
+    try:
+        items = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        items = paginator.page(paginator.num_pages)
+
+    return items
+
+
+
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
     return HttpResponseRedirect('/projects/')

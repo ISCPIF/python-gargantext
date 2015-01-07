@@ -75,23 +75,16 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-						<p class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
+						<p onclick="updateDocuments();" class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
         </a>
       </h4>
     </div>
     <div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
       <div class="panel-body">
 				<p align="right">
-				Page <a href="#">2</a> sur 100
-				</p>
-				</center>
-				{% if documents %}
-				<ul>
-						{% for doc in documents %}
-						<li> <b>{{ doc.date }}</b>, <a href="/admin/node/document/{{doc.id}}">{{ doc.title}}</a></li>
-						{% endfor %}
-				</ul>
-				{% endif %}
+				
+                <!--{% include "subcorpus.html" %}-->
+                <div id="subcorpusdiv"></div>
 
       </div>
     </div>
@@ -150,6 +143,64 @@
 <script>
 
 
+var datesbuffer = false;
+
+function pr(msg) {
+    console.log(msg)
+}
+
+function dateToInt(todayTime) {
+    var month = (todayTime .getMonth() + 1);
+    var day = (todayTime .getDate());
+    var year = (todayTime .getFullYear());
+    if(month<10) month = "0"+month;
+    if(day<10) day = "0"+day;
+    return year+""+month+""+day;
+}
+
+
+// I've clicked "Read Documents":
+function updateDocuments(pagenumber,pagenav) {
+
+    pagenav = (pagenav)?pagenav:true;
+    pagenumber = (pagenumber)?pagenumber:1;
+    pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
+    pr($( "#collapseOne" ).height())
+    // if "Read Documents" collapsible is close, then... show some me pubs!
+    if ( pagenav || $( "#collapseOne" ).height() < 50) {
+
+        // Here u ask for the server some paginated results (pubs)
+        // if u havent select a timerange from the blue chart, then show me all pubs
+        if(!datesbuffer) {
+            console.log("nothing cause dont wanna")
+        } 
+        // there's some timerange selected in the blue chart, so show me the pubs of that period
+        else {
+            var dataini = dateToInt(datesbuffer[0])
+            var datafin = dateToInt(datesbuffer[1])
+            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
+
+            var base = window.location.href;
+            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
+            pr("theurl:   "+theurl)
+
+            $.ajax({
+              url: theurl,
+              success: function(data) {
+                // console.log(data)
+                $('#subcorpusdiv').html(data);
+              }
+            });
+
+        }
+
+    }
+    //else: "Read Documents" collapsible is open!, so do nothing 
+    
+
+
+
+}
 
 
 // var gainOrLossChart = dc.pieChart("#gain-loss-chart");
@@ -181,44 +232,6 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             // feed it through crossfilter
             var ndx = crossfilter(data);
             var all = ndx.groupAll();
-
-            /*
-            var yearlyDimension = ndx.dimension(function (d) {
-                return d3.time.year(d.dd);
-            });
-            var yearlyPerformanceGroup = yearlyDimension.group().reduce(
-                    //add
-                    function (p, v) {
-                        ++p.count;
-                        p.absGain += +v.close - +v.open;
-                        p.fluctuation += Math.abs(+v.close - +v.open);
-                        p.sumIndex += (+v.open + +v.close) / 2;
-                        p.avgIndex = p.sumIndex / p.count;
-                        p.percentageGain = (p.absGain / p.avgIndex) * 100;
-                        p.fluctuationPercentage = (p.fluctuation / p.avgIndex) * 100;
-                        return p;
-                    },
-                    //remove
-                    function (p, v) {
-                        --p.count;
-                        p.absGain -= +v.close - +v.open;
-                        p.fluctuation -= Math.abs(+v.close - +v.open);
-                        p.sumIndex -= (+v.open + +v.close) / 2;
-                        p.avgIndex = p.sumIndex / p.count;
-                        p.percentageGain = (p.absGain / p.avgIndex) * 100;
-                        p.fluctuationPercentage = (p.fluctuation / p.avgIndex) * 100;
-                        return p;
-                    },
-                    //init
-                    function () {
-                        return {count: 0, absGain: 0, fluctuation: 0, fluctuationPercentage: 0, sumIndex: 0, avgIndex: 0, percentageGain: 0};
-                    }
-            );
-
-            var dateDimension = ndx.dimension(function (d) {
-                return d.dd;
-            });
-            */
 
             //volumeChart:(1)
             //moveChart:(1)
@@ -256,153 +269,6 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                         return {days: 0, total: 0, avg: 0};
                     }
             );
-
-            /*
-            var gainOrLoss = ndx.dimension(function (d) {
-                return +d.open > +d.close ? "Loss" : "Gain";
-            });
-            var gainOrLossGroup = gainOrLoss.group();
-
-            var fluctuation = ndx.dimension(function (d) {
-                return Math.round((d.close - d.open) / d.open * 100);
-            });
-            var fluctuationGroup = fluctuation.group();
-
-            var quarter = ndx.dimension(function (d) {
-                var month = d.dd.getMonth();
-                if (month <= 3)
-                    return "Q1";
-                else if (month > 3 && month <= 5)
-                    return "Q2";
-                else if (month > 5 && month <= 7)
-                    return "Q3";
-                else
-                    return "Q4";
-            });
-            var quarterGroup = quarter.group().reduceSum(function (d) {
-                return d.volume;
-            });
-
-            var dayOfWeek = ndx.dimension(function (d) {
-                var day = d.dd.getDay();
-                switch (day) {
-                    case 0:
-                        return "0.Sun";
-                    case 1:
-                        return "1.Mon";
-                    case 2:
-                        return "2.Tue";
-                    case 3:
-                        return "3.Wed";
-                    case 4:
-                        return "4.Thu";
-                    case 5:
-                        return "5.Fri";
-                    case 6:
-                        return "6.Sat";
-                }
-            });
-            var dayOfWeekGroup = dayOfWeek.group();
-            */
-
-            /*
-            yearlyBubbleChart.width(990)
-                    .height(250)
-                    .margins({top: 10, right: 50, bottom: 30, left: 40})
-                    .dimension(yearlyDimension)
-                    .group(yearlyPerformanceGroup)
-                    .transitionDuration(1500)
-                    .colors(["#a60000", "#ff0000", "#ff4040", "#ff7373", "#67e667", "#39e639", "#00cc00"])
-                    .colorDomain([-12000, 12000])
-                    .colorAccessor(function (d) {
-                        return d.value.absGain;
-                    })
-                    .keyAccessor(function (p) {
-                        return p.value.absGain;
-                    })
-                    .valueAccessor(function (p) {
-                        return p.value.percentageGain;
-                    })
-                    .radiusValueAccessor(function (p) {
-                        return p.value.fluctuationPercentage;
-                    })
-                    .maxBubbleRelativeSize(0.3)
-                    .x(d3.scale.linear().domain([-2500, 2500]))
-                    .y(d3.scale.linear().domain([-100, 100]))
-                    .r(d3.scale.linear().domain([0, 4000]))
-                    .elasticY(true)
-                    .yAxisPadding(100)
-                    .elasticX(true)
-                    .xAxisPadding(500)
-                    .renderHorizontalGridLines(true)
-                    .renderVerticalGridLines(true)
-                    .renderLabel(true)
-                    .renderTitle(true)
-                    .label(function (p) {
-                        return p.key.getFullYear();
-                    })
-                    .title(function (p) {
-                        return p.key.getFullYear()
-                                + "\n"
-                                + "Index Gain: " + numberFormat(p.value.absGain) + "\n"
-                                + "Index Gain in Percentage: " + numberFormat(p.value.percentageGain) + "%\n"
-                                + "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%";
-                    })
-                    .yAxis().tickFormat(function (v) {
-                        return v + "%";
-                    });
-            */
-
-            /*
-            gainOrLossChart.width(180)
-                    .height(180)
-                    .radius(80)
-                    .dimension(gainOrLoss)
-                    .group(gainOrLossGroup)
-                    .label(function (d) {
-                        return d.data.key + "(" + Math.floor(d.data.value / all.value() * 100) + "%)";
-                    });
-            */
-
-            /*
-            quarterChart.width(180)
-                    .height(180)
-                    .radius(80)
-                    .innerRadius(30)
-                    .dimension(quarter)
-                    .group(quarterGroup);
-            */
-
-            /*
-            dayOfWeekChart.width(180)
-                .height(180)
-                .margins({top: 20, left: 10, right: 10, bottom: 20})
-                .group(dayOfWeekGroup)
-                .dimension(dayOfWeek)
-                .colors(['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb'])
-                .label(function (d){
-                    return d.key.split(".")[1];
-                })
-                .xAxis().ticks(4);
-            */
-
-            /*
-            fluctuationChart.width(420)
-                    .height(180)
-                    .margins({top: 10, right: 50, bottom: 30, left: 40})
-                    .dimension(fluctuation)
-                    .group(fluctuationGroup)
-                    .elasticY(true)
-                    .centerBar(true)
-                    .gap(1)
-                    .round(dc.round.floor)
-                    .x(d3.scale.linear().domain([-25, 25]))
-                    .renderHorizontalGridLines(true)
-                    .xAxis()
-                    .tickFormat(function (v) {
-                        return v + "%";
-                    });
-            */
 
 
             moveChart.width(800)
@@ -450,53 +316,13 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .renderlet(function (chart) {
                         chart.select("g.y").style("display", "none");
                         moveChart.filter(chart.filter());
+                        datesbuffer = chart.filter();
                     })
                     .on("filtered", function (chart) {
                         dc.events.trigger(function () {
                             moveChart.focus(chart.filter());
                         });
                     });
-
-
-            /*
-            dc.dataCount(".dc-data-count")
-                    .dimension(ndx)
-                    .group(all);
-            */
-
-            /*
-            dc.dataTable(".dc-data-table")
-                    .dimension(dateDimension)
-                    .group(function (d) {
-                        var format = d3.format("02d");
-                        return d.dd.getFullYear() + "/" + format((d.dd.getMonth() + 1));
-                    })
-                    .size(10)
-                    .columns([
-                        function (d) {
-                            return d.date;
-                        },
-                        function (d) {
-                            return d.open;
-                        },
-                        function (d) {
-                            return d.close;
-                        },
-                        function (d) {
-                            return numberFormat(d.close - d.open);
-                        },
-                        function (d) {
-                            return d.volume;
-                        }
-                    ])
-                    .sortBy(function (d) {
-                        return d.dd;
-                    })
-                    .order(d3.ascending)
-                    .renderlet(function (table) {
-                        table.selectAll(".dc-table-group").classed("info", true);
-                    });
-            */
 
             dc.renderAll();
         }

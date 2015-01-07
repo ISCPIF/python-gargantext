@@ -47,7 +47,7 @@ TEMPLATE_DIRS = (
 
 
 #ALLOWED_HOSTS = ['*',]
-ALLOWED_HOSTS = ['localhost', 'master.polemic.be', '*gargantext.org']
+ALLOWED_HOSTS = ['localhost', 'master.polemic.be', 'beta.gargantext.org']
 
 
 

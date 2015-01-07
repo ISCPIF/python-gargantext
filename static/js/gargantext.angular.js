@@ -87,7 +87,7 @@ var groupings = {
 
 
 // Define the application
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies'])
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies']);
 
 
 // Customize the application's scope
@@ -168,7 +168,7 @@ gargantext.controller("QueryController", function($scope, $http) {
             // change view to loading mode
             $scope.loading = true;
             // query parameters: columns
-            var retrieve = {type: 'fields', list: ['id', 'name']};
+            var retrieve = {type: 'fields', list: ['id', 'name', 'metadata.publication_date']};
             // query parameters: pagination
             var pagination = $scope.pagination;
             // query parameters: sort
@@ -200,13 +200,27 @@ gargantext.controller("QueryController", function($scope, $http) {
             // send query to the server
             $http.post(url, query).success(function(response){
                 $scope.resultsCount = response.pagination.total;
-                $scope.results = response.data;
+                $scope.results = response.results;
+                $scope.columns = response.retrieve;
                 $scope.loading = false;
             }).error(function(response){
                 console.error(response);
             });
         }
     }
+    // change current page
+    $scope.decrement = function() {
+        if ($scope.pagination.offset > 0) {
+            $scope.pagination.offset--;
+        }
+        $scope.postQuery();
+    };
+    $scope.increment = function() {
+        if ($scope.pagination.offset < $scope.resultsCount) {
+            $scope.pagination.offset += $scope.pagination.limit;
+        }
+        $scope.postQuery();
+    };
 });
 
 // Controller for datasets
@@ -220,10 +234,17 @@ gargantext.controller("DatasetController", function($scope, $http) {
     $scope.results = [];
     $scope.resultsCount = undefined;
     // corpus retrieval
+    $scope.projects = [];
     $scope.corpora = [];
-    $http.get('/api/nodes?type=Corpus', {cache: true}).success(function(response){
-        $scope.corpora = response.data;
+    $http.get('/api/nodes?type=Project', {cache: true}).success(function(response){
+        $scope.projects = response.data;
     });
+    // update corpora according to the select parent project
+    $scope.updateCorpora = function() {
+        $http.get('/api/nodes?type=Corpus&parent=' + $scope.projectId, {cache: true}).success(function(response){
+            $scope.corpora = response.data;
+        });
+    };
     // update entities depending on the selected corpus
     $scope.updateEntities = function() {
         var url = '/api/nodes/' + $scope.corpusId + '/children/metadata';
@@ -302,7 +323,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {type: 'log'},
+                y: {type: 'linear', type: 'numeric'},
             },
             tension: 1.0,
             lineMode: 'bundle',
@@ -363,15 +384,27 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             });
         });
         // Convert this object back to a sorted array
+        var yMin, yMax;
         var linearData = [];
         for (var x in dataObject) {
             var row = {x: convert(x)};
             var yList = dataObject[x];
             for (var i=0; i<yList.length; i++) {
-                row['y' + i] = yList[i];
+                y = yList[i];
+                row['y' + i] = y;
+                if (yMax == undefined || y > yMax) {
+                    yMax = y;
+                }
+                if (yMin == undefined || y < yMin) {
+                    yMin = y;
+                }
             }
             linearData.push(row);
         }
+        // Update the axis
+        $scope.graph.options.axes.y.min = yMin;
+        $scope.graph.options.axes.y.max = yMax;
+        $scope.graph.options.axes.y.ticks = 100;
         // Finally, update the graph
         var series = [];
         for (var i=0, n=$scope.datasets.length; i<n; i++) {

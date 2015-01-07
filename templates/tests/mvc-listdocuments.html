@@ -140,11 +140,11 @@
 
     <div class="container">
 
-        <!--
+        
         <div ng-app="Gargantext" ng-controller="QueryController">
             <div class="corpus">
                 Chosen corpus:
-                <select ng-model="corpusId" ng-change="updateEntities()">
+                <select ng-model="corpusId" ng-change="updateEntities(); postQuery();">
                     <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
                 </select>
             </div>
@@ -179,15 +179,13 @@
                 <button ng-if="corpusId" ng-click="postQuery()">Refresh results</button>
                 <div class="list">
                     <div class="list-pagination">
-                        <select ng-model="pagination.limit">
-                            <option ng-repeat="limit in [5, 10, 20, 50, 100]" value="{{limit}}">{{limit}}</option>
-                        </select>
+                        <select ng-model="pagination.limit" ng-options="limit for limit in [5, 10, 20, 50, 100]" ng-change="postQuery();"></select>
                         results per page
                         <span ng-if="resultsCount != undefined">
                             showing page
-                            <select ng-model="pagination.offset">
-                                <option ng-repeat="x in range(0, resultsCount+1, pagination.limit)" value="{{ x }}">{{ Math.round(1+x/pagination.limit) }}</option>
-                            </select>
+                            <button ng-click="decrement()">-</button>
+                            <select ng-model="pagination.offset" ng-options="x as Math.round(1+x/pagination.limit) for x in range(0, resultsCount+1, pagination.limit)" ng-change="postQuery();"></select>
+                            <button ng-click="increment()">+</button>
                             out of
                             {{ Math.ceil(resultsCount / pagination.limit) }}
                             <strong>({{resultsCount}}</strong> results found)
@@ -197,18 +195,18 @@
                         <em>Loading, please wait...</em>
                     </div>
                     <div class="list-results" ng-if="!loading &amp;&amp; resultsCount != undefined">
-                        <div ng-if="!results.length">
+                        <div ng-if="!resultsCount">
                             <em>No results were found.</em>
                         </div>
-                        <table ng-if="results.length">
+                        <table ng-if="resultsCount">
                             <thead>
                                 <tr>
-                                    <th ng-repeat="(key, value) in results[0]">{{key}}</th>
+                                    <th ng-repeat="key in columns">{{key}}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="result in results">
-                                    <td ng-repeat="(key, value) in result">{{value}}</td>
+                                    <td ng-repeat="value in result">{{value}}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -216,8 +214,8 @@
                 </div>
             </div>
         </div>
-    -->
-
+    
+<!-- 
         <div ng-app="Gargantext" ng-controller="GraphController">        
             
             <ul class="datasets">
@@ -227,10 +225,10 @@
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
                         <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
-                        in the project
-                        <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
-                        corpus
-                        <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
+                        in the corpus
+                        <select ng-model="corpusId" ng-change="updateEntities()">
+                            <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
+                        </select>
                     </div>                    
                     <div class="filters" ng-if="entities">
                         <ul>
@@ -273,7 +271,7 @@
                 <br/>
 
                 Y-axis: use a
-                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['linear', 'log']"></select>
+                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['log', 'linear']"></select>
                 scale
                 <br/>
                 
@@ -305,7 +303,7 @@
                 </span>
             </div>
         </div>
-
+ -->
     </div>
 
 <!-- 

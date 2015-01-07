@@ -27,6 +27,31 @@ from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
+
+from django.http import *
+from django.shortcuts import render_to_response,redirect
+from django.template import RequestContext
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+
+def login_user(request):
+    logout(request)
+    username = password = ''
+    print(request)
+    if request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect('/projects/')
+    return render_to_response('authentication.html', context_instance=RequestContext(request))
+
+
+
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
     that returns the results as a bunch of dictionaries

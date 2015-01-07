@@ -16,6 +16,8 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')),
+
+    url(r'^auth/$', views.login_user),
     
     # User Home view
     url(r'^$', views.home),

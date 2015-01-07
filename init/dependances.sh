@@ -31,4 +31,4 @@ sudo apt-get install liblapack-dev
 
 
 source /srv/gargantext_env/bin/activate
-pip install git+https://github.com/mathieurodic/aldjemy.git
+pip3 install git+https://github.com/mathieurodic/aldjemy.git

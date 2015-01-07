@@ -1,5 +1,5 @@
-from parsing.NgramsExtractors.NgramsExtractor import NgramsExtractor
-from parsing.Taggers import NltkTagger
+from .NgramsExtractor import NgramsExtractor
+from ..Taggers import NltkTagger
 
 
 class EnglishNgramsExtractor(NgramsExtractor):

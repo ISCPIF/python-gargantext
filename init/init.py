@@ -26,9 +26,9 @@ french  = Language.objects.get(iso2='fr')
 
 
 try:
-    me = User.objects.get(username='alexandre')
+    me = User.objects.get(username='pksm3')
 except:
-    me = User(username='alexandre')
+    me = User(username='pksm3')
     me.save()
 
 
@@ -60,6 +60,23 @@ except Exception as error:
     print(error)
     typeDoc     = NodeType(name='Document')
     typeDoc.save()
+
+
+try:
+    typeStem     = NodeType.objects.get(name='Stem')
+except Exception as error:
+    print(error)
+    typeStem     = NodeType(name='Stem')
+    typeStem.save()
+
+try:
+    typeTfidf     = NodeType.objects.get(name='Tfidf')
+except Exception as error:
+    print(error)
+    typeTfidf     = NodeType(name='Tfidf')
+    typeTfidf.save()
+
+
 
 try:
     typeDoc     = NodeType.objects.get(name='WhiteList')
@@ -131,5 +148,13 @@ try:
 except:
     project = Node(name='Bees project', type=typeProject, user=me)
     project.save()
+
+try:
+    stem = Node.objects.get(name='Stem')
+except:
+    stem = Node(name='Stem', type=typeStem, user=me)
+    stem.save()
+
+
 
 

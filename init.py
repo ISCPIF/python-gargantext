@@ -10,10 +10,6 @@ os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 from node.models import *
 
 
-# Node.objects.get(id=26514).children.all().make_metadata_filterable()
-# exit()
-
-
 # Reset: all data
 
 tables_to_empty = [
@@ -41,7 +37,6 @@ metadata = {
     'source': 'string',
     'volume': 'string',
     'text': 'text',
-    'date': 'datetime',
     'page': 'string',
     'doi': 'string',
     'journal': 'string',
@@ -72,15 +67,23 @@ french  = Language.objects.get(iso2='fr')
 
 print('Initialize users...')
 try:
-    me = User.objects.get(username='mat')
+    me = User.objects.get(username='alexandre')
 except:
-    me = User(username='mat')
+    me = User(username='alexandre')
     me.save()
 
 
 # Integration: node types
 
 print('Initialize node types...')
+
+try:
+    typeProject = NodeType.objects.get(name='Root')
+except Exception as error:
+    print(error)
+    typeProject = NodeType(name='Root')
+    typeProject.save()  
+
 try:
     typeProject = NodeType.objects.get(name='Project')
 except Exception as error:
@@ -102,15 +105,59 @@ except Exception as error:
     typeDoc     = NodeType(name='Document')
     typeDoc.save()
 
+try:
+    typeStem     = NodeType.objects.get(name='Stem')
+except Exception as error:
+    print(error)
+    typeStem     = NodeType(name='Stem')
+    typeStem.save()
+
+try:
+    typeTfidf     = NodeType.objects.get(name='Tfidf')
+except Exception as error:
+    print(error)
+    typeTfidf     = NodeType(name='Tfidf')
+    typeTfidf.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='WhiteList')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='WhiteList')
+    typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='BlackList')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='BlackList')
+    typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='Synonyme')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='Synonyme')
+    typeDoc.save()
+
+try:
+    typeDoc     = NodeType.objects.get(name='Cooccurrence')
+except Exception as error:
+    print(error)
+    typeDoc     = NodeType(name='Cooccurrence')
+    typeDoc.save()
+
+
 
 # Integration: resource types
 
 print('Initialize resource...')
 try:
-    typePubmed = ResourceType.objects.get(name='pubmed')
-    typeIsi    = ResourceType.objects.get(name='isi')
-    typeRis    = ResourceType.objects.get(name='ris')
-    typePresse = ResourceType.objects.get(name='europress')
+    typePubmed      = ResourceType.objects.get(name='pubmed')
+    typeIsi         = ResourceType.objects.get(name='isi')
+    typeRis         = ResourceType.objects.get(name='ris')
+    typePresseFr    = ResourceType.objects.get(name='europress_french')
+    typePresseEn    = ResourceType.objects.get(name='europress_english')
 
 except Exception as error:
     print(error)
@@ -124,8 +171,19 @@ except Exception as error:
     typeRis    = ResourceType(name='ris')
     typeRis.save()
     
-    typePresse = ResourceType(name='europress')
-    typePresse.save()
+    typePresseFr = ResourceType(name='europress_french')
+    typePresseFr.save()
+    
+    typePresseEn = ResourceType(name='europress_english')
+    typePresseEn.save()
+
+# Integration Node Stem
+try:
+    stem = Node.objects.get(name='Stem')
+except:
+    stem = Node(name='Stem', type=typeStem, user=me)
+    stem.save()
+
 
 
 # Integration: project
@@ -150,7 +208,8 @@ except:
 print('Initialize resource...')
 corpus_pubmed.add_resource(
     # file='./data_samples/pubmed.zip',
-    file='./data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
+    #file='./data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
+    file='/srv/gargantext_lib/data_samples/pubmed.xml',
     type=typePubmed,
     user=me
 )

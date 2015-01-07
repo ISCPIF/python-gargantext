@@ -7,7 +7,7 @@ from django.template import Context
 
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
-        Node_Ngram, NodeNgramNgram
+        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
 from node.admin import CorpusForm, ProjectForm, ResourceForm
 
@@ -239,6 +239,8 @@ def project(request, project_id):
             try:
                 #corpus.parse_and_extract_ngrams()
                 corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                #corpus.workflow()
+                #corpus.workflow((), countdown=3)
 
             except Exception as error:
                 print(error)
@@ -285,8 +287,8 @@ def corpus(request, project_id, corpus_id):
     project = Node.objects.get(id=project_id)
     corpus  = Node.objects.get(id=corpus_id)
     
-    #documents  = corpus.children.all()
-    #number = corpus.children.count()
+    type_doc = NodeType.objects.get(name="Document")
+    number = Node.objects.filter(parent=corpus, type=type_doc).count()
 
 #    try:
 #        sources = defaultdict(int)
@@ -357,11 +359,152 @@ def corpus(request, project_id, corpus_id):
             'project': project,\
             'corpus' : corpus,\
             'documents': documents,\
-    #        'number' : number,\
+            'number' : number,\
             'dates' : chart,\
             }))
     
     return HttpResponse(html)
+
+
+
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+def subcorpus(request, project_id, corpus_id, start , end ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    try:
+        offset = str(project_id)
+        offset = str(corpus_id)
+        offset = str(start)
+        offset = str(end)
+    except ValueError:
+        raise Http404()
+
+    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
+    import datetime
+    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
+    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
+
+    t = get_template('subcorpus.html')
+    
+    user = request.user
+    date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
+    corpus = Node.objects.get(id=corpus_id)
+    
+    # retrieving all the documents
+    documents  = corpus.children.all()
+    number = corpus.children.count()
+
+    filtered_docs = []
+    # filtering documents by range-date
+    for doc in documents:
+        if "publication_date" in doc.metadata:
+            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+            if dateini <= realdate <= datefin:
+                doc.date = realdate
+                filtered_docs.append(doc)
+
+    # ordering from most recent to the older.
+    ordered = sorted(filtered_docs, key=lambda x: x.date, reverse=True)
+
+    # pages of 10 elements. Like a sir.
+    paginator = Paginator(ordered, 10)
+
+    page = request.GET.get('page')
+    try:
+        results = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        results = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        results = paginator.page(paginator.num_pages)
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'project': project,\
+            'corpus' : corpus,\
+            'documents': results,\
+            # 'number' : len(filtered_docs),\
+            # 'dates' : chart,\
+            }))
+    
+    return HttpResponse(html)
+
+
+import json
+def subcorpusJSON(request, project_id, corpus_id, start , end ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    try:
+        offset = str(project_id)
+        offset = str(corpus_id)
+        offset = str(start)
+        offset = str(end)
+    except ValueError:
+        raise Http404()
+
+    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
+    import datetime
+    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
+    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
+
+    t = get_template('subcorpus.html')
+    
+    user = request.user
+    date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
+    corpus = Node.objects.get(id=corpus_id)
+    
+    # retrieving all the documents
+    documents  = corpus.children.all()
+    number = corpus.children.count()
+
+    filtered_docs = []
+    # filtering documents by range-date
+    for doc in documents:
+        if "publication_date" in doc.metadata:
+            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+            if dateini <= realdate <= datefin:
+                doc.date = realdate
+                filtered_docs.append(doc)
+
+    # ordering from most recent to the older.
+    ordered = sorted(filtered_docs, key=lambda x: x.date)
+
+    # pages of 10 elements. Like a sir.
+    paginator = Paginator(ordered, 10)
+
+    page = request.GET.get('page')
+    try:
+        results = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        results = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        results = paginator.page(paginator.num_pages)
+
+    from rest_framework.pagination import PaginationSerializer
+
+    serializer = PaginationSerializer(instance=results)
+    print(serializer.data)
+ 
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'corpus': corpus,\
+            }))
+    # return HttpResponse(html)
+    return HttpResponse( serializer.data , content_type='application/json')
+
+
 
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
@@ -371,7 +514,35 @@ def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
 
-def explorer_graph(request, corpus_id):
+
+def chart(request, project_id, corpus_id):
+    ''' Charts to compare, filter, count'''
+    t = get_template('chart.html')
+    user = request.user
+    date = datetime.datetime.now()
+    project = Node.objects.get(id=project_id)
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'project' : project,
+    }))    
+    return HttpResponse(html)
+
+def matrix(request, corpus_id):
+    t = get_template('matrix.html')
+    user = request.user
+    date = datetime.datetime.now()
+    corpus = Node.objects.get(id=corpus_id)
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'corpus': corpus,\
+            }))
+    
+    return HttpResponse(html)
+
+def graph(request, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -385,19 +556,9 @@ def explorer_graph(request, corpus_id):
     
     return HttpResponse(html)
 
-def explorer_matrix(request, corpus_id):
-    t = get_template('matrix.html')
-    user = request.user
-    date = datetime.datetime.now()
-    corpus = Node.objects.get(id=corpus_id)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
-            }))
-    
-    return HttpResponse(html)
+
+
 
 def exploration(request):
     t = get_template('exploration.html')
@@ -425,6 +586,36 @@ def explorer_chart(request):
 
 import csv
 from django.db import connection
+
+def corpus_csv(request, project_id, corpus_id):
+    '''
+    Create the HttpResponse object with the appropriate CSV header.
+    '''
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="corpus.csv"'
+
+    writer = csv.writer(response)
+
+    corpus = Node.objects.get(id=corpus_id)
+    type_document = NodeType.objects.get(name="Document")
+    documents = Node.objects.filter(parent=corpus, type=type_document)
+
+    keys = list(documents[0].metadata.keys())
+    writer.writerow(keys)
+
+    for doc in documents:
+        data = list()
+        for key in keys:
+            try:
+                data.append(doc.metadata[key])
+            except:
+                data.append("")
+        writer.writerow(data)
+
+
+    return response
+
+
 
 def send_csv(request, corpus_id):
     '''
@@ -470,7 +661,7 @@ def send_csv(request, corpus_id):
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
-
+import json
 
 def node_link(request, corpus_id):
     '''
@@ -488,10 +679,20 @@ def adjacency(request, corpus_id):
     data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
     return JsonHttpResponse(data)
 
-
 def graph_it(request):
     '''The new multimodal graph.'''
     t = get_template('graph-it.html')
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+    }))    
+    return HttpResponse(html)
+
+def tests_mvc(request):
+    '''Just a test page for Javascript MVC.'''
+    t = get_template('tests/mvc.html')
     user = request.user
     date = datetime.datetime.now()
     html = t.render(Context({
@@ -517,3 +718,60 @@ def ngrams(request):
     }))    
     return HttpResponse(html)
 
+
+def nodeinfo(request , node_id):
+    '''Structure of the popUp for topPapers div '''
+    t = get_template('node-info.html')
+    ngrams_list = ["hola","mundo"]
+    
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+        'node_id' : node_id,
+    }))    
+    return HttpResponse(html)
+
+
+def tfidf(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    ngramsids = ngram_id.split("a")
+
+    corpus = Node.objects.get(id=corpus_id)
+    ngram  = Ngram.objects.get(id=ngramsids[0])#not used
+    
+    print("********web/views.tfidf*******")
+    print("first ngram:")
+    print(ngram)
+    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
+    # print(node_node_ngrams)
+    goodDict = {}
+    for x in node_node_ngrams:
+        goodDict[x.nodey.id] = x.nodey
+    # print("imma here")
+    # print("arguments... nodes ids:")
+    # print(ngramsids)
+    # print ("with tfidf:")
+    # print(node_node_ngrams)
+    # print("corpus:")
+    # print(NodeNodeNgram.objects.filter(nodex=corpus))
+    tfidf_list = []
+    for x in goodDict:
+        pub = goodDict[x] # getting the unique publication
+        finalpub = {}
+        finalpub["id"] = pub.id
+        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
+        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
+        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
+        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
+        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
+    
+    data = json.dumps(tfidf_list) 
+    return JsonHttpResponse(data)

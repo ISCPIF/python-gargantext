@@ -1,9 +1,11 @@
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
-        Node_Ngram, NodeNgramNgram
+        Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
 from collections import defaultdict
 from django.db import connection, transaction
+
+from math import log
 
 def create_blacklist(user, corpus):
     pass
@@ -133,7 +135,7 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=Non
     cursor.execute(query_cooc)
     return cooc
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
+def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150):
     import pandas as pd
     from copy import copy
     import numpy as np
@@ -144,6 +146,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
     from analysis.louvain import best_partition
 
     matrix = defaultdict(lambda : defaultdict(float))
+    ids    = dict()
     labels = dict()
     weight = dict()
 
@@ -159,9 +162,13 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
         cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
+        
+        ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
+        ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
+
         labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
         labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
-        
+
         matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
         matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
 
@@ -193,12 +200,12 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
         for community in set(partition.values()):
             #print(community)
             G.add_node("cluster " + str(community), hidden=1)
-
         for node in G.nodes():
             try:
                 #node,type(labels[node])
                 G.node[node]['label']   = node
                 G.node[node]['name']    = node
+                G.node[node]['pk']      = ids[str(node)]
                 G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
                 G.add_edge(node, "cluster " + str(partition[node]), weight=3)
@@ -234,6 +241,42 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type=None, n=150):
     return data
 
 
+def tfidf(corpus, document, ngram):
+    try:
+        occurences_of_ngram = Node_Ngram.objects.get(node=document, ngram=ngram).weight
+        ngrams_by_document = sum([ x.weight for x in Node_Ngram.objects.filter(node=document)])
+        term_frequency = occurences_of_ngram / ngrams_by_document
+    
+        xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
+        yy = Node_Ngram.objects.filter(ngram=ngram).count()
+        inverse_d_frequency= log(xx/yy)
+        
+        # result = tf * idf
+        result = term_frequency * inverse_d_frequency
+    except Exception as error:
+        print(error)
+        result = 0
+    return result
+
+
+
+def do_tfidf(corpus, reset=True):
+
+    with transaction.atomic():
+        if reset==True:
+            NodeNodeNgram.objects.filter(nodex=corpus).delete()
+        
+        if isinstance(corpus, Node) and corpus.type.name == "Corpus":
+            for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
+                for node_ngram in Node_Ngram.objects.filter(node=document):
+                    try:
+                        nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
+                    except:
+                        score = tfidf(corpus, document, node_ngram.ngram)
+                        nnn = NodeNodeNgram(nodex=corpus, nodey=node_ngram.node, ngram=node_ngram.ngram, score=score)
+                        nnn.save()
+        else:
+            print("Only corpus implemented yet, you put instead:", type(corpus))
 
 
 

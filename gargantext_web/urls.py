@@ -17,36 +17,46 @@ urlpatterns = patterns('',
     url(r'^login/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')),
     
-    # User views
+    # User Home view
     url(r'^$', views.home),
     
+    # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/delete/$', views.delete_project),
-    
     url(r'^project/(\d+)/$', views.project),
     
+    # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     
+    url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
+
     # Visualizations
-    url(r'^corpus/(\d+)/explorer$', views.explorer_graph),
-    url(r'^corpus/(\d+)/matrix$', views.explorer_matrix),
+    url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
+    url(r'^corpus/(\d+)/explorer$', views.graph),
+    url(r'^corpus/(\d+)/matrix$', views.matrix),
     
-    # Getting data
+    # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
+    url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
 
+    # Data management
     url(r'^api$', gargantext_web.api.Root),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
+    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
+    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     
-    url(r'^api/nodes$', gargantext_web.api.NodesController.get),
-    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-    url(r'^api/nodes/(\d+)/data$', gargantext_web.api.CorpusController.data),
+    url(r'^api/project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpusJSON),
 
-    url(r'^graph-it$', views.graph_it),
+    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+
     url(r'^ngrams$', views.ngrams),
+    url(r'^nodeinfo/(\d+)$', views.nodeinfo),
+    url(r'^tests/mvc$', views.tests_mvc),
 )
 
 

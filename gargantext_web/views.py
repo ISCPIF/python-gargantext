@@ -439,7 +439,7 @@ def subcorpus(request, project_id, corpus_id, start , end ):
                 filtered_docs.append(doc)
 
     # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date, reverse=True)
+    ordered = sorted(filtered_docs, key=lambda x: x.date)
 
     # pages of 10 elements. Like a sir.
     paginator = Paginator(ordered, 10)

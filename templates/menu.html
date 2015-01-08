@@ -22,9 +22,16 @@
         
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/admin/">Admin</a></li>
-            <li><a href="/projects/">Projects</a></li>
-            <li><a href="/projects/">Corpus</a></li>
+							<!-- <li><a href="/admin/">Admin/</a></li> --!>
+            <li><a href="/projects/">Projects/</a></li>
+						{% if project %}
+						<li><a href="/project/{{project.id}}">{{project.name}}/</a></li>
+						{% endif %}
+						{% if corpus %}
+						<li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}/</a></li>
+						{% endif %}
+
+
           </ul>
 
 				<ul class="nav pull-right">

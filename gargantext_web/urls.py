@@ -32,13 +32,14 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
+    url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
     
     url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
 
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
-    url(r'^corpus/(\d+)/explorer$', views.graph),
-    url(r'^corpus/(\d+)/matrix$', views.matrix),
+    url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
+    url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
     
     # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
@@ -60,6 +61,7 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
+    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
 )
 
 

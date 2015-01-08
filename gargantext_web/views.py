@@ -27,7 +27,7 @@ from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
-
+from gargantext_web.settings import DEBUG
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -266,8 +266,12 @@ def project(request, project_id):
                     )
 
             try:
-                corpus.workflow()
-                #corpus.workflow((), countdown=3)
+                #corpus.parse_and_extract_ngrams()
+                #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                if DEBUG is True:
+                    corpus.workflow()
+                else:
+                    corpus.workflow.apply_async((), countdown=3)
 
             except Exception as error:
                 print(error)
@@ -547,38 +551,48 @@ def chart(request, project_id, corpus_id):
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
+    
     project = Node.objects.get(id=project_id)
+    corpus  = Node.objects.get(id=corpus_id)
+    
     html = t.render(Context({
-        'user': user,
-        'date': date,
-        'project' : project,
+        'user'      : user,
+        'date'      : date,
+        'project'   : project,
+        'corpus'    : corpus,
     }))    
     return HttpResponse(html)
 
-def matrix(request, corpus_id):
+def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)
 
-def graph(request, corpus_id):
+def graph(request, project_id, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)
@@ -720,6 +734,17 @@ def graph_it(request):
 def tests_mvc(request):
     '''Just a test page for Javascript MVC.'''
     t = get_template('tests/mvc.html')
+    user = request.user
+    date = datetime.datetime.now()
+    html = t.render(Context({
+        'user': user,
+        'date': date,
+    }))    
+    return HttpResponse(html)
+
+def tests_mvc_listdocuments(request):
+    '''Just a test page for Javascript MVC.'''
+    t = get_template('tests/mvc-listdocuments.html')
     user = request.user
     date = datetime.datetime.now()
     html = t.render(Context({

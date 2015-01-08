@@ -12,7 +12,6 @@
 {% block content %}
 
 <div id="loading" style="position:absolute; top:50%; left:40%; width:80px; display: none;" >
-
     <img src="{% static "img/ajax-loader.gif" %}" alt="" />
 </div>
 
@@ -29,11 +28,5 @@
 </div>
 </div>
 
-<script>
-function showLoader(){
-  $('#loading').setStyle('display', 'block');
-  $('submit_btn').disabled = true;
-};
-</script>
 
 {% endblock %}

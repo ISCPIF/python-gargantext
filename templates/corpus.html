@@ -14,6 +14,15 @@
 <script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
 <script type="text/javascript" src="{% static "js/charts/dc.js"%}"></script>
 
+<style>
+.no-transition {
+  -webkit-transition: height 0.1s;
+  -moz-transition: height 0.1s;
+  -ms-transition: height 0.1s;
+  -o-transition: height 0.1s;
+  transition: height 0.1s;
+}
+</style>
 
 {% endblock %}
 
@@ -33,7 +42,7 @@
 							</p>
 							{% endif %}
 
-							<!--						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add file</a> --!>
+							<!--						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.pk }}/">Add file</a> -->
 						<a class="btn btn-primary btn-lg" role="button" href="/project/{{project.pk}}/corpus/{{ corpus.pk }}/corpus.csv">Save as</a>
 						<a class="btn btn-primary btn-lg" role="button" href="/project/{{project.pk}}/corpus/{{ corpus.pk }}/delete">Delete</a></p>
 
@@ -79,7 +88,7 @@
         </a>
       </h4>
     </div>
-    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
+    <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
       <div class="panel-body">
 				<p align="right">
 				
@@ -144,6 +153,7 @@
 
 
 var datesbuffer = false;
+var latest,oldest;
 
 function pr(msg) {
     console.log(msg)
@@ -165,14 +175,29 @@ function updateDocuments(pagenumber,pagenav) {
     pagenav = (pagenav)?pagenav:true;
     pagenumber = (pagenumber)?pagenumber:1;
     pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
-    pr($( "#collapseOne" ).height())
+    pr("offset left: "+$( "#collapseOne" ).offset().left)
     // if "Read Documents" collapsible is close, then... show some me pubs!
-    if ( pagenav || $( "#collapseOne" ).height() < 50) {
+    if ( pagenav || $( "#collapseOne" ).offset().left == 0) {
 
         // Here u ask for the server some paginated results (pubs)
         // if u havent select a timerange from the blue chart, then show me all pubs
         if(!datesbuffer) {
-            console.log("nothing cause dont wanna")
+
+            var dataini = oldest.join("")
+            var datafin = latest.join("")
+            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
+
+            var base = window.location.href;
+            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
+            pr("theurl:   "+theurl)
+
+            $.ajax({
+              url: theurl,
+              success: function(data) {
+                // console.log(data)
+                $('#subcorpusdiv').html(data);
+              }
+            });
         } 
         // there's some timerange selected in the blue chart, so show me the pubs of that period
         else {
@@ -196,10 +221,6 @@ function updateDocuments(pagenumber,pagenav) {
 
     }
     //else: "Read Documents" collapsible is open!, so do nothing 
-    
-
-
-
 }
 
 
@@ -233,13 +254,8 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
 
             var orderDates = Object.keys(justdates).reverse();
             
-            var latest = orderDates[0].split("/")
-            var oldest = orderDates[orderDates.length-1].split("/")
-
-            pr("latest:")
-            pr(latest)
-            pr("oldest:")
-            pr(oldest)
+            latest = orderDates[0].split("/")
+            oldest = orderDates[orderDates.length-1].split("/")
 
             var t0_year = oldest[0]
             var t0_month = oldest[1]

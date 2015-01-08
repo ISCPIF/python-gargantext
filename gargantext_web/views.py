@@ -709,8 +709,9 @@ def node_link(request, corpus_id):
     Create the HttpResponse object with the node_link dataset.
     '''
 
-   
+    print("In node_link() START")
     data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    print("In node_link() END")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):

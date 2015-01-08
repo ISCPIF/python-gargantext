@@ -3,6 +3,7 @@ import locale
 from lxml import etree
 from datetime import datetime, date
 from django.utils import timezone
+import dateutil.parser
 
 from .FileParser import FileParser
 from ..NgramsExtractors import *
@@ -23,9 +24,9 @@ class EuropressFileParser(FileParser):
         #print(len(contents))
         #return []
         encoding = self.detect_encoding(contents)
-        print(encoding)
-        if encoding != "utf-8":
-            contents = contents.decode(encoding, errors='replace').encode(codif)
+        #print(encoding)
+        #if encoding != "utf-8":
+        contents = contents.decode(encoding, errors='replace').encode(codif)
 
         try:
             html_parser = etree.HTMLParser(encoding=codif)
@@ -78,14 +79,19 @@ class EuropressFileParser(FileParser):
                             text = text.replace('ű', 'û')
                             text = text.replace(' aot ', ' août ')
 
+
                         try :
                             metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                         except :
                             try:
                                 metadata['publication_date'] = datetime.strptime(text, '%B %Y')
                             except :
-                                print(text)
-                                pass
+                                try:
+                                    metadata['publication_date'] = dateutil.parser.parse(text)
+                                except Exception as error:
+                                    print(error)
+                                    print(text)
+                                    pass
                     
                     if test_date_en is not None:
                         localeEncoding = "en_GB.UTF-8"

@@ -51,6 +51,10 @@ def login_user(request):
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
 
+def logout_user(request):
+    logout(request)
+    return HttpResponseRedirect('/')
+    # Redirect to a success page.
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -117,7 +121,7 @@ def projects(request):
     To each project, we can link a resource that can be an image.
     '''
     if not request.user.is_authenticated():
-        return redirect('/admin/logout/?next=%s' % request.path)
+        return redirect('/auth/')
     
     t = get_template('projects.html')
     

@@ -77,9 +77,9 @@ class FileParser:
                 if language:
                     break
         if language:
-            metadata["language_iso2"] = language.iso2
-            metadata["language_iso3"] = language.iso3
-            metadata["language_fullname"] = language.fullname
+            metadata["language_iso2"]       = language.iso2
+            metadata["language_iso3"]       = language.iso3
+            metadata["language_fullname"]   = language.fullname
         return metadata
         
     def format_metadata(self, metadata):

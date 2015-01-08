@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^grappelli/', include('grappelli.urls')),
 
     url(r'^auth/$', views.login_user),
+    url(r'^auth/logout/$', views.logout_user),
     
     # User Home view
     url(r'^$', views.home),

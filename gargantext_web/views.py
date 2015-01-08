@@ -547,38 +547,48 @@ def chart(request, project_id, corpus_id):
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
+    
     project = Node.objects.get(id=project_id)
+    corpus  = Node.objects.get(id=corpus_id)
+    
     html = t.render(Context({
-        'user': user,
-        'date': date,
-        'project' : project,
+        'user'      : user,
+        'date'      : date,
+        'project'   : project,
+        'corpus'    : corpus,
     }))    
     return HttpResponse(html)
 
-def matrix(request, corpus_id):
+def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)
 
-def graph(request, corpus_id):
+def graph(request, project_id, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)

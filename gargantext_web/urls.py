@@ -37,8 +37,8 @@ urlpatterns = patterns('',
 
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
-    url(r'^corpus/(\d+)/explorer$', views.graph),
-    url(r'^corpus/(\d+)/matrix$', views.matrix),
+    url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
+    url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
     
     # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),

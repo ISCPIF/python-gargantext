@@ -23,12 +23,12 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
 							<!-- <li><a href="/admin/">Admin/</a></li> --!>
-            <li><a href="/projects/">Projects/</a></li>
+            <li><a href="/projects/">Projects</a></li>
 						{% if project %}
-						<li><a href="/project/{{project.id}}">{{project.name}}/</a></li>
+						<li><a href="/project/{{project.id}}">{{project.name}}</a></li>
 						{% endif %}
 						{% if corpus %}
-						<li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}/</a></li>
+						<li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></li>
 						{% endif %}
 
 
@@ -61,7 +61,7 @@
 <hr>
 
 <footer>
-        <p>Gargantext v.1.0 (Copyrights {{ date.year }})</p>
+        <p>Gargantext v.1.0 (Copyrights CNRS {{ date.year }})</p>
 </footer>
 
 

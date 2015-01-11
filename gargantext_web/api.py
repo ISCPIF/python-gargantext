@@ -206,28 +206,28 @@ class NodesChildrenDuplicates(APIView):
         # and now, return it
         return duplicates_query
 
-    # def get(self, request, node_id):
-    #     # data to be returned
-    #     duplicates = self._fetch_duplicates(request, node_id)
-    #     # pagination
-    #     offset = int(request.GET.get('offset', 0))
-    #     limit = int(request.GET.get('limit', 10))
-    #     total = duplicates.count()
-    #     # response building
-    #     return JsonHttpResponse({
-    #         'pagination': {
-    #             'offset': offset,
-    #             'limit': limit,
-    #             'total': total,
-    #         },
-    #         'data': [
-    #             {
-    #                 'count': duplicate[0],
-    #                 'values': duplicate[1:],
-    #             }
-    #             for duplicate in duplicates[offset : offset+limit]
-    #         ]
-    #     })
+    def get(self, request, node_id):
+        # data to be returned
+        duplicates = self._fetch_duplicates(request, node_id)
+        # pagination
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 10))
+        total = duplicates.count()
+        # response building
+        return JsonHttpResponse({
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+            },
+            'data': [
+                {
+                    'count': duplicate[0],
+                    'values': duplicate[1:],
+                }
+                for duplicate in duplicates[offset : offset+limit]
+            ]
+        })
 
     def delete(self, request, node_id):
         session = get_session()

@@ -168,7 +168,7 @@ def Root(request, format=None):
 
 class NodesChildrenDuplicates(APIView):
 
-    def get(self, request, node_id):
+    def _fetch_duplicates(self, request, node_id, extra_columns=[], min_count=1):
         # input validation
         if 'keys' not in request.GET:
             raise APIException('Missing GET parameter: "keys"', 400)
@@ -190,10 +190,10 @@ class NodesChildrenDuplicates(APIView):
             columns.append(
                 getattr(_Node_Metadata, 'value_' + metadata.type)
             )
-        # build the query!
+        # build the query
         groups = list(columns)
         duplicates_query = (get_session()
-            .query(*( [func.count()] + columns ))
+            .query(*(extra_columns + [func.count()] + columns))
             .select_from(Node)
         )
         for _Node_Metadata, metadata in zip(aliases, metadata_query):
@@ -202,15 +202,53 @@ class NodesChildrenDuplicates(APIView):
         duplicates_query = duplicates_query.filter(Node.parent_id == node_id)
         duplicates_query = duplicates_query.group_by(*columns)
         duplicates_query = duplicates_query.order_by(func.count().desc())
-        duplicates_query = duplicates_query.having(func.count() > 1)
-        # return results
-        return JsonHttpResponse([
-            {
-                'count': duplicate[0],
-                'values': duplicate[1:],
-            }
-            for duplicate in duplicates_query
-        ])
+        duplicates_query = duplicates_query.having(func.count() > min_count)
+        # and now, return it
+        return duplicates_query
+
+    # def get(self, request, node_id):
+    #     # data to be returned
+    #     duplicates = self._fetch_duplicates(request, node_id)
+    #     # pagination
+    #     offset = int(request.GET.get('offset', 0))
+    #     limit = int(request.GET.get('limit', 10))
+    #     total = duplicates.count()
+    #     # response building
+    #     return JsonHttpResponse({
+    #         'pagination': {
+    #             'offset': offset,
+    #             'limit': limit,
+    #             'total': total,
+    #         },
+    #         'data': [
+    #             {
+    #                 'count': duplicate[0],
+    #                 'values': duplicate[1:],
+    #             }
+    #             for duplicate in duplicates[offset : offset+limit]
+    #         ]
+    #     })
+
+    def delete(self, request, node_id):
+        session = get_session()
+        # get the minimum ID for each of the nodes sharing the same metadata
+        kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
+        kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
+        # delete the stuff
+        delete_query = (session
+            .query(Node)
+            .filter(Node.parent_id == node_id)
+            .filter(~Node.id.in_(kept_node_ids))
+        )
+        count = delete_query.count()
+        delete_query.delete(synchronize_session=False)
+        session.flush()
+        # return the result
+        return JsonHttpResponse({
+            'deleted': count,
+        })
+        # return duplicates_query
+
 
 
 class NodesChildrenMetatadata(APIView):

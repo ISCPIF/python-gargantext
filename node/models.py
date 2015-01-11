@@ -243,7 +243,7 @@ class Node(CTENode):
         do_tfidf(self)
 
 class Node_Metadata(models.Model):
-    node        = models.ForeignKey(Node)
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
     metadata    = models.ForeignKey(Metadata)
     value_int   = models.IntegerField(null=True, db_index=True)
     value_float = models.FloatField(null=True, db_index=True)
@@ -252,12 +252,12 @@ class Node_Metadata(models.Model):
     value_text  = models.TextField(null=True)
 
 class Node_Resource(models.Model):
-    node     = models.ForeignKey(Node, related_name='node_resource')
+    node     = models.ForeignKey(Node, related_name='node_resource', on_delete=models.CASCADE)
     resource = models.ForeignKey(Resource)
     parsed   = models.BooleanField(default=False)
             
 class Node_Ngram(models.Model):
-    node   = models.ForeignKey(Node)
+    node   = models.ForeignKey(Node, on_delete=models.CASCADE)
     ngram  = models.ForeignKey(Ngram)
     weight = models.FloatField()
     def __str__(self):
@@ -289,7 +289,7 @@ class Document(Node):
         proxy=True
 
 class NodeNgramNgram(models.Model):
-    node        = models.ForeignKey(Node)
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
     
     ngramx      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
     ngramy      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
@@ -301,8 +301,8 @@ class NodeNgramNgram(models.Model):
 
 
 class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex")
-    nodey        = models.ForeignKey(Node, related_name="nodey")
+    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
+    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
     
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 
@@ -312,8 +312,8 @@ class NodeNodeNgram(models.Model):
         return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
 class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex")
-    nodey        = models.ForeignKey(Node, related_name="nodey")
+    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
+    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
     
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 

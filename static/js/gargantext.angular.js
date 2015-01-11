@@ -29,12 +29,12 @@ var operators = {
 };
 
 var strDate = function(date) {
-    return date.getUTCFullYear() + '-' +
-            ('00' + (date.getUTCMonth() + 1)).slice(-2) + '-' +
-            ('00' + date.getUTCDate()).slice(-2) + 'T' +
-            ('00' + date.getUTCHours()).slice(-2) + ':' +
-            ('00' + date.getUTCMinutes()).slice(-2) + ':' +
-            ('00' + date.getUTCSeconds()).slice(-2) + 'Z';
+    return date.getFullYear() + '-' +
+            ('00' + (date.getMonth() + 1)).slice(-2) + '-' +
+            ('00' + date.getDate()).slice(-2) + 'T' +
+            ('00' + date.getHours()).slice(-2) + ':' +
+            ('00' + date.getMinutes()).slice(-2) + ':' +
+            ('00' + date.getSeconds()).slice(-2) + 'Z';
 }
 var addZero = function(x) {
     return (x<10) ? ('0'+x) : x;
@@ -47,14 +47,27 @@ var groupings = {
     datetime: {
         century: {
             truncate: function(x) {return x.substr(0, 2) + '00-01-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+100); return strDate(x);},
+            display: function(x) {return x.substr(0, 2) + 'th century'},
+            next: function(x) {
+                x = new Date(x);
+                x.setFullYear(x.getFullYear()+100);
+                x.setHours(0);
+                return strDate(x);
+            },
         },
         decade: {
             truncate: function(x) {return x.substr(0, 3) + '0-01-01T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setFullYear(x.getFullYear()+10); return strDate(x);},
+            display: function(x) {return x.substr(0, 3)} + '0s',
+            next: function(x) {
+                x = new Date(x);
+                x.setFullYear(x.getFullYear() + 10);
+                x.setHours(0);
+                return strDate(x);
+            },
         },
         year: {
             truncate: function(x) {return x.substr(0, 4) + '-01-01T00:00:00Z';},
+            display: function(x) {return x.substr(0, 4)},
             next: function(x) {
                 var y = parseInt(x.substr(0, 4));
                 return addZeros(y + 1, 4) + x.substr(4);
@@ -62,6 +75,7 @@ var groupings = {
         },
         month: {
             truncate: function(x) {return x.substr(0, 7) + '-01T00:00:00Z';},
+            display: function(x) {return x.substr(0, 7)},
             next: function(x) {
                 var m = parseInt(x.substr(5, 2));
                 if (m == 12) {
@@ -74,7 +88,13 @@ var groupings = {
         },
         day: {
             truncate: function(x) {return x.substr(0, 10) + 'T00:00:00Z';},
-            next: function(x) {x = new Date(x); x.setDate(x.getDate()+1); return strDate(x);},
+            display: function(x) {return x.substr(0, 10)},
+            next: function(x) {
+                x = new Date(x);
+                x.setDate(x.getDate() + 1);
+                x.setHours(0);
+                return strDate(x);
+            },
         },
     },
     numeric: {
@@ -309,6 +329,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
     $scope.datasets = [{}];
     $scope.groupingKey = 'year';
+    $scope.grouping = groupings.datetime[$scope.groupingKey];
     $scope.options = {
         stacking: false
     };
@@ -327,7 +348,10 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             },
             tension: 1.0,
             lineMode: 'bundle',
-            tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return x + ' → ' + y;}},
+            tooltip: {mode: 'scrubber', formatter: function(x, y, series) {
+                alert($scope.grouping.display(x))
+                return $scope.grouping.display(x) + ' → ' + y;
+            }},
             drawLegend: false,
             drawDots: true,
             columnsHGap: 5
@@ -354,25 +378,29 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 return false;
             }
             var results = dataset.results;
-            var xMinTmp = results[0][0];
-            var xMaxTmp = results[results.length - 1][0];
-            if (xMin === undefined || xMinTmp < xMin) {
-                xMin = xMinTmp;
-            }
-            if (xMax === undefined || xMaxTmp < xMax) {
-                xMax = xMaxTmp;
+            if (results.length) {
+                var xMinTmp = results[0][0];
+                var xMaxTmp = results[results.length - 1][0];
+                if (xMin === undefined || xMinTmp < xMin) {
+                    xMin = xMinTmp;
+                }
+                if (xMax === undefined || xMaxTmp < xMax) {
+                    xMax = xMaxTmp;
+                }
             }
         });
         // Create the dataObject for interpolation
         var dataObject = {};
-        xMin = grouping.truncate(xMin);
-        xMax = grouping.truncate(xMax);
-        for (var x=xMin; x<=xMax; x=grouping.next(x)) {
-            var row = [];
-            angular.forEach($scope.datasets, function(){
-                row.push(0);
-            });
-            dataObject[x] = row;
+        if (xMin != undefined && xMax != undefined) {
+            xMin = grouping.truncate(xMin);
+            xMax = grouping.truncate(xMax);
+            for (var x=xMin; x<=xMax; x=grouping.next(x)) {
+                var row = [];
+                angular.forEach($scope.datasets, function(){
+                    row.push(0);
+                });
+                dataObject[x] = row;
+            }
         }
         // Fill the dataObject with results
         angular.forEach($scope.datasets, function(dataset, datasetIndex){
@@ -404,7 +432,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         // Update the axis
         $scope.graph.options.axes.y.min = yMin;
         $scope.graph.options.axes.y.max = yMax;
-        $scope.graph.options.axes.y.ticks = 100;
+        $scope.graph.options.axes.y.ticks = Math.pow(10, Math.floor(Math.abs(Math.log10(yMax - yMin))));
         // Finally, update the graph
         var series = [];
         for (var i=0, n=$scope.datasets.length; i<n; i++) {

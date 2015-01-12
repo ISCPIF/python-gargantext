@@ -46,8 +46,8 @@ var addZeros = function(x, n) {
 var groupings = {
     datetime: {
         century: {
+            representation: function(x) {return x.toISOString().substr(0, 2) + 'th century'},
             truncate: function(x) {return x.substr(0, 2) + '00-01-01T00:00:00Z';},
-            display: function(x) {return x.substr(0, 2) + 'th century'},
             next: function(x) {
                 x = new Date(x);
                 x.setFullYear(x.getFullYear()+100);
@@ -56,8 +56,8 @@ var groupings = {
             },
         },
         decade: {
+            representation: function(x) {return x.toISOString().substr(0, 3)} + '0s',
             truncate: function(x) {return x.substr(0, 3) + '0-01-01T00:00:00Z';},
-            display: function(x) {return x.substr(0, 3)} + '0s',
             next: function(x) {
                 x = new Date(x);
                 x.setFullYear(x.getFullYear() + 10);
@@ -66,16 +66,16 @@ var groupings = {
             },
         },
         year: {
+            representation: function(x) {return x.toISOString().substr(0, 4)},
             truncate: function(x) {return x.substr(0, 4) + '-01-01T00:00:00Z';},
-            display: function(x) {return x.substr(0, 4)},
             next: function(x) {
                 var y = parseInt(x.substr(0, 4));
                 return addZeros(y + 1, 4) + x.substr(4);
             },
         },
         month: {
+            representation: function(x) {return x.toISOString().substr(0, 7)},
             truncate: function(x) {return x.substr(0, 7) + '-01T00:00:00Z';},
-            display: function(x) {return x.substr(0, 7)},
             next: function(x) {
                 var m = parseInt(x.substr(5, 2));
                 if (m == 12) {
@@ -87,8 +87,8 @@ var groupings = {
             },
         },
         day: {
+            representation: function(x) {return x.toISOString().substr(0, 10)},
             truncate: function(x) {return x.substr(0, 10) + 'T00:00:00Z';},
-            display: function(x) {return x.substr(0, 10)},
             next: function(x) {
                 x = new Date(x);
                 x.setDate(x.getDate() + 1);
@@ -99,6 +99,7 @@ var groupings = {
     },
     numeric: {
         unit: {
+            representation: function(x) {return x.toString()},
             truncate: function(x) {return Math.round(x)},
             next: function(x) {return x+1;},
         },
@@ -329,7 +330,6 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     // initialization
     $scope.datasets = [{}];
     $scope.groupingKey = 'year';
-    $scope.grouping = groupings.datetime[$scope.groupingKey];
     $scope.options = {
         stacking: false
     };
@@ -344,13 +344,13 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {type: 'linear', type: 'numeric'},
+                y: {key: 'y', type: 'linear', type: 'numeric'},
             },
             tension: 1.0,
             lineMode: 'bundle',
             tooltip: {mode: 'scrubber', formatter: function(x, y, series) {
-                alert($scope.grouping.display(x))
-                return $scope.grouping.display(x) + ' → ' + y;
+                var grouping = groupings.datetime[$scope.groupingKey];
+                return grouping.representation(x) + ' → ' + y;
             }},
             drawLegend: false,
             drawDots: true,
@@ -407,8 +407,8 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             var results = dataset.results;
             angular.forEach(results, function(result, r){
                 var x = grouping.truncate(result[0]);
-                var y = result[1];
-                dataObject[x][datasetIndex] += parseFloat(y);
+                var y = parseFloat(result[1]);
+                dataObject[x][datasetIndex] += y;
             });
         });
         // Convert this object back to a sorted array
@@ -429,10 +429,10 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             }
             linearData.push(row);
         }
-        // Update the axis
-        $scope.graph.options.axes.y.min = yMin;
-        $scope.graph.options.axes.y.max = yMax;
-        $scope.graph.options.axes.y.ticks = Math.pow(10, Math.floor(Math.abs(Math.log10(yMax - yMin))));
+        // // Update the axis
+        // $scope.graph.options.axes.y.min = yMin;
+        // $scope.graph.options.axes.y.max = yMax;
+        // $scope.graph.options.axes.y.ticks = Math.pow(10, Math.floor(Math.abs(Math.log10(yMax - yMin))));
         // Finally, update the graph
         var series = [];
         for (var i=0, n=$scope.datasets.length; i<n; i++) {

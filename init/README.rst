@@ -139,4 +139,18 @@ Start the Django server
 -----------------------
 in bash to launch python env : /srv/gargantext_env/bin/activate
 In Pyvenv:
-python manage.py runserver
+$ python manage.py runserver
+
+
+For Production Server
+---------------------
+
+git checkout stable
+
+$ sudo aptitude install rabbitmq-server
+$ sudo aptitude install tmux
+# In your python envrionment:
+$ tmux -c ./manage.py celery worker --loglevel=info
+$ python manage.py runserver
+
+

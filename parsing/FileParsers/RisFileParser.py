@@ -36,6 +36,10 @@ class RisFileParser(FileParser):
                             #print(metadata)
                             try:
                                 #print("append")
+                                if 'language_fullname' not in metadata.keys():
+                                    if 'language_iso3' not in metadata.keys():
+                                        if 'language_iso2' not in metadata.keys():
+                                            metadata['language_iso2'] = 'en'
                                 metadata_list.append(metadata)
                                 metadata = {}
                                 #print("append succeeded")

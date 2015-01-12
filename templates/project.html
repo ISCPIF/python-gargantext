@@ -46,7 +46,7 @@
 								data-placement="bottom"
 								>Add a corpus</button>
 								<div id="popover-content" class="hide">
-
+								
 					<form id="uploadcorpusform" enctype="multipart/form-data" action="/project/{{project.id}}/" method="post">
 					    {% csrf_token %}
 							{{ form.non_field_errors }}
@@ -56,6 +56,7 @@
 							{{ formResource.as_p}}
 							<input type="submit" class="btn" value="Add this corpus" />
 					</form>
+
     </center>
 				</p>
 

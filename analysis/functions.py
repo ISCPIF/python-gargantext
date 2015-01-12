@@ -257,7 +257,7 @@ def tfidf(corpus, document, ngram):
         # result = tf * idf
         result = term_frequency * inverse_d_frequency
     except Exception as error:
-        print(error)
+        print(error, ngram)
         result = 0
     return result
 

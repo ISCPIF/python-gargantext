@@ -54,6 +54,9 @@ def create_whitelist(user, corpus, size=100):
             n.type_id = %d
         AND
         ngX.n >= 2
+        AND
+        ngX.n <= 3
+
 
         GROUP BY
             ngX.id

@@ -129,11 +129,38 @@ class Node(CTENode):
         return Resource.objects.select_related('node_resource').filter(node_resource__node = self)
 
     def add_resource(self, **kwargs):
+
+
+
+
+        print("printing arguments for add_resource():")
+        print(kwargs)
+
+
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        import os
+        thefile = kwargs["file"]
+        path = default_storage.save('tmp/somename.zip', ContentFile(thefile.read()))
+        tmp_file  = os.path.join(MEDIA_ROOT, path)
+        print(tmp_file)
+        kwargs["file"] = tmp_file
+        print("final kwargs:")
+        print(kwargs)
+
+
         # only for tests
         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
 
+
         #resource = Resource(**kwargs)
         resource.save()
+        print("printing rresource.file:")
+        print(resource.file)
+        # print("printing the resource 01____:")
+        # print(resource.file)
+        # print("printing the resource 02____: asdasdasd")
+
         # User
         if 'user' not in kwargs and 'user_id' not in kwargs:
             resource.user = self.user
@@ -170,6 +197,8 @@ class Node(CTENode):
                 'europress_french'  : EuropressFileParser,
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()
+            print("parse_resources:")
+            print(resource.file)
             metadata_list += parser.parse(str(resource.file))
         # retrieve info from the database
         type_id = NodeType.objects.get(name='Document').id

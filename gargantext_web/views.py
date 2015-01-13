@@ -218,7 +218,6 @@ def project(request, project_id):
         #form = CorpusForm(request.POST, request.FILES)
         #print(str(request.POST))
         name        = str(request.POST['name'])
-
         try:
             resource_type = ResourceType.objects.get(id=str(request.POST['type']))
         except Exception as error:
@@ -258,6 +257,8 @@ def project(request, project_id):
                         )
 
             corpus.save()
+
+            print(request.user, resource_type , file )
             print(corpus.language)
             corpus.add_resource(
                     user=request.user,

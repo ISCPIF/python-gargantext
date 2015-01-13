@@ -28,11 +28,12 @@ class EuropressFileParser(FileParser):
         if encoding != "utf-8":
             try:
                 contents = contents.decode("latin1", errors='replace').encode(codif)
-            except :
-                try:
-                    contents = contents.decode(encoding, errors='replace').encode(codif)
-                except Exception as error:
-                    print(error)
+            except Exception as error:
+                print(error)
+#                try:
+#                    contents = contents.decode(encoding, errors='replace').encode(codif)
+#                except Exception as error:
+#                    print(error)
 
         try:
             html_parser = etree.HTMLParser(encoding=codif)

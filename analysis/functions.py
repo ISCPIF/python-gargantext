@@ -54,6 +54,9 @@ def create_whitelist(user, corpus, size=100):
             n.type_id = %d
         AND
         ngX.n >= 2
+        AND
+        ngX.n <= 3
+
 
         GROUP BY
             ngX.id
@@ -254,7 +257,7 @@ def tfidf(corpus, document, ngram):
         # result = tf * idf
         result = term_frequency * inverse_d_frequency
     except Exception as error:
-        print(error)
+        print(error, ngram)
         result = 0
     return result
 

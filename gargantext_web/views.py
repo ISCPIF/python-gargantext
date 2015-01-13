@@ -341,41 +341,41 @@ def corpus(request, project_id, corpus_id):
 #    except:
 #        sources_donut = []
     # Do a javascript query/api for that
-    query_date = """
-        SELECT
-            id,
-            metadata -> 'publication_year' as year,
-            metadata -> 'publication_month' as month, 
-            metadata -> 'publication_day' as day,
-            metadata -> 'title'
-        FROM
-            node_node AS n
-        WHERE
-            n.parent_id = %d
-        ORDER BY
-            year, month, day DESC
-        LIMIT
-            20
-        OFFSET
-            %d
-    """ % (corpus.id, 0)
-    try:
-        cursor = connection.cursor()
-
-        cursor.execute(query_date)
-        documents = list()
-        while True:
-            document = dict()
-            row = cursor.fetchone()
-            
-            if row is None:
-                break
-            document['id']      = row[0]
-            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
-            document['title']   = row[4]
-            documents.append(document)
-    except Exception as error:
-        print(error)
+#    query_date = """
+#        SELECT
+#            id,
+#            metadata -> 'publication_year' as year,
+#            metadata -> 'publication_month' as month, 
+#            metadata -> 'publication_day' as day,
+#            metadata -> 'title'
+#        FROM
+#            node_node AS n
+#        WHERE
+#            n.parent_id = %d
+#        ORDER BY
+#            year, month, day DESC
+#        LIMIT
+#            20
+#        OFFSET
+#            %d
+#    """ % (corpus.id, 0)
+#    try:
+#        cursor = connection.cursor()
+#
+#        cursor.execute(query_date)
+#        documents = list()
+#        while True:
+#            document = dict()
+#            row = cursor.fetchone()
+#            
+#            if row is None:
+#                break
+#            document['id']      = row[0]
+#            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
+#            document['title']   = row[4]
+#            documents.append(document)
+#    except Exception as error:
+#        print(error)
 
     try:
         chart = dict()
@@ -390,7 +390,7 @@ def corpus(request, project_id, corpus_id):
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
-            'documents': documents,\
+#            'documents': documents,\
             'number' : number,\
             'dates' : chart,\
             }))

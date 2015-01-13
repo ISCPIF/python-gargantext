@@ -130,12 +130,8 @@ class Node(CTENode):
 
     def add_resource(self, **kwargs):
 
-
-
-
         print("printing arguments for add_resource():")
         print(kwargs)
-
 
         from django.core.files.storage import default_storage
         from django.core.files.base import ContentFile

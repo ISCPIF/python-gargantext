@@ -214,8 +214,6 @@ class NodesChildrenDuplicates(APIView):
         limit = int(request.GET.get('limit', 10))
         total = duplicates.count()
         # response building
-        for duplicate in duplicates[offset : offset+limit]:
-            print(duplicate)
         return JsonHttpResponse({
             'pagination': {
                 'offset': offset,

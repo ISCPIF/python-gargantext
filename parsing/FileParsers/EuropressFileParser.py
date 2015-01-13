@@ -70,18 +70,20 @@ class EuropressFileParser(FileParser):
                         
                         if isinstance(text, bytes):
                             text = text.decode(encoding)
-
                         format_date_fr = re.compile('\d*\s*\w+\s+\d{4}', re.UNICODE)
-                        test_date_fr = format_date_fr.match(text)
-                        
-                        format_date_en = re.compile('\w+\s+\d+,\s+\d{4}', re.UNICODE)
-                        test_date_en = format_date_en.match(text)
-
-                        format_sect = re.compile('(\D+),', re.UNICODE)
-                        test_sect = format_sect.match(text)
-                        
-                        format_page = re.compile(', p. (\w+)', re.UNICODE)
-                        test_page = format_page.match(text)
+                        if text is not None:
+                            test_date_fr = format_date_fr.match(text)
+                            format_date_en = re.compile('\w+\s+\d+,\s+\d{4}', re.UNICODE)
+                            test_date_en = format_date_en.match(text)
+                            format_sect = re.compile('(\D+),', re.UNICODE)
+                            test_sect = format_sect.match(text)
+                            format_page = re.compile(', p. (\w+)', re.UNICODE)
+                            test_page = format_page.match(text)
+                        else:
+                            test_date_fr = None
+                            test_date_en = None
+                            test_sect = None
+                            test_page = None
                         
                         if test_date_fr is not None:
                             self.localeEncoding = "fr_FR"

@@ -129,11 +129,34 @@ class Node(CTENode):
         return Resource.objects.select_related('node_resource').filter(node_resource__node = self)
 
     def add_resource(self, **kwargs):
+
+        print("printing arguments for add_resource():")
+        print(kwargs)
+
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        import os
+        thefile = kwargs["file"]
+        path = default_storage.save('tmp/somename.zip', ContentFile(thefile.read()))
+        tmp_file  = os.path.join(MEDIA_ROOT, path)
+        print(tmp_file)
+        kwargs["file"] = tmp_file
+        print("final kwargs:")
+        print(kwargs)
+
+
         # only for tests
         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
 
+
         #resource = Resource(**kwargs)
         resource.save()
+        print("printing rresource.file:")
+        print(resource.file)
+        # print("printing the resource 01____:")
+        # print(resource.file)
+        # print("printing the resource 02____: asdasdasd")
+
         # User
         if 'user' not in kwargs and 'user_id' not in kwargs:
             resource.user = self.user
@@ -170,6 +193,8 @@ class Node(CTENode):
                 'europress_french'  : EuropressFileParser,
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()
+            print("parse_resources:")
+            print(resource.file)
             metadata_list += parser.parse(str(resource.file))
         # retrieve info from the database
         type_id = NodeType.objects.get(name='Document').id
@@ -245,7 +270,7 @@ class Node(CTENode):
         print("In workflow() END")
 
 class Node_Metadata(models.Model):
-    node        = models.ForeignKey(Node)
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
     metadata    = models.ForeignKey(Metadata)
     value_int   = models.IntegerField(null=True, db_index=True)
     value_float = models.FloatField(null=True, db_index=True)
@@ -254,12 +279,12 @@ class Node_Metadata(models.Model):
     value_text  = models.TextField(null=True)
 
 class Node_Resource(models.Model):
-    node     = models.ForeignKey(Node, related_name='node_resource')
+    node     = models.ForeignKey(Node, related_name='node_resource', on_delete=models.CASCADE)
     resource = models.ForeignKey(Resource)
     parsed   = models.BooleanField(default=False)
             
 class Node_Ngram(models.Model):
-    node   = models.ForeignKey(Node)
+    node   = models.ForeignKey(Node, on_delete=models.CASCADE)
     ngram  = models.ForeignKey(Ngram)
     weight = models.FloatField()
     def __str__(self):
@@ -291,7 +316,7 @@ class Document(Node):
         proxy=True
 
 class NodeNgramNgram(models.Model):
-    node        = models.ForeignKey(Node)
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
     
     ngramx      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
     ngramy      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
@@ -303,8 +328,8 @@ class NodeNgramNgram(models.Model):
 
 
 class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex")
-    nodey        = models.ForeignKey(Node, related_name="nodey")
+    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
+    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
     
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 
@@ -314,8 +339,8 @@ class NodeNodeNgram(models.Model):
         return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
 class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex")
-    nodey        = models.ForeignKey(Node, related_name="nodey")
+    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
+    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
     
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 

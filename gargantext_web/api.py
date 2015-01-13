@@ -136,9 +136,8 @@ _ngrams_order_columns = {
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException as _APIException
 
-_APIException = APIException
 class APIException(_APIException):
     def __init__(self, message, code=500):
         self.status_code = code
@@ -165,6 +164,91 @@ def Root(request, format=None):
         'users': reverse('user-list', request=request, format=format),
         'snippets': reverse('snippet-list', request=request, format=format)
     })
+
+
+class NodesChildrenDuplicates(APIView):
+
+    def _fetch_duplicates(self, request, node_id, extra_columns=[], min_count=1):
+        # input validation
+        if 'keys' not in request.GET:
+            raise APIException('Missing GET parameter: "keys"', 400)
+        keys = request.GET['keys'].split(',')
+        # metadata retrieval
+        metadata_query = (Metadata
+            .query(Metadata)
+            .filter(Metadata.name.in_(keys))
+        )
+        # build query elements
+        columns = []
+        aliases = []
+        for metadata in metadata_query:
+            # aliases
+            _Metadata = aliased(Metadata)
+            _Node_Metadata = aliased(Node_Metadata)
+            aliases.append(_Node_Metadata)
+            # what shall we retrieve?
+            columns.append(
+                getattr(_Node_Metadata, 'value_' + metadata.type)
+            )
+        # build the query
+        groups = list(columns)
+        duplicates_query = (get_session()
+            .query(*(extra_columns + [func.count()] + columns))
+            .select_from(Node)
+        )
+        for _Node_Metadata, metadata in zip(aliases, metadata_query):
+            duplicates_query = duplicates_query.outerjoin(_Node_Metadata, _Node_Metadata.node_id == Node.id)
+            duplicates_query = duplicates_query.filter(_Node_Metadata.metadata_id == metadata.id)
+        duplicates_query = duplicates_query.filter(Node.parent_id == node_id)
+        duplicates_query = duplicates_query.group_by(*columns)
+        duplicates_query = duplicates_query.order_by(func.count().desc())
+        duplicates_query = duplicates_query.having(func.count() > min_count)
+        # and now, return it
+        return duplicates_query
+
+    def get(self, request, node_id):
+        # data to be returned
+        duplicates = self._fetch_duplicates(request, node_id)
+        # pagination
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 10))
+        total = duplicates.count()
+        # response building
+        return JsonHttpResponse({
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+            },
+            'data': [
+                {
+                    'count': duplicate[0],
+                    'values': duplicate[1:],
+                }
+                for duplicate in duplicates[offset : offset+limit]
+            ]
+        })
+
+    def delete(self, request, node_id):
+        session = get_session()
+        # get the minimum ID for each of the nodes sharing the same metadata
+        kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
+        kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
+        # delete the stuff
+        delete_query = (session
+            .query(Node)
+            .filter(Node.parent_id == node_id)
+            .filter(~Node.id.in_(kept_node_ids))
+        )
+        count = delete_query.count()
+        delete_query.delete(synchronize_session=False)
+        session.flush()
+        # return the result
+        return JsonHttpResponse({
+            'deleted': count,
+        })
+        # return duplicates_query
+
 
 
 class NodesChildrenMetatadata(APIView):
@@ -536,7 +620,20 @@ class Nodes(APIView):
             'metadata': dict(node.metadata),
         })
 
+    # deleting node by id
+    def delete(self, request, node_id):
+        session = get_session()
+        node = models.Node.objects.filter(id = node_id)
+        msgres = ""
+        try:
+            node.delete()
+            msgres = node_id+" deleted!"
+        except:
+            msgres ="error deleting: "+node_id
 
+        return JsonHttpResponse({
+            'deleted': msgres,
+        })
 
 class CorpusController:
 

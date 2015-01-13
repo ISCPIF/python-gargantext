@@ -222,13 +222,9 @@ function updateDocuments(pagenumber,pagenav) {
     }
     //else: "Read Documents" collapsible is open!, so do nothing 
 }
-$.ajax({
-    url: 'http://localhost:8000/api/nodes/44335',
-    type: 'DELETE',
-    success: function(result) {
-        console.log("Do something with the result");
-    }
-});
+
+
+
 var current_docs = {}
 var BIS_dict = {}
 var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes

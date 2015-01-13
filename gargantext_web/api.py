@@ -622,29 +622,20 @@ class Nodes(APIView):
             'metadata': dict(node.metadata),
         })
 
-
+    # deleting node by id
     def delete(self, request, node_id):
         session = get_session()
-        # get the minimum ID for each of the nodes sharing the same metadata
-        node = models.Node.objects.filter(id = node_id).first()
-        # delete the stuff
-        delete_query = (session
-            .query(Node)
-            .filter(Node.parent_id == node_id)
-        )
-        print("in Nodes.delete():")
-        print("node to delete: "+node_id)
-        print(delete_query)
-        print("--")
-        count = delete_query.count()
-        # delete_query.delete(synchronize_session=False)
-        # session.flush()
-        # # return the result
-        return JsonHttpResponse({
-            'deleted': count,
-        })
-        # return duplicates_query
+        node = models.Node.objects.filter(id = node_id)
+        msgres = ""
+        try:
+            node.delete()
+            msgres = node_id+" deleted!"
+        except:
+            msgres ="error deleting: "+node_id
 
+        return JsonHttpResponse({
+            'deleted': msgres,
+        })
 
 class CorpusController:
 

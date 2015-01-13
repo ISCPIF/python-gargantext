@@ -214,6 +214,8 @@ class NodesChildrenDuplicates(APIView):
         limit = int(request.GET.get('limit', 10))
         total = duplicates.count()
         # response building
+        for duplicate in duplicates[offset : offset+limit]:
+            print(duplicate)
         return JsonHttpResponse({
             'pagination': {
                 'offset': offset,
@@ -620,6 +622,28 @@ class Nodes(APIView):
             'metadata': dict(node.metadata),
         })
 
+
+    def delete(self, request, node_id):
+        session = get_session()
+        # get the minimum ID for each of the nodes sharing the same metadata
+        node = models.Node.objects.filter(id = node_id).first()
+        # delete the stuff
+        delete_query = (session
+            .query(Node)
+            .filter(Node.parent_id == node_id)
+        )
+        print("in Nodes.delete():")
+        print("node to delete: "+node_id)
+        print(delete_query)
+        print("--")
+        count = delete_query.count()
+        # delete_query.delete(synchronize_session=False)
+        # session.flush()
+        # # return the result
+        return JsonHttpResponse({
+            'deleted': count,
+        })
+        # return duplicates_query
 
 
 class CorpusController:

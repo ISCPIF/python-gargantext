@@ -21,9 +21,22 @@
 <ul>
 {% for doc in documents %}
     {% if doc.date %}
-    <li> <b>{{ doc.date }}</b>: <a target="_blank" href="/nodeinfo/{{doc.id}}">{{ doc.name}}</a> , @ {{ doc.metadata.source}}</li>
+    <li><div id="doc_{{doc.id}}"> <b>{{ doc.date }}</b>: <a target="_blank" href="/nodeinfo/{{doc.id}}">{{ doc.name}}</a> , @ {{ doc.metadata.source}}</div></li>
     {% endif %}
 {% endfor %}
 </ul>
 
+<script>
+current_docs = []
+{% for doc in documents %}
+    id = "doc_{{doc.id}}"
+    title = "{{doc.name}}"
+    if(BIS_dict[title]) {
+        var ahref = 'here goes the delete url'
+        var delimg = '<a><img width="20px" src="/static/img/delete-big.png"></img></a>'
+        $("#"+id).prepend( delimg )
+    }
+{% endfor %}
+
+</script>
 {% endif %}

@@ -54,7 +54,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
-    
+
     url(r'^api/project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpusJSON),
 
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),

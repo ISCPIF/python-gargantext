@@ -620,7 +620,20 @@ class Nodes(APIView):
             'metadata': dict(node.metadata),
         })
 
+    # deleting node by id
+    def delete(self, request, node_id):
+        session = get_session()
+        node = models.Node.objects.filter(id = node_id)
+        msgres = ""
+        try:
+            node.delete()
+            msgres = node_id+" deleted!"
+        except:
+            msgres ="error deleting: "+node_id
 
+        return JsonHttpResponse({
+            'deleted': msgres,
+        })
 
 class CorpusController:
 

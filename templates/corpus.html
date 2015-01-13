@@ -224,6 +224,23 @@ function updateDocuments(pagenumber,pagenav) {
 }
 
 
+
+var current_docs = {}
+var BIS_dict = {}
+var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
+var theurl = "http://localhost:8000/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
+$.ajax({
+  url: theurl,
+  success: function(data) {
+    bisarray = data.data
+    for(var i in bisarray) {
+        onebis = bisarray[i].values
+        BIS_dict[onebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
+    }
+    pr(BIS_dict)
+  }
+});
+
 // var gainOrLossChart = dc.pieChart("#gain-loss-chart");
 // var fluctuationChart = dc.barChart("#fluctuation-chart");
 // var quarterChart = dc.pieChart("#quarter-chart");

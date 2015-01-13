@@ -1,9 +1,5 @@
 
 
-{% if date %}
-<p>Today: {{date}}</p>
-{% endif %}
-
 <div class="pagination">
     <span class="step-links">
         {% if documents.has_previous %}
@@ -25,9 +21,56 @@
 <ul>
 {% for doc in documents %}
     {% if doc.date %}
-    <li> <b>{{ doc.date }}</b>: <a target="_blank" href="/nodeinfo/{{doc.id}}">{{ doc.name}}</a> , @ {{ doc.metadata.source}}</li>
+    <li><div id="doc_{{doc.id}}"> <b>{{ doc.date }}</b>: <a target="_blank" href="/nodeinfo/{{doc.id}}">{{ doc.name}}</a> , @ {{ doc.metadata.source}}</div></li>
     {% endif %}
 {% endfor %}
 </ul>
 
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+function deleteNode(node_id) {
+    $.ajax({
+        url: '/api/nodes/'+node_id,
+        type: 'DELETE',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+        success: function(result) {
+            console.log(result)
+            location.reload();
+        },
+        error: function(result) {
+            console.log("Data not found");
+            console.log(result)
+        }
+    });
+}
+current_docs = []
+{% for doc in documents %}
+    id = "doc_{{doc.id}}"
+    title = "{{doc.name}}"
+    if(BIS_dict[title]) {
+        var delimg = '<a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+')"><img width="20px" src="/static/img/delete-big.png"></img></a>'
+        $("#"+id).prepend( delimg )
+    }
+{% endfor %}
+
+</script>
 {% endif %}

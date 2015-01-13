@@ -389,7 +389,7 @@ def corpus(request, project_id, corpus_id):
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
-            'documents': documents,\
+#            'documents': documents,\
             'number' : number,\
             'dates' : chart,\
             }))

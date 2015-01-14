@@ -6,6 +6,7 @@
             <a style="cursor: pointer;" onclick="updateDocuments({{ documents.previous_page_number }},true);">previous</a>
         {% endif %}
 
+        <div id="currentpage" style="display: none;">{{ documents.number }}</div>
         <span class="current">
             <strong>Page {{ documents.number }}</strong> of {{ documents.paginator.num_pages }}.
         </span>
@@ -45,7 +46,7 @@ function getCookie(name) {
 }
 
 
-function deleteNode(node_id) {
+function deleteNode(node_id,title) {
     $.ajax({
         url: '/api/nodes/'+node_id,
         type: 'DELETE',
@@ -54,7 +55,19 @@ function deleteNode(node_id) {
         },
         success: function(result) {
             console.log(result)
-            location.reload();
+            var currentpage = $("#currentpage").html()
+            console.log("vaciando div de subcorpus")
+            $("#divsubcorpus").html("")
+            console.log("before:")
+            console.log(BIS_dict[title])
+            BIS_dict[title][0]--;
+            BIS_dict[title][1]++;
+            console.log("after:")
+            console.log(BIS_dict[title])
+            // updateDocuments( currentpage , true );
+            console.log("after delete:     updateDocuments( "+currentpage+" , true )")
+            updateDocuments( currentpage , true )
+
         },
         error: function(result) {
             console.log("Data not found");
@@ -62,13 +75,12 @@ function deleteNode(node_id) {
         }
     });
 }
-current_docs = []
 {% for doc in documents %}
     id = "doc_{{doc.id}}"
     title = "{{doc.name}}"
-    if(BIS_dict[title]) {
-        var delimg = '<a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+')"><img width="20px" src="/static/img/delete-big.png"></img></a>'
-        $("#"+id).prepend( delimg )
+    if(BIS_dict[title] && BIS_dict[title][0] > BIS_dict[title][1]) {
+        var del_img = '<span id="delete_{{doc.id}}"><a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+',\''+title+'\')"><img width="20px" src="/static/img/delete-big.png"></img></a><span>'
+        $("#"+id).prepend( del_img )
     }
 {% endfor %}
 

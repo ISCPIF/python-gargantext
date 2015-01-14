@@ -3,15 +3,15 @@
 <div class="pagination">
     <span class="step-links">
         {% if documents.has_previous %}
-            <a onclick="updateDocuments({{ documents.previous_page_number }},true);">previous</a>
+            <a style="cursor: pointer;" onclick="updateDocuments({{ documents.previous_page_number }},true);">previous</a>
         {% endif %}
 
         <span class="current">
-            Page {{ documents.number }} of {{ documents.paginator.num_pages }}.
+            <strong>Page {{ documents.number }}</strong> of {{ documents.paginator.num_pages }}.
         </span>
 
         {% if documents.has_next %}
-            <a onclick="updateDocuments({{ documents.next_page_number }},true);">next</a>
+            <a style="cursor: pointer;" onclick="updateDocuments({{ documents.next_page_number }},true);">next</a>
         {% endif %}
     </span>
 </div>

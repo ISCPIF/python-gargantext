@@ -13,13 +13,14 @@ from ..NgramsExtractors import *
 class EuropressFileParser(FileParser):
   
     def _parse(self, file):
+
         localeEncoding = "fr_FR"
         codif      = "UTF-8"
         count = 0
 
         if isinstance(file, str):
             file = open(file, 'rb')
-        #print(file)
+        # print(file)
         contents = file.read()
         #print(len(contents))
         #return []
@@ -174,11 +175,14 @@ class EuropressFileParser(FileParser):
                     metadata['publication_month'] = metadata['publication_date'].strftime('%m')
                     metadata['publication_day']  = metadata['publication_date'].strftime('%d')
                     metadata['publication_date'] = ""
+                    
+                    if len(metadata['text'])>0: 
+                        metadata['doi'] = str(metadata['text'][-9])
+                        metadata['text'].pop()
+                        metadata['text'] = str(' '.join(metadata['text']))
+                        metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
 
-                    metadata['object_id'] = str(metadata['text'][-9])
-                    metadata['text'].pop()
-                    metadata['text'] = str(' '.join(metadata['text']))
-                    metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
+                    else: metadata['doi'] = "not found"
 
                     metadata['bdd']  = u'europresse'
                     metadata['url']  = u''

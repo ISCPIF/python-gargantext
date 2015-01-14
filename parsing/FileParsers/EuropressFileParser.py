@@ -101,7 +101,9 @@ class EuropressFileParser(FileParser):
                                     metadata['publication_date'] = datetime.strptime(text, '%B %Y')
                                 except :
                                     try:
-                                        metadata['publication_date'] = dateutil.parser.parse(text)
+                                        locale.setlocale(locale.LC_ALL, "fr_FR")
+                                        metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
+                                        # metadata['publication_date'] = dateutil.parser.parse(text)
                                     except Exception as error:
                                         print(error)
                                         print(text)

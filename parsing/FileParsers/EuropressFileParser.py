@@ -94,6 +94,8 @@ class EuropressFileParser(FileParser):
                             test_sect = None
                             test_page = None
                         
+                        
+                        
                         if test_date_fr is not None:
                             self.localeEncoding = "fr_FR"
                             locale.setlocale(locale.LC_ALL, localeEncoding)
@@ -101,7 +103,6 @@ class EuropressFileParser(FileParser):
                                 text = text.replace('י', 'é')
                                 text = text.replace('ű', 'û')
                                 text = text.replace(' aot ', ' août ')
-
 
                             try :
                                 metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
@@ -117,6 +118,8 @@ class EuropressFileParser(FileParser):
                                         print(error)
                                         print(text)
                                         pass
+                        
+                        
                         
                         if test_date_en is not None:
                             localeEncoding = "en_GB.UTF-8"

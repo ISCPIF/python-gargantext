@@ -66,33 +66,7 @@ function deleteNode(node_id,title) {
             console.log(BIS_dict[title])
             // updateDocuments( currentpage , true );
             console.log("after delete:     updateDocuments( "+currentpage+" , true )")
-            $.when(  updateDocuments( currentpage , true )  ).done(function(a1) {
-                console.log("inside the wheeeeen")
-                console.log(BIS_dict[title])
-                if(BIS_dict[title][0] == BIS_dict[title][1]) {
-
-                    $.doTimeout( 1000, function(){
-                        var elems = current_docs[title]
-                        for (var i in elems ) {
-                            var id = elems[i]
-                            console.log("deleting icons for :"+"#delete_"+id)
-                            $("#delete_"+id).remove();  
-                        }
-                    });
-                }
-                // // // if(BIS_dict[title][0] == BIS_dict[title][1])
-                // // //     $("#delete_"+node_id).remove();         
-                // // current_docs = []
-                // {% for doc in documents %}
-                //     id = "doc_{{doc.id}}"
-                //     title = "{{doc.name}}"
-                //     console.log(BIS_dict[title])
-                //     if(BIS_dict[title] && BIS_dict[title][0] > BIS_dict[title][1]) {
-                //         var del_img = '<span id="delete_{{doc.id}}"><a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+',\''+title+'\')"><img width="20px" src="/static/img/delete-big.png"></img></a><span>'
-                //         $("#"+id).prepend( del_img )
-                //     }
-                // {% endfor %}
-            });
+            updateDocuments( currentpage , true )
 
         },
         error: function(result) {
@@ -101,15 +75,12 @@ function deleteNode(node_id,title) {
         }
     });
 }
-current_docs = {}
 {% for doc in documents %}
     id = "doc_{{doc.id}}"
     title = "{{doc.name}}"
-    if(BIS_dict[title]) {
+    if(BIS_dict[title] && BIS_dict[title][0] > BIS_dict[title][1]) {
         var del_img = '<span id="delete_{{doc.id}}"><a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+',\''+title+'\')"><img width="20px" src="/static/img/delete-big.png"></img></a><span>'
         $("#"+id).prepend( del_img )
-        if(!current_docs[title]) current_docs[title] = []
-        current_docs[title].push("{{doc.id}}")
     }
 {% endfor %}
 

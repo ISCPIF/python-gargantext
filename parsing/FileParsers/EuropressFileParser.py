@@ -13,13 +13,14 @@ from ..NgramsExtractors import *
 class EuropressFileParser(FileParser):
   
     def _parse(self, file):
+
         localeEncoding = "fr_FR"
         codif      = "UTF-8"
         count = 0
 
         if isinstance(file, str):
             file = open(file, 'rb')
-        #print(file)
+        # print(file)
         contents = file.read()
         #print(len(contents))
         #return []
@@ -38,7 +39,15 @@ class EuropressFileParser(FileParser):
         try:
             html_parser = etree.HTMLParser(encoding=codif)
             html = etree.fromstring(contents, html_parser)
-            html_articles = html.xpath('/html/body/table')
+            
+            try:
+                html_articles = html.xpath('/html/body/table/tbody')
+                if len(html_articles) < 1:
+                    html_articles = html.xpath('/html/body/table')
+            except Exception as error:
+                print(error)
+            
+
         except:
             return []
 
@@ -85,6 +94,8 @@ class EuropressFileParser(FileParser):
                             test_sect = None
                             test_page = None
                         
+                        
+                        
                         if test_date_fr is not None:
                             self.localeEncoding = "fr_FR"
                             locale.setlocale(locale.LC_ALL, localeEncoding)
@@ -93,7 +104,6 @@ class EuropressFileParser(FileParser):
                                 text = text.replace('ű', 'û')
                                 text = text.replace(' aot ', ' août ')
 
-
                             try :
                                 metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                             except :
@@ -101,11 +111,15 @@ class EuropressFileParser(FileParser):
                                     metadata['publication_date'] = datetime.strptime(text, '%B %Y')
                                 except :
                                     try:
-                                        metadata['publication_date'] = dateutil.parser.parse(text)
+                                        locale.setlocale(locale.LC_ALL, "fr_FR")
+                                        metadata['publication_date'] = datetime.strptime(text, '%d %B %Y')
+                                        # metadata['publication_date'] = dateutil.parser.parse(text)
                                     except Exception as error:
                                         print(error)
                                         print(text)
                                         pass
+                        
+                        
                         
                         if test_date_en is not None:
                             localeEncoding = "en_GB.UTF-8"
@@ -172,11 +186,14 @@ class EuropressFileParser(FileParser):
                     metadata['publication_month'] = metadata['publication_date'].strftime('%m')
                     metadata['publication_day']  = metadata['publication_date'].strftime('%d')
                     metadata['publication_date'] = ""
+                    
+                    if len(metadata['text'])>0: 
+                        metadata['doi'] = str(metadata['text'][-9])
+                        metadata['text'].pop()
+                        metadata['text'] = str(' '.join(metadata['text']))
+                        metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
 
-                    metadata['object_id'] = str(metadata['text'][-9])
-                    metadata['text'].pop()
-                    metadata['text'] = str(' '.join(metadata['text']))
-                    metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
+                    else: metadata['doi'] = "not found"
 
                     metadata['bdd']  = u'europresse'
                     metadata['url']  = u''

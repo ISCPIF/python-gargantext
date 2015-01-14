@@ -130,19 +130,19 @@ class Node(CTENode):
 
     def add_resource(self, **kwargs):
 
-        print("printing arguments for add_resource():")
-        print(kwargs)
+        # print("printing arguments for add_resource():")
+        # print(kwargs)
 
-        from django.core.files.storage import default_storage
-        from django.core.files.base import ContentFile
-        import os
-        thefile = kwargs["file"]
-        path = default_storage.save('tmp/somename.zip', ContentFile(thefile.read()))
-        tmp_file  = os.path.join(MEDIA_ROOT, path)
-        print(tmp_file)
-        kwargs["file"] = tmp_file
-        print("final kwargs:")
-        print(kwargs)
+        # from django.core.files.storage import default_storage
+        # from django.core.files.base import ContentFile
+        # import os
+        # thefile = kwargs["file"]
+        # path = default_storage.save('tmp/somename.zip', ContentFile(thefile.read()))
+        # tmp_file  = os.path.join(MEDIA_ROOT, path)
+        # print(tmp_file)
+        # kwargs["file"] = tmp_file
+        # print("final kwargs:")
+        # print(kwargs)
 
 
         # only for tests

@@ -197,6 +197,7 @@ function updateDocuments(pagenumber,pagenav) {
               success: function(data) {
                 // console.log(data)
                 $('#subcorpusdiv').html(data);
+                return true;
               }
             });
         } 
@@ -235,8 +236,8 @@ $.ajax({
   success: function(data) {
     bisarray = data.data
     for(var i in bisarray) {
-        onebis = bisarray[i].values
-        BIS_dict[onebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
+        untitlebis = bisarray[i].values
+        BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
     }
     pr(BIS_dict)
   }
@@ -386,5 +387,6 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
 
 </script>
 
+<script type="text/javascript" src="{% static "js/jquery/jquery.ba-dotimeout.min.js"%}"></script>
 
 {% endblock %}

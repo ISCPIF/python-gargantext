@@ -39,7 +39,15 @@ class EuropressFileParser(FileParser):
         try:
             html_parser = etree.HTMLParser(encoding=codif)
             html = etree.fromstring(contents, html_parser)
-            html_articles = html.xpath('/html/body/table')
+            
+            try:
+                html_articles = html.xpath('/html/body/table/tbody')
+                if len(html_articles) < 1:
+                    html_articles = html.xpath('/html/body/table')
+            except Exception as error:
+                print(error)
+            
+
         except:
             return []
 

@@ -12,10 +12,11 @@ def notify_user(username, email, password):
     Votre login est: %s
     Votre mot de passe est : %s
 
-    Je reste à votre disposition pour tout complément d'information.
+    Nous restons votre disposition pour tout complément d'information.
     Cordialement
     --
-        Alexandre Delanoë
+        L'équipe de Gargantext (CNRS)
+(Pour l'école des Mines, contactez Alexandre Delanoë)
 
     ''' % (username, password)
 

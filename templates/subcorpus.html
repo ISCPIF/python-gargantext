@@ -46,7 +46,7 @@ function getCookie(name) {
 }
 
 
-function deleteNode(node_id,title) {
+function deleteNode(node_id) {
     $.ajax({
         url: '/api/nodes/'+node_id,
         type: 'DELETE',
@@ -54,6 +54,9 @@ function deleteNode(node_id,title) {
             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },
         success: function(result) {
+            console.log("deleting: ")
+            console.log(current_docs[node_id])
+            var title = current_docs[node_id]
             console.log(result)
             var currentpage = $("#currentpage").html()
             console.log("vaciando div de subcorpus")
@@ -67,6 +70,33 @@ function deleteNode(node_id,title) {
             // updateDocuments( currentpage , true );
             console.log("after delete:     updateDocuments( "+currentpage+" , true )")
             updateDocuments( currentpage , true )
+            // $.when(  updateDocuments( currentpage , true )  ).done(function(a1) {
+            //     console.log("inside the wheeeeen")
+            //     console.log(BIS_dict[title])
+            //     if(BIS_dict[title][0] == BIS_dict[title][1]) {
+
+            //         $.doTimeout( 1000, function(){
+            //             var elems = current_docs[title]
+            //             for (var i in elems ) {
+            //                 var id = elems[i]
+            //                 console.log("deleting icons for :"+"#delete_"+id)
+            //                 $("#delete_"+id).remove();  
+            //             }
+            //         });
+            //     }
+            //     // // // if(BIS_dict[title][0] == BIS_dict[title][1])
+            //     // // //     $("#delete_"+node_id).remove();         
+            //     // // current_docs = []
+            //     // {% for doc in documents %}
+            //     //     id = "doc_{{doc.id}}"
+            //     //     title = "{{doc.name}}"
+            //     //     console.log(BIS_dict[title])
+            //     //     if(BIS_dict[title] && BIS_dict[title][0] > BIS_dict[title][1]) {
+            //     //         var del_img = '<span id="delete_{{doc.id}}"><a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+',\''+title+'\')"><img width="20px" src="/static/img/delete-big.png"></img></a><span>'
+            //     //         $("#"+id).prepend( del_img )
+            //     //     }
+            //     // {% endfor %}
+            // });
 
         },
         error: function(result) {
@@ -75,11 +105,19 @@ function deleteNode(node_id,title) {
         }
     });
 }
+
+
+
+//'+"{{doc.id}}"+',\"'+title+'\"
+
+current_docs = {}
 {% for doc in documents %}
     id = "doc_{{doc.id}}"
-    title = "{{doc.name}}"
+    title = $("<div/>").html("{{doc.name}}").text()
+    current_docs["{{doc.id}}"] = title;
     if(BIS_dict[title] && BIS_dict[title][0] > BIS_dict[title][1]) {
-        var del_img = '<span id="delete_{{doc.id}}"><a title="Delete this document!" style="cursor: pointer;" onclick="deleteNode('+"{{doc.id}}"+',\''+title+'\')"><img width="20px" src="/static/img/delete-big.png"></img></a><span>'
+        jspart = 'onclick= "deleteNode( {{doc.id}} );"'
+        var del_img = '<a title="Delete this document!" style="cursor: pointer;" '+jspart+'><img width="20px" src="/static/img/delete-big.png"></img></a>'
         $("#"+id).prepend( del_img )
     }
 {% endfor %}

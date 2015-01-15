@@ -427,7 +427,7 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     type_document = NodeType.objects.get(name="Document")
     # retrieving all the documents
     # documents  = corpus.children.all()
-    documents  = corpus.objects.filter(parent_id=corpus_id , type = type_document )
+    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
     number = len(documents)
 
     filtered_docs = []
@@ -496,7 +496,7 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     type_document = NodeType.objects.get(name="Document")
     # retrieving all the documents
     # documents  = corpus.children.all()
-    documents  = corpus.objects.filter(parent_id=corpus_id , type = type_document )
+    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
     number = len(documents)
 
     filtered_docs = []

@@ -171,7 +171,7 @@ function dateToInt(todayTime) {
 
 // I've clicked "Read Documents":
 function updateDocuments(pagenumber,pagenav) {
-    
+
     pagenav = (pagenav)?pagenav:true;
     pagenumber = (pagenumber)?pagenumber:1;
     pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
@@ -229,7 +229,7 @@ function updateDocuments(pagenumber,pagenav) {
 var current_docs = {}
 var BIS_dict = {}
 var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
-var theurl = "http://localhost:8000/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
+var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
 $.ajax({
   url: theurl,
   success: function(data) {

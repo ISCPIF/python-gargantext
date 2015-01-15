@@ -424,10 +424,11 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     
     project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
-    
+    type_document = NodeType.objects.get(name="Document")
     # retrieving all the documents
-    documents  = corpus.children.all()
-    number = corpus.children.count()
+    # documents  = corpus.children.all()
+    documents  = corpus.objects.filter(parent_id=corpus_id , type = type_document )
+    number = len(documents)
 
     filtered_docs = []
     # filtering documents by range-date

@@ -4,22 +4,24 @@ from django.core.mail import send_mail
 def notify_user(username, email, password):
     message = '''
     Bonjour,
-    voici votre compte.
-    Veuillez vous connecter à
+    votre compte vient d'être créé.
+
+    Vous pouvez désormais vous connecter ici:
     http://beta.gargantext.org
 
-    Votre login: %s
-    Votre mot de passe : %s
+    Votre login est: %s
+    Votre mot de passe est : %s
 
-    Je reste à votre disposition pour tout complément d'information.
+    Nous restons votre disposition pour tout complément d'information.
     Cordialement
     --
-        Alexandre Delanoë
+        L'équipe de Gargantext (CNRS)
+(Pour l'école des Mines, contactez Alexandre Delanoë)
 
     ''' % (username, password)
 
     #send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
-    send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre+gargantext@delanoe.org'] )
+    send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre@delanoe.org'] )
     # add option for mass sending email
 
 def create_user(username, email, password=None, active=False, notify=True):

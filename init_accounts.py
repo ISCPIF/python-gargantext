@@ -54,7 +54,7 @@ def active_user(username, active=True):
     user.save()
 
 def mines_account_creation(fichier=None):
-    if file is None:
+    if fichier is None:
         fichier = "/home/alexandre/projets/forccast/Tutorat/2014-2015/comptes_gargantext.txt"
     accounts = open(fichier, "r")
     for line in accounts.readlines():

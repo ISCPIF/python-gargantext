@@ -59,7 +59,7 @@ def mines_account_creation(fichier=None):
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password = line.split(',')
-        create_user(username, email, password=password, notify=True)
-        #delete_user(username)
-    fichier.close()
+        #create_user(username, email, password=password, notify=True)
+        delete_user(username)
+    accounts.close()
 

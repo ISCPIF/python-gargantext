@@ -7,7 +7,7 @@ def notify_user(username, email, password):
     votre compte vient d'être créé.
 
     Vous pouvez désormais vous connecter ici:
-    http://beta.gargantext.org
+    http://mines.gargantext.org
 
     Votre login est: %s
     Votre mot de passe est : %s
@@ -16,7 +16,6 @@ def notify_user(username, email, password):
     Cordialement
     --
         L'équipe de Gargantext (CNRS)
-(Pour l'école des Mines, contactez Alexandre Delanoë)
 
     ''' % (username, password)
 

@@ -20,8 +20,10 @@ def notify_user(username, email, password):
 
     ''' % (username, password)
 
-    #send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
-    send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre@delanoe.org'] )
+    send_mail('[Gargantext] Création de votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
+    #send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre@delanoe.org'] )
+
+
     # add option for mass sending email
 
 def create_user(username, email, password=None, active=False, notify=True):
@@ -58,7 +60,7 @@ def mines_account_creation(fichier=None):
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password = line.split(',')
-        #create_user(username, email, password=password, notify=True)
-        delete_user(username)
+        create_user(username, email, password=password, notify=True)
+        #delete_user(username)
     fichier.close()
 

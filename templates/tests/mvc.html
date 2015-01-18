@@ -237,22 +237,10 @@
                             <li ng-repeat="filter in filters">
                                 <button ng-click="removeFilter($index)" title="remove this filter">x</button>
                                 <span>...where the </span>
-                                <select ng-model="filter.entity">
-                                    <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-                                </select>
-                                <span ng-if="filter.entity">
-                                    <select ng-model="filter.column">
-                                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
-                                    </select>
-                                    <span ng-if="filter.column" ng-repeat="column in entities[filter.entity]">
-                                        <span ng-if="column.key == filter.column">
-                                            <select ng-model="filter.operator">
-                                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
-                                            </select>
-                                            <input type="text" ng-model="filter.value" ng-change="updateQuery()">
-                                        </span>
-                                    </span>
-                                </span>
+                                <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
+                                <select ng-if="filter.entity" ng-model="filter.column" ng-options="column as column.key for column in filter.entity.columns | orderBy:'key'"></select>
+                                <select ng-if="filter.column" ng-model="filter.operator" ng-options="operator.key as operator.label for operator in operators[filter.column.type]"></select>
+                                <input ng-if="filter.operator" type="text" ng-model="filter.value" ng-change="updateQuery()">
                             </li>
                         </ul>
                         <button ng-click="addFilter()">Add a filter...</button>

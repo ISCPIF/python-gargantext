@@ -272,13 +272,19 @@ gargantext.controller("DatasetController", function($scope, $http) {
         $scope.entities = undefined;
         $scope.filters = [];
         $http.get(url, {cache: true}).success(function(response){
-            $scope.entities = {
-                metadata: response.data,
-                ngrams: [
-                    {key:'terms', type:'string'},
-                    {key:'terms count', type:'integer'}
-                ]
-            };
+            $scope.entities = [
+                {
+                    key: 'metadata',
+                    columns: response.data
+                },
+                {
+                    key: 'ngrams',
+                    columns: [
+                        {key:'terms', type:'string'},
+                        {key:'terms count', type:'integer'}
+                    ],
+                }
+            ];
         });
         $scope.updateQuery();
     };
@@ -309,7 +315,7 @@ gargantext.controller("DatasetController", function($scope, $http) {
                     }
                 }
                 filters.push({
-                    field: filter.entity + '.' + filter.column,
+                    field: filter.entity.key + '.' + filter.column.key,
                     operator: filter.operator,
                     value: filter.value
                 });

@@ -1,0 +1,15 @@
+<html>
+<body>
+
+<form action="/formexample/" enctype="multipart/form-data" method="post">
+	{% csrf_token %}
+    {{ form }}
+    <input type="submit" value="OK">
+</form>
+
+{% if msg  %}
+<p>Response: {{msg}}</p>
+{% endif %}
+
+</body>
+</html>

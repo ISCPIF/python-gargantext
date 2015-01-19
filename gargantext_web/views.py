@@ -9,7 +9,7 @@ from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
-from node.admin import CorpusForm, ProjectForm, ResourceForm
+from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
 
 from django.contrib.auth.models import User
 
@@ -149,6 +149,44 @@ def projects(request):
         'number': number,
         'projects': projects
         })
+
+# def formexample(request):
+#     print("my first form")
+#     return render(request, 'formexample.html', {"bar":"foo"} )
+
+
+
+# for formexample.html
+def handle_uploaded_file(f):
+    with open('somefilename', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+# for formexample.html
+def formexample(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CustomForm(request.POST, request.FILES)#NameForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            name = form.cleaned_data['name']
+            thefile = form.cleaned_data['file']
+            handle_uploaded_file(request.FILES['file'])
+
+            return render(request, "tests/formexample.html" , {'form':form , 'msg':("form received! "+name)})
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = CustomForm()
+
+    return render(request, 'tests/formexample.html', {'form': form} )
+
+
+
 
 def project(request, project_id):
     '''

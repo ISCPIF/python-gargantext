@@ -172,12 +172,15 @@ class NodesChildrenNgrams(APIView):
         # query ngrams
         ParentNode = aliased(Node)
         ngrams_query = (Ngram
-            .query(Ngram.id, Ngram.terms, func.count().label('count'))
+            .query(Ngram.terms, func.count().label('count'))
+            # .query(Ngram.id, Ngram.terms, func.count().label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)
             .filter(Node.parent_id == node_id)
-            .group_by(Ngram)
-            .order_by(func.count().desc())
+            .group_by(Ngram.terms)
+            # .group_by(Ngram)
+            .order_by(func.count().desc(), Ngram.terms)
+            # .order_by(func.count().desc(), Ngram.id)
         )
         # filters
         if 'startwith' in request.GET:
@@ -197,7 +200,7 @@ class NodesChildrenNgrams(APIView):
             },
             'data': [
                 {
-                    'id': ngram.id,
+                    # 'id': ngram.id,
                     'terms': ngram.terms,
                     'count': ngram.count,
                 }

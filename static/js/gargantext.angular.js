@@ -108,7 +108,7 @@ var groupings = {
 
 
 // Define the application
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies']);
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies', 'ngTagsInput']);
 
 
 // Customize the application's scope
@@ -314,11 +314,23 @@ gargantext.controller("DatasetController", function($scope, $http) {
                         continue;
                     }
                 }
-                filters.push({
-                    field: filter.entity.key + '.' + filter.column.key,
-                    operator: filter.operator,
-                    value: filter.value
-                });
+                if (filter.entity.key == 'ngrams') {
+                    var termsList = [];
+                    angular.forEach(filter.value, function(ngram) {
+                        termsList.push(ngram.terms);
+                    });
+                    filters.push({
+                        field: 'ngrams.terms',
+                        operator: 'in',
+                        value: termsList
+                    });
+                } else {
+                    filters.push({
+                        field: filter.entity.key + '.' + filter.column.key,
+                        operator: filter.operator,
+                        value: filter.value
+                    });
+                }
             }
             // event firing to parent(s)
             $scope.$emit('updateDataset', {
@@ -362,6 +374,18 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             drawDots: true,
             columnsHGap: 5
         }
+    };
+    // query ngrams
+    $scope.getNgrams = function(query) {
+        var appendTransform = function(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+        return $http.get('/api/nodes/26128/children/ngrams?limit=10&contain=' + encodeURI(query), {
+            transformResponse: appendTransform($http.defaults.transformResponse, function(value) {
+                return value.data;
+            })
+        });
     };
     // add a dataset
     $scope.addDataset = function() {

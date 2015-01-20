@@ -1,0 +1,70 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+
+<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+				<h1>About Gargantext</h1>
+		</div>
+
+{% if team %}
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+										<h2>The Team</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<div class="row">
+												<div class="thumbnails">
+												{% for member in team %}
+												<div class="col-md-4">
+														<div class="thumbnail">
+															{% if member.picture %}
+																<img src="{% static "img/team/"%}{{ member.picture }}" style="100px; height:150px">
+															{% endif %}
+																		<div class="caption">
+																				<h3>{{ member.first_name }} {{member.last_name }}</h3>
+																				{% if member.role %}
+																						<p class="description">{{ member.role }}</p>
+																				{% endif %}
+																				
+																				{% if member.mail %}
+																					<a href="mailto:{{ member.mail }}" class="btn btn-primary btn-xs">Mail</a>
+																				{% endif %}
+																						
+																				{% if member.website %}
+																					<a href="{{ member.website }}" class="btn btn-primary btn-xs">Website</a>
+																				{% endif %}
+																		</div>
+														</div>
+												</div>
+												{% endfor %}
+										</div>
+								</div>
+						</div>
+				</div>
+		</div>
+</div>
+{% endif %}
+
+
+</div>
+
+{% endblock %}

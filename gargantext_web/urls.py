@@ -53,6 +53,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
+    # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
 

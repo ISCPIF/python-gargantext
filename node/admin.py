@@ -95,14 +95,20 @@ class ResourceForm(ModelForm):
 
 # for formexample.html
 from django import forms
+
 from django.utils.translation import ugettext_lazy as _
 class CustomForm(forms.Form):
-    name = forms.CharField( label='Your name', max_length=5 )
+    name = forms.CharField( label='Your name', max_length=5 , required=True)
+    parsing_options = ResourceType.objects.all().values_list('id', 'name')
+    type = forms.IntegerField( widget=forms.Select( choices= parsing_options) , required=True )
     file = forms.FileField()
+
+
+
     # Description: clean_file()
     """
-        * file_.content_type - list containing allowed content_types. Example: ['application/pdf', 'image/jpeg']
-        * len(file_) - a number indicating the maximum file size allowed for upload.
+        * file_.content_type - Example: ['application/pdf', 'image/jpeg']
+        * len(file_) - file size.
             2.5MB - 2621440
             5MB - 5242880
             10MB - 10485760
@@ -114,19 +120,19 @@ class CustomForm(forms.Form):
     """
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
-
         #Filename length
         if len(file_.name)>30:
-            raise forms.ValidationError(_('Come on dude, name too long.'))
-        
+            from datetime import datetime
+            file_.name = str(datetime.now().microsecond)
+            # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
         #File size
         if len(file_)>104857600:
             raise forms.ValidationError(_('File to heavy! (<100MB svp mec).'))
-
         ## File type:
         # if file_.content_type == "application/zip":
         #     raise forms.ValidationError(_('We need a zip pls.'))
-        return self.cleaned_data.get('file', '')
+        return file_
+
 
 
 class CorpusForm(ModelForm):

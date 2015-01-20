@@ -183,22 +183,14 @@ def handle_uploaded_file(f):
 
 # for formexample.html
 def formexample(request):
-    # if this is a POST request we need to process the form data
+
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
         form = CustomForm(request.POST, request.FILES)#NameForm(request.POST)
-        # check whether it's valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
             handle_uploaded_file(request.FILES['file'])
-
             return render(request, "tests/formexample.html" , {'form':form , 'msg':("form received! "+name)})
-
-    # if a GET (or any other method) we'll create a blank form
     else:
         form = CustomForm()
 
@@ -272,81 +264,172 @@ def project(request, project_id):
 
 
     if request.method == 'POST':
-        #form = CorpusForm(request.POST, request.FILES)
-        #print(str(request.POST))
-        name        = str(request.POST['name'])
-        try:
-            resource_type = ResourceType.objects.get(id=str(request.POST['type']))
-        except Exception as error:
-            print(error)
-            resource_type = None
-        
-        try:
-            file = request.FILES['file']
-        except Exception as error:
-            print(error)
-            file = None
+        print("original file:")
+        print(request.FILES)
 
-        #if name != "" and resource_type is not None and file is not None:
-        try:
-            parent      = Node.objects.get(id=project_id)
-            node_type   = NodeType.objects.get(name='Corpus')
+        form = CustomForm(request.POST, request.FILES)
+        if form.is_valid():
+
+
+            name = form.cleaned_data['name']
+            thefile = form.cleaned_data['file']
+            resource_type = ResourceType.objects.get(id=str( form.cleaned_data['type'] ))
+
+            print("-------------")
+            print(name,"|",resource_type,"|",thefile)
+            print("-------------")
             
-            if resource_type.name == "europress_french":
-                language    = Language.objects.get(iso2='fr')
-            elif resource_type.name == "europress_english":
-                language    = Language.objects.get(iso2='en')
-            
-            try:
-                corpus = Node(
-                        user=request.user,
-                        parent=parent,
-                        type=node_type,
-                        language=language,
-                        name=name,
-                        )
-            except:
-                corpus = Node(
-                        user=request.user,
-                        parent=parent,
-                        type=node_type,
-                        name=name,
-                        )
-
-            corpus.save()
-
-            print(request.user, resource_type , file )
-            print(corpus.language)
-            corpus.add_resource(
-                    user=request.user,
-                    type=resource_type,
-                    file=file
-                    )
+            print("new file:")
+            print(thefile)
 
             try:
-                #corpus.parse_and_extract_ngrams()
-                #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
-                if DEBUG is True:
-                    corpus.workflow()
-                else:
-                    corpus.workflow.apply_async((), countdown=3)
+                parent      = Node.objects.get(id=project_id)
+                node_type   = NodeType.objects.get(name='Corpus')
+                
+                if resource_type.name == "europress_french":
+                    language    = Language.objects.get(iso2='fr')
+                elif resource_type.name == "europress_english":
+                    language    = Language.objects.get(iso2='en')
+                
+                try:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            language=language,
+                            name=name,
+                            )
+                except:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            name=name,
+                            )
 
+                corpus.save()
+
+                print(request.user, resource_type , thefile )
+                print(corpus.language)
+                corpus.add_resource(
+                        user=request.user,
+                        type=resource_type,
+                        file=thefile
+                        )
+
+                try:
+                    #corpus.parse_and_extract_ngrams()
+                    #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                    if DEBUG is True:
+                        corpus.workflow()
+                    else:
+                        corpus.workflow.apply_async((), countdown=3)
+
+                except Exception as error:
+                    print(error)
+
+                return HttpResponseRedirect('/project/' + str(project_id))
+
+                
             except Exception as error:
-                print(error)
+                print('ee', error)
+                form = CorpusForm(request=request)
+                formResource = ResourceForm()
 
-            return HttpResponseRedirect('/project/' + str(project_id))
-        except Exception as error:
-            print('ee', error)
-            form = CorpusForm(request=request)
-            formResource = ResourceForm()
 
+        else:
+            print("bad form, bad form")
+            return render(request, 'project.html', {
+                    'form'          : form,
+                    'user'          : user,
+                    'date'          : date,
+                    'project'       : project,
+                    'donut'         : donut,
+                    'list_corpora'  : list_corpora,
+                    'whitelists'    : whitelists,
+                    'blacklists'    : blacklists,
+                    'cooclists'     : cooclists,
+                    'number'        : number,
+                })
     else:
-        form = CorpusForm(request=request)
-        formResource = ResourceForm()
+        form = CustomForm()
+
+
+    # if request.method == 'POST':
+    #     #form = CorpusForm(request.POST, request.FILES)
+    #     #print(str(request.POST))
+    #     name        = str(request.POST['name'])
+    #     try:
+    #         resource_type = ResourceType.objects.get(id=str(request.POST['type']))
+    #     except Exception as error:
+    #         print(error)
+    #         resource_type = None
+        
+    #     try:
+    #         file = request.FILES['file']
+    #     except Exception as error:
+    #         print(error)
+    #         file = None
+
+    #     #if name != "" and resource_type is not None and file is not None:
+    #     try:
+    #         parent      = Node.objects.get(id=project_id)
+    #         node_type   = NodeType.objects.get(name='Corpus')
+            
+    #         if resource_type.name == "europress_french":
+    #             language    = Language.objects.get(iso2='fr')
+    #         elif resource_type.name == "europress_english":
+    #             language    = Language.objects.get(iso2='en')
+            
+    #         try:
+    #             corpus = Node(
+    #                     user=request.user,
+    #                     parent=parent,
+    #                     type=node_type,
+    #                     language=language,
+    #                     name=name,
+    #                     )
+    #         except:
+    #             corpus = Node(
+    #                     user=request.user,
+    #                     parent=parent,
+    #                     type=node_type,
+    #                     name=name,
+    #                     )
+
+    #         corpus.save()
+
+    #         print(request.user, resource_type , file )
+    #         print(corpus.language)
+    #         corpus.add_resource(
+    #                 user=request.user,
+    #                 type=resource_type,
+    #                 file=file
+    #                 )
+
+    #         try:
+    #             #corpus.parse_and_extract_ngrams()
+    #             #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+    #             if DEBUG is True:
+    #                 corpus.workflow()
+    #             else:
+    #                 corpus.workflow.apply_async((), countdown=3)
+
+    #         except Exception as error:
+    #             print(error)
+
+    #         return HttpResponseRedirect('/project/' + str(project_id))
+    #     except Exception as error:
+    #         print('ee', error)
+    #         form = CorpusForm(request=request)
+    #         formResource = ResourceForm()
+
+    # else:
+    #     form = CorpusForm(request=request)
+    #     formResource = ResourceForm()
        
     return render(request, 'project.html', {
             'form'          : form,
-            'formResource'  : formResource,
             'user'          : user,
             'date'          : date,
             'project'       : project,

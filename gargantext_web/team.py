@@ -17,11 +17,11 @@ def get_team():
 
     '''
     team = [
-            { 'first_name' : 'Alexandre', 'name' : 'Delanoë', 'mail' : 'alexandre+gargantextATdelanoe.org', 'website' : 'http://alexandre.delanoe.org', 'picture' : 'alexandre.png'},
-            { 'first_name' : 'David', 'name' : 'Chavalarias', 'mail' : '', 'website' : 'http://chavalarias.com', 'picture' : 'david.png'},
-            { 'first_name' : 'Mathieu', 'name' : 'Rodic', 'mail' : '', 'website'  : 'http://rodic.fr', 'picture' : 'mathieu.png'},
-            { 'first_name' : 'Samuel', 'name' : 'Castillo J.', 'mail' : '', 'website'  : '', 'picture' : 'samuel.png'},
-            { 'first_name' : 'Elias', 'name' : 'Showk', 'mail' : '', 'website' : '', 'picture' : ''},
+            { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë', 'mail' : 'alexandre+gargantextATdelanoe.org', 'website' : 'http://alexandre.delanoe.org', 'picture' : 'alexandre.jpg'},
+            { 'first_name' : 'David', 'last_name' : 'Chavalarias', 'mail' : '', 'website' : 'http://chavalarias.com', 'picture' : 'david.jpg'},
+            { 'first_name' : 'Mathieu', 'last_name' : 'Rodic', 'mail' : '', 'website'  : 'http://rodic.fr', 'picture' : 'mathieu.jpg'},
+            { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.', 'mail' : '', 'website'  : '', 'picture' : 'samuel.jpg'},
+            { 'first_name' : 'Elias', 'last_name' : 'Showk', 'mail' : '', 'website' : '', 'picture' : 'logo.svg'},
             #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
             # copy paste the line above and write your informations please
             ]

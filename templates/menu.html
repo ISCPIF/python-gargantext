@@ -23,7 +23,11 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
 							<!-- <li><a href="/admin/">Admin/</a></li> --!>
+            <li><a href="/about/">About</a>
+						</li>
+						{% if user.is_authenticated %}
             <li><a href="/projects/">Projects</a></li>
+						{% endif %}
 						{% if project %}
 						<li><a href="/project/{{project.id}}">{{project.name}}</a></li>
 						{% endif %}

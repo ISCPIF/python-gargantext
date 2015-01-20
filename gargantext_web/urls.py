@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     
     # User Home view
     url(r'^$', views.home),
+    url(r'^about/', views.about),
     
     # Project Management
     url(r'^projects/$', views.projects),

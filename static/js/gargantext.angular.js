@@ -288,6 +288,20 @@ gargantext.controller("DatasetController", function($scope, $http) {
         });
         $scope.updateQuery();
     };
+    // query ngrams
+    $scope.getNgrams = function(query) {
+        var url = '/api/nodes/' + $scope.corpusId + '/children/ngrams?limit=10&contain=' + encodeURI(query);
+        var appendTransform = function(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+        return $http.get(url, {
+            transformResponse: appendTransform($http.defaults.transformResponse, function(value) {
+                console.log(value.data)
+                return value.data;
+            })
+        });
+    };
     // filtering informations retrieval
     $scope.operators = operators;
     // add a filter
@@ -319,11 +333,13 @@ gargantext.controller("DatasetController", function($scope, $http) {
                     angular.forEach(filter.value, function(ngram) {
                         termsList.push(ngram.terms);
                     });
-                    filters.push({
-                        field: 'ngrams.terms',
-                        operator: 'in',
-                        value: termsList
-                    });
+                    if (termsList.length) {
+                        filters.push({
+                            field: 'ngrams.terms',
+                            operator: 'in',
+                            value: termsList
+                        });
+                    }
                 } else {
                     filters.push({
                         field: filter.entity.key + '.' + filter.column.key,
@@ -374,18 +390,6 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             drawDots: true,
             columnsHGap: 5
         }
-    };
-    // query ngrams
-    $scope.getNgrams = function(query) {
-        var appendTransform = function(defaults, transform) {
-            defaults = angular.isArray(defaults) ? defaults : [defaults];
-            return defaults.concat(transform);
-        }
-        return $http.get('/api/nodes/26128/children/ngrams?limit=10&contain=' + encodeURI(query), {
-            transformResponse: appendTransform($http.defaults.transformResponse, function(value) {
-                return value.data;
-            })
-        });
     };
     // add a dataset
     $scope.addDataset = function() {

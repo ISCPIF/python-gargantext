@@ -226,7 +226,7 @@
             <ul class="datasets">
                 <button class="add" ng-click="addDataset()">Add a dataset...</button>
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
-                    <hr/>                
+                    <hr/>
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
                         <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>

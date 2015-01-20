@@ -92,6 +92,49 @@ class ResourceForm(ModelForm):
         model = Resource
         exclude = ['user', 'guid', 'digest']
 
+
+# for formexample.html
+from django import forms
+
+from django.utils.translation import ugettext_lazy as _
+class CustomForm(forms.Form):
+    name = forms.CharField( label='Name', max_length=199 , required=True)
+    parsing_options = ResourceType.objects.all().values_list('id', 'name')
+    type = forms.IntegerField( widget=forms.Select( choices= parsing_options) , required=True )
+    file = forms.FileField()
+
+
+
+    # Description: clean_file()
+    """
+        * file_.content_type - Example: ['application/pdf', 'image/jpeg']
+        * len(file_) - file size.
+            2.5MB - 2621440
+            5MB - 5242880
+            10MB - 10485760
+            20MB - 20971520
+            50MB - 5242880
+            100MB 104857600
+            250MB - 214958080
+            500MB - 429916160
+    """
+    def clean_file(self):
+        file_ = self.cleaned_data.get('file')
+        #Filename length
+        if len(file_.name)>30:
+            from datetime import datetime
+            file_.name = str(datetime.now().microsecond)
+            raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
+        #File size
+        if len(file_)>104857600:
+            raise forms.ValidationError(_('File to heavy! (<100MB svp mec).'))
+        ## File type:
+        # if file_.content_type == "application/zip":
+        #     raise forms.ValidationError(_('We need a zip pls.'))
+        return file_
+
+
+
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)
     def __init__(self, *args, **kwargs):
@@ -99,12 +142,6 @@ class CorpusForm(ModelForm):
             self.request = kwargs.pop('request', None)
             super(CorpusForm, self).__init__(*args, **kwargs)
             parent_type = NodeType.objects.get(name="Project")
-            #parent_type = NodeType.objects.get(name=self._parent_nodetype_name)
-#            self.fields['parent'].queryset = Node.objects.filter(
-#                    user_id=self.request.user.id, 
-#                    type_id=parent_type.id
-#                    )
-            #self.fields['language'].queryset = Language.objects.filter(implemented=1)
         except Exception as error:
             print("Error with", error)
     

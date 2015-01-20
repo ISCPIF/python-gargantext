@@ -63,7 +63,7 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
-    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
+    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments)
 )
 
 

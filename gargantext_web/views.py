@@ -97,6 +97,25 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
+from gargantext_web import team
+def about(request):
+    '''
+    About Gargantext, the team and sponsors
+    '''
+    template = get_template('about.html')
+    user = request.user
+    date = datetime.datetime.now()
+    members = team.get_team()
+
+    html = template.render(Context({\
+            'user': user,\
+            'date': date,\
+            'team': members,\
+            }))
+    
+    return HttpResponse(html)
+
+
 def home(request):
     '''
     Home describes the platform.
@@ -434,8 +453,6 @@ def corpus(request, project_id, corpus_id):
             }))
     
     return HttpResponse(html)
-
-
 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger

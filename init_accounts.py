@@ -7,7 +7,7 @@ def notify_user(username, email, password):
     votre compte vient d'être créé.
 
     Vous pouvez désormais vous connecter ici:
-    http://beta.gargantext.org
+    http://mines.gargantext.org
 
     Votre login est: %s
     Votre mot de passe est : %s
@@ -16,7 +16,6 @@ def notify_user(username, email, password):
     Cordialement
     --
         L'équipe de Gargantext (CNRS)
-(Pour l'école des Mines, contactez Alexandre Delanoë)
 
     ''' % (username, password)
 
@@ -53,12 +52,12 @@ def active_user(username, active=True):
     user.save()
 
 def mines_account_creation(fichier=None):
-    if file is None:
-        fichier = "/home/alexandre/projets/forccast/Tutorat/2014-2015/comptes_gargantext.txt"
+    if fichier is None:
+        fichier = "/home/alexandre/projets/forccast/Tutorat/2014-2015/comptes_gargantext.csv"
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password = line.split(',')
-        #create_user(username, email, password=password, notify=True)
-        delete_user(username)
-    fichier.close()
+        create_user(username, email, password=password, notify=True)
+        #delete_user(username)
+    accounts.close()
 

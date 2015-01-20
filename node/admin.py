@@ -98,7 +98,7 @@ from django import forms
 
 from django.utils.translation import ugettext_lazy as _
 class CustomForm(forms.Form):
-    name = forms.CharField( label='Your name', max_length=5 , required=True)
+    name = forms.CharField( label='Name', max_length=199 , required=True)
     parsing_options = ResourceType.objects.all().values_list('id', 'name')
     type = forms.IntegerField( widget=forms.Select( choices= parsing_options) , required=True )
     file = forms.FileField()
@@ -124,7 +124,7 @@ class CustomForm(forms.Form):
         if len(file_.name)>30:
             from datetime import datetime
             file_.name = str(datetime.now().microsecond)
-            # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
+            raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
         #File size
         if len(file_)>104857600:
             raise forms.ValidationError(_('File to heavy! (<100MB svp mec).'))

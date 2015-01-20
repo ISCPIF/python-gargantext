@@ -169,35 +169,6 @@ def projects(request):
         'projects': projects
         })
 
-# def formexample(request):
-#     print("my first form")
-#     return render(request, 'formexample.html', {"bar":"foo"} )
-
-
-
-# for formexample.html
-def handle_uploaded_file(f):
-    with open('somefilename', 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-
-# for formexample.html
-def formexample(request):
-
-    if request.method == 'POST':
-        form = CustomForm(request.POST, request.FILES)#NameForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            thefile = form.cleaned_data['file']
-            handle_uploaded_file(request.FILES['file'])
-            return render(request, "tests/formexample.html" , {'form':form , 'msg':("form received! "+name)})
-    else:
-        form = CustomForm()
-
-    return render(request, 'tests/formexample.html', {'form': form} )
-
-
-
 
 def project(request, project_id):
     '''
@@ -310,7 +281,7 @@ def project(request, project_id):
                 corpus.save()
 
                 print(request.user, resource_type , thefile )
-                print(corpus.language)
+
                 corpus.add_resource(
                         user=request.user,
                         type=resource_type,

@@ -242,12 +242,12 @@
                                 </select>
                                 <span ng-if="filter.entity">
                                     <select ng-model="filter.column">
-                                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
+                                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">a{{column.key}}</option>
                                     </select>
                                     <span ng-if="filter.column" ng-repeat="column in entities[filter.entity]">
                                         <span ng-if="column.key == filter.column">
                                             <select ng-model="filter.operator">
-                                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
+                                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">b{{operator.label}}</option>
                                             </select>
                                             <input type="text" ng-model="filter.value" ng-change="updateQuery()">
                                         </span>

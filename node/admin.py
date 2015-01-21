@@ -120,12 +120,14 @@ class CustomForm(forms.Form):
     """
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
-        #Filename length
-        if len(file_.name)>30:
-            from datetime import datetime
-            file_.name = str(datetime.now().microsecond)
-            # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
-        #File size
+        from datetime import datetime
+        file_.name = str(datetime.now().microsecond)
+        # #Filename length
+        # if len(file_.name)>30:
+        #     from datetime import datetime
+        #     file_.name = str(datetime.now().microsecond)
+        #     # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
+        # #File size
         if len(file_)>104857600:
             raise forms.ValidationError(_('File to heavy! (<100MB).'))
         ## File type:

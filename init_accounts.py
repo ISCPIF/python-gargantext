@@ -58,8 +58,8 @@ def mines_account_creation(fichier=None):
         fichier = "/home/alexandre/projets/forccast/Tutorat/2014-2015/comptes_gargantext.csv"
     accounts = open(fichier, "r")
     for line in accounts.readlines():
-        username, email, password = line.split(',')
-        create_user(username, email, password=password, notify=True)
+        username, email, password, fin = line.split(',')
+        create_user(username, email, password=password, notify=False)
         #delete_user(username)
     accounts.close()
 

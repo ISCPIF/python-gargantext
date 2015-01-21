@@ -166,6 +166,49 @@ def Root(request, format=None):
     })
 
 
+class NodesChildrenNgrams(APIView):
+
+    def get(self, request, node_id):
+        # query ngrams
+        ParentNode = aliased(Node)
+        ngrams_query = (Ngram
+            .query(Ngram.terms, func.count().label('count'))
+            # .query(Ngram.id, Ngram.terms, func.count().label('count'))
+            .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
+            .join(Node, Node.id == Node_Ngram.node_id)
+            .filter(Node.parent_id == node_id)
+            .group_by(Ngram.terms)
+            # .group_by(Ngram)
+            .order_by(func.count().desc(), Ngram.terms)
+            # .order_by(func.count().desc(), Ngram.id)
+        )
+        # filters
+        if 'startwith' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
+        if 'contain' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
+        # pagination
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 20))
+        total = ngrams_query.count()
+        # return formatted result
+        return JsonHttpResponse({
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+            },
+            'data': [
+                {
+                    # 'id': ngram.id,
+                    'terms': ngram.terms,
+                    'count': ngram.count,
+                }
+                for ngram in ngrams_query[offset : offset+limit]
+            ],
+        })
+
+
 class NodesChildrenDuplicates(APIView):
 
     def _fetch_duplicates(self, request, node_id, extra_columns=[], min_count=1):
@@ -291,10 +334,10 @@ class NodesChildrenMetatadata(APIView):
             # if there is less than 32 values, retrieve them
             values = None
             if isinstance(values_count, int) and values_count <= 48:
-                values = [row[0] for row in node_metadata_query.all()]
                 if metadata.type == 'datetime':
-                    values = []
-                    values = map(lambda x: x.isoformat(), values)
+                    values = [row[0].isoformat() for row in node_metadata_query.all()]
+                else:
+                    values = [row[0] for row in node_metadata_query.all()]
 
             # adding this metadata to the collection
             collection.append({
@@ -620,20 +663,7 @@ class Nodes(APIView):
             'metadata': dict(node.metadata),
         })
 
-    # deleting node by id
-    def delete(self, request, node_id):
-        session = get_session()
-        node = models.Node.objects.filter(id = node_id)
-        msgres = ""
-        try:
-            node.delete()
-            msgres = node_id+" deleted!"
-        except:
-            msgres ="error deleting: "+node_id
 
-        return JsonHttpResponse({
-            'deleted': msgres,
-        })
 
 class CorpusController:
 

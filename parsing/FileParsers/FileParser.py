@@ -102,10 +102,16 @@ class FileParser:
         if zipfile.is_zipfile(file):
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
-                metadata_list += self.parse(zipArchive.open(filename, "r"))
+                try:
+                    metadata_list += self.parse(zipArchive.open(filename, "r"))
+                except Exception as error:
+                    print(error)
         # ...otherwise, let's parse it directly!
         else:
-            metadata_list += self._parse(file)
+            try:
+                metadata_list += self._parse(file)
+            except Exception as error:
+                print(error)
         # return the list of formatted metadata
         return map(self.format_metadata, metadata_list)
 

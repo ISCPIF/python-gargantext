@@ -18,9 +18,11 @@
 				<h1>About Gargantext</h1>
 		</div>
 
-{% if team %}
+
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 		<div class="panel panel-default">
+
+{% if team %}
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
@@ -28,13 +30,13 @@
 								</a>
 						</h2>
 				</div>
-				<div id="collapseOne" class="panel-collapse collapse" role="tabpanel">
+				<div id="collapseOne" class="panel-collapse show" role="tabpanel">
 						<div class="panel-body">
 								<div class="container">
 										<div class="row">
 												<div class="thumbnails">
 												{% for member in team %}
-												<div class="col-md-4">
+												<div class="col-md-3 ">
 														<div class="thumbnail">
 															{% if member.picture %}
 																<img src="{% static "img/team/"%}{{ member.picture }}" style="100px; height:150px">
@@ -44,11 +46,9 @@
 																				{% if member.role %}
 																						<p class="description">{{ member.role }}</p>
 																				{% endif %}
-																				
 																				{% if member.mail %}
 																					<a href="mailto:{{ member.mail }}" class="btn btn-primary btn-xs">Mail</a>
 																				{% endif %}
-																						
 																				{% if member.website %}
 																					<a href="{{ member.website }}" class="btn btn-primary btn-xs">Website</a>
 																				{% endif %}
@@ -60,9 +60,12 @@
 								</div>
 						</div>
 				</div>
+
+{% endif %}
+
 		</div>
 </div>
-{% endif %}
+
 
 
 </div>

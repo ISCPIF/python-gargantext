@@ -234,20 +234,23 @@ class NodesChildrenDuplicates(APIView):
         # get the minimum ID for each of the nodes sharing the same metadata
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
-        # delete the stuff
-        delete_query = (session
-            .query(Node)
-            .filter(Node.parent_id == node_id)
-            .filter(~Node.id.in_(kept_node_ids))
-        )
-        count = delete_query.count()
-        delete_query.delete(synchronize_session=False)
-        session.flush()
-        # return the result
+        duplicate_nodes =  models.Node.objects.filter( parent_id=node_id ).exclude(id__in=kept_node_ids)
+        # # delete the stuff
+        # delete_query = (session
+        #     .query(Node)
+        #     .filter(Node.parent_id == node_id)
+        #     .filter(~Node.id.in_(kept_node_ids))
+        # )
+        count = len(duplicate_nodes)
+        for node in duplicate_nodes:
+            print("deleting node ",node.id)
+            node.delete()
+        # print(delete_query)
+        # # delete_query.delete(synchronize_session=True)
+        # session.flush()
         return JsonHttpResponse({
-            'deleted': count,
+            'deleted': count
         })
-        # return duplicates_query
 
 
 
@@ -621,6 +624,7 @@ class Nodes(APIView):
         })
 
     # deleting node by id
+    # currently, very dangerous
     def delete(self, request, node_id):
         session = get_session()
         node = models.Node.objects.filter(id = node_id)

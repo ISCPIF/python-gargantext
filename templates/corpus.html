@@ -239,6 +239,7 @@ $.ajax({
         BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
     }
     pr(BIS_dict)
+    if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
   }
 });
 

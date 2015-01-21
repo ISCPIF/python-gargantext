@@ -334,10 +334,10 @@ class NodesChildrenMetatadata(APIView):
             # if there is less than 32 values, retrieve them
             values = None
             if isinstance(values_count, int) and values_count <= 48:
-                values = [row[0] for row in node_metadata_query.all()]
                 if metadata.type == 'datetime':
-                    values = []
-                    values = map(lambda x: x.isoformat(), values)
+                    values = [row[0].isoformat() for row in node_metadata_query.all()]
+                else:
+                    values = [row[0] for row in node_metadata_query.all()]
 
             # adding this metadata to the collection
             collection.append({

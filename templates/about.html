@@ -1,0 +1,143 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+
+<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+				<h1>About Gargantext</h1>
+		</div>
+
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseVersions">
+										<h2>Versions</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseVersions" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<ul>
+												<li>Version 1.0</li>
+														<ul>
+																<li>Beta Version </li>
+																<li>Licence of Gargantext is GPL v3+ </li>
+														</ul>
+												<li>Version 1.0.5</li>
+														<ul>
+																<li>Bug resolution: xml zipped from Mac</li>
+																<li>Bug resolution: french accents in filenames</li>
+																<li>New features: [Advanced chart] ngrams completion</li>
+																<li>New features: button to delete all duplicates</li>
+														</ul>
+										</ul>
+								</div>
+						</div>
+				</div>
+		</div>
+
+
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseCommunity">
+										<h2>Community</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseCommunity" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<ul>
+												<li>Mailing-lists</li>
+														<ul>
+																<li>User mailing-list: soon</li>
+																<li>Devel mailing-list: soon</li>
+														</ul>
+												<li>Code and repository access</li>
+														<ul>
+																<li>You are free to participate. Present yourself on mailing-lists or irc.</li>
+														</ul>
+												<li>IRC</li>
+														<ul>
+																<li>#gargantext on OFTC:</li>
+																<li> 
+																		<p><iframe src="http://webchat.oftc.net/?channels=#gargantext" width="500" height="350"></iframe></p>
+																<p>If the window is too small, just click <a href="http://webchat.oftc.net/?channels=#gargantext">here</a></p>
+																</li>
+														</ul>
+										</ul>
+								</div>
+						</div>
+				</div>
+		</div>
+
+
+
+{% if team %}
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseTeam">
+										<h2>Core team</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseTeam" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<div class="row">
+												<div class="thumbnails">
+												{% for member in team %}
+												<div class="col-md-3 ">
+														<div class="thumbnail">
+															{% if member.picture %}
+																<img src="{% static "img/team/"%}{{ member.picture }}" style="100px; height:150px">
+																{% else %}
+																<img src="{% static "img/logo.png" %}" style="100px; height:150px">
+															{% endif %}
+																		<div class="caption">
+																				<h3>{{ member.first_name }} {{member.last_name }}</h3>
+																				{% if member.role %}
+																						<p class="description">{{ member.role }}</p>
+																				{% endif %}
+																				{% if member.mail %}
+																					<a href="mailto:{{ member.mail }}" class="btn btn-primary btn-xs">Mail</a>
+																				{% endif %}
+																				{% if member.website %}
+																					<a href="{{ member.website }}" class="btn btn-primary btn-xs">Website</a>
+																				{% endif %}
+																		</div>
+														</div>
+												</div>
+												{% endfor %}
+										</div>
+								</div>
+						</div>
+				</div>
+
+{% endif %}
+
+		</div>
+</div>
+
+
+
+</div>
+
+{% endblock %}

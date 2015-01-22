@@ -31,7 +31,7 @@
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1360"
+     inkscape:window-width="881"
      inkscape:window-height="762"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -60,11 +60,11 @@
        x="0"
        y="-0.1566938"
        inkscape:export-filename="/srv/gargantext/static/img/logo.png"
-       inkscape:export-xdpi="53"
-       inkscape:export-ydpi="53" />
+       inkscape:export-xdpi="454.50735"
+       inkscape:export-ydpi="454.50735" />
     <g
-       inkscape:export-ydpi="53.799999"
-       inkscape:export-xdpi="53.799999"
+       inkscape:export-ydpi="454.50735"
+       inkscape:export-xdpi="454.50735"
        inkscape:export-filename="/srv/gargantext/static/img/logo.png"
        style="fill:#ff8080;fill-opacity:0.82014388"
        id="g3835"

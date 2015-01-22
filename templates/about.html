@@ -40,6 +40,8 @@
 														<div class="thumbnail">
 															{% if member.picture %}
 																<img src="{% static "img/team/"%}{{ member.picture }}" style="100px; height:150px">
+																{% else %}
+																<img src="{% static "img/logo.png" %}" style="100px; height:150px">
 															{% endif %}
 																		<div class="caption">
 																				<h3>{{ member.first_name }} {{member.last_name }}</h3>

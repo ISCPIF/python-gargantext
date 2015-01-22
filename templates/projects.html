@@ -38,7 +38,16 @@
 										<!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
 										<div class="col-md-3 content">
 												<h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
-														<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" data-content='<a href="/project/{{ project.id }}/delete">Yes, I am sure!</a>'>Delete</button>
+														
+														<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+																		data-content='
+																		<ul>
+																		<li> Rename </li>
+																		<li> Add new corpus </li>
+																		<li><a href="/project/{{ project.id }}/delete">Delete</a></li>
+																		</ul>
+																		'>Manage</button>
+
 												</h3>
 
 												<h4>{{ project.subtitle }}<h4>

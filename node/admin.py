@@ -124,10 +124,10 @@ class CustomForm(forms.Form):
         if len(file_.name)>30:
             from datetime import datetime
             file_.name = str(datetime.now().microsecond)
-            raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
+            # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
         #File size
         if len(file_)>104857600:
-            raise forms.ValidationError(_('File to heavy! (<100MB svp mec).'))
+            raise forms.ValidationError(_('File to heavy! (<100MB).'))
         ## File type:
         # if file_.content_type == "application/zip":
         #     raise forms.ValidationError(_('We need a zip pls.'))

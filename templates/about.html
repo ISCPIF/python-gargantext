@@ -20,17 +20,80 @@
 
 
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-		<div class="panel panel-default">
 
-{% if team %}
+		<div class="panel panel-default">
 				<div class="panel-heading">
 						<h2 class="panel-title">
-								<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-										<h2>The Team</h2>
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseVersions">
+										<h2>Versions</h2>
 								</a>
 						</h2>
 				</div>
-				<div id="collapseOne" class="panel-collapse show" role="tabpanel">
+				<div id="collapseVersions" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<ul>
+												<li>Version 1.0</li>
+														<ul>
+																<li>Beta Version </li>
+														</ul>
+												<li>Version 1.0.5</li>
+														<ul>
+																<li>Bug resolution: xml zipped from Mac</li>
+																<li>Bug resolution: french accents in filenames</li>
+																<li>New features: [Advanced chart] ngrams completion</li>
+																<li>New features: button to delete all duplicates</li>
+														</ul>
+										</ul>
+								</div>
+						</div>
+				</div>
+		</div>
+
+
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseCommunity">
+										<h2>Community</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseCommunity" class="panel-collapse collapse" role="tabpanel">
+						<div class="panel-body">
+								<div class="container">
+										<ul>
+												<li>Mailing-lists</li>
+														<ul>
+																<li>User mailing-list: soon</li>
+																<li>Devel mailing-list: soon</li>
+														</ul>
+												<li>Code and repository access</li>
+														<ul>
+																<li>You are free to participate. Ask on mailing-lists and irc.</li>
+														</ul>
+												<li>IRC</li>
+														<ul>
+																<li>#gargantext on Freenode.</li>
+														</ul>
+										</ul>
+								</div>
+						</div>
+				</div>
+		</div>
+
+
+
+{% if team %}
+		<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapseTeam">
+										<h2>Core team</h2>
+								</a>
+						</h2>
+				</div>
+				<div id="collapseTeam" class="panel-collapse collapse" role="tabpanel">
 						<div class="panel-body">
 								<div class="container">
 										<div class="row">

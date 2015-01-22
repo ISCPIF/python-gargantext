@@ -108,7 +108,7 @@ var groupings = {
 
 
 // Define the application
-var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies']);
+var gargantext = angular.module('Gargantext', ['n3-charts.linechart', 'ngCookies', 'ngTagsInput']);
 
 
 // Customize the application's scope
@@ -272,15 +272,35 @@ gargantext.controller("DatasetController", function($scope, $http) {
         $scope.entities = undefined;
         $scope.filters = [];
         $http.get(url, {cache: true}).success(function(response){
-            $scope.entities = {
-                metadata: response.data,
-                ngrams: [
-                    {key:'terms', type:'string'},
-                    {key:'terms count', type:'integer'}
-                ]
-            };
+            $scope.entities = [
+                {
+                    key: 'metadata',
+                    columns: response.data
+                },
+                {
+                    key: 'ngrams',
+                    columns: [
+                        {key:'terms', type:'string'},
+                        {key:'terms count', type:'integer'}
+                    ],
+                }
+            ];
         });
         $scope.updateQuery();
+    };
+    // query ngrams
+    $scope.getNgrams = function(query) {
+        var url = '/api/nodes/' + $scope.corpusId + '/children/ngrams?limit=10&contain=' + encodeURI(query);
+        var appendTransform = function(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+        return $http.get(url, {
+            transformResponse: appendTransform($http.defaults.transformResponse, function(value) {
+                console.log(value.data)
+                return value.data;
+            })
+        });
     };
     // filtering informations retrieval
     $scope.operators = operators;
@@ -308,11 +328,25 @@ gargantext.controller("DatasetController", function($scope, $http) {
                         continue;
                     }
                 }
-                filters.push({
-                    field: filter.entity + '.' + filter.column,
-                    operator: filter.operator,
-                    value: filter.value
-                });
+                if (filter.entity.key == 'ngrams') {
+                    var termsList = [];
+                    angular.forEach(filter.value, function(ngram) {
+                        termsList.push(ngram.terms);
+                    });
+                    if (termsList.length) {
+                        filters.push({
+                            field: 'ngrams.terms',
+                            operator: 'in',
+                            value: termsList
+                        });
+                    }
+                } else {
+                    filters.push({
+                        field: filter.entity.key + '.' + filter.column.key,
+                        operator: filter.operator,
+                        value: filter.value
+                    });
+                }
             }
             // event firing to parent(s)
             $scope.$emit('updateDataset', {

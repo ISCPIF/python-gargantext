@@ -2,6 +2,7 @@ from django.db import transaction
 from lxml import etree
 from .FileParser import FileParser
 from ..NgramsExtractors import *
+from datetime import datetime
 
 class PubmedFileParser(FileParser):
     
@@ -21,7 +22,10 @@ class PubmedFileParser(FileParser):
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
                 "language_iso3"     : 'MedlineCitation/Article/Language',
                 "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
-                "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
+                "realdate_full_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/MedlineDate',
+                "realdate_year_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Year',
+                "realdate_month_"    : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Month',
+                "realdate_day_"      : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Day',
                 "publication_year"  : 'MedlineCitation/DateCreated/Year',
                 "publication_month" : 'MedlineCitation/DateCreated/Month',
                 "publication_day"   : 'MedlineCitation/DateCreated/Day',
@@ -30,6 +34,7 @@ class PubmedFileParser(FileParser):
             for key, path in metadata_path.items():
                 try:
                     xml_node = xml_article.find(path)
+                    # Authors tag
                     if key == 'authors':
                         metadata[key] = ', '.join([
                             xml_author.find('ForeName').text + ' ' + xml_author.find('LastName').text
@@ -37,8 +42,40 @@ class PubmedFileParser(FileParser):
                         ])
                     else:
                         metadata[key] = xml_node.text
+
                 except:
                     pass
+
+            # Date-Decision
+            # forge.iscpif.fr/issues/1418
+            RealDate = ""
+            if "realdate_full_" in metadata:
+                RealDate = metadata["realdate_full_"]
+            else:
+                if "realdate_year_" in metadata: RealDate+=metadata["realdate_year_"]
+                if "realdate_month_" in metadata: RealDate+=" "+metadata["realdate_month_"]
+                if "realdate_day_" in metadata: RealDate+=" "+metadata["realdate_day_"]
+            metadata["realdate_full_"] = RealDate
+            RealDate = RealDate.split("-")[0]
+
+            PubmedDate = ""
+            if "publication_year" in metadata: PubmedDate+=metadata["publication_year"]
+            if "publication_month" in metadata: PubmedDate+=" "+metadata["publication_month"]
+            if "publication_day" in metadata: PubmedDate+=" "+metadata["publication_day"]
+
+
+            if len(RealDate)>4:
+                if len(RealDate)>8: decision = datetime.strptime(RealDate, '%Y %b %d').date()
+                else: decision = datetime.strptime(RealDate, '%Y %b').date()
+            else: decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+
+            if "publication_year" in metadata: metadata["publication_year"] = str(decision.year)
+            if "publication_month" in metadata: metadata["publication_month"] = str(decision.month)
+            if "publication_day" in metadata: metadata["publication_day"] = str(decision.day)
+            if "realdate_year_" in metadata: metadata.pop("realdate_year_")
+            if "realdate_month_" in metadata: metadata.pop("realdate_month_")
+            if "realdate_day_" in metadata: metadata.pop("realdate_day_")
+
             metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

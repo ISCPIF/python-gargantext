@@ -52,6 +52,7 @@
 		{{ formResource.non_field_errors }}
 		{{ formResource.as_p}}
 		<input onclick='$("#semLoader").css("visibility", "visible"); $("#semLoader").show();' type="submit" name="submit" id="submit" class="btn" value="Add this corpus" /><div>
+		<div id="pubmedcrawl" align="right"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div>
     </center>
 				</p>
 
@@ -147,7 +148,107 @@
 </div>
 
 
+  <!-- Modal -->
+  <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Query to PubMed</h3>
+		</div>
+		<div class="modal-body">
+			<p>One fine body…</p>
+			<input id="daquery" type="text" class="input-lg" data-tabindex="2">
+			<a onclick="getGlobalResults();" class="btn">Scan</a>
+			<div id="results"></div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  <button onclick="doTheQuery();" disabled id="id_thebutton" type="button" class="btn btn-primary">Explore a sample!</button>
+		</div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+
 <script>
+		function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie != '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = jQuery.trim(cookies[i]);
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+
+		var thequeries = []
+
+		function doTheQuery() {
+			if ( $('#id_thebutton').prop('disabled') ) return;
+			console.log("in doTheQuery:");
+
+		    $.ajax({
+			  // contentType: "application/json",
+		      url: window.location.origin+"/tests/pubmedquery/go",
+		      data: formData,
+		      type: 'POST',
+		      beforeSend: function(xhr) {
+		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		      },
+		      success: function(data) {
+				console.log("in doTheQuery()")
+		        console.log(data)
+		      },
+		        error: function(result) {
+		            console.log("Data not found");
+		        }
+		    });
+
+		}
+
+		function getGlobalResults(){
+			// AJAX to django
+			var pubmedquery = $("#daquery").val()
+			var formData = {query:pubmedquery}
+			$("#results").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+
+		    $.ajax({
+			  // contentType: "application/json",
+		      url: window.location.origin+"/tests/pubmedquery",
+		      data: formData,
+		      type: 'POST',
+		      beforeSend: function(xhr) {
+		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		      },
+		      success: function(data) {
+				console.log("in getGlobalResults")
+		        console.log(data)
+
+	            thequeries = data
+	            var N=0,k=0;
+	            for(var i in thequeries) N += thequeries[i].count
+
+	            if(N>0) {
+	            	$("#results").html("Result: "+N+" publications in the last 5 years")
+	            	$('#id_thebutton').prop('disabled', false);
+	            }
+
+		      },
+		        error: function(result) {
+		            console.log("Data not found");
+		        }
+		    });
+			
+			
+		}
         // Morris Donut Chart
         Morris.Donut({
             element: 'hero-donut',
@@ -163,6 +264,7 @@
             //colors: ["#30a1ec", "#76bdee"],
             formatter: function (y) { return y + "%" }
         });
+
 </script>
 
 

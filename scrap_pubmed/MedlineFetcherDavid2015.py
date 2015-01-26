@@ -90,18 +90,19 @@ class MedlineFetcher:
         print ('Starting fetching at ' , time.asctime(time.localtime()) )
 
         retstart = 0
-        while(retstart < count):
-            eFetch = '%s/efetch.fcgi?email=youremail@example.org&rettype=%s&retmode=xml&retstart=%s&retmax=%s&db=%s&query_key=%s&WebEnv=%s' %(self.pubMedEutilsURL, self.reportType, retstart, retmax, self.pubMedDB, queryKey, webEnv)                
-            eFetchResult = urlopen(eFetch)
-            if sys.version_info >= (3, 0): pubMedResultFile.write(eFetchResult.read().decode('utf-8'))
-            else: pubMedResultFile.write(eFetchResult.read())
-            retstart += retmax
-            break # you shall not pass !!
+        # while(retstart < count):
+        eFetch = '%s/efetch.fcgi?email=youremail@example.org&rettype=%s&retmode=xml&retstart=%s&retmax=%s&db=%s&query_key=%s&WebEnv=%s' %(self.pubMedEutilsURL, self.reportType, retstart, retmax, self.pubMedDB, queryKey, webEnv)
+        return eFetch
+        #     if sys.version_info >= (3, 0): pubMedResultFile.write(eFetchResult.read().decode('utf-8'))
+        #     else: pubMedResultFile.write(eFetchResult.read())
+        #     retstart += retmax
+        #     break # you shall not pass !!
 
-        pubMedResultFile.close()
-        print ('Fetching for query ' , query , ' finished at ' , time.asctime(time.localtime()) )
-        print (retmax , ' results written to file ' , pubMedResultFileName , '\n' )
-        print("------------------------------------------")
+        # pubMedResultFile.close()
+        # print ('Fetching for query ' , query , ' finished at ' , time.asctime(time.localtime()) )
+        # print (retmax , ' results written to file ' , pubMedResultFileName , '\n' )
+        # print("------------------------------------------")
+        # return ["everything","ok"]
 
 
 

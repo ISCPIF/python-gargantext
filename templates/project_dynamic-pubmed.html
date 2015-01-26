@@ -1,0 +1,280 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+
+<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+
+<script src="{% static "js/raphael-min.js"%}"></script>
+<script src="{% static "js/morris.min.js"%}"></script>
+
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+				<div class="row">
+        <div class="col-md-6">
+            {% if project %}
+            <h1>{{ project.name }}</h1>
+						<!--<h3> {{number}} corpora </h3>-->
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+				<p>
+				{% if donut %}
+	  		<div id="hero-donut" style="height: 200px;"></div>
+				{% endif %}
+        <center>
+            <button 
+								type="button" 
+								class="btn btn-primary btn-lg" 
+								data-container="body" 
+								data-toggle="popover" 
+								data-placement="bottom"
+								>Add a corpus</button>
+								<div id="popover-content" class="hide">
+
+					<form enctype="multipart/form-data" action="/project/{{project.id}}/" method="post">
+    {% csrf_token %}
+		{{ form.non_field_errors }}
+		{{ form.as_p}}
+		
+		{{ formResource.non_field_errors }}
+		{{ formResource.as_p}}
+		<input onclick='$("#semLoader").css("visibility", "visible"); $("#semLoader").show();' type="submit" name="submit" id="submit" class="btn" value="Add this corpus" /><div>
+		<div id="pubmedcrawl" align="right"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div>
+    </center>
+				</p>
+
+								</div>
+		        </div>
+
+        </div>
+
+
+        </div>
+        </div>
+</div>
+<!-- Add jumbotron container for each type of corpus (presse, science etc.) -->
+
+          <div id="semLoader" style="position:absolute; top:50%; left:40%; width:80px; visibility: hidden;">
+							<img src="{% static "js/libs/img2/loading-bar.gif" %}"></img>
+          </div>
+
+<div class="container">
+				{% if list_corpora  %}
+								<h1>Resources</h1>
+								<h2>Corpora</h2>
+										<ul>
+										{% for key, corpora in list_corpora.items %}
+										<li>{{ key }}</li>
+												<ul>
+														{% for corpus in corpora %}
+														<li> {% ifnotequal corpus.count 0 %}
+																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}"> 
+																			{{corpus.name}}
+																		</a>
+																		, {{ corpus.count }} Documents 
+																 {% else %}
+																 {{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
+																 {% endifnotequal %}
+																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+																		data-content='
+																		<ul>
+																		<li> Rename </li>
+																		<li> Add new documents </li>
+																		<li><a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Delete</a></li>
+																		</ul>
+																		'>Manage</button>
+																</li>
+														{% endfor %}
+												</ul>
+										{% endfor %}
+										</ul>
+				{% endif %}
+
+
+								{% if list_corporax  %}
+										<div class="col-md-4">
+                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a>
+												</h3>
+												<h4>{{ corpus.count }} Documents </h4>
+												<h5>Activity:</h5>
+												<div class="chart" data-percent="73">73%</div>
+										</div>
+								{% endif %}
+				
+						{% if whitelists  %}
+						<h2>Lists of Ngrams</h2>
+								<h3>White Lists</h2>
+								{% for list in whitelists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+						
+            {% if whitelists  %}
+						<h3>Black Lists</h2>
+								{% for list in blacklists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+						
+
+				
+        {% if cooclists  %}
+						<h2>Results (graphs)</h2>
+						<h3>Cooccurrences Lists</h2>
+								{% for list in cooclists %}
+										<ul>
+                    <li> {{list.name }}
+										</ul>
+								{% endfor %}
+						{% endif %}
+			  
+</div>
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Query to PubMed</h3>
+		</div>
+		<div class="modal-body">
+			<p>One fine body…</p>
+			<input id="daquery" type="text" class="input-lg" data-tabindex="2">
+			<a onclick="getGlobalResults();" class="btn">Scan</a>
+			<div id="results"></div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  <button onclick="doTheQuery();" disabled id="id_thebutton" type="button" class="btn btn-primary">Explore a sample!</button>
+		</div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+
+<script>
+		function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie != '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = jQuery.trim(cookies[i]);
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+
+		var thequeries = []
+
+		function doTheQuery() {
+			if ( $('#id_thebutton').prop('disabled') ) return;
+			console.log("in doTheQuery:");
+			var origQuery = $("#daquery").val()
+
+
+			var pubmedifiedQuery = { query : JSON.stringify(thequeries) , string: origQuery } ;
+			console.log(pubmedifiedQuery)
+
+			var projectid = window.location.href.split("project")[1].replace(/\//g, '')//replace all the slashes
+
+		    $.ajax({
+			  // contentType: "application/json",
+		      url: window.location.origin+"/tests/project/"+projectid+"/pubmedquery/go",
+		      data: pubmedifiedQuery,
+		      type: 'POST',
+		      beforeSend: function(xhr) {
+		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		      },
+		      success: function(data) {
+				console.log("in doTheQuery()")
+		        console.log(data)
+		      },
+		        error: function(result) {
+		            console.log("in doTheQuery(). Data not found");
+		        }
+		    });
+
+		}
+
+		function getGlobalResults(){
+			// AJAX to django
+			var pubmedquery = $("#daquery").val()
+			var formData = {query:pubmedquery}
+			$("#results").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+
+		    $.ajax({
+			  // contentType: "application/json",
+		      url: window.location.origin+"/tests/pubmedquery",
+		      data: formData,
+		      type: 'POST',
+		      beforeSend: function(xhr) {
+		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		      },
+		      success: function(data) {
+				console.log("in getGlobalResults")
+		        console.log(data)
+
+	            thequeries = data
+	            var N=0,k=0;
+	            for(var i in thequeries) N += thequeries[i].count
+
+	            if(N>0) {
+	            	$("#results").html("Result: "+N+" publications in the last 5 years")
+	            	$('#id_thebutton').prop('disabled', false);
+	            }
+
+		      },
+		        error: function(result) {
+		            console.log("Data not found");
+		        }
+		    });
+			
+			
+		}
+        // Morris Donut Chart
+        Morris.Donut({
+            element: 'hero-donut',
+            data: [
+            {% if donut %}
+            {% for part in donut %}
+						{label: '{{ part.source }}', value: {{ part.part }} },
+            {% endfor %}
+            {% endif %}
+
+            ],
+            colors: ["@white", "@white"],
+            //colors: ["#30a1ec", "#76bdee"],
+            formatter: function (y) { return y + "%" }
+        });
+
+</script>
+
+
+
+
+{% endblock %}

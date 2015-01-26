@@ -3,13 +3,18 @@ from lxml import etree
 from .FileParser import FileParser
 from ..NgramsExtractors import *
 from datetime import datetime
+from io import BytesIO
 
 class PubmedFileParser(FileParser):
     
     def _parse(self, file):
         # open the file as XML
         xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
-        xml = etree.parse(file, parser=xml_parser)
+        
+        xml = ""
+        if type(file)==bytes: xml = etree.parse( BytesIO(file) , parser=xml_parser)
+        else: xml = etree.parse(file, parser=xml_parser)
+
         xml_articles = xml.findall('PubmedArticle')
         # initialize the list of metadata
         metadata_list = []
@@ -75,7 +80,7 @@ class PubmedFileParser(FileParser):
             if "realdate_year_" in metadata: metadata.pop("realdate_year_")
             if "realdate_month_" in metadata: metadata.pop("realdate_month_")
             if "realdate_day_" in metadata: metadata.pop("realdate_day_")
-
+            
             metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

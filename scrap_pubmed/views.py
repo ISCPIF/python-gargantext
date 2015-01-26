@@ -4,10 +4,12 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
+from django.contrib.auth.models import User
 
 from scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
 
 from gargantext_web.api import JsonHttpResponse
+from urllib.request import urlopen, urlretrieve
 import json
 
 from node.models import Language, ResourceType, Resource, \
@@ -28,10 +30,13 @@ def getGlobalStats(request ):
 	return JsonHttpResponse(data)
 
 
+from parsing.FileParsers import PubmedFileParser
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
 	if request.method == "POST":
+
+		
 		query = request.POST["query"]
 		name = request.POST["string"]
 
@@ -42,12 +47,7 @@ def doTheQuery(request , project_id):
 
 		urlreqs = []
 		for yearquery in thequeries:
-			print("fetching:")
-			print(yearquery)
 			urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
-			print(" - - - - - ")
-		print( "============================" )
-		print(urlreqs)
 		alist = ["tudo fixe" , "tudo bem"]
 
 		"""
@@ -56,47 +56,71 @@ def doTheQuery(request , project_id):
 			eFetchResult = urlopen(url)
 			eFetchResult.read()  # this will output the XML... normally you write this to a XML-file.
 		"""
-		# print("finding out project ID:")
-		# print(project_id)
 
-		# thefile = "how we do this here?"
-		# resource_type = ResourceType()
-		# resource_type.name = name
+		thefile = "how we do this here?"
+		resource_type = ResourceType()
+		resource_type.name = name
 
-		# print("-------------")
-		# print(name,"|",resource_type,"|",thefile)
-		# print("-------------")
+		try:
+			parent      = Node.objects.get(id=project_id)
+			node_type   = NodeType.objects.get(name='Corpus')
+			type_id = NodeType.objects.get(name='Document').id
+			user_id = User.objects.get( username=request.user ).id
 
-		# print(request.user)
+			corpus = Node(
+				user=request.user,
+				parent=parent,
+				type=node_type,
+				name=name,
+			)
 
-		# try:
-		# 	parent      = Node.objects.get(id=project_id)
-		# 	print("IMMA    HEEEEERE 01")
-		# 	node_type   = NodeType.objects.get(name='Corpus')
-		# 	print("IMMA    HEEEEERE 02")
-
-		# 	corpus = Node(
-		# 		user=request.user,
-		# 		parent=parent,
-		# 		type=node_type,
-		# 		name=name,
-		# 	)
-
-		# 	print("IMMA    HEEEEERE 03")
-		# 	corpus.save()
-
-		# 	print("IMMA    HEEEEERE 04")
-		# 	corpus.add_resource(
-		# 		user=request.user,
-		# 		type=resource_type,
-		# 		file=urlreqs
-		# 	)
-		# 	print("IMMA    HEEEEERE 05")
+			corpus.save()
+			
+			parser = PubmedFileParser()
+			metadata_list = []
+			for url in urlreqs:
+				data = urlopen(url)
+				metadata_list += parser.parse( data.read() )
+				# corpus.add_resource( user=request.user, type=resource_type, file=data.read() )
+				break
 
 
-		# except Exception as error:
-		# 	print(error)
+			from parsing.Caches import LanguagesCache
+			langages_cache = LanguagesCache()
+			for i, metadata_values in enumerate(metadata_list):
+				name = metadata_values.get('title', '')[:200]
+				language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
+				if isinstance(language, tuple):
+					language = language[0]
 
+				Node(
+					user_id  = user_id,
+					type_id  = type_id,
+					name     = name,
+					parent   = parent,
+					language_id = language.id if language else None,
+					metadata = metadata_values
+				).save()
+
+			parent.children.all().make_metadata_filterable()
+
+			type_document   = NodeType.objects.get(name='Document')
+			print("printing here 01")
+			parent.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+			print("printing here 02")
+
+			print("now we've to apply do_tfidf...")
+
+
+			# thetitles = parent.children.filter(type_id=type_document.pk)
+			# print(Node.objects.filter(parent=parent))
+			# from analysis.functions import do_tfidf
+			# do_tfidf(corpus)
+
+			print("ca va?")
+
+		except Exception as error:
+			print("lele",error)
 
 
 

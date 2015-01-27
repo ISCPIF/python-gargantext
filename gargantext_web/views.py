@@ -212,6 +212,8 @@ def project(request, project_id):
     cooclists       = ""#.children.filter(type=type_cooclist)
     
     for corpus in corpora:
+        # print("corpus", corpus.pk , corpus.name , corpus.type_id)
+
         docs_count =  corpus.children.count()
         docs_total += docs_count
         
@@ -219,10 +221,17 @@ def project(request, project_id):
         corpus_view['id']         = corpus.pk
         corpus_view['name']       = corpus.name
         corpus_view['count']      = corpus.children.count()
-        
-        for node_resource in Node_Resource.objects.filter(node=corpus):
-            donut_part[node_resource.resource.type] += docs_count
-            list_corpora[node_resource.resource.type.name].append(corpus_view)
+
+        #just get first element of the corpora and get his type.
+        corpus_type = Node_Resource.objects.filter(node=corpus)[0].resource.type
+        list_corpora[corpus_type].append(corpus_view)
+
+        ## For avoiding to list repeated elements, like when u use the dynamic query (per each xml, 1)
+        # for node_resource in Node_Resource.objects.filter(node=corpus):
+        #     print( "node_resource.id:",node_resource.id , node_resource.resource.file )
+        #     donut_part[node_resource.resource.type] += docs_count
+        #     list_corpora[node_resource.resource.type.name].append(corpus_view)
+            # print(node_resource.resource.type.name)
     list_corpora = dict(list_corpora)
 
     if docs_total == 0 or docs_total is None:
@@ -235,8 +244,6 @@ def project(request, project_id):
 
 
     if request.method == 'POST':
-        print("original file:")
-        print(request.FILES)
 
         form = CustomForm(request.POST, request.FILES)
         if form.is_valid():
@@ -249,9 +256,6 @@ def project(request, project_id):
             print("-------------")
             print(name,"|",resource_type,"|",thefile)
             print("-------------")
-            
-            print("new file:")
-            print(thefile)
 
             try:
                 parent      = Node.objects.get(id=project_id)
@@ -279,8 +283,6 @@ def project(request, project_id):
                             )
 
                 corpus.save()
-
-                print(request.user, resource_type , thefile )
 
                 corpus.add_resource(
                         user=request.user,
@@ -324,80 +326,6 @@ def project(request, project_id):
                 })
     else:
         form = CustomForm()
-
-
-    # if request.method == 'POST':
-    #     #form = CorpusForm(request.POST, request.FILES)
-    #     #print(str(request.POST))
-    #     name        = str(request.POST['name'])
-    #     try:
-    #         resource_type = ResourceType.objects.get(id=str(request.POST['type']))
-    #     except Exception as error:
-    #         print(error)
-    #         resource_type = None
-        
-    #     try:
-    #         file = request.FILES['file']
-    #     except Exception as error:
-    #         print(error)
-    #         file = None
-
-    #     #if name != "" and resource_type is not None and file is not None:
-    #     try:
-    #         parent      = Node.objects.get(id=project_id)
-    #         node_type   = NodeType.objects.get(name='Corpus')
-            
-    #         if resource_type.name == "europress_french":
-    #             language    = Language.objects.get(iso2='fr')
-    #         elif resource_type.name == "europress_english":
-    #             language    = Language.objects.get(iso2='en')
-            
-    #         try:
-    #             corpus = Node(
-    #                     user=request.user,
-    #                     parent=parent,
-    #                     type=node_type,
-    #                     language=language,
-    #                     name=name,
-    #                     )
-    #         except:
-    #             corpus = Node(
-    #                     user=request.user,
-    #                     parent=parent,
-    #                     type=node_type,
-    #                     name=name,
-    #                     )
-
-    #         corpus.save()
-
-    #         print(request.user, resource_type , file )
-    #         print(corpus.language)
-    #         corpus.add_resource(
-    #                 user=request.user,
-    #                 type=resource_type,
-    #                 file=file
-    #                 )
-
-    #         try:
-    #             #corpus.parse_and_extract_ngrams()
-    #             #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
-    #             if DEBUG is True:
-    #                 corpus.workflow()
-    #             else:
-    #                 corpus.workflow.apply_async((), countdown=3)
-
-    #         except Exception as error:
-    #             print(error)
-
-    #         return HttpResponseRedirect('/project/' + str(project_id))
-    #     except Exception as error:
-    #         print('ee', error)
-    #         form = CorpusForm(request=request)
-    #         formResource = ResourceForm()
-
-    # else:
-    #     form = CorpusForm(request=request)
-    #     formResource = ResourceForm()
        
     return render(request, 'project.html', {
             'form'          : form,

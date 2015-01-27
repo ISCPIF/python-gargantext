@@ -56,6 +56,7 @@ class MedlineFetcher:
         # webEnv = doc.xpathEval('eSearchResult/WebEnv/text()')[0]
         # print count, queryKey, webEnv
         values = { "count": int(str(count)), "queryKey": queryKey , "webEnv":webEnv }
+        print(values)
         return values
 
 
@@ -126,28 +127,27 @@ class MedlineFetcher:
             # medlineEfetchRAW(str(year) + '[dp] '+query , retmax=300)
             pubmedquery = str(year) + '[dp] '+query
             globalresults = self.medlineEsearch(pubmedquery)
-            N+=globalresults["count"]
-            querymetadata = { 
-                "string": pubmedquery , 
-                "count": globalresults["count"] , 
-                "queryKey":globalresults["queryKey"] , 
-                "webEnv":globalresults["webEnv"] , 
-                "retmax":0 
-            }
-            thequeries.append ( querymetadata )
+            if globalresults["count"]>0:
+                N+=globalresults["count"]
+                querymetadata = { 
+                    "string": pubmedquery , 
+                    "count": globalresults["count"] , 
+                    "queryKey":globalresults["queryKey"] , 
+                    "webEnv":globalresults["webEnv"] , 
+                    "retmax":0 
+                }
+                thequeries.append ( querymetadata )
 
         print("Total Number:", N,"publications")
         print("And i want just:",globalLimit,"publications")
         print("---------------------------------------\n")
 
-        for query in thequeries:
+        for i,query in enumerate(thequeries):
             k = query["count"]
             percentage = k/float(N)
             retmax_forthisyear = int(round(globalLimit*percentage))
             query["retmax"] = retmax_forthisyear
-            # self.medlineEfetchRAW( query )
 
-        print ('Done !')
         return thequeries
 
 

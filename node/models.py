@@ -236,12 +236,17 @@ class Node(CTENode):
 
     @current_app.task(filter=task_method)
     def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
-        print("In workflow() START")
+        print("In workflow()    parse_resources()")
         self.parse_resources()
+        print("In workflow()    / parse_resources()")
+        print("In workflow()    extract_ngrams()")
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+        print("In workflow()    / extract_ngrams()")
+        print("In workflow()    do_tfidf()")
         from analysis.functions import do_tfidf
         do_tfidf(self)
+        print("In workflow()    / do_tfidf()")
         print("In workflow() END")
 
 class Node_Metadata(models.Model):

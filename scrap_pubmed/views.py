@@ -12,6 +12,11 @@ from gargantext_web.api import JsonHttpResponse
 from urllib.request import urlopen, urlretrieve
 import json
 
+from gargantext_web.settings import MEDIA_ROOT
+from datetime import datetime
+from django.core.files import File
+from gargantext_web.settings import DEBUG
+
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
@@ -24,7 +29,7 @@ def getGlobalStats(request ):
 	if request.method == "POST":
 		query = request.POST["query"]
 		instancia = MedlineFetcher()
-		alist = instancia.serialFetcher( 5, query , 200 )
+		alist = instancia.serialFetcher( 5, query , 100 )
 
 	data = alist
 	return JsonHttpResponse(data)
@@ -43,8 +48,6 @@ def doTheQuery(request , project_id):
 		instancia = MedlineFetcher()
 		thequeries = json.loads(query)
 
-		print("------------------")
-
 		urlreqs = []
 		for yearquery in thequeries:
 			urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
@@ -58,71 +61,49 @@ def doTheQuery(request , project_id):
 		"""
 
 		thefile = "how we do this here?"
-		resource_type = ResourceType()
-		resource_type.name = name
+		resource_type = ResourceType.objects.get(name="pubmed" )
+
+		parent      = Node.objects.get(id=project_id)
+		node_type   = NodeType.objects.get(name='Corpus')
+		type_id = NodeType.objects.get(name='Document').id
+		user_id = User.objects.get( username=request.user ).id
+
+		corpus = Node(
+			user=request.user,
+			parent=parent,
+			type=node_type,
+			name=name,
+		)
+
+		corpus.save()
 
 		try:
-			parent      = Node.objects.get(id=project_id)
-			node_type   = NodeType.objects.get(name='Corpus')
-			type_id = NodeType.objects.get(name='Document').id
-			user_id = User.objects.get( username=request.user ).id
-
-			corpus = Node(
-				user=request.user,
-				parent=parent,
-				type=node_type,
-				name=name,
-			)
-
-			corpus.save()
-			
-			parser = PubmedFileParser()
-			metadata_list = []
 			for url in urlreqs:
+				print(url)
 				data = urlopen(url)
-				metadata_list += parser.parse( data.read() )
-				# corpus.add_resource( user=request.user, type=resource_type, file=data.read() )
-				break
+				xmlname = MEDIA_ROOT + '/corpora/%s/%s.xml' % (request.user, str(datetime.now().microsecond))
+				f = open(xmlname, 'w')
+				myfile = File(f)
+				myfile.write( data.read().decode('utf-8') )
+				myfile.close()
+				f.close()
+				corpus.add_resource( user=request.user, type=resource_type, file=xmlname )
 
+			try:
+				if DEBUG is True:
+					corpus.workflow()
+				else:
+					corpus.workflow.apply_async((), countdown=3)
 
-			from parsing.Caches import LanguagesCache
-			langages_cache = LanguagesCache()
-			for i, metadata_values in enumerate(metadata_list):
-				name = metadata_values.get('title', '')[:200]
-				language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
-				if isinstance(language, tuple):
-					language = language[0]
+				return JsonHttpResponse(["workflow","finished"])
 
-				Node(
-					user_id  = user_id,
-					type_id  = type_id,
-					name     = name,
-					parent   = parent,
-					language_id = language.id if language else None,
-					metadata = metadata_values
-				).save()
+			except Exception as error:
+				print(error)
 
-			parent.children.all().make_metadata_filterable()
-
-			type_document   = NodeType.objects.get(name='Document')
-			print("printing here 01")
-			parent.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-			print("printing here 02")
-
-			print("now we've to apply do_tfidf...")
-
-
-			# thetitles = parent.children.filter(type_id=type_document.pk)
-			# print(Node.objects.filter(parent=parent))
-			# from analysis.functions import do_tfidf
-			# do_tfidf(corpus)
-
-			print("ca va?")
+			return JsonHttpResponse(["workflow","finished","outside the try-except"])
 
 		except Exception as error:
 			print("lele",error)
-
-
 
 	data = alist
 	return JsonHttpResponse(data)

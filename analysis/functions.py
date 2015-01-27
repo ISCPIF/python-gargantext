@@ -269,7 +269,6 @@ from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):
     print("doing tfidf")
-    print("\t",corpus.type)
     with transaction.atomic():
         if reset==True:
             NodeNodeNgram.objects.filter(nodex=corpus).delete()

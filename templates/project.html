@@ -213,6 +213,7 @@
 		      success: function(data) {
 				console.log("in doTheQuery()")
 		        console.log(data)
+		        location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in doTheQuery(). Data not found");
@@ -241,11 +242,14 @@
 
 	            thequeries = data
 	            var N=0,k=0;
-	            for(var i in thequeries) N += thequeries[i].count
 
-	            if(N>0) {
+	            for(var i in thequeries) N += thequeries[i].count
+	            if( N>0) {
 	            	$("#results").html("Result: "+N+" publications in the last 5 years")
 	            	$('#id_thebutton').prop('disabled', false);
+	            } else {
+	            	$("#results").html("No results!.")
+	            	$('#id_thebutton').prop('disabled', true);
 	            }
 
 		      },

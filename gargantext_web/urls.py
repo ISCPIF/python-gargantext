@@ -67,6 +67,7 @@ urlpatterns = patterns('',
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
     url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
+
     url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery)
 

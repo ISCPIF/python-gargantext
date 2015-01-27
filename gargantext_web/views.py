@@ -495,12 +495,18 @@ def corpus(request, project_id, corpus_id):
         print(chart)
     except Exception as error:
         print(error)
-       
+    
+    try:
+        processing = corpus.metadata['Processing']
+    except:
+        processing = 0
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
+            'processing' : processing,\
 #            'documents': documents,\
             'number' : number,\
             'dates' : chart,\

@@ -10,6 +10,8 @@ NodeType = models.NodeType.sa
 NodeNgram = models.Node_Ngram.sa
 NodeNodeNgram = models.NodeNgramNgram.sa
 Ngram = models.Ngram.sa
+Node_Metadata = models.Node_Metadata.sa
+Metadata = models.Metadata.sa
 Node = models.Node.sa
 Corpus = models.Corpus.sa
 
@@ -36,7 +38,7 @@ def result2dict(query):
     return(results)
 
 
-def diachronic_specificity(corpus_id, string, order=True):
+def diachronic_specificity(corpus_id, terms, order=True):
     ''' 
     Take as parameter Corpus primary key and text of ngrams.
     Result is a dictionnary.
@@ -44,33 +46,44 @@ def diachronic_specificity(corpus_id, string, order=True):
     Values are measure to indicate diachronic specificity.
     Nowadays, the measure is rather simple: distance of frequency of period from mean of frequency of all corpus.
     '''
-    corpus = session.query(Node).get(int(corpus_id))
-    ngram = session.query(Ngram).filter(Ngram.terms == string).first()
-    
-    ngram_frequency_query = session.query(Node.metadata['publication_year'], func.count('*'))                        .join(NodeNgram, Node.id == NodeNgram.node_id)                        .filter( NodeNgram.ngram == ngram)                        .filter(Node.parent_id == corpus.id)                        .group_by(Node.metadata['publication_year']).all()
+    ngram_frequency_query = (session
+        .query(Node.metadata['publication_year'], func.count('*'))
+        .join(NodeNgram, Node.id == NodeNgram.node_id)
+        .join(Ngram, Ngram.id == NodeNgram.ngram_id)
+        .filter(Ngram.terms == terms)
+        .filter(Node.parent_id == corpus_id)
+        .group_by(Node.metadata['publication_year'])
+    )
 
-    document_year_sum_query = session.query(Node.metadata['publication_year'], func.count('*'))            .filter(Node.parent_id == corpus.id)            .group_by(Node.metadata['publication_year']).all()
+    document_year_sum_query = (session
+        .query(Node.metadata['publication_year'], func.count('*'))
+        .filter(Node.parent_id == corpus_id)
+        .group_by(Node.metadata['publication_year'])
+    )
             
             
-    document_filterByngram_year = result2dict(ngram_frequency_query)
-    document_all_year = result2dict(document_year_sum_query)
+    document_filterByngram_year = dict(ngram_frequency_query.all())
+    document_all_year = dict(document_year_sum_query.all())
     #print(document_all_year)
-    data = dict()
     
-    for year in document_all_year.keys():
-       data[year] = document_filterByngram_year.get(year, 0) / document_all_year[year]
+    relative_terms_count = dict()
+    for year, total in document_all_year.items():
+        terms_count = document_filterByngram_year.get(year, 0)
+        relative_terms_count[year] = terms_count / total
     
-    mean = np.mean(list(data.values()))
+    mean = np.mean(list(relative_terms_count.values()))
     
-    data_dict = dict(zip(data.keys(), list(map(lambda x: x - mean, data.values()))))
+    relative_terms_count = {
+        key: (value - mean)
+        for key, value in relative_terms_count.items()
+    }
     
     if order == True:
-        return collections.OrderedDict(sorted(data_dict.items()))
+        return collections.OrderedDict(sorted(relative_terms_count.items()))
     else:
-        return data_dict
+        return relative_terms_count
 
 
 # For tests
-#diachronic_specificity(102750, "bayer", order=True)
-
-
+# diachronic_specificity(102750, "bayer", order=True)
+# diachronic_specificity(26128, "bee", order=True)

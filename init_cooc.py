@@ -10,7 +10,7 @@ os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 from node.models import User, NodeType, Node
 
 
-user = User.objects.get(username = 'alexandre')
+user = User.objects.get(username = 'contro2015.lait')
 
 # Reset: all data
 

@@ -131,9 +131,9 @@ class Node(CTENode):
     def add_resource(self, **kwargs):
         # only for tests
         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
-
         #resource = Resource(**kwargs)
         resource.save()
+
         # User
         if 'user' not in kwargs and 'user_id' not in kwargs:
             resource.user = self.user
@@ -236,11 +236,13 @@ class Node(CTENode):
 
     @current_app.task(filter=task_method)
     def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+        print("In workflow() START")
         self.parse_resources()
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
         from analysis.functions import do_tfidf
         do_tfidf(self)
+        print("In workflow() END")
 
 class Node_Metadata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)

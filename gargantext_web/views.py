@@ -9,7 +9,7 @@ from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
-from node.admin import CorpusForm, ProjectForm, ResourceForm
+from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
 
 from django.contrib.auth.models import User
 
@@ -26,6 +26,35 @@ from collections import defaultdict
 from parsing.FileParsers import *
 
 # SOME FUNCTIONS
+
+from gargantext_web.settings import DEBUG
+from django.http import *
+from django.shortcuts import render_to_response,redirect
+from django.template import RequestContext
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+
+def login_user(request):
+    logout(request)
+    username = password = ''
+    print(request)
+    if request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect('/projects/')
+    return render_to_response('authentication.html', context_instance=RequestContext(request))
+
+
+def logout_user(request):
+    logout(request)
+    return HttpResponseRedirect('/')
+    # Redirect to a success page.
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -68,6 +97,25 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
+from gargantext_web import team
+def about(request):
+    '''
+    About Gargantext, the team and sponsors
+    '''
+    template = get_template('about.html')
+    user = request.user
+    date = datetime.datetime.now()
+    members = team.get_team()
+
+    html = template.render(Context({\
+            'user': user,\
+            'date': date,\
+            'team': members,\
+            }))
+    
+    return HttpResponse(html)
+
+
 def home(request):
     '''
     Home describes the platform.
@@ -92,7 +140,7 @@ def projects(request):
     To each project, we can link a resource that can be an image.
     '''
     if not request.user.is_authenticated():
-        return redirect('/admin/logout/?next=%s' % request.path)
+        return redirect('/auth/')
     
     t = get_template('projects.html')
     
@@ -120,6 +168,7 @@ def projects(request):
         'number': number,
         'projects': projects
         })
+
 
 def project(request, project_id):
     '''
@@ -186,76 +235,172 @@ def project(request, project_id):
 
 
     if request.method == 'POST':
-        #form = CorpusForm(request.POST, request.FILES)
-        #print(str(request.POST))
-        name        = str(request.POST['name'])
+        print("original file:")
+        print(request.FILES)
 
-        try:
-            resource_type = ResourceType.objects.get(id=str(request.POST['type']))
-        except Exception as error:
-            print(error)
-            resource_type = None
-        
-        try:
-            file = request.FILES['file']
-        except Exception as error:
-            print(error)
-            file = None
+        form = CustomForm(request.POST, request.FILES)
+        if form.is_valid():
 
-        #if name != "" and resource_type is not None and file is not None:
-        try:
-            parent      = Node.objects.get(id=project_id)
-            node_type   = NodeType.objects.get(name='Corpus')
+
+            name = form.cleaned_data['name']
+            thefile = form.cleaned_data['file']
+            resource_type = ResourceType.objects.get(id=str( form.cleaned_data['type'] ))
+
+            print("-------------")
+            print(name,"|",resource_type,"|",thefile)
+            print("-------------")
             
-            if resource_type.name == "europress_french":
-                language    = Language.objects.get(iso2='fr')
-            elif resource_type.name == "europress_english":
-                language    = Language.objects.get(iso2='en')
-            
-            try:
-                corpus = Node(
-                        user=request.user,
-                        parent=parent,
-                        type=node_type,
-                        language=language,
-                        name=name,
-                        )
-            except:
-                corpus = Node(
-                        user=request.user,
-                        parent=parent,
-                        type=node_type,
-                        name=name,
-                        )
-
-            corpus.save()
-            print(corpus.language)
-            corpus.add_resource(
-                    user=request.user,
-                    type=resource_type,
-                    file=file
-                    )
+            print("new file:")
+            print(thefile)
 
             try:
-                corpus.workflow()
-                #corpus.workflow((), countdown=3)
+                parent      = Node.objects.get(id=project_id)
+                node_type   = NodeType.objects.get(name='Corpus')
+                
+                if resource_type.name == "europress_french":
+                    language    = Language.objects.get(iso2='fr')
+                elif resource_type.name == "europress_english":
+                    language    = Language.objects.get(iso2='en')
+                
+                try:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            language=language,
+                            name=name,
+                            )
+                except:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            name=name,
+                            )
 
+                corpus.save()
+
+                print(request.user, resource_type , thefile )
+
+                corpus.add_resource(
+                        user=request.user,
+                        type=resource_type,
+                        file=thefile
+                        )
+
+                try:
+                    #corpus.parse_and_extract_ngrams()
+                    #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                    if DEBUG is True:
+                        corpus.workflow()
+                    else:
+                        corpus.workflow.apply_async((), countdown=3)
+
+                except Exception as error:
+                    print(error)
+
+                return HttpResponseRedirect('/project/' + str(project_id))
+
+                
             except Exception as error:
-                print(error)
+                print('ee', error)
+                form = CorpusForm(request=request)
+                formResource = ResourceForm()
 
-            return HttpResponseRedirect('/project/' + str(project_id))
-        except Exception as error:
-            print('ee', error)
-            form = CorpusForm(request=request)
-            formResource = ResourceForm()
 
+        else:
+            print("bad form, bad form")
+            return render(request, 'project.html', {
+                    'form'          : form,
+                    'user'          : user,
+                    'date'          : date,
+                    'project'       : project,
+                    'donut'         : donut,
+                    'list_corpora'  : list_corpora,
+                    'whitelists'    : whitelists,
+                    'blacklists'    : blacklists,
+                    'cooclists'     : cooclists,
+                    'number'        : number,
+                })
     else:
-        form = CorpusForm(request=request)
-        formResource = ResourceForm()
+        form = CustomForm()
+
+
+    # if request.method == 'POST':
+    #     #form = CorpusForm(request.POST, request.FILES)
+    #     #print(str(request.POST))
+    #     name        = str(request.POST['name'])
+    #     try:
+    #         resource_type = ResourceType.objects.get(id=str(request.POST['type']))
+    #     except Exception as error:
+    #         print(error)
+    #         resource_type = None
+        
+    #     try:
+    #         file = request.FILES['file']
+    #     except Exception as error:
+    #         print(error)
+    #         file = None
+
+    #     #if name != "" and resource_type is not None and file is not None:
+    #     try:
+    #         parent      = Node.objects.get(id=project_id)
+    #         node_type   = NodeType.objects.get(name='Corpus')
+            
+    #         if resource_type.name == "europress_french":
+    #             language    = Language.objects.get(iso2='fr')
+    #         elif resource_type.name == "europress_english":
+    #             language    = Language.objects.get(iso2='en')
+            
+    #         try:
+    #             corpus = Node(
+    #                     user=request.user,
+    #                     parent=parent,
+    #                     type=node_type,
+    #                     language=language,
+    #                     name=name,
+    #                     )
+    #         except:
+    #             corpus = Node(
+    #                     user=request.user,
+    #                     parent=parent,
+    #                     type=node_type,
+    #                     name=name,
+    #                     )
+
+    #         corpus.save()
+
+    #         print(request.user, resource_type , file )
+    #         print(corpus.language)
+    #         corpus.add_resource(
+    #                 user=request.user,
+    #                 type=resource_type,
+    #                 file=file
+    #                 )
+
+    #         try:
+    #             #corpus.parse_and_extract_ngrams()
+    #             #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+    #             if DEBUG is True:
+    #                 corpus.workflow()
+    #             else:
+    #                 corpus.workflow.apply_async((), countdown=3)
+
+    #         except Exception as error:
+    #             print(error)
+
+    #         return HttpResponseRedirect('/project/' + str(project_id))
+    #     except Exception as error:
+    #         print('ee', error)
+    #         form = CorpusForm(request=request)
+    #         formResource = ResourceForm()
+
+    # else:
+    #     form = CorpusForm(request=request)
+    #     formResource = ResourceForm()
        
     return render(request, 'project.html', {
             'form'          : form,
-            'formResource'  : formResource,
             'user'          : user,
             'date'          : date,
             'project'       : project,
@@ -307,41 +452,41 @@ def corpus(request, project_id, corpus_id):
 #    except:
 #        sources_donut = []
     # Do a javascript query/api for that
-    query_date = """
-        SELECT
-            id,
-            metadata -> 'publication_year' as year,
-            metadata -> 'publication_month' as month, 
-            metadata -> 'publication_day' as day,
-            metadata -> 'title'
-        FROM
-            node_node AS n
-        WHERE
-            n.parent_id = %d
-        ORDER BY
-            year, month, day DESC
-        LIMIT
-            20
-        OFFSET
-            %d
-    """ % (corpus.id, 0)
-    try:
-        cursor = connection.cursor()
-
-        cursor.execute(query_date)
-        documents = list()
-        while True:
-            document = dict()
-            row = cursor.fetchone()
-            
-            if row is None:
-                break
-            document['id']      = row[0]
-            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
-            document['title']   = row[4]
-            documents.append(document)
-    except Exception as error:
-        print(error)
+#    query_date = """
+#        SELECT
+#            id,
+#            metadata -> 'publication_year' as year,
+#            metadata -> 'publication_month' as month, 
+#            metadata -> 'publication_day' as day,
+#            metadata -> 'title'
+#        FROM
+#            node_node AS n
+#        WHERE
+#            n.parent_id = %d
+#        ORDER BY
+#            year, month, day DESC
+#        LIMIT
+#            20
+#        OFFSET
+#            %d
+#    """ % (corpus.id, 0)
+#    try:
+#        cursor = connection.cursor()
+#
+#        cursor.execute(query_date)
+#        documents = list()
+#        while True:
+#            document = dict()
+#            row = cursor.fetchone()
+#            
+#            if row is None:
+#                break
+#            document['id']      = row[0]
+#            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
+#            document['title']   = row[4]
+#            documents.append(document)
+#    except Exception as error:
+#        print(error)
 
     try:
         chart = dict()
@@ -356,14 +501,12 @@ def corpus(request, project_id, corpus_id):
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
-            'documents': documents,\
+#            'documents': documents,\
             'number' : number,\
             'dates' : chart,\
             }))
     
     return HttpResponse(html)
-
-
 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -390,10 +533,11 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     
     project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
-    
+    type_document = NodeType.objects.get(name="Document")
     # retrieving all the documents
-    documents  = corpus.children.all()
-    number = corpus.children.count()
+    # documents  = corpus.children.all()
+    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
+    number = len(documents)
 
     filtered_docs = []
     # filtering documents by range-date
@@ -406,7 +550,7 @@ def subcorpus(request, project_id, corpus_id, start , end ):
                 filtered_docs.append(doc)
 
     # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date, reverse=True)
+    ordered = sorted(filtered_docs, key=lambda x: x.date)
 
     # pages of 10 elements. Like a sir.
     paginator = Paginator(ordered, 10)
@@ -458,10 +602,11 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     
     project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
-    
+    type_document = NodeType.objects.get(name="Document")
     # retrieving all the documents
-    documents  = corpus.children.all()
-    number = corpus.children.count()
+    # documents  = corpus.children.all()
+    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
+    number = len(documents)
 
     filtered_docs = []
     # filtering documents by range-date
@@ -518,38 +663,48 @@ def chart(request, project_id, corpus_id):
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
+    
     project = Node.objects.get(id=project_id)
+    corpus  = Node.objects.get(id=corpus_id)
+    
     html = t.render(Context({
-        'user': user,
-        'date': date,
-        'project' : project,
+        'user'      : user,
+        'date'      : date,
+        'project'   : project,
+        'corpus'    : corpus,
     }))    
     return HttpResponse(html)
 
-def matrix(request, corpus_id):
+def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)
 
-def graph(request, corpus_id):
+def graph(request, project_id, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
+    
+    project = Node.objects.get(id=project_id)
     corpus = Node.objects.get(id=corpus_id)
 
     html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            'project'   : project,\
             }))
     
     return HttpResponse(html)
@@ -666,8 +821,9 @@ def node_link(request, corpus_id):
     Create the HttpResponse object with the node_link dataset.
     '''
 
-   
+    print("In node_link() START")
     data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    print("In node_link() END")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):

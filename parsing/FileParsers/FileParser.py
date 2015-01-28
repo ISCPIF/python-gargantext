@@ -77,9 +77,9 @@ class FileParser:
                 if language:
                     break
         if language:
-            metadata["language_iso2"] = language.iso2
-            metadata["language_iso3"] = language.iso3
-            metadata["language_fullname"] = language.fullname
+            metadata["language_iso2"]       = language.iso2
+            metadata["language_iso3"]       = language.iso3
+            metadata["language_fullname"]   = language.fullname
         return metadata
         
     def format_metadata(self, metadata):
@@ -102,10 +102,16 @@ class FileParser:
         if zipfile.is_zipfile(file):
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
-                metadata_list += self.parse(zipArchive.open(filename, "r"))
+                try:
+                    metadata_list += self.parse(zipArchive.open(filename, "r"))
+                except Exception as error:
+                    print(error)
         # ...otherwise, let's parse it directly!
         else:
-            metadata_list += self._parse(file)
+            try:
+                metadata_list += self._parse(file)
+            except Exception as error:
+                print(error)
         # return the list of formatted metadata
         return map(self.format_metadata, metadata_list)
 

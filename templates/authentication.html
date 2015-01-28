@@ -1,0 +1,105 @@
+<html>
+<body>
+
+<head>
+
+        <link href="/static/grappelli/jquery/ui/css/custom-theme/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/static/grappelli/stylesheets/screen.css" rel="stylesheet" type="text/css" media="screen" />
+        
+            <link href="/static/grappelli/stylesheets/mueller/grid/output.css" rel="stylesheet" type="text/css" media="screen" />
+
+
+        <script src="/static/grappelli/jquery/jquery-1.9.1.min.js" type="text/javascript"></script>
+        <script src="/static/grappelli/jquery/ui/js/jquery-ui-1.10.3.custom.min.js" type="text/javascript"></script>
+        
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="/static/css/morris.css">
+            <!-- Grappelli Minified -->
+            <script src="/static/grappelli/js/grappelli.min.js" type="text/javascript"></script>
+</head>
+
+    <div id="grp-container">
+
+        <!-- HEADER -->
+        <header id="grp-header" class="">
+            
+
+                <!-- NAVIGATION -->
+                <div id="grp-navigation">
+                    <h1 id="grp-admin-title">Gargantext</h1>
+                    <!-- Nav-Global -->
+                </div>
+        </header>
+
+
+        <!-- CONTENT -->
+        <article id="grp-content" class="">
+            
+                
+            
+
+            <!-- CONTENT TITLE -->
+            <header id="grp-content-title">
+                <br><br><br>
+            </header>
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+            <!-- CONTENT-CONTAINER -->
+            <div id="grp-content-container">
+                
+                <div class="g-d-c g-d-10 g-centered">
+                    <form action="/auth/" method="post"><input type='hidden' name='csrfmiddlewaretoken' value='Yopwc8YatA3C68kSevZX9upoXdIcZzPn' />
+                        <fieldset class="grp-module grp-module-login">
+                            <h2>
+                                <span class="grp-current-page">Login</span>
+                            </h2a>
+                            <div class="grp-module">
+
+                                
+                                
+                                {% block main %}
+                                    <div id="login">
+                                        <form class="form-horizontal" name="LoginForm" action="/auth/" method="post">
+                                        {% csrf_token %}
+                                        {% if next %}
+                                            <input type="hidden" name="next" value="{{ next }}" />
+                                        {% endif %}
+                                        <div class="grp-row">
+                                            <label class="control-label" for="username">Username</label>
+                                            <input type="text" id="username" name="username"  placeholder="Username">
+                                        </div>
+                                        <div class="grp-row grp-connected">
+                                            <label class="control-label" for="password">Password</label>
+                                            <input type="password" name="password" id="password" placeholder="Password">
+                                        </div>
+                                
+                                
+                            </div>
+                        </fieldset>
+                        <div class="grp-module grp-submit-row">
+                            <ul>
+                                <li><input type="submit" class="grp-button grp-default" value="Log in" /></li>
+                            </ul>
+                        </div>
+                    </form>
+                    </div>
+                {% endblock %}
+                </div>
+            </div>
+
+        </article>
+
+        </div>
+</div>
+    </div>
+
+
+    
+    <script type="text/javascript">
+        (function($) {
+            $(window).load(function(){ $('#username').focus(); });
+        })(grp.jQuery);
+    </script>
+</body>
+</html>

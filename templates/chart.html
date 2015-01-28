@@ -13,8 +13,8 @@
 
     <div class="container theme-showcase" role="main">
         <div class="jumbotron">
-						<h1>{{ project.name }}</h1>
-            <p>Advanced charts</p>
+            <h1>Advanced chart</h1>
+            <p>Custom, test, interpret</p>
         </div>
     </div>
 
@@ -218,40 +218,39 @@
         </div>
     -->
 
-        <div ng-app="Gargantext" ng-controller="GraphController">        
+
+
+        <div ng-app="Gargantext" ng-controller="GraphController">
+
             
             <ul class="datasets">
                 <button class="add" ng-click="addDataset()">Add a dataset...</button>
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
-                    <hr/>                
+                    <hr/>
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
                         <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
-                        in the corpus
-                        <select ng-model="corpusId" ng-change="updateEntities()">
-                            <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
-                        </select>
+                        in the project
+                        <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
+                        corpus
+                        <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
                     </div>                    
                     <div class="filters" ng-if="entities">
                         <ul>
                             <li ng-repeat="filter in filters">
                                 <button ng-click="removeFilter($index)" title="remove this filter">x</button>
                                 <span>...where the </span>
-                                <select ng-model="filter.entity">
-                                    <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-                                </select>
-                                <span ng-if="filter.entity">
-                                    <select ng-model="filter.column">
-                                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
-                                    </select>
-                                    <span ng-if="filter.column" ng-repeat="column in entities[filter.entity]">
-                                        <span ng-if="column.key == filter.column">
-                                            <select ng-model="filter.operator">
-                                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
-                                            </select>
-                                            <input type="text" ng-model="filter.value" ng-change="updateQuery()">
-                                        </span>
-                                    </span>
+                                <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
+                                <span ng-if="filter.entity.key != 'ngrams'">
+                                    <select ng-if="filter.entity" ng-model="filter.column" ng-options="column as column.key for column in filter.entity.columns | orderBy:'key'"></select>
+                                    <select ng-if="filter.column" ng-model="filter.operator" ng-options="operator.key as operator.label for operator in operators[filter.column.type]"></select>
+                                    <input ng-if="filter.operator" type="text" ng-model="filter.value" ng-change="updateQuery()">
+                                </span>
+                                <span ng-if="filter.entity.key == 'ngrams'">
+                                    are in this list:
+                                    <tags-input ng-model="filter.value" display-property="terms" placeholder="Add an ngram" on-tag-added="updateQuery()" on-tag-removed="updateQuery()" add-from-autocomplete-only="true">
+                                        <auto-complete source="getNgrams($query)"></auto-complete>
+                                    </tags-input ng-model="tags">
                                 </span>
                             </li>
                         </ul>
@@ -273,7 +272,7 @@
                 <br/>
 
                 Y-axis: use a
-                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['log', 'linear']"></select>
+                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['linear', 'log']"></select>
                 scale
                 <br/>
                 
@@ -334,7 +333,9 @@
     <script type="text/javascript" src="{% static "js/angular-cookies.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/d3/d3.v2.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/d3/n3.line-chart.min.js" %}"></script>
-    <!-- <script type="text/javascript" src="{% static "js/d3/angular-charts.js" %}"></script> -->
+
+    <script type="text/javascript" src="{% static "js/ng-tags-input.min.js" %}"></script>
+    <link rel="stylesheet" href="{% static "css/ng-tags-input.min.css" %}">
 
     <script type="text/javascript" src="{% static "js/gargantext.angular.js" %}"></script>
 

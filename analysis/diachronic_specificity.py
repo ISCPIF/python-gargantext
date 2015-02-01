@@ -6,9 +6,12 @@ from sqlalchemy.sql import func
 import numpy as np
 import collections
 
+ResourceType = models.ResourceType.sa
+Resource = models.Resource.sa
 NodeType = models.NodeType.sa
 NodeNgram = models.Node_Ngram.sa
-NodeNodeNgram = models.NodeNgramNgram.sa
+NodeNodeNgram = models.NodeNodeNgram.sa
+NodeNgramNgram = models.NodeNgramNgram.sa
 Ngram = models.Ngram.sa
 Node_Metadata = models.Node_Metadata.sa
 Metadata = models.Metadata.sa

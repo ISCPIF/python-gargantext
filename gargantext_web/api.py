@@ -397,6 +397,10 @@ class NodesChildrenQueries(APIView):
         # return value
         return field, _operators[operator], value
 
+    def _count_documents(self, query):
+        return {
+            'fields': []
+        }
 
     def post(self, request, node_id):
         """ Query the children of the given node.

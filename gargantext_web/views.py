@@ -64,6 +64,23 @@ def logo(request):
             }))
     return HttpResponse(svg_data, mimetype="image/svg+xml")
 
+def css(request):
+    template = get_template('bootstrap.css')
+    css = dict()
+    css['color']        = '#666666'
+    css['background']   = '#f8f8f7'
+    css['a']            = '#bd2525'
+    css['focus']        = '#7d1818'
+    css['hr']           = '#eaafae'
+    css['text']         = '#a2a3a2'
+    css['form']         = '#a5817f'
+    css['help']         = '#a6a6a6'
+    css_data = template.render(Context({\
+            'css': css,\
+            }))
+    return HttpResponse(css_data, mimetype="text/css")
+
+
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator

@@ -27,9 +27,9 @@ CELERY_IMPORTS=("node.models",)
 SECRET_KEY = 'bt)3n9v&a02cu7^^=+u_t2tmn8ex5fvx8$x4r*j*pb1yawd+rz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = False
 
 
 TEMPLATE_DIRS = (

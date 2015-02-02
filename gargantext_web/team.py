@@ -18,7 +18,7 @@ def get_team():
     '''
     team = [
             { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë', 'mail' : 'alexandre+gargantextATdelanoe.org', 'website' : 'http://alexandre.delanoe.org', 'picture' : 'alexandre.jpg'},
-            { 'first_name' : 'David', 'last_name' : 'Chavalarias', 'mail' : '', 'website' : 'http://chavalarias.com', 'picture' : 'david.jpg'},
+            { 'first_name' : 'David', 'last_name' : 'Chavalarias', 'mail' : 'david.chavalariasATiscpif.fr', 'website' : 'http://chavalarias.com', 'picture' : 'david.jpg'},
             { 'first_name' : 'Mathieu', 'last_name' : 'Rodic', 'mail' : '', 'website'  : 'http://rodic.fr', 'picture' : 'mathieu.jpg'},
             { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.', 'mail' : 'kaisleanATgmail.com', 'website'  : 'http://www.pksm3.droppages.com', 'picture' : 'samuel.jpg'},
             { 'first_name' : 'Elias', 'last_name' : 'Showk', 'mail' : '', 'website' : 'https://github.com/elishowk', 'picture' : ''},
@@ -35,7 +35,9 @@ def get_sponsors():
 
     '''
     sponsors = [
-            { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'logo.png'},
+            { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png'},
+            { 'name' : 'Institut Pasteur', 'website' : 'http://www.pasteur.fr', 'picture' : 'pasteur.png'},
+            { 'name' : 'Forccast', 'website' : 'http://forccast.hypotheses.org/', 'picture' : 'forccast.png'},
             # copy paste the line above and write your informations please
             ]
 

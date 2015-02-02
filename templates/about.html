@@ -25,7 +25,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseVersions">
+										<center>
 										<h2>Versions</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -61,7 +63,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseCommunity">
+										<center>
 										<h2>Community</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -99,7 +103,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseTeam">
+										<center>
 										<h2>Core team</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -135,11 +141,27 @@
 								</div>
 						</div>
 				</div>
-
 {% endif %}
 
 		</div>
 </div>
+
+{% if sponsors %}
+<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+										<center>
+										<h2>Sponsors</h2>
+										</center>
+<img src="{% static "img/sponsors/cnrs.png"%}" style="100px; height:150px">
+<img src="{% static "img/sponsors/iscpif.svg"%}" style="100px; height:150px">
+{% for sponsor in sponsors %}
+<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="100px; height:150px">
+{% endfor %}
+</div>
+</div>
+</div>
+{% endif %}
 
 
 

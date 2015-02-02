@@ -147,15 +147,18 @@ def about(request):
     '''
     About Gargantext, the team and sponsors
     '''
-    template = get_template('about.html')
-    user = request.user
-    date = datetime.datetime.now()
-    members = team.get_team()
+    template    = get_template('about.html')
+    user        = request.user
+    date        = datetime.datetime.now()
+    
+    members     = team.get_team()
+    sponsors    = team.get_sponsors()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
+            'sponsors':sponsors,\
             }))
     
     return HttpResponse(html)

@@ -153,11 +153,17 @@
 										<center>
 										<h2>Sponsors</h2>
 										</center>
-<img src="{% static "img/sponsors/cnrs.png"%}" style="100px; height:150px">
-<img src="{% static "img/sponsors/iscpif.svg"%}" style="100px; height:150px">
-{% for sponsor in sponsors %}
-<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="100px; height:150px">
-{% endfor %}
+										<a href="http://www.cnrs.fr" target="_blank" >
+										<img src="{% static "img/sponsors/cnrs.png"%}" alt="CNRS"  style="100px; height:150px">
+										</a>
+										<a href="http://www.iscpif.fr" target="_blank" >
+										<img src="{% static "img/sponsors/iscpif.svg"%}" style="100px; height:150px">
+										</a>
+										{% for sponsor in sponsors %}
+										<a href="{{ sponsor.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="100px; height:150px">
+										</a>
+										{% endfor %}
 </div>
 </div>
 </div>

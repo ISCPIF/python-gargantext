@@ -10,7 +10,7 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-from gargantext_web.sqla import *
+from gargantext_web.db import *
 
 
 def DebugHttpResponse(data):

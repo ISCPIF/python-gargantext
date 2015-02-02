@@ -6,7 +6,6 @@ DAEMON_DIR=$( cd "$(dirname "$BASH_SOURCE[0]")" && pwd)
 DAEMON_SCRIPT=$DAEMON_DIR/server.py
 DAEMON_NAME=nlpserver
 DAEMON_ARGS= 
-echo $DAEMON_SCRIPT
 # DAEMON_USER=root
  
 # The process ID of the script when it runs is stored here:

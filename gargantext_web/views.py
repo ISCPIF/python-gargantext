@@ -27,7 +27,7 @@ from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG
+from gargantext_web.settings import DEBUG, STATIC_ROOT
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -55,6 +55,15 @@ def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/')
     # Redirect to a success page.
+
+def logo(request):
+    template = get_template('logo.svg')
+    color = "#ff8080"
+    svg_data = template.render(Context({\
+            'color': color,\
+            }))
+    return HttpResponse(svg_data, mimetype="image/svg+xml")
+
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator

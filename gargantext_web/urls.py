@@ -19,6 +19,7 @@ urlpatterns = patterns('',
 
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
+    url(r'^img/logo.svg$', views.logo),
     
     # User Home view
     url(r'^$', views.home),

@@ -295,7 +295,7 @@
                     <br/>
                     Interpolation:
                     <select ng-model="graph.options.lineMode">
-                        <option ng-repeat="mode in ['bundle', 'linear']" value="{{ mode }}">{{ mode }}</option>
+                        <option ng-repeat="mode in ['linear', 'bundle']" value="{{ mode }}">{{ mode }}</option>
                     </select>
                     <span ng-if="graph.options.lineMode != 'linear'">
                         with a tension of

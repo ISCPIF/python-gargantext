@@ -381,7 +381,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 y: {key: 'y', type: 'linear', type: 'numeric'},
             },
             tension: 1.0,
-            lineMode: 'bundle',
+            lineMode: 'linear',
             tooltip: {mode: 'scrubber', formatter: function(x, y, series) {
                 var grouping = groupings.datetime[$scope.groupingKey];
                 return grouping.representation(x) + ' → ' + y;
@@ -442,6 +442,13 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             angular.forEach(results, function(result, r){
                 var x = grouping.truncate(result[0]);
                 var y = parseFloat(result[1]);
+                if (dataObject[x] === undefined) {
+                    var row = [];
+                    angular.forEach($scope.datasets, function(){
+                        row.push(0);
+                    });
+                    dataObject[x] = row;
+                }
                 dataObject[x][datasetIndex] += y;
             });
         });

@@ -25,7 +25,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseVersions">
+										<center>
 										<h2>Versions</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -35,15 +37,20 @@
 										<ul>
 												<li>Version 1.0</li>
 														<ul>
-																<li>Beta Version </li>
-																<li>Licence of Gargantext is GPL v3+ </li>
+																<li>[Start] Beta Version </li>
+																<li>[Law] Licence of Gargantext is GPL v3+ </li>
 														</ul>
 												<li>Version 1.0.5</li>
 														<ul>
-																<li>Bug resolution: xml zipped from Mac</li>
-																<li>Bug resolution: french accents in filenames</li>
+																<li>Bug resolution: [Import] xml zipped from Mac</li>
+																<li>Bug resolution: [Import] french accents in filenames</li>
 																<li>New features: [Advanced chart] ngrams completion</li>
-																<li>New features: button to delete all duplicates</li>
+																<li>New features: [Duplicates management] button to delete all duplicates</li>
+														</ul>
+												<li>Version 1.0.6</li>
+														<ul>
+																<li>Bug resolution: [Advanced chart] one can make comparisons with different corpora at different scales</li>
+																<li>Bug resolution: [Graph] Graph link can not be executed until workflow is finished.</li>
 														</ul>
 										</ul>
 								</div>
@@ -56,7 +63,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseCommunity">
+										<center>
 										<h2>Community</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -94,7 +103,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseTeam">
+										<center>
 										<h2>Core team</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -130,11 +141,33 @@
 								</div>
 						</div>
 				</div>
-
 {% endif %}
 
 		</div>
 </div>
+
+{% if sponsors %}
+<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+										<center>
+										<h2>Sponsors</h2>
+										<a href="http://www.cnrs.fr" target="_blank" >
+										<img src="{% static "img/sponsors/cnrs.png"%}" alt="CNRS"  style="height:100px">
+										</a>
+										<a href="http://www.iscpif.fr" target="_blank" >
+										<img src="{% static "img/sponsors/iscpif.svg"%}" style="height:100px">
+										</a>
+										{% for sponsor in sponsors %}
+										<a href="{{ sponsor.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="height:100px">
+										</a>
+										{% endfor %}
+										</center>
+</div>
+</div>
+</div>
+{% endif %}
 
 
 

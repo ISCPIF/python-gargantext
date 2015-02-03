@@ -243,6 +243,8 @@ class Node(CTENode):
 
         print("LOG::TIME: In workflow()    parse_resources()")
         start = time.time()
+        self.metadata['Processing'] = 1
+        self.save()
         self.parse_resources()
         end = time.time()
         print ("LOG::TIME: parse_resources() [s]",(end - start))
@@ -266,6 +268,8 @@ class Node(CTENode):
         print("LOG::TIME: In workflow()    / do_tfidf()")
 
         print("In workflow() END")
+        self.metadata['Processing'] = 0
+        self.save()
 
 class Node_Metadata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)

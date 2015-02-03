@@ -25,7 +25,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseVersions">
+										<center>
 										<h2>Versions</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -61,7 +63,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseCommunity">
+										<center>
 										<h2>Community</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -99,7 +103,9 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 								<a data-toggle="collapse" data-parent="#accordion" href="#collapseTeam">
+										<center>
 										<h2>Core team</h2>
+										</center>
 								</a>
 						</h2>
 				</div>
@@ -135,11 +141,33 @@
 								</div>
 						</div>
 				</div>
-
 {% endif %}
 
 		</div>
 </div>
+
+{% if sponsors %}
+<div class="panel panel-default">
+				<div class="panel-heading">
+						<h2 class="panel-title">
+										<center>
+										<h2>Sponsors</h2>
+										<a href="http://www.cnrs.fr" target="_blank" >
+										<img src="{% static "img/sponsors/cnrs.png"%}" alt="CNRS"  style="height:100px">
+										</a>
+										<a href="http://www.iscpif.fr" target="_blank" >
+										<img src="{% static "img/sponsors/iscpif.svg"%}" style="height:100px">
+										</a>
+										{% for sponsor in sponsors %}
+										<a href="{{ sponsor.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="height:100px">
+										</a>
+										{% endfor %}
+										</center>
+</div>
+</div>
+</div>
+{% endif %}
 
 
 

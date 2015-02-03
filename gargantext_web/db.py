@@ -2,17 +2,20 @@ from node import models
 from gargantext_web import settings
 
 
-Language = models.Language.sa
-Metadata = models.Metadata.sa
-Ngram = models.Ngram.sa
-Node = models.Node.sa
-Node_Metadata = models.Node_Metadata.sa
-NodeNgram = Node_Ngram = models.Node_Ngram.sa
-NodeNodeNgram = models.NodeNgramNgram.sa
-NodeType = models.NodeType.sa
-Resource = models.Resource.sa
-ResourceType = models.ResourceType.sa
+__all__ = ['literalquery', 'session', 'cache']
 
+
+# map the Django models found in node.models to SQLAlchemy models
+
+for model_name, model in models.__dict__.items():
+    if hasattr(model, 'sa'):
+        globals()[model_name] = model.sa
+        __all__.append(model_name)
+
+NodeNgram = Node_Ngram
+
+
+# debugging tool, to translate SQLAlchemy queries to string
 
 def literalquery(statement, dialect=None):
     """Generate an SQL expression string with bound parameters rendered inline
@@ -55,6 +58,9 @@ def literalquery(statement, dialect=None):
 
     return LiteralCompiler(dialect, statement)
 
+
+# SQLAlchemy session management
+
 def get_sessionmaker():
     from django.db import connections
     from sqlalchemy.orm import sessionmaker
@@ -67,6 +73,57 @@ def get_sessionmaker():
     engine = create_engine(url, use_native_hstore=True)
     return sessionmaker(bind=engine)
 
-
 Session = get_sessionmaker()
 session = Session()
+
+
+# SQLAlchemy model objects caching
+
+from sqlalchemy import or_
+
+class ModelCache(dict):
+
+    def __init__(self, model, preload=False):
+        self._model = model.sa
+        self._columns_names = [column.name for column in model._meta.fields if column.unique]
+        self._columns = [getattr(self._model, column_name) for column_name in self._columns_names]
+        self._columns_validators = []
+        if preload:
+            self.preload()
+
+    def __missing__(self, key):
+        for column in self._columns:
+            conditions = []
+            try:
+                formatted_key = column.type.python_type(key)
+                conditions.append(column == key)
+            except ValueError:
+                pass
+        if formatted_key in self:
+            self[key] = self[formatted_key]
+        else:
+            element = session.query(self._model).filter(or_(*conditions)).first()
+            if element is None:
+                raise KeyError
+            self[key] = element
+        return element
+
+    def preload(self):
+        self.clear()
+        for element in session.query(self._model).all():
+            for column_name in self._columns_names:
+                key = getattr(element, column_name)
+                self[key] = element
+
+class Cache:
+
+    def __getattr__(self, key):
+        try:
+            model = getattr(models, key)
+        except AttributeError:
+            raise AttributeError('No such model: `%s`' % key)
+        modelcache = ModelCache(model)
+        setattr(self, key, modelcache)
+        return modelcache
+
+cache = Cache()

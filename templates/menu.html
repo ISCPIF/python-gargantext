@@ -17,7 +17,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-					<a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="{% static "img/logo.svg" %}"></a>
+					<a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="/img/logo.svg"></a>
         </div>
         
         <div class="navbar-collapse collapse">
@@ -40,19 +40,20 @@
 
 				<ul class="nav pull-right">
 						<li class="dropdown">
-								<a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">:<i class="icon-user"></i> {{ user }}<i class="caret"></i>
+								<a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
 
 								</a>
 								<ul class="dropdown-menu">
-										<li><a tabindex="-1" href="/auth/">Login</a></li>
-										<li><a tabindex="-1" href="#">Profile</a></li>
+										<li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" target="blank" >Report Feedback</a></li>
 										<li class="divider"></li>
+								{% if user.is_authenticated %}
 										<li><a tabindex="-1" href="/auth/logout">Logout</a></li>
+										{% else %}
+										<li><a tabindex="-1" href="/auth/">Login</a></li>
+								{% endif %}
 								</ul>
 						</li>
 				</ul>
-
-          
       </div>
       </div>
     </div>
@@ -65,7 +66,8 @@
 <hr>
 
 <footer>
-        <p>Gargantext, version 1.0.6, Copyrights CNRS {{ date.year }}.</p>
+		<p>Gargantext, version 1.0.6, <a href="http://www.cnrs.fr" target="blank">Copyrights CNRS {{ date.year }}</a>, 
+		<a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank">Licence aGPLCV3</a>.</p>
 </footer>
 
 

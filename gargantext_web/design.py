@@ -41,18 +41,18 @@ def css(request):
         css['label_primary_focus']      = '#921d1d'
 
     else:
-        css['color']                    = '#E2E7EB' # color of text
-        css['background']               = '#8C9DAD' # container background
-        css['a']                        = '#093558'
-        css['focus']                    = '#556F86'
-        css['hr']                       = '#426A8A'
+        css['color']                    = '#AA2E09' # color of text 
+        css['background']               = '#93AA00' # background
+        css['a']                        = '#093551' # button primary
+        css['focus']                    = '#093551' #
+        css['hr']                       = '#426A8A' # container background
         css['text']                     = '#214A6D'
         css['form']                     = '#093558'
         css['help']                     = '#093558'
         css['border']                   = css['color']
-        css['button_background']        = css['background']
+        css['button_background']        = css['hr']
         css['button_border']            = css['background']
-        css['navbar_inverse_background']= css['hr']
+        css['navbar_inverse_background']= css['a']
         css['navbar_inverse_border']    = css['text']
         css['list_group']               = css['background']
         css['label_default']            = css['background']

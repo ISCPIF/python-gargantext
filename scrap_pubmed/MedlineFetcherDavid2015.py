@@ -83,6 +83,11 @@ class MedlineFetcher:
         eFetch = '%s/efetch.fcgi?email=youremail@example.org&rettype=%s&retmode=xml&retstart=%s&retmax=%s&db=%s&query_key=%s&WebEnv=%s' %(self.pubMedEutilsURL, self.reportType, retstart, retmax, self.pubMedDB, queryKey, webEnv)
         return eFetch
 
+    def ensure_dir(self , f):
+        d = os.path.dirname(f)
+        if not os.path.exists(d):
+            os.makedirs(d)
+
     # generic!
     def downloadFile(self, item):
         url = item[0]

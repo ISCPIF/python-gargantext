@@ -15,6 +15,7 @@ import json
 from gargantext_web.settings import MEDIA_ROOT
 from datetime import datetime
 import time
+import os
 import threading
 from django.core.files import File
 from gargantext_web.settings import DEBUG
@@ -83,6 +84,7 @@ def doTheQuery(request , project_id):
 
 		try:
 			tasks = MedlineFetcher()
+			tasks.ensure_dir ( MEDIA_ROOT + '/corpora/'+str(request.user)+"/" ) 
 			# configuring your queue with the event
 			for i in range(8):
 				t = threading.Thread(target=tasks.worker2) #thing to do

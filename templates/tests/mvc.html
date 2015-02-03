@@ -248,7 +248,7 @@
                                 </span>
                                 <span ng-if="filter.entity.key == 'ngrams'">
                                     are in this list:
-                                    <tags-input ng-model="filter.value" display-property="terms" placeholder="Add an ngram" on-tag-added="updateQuery()" on-tag-removed="updateQuery()" add-from-autocomplete-only="true">
+                                    <tags-input ng-model="filter.value" display-property="terms" placeholder="Add an ngram" on-tag-added="updateQuery()" on-tag-removed="updateQuery()" add-from-autocomplete-only="true" replace-spaces-with-dashes="false">
                                         <auto-complete source="getNgrams($query)"></auto-complete>
                                     </tags-input ng-model="tags">
                                 </span>

@@ -1880,7 +1880,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary {
   color: #ffffff;
   background-color: {{css.a}};
-  border-color: #a82121;
+  border-color: {{css.border}};
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -1888,8 +1888,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #9b1e1e;
-  border-color: #741717;
+  background-color: {{css.button_background}};
+  border-color: {{css.button_border}};
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -1912,7 +1912,7 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
   background-color: {{css.a}};
-  border-color: #a82121;
+  border-color: {{css.border}};
 }
 .btn-warning {
   color: #ffffff;
@@ -2767,7 +2767,7 @@ input[type="button"].btn-block {
   height: 0;
   margin-left: 2px;
   vertical-align: middle;
-  border-top: 4px solid #000000;
+  border-top: 4px solid {{css.navbar_inverse_border}};
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   border-bottom: 0 dotted;
@@ -2873,7 +2873,7 @@ input[type="button"].btn-block {
 .dropup .caret,
 .navbar-fixed-bottom .dropdown .caret {
   border-top: 0 dotted;
-  border-bottom: 4px solid #000000;
+  border-bottom: 4px solid {{css.navbar_inverse_border}};
   content: "";
 }
 .dropup .dropdown-menu,
@@ -3902,8 +3902,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
   color: #333333;
 }
 .navbar-inverse {
-  background-color: #090a09;
-  border-color: #000000;
+  background-color: {{css.navbar_inverse_background}};
+  border-color: {{css.navbar_inverse_border}};
 }
 .navbar-inverse .navbar-brand {
   color: {{css.text}};
@@ -3928,7 +3928,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .navbar-inverse .navbar-nav > .active > a:hover,
 .navbar-inverse .navbar-nav > .active > a:focus {
   color: #ffffff;
-  background-color: #000000;
+  background-color: {{css.navbar_inverse_border}};
 }
 .navbar-inverse .navbar-nav > .disabled > a,
 .navbar-inverse .navbar-nav > .disabled > a:hover,
@@ -3948,12 +3948,12 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .navbar-inverse .navbar-collapse,
 .navbar-inverse .navbar-form {
-  border-color: #000000;
+  border-color: {{css.navbar_inverse_border}};
 }
 .navbar-inverse .navbar-nav > .open > a,
 .navbar-inverse .navbar-nav > .open > a:hover,
 .navbar-inverse .navbar-nav > .open > a:focus {
-  background-color: #000000;
+  background-color: {{css.navbar_inverse_border}};
   color: #ffffff;
 }
 .navbar-inverse .navbar-nav > .dropdown > a:hover .caret {
@@ -3972,7 +3972,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 @media (max-width: 767px) {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .dropdown-header {
-    border-color: #000000;
+    border-color: {{css.navbar_inverse_border}};
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
     color: {{css.text}};
@@ -3986,7 +3986,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .active > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .active > a:focus {
     color: #ffffff;
-    background-color: #000000;
+    background-color: {{css.navbar_inverse_border}};
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > .disabled > a,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .disabled > a:hover,
@@ -4195,14 +4195,14 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .label-default[href]:hover,
 .label-default[href]:focus {
-  background-color: #888a88;
+  background-color: {{css.label_default}};
 }
 .label-primary {
   background-color: {{css.a}};
 }
 .label-primary[href]:hover,
 .label-primary[href]:focus {
-  background-color: #921d1d;
+  background-color: {{css.label_primary_focus}};
 }
 .label-success {
   background-color: #5cb85c;
@@ -4588,7 +4588,7 @@ a.list-group-item:focus {
 .list-group-item.active .list-group-item-text,
 .list-group-item.active:hover .list-group-item-text,
 .list-group-item.active:focus .list-group-item-text {
-  color: #f2bcbc;
+  color: {{css.list_group}};
 }
 .list-group-item-heading {
   margin-top: 0;
@@ -4807,14 +4807,14 @@ a.list-group-item:focus {
   font-size: 21px;
   font-weight: bold;
   line-height: 1;
-  color: #000000;
+  color: {{css.navbar_inverse_border}};
   text-shadow: 0 1px 0 #ffffff;
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
 .close:hover,
 .close:focus {
-  color: #000000;
+  color: {{css.navbar_inverse_border}};
   text-decoration: none;
   cursor: pointer;
   opacity: 0.5;
@@ -4885,7 +4885,7 @@ body.modal-open,
   bottom: 0;
   left: 0;
   z-index: 1030;
-  background-color: #000000;
+  background-color: {{css.navbar_inverse_border}};
 }
 .modal-backdrop.fade {
   opacity: 0;
@@ -5000,7 +5000,7 @@ body.modal-open,
   color: #ffffff;
   text-align: center;
   text-decoration: none;
-  background-color: #000000;
+  background-color: {{css.navbar_inverse_border}};
   border-radius: 4px;
 }
 .tooltip-arrow {
@@ -5015,52 +5015,52 @@ body.modal-open,
   left: 50%;
   margin-left: -5px;
   border-width: 5px 5px 0;
-  border-top-color: #000000;
+  border-top-color: {{css.navbar_inverse_border}};
 }
 .tooltip.top-left .tooltip-arrow {
   bottom: 0;
   left: 5px;
   border-width: 5px 5px 0;
-  border-top-color: #000000;
+  border-top-color: {{css.navbar_inverse_border}};
 }
 .tooltip.top-right .tooltip-arrow {
   bottom: 0;
   right: 5px;
   border-width: 5px 5px 0;
-  border-top-color: #000000;
+  border-top-color: {{css.navbar_inverse_border}};
 }
 .tooltip.right .tooltip-arrow {
   top: 50%;
   left: 0;
   margin-top: -5px;
   border-width: 5px 5px 5px 0;
-  border-right-color: #000000;
+  border-right-color: {{css.navbar_inverse_border}};
 }
 .tooltip.left .tooltip-arrow {
   top: 50%;
   right: 0;
   margin-top: -5px;
   border-width: 5px 0 5px 5px;
-  border-left-color: #000000;
+  border-left-color: {{css.navbar_inverse_border}};
 }
 .tooltip.bottom .tooltip-arrow {
   top: 0;
   left: 50%;
   margin-left: -5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #000000;
+  border-bottom-color: {{css.navbar_inverse_border}};
 }
 .tooltip.bottom-left .tooltip-arrow {
   top: 0;
   left: 5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #000000;
+  border-bottom-color: {{css.navbar_inverse_border}};
 }
 .tooltip.bottom-right .tooltip-arrow {
   top: 0;
   right: 5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #000000;
+  border-bottom-color: {{css.navbar_inverse_border}};
 }
 .popover {
   position: absolute;
@@ -5251,7 +5251,7 @@ body.modal-open,
   background-image: -moz-linear-gradient(left, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='{{css.navbar_inverse_border}}00', GradientType=1);
 }
 .carousel-control.right {
   left: auto;
@@ -5261,7 +5261,7 @@ body.modal-open,
   background-image: -moz-linear-gradient(left, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='{{css.navbar_inverse_border}}00', endColorstr='#80000000', GradientType=1);
 }
 .carousel-control:hover,
 .carousel-control:focus {

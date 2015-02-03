@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth.views import login
 
-from gargantext_web import views
+from gargantext_web import views, design
 
 import gargantext_web.api
 
@@ -19,8 +19,8 @@ urlpatterns = patterns('',
 
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
-    url(r'^img/logo.svg$', views.logo),
-    url(r'^css/bootstrap.css$', views.css),
+    url(r'^img/logo.svg$', design.logo),
+    url(r'^css/bootstrap.css$', design.css),
     
     # User Home view
     url(r'^$', views.home),

@@ -25,6 +25,7 @@ class PubmedFileParser(FileParser):
             metadata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
+                "title2"            : 'MedlineCitation/Article/VernacularTitle',
                 "language_iso3"     : 'MedlineCitation/Article/Language',
                 "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
                 "realdate_full_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/MedlineDate',
@@ -51,6 +52,13 @@ class PubmedFileParser(FileParser):
                 except:
                     pass
 
+            #Title-Decision
+            Title=""
+            if not metadata["title"] or metadata["title"]=="":
+                if "title2" in metadata:
+                    metadata["title"] = metadata["title2"]
+                else: metadata["title"] = ""
+
             # Date-Decision
             # forge.iscpif.fr/issues/1418
             RealDate = ""
@@ -68,19 +76,25 @@ class PubmedFileParser(FileParser):
             if "publication_month" in metadata: PubmedDate+=" "+metadata["publication_month"]
             if "publication_day" in metadata: PubmedDate+=" "+metadata["publication_day"]
 
-
+            Decision=""
             if len(RealDate)>4:
-                if len(RealDate)>8: decision = datetime.strptime(RealDate, '%Y %b %d').date()
-                else: decision = datetime.strptime(RealDate, '%Y %b').date()
-            else: decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                if len(RealDate)>8:
+                    try: Decision = datetime.strptime(RealDate, '%Y %b %d').date()
+                    except: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                else: 
+                    try: Decision = datetime.strptime(RealDate, '%Y %b').date()
+                    except: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+            else: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
 
-            if "publication_year" in metadata: metadata["publication_year"] = str(decision.year)
-            if "publication_month" in metadata: metadata["publication_month"] = str(decision.month)
-            if "publication_day" in metadata: metadata["publication_day"] = str(decision.day)
+            if "publication_year" in metadata: metadata["publication_year"] = str(Decision.year)
+            if "publication_month" in metadata: metadata["publication_month"] = str(Decision.month)
+            if "publication_day" in metadata: metadata["publication_day"] = str(Decision.day)
             if "realdate_year_" in metadata: metadata.pop("realdate_year_")
             if "realdate_month_" in metadata: metadata.pop("realdate_month_")
             if "realdate_day_" in metadata: metadata.pop("realdate_day_")
+            if "title2" in metadata: metadata.pop("title2")
             
+            # print(metadata)
             metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

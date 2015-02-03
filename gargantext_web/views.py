@@ -223,8 +223,14 @@ def project(request, project_id):
         corpus_view['count']      = corpus.children.count()
 
         #just get first element of the corpora and get his type.
-        corpus_type = Node_Resource.objects.filter(node=corpus)[0].resource.type
-        list_corpora[corpus_type].append(corpus_view)
+
+        resource_corpus = Node_Resource.objects.filter(node=corpus)
+        if len(resource_corpus)>0:
+            # print(Node_Resource.objects.filter(node=corpus).all())
+            corpus_type = Node_Resource.objects.filter(node=corpus)[0].resource.type
+            list_corpora[corpus_type].append(corpus_view)
+            donut_part[corpus_type] += docs_count
+        else: print(" Node_Resource = this.corpus(",corpus.pk,") ... nothing, why?")
 
         ## For avoiding to list repeated elements, like when u use the dynamic query (per each xml, 1)
         # for node_resource in Node_Resource.objects.filter(node=corpus):
@@ -237,6 +243,8 @@ def project(request, project_id):
     if docs_total == 0 or docs_total is None:
         docs_total = 1
 
+
+    # The donut will show: percentage by  
     donut = [ {'source': key, 
                 'count': donut_part[key] , 
                 'part' : round(donut_part[key] * 100 / docs_total) } \
@@ -246,12 +254,15 @@ def project(request, project_id):
     if request.method == 'POST':
 
         form = CustomForm(request.POST, request.FILES)
+
         if form.is_valid():
 
 
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
-            resource_type = ResourceType.objects.get(id=str( form.cleaned_data['type'] ))
+            print(request.POST['type'])
+            print(form.cleaned_data['type'])
+            resource_type = ResourceType.objects.get(name=str( form.cleaned_data['type'] ))
 
             print("-------------")
             print(name,"|",resource_type,"|",thefile)
@@ -326,6 +337,7 @@ def project(request, project_id):
                 })
     else:
         form = CustomForm()
+
        
     return render(request, 'project.html', {
             'form'          : form,
@@ -748,9 +760,12 @@ def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
     '''
-
+    import time
     print("In node_link() START")
+    start = time.time()
     data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    end = time.time()
+    print ("LOG::TIME: get_cooc() [s]",(end - start))
     print("In node_link() END")
     return JsonHttpResponse(data)
 

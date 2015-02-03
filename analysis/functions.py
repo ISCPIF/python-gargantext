@@ -274,7 +274,6 @@ def do_tfidf(corpus, reset=True):
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
         
         if isinstance(corpus, Node) and corpus.type.name == "Corpus":
-            print(Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")))
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
                 for node_ngram in Node_Ngram.objects.filter(node=document):
                     try:

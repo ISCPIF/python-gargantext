@@ -10,29 +10,36 @@ import os
 import time
 # import libxml2
 from lxml import etree
+from datetime import datetime
+from django.core.files import File
+
+import threading
+from queue import Queue
+import time
 
 class MedlineFetcher:
 
     def __init__(self):
+        self.queue_size = 8
+        self.q = Queue()
+        self.firstResults = []
+        self.lock = threading.Lock() # lock to serialize console output
         self.pubMedEutilsURL = 'http://www.ncbi.nlm.nih.gov/entrez/eutils'
         self.pubMedDB = 'Pubmed'
         self.reportType = 'medline'
-        self.personalpath_mainPath = 'MedLine/'
-        if not os.path.isdir(self.personalpath_mainPath):
-            os.makedirs(self.personalpath_mainPath)
-            print ('Created directory ' + self.personalpath_mainPath)
 
-    # Return the:
+
+    # Return the globalResults!:
     # - count = 
     # - queryKey = 
     # - webEnv = 
     def medlineEsearch(self , query):
 
-        print ("MedlineFetcher::medlineEsearch :")
+        # print ("MedlineFetcher::medlineEsearch :")
 
         "Get number of results for query 'query' in variable 'count'"
         "Get also 'queryKey' and 'webEnv', which are used by function 'medlineEfetch'"
-        
+        origQuery = query
         query = query.replace(' ', '%20')
             
         eSearch = '%s/esearch.fcgi?db=%s&retmax=1&usehistory=y&term=%s' %(self.pubMedEutilsURL, self.pubMedDB, query)
@@ -50,13 +57,7 @@ class MedlineFetcher:
         findwebenv = etree.XPath("/eSearchResult/WebEnv/text()")
         webEnv = findwebenv(root)[0]
 
-        # doc = libxml2.parseDoc(data)
-        # count = doc.xpathEval('eSearchResult/Count/text()')[0]
-        # queryKey = doc.xpathEval('eSearchResult/QueryKey/text()')[0]
-        # webEnv = doc.xpathEval('eSearchResult/WebEnv/text()')[0]
-        # print count, queryKey, webEnv
-        values = { "count": int(str(count)), "queryKey": queryKey , "webEnv":webEnv }
-        print(values)
+        values = { "query":origQuery , "count": int(str(count)), "queryKey": queryKey , "webEnv":webEnv }
         return values
 
 
@@ -72,40 +73,58 @@ class MedlineFetcher:
         queryKey = fullquery["queryKey"]
         webEnv = fullquery["webEnv"]
 
-        print ("MedlineFetcher::medlineEfetchRAW :")
-
         "Fetch medline result for query 'query', saving results to file every 'retmax' articles"
 
         queryNoSpace = query.replace(' ', '') # No space in directory and file names, avoids stupid errors
         
-
-        # pubmedqueryfolder = personalpath.pubMedAbstractsPath + 'Pubmed_' + queryNoSpace
-        # if not os.path.isdir(pubmedqueryfolder):
-        #     os.makedirs(pubmedqueryfolder)
-
-        pubMedResultFileName = self.personalpath_mainPath + 'Pubmed_' + queryNoSpace + '.xml'
-        pubMedResultFile = open(pubMedResultFileName, 'w')
-        
-
-        print ('Query "' , query , '"\t:\t' , count , ' results')
-        print ('Starting fetching at ' , time.asctime(time.localtime()) )
+        print ("LOG::TIME: ",'medlineEfetchRAW :Query "' , query , '"\t:\t' , count , ' results')
 
         retstart = 0
-        # while(retstart < count):
         eFetch = '%s/efetch.fcgi?email=youremail@example.org&rettype=%s&retmode=xml&retstart=%s&retmax=%s&db=%s&query_key=%s&WebEnv=%s' %(self.pubMedEutilsURL, self.reportType, retstart, retmax, self.pubMedDB, queryKey, webEnv)
         return eFetch
-        #     if sys.version_info >= (3, 0): pubMedResultFile.write(eFetchResult.read().decode('utf-8'))
-        #     else: pubMedResultFile.write(eFetchResult.read())
-        #     retstart += retmax
-        #     break # you shall not pass !!
 
-        # pubMedResultFile.close()
-        # print ('Fetching for query ' , query , ' finished at ' , time.asctime(time.localtime()) )
-        # print (retmax , ' results written to file ' , pubMedResultFileName , '\n' )
-        # print("------------------------------------------")
-        # return ["everything","ok"]
+    # generic!
+    def downloadFile(self, item):
+        url = item[0]
+        filename = item[1]
+        print("\tin downloadFile:")
+        print(url,filename)
+        data = urlopen(url)
+        f = open(filename, 'w')
+        myfile = File(f)
+        myfile.write( data.read().decode('utf-8') )
+        myfile.close()
+        f.close()
+        with self.lock:
+            print(threading.current_thread().name, filename+" OK")
+            return filename
 
 
+    # generic!
+    def do_work(self,item):
+        # time.sleep(1) # pretend to do some lengthy work.
+        returnvalue = self.medlineEsearch(item)
+        with self.lock:
+            print(threading.current_thread().name, item)
+            return returnvalue
+
+    # The worker thread pulls an item from the queue and processes it
+    def worker(self):
+        while True:
+            item = self.q.get()
+            self.firstResults.append(self.do_work(item))
+            self.q.task_done()
+
+    def worker2(self):
+        while True:
+            item = self.q.get()
+            self.firstResults.append(self.downloadFile(item))
+            self.q.task_done()
+
+    def chunks(self , l , n):
+        print("chunks:")
+        for i in range(0, len(l), n):
+            yield l[i:i+n]
 
     # GLOBALLIMIT:
     # I will retrieve this exact amount of publications.
@@ -115,22 +134,34 @@ class MedlineFetcher:
     # - GlobalLimit : Number of publications i want.
     def serialFetcher(self , yearsNumber , query, globalLimit):
 
+        # Create the queue and thread pool.
+        for i in range(self.queue_size):
+             t = threading.Thread(target=self.worker)
+             t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+             t.start()
+        start = time.perf_counter()
+
         N = 0
 
         print ("MedlineFetcher::serialFetcher :")
         thequeries = []
+        globalresults = []
         for i in range(yearsNumber):
             year = str(2015 - i)
             print ('YEAR ' + year)
             print ('---------\n')
-            # medlineEfetch(str(year) + '[dp] '+query , 20000)
-            # medlineEfetchRAW(str(year) + '[dp] '+query , retmax=300)
             pubmedquery = str(year) + '[dp] '+query
-            globalresults = self.medlineEsearch(pubmedquery)
+            self.q.put( pubmedquery ) #put task in the queue
+        
+        self.q.join()
+        print('time:',time.perf_counter() - start)
+
+        for globalresults in self.firstResults:
+            # globalresults = self.medlineEsearch(pubmedquery)
             if globalresults["count"]>0:
                 N+=globalresults["count"]
                 querymetadata = { 
-                    "string": pubmedquery , 
+                    "string": globalresults["query"] , 
                     "count": globalresults["count"] , 
                     "queryKey":globalresults["queryKey"] , 
                     "webEnv":globalresults["webEnv"] , 
@@ -149,11 +180,3 @@ class MedlineFetcher:
             query["retmax"] = retmax_forthisyear
 
         return thequeries
-
-
-
-# serialFetcher(yearsNumber=3, 'microbiota' , globalLimit=100 )
-# query = str(2015)+ '[dp] '+'microbiota'
-# medlineEsearch( query )
-
-# 

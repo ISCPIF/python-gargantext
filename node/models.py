@@ -163,6 +163,7 @@ class Node(CTENode):
         for node_resource in self.node_resource.filter(parsed=False):
             resource = node_resource.resource
             parser = defaultdict(lambda:FileParser.FileParser, {
+                'istext'    : ISText,
                 'pubmed'    : PubmedFileParser,
                 'isi'       : IsiFileParser,
                 'ris'       : RisFileParser,
@@ -171,6 +172,7 @@ class Node(CTENode):
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
+            # print(parser.parse(str(resource.file)))
         # retrieve info from the database
         type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()
@@ -183,6 +185,8 @@ class Node(CTENode):
             language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
             if isinstance(language, tuple):
                 language = language[0]
+            # print("metadata_values:")
+            # print("\t",metadata_values,"\n- - - - - - - - - - - - ")
             Node(
                 user_id  = user_id,
                 type_id  = type_id,
@@ -191,7 +195,6 @@ class Node(CTENode):
                 language_id = language.id if language else None,
                 metadata = metadata_values
             ).save()
-
         # make metadata filterable
         self.children.all().make_metadata_filterable()
 
@@ -236,17 +239,32 @@ class Node(CTENode):
 
     @current_app.task(filter=task_method)
     def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
-        print("In workflow()    parse_resources()")
+        import time
+
+        print("LOG::TIME: In workflow()    parse_resources()")
+        start = time.time()
         self.parse_resources()
-        print("In workflow()    / parse_resources()")
-        print("In workflow()    extract_ngrams()")
+        end = time.time()
+        print ("LOG::TIME: parse_resources() [s]",(end - start))
+        print("LOG::TIME: In workflow()    / parse_resources()")
+
+        start = time.time()
+        print("LOG::TIME: In workflow()    extract_ngrams()")
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-        print("In workflow()    / extract_ngrams()")
+        end = time.time()
+        print ("LOG::TIME: ",(end - start))
+        print ("LOG::TIME: extract_ngrams() [s]",(end - start))
+        print("LOG::TIME: In workflow()    / extract_ngrams()")
+        
+        start = time.time()
         print("In workflow()    do_tfidf()")
         from analysis.functions import do_tfidf
         do_tfidf(self)
-        print("In workflow()    / do_tfidf()")
+        end = time.time()
+        print ("LOG::TIME: do_tfidf() [s]",(end - start))
+        print("LOG::TIME: In workflow()    / do_tfidf()")
+
         print("In workflow() END")
 
 class Node_Metadata(models.Model):

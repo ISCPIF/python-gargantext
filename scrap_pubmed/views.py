@@ -32,10 +32,10 @@ def getGlobalStats(request ):
 	if request.method == "POST":
 		query = request.POST["query"]
 		print ("LOG::TIME: query =", query )
-		print ("LOG::TIME: N =", 300 )
+		print ("LOG::TIME: N =", 100 )
 		instancia = MedlineFetcher()
 		# alist = instancia.serialFetcher( 5, query , int(request.POST["N"]) )
-		alist = instancia.serialFetcher( 5, query , 300 )
+		alist = instancia.serialFetcher( 5, query , 100 )
 
 	data = alist
 	return JsonHttpResponse(data)

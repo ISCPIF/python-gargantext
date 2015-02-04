@@ -24,7 +24,7 @@ def kamaieu(color_name, number=18, order=None):
     r, g, b = igraph.color_name_to_rgb(color_name)
     h, l, s = colorsys.rgb_to_hls(r, g, b)
     
-    colors_hls = [(h, l/(1 + 1.9 / light), s) for light in range(1,number)]
+    colors_hls = [(h, 0.2 + (l/(1 + 1.9 / light)), s) for light in range(1,number)]
     
     colors_rgb = [colorsys.hls_to_rgb(*color) for color in colors_hls]
 
@@ -76,23 +76,24 @@ def css(request):
     elif group == "test":
         list_css = [
         'focus',
+        'color',                # color of text
         'navbar_inverse_background',
         'navbar_inverse_border',
+        'hr',                   # container background
         'a',                    # button primary
-        'color',                # color of text
         'form',
         'help',
         'border',
         'button_background',
         'text',
         'button_border',
-        'hr',                   # container background
         'list_group',
         'label_default',
         'label_primary_focus',
         'background',           # background
+        'white',
                 ]
-        colors = kamaieu('violet', number=len(list_css))
+        colors = kamaieu('pink', number=len(list_css))
         css    = { i[0]: '#' + i[1].decode('utf-8') for i in zip(list_css, colors)}
         print(css)
     

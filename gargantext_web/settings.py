@@ -66,6 +66,7 @@ INSTALLED_APPS = (
     'cte_tree',
     'node',
     'ngram',
+    'scrap_pubmed',
     'django_hstore',
     'djcelery',
     'aldjemy',

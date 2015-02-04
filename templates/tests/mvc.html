@@ -240,6 +240,7 @@
                             <li ng-repeat="filter in filters">
                                 <button ng-click="removeFilter($index)" title="remove this filter">x</button>
                                 <span>...where the </span>
+
                                 <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
                                 <span ng-if="filter.entity.key != 'ngrams'">
                                     <select ng-if="filter.entity" ng-model="filter.column" ng-options="column as column.key for column in filter.entity.columns | orderBy:'key'"></select>

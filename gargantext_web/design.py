@@ -2,11 +2,45 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
+import igraph, colorsys, struct, binascii
+
+
+
+def hex2rgb(hex_color):
+    return struct.unpack('BBB', hex_color.decode('hex'))
+
+def rgb2hex(rgb_color):
+    return binascii.hexlify(struct.pack('BBB', *rgb_color))
+
+def round_tuple(data_tuple):
+    return(tuple(map(lambda x: round(x * 255), data_tuple)))
+
+
+def kamaieu(color_name, number=18, order=None):
+    '''
+    Order from dark to light
+    Order from light to dark
+    '''
+    r, g, b = igraph.color_name_to_rgb(color_name)
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    
+    colors_hls = [(h, l/(1 + 1.9 / light), s) for light in range(1,number)]
+    
+    colors_rgb = [colorsys.hls_to_rgb(*color) for color in colors_hls]
+
+    print(colors_rgb)
+    colors_rgb_round = list(map(round_tuple, colors_rgb))
+    print(colors_rgb_round)
+    colors_hex = [rgb2hex(color) for color in colors_rgb_round]
+    
+    return(colors_hex)
+
+
 
 def logo(request):
     template = get_template('logo.svg')
     group = "mines"
-    group = "cnrs"
+    #group = "cnrs"
     if group == "cnrs":
         color = "#093558"
     else:
@@ -20,7 +54,7 @@ def css(request):
     template = get_template('bootstrap.css')
     css = dict()
     group = "mines"
-    group = "cnrs"
+    group = "test"
 
     if group == "mines":
         css['color']                    = '#666666'
@@ -39,7 +73,29 @@ def css(request):
         css['list_group']               = '#f2bcbc'
         css['label_default']            = '#888a88'
         css['label_primary_focus']      = '#921d1d'
-
+    elif group == "test":
+        list_css = [
+        'focus',
+        'navbar_inverse_background',
+        'navbar_inverse_border',
+        'hr',                   # container background
+        'a',                    # button primary
+        'form',
+        'help',
+        'border',
+        'button_background',
+        'text',
+        'background',           # background
+        'button_border',
+        'list_group',
+        'label_default',
+        'label_primary_focus',
+        'color',                # color of text
+                ]
+        colors = kamaieu('pink', number=len(list_css))
+        css    = { i[0]: '#' + i[1].decode('utf-8') for i in zip(list_css, colors)}
+        print(css)
+    
     else:
         css['color']                    = '#AA2E09' # color of text 
         css['background']               = '#93AA00' # background

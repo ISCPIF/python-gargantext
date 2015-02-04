@@ -63,7 +63,7 @@ function deleteDuplicates(url) {
       success: function(data) {
         console.log("in DeleteDuplicates")
         console.log(data)
-        $("#delAll").remove();
+        location.reload();
       },
         error: function(result) {
             console.log("Data not found");

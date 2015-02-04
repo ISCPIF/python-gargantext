@@ -6,6 +6,7 @@ from django.contrib.auth.views import login
 from gargantext_web import views
 
 import gargantext_web.api
+import scrap_pubmed.views as pubmedscrapper
 
 
 admin.autodiscover()
@@ -67,7 +68,12 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
-    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments)
+    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
+
+    url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
+    url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
+    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX)
+
 )
 
 

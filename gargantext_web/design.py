@@ -78,21 +78,21 @@ def css(request):
         'focus',
         'navbar_inverse_background',
         'navbar_inverse_border',
-        'hr',                   # container background
         'a',                    # button primary
+        'color',                # color of text
         'form',
         'help',
         'border',
         'button_background',
         'text',
-        'background',           # background
         'button_border',
+        'hr',                   # container background
         'list_group',
         'label_default',
         'label_primary_focus',
-        'color',                # color of text
+        'background',           # background
                 ]
-        colors = kamaieu('pink', number=len(list_css))
+        colors = kamaieu('violet', number=len(list_css))
         css    = { i[0]: '#' + i[1].decode('utf-8') for i in zip(list_css, colors)}
         print(css)
     

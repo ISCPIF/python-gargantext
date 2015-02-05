@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
 
@@ -13,8 +13,9 @@ from urllib.request import urlopen, urlretrieve
 import json
 
 from gargantext_web.settings import MEDIA_ROOT
-from datetime import datetime
+# from datetime import datetime
 import time
+import datetime
 import os
 import threading
 from django.core.files import File
@@ -30,12 +31,13 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
+		N = 100
 		query = request.POST["query"]
-		print ("LOG::TIME: query =", query )
-		print ("LOG::TIME: N =", 100 )
+		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
+		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		instancia = MedlineFetcher()
 		# alist = instancia.serialFetcher( 5, query , int(request.POST["N"]) )
-		alist = instancia.serialFetcher( 5, query , 100 )
+		alist = instancia.serialFetcher( 5, query , N )
 
 	data = alist
 	return JsonHttpResponse(data)
@@ -73,6 +75,7 @@ def doTheQuery(request , project_id):
 		type_id = NodeType.objects.get(name='Document').id
 		user_id = User.objects.get( username=request.user ).id
 
+
 		corpus = Node(
 			user=request.user,
 			parent=parent,
@@ -91,7 +94,7 @@ def doTheQuery(request , project_id):
 				t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
 				t.start()
 			for url in urlreqs:
-				filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.now().microsecond))
+				filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
 				tasks.q.put( [url , filename]) #put a task in th queue
 			tasks.q.join() # wait until everything is finished
 			for filename in tasks.firstResults:

@@ -274,14 +274,19 @@ def do_tfidf(corpus, reset=True):
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
         
         if isinstance(corpus, Node) and corpus.type.name == "Corpus":
+            # print("\n- - - - - - - - - - ")
+            # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
+            # print("^^^",i)
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
                 for node_ngram in Node_Ngram.objects.filter(node=document):
                     try:
+                        # print("\t",node_ngram.ngram)
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
                     except:
                         score = tfidf(corpus, document, node_ngram.ngram)
                         nnn = NodeNodeNgram(nodex=corpus, nodey=node_ngram.node, ngram=node_ngram.ngram, score=score)
                         nnn.save()
+            # print("- - - - - - - - - - \n")
         else:
             print("Only corpus implemented yet, you put instead:", type(corpus))
 

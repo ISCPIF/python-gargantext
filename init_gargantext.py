@@ -217,10 +217,10 @@ corpus_pubmed.add_resource(
 for resource in corpus_pubmed.get_resources():
     print('Resource #%d - %s - %s' % (resource.id, resource.digest, resource.file))
     
-print('Parse corpus #%d...' % (corpus_pubmed.id, ))
-corpus_pubmed.parse_resources(verbose=True)
-print('Extract corpus #%d...' % (corpus_pubmed.id, ))
-corpus_pubmed.children.all().extract_ngrams(['title',])
-print('Parsed corpus #%d.' % (corpus_pubmed.id, ))
+# print('Parse corpus #%d...' % (corpus_pubmed.id, ))
+# corpus_pubmed.parse_resources(verbose=True)
+# print('Extract corpus #%d...' % (corpus_pubmed.id, ))
+# corpus_pubmed.children.all().extract_ngrams(['title',])
+# print('Parsed corpus #%d.' % (corpus_pubmed.id, ))
 
 exit()

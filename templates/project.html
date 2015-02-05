@@ -221,8 +221,6 @@
 					<button onclick='bringDaNoise();' id="submit_thing" disabled class="btn btn-primary" >Process this!</button><span id="simpleloader"></span>
 				</div>
 
-
-
 		</div>
 
       </div><!-- /.modal-content -->
@@ -245,8 +243,6 @@
 		    }
 		    return cookieValue;
 		}
-
-
 
 		var thequeries = []
 
@@ -331,6 +327,7 @@
 				console.log("enabling "+"#"+value.id)
 				$("#"+value.id).attr('onclick','getGlobalResults(this);');
 				// $("#submit_thing").prop('disabled' , false)
+				$("#submit_thing").html("Process a 100 sample!")
 
 	            thequeries = data
 	            var N=0,k=0;
@@ -364,6 +361,7 @@
 				$("#theresults").html("")
 	            $('#submit_thing').prop('disabled', false);
 	            $( "#id_name" ).on('input',null);
+	            $("#submit_thing").html("Process this!")
 			}
 			// @dynamic-query events
 			else {
@@ -391,6 +389,7 @@
 				$("#pubmedcrawl").css("visibility", "visible"); 
 				$("#pubmedcrawl").show();
 				$("#file_yes").click();
+				$("#submit_thing").html("Process this!")
 			} 
 			// hide Radio-Inputs and trigger @upload-file events
 			else {

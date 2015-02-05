@@ -11,6 +11,7 @@ from cte_tree.models import CTENode, CTENodeManager
 from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
 from parsing.FileParsers import *
 from time import time
+import datetime
 from collections import defaultdict
 import hashlib
 
@@ -160,6 +161,9 @@ class Node(CTENode):
     def parse_resources(self, verbose=False):
         # parse all resources into a list of metadata
         metadata_list = []
+        print("not parsed resources:")
+        print(self.node_resource.filter(parsed=False))
+        print("= = = = = = = = =  = =\n")
         for node_resource in self.node_resource.filter(parsed=False):
             resource = node_resource.resource
             parser = defaultdict(lambda:FileParser.FileParser, {
@@ -173,7 +177,11 @@ class Node(CTENode):
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
             # print(parser.parse(str(resource.file)))
-        # retrieve info from the database
+        # # retrieve info from the database
+        # print("\n - - -- - - - - - - - ")
+        # for i in metadata_list:
+        #     print("***",i["title"])
+        # print("- - -- - - - - - - - \n")
         type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()
         user_id = self.user.id
@@ -228,6 +236,7 @@ class Node(CTENode):
                     associations[terms] += 1
         #print(associations)
         # insert the occurrences in the database
+        # print(associations.items())
         Node_Ngram.objects.bulk_create([
             Node_Ngram(
                 node   = self,
@@ -247,16 +256,18 @@ class Node(CTENode):
         self.save()
         self.parse_resources()
         end = time.time()
-        print ("LOG::TIME: parse_resources() [s]",(end - start))
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
         print("LOG::TIME: In workflow()    / parse_resources()")
 
         start = time.time()
         print("LOG::TIME: In workflow()    extract_ngrams()")
+        print("\n- - - - - - - - - -")
         type_document   = NodeType.objects.get(name='Document')
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
         end = time.time()
+        print("- - - - - - - - - - \n")
         print ("LOG::TIME: ",(end - start))
-        print ("LOG::TIME: extract_ngrams() [s]",(end - start))
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
         print("LOG::TIME: In workflow()    / extract_ngrams()")
         
         start = time.time()
@@ -264,7 +275,7 @@ class Node(CTENode):
         from analysis.functions import do_tfidf
         do_tfidf(self)
         end = time.time()
-        print ("LOG::TIME: do_tfidf() [s]",(end - start))
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
         print("LOG::TIME: In workflow()    / do_tfidf()")
 
         print("In workflow() END")

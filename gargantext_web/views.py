@@ -34,6 +34,8 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
+from scrap_pubmed.admin import Logger
+
 def login_user(request):
     logout(request)
     username = password = ''
@@ -194,6 +196,7 @@ def projects(request):
     
     user = request.user
     date = datetime.datetime.now()
+    print(Logger.write("STATIC_ROOT"))
     
     project_type = NodeType.objects.get(name='Project')
     projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
@@ -299,6 +302,10 @@ def project(request, project_id):
                         for key in donut_part.keys() ]
 
 
+    dauser = User.objects.get( username=user )
+    groups = len(dauser.groups.filter(name="PubMed_0.1"))
+    print("*groupslen*:",groups)
+
     if request.method == 'POST':
 
         form = CustomForm(request.POST, request.FILES)
@@ -308,8 +315,6 @@ def project(request, project_id):
 
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
-            print(request.POST['type'])
-            print(form.cleaned_data['type'])
             resource_type = ResourceType.objects.get(name=str( form.cleaned_data['type'] ))
 
             print("-------------")
@@ -819,7 +824,7 @@ def node_link(request, corpus_id):
     start = time.time()
     data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     end = time.time()
-    print ("LOG::TIME: get_cooc() [s]",(end - start))
+    print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" get_cooc() [s]",(end - start))
     print("In node_link() END")
     return JsonHttpResponse(data)
 

@@ -10,12 +10,12 @@ import os
 import time
 # import libxml2
 from lxml import etree
-from datetime import datetime
+import datetime
 from django.core.files import File
 
 import threading
 from queue import Queue
-import time
+# import time
 
 class MedlineFetcher:
 
@@ -180,8 +180,9 @@ class MedlineFetcher:
 
         for i,query in enumerate(thequeries):
             k = query["count"]
-            percentage = k/float(N)
-            retmax_forthisyear = int(round(globalLimit*percentage))
+            proportion = k/float(N)
+            retmax_forthisyear = int(round(globalLimit*proportion))
             query["retmax"] = retmax_forthisyear
+            if query["retmax"]==0: query["retmax"]+=1
 
         return thequeries

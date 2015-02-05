@@ -39,6 +39,7 @@ class MedlineFetcher:
 
         "Get number of results for query 'query' in variable 'count'"
         "Get also 'queryKey' and 'webEnv', which are used by function 'medlineEfetch'"
+        print(query)
         origQuery = query
         query = query.replace(' ', '%20')
             

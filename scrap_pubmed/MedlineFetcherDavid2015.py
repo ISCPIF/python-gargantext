@@ -12,6 +12,7 @@ import time
 from lxml import etree
 import datetime
 from django.core.files import File
+import codecs
 
 import threading
 from queue import Queue
@@ -39,6 +40,7 @@ class MedlineFetcher:
 
         "Get number of results for query 'query' in variable 'count'"
         "Get also 'queryKey' and 'webEnv', which are used by function 'medlineEfetch'"
+        print(query)
         origQuery = query
         query = query.replace(' ', '%20')
             
@@ -92,10 +94,10 @@ class MedlineFetcher:
     def downloadFile(self, item):
         url = item[0]
         filename = item[1]
-        print("\tin downloadFile:")
-        print(url,filename)
+        print("\tin test_downloadFile:")
+        # print(url,filename)
         data = urlopen(url)
-        f = open(filename, 'w')
+        f = codecs.open(filename, "w" ,encoding='utf-8')
         myfile = File(f)
         myfile.write( data.read().decode('utf-8') )
         myfile.close()
@@ -104,6 +106,13 @@ class MedlineFetcher:
             print(threading.current_thread().name, filename+" OK")
             return filename
 
+    # generic!
+    def test_downloadFile(self, item):
+        url = item[0]
+        filename = item[1]
+        print("\tin downloadFile:")
+        data = urlopen(url)
+        return data
 
     # generic!
     def do_work(self,item):
@@ -123,7 +132,10 @@ class MedlineFetcher:
     def worker2(self):
         while True:
             item = self.q.get()
-            self.firstResults.append(self.downloadFile(item))
+            results = []
+            try: result = self.downloadFile(item)
+            except: result = False
+            self.firstResults.append(result)
             self.q.task_done()
 
     def chunks(self , l , n):

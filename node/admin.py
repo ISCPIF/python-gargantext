@@ -125,8 +125,8 @@ class CustomForm(forms.Form):
         #     file_.name = str(datetime.now().microsecond)
         #     # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
         # #File size
-        if len(file_)>104857600:
-            raise forms.ValidationError(_('File to heavy! (<100MB).'))
+        # if len(file_)>104857600:
+        #     raise forms.ValidationError(_('File to heavy! (<100MB).'))
         ## File type:
         # if file_.content_type == "application/zip":
         #     raise forms.ValidationError(_('We need a zip pls.'))

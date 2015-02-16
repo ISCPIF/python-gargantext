@@ -43,6 +43,32 @@ def getGlobalStats(request ):
 	return JsonHttpResponse(data)
 
 
+
+def getGlobalStatsISTEXT(request ):
+	print(request.method)
+	alist = ["bar","foo"]
+
+	if request.method == "POST":
+		N = 100
+		query = request.POST["query"]
+		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
+		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
+		query_string = query.replace(" ","+")
+		url = "http://api.istex.fr/document/?q="+query_string
+
+		tasks = MedlineFetcher()
+
+		filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
+
+		try: 
+			thedata = tasks.test_downloadFile( [url,filename] )
+			alist = thedata.read().decode('utf-8')
+		except Exception as error:
+			alist = [str(error)]
+	data = alist
+	return JsonHttpResponse(data)
+
+
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
@@ -85,36 +111,36 @@ def doTheQuery(request , project_id):
 
 		corpus.save()
 
-		try:
-			tasks = MedlineFetcher()
-			tasks.ensure_dir ( MEDIA_ROOT + '/corpora/'+str(request.user)+"/" ) 
-			# configuring your queue with the event
-			for i in range(8):
-				t = threading.Thread(target=tasks.worker2) #thing to do
-				t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-				t.start()
-			for url in urlreqs:
-				filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
-				tasks.q.put( [url , filename]) #put a task in th queue
-			tasks.q.join() # wait until everything is finished
-			for filename in tasks.firstResults:
+		tasks = MedlineFetcher()
+		for i in range(8):
+			t = threading.Thread(target=tasks.worker2) #thing to do
+			t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+			t.start()
+		for url in urlreqs:
+			filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
+			tasks.q.put( [url , filename]) #put a task in th queue
+		tasks.q.join() # wait until everything is finished
+
+		dwnldsOK = 0
+		for filename in tasks.firstResults:
+			if filename!=False:
 				corpus.add_resource( user=request.user, type=resource_type, file=filename )
+				dwnldsOK+=1
+			
+		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
-			# do the WorkFlow
-			try:
-				if DEBUG is True:
-					corpus.workflow()
-				else:
-					corpus.workflow.apply_async((), countdown=3)
+		# do the WorkFlow
+		try:
+			if DEBUG is True:
+				corpus.workflow()
+			else:
+				corpus.workflow.apply_async((), countdown=3)
 
-				return JsonHttpResponse(["workflow","finished"])
-			except Exception as error:
-				print(error)
-
-			return JsonHttpResponse(["workflow","finished","outside the try-except"])
-
+			return JsonHttpResponse(["workflow","finished"])
 		except Exception as error:
-			print("lele",error)
+			print(error)
+
+		return JsonHttpResponse(["workflow","finished","outside the try-except"])
 
 	data = alist
 	return JsonHttpResponse(data)
@@ -146,7 +172,8 @@ def testISTEX(request , project_id):
 			urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
 		print(urlreqs)
 
-		# urlreqs = ["http://localhost/374255" , "http://localhost/374278" ]
+		urlreqs = ["http://localhost/374255" , "http://localhost/374278" ]
+		print(urlreqs)
 
 		resource_type = ResourceType.objects.get(name="istext" )
 

@@ -12,6 +12,7 @@ import time
 from lxml import etree
 import datetime
 from django.core.files import File
+import codecs
 
 import threading
 from queue import Queue
@@ -93,10 +94,10 @@ class MedlineFetcher:
     def downloadFile(self, item):
         url = item[0]
         filename = item[1]
-        print("\tin downloadFile:")
-        print(url,filename)
+        print("\tin test_downloadFile:")
+        # print(url,filename)
         data = urlopen(url)
-        f = open(filename, 'w')
+        f = codecs.open(filename, "w" ,encoding='utf-8')
         myfile = File(f)
         myfile.write( data.read().decode('utf-8') )
         myfile.close()

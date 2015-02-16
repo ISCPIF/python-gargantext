@@ -369,8 +369,18 @@
 					// $("#submit_thing").prop('disabled' , false)
 					$("#submit_thing").html("Process a 100 sample!")
 
-					$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+data[0]+"</i><br>")
 		            thequeries = data
+		            var N=data.length,k=0;
+		            console.log("N: "+N)
+		            // for(var i in thequeries) N += thequeries[i].count
+		            if( N>1) {
+		            	var total = JSON.parse(data).total
+		            	$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+total+" publications.</i><br>")
+		            	$('#submit_thing').prop('disabled', false);
+		            } else {
+		            	$("#theresults").html("<i>  <b>"+data[0]+"</b></i><br>")
+		            	$('#submit_thing').prop('disabled', true);
+		            }
 
 			      },
 			        error: function(result) {

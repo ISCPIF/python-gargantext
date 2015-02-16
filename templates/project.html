@@ -313,44 +313,77 @@
 			console.log("disabling "+"#"+value.id)
 			$("#"+value.id).prop('onclick',null);
 
-		    $.ajax({
-			  // contentType: "application/json",
-		      url: window.location.origin+"/tests/pubmedquery",
-		      data: formData,
-		      type: 'POST',
-		      beforeSend: function(xhr) {
-		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-		      },
-		      success: function(data) {
-				console.log("in getGlobalResults")
-		        console.log(data)
-				console.log("enabling "+"#"+value.id)
-				$("#"+value.id).attr('onclick','getGlobalResults(this);');
-				// $("#submit_thing").prop('disabled' , false)
-				$("#submit_thing").html("Process a 100 sample!")
+			var theType = $("#id_type option:selected").html();
 
-	            thequeries = data
-	            var N=0,k=0;
+			if(theType=="pubmed") {
+			    $.ajax({
+				  // contentType: "application/json",
+			      url: window.location.origin+"/tests/pubmedquery",
+			      data: formData,
+			      type: 'POST',
+			      beforeSend: function(xhr) {
+			        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+			      },
+			      success: function(data) {
+					console.log("in getGlobalResults")
+			        console.log(data)
+					console.log("enabling "+"#"+value.id)
+					$("#"+value.id).attr('onclick','getGlobalResults(this);');
+					// $("#submit_thing").prop('disabled' , false)
+					$("#submit_thing").html("Process a 100 sample!")
 
-	            for(var i in thequeries) N += thequeries[i].count
-	            if( N>0) {
-	            	$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications in the last 5 years</i><br>")
-	            	$('#submit_thing').prop('disabled', false);
-	            } else {
-	            	$("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
-	            	$('#submit_thing').prop('disabled', true);
-	            }
+		            thequeries = data
+		            var N=0,k=0;
 
-		      },
-		        error: function(result) {
-		            console.log("Data not found");
-		        }
-		    });	
+		            for(var i in thequeries) N += thequeries[i].count
+		            if( N>0) {
+		            	$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications in the last 5 years</i><br>")
+		            	$('#submit_thing').prop('disabled', false);
+		            } else {
+		            	$("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+		            	$('#submit_thing').prop('disabled', true);
+		            }
+
+			      },
+			        error: function(result) {
+			            console.log("Data not found");
+			        }
+			    });	
+			}
+
+			if(theType=="istext") {
+				console.log(window.location.origin+"tests/istextquery")
+			    $.ajax({
+				  // contentType: "application/json",
+			      url: window.location.origin+"/tests/istextquery",
+			      data: formData,
+			      type: 'POST',
+			      beforeSend: function(xhr) {
+			        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+			      },
+			      success: function(data) {
+					console.log("in getGlobalResults")
+			        console.log(data)
+					console.log("enabling "+"#"+value.id)
+					$("#"+value.id).attr('onclick','getGlobalResults(this);');
+					// $("#submit_thing").prop('disabled' , false)
+					$("#submit_thing").html("Process a 100 sample!")
+
+					$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+data[0]+"</i><br>")
+		            thequeries = data
+
+			      },
+			        error: function(result) {
+			            console.log("Data not found");
+			        }
+			    });	
+			}
 		}
 
 		// CSS events for selecting one Radio-Input
 		function FileOrNotFile( value ) {
 			var showfile = JSON.parse(value)
+			var theType = $("#id_type option:selected").html();
 			// @upload-file events
 			if (showfile) {
 				console.log("You've clicked the YES") 
@@ -376,7 +409,7 @@
 
 				$( "#id_name" ).on('input',function(e){
 					console.log($(this).val())
-					testAjax( $(this).val() )
+					if(theType=="pubmed") testPUBMED( $(this).val() )
 				}); 
 			}
 		}
@@ -384,8 +417,8 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			if(selected=="pubmed") {
-				console.log("show the button")
+			if(selected=="pubmed" || selected=="istext") {
+				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 
 				$("#pubmedcrawl").show();
 				$("#file_yes").click();
@@ -414,7 +447,7 @@
  			return data;
  		}
 
-		function testAjax( query ) {
+		function testPUBMED( query ) {
 			LastData = []
 			if(!query || query=="") return;
 			var pubmedquery = encodeURIComponent(query)
@@ -450,7 +483,7 @@
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
 		        console.log(data)
-		        location.reload();
+		        // location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

@@ -81,7 +81,6 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
         metadata_cache = {metadata.name: metadata for metadata in Metadata.objects.all()}
         data = []
         for node in self:
-            print(node.id)
             for key, value in node.metadata.items():
                 if key in metadata_cache:
                     metadata = metadata_cache[key]
@@ -249,13 +248,14 @@ class Node(CTENode):
     @current_app.task(filter=task_method)
     def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
         import time
-
+        total = 0
         print("LOG::TIME: In workflow()    parse_resources()")
         start = time.time()
         self.metadata['Processing'] = 1
         self.save()
         self.parse_resources()
         end = time.time()
+        total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
         print("LOG::TIME: In workflow()    / parse_resources()")
 
@@ -266,7 +266,7 @@ class Node(CTENode):
         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
         end = time.time()
         print("- - - - - - - - - - \n")
-        print ("LOG::TIME: ",(end - start))
+        total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
         print("LOG::TIME: In workflow()    / extract_ngrams()")
         
@@ -275,9 +275,9 @@ class Node(CTENode):
         from analysis.functions import do_tfidf
         do_tfidf(self)
         end = time.time()
+        total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
         print("LOG::TIME: In workflow()    / do_tfidf()")
-
         print("In workflow() END")
         self.metadata['Processing'] = 0
         self.save()

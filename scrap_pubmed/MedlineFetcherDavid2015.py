@@ -39,6 +39,7 @@ class MedlineFetcher:
 
         "Get number of results for query 'query' in variable 'count'"
         "Get also 'queryKey' and 'webEnv', which are used by function 'medlineEfetch'"
+        print(query)
         origQuery = query
         query = query.replace(' ', '%20')
             
@@ -104,6 +105,13 @@ class MedlineFetcher:
             print(threading.current_thread().name, filename+" OK")
             return filename
 
+    # generic!
+    def test_downloadFile(self, item):
+        url = item[0]
+        filename = item[1]
+        print("\tin downloadFile:")
+        data = urlopen(url)
+        return data
 
     # generic!
     def do_work(self,item):
@@ -123,7 +131,10 @@ class MedlineFetcher:
     def worker2(self):
         while True:
             item = self.q.get()
-            self.firstResults.append(self.downloadFile(item))
+            results = []
+            try: result = self.downloadFile(item)
+            except: result = False
+            self.firstResults.append(result)
             self.q.task_done()
 
     def chunks(self , l , n):

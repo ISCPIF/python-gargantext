@@ -80,21 +80,28 @@ class PubmedFileParser(FileParser):
             if len(RealDate)>4:
                 if len(RealDate)>8:
                     try: Decision = datetime.strptime(RealDate, '%Y %b %d').date()
-                    except: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                    except: 
+                        try: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                        except: Decision=False
                 else: 
                     try: Decision = datetime.strptime(RealDate, '%Y %b').date()
-                    except: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
-            else: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                    except: 
+                        try: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                        except: Decision=False
+            else: 
+                try: Decision = datetime.strptime(PubmedDate, '%Y %m %d').date()
+                except: Decision=False
 
-            if "publication_year" in metadata: metadata["publication_year"] = str(Decision.year)
-            if "publication_month" in metadata: metadata["publication_month"] = str(Decision.month)
-            if "publication_day" in metadata: metadata["publication_day"] = str(Decision.day)
-            if "realdate_year_" in metadata: metadata.pop("realdate_year_")
-            if "realdate_month_" in metadata: metadata.pop("realdate_month_")
-            if "realdate_day_" in metadata: metadata.pop("realdate_day_")
-            if "title2" in metadata: metadata.pop("title2")
-            
-            # print(metadata)
-            metadata_list.append(metadata)
+            if Decision!=False:
+                if "publication_year" in metadata: metadata["publication_year"] = str(Decision.year)
+                if "publication_month" in metadata: metadata["publication_month"] = str(Decision.month)
+                if "publication_day" in metadata: metadata["publication_day"] = str(Decision.day)
+                if "realdate_year_" in metadata: metadata.pop("realdate_year_")
+                if "realdate_month_" in metadata: metadata.pop("realdate_month_")
+                if "realdate_day_" in metadata: metadata.pop("realdate_day_")
+                if "title2" in metadata: metadata.pop("title2")
+                
+                # print(metadata)
+                metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

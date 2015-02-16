@@ -10,96 +10,7 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-from node import models
-NodeType = models.NodeType.sa
-Node = models.Node.sa
-Node_Ngram = models.Node_Ngram.sa
-Ngram = models.Ngram.sa
-Metadata = models.Metadata.sa
-Node_Metadata = models.Node_Metadata.sa
-
-# for debugging only
-def literalquery(statement, dialect=None):
-    """Generate an SQL expression string with bound parameters rendered inline
-    for the given SQLAlchemy statement.
-
-    WARNING: This method of escaping is insecure, incomplete, and for debugging
-    purposes only. Executing SQL statements with inline-rendered user values is
-    extremely insecure.
-    """
-    from datetime import datetime
-    import sqlalchemy.orm
-    if isinstance(statement, sqlalchemy.orm.Query):
-        if dialect is None:
-            dialect = statement.session.get_bind(
-                statement._mapper_zero_or_none()
-            ).dialect
-        statement = statement.statement
-    if dialect is None:
-        dialect = getattr(statement.bind, 'dialect', None)
-    if dialect is None:
-        from sqlalchemy.dialects import mysql
-        dialect = mysql.dialect()
-
-    Compiler = type(statement._compiler(dialect))
-
-    class LiteralCompiler(Compiler):
-        visit_bindparam = Compiler.render_literal_bindparam
-
-        def render_literal_value(self, value, type_):
-            return "'" + str(value) + "'"
-            # if isinstance(value, (float, int)):
-            #     return str(value)
-            # elif isinstance(value, datetime):
-            #     return repr(str(value))
-            # else:  # fallback
-            #     value = super(LiteralCompiler, self).render_literal_value(
-            #         value, type_,
-            #     )
-            #     if isinstance(value, unicode):
-            #         return value.encode('UTF-8')
-            #     else:
-            #         return value
-
-    return LiteralCompiler(dialect, statement)
-
-# these might be used for SQLAlchemy
-def get_session():
-    import sqlalchemy.orm
-    from django.db import connections
-    from sqlalchemy.orm import sessionmaker
-    from aldjemy.core import get_engine
-    alias = 'default'
-    connection = connections[alias]
-    engine = get_engine()
-    Session = sessionmaker(bind=engine)
-    return Session()
-
-def get_connection():
-    from aldjemy.core import get_engine
-    engine = get_engine()
-    return engine.connect()
-
-# for recursive queries
-# _sql_cte = '''
-#     WITH RECURSIVE cte ("depth", "path", "ordering", "id") AS (        
-#         SELECT 1 AS depth,
-#         array[T."id"] AS path,
-#         array[T."id"] AS ordering,
-#         T."id"
-#         FROM  %s T
-#         WHERE T."parent_id" IS NULL
-
-#         UNION ALL
-
-#         SELECT cte.depth + 1 AS depth,
-#         cte.path || T."id",
-#         cte.ordering || array[T."id"],
-#         T."id"
-#         FROM  %s T
-#         JOIN  cte ON T."parent_id" = cte."id"
-#     )
-# ''' % (Node._meta.db_table, Node._meta.db_table, )
+from gargantext_web.db import *
 
 
 def DebugHttpResponse(data):
@@ -235,7 +146,7 @@ class NodesChildrenDuplicates(APIView):
             )
         # build the query
         groups = list(columns)
-        duplicates_query = (get_session()
+        duplicates_query = (session
             .query(*(extra_columns + [func.count()] + columns))
             .select_from(Node)
         )
@@ -273,7 +184,6 @@ class NodesChildrenDuplicates(APIView):
         })
 
     def delete(self, request, node_id):
-        session = get_session()
         # get the minimum ID for each of the nodes sharing the same metadata
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
@@ -397,6 +307,10 @@ class NodesChildrenQueries(APIView):
         # return value
         return field, _operators[operator], value
 
+    def _count_documents(self, query):
+        return {
+            'fields': []
+        }
 
     def post(self, request, node_id):
         """ Query the children of the given node.
@@ -509,7 +423,7 @@ class NodesChildrenQueries(APIView):
 
         # starting the query!
         document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
-        query = (get_session()
+        query = (session
             .query(*fields_list)
             .select_from(Node)
             .filter(Node.type_id == document_type_id)
@@ -667,9 +581,10 @@ class Nodes(APIView):
         })
 
     # deleting node by id
-    # currently, very dangerous
+    # currently, very dangerous.
+    # it should take the subnodes into account as well,
+    # for better constistency...
     def delete(self, request, node_id):
-        session = get_session()
         node = models.Node.objects.filter(id = node_id)
         msgres = ""
         try:

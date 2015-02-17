@@ -153,4 +153,10 @@ $ sudo aptitude install tmux
 $ tmux -c ./manage.py celery worker --loglevel=info
 $ python manage.py runserver
 
+Versions on git
+---------------
+
+stable branch    : current version  for production server with nginx config (and tina branch for tina/apache server)
+testing branch   : current version for users' tests
+unstable branch  : current version for developers
 

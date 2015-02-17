@@ -15,7 +15,7 @@ DAEMON_PID=/tmp/$DAEMON_NAME.pid
  
 do_start () {
     log_daemon_msg "Starting system '$DAEMON_NAME' daemon..."
-    start-stop-daemon --start --quiet \
+    /sbin/start-stop-daemon --start --quiet \
         --make-pidfile --pidfile $DAEMON_PID --background \
         --startas /bin/bash -- -c "python3 $DAEMON_SCRIPT $DAEMON_ARGS > /tmp/$DAEMON_NAME.log 2>&1"
         # --exec $DAEMON_SCRIPT \
@@ -24,7 +24,7 @@ do_start () {
 }
 do_stop () {
     log_daemon_msg "Stopping system '$DAEMON_NAME' daemon..."
-    start-stop-daemon --stop --pidfile $DAEMON_PID --retry 10
+    /sbin/start-stop-daemon --stop --pidfile $DAEMON_PID --retry 10
     log_end_msg $?
 }
  

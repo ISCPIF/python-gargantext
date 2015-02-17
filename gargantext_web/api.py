@@ -10,7 +10,7 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-from gargantext_web.db import *
+from .db import *
 
 
 def DebugHttpResponse(data):
@@ -570,7 +570,7 @@ class NodesList(APIView):
 class Nodes(APIView):
 
     def get(self, request, node_id):
-        node = models.Node.objects.filter(id = node_id).first()
+        node = session.query(Node).filter(Node.id == node_id).first()
         if node is None:
             raise APIException('This node does not exist', 404)
         return JsonHttpResponse({

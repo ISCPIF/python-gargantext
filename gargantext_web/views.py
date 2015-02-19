@@ -5,6 +5,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
+from node import models
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
@@ -243,12 +244,12 @@ def project(request, project_id):
     type_corpus     = NodeType.objects.get(name='Corpus')
     type_document   = NodeType.objects.get(name='Document')
     
-    type_whitelist  = NodeType.objects.get(name='WhiteList')
-    type_blacklist  = NodeType.objects.get(name='BlackList')
-    type_cooclist   = NodeType.objects.get(name='Cooccurrence')
+#    type_whitelist  = NodeType.objects.get(name='WhiteList')
+#    type_blacklist  = NodeType.objects.get(name='BlackList')
+#    type_cooclist   = NodeType.objects.get(name='Cooccurrence')
 
     project = Node.objects.get(id=project_id)
-    corpora = project.children.filter(type=type_corpus)
+    corpora = Node.objects.filter(parent=project, type=type_corpus)
     number  = len(corpora)
 
     # DONUT corpora representation
@@ -265,13 +266,13 @@ def project(request, project_id):
     for corpus in corpora:
         # print("corpus", corpus.pk , corpus.name , corpus.type_id)
 
-        docs_count =  corpus.children.count()
+        docs_count =  Node.objects.filter(parent=corpus, type=type_document).count()
         docs_total += docs_count
         
         corpus_view = dict()
         corpus_view['id']         = corpus.pk
         corpus_view['name']       = corpus.name
-        corpus_view['count']      = corpus.children.count()
+        corpus_view['count']      = docs_count
 
         #just get first element of the corpora and get his type.
 

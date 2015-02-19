@@ -145,8 +145,8 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
-from gargantext_web import team
-def about(request):
+from gargantext_web import about
+def get_about(request):
     '''
     About Gargantext, the team and sponsors
     '''
@@ -154,8 +154,8 @@ def about(request):
     user        = request.user
     date        = datetime.datetime.now()
     
-    members     = team.get_team()
-    sponsors    = team.get_sponsors()
+    members     = about.get_team()
+    sponsors    = about.get_sponsors()
 
     html = template.render(Context({\
             'user': user,\

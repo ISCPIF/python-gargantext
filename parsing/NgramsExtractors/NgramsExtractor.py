@@ -1,4 +1,4 @@
-from parsing.Taggers import Tagger
+from ..Taggers import Tagger
 import nltk
 
 
@@ -31,14 +31,14 @@ class NgramsExtractor:
         tagged_ngrams = self.tagger.tag_text(contents)
         grammar = nltk.RegexpParser(self._rule)
         result = []
-        try:
-            grammar_parsed = grammar.parse(tagged_ngrams)
-            for subtree in grammar_parsed.subtrees():
-                if subtree.label() == self._label:
-                    result.append(subtree.leaves())
-        except:
-            print("Problem while parsing rule '%s'" % (self._rule, ))
-            pass
+        # try:
+        grammar_parsed = grammar.parse(tagged_ngrams)
+        for subtree in grammar_parsed.subtrees():
+            if subtree.label() == self._label:
+                result.append(subtree.leaves())
+        # except Exception as e:
+        #     print("Problem while parsing rule '%s'" % (self._rule, ))
+        #     print(e)
         return result
         
         

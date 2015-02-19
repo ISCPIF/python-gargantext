@@ -29,6 +29,9 @@ sudo apt-get install gfortran
 sudo apt-get install libopenblas-dev
 sudo apt-get install liblapack-dev
 
+#nlpserver
+sudo apt-get install libgflags-dev
+sudo aptitude install libgoogle-glog-dev
 
 source /srv/gargantext_env/bin/activate
 pip3 install git+https://github.com/mathieurodic/aldjemy.git

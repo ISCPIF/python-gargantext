@@ -17,11 +17,11 @@ def get_team():
 
     '''
     team = [
-            { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë', 'mail' : 'alexandre+gargantextATdelanoe.org', 'website' : 'http://alexandre.delanoe.org', 'picture' : 'alexandre.jpg'},
-            { 'first_name' : 'David', 'last_name' : 'Chavalarias', 'mail' : 'david.chavalariasATiscpif.fr', 'website' : 'http://chavalarias.com', 'picture' : 'david.jpg'},
-            { 'first_name' : 'Mathieu', 'last_name' : 'Rodic', 'mail' : '', 'website'  : 'http://rodic.fr', 'picture' : 'mathieu.jpg'},
-            { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.', 'mail' : 'kaisleanATgmail.com', 'website'  : 'http://www.pksm3.droppages.com', 'picture' : 'samuel.jpg'},
-            { 'first_name' : 'Elias', 'last_name' : 'Showk', 'mail' : '', 'website' : 'https://github.com/elishowk', 'picture' : ''},
+            { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë', 'mail' : 'alexandre+gargantextATdelanoe.org', 'website' : 'http://alexandre.delanoe.org', 'picture' : 'alexandre.jpg', 'role' : 'project manager, scientific board, developer'},
+            { 'first_name' : 'David', 'last_name' : 'Chavalarias', 'mail' : 'david.chavalariasATiscpif.fr', 'website' : 'http://chavalarias.com', 'picture' : 'david.jpg', 'role':'scientific board'},
+            { 'first_name' : 'Mathieu', 'last_name' : 'Rodic', 'mail' : '', 'website'  : 'http://rodic.fr', 'picture' : 'mathieu.jpg', 'role' : 'developer'},
+            { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.', 'mail' : 'kaisleanATgmail.com', 'website'  : 'http://www.pksm3.droppages.com', 'picture' : 'samuel.jpg', 'role' : 'developer'},
+            { 'first_name' : 'Elias', 'last_name' : 'Showk', 'mail' : '', 'website' : 'https://github.com/elishowk', 'picture' : '', 'role' : 'developer'},
             #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
             # copy paste the line above and write your informations please
             ]

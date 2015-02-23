@@ -281,7 +281,7 @@ def do_tfidf(corpus, reset=True):
                 somevariable = Node_Ngram.objects.filter(node=document)
                 for node_ngram in somevariable:
                     try:
-                        # print("\tngram:",node_ngram.ngram)
+                        # print("\tngram:",node_ngram.ngram, " @@@ type:",type(node_ngram.ngram))
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
                     except:
                         score = tfidf(corpus, document, node_ngram.ngram)

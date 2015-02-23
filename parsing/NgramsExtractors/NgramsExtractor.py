@@ -29,6 +29,8 @@ class NgramsExtractor:
     """
     def extract_ngrams(self, contents):
         tagged_ngrams = self.tagger.tag_text(contents)
+        if len(tagged_ngrams)==0: return []
+        
         grammar = nltk.RegexpParser(self._rule)
         result = []
         # try:

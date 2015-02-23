@@ -427,7 +427,8 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			if(selected=="pubmed" || selected=="istext") {
+			//if(selected=="pubmed" || selected=="istext") {
+			if(selected=="pubmed") {
 				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 
 				$("#pubmedcrawl").show();

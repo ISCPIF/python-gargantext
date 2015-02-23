@@ -33,15 +33,15 @@ def _upload_to(instance, filename):
 
 class Language(models.Model):
     iso2        = models.CharField(max_length=2, unique=True)
-    iso3        = models.CharField(max_length=3)
-    fullname    = models.CharField(max_length=255)
+    iso3        = models.CharField(max_length=3, unique=True)
+    fullname    = models.CharField(max_length=255, unique=True)
     implemented = models.BooleanField(blank=True)
     
     def __str__(self):
         return self.fullname
 
 class ResourceType(models.Model):
-    name    = models.CharField(max_length=255)
+    name    = models.CharField(max_length=255, unique=True)
     
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class ResourceType(models.Model):
 class Ngram(models.Model):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     n           = models.IntegerField()
-    terms       = models.CharField(max_length=255)
+    terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
     
     def __str__(self):
@@ -66,7 +66,7 @@ class Resource(models.Model):
         return self.file
 
 class NodeType(models.Model):
-    name        = models.CharField(max_length=200)
+    name        = models.CharField(max_length=200, unique=True)
     def __str__(self):
         return self.name
 

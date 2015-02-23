@@ -296,8 +296,8 @@ gargantext.controller("DatasetController", function($scope, $http) {
             return defaults.concat(transform);
         }
         return $http.get(url, {
+            cache: true,
             transformResponse: appendTransform($http.defaults.transformResponse, function(value) {
-                console.log(value.data)
                 return value.data;
             })
         });

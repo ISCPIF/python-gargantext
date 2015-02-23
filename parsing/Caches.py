@@ -1,5 +1,5 @@
 import node.models
-from parsing.NgramsExtractors import *
+from .NgramsExtractors import *
 
 from collections import defaultdict
 

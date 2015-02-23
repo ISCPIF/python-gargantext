@@ -133,6 +133,7 @@ def doTheQuery(request , project_id):
 		try:
 			if DEBUG is True:
 				corpus.workflow()
+				# corpus.workflow__MOV()
 			else:
 				corpus.workflow.apply_async((), countdown=3)
 
@@ -205,7 +206,7 @@ def testISTEX(request , project_id):
 
 
 		corpus.save()
-
+		print("DEBUG:",DEBUG)
 		# do the WorkFlow
 		try:
 			if DEBUG is True:

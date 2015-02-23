@@ -97,7 +97,6 @@ Extras
 
 Last steps of configuration:
 ----------------------------
-
 1) If your project is not in /srv/gargantext:
     ln -s [the project folder] /srv/gargantext
 
@@ -126,9 +125,14 @@ patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/ga
 /srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
 
 
+Start Turbo parser server
+-------------------------
+See dependences in init/dependences.sh
+See README for install instructions /srv/gargantext/parsing/Taggers/nlpserver/README.rst
+
+
 Start the Python Notebook server
 --------------------------------
-
 1)  In Pyvenv:
     python manage.py shell_plus --notebook
 
@@ -144,7 +148,6 @@ $ python manage.py runserver
 
 For Production Server
 ---------------------
-
 git checkout stable
 
 $ sudo aptitude install rabbitmq-server

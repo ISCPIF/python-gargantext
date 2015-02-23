@@ -28,7 +28,7 @@ from parsing.FileParsers import *
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG, STATIC_ROOT
+from gargantext_web.settings import DEBUG, STATIC_ROOT, MAINTENANCE
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -50,7 +50,9 @@ def login_user(request):
 
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/projects/')
+                print("MAINTENANCE:",MAINTENANCE)
+                if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
+                else: return HttpResponseRedirect('/projects/')
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
 
@@ -162,6 +164,21 @@ def get_about(request):
             'date': date,\
             'team': members,\
             'sponsors':sponsors,\
+            }))
+    
+    return HttpResponse(html)
+
+def get_maintenance(request):
+    '''
+    Gargantext out of service
+    '''
+    template    = get_template('maintenance.html')
+    user        = request.user
+    date        = datetime.datetime.now()
+
+    html = template.render(Context({\
+            'user': user,\
+            'date': date,\
             }))
     
     return HttpResponse(html)

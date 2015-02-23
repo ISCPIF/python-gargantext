@@ -230,8 +230,9 @@ class Node(CTENode):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
 
-        # import pprint
-        # pprint.pprint(associations)
+        import pprint
+        pprint.pprint(associations)
+        print(" - - - - - ")
         #print(associations)
         # insert the occurrences in the database
         # print(associations.items())

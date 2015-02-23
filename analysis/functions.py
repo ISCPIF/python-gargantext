@@ -268,19 +268,20 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):
-    print("doing tfidf")
+    print("=========== doing tfidf ===========")
     with transaction.atomic():
         if reset==True:
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
         
         if isinstance(corpus, Node) and corpus.type.name == "Corpus":
             # print("\n- - - - - - - - - - ")
-            # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
-            # print("^^^",i)
+            # # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
-                for node_ngram in Node_Ngram.objects.filter(node=document):
+                # print("the doc:",document)
+                somevariable = Node_Ngram.objects.filter(node=document)
+                for node_ngram in somevariable:
                     try:
-                        # print("\t",node_ngram.ngram)
+                        # print("\tngram:",node_ngram.ngram)
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
                     except:
                         score = tfidf(corpus, document, node_ngram.ngram)

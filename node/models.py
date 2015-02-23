@@ -10,8 +10,11 @@ from cte_tree.models import CTENode, CTENodeManager
 
 from parsing.Caches import LanguagesCache, NgramsExtractorsCache, NgramsCaches
 from parsing.FileParsers import *
+
 from time import time
 import datetime
+from multiprocessing import Process
+
 from collections import defaultdict
 import hashlib
 
@@ -175,12 +178,6 @@ class Node(CTENode):
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
-            # print(parser.parse(str(resource.file)))
-        # # retrieve info from the database
-        # print("\n - - -- - - - - - - - ")
-        # for i in metadata_list:
-        #     print("***",i["title"])
-        # print("- - -- - - - - - - - \n")
         type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()
         user_id = self.user.id
@@ -208,7 +205,6 @@ class Node(CTENode):
         # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
 
-    
     @current_app.task(filter=task_method)
     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
         # if there is no cache...
@@ -233,6 +229,9 @@ class Node(CTENode):
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
+
+        # import pprint
+        # pprint.pprint(associations)
         #print(associations)
         # insert the occurrences in the database
         # print(associations.items())
@@ -279,6 +278,150 @@ class Node(CTENode):
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
         print("LOG::TIME: In workflow()    / do_tfidf()")
         print("In workflow() END")
+        self.metadata['Processing'] = 0
+        self.save()
+
+
+
+
+    def parse_resources__MOV(self, verbose=False):
+        # parse all resources into a list of metadata
+        metadata_list = []
+        print("not parsed resources:")
+        print(self.node_resource.filter(parsed=False))
+        print("= = = = = = = = =  = =\n")
+        for node_resource in self.node_resource.filter(parsed=False):
+            resource = node_resource.resource
+            parser = defaultdict(lambda:FileParser.FileParser, {
+                'istext'    : ISText,
+                'pubmed'    : PubmedFileParser,
+                'isi'       : IsiFileParser,
+                'ris'       : RisFileParser,
+                'europress' : EuropressFileParser,
+                'europress_french'  : EuropressFileParser,
+                'europress_english' : EuropressFileParser,
+            })[resource.type.name]()
+            metadata_list += parser.parse(str(resource.file))
+        self.node_resource.update(parsed=True) #writing to DB
+        return metadata_list
+
+    def writeMetadata__MOV(self, metadata_list=None , verbose=False):
+        type_id = NodeType.objects.get(name='Document').id
+        user_id = self.user.id
+        langages_cache = LanguagesCache()
+        # # insert the new resources in the database!
+        for i, metadata_values in enumerate(metadata_list):
+            name = metadata_values.get('title', '')[:200]
+            language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
+            if isinstance(language, tuple):
+                language = language[0]
+            Node(
+                user_id  = user_id,
+                type_id  = type_id,
+                name     = name,
+                parent   = self,
+                language_id = language.id if language else None,
+                metadata = metadata_values
+            ).save()
+            metadata_list[i]["thelang"] = language
+        # # make metadata filterable
+        self.children.all().make_metadata_filterable()
+        # # mark the resources as parsed for this node
+        self.node_resource.update(parsed=True)
+
+    def extract_ngrams__MOV(self, array , keys , ngramsextractorscache=None, ngramscaches=None):
+        if ngramsextractorscache is None:
+            ngramsextractorscache = NgramsExtractorsCache()
+        langages_cache = LanguagesCache()
+
+        if ngramscaches is None:
+            ngramscaches = NgramsCaches()
+
+        for metadata in array:
+            associations = defaultdict(float) # float or int?
+            language = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
+            if isinstance(language, tuple):
+                language = language[0]
+            metadata["thelang"] = language
+            extractor = ngramsextractorscache[language]
+            ngrams = ngramscaches[language]
+            # print("\t\t number of req keys:",len(keys)," AND isdict?:",isinstance(keys, dict))
+            if isinstance(keys, dict):
+                for key, weight in keys.items():
+                    if key in metadata:
+                        for ngram in extractor.extract_ngrams(metadata[key]):
+                            terms = ' '.join([token for token, tag in ngram])
+                            associations[ngram] += weight
+            else:
+                for key in keys:
+                    if key in metadata:
+                        # print("the_content:[[[[[[__",metadata[key],"__]]]]]]")
+                        for ngram in extractor.extract_ngrams(metadata[key]):
+                            terms = ' '.join([token for token, tag in ngram])
+                            associations[terms] += 1
+            if len(associations.items())>0:
+                Node_Ngram.objects.bulk_create([
+                    Node_Ngram(
+                        node   = self,
+                        ngram  = ngrams[ngram_text],
+                        weight = weight
+                    )
+                    for ngram_text, weight in associations.items()
+                ])
+                # for ngram_text, weight in associations.items():
+                #     print("ngram_text:",ngram_text,"  | weight:",weight, " | ngrams[ngram_text]:",ngrams[ngram_text])
+    
+    def runInParallel(self, *fns):
+        proc = []
+        for fn in fns:
+            p = Process(target=fn)
+            p.start()
+            proc.append(p)
+        for p in proc:
+            p.join()
+
+    def workflow__MOV(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+        import time
+        total = 0
+        self.metadata['Processing'] = 1
+        self.save()
+
+        print("LOG::TIME: In workflow()    parse_resources__MOV()")
+        start = time.time()
+        theMetadata = self.parse_resources__MOV()
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources()__MOV [s]",(end - start))
+
+        print("LOG::TIME: In workflow()    writeMetadata__MOV()")
+        start = time.time()
+        self.writeMetadata__MOV( metadata_list=theMetadata )
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
+
+
+        print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
+        start = time.time()
+        self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] )
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams__MOV() [s]",(end - start))
+
+        # # this is not working
+        # self.runInParallel( self.writeMetadata__MOV( metadata_list=theMetadata ) , self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] ) )
+        
+        start = time.time()
+        print("LOG::TIME: In workflow()    do_tfidf()")
+        from analysis.functions import do_tfidf
+        do_tfidf(self)
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+        # # print("LOG::TIME: In workflow()    / do_tfidf()")
+        print("LOG::TIME:_ "+datetime.datetime.now().isoformat()+"   In workflow() END")
+
+
         self.metadata['Processing'] = 0
         self.save()
 

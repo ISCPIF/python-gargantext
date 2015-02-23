@@ -15,6 +15,10 @@ CONFIGURATION
 The settings for the server can be found in `settings.py`.
 Please ensure the TCP port is not already in use on your machine, and that the path to the models are correct.
 
+START for tests
+===============
+python3 server.py
+"CTRL + c" to shut down
 
 START/STOP THE SERVER
 =====================

@@ -26,6 +26,7 @@ urlpatterns = patterns('',
     # User Home view
     url(r'^$', views.home),
     url(r'^about/', views.get_about),
+    url(r'^maintenance/', views.get_maintenance),
     
     # Project Management
     url(r'^projects/$', views.projects),

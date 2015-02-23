@@ -280,13 +280,15 @@ def do_tfidf(corpus, reset=True):
                 # print("the doc:",document)
                 somevariable = Node_Ngram.objects.filter(node=document)
                 for node_ngram in somevariable:
+                    # print("\tngram:",node_ngram.ngram)
                     try:
-                        # print("\tngram:",node_ngram.ngram, " @@@ type:",type(node_ngram.ngram))
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
+                        # print("\t\tTRY")
                     except:
                         score = tfidf(corpus, document, node_ngram.ngram)
                         nnn = NodeNodeNgram(nodex=corpus, nodey=node_ngram.node, ngram=node_ngram.ngram, score=score)
                         nnn.save()
+                        # print("\t\tEXC: ",score)
             # print("- - - - - - - - - - \n")
         else:
             print("Only corpus implemented yet, you put instead:", type(corpus))

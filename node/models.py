@@ -14,6 +14,7 @@ from parsing.FileParsers import *
 from time import time
 import datetime
 from multiprocessing import Process
+from math import log
 
 from collections import defaultdict
 import hashlib
@@ -229,13 +230,6 @@ class Node(CTENode):
                 for ngram in extractor.extract_ngrams(self.metadata[key]):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
-
-        import pprint
-        pprint.pprint(associations)
-        print(" - - - - - ")
-        #print(associations)
-        # insert the occurrences in the database
-        # print(associations.items())
         Node_Ngram.objects.bulk_create([
             Node_Ngram(
                 node   = self,
@@ -284,6 +278,14 @@ class Node(CTENode):
 
 
 
+    def runInParallel(self, *fns):
+        proc = []
+        for fn in fns:
+            p = Process(target=fn)
+            p.start()
+            proc.append(p)
+        for p in proc:
+            p.join()
 
     def parse_resources__MOV(self, verbose=False):
         # parse all resources into a list of metadata
@@ -324,7 +326,6 @@ class Node(CTENode):
                 language_id = language.id if language else None,
                 metadata = metadata_values
             ).save()
-            metadata_list[i]["thelang"] = language
         # # make metadata filterable
         self.children.all().make_metadata_filterable()
         # # mark the resources as parsed for this node
@@ -338,48 +339,63 @@ class Node(CTENode):
         if ngramscaches is None:
             ngramscaches = NgramsCaches()
 
+        results = []
+        i = 0
         for metadata in array:
             associations = defaultdict(float) # float or int?
             language = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
             if isinstance(language, tuple):
                 language = language[0]
-            metadata["thelang"] = language
+
             extractor = ngramsextractorscache[language]
             ngrams = ngramscaches[language]
-            # print("\t\t number of req keys:",len(keys)," AND isdict?:",isinstance(keys, dict))
+            # theText = []
+
             if isinstance(keys, dict):
                 for key, weight in keys.items():
                     if key in metadata:
-                        for ngram in extractor.extract_ngrams(metadata[key]):
-                            terms = ' '.join([token for token, tag in ngram])
+                        text2process = str(metadata[key]).replace('[','').replace(']','')
+                        # theText.append(text2process)
+                        for ngram in extractor.extract_ngrams(text2process):
+                            terms = ' '.join([token for token, tag in ngram]).strip().lower()
                             associations[ngram] += weight
             else:
                 for key in keys:
                     if key in metadata:
-                        # print("the_content:[[[[[[__",metadata[key],"__]]]]]]")
-                        for ngram in extractor.extract_ngrams(metadata[key]):
-                            terms = ' '.join([token for token, tag in ngram])
+                        text2process = str(metadata[key]).replace('[','').replace(']','')
+                        # theText.append(text2process)
+                        for ngram in extractor.extract_ngrams(text2process):
+                            terms = ' '.join([token for token, tag in ngram]).strip().lower()
                             associations[terms] += 1
-            if len(associations.items())>0:
-                Node_Ngram.objects.bulk_create([
-                    Node_Ngram(
-                        node   = self,
-                        ngram  = ngrams[ngram_text],
-                        weight = weight
-                    )
-                    for ngram_text, weight in associations.items()
-                ])
-                # for ngram_text, weight in associations.items():
-                #     print("ngram_text:",ngram_text,"  | weight:",weight, " | ngrams[ngram_text]:",ngrams[ngram_text])
+
+            if(len(associations)>0):
+                results.append( [i , associations] )
+            
+            i+=1
+        return results
     
-    def runInParallel(self, *fns):
-        proc = []
-        for fn in fns:
-            p = Process(target=fn)
-            p.start()
-            proc.append(p)
-        for p in proc:
-            p.join()
+    def do_tfidf__MOV( self, FreqList ):
+
+        IDFList = {}
+        for i in FreqList:
+            arrayID = i[0]
+            associations = i[1]
+            for ngram_text, weight in associations.items():
+                if ngram_text in IDFList: IDFList[ngram_text] += 1
+                else: IDFList[ngram_text] = 1
+        
+        N = float(len(FreqList)) #nro docs really processed
+
+        for i in FreqList:
+            arrayID = i[0]
+            associations = i[1]
+            ngrams_by_document = len(associations.items())
+            for ngram_text, weight in associations.items():
+                occurrences_of_ngram = weight
+                term_frequency = occurrences_of_ngram / ngrams_by_document
+                xx = N
+                yy = IDFList[ngram_text]
+                inverse_document_frequency= log(xx/yy) #log base e
 
     def workflow__MOV(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
         import time
@@ -394,32 +410,44 @@ class Node(CTENode):
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources()__MOV [s]",(end - start))
 
-        print("LOG::TIME: In workflow()    writeMetadata__MOV()")
-        start = time.time()
-        self.writeMetadata__MOV( metadata_list=theMetadata )
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
+        # print("LOG::TIME: In workflow()    writeMetadata__MOV()")
+        # start = time.time()
+        # self.writeMetadata__MOV( metadata_list=theMetadata )
+        # end = time.time()
+        # total += (end - start)
+        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
 
 
         print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
         start = time.time()
-        self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] )
+        FreqList = self.extract_ngrams__MOV(theMetadata , keys=['title',] )
         end = time.time()
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams__MOV() [s]",(end - start))
 
-        # # this is not working
-        # self.runInParallel( self.writeMetadata__MOV( metadata_list=theMetadata ) , self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] ) )
+        # start = time.time()
+        # print("LOG::TIME: In workflow()    do_tfidf()")
+        # self.do_tfidf__MOV( FreqList )
+        # end = time.time()
+        # total += (end - start)
+        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+        # # # print("LOG::TIME: In workflow()    / do_tfidf()")
+
+
+
+
+
+        # # # this is not working
+        # # self.runInParallel( self.writeMetadata__MOV( metadata_list=theMetadata ) , self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] ) )
         
-        start = time.time()
-        print("LOG::TIME: In workflow()    do_tfidf()")
-        from analysis.functions import do_tfidf
-        do_tfidf(self)
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        # # print("LOG::TIME: In workflow()    / do_tfidf()")
+        # start = time.time()
+        # print("LOG::TIME: In workflow()    do_tfidf()")
+        # from analysis.functions import do_tfidf
+        # do_tfidf(self)
+        # end = time.time()
+        # total += (end - start)
+        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+        # # # print("LOG::TIME: In workflow()    / do_tfidf()")
         print("LOG::TIME:_ "+datetime.datetime.now().isoformat()+"   In workflow() END")
 
 

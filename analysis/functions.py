@@ -268,7 +268,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):
-    print("=========== doing tfidf ===========")
+    # print("=========== doing tfidf ===========")
     with transaction.atomic():
         if reset==True:
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
@@ -278,8 +278,7 @@ def do_tfidf(corpus, reset=True):
             # # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
                 # print("the doc:",document)
-                somevariable = Node_Ngram.objects.filter(node=document)
-                for node_ngram in somevariable:
+                for node_ngram in Node_Ngram.objects.filter(node=document):
                     # print("\tngram:",node_ngram.ngram)
                     try:
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)

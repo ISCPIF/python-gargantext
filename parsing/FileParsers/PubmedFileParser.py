@@ -10,8 +10,6 @@ class PubmedFileParser(FileParser):
         xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
         xml = etree.parse(file, parser=xml_parser)
         xml_articles = xml.findall('PubmedArticle')
-        # initialize the list of metadata
-        metadata_list = []
         # parse all the articles, one by one
         for xml_article in xml_articles:
             # extract data from the document
@@ -39,6 +37,4 @@ class PubmedFileParser(FileParser):
                         metadata[key] = xml_node.text
                 except:
                     pass
-            metadata_list.append(metadata)
-        # return the list of metadata
-        return metadata_list
+            yield metadata

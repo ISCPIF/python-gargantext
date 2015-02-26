@@ -109,9 +109,11 @@ class FileParser:
         # ...otherwise, let's parse it directly!
         else:
             try:
-                metadata_list += self._parse(file)
+                for metadata in self._parse(file):
+                    metadata_list.append(self.format_metadata(metadata))
             except Exception as error:
                 print(error)
         # return the list of formatted metadata
-        return map(self.format_metadata, metadata_list)
+        return metadata_list
+
 

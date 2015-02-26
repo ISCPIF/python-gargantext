@@ -17,14 +17,12 @@ class RisFileParser(FileParser):
     }
 
     def _parse(self, file):
-        metadata_list = []
         metadata = {}
         last_key = None
         last_values = []
         for line in file:
             if len(line) > 2:
                 parameter_key = line[:2]
-#                print(parameter_key)
                 if parameter_key != b'  ' and parameter_key != last_key:
                     if last_key in self._parameters:
                         parameter = self._parameters[last_key]
@@ -32,17 +30,13 @@ class RisFileParser(FileParser):
                             separator = parameter["separator"] if "separator" in parameter else ""
                             metadata[parameter["key"]] = separator.join(last_values)
                         elif parameter["type"] == "delimiter":
-                            #language = self._languages_fullname[metadata["language"].lower()]
-                            #print(metadata)
                             try:
-                                #print("append")
                                 if 'language_fullname' not in metadata.keys():
                                     if 'language_iso3' not in metadata.keys():
                                         if 'language_iso2' not in metadata.keys():
                                             metadata['language_iso2'] = 'en'
-                                metadata_list.append(metadata)
+                                yield metadata
                                 metadata = {}
-                                #print("append succeeded")
                             except:
                                 pass
                     last_key = parameter_key
@@ -52,7 +46,3 @@ class RisFileParser(FileParser):
                 except Exception as error:
                     print(error)
                     pass
-        #print(len(metadata_list))
-        #print(metadata_list)
-
-        return metadata_list

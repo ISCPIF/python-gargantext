@@ -2,7 +2,7 @@ from node import models
 from gargantext_web import settings
 
 
-__all__ = ['literalquery', 'session', 'cache']
+__all__ = ['literalquery', 'session', 'cache', 'Session']
 
 
 # map the Django models found in node.models to SQLAlchemy models
@@ -92,20 +92,17 @@ class ModelCache(dict):
             self.preload()
 
     def __missing__(self, key):
-        for column in self._columns:
-            conditions = []
-            try:
-                formatted_key = column.type.python_type(key)
-                conditions.append(column == key)
-            except ValueError:
-                pass
-        if formatted_key in self:
-            self[key] = self[formatted_key]
-        else:
-            element = session.query(self._model).filter(or_(*conditions)).first()
-            if element is None:
-                raise KeyError
-            self[key] = element
+        conditions = [
+            (column == key)
+            for column in self._columns
+            if key.__class__ == column.type.python_type
+        ]
+        if len(conditions) == 0:
+            raise KeyError
+        element = session.query(self._model).filter(or_(*conditions)).first()
+        if element is None:
+            raise KeyError
+        self[key] = element
         return element
 
     def preload(self):

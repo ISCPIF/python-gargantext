@@ -1,5 +1,5 @@
-from node import models
 from gargantext_web import settings
+from node import models
 
 
 __all__ = ['literalquery', 'session', 'cache', 'Session']

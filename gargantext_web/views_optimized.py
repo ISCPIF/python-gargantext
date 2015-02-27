@@ -12,6 +12,7 @@ from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG
 
+from parsing.corpus import parse_resources
 
 
 def project(request, project_id):
@@ -49,6 +50,7 @@ def project(request, project_id):
         .join(Resource, Resource.id == Node_Resource.resource_id)
         .filter(Node.parent_id == project.id)
         .group_by(Node, Resource)
+        .order_by(Node.name)
     )
     corpora_by_resourcetype = defaultdict(list)
     documents_count_by_resourcetype = defaultdict(int)
@@ -69,7 +71,7 @@ def project(request, project_id):
     donut = [
         {   'source': key, 
             'count': value,
-            'part' : round(value * 100 / total_documents_count),
+            'part' : round(value * 100 / total_documents_count) if total_documents_count else 0,
         }
         for key, value in documents_count_by_resourcetype.items()
     ]
@@ -108,10 +110,11 @@ def project(request, project_id):
             )
             # let's start the workflow
             try:
-                if DEBUG is True:
-                    dj_corpus.workflow()
-                else:
-                    dj_corpus.workflow.apply_async((), countdown=3)
+                parse_resources(dj_corpus, user_id=request.user.id)
+                # if DEBUG is True:
+                #     dj_corpus.workflow()
+                # else:
+                #     dj_corpus.workflow.apply_async((), countdown=3)
             except Exception as error:
                 print('WORKFLOW ERROR')
                 print(error)

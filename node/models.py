@@ -287,6 +287,16 @@ class Node(CTENode):
         for p in proc:
             p.join()
 
+
+    def pushScore( self , FINAL , n1,n2, score):
+        if not FINAL.has_key(n1):
+            FINAL[n1]=[]
+        FINAL[n1].append(score)
+        
+        if not FINAL.has_key(n2):
+            FINAL[n2]=[]
+        FINAL[n2].append(score)
+
     def parse_resources__MOV(self, verbose=False):
         # parse all resources into a list of metadata
         metadata_list = []
@@ -374,28 +384,170 @@ class Node(CTENode):
             i+=1
         return results
     
-    def do_tfidf__MOV( self, FreqList ):
+    def do_tfidf__MOV( self, FreqList , Metadata , n=150):
 
-        IDFList = {}
+        from analysis.InterUnion import Utils
+        calc = Utils()
+
+        # *01* [ calculating global count of each ngram ]
+        GlobalCount = {}
         for i in FreqList:
-            arrayID = i[0]
+            docID = i[0]
             associations = i[1]
             for ngram_text, weight in associations.items():
-                if ngram_text in IDFList: IDFList[ngram_text] += 1
-                else: IDFList[ngram_text] = 1
+                if len(ngram_text.split())>1 and len(ngram_text.split())<4:# considering just {2,3}-grams
+                    if ngram_text in GlobalCount: 
+                        if "C" in GlobalCount[ngram_text]:
+                            GlobalCount[ngram_text]["C"] += 1
+                        else: 
+                            GlobalCount[ngram_text] = {}
+                            GlobalCount[ngram_text]["C"] = 1
+                    else:
+                        GlobalCount[ngram_text] = {}
+                        GlobalCount[ngram_text]["C"] = 1
+        # *01* [ / calculating global count of each ngram ]
         
+
+        # *02* [ Considering the first <150 ngrams by DESC occurrences ]
+        FirstNgrams = {}
+        sortedList = sorted(GlobalCount, key=lambda x: GlobalCount[x]['C'], reverse=True)
+        for i in range(len(sortedList)):
+            term = sortedList[i]
+            FirstNgrams[term] = {}
+            FirstNgrams[term]["C"] = GlobalCount[term]["C"]
+            if i==(n-1): break
+        # *02* [ / Considering the first <150 ngrams by DESC occurrences ]
+
         N = float(len(FreqList)) #nro docs really processed
 
-        for i in FreqList:
-            arrayID = i[0]
+
+        # *03* [ making dictionaries  for  NGram_Text <=> NGram_ID ]
+        NGram2ID = {}
+        ID2NGram = {}
+        ngramid = 0
+        for i in FirstNgrams:
+            NGram2ID[i] = ngramid
+            ID2NGram[ngramid] = i
+            ngramid+=1
+        # *03* [ / making dictionaries  for  NGram_Text <=> NGram_ID ]
+
+
+        for i in FreqList: # foreach ID in Doc:
+            docID = i[0]
             associations = i[1]
-            ngrams_by_document = len(associations.items())
+
+            termsCount = 0
             for ngram_text, weight in associations.items():
-                occurrences_of_ngram = weight
-                term_frequency = occurrences_of_ngram / ngrams_by_document
-                xx = N
-                yy = IDFList[ngram_text]
-                inverse_document_frequency= log(xx/yy) #log base e
+                if ngram_text in NGram2ID: # considering just {2,3}-grams
+                    termsCount+=1
+
+            ngrams_by_document = termsCount # i re-calculed this because of *02*
+            terms = []
+            if ngrams_by_document > 0:
+                for ngram_text, weight in associations.items():
+                    if ngram_text in NGram2ID: 
+                        terms.append(NGram2ID[ngram_text])
+                        # [ calculating TF-IDF ]
+                        occurrences_of_ngram = weight
+                        term_frequency = occurrences_of_ngram / ngrams_by_document
+                        xx = N
+                        yy = FirstNgrams[ngram_text]["C"]
+                        inverse_document_frequency= log(xx/yy) #log base e
+                        tfidfScore = term_frequency*inverse_document_frequency
+                        # [ / calculating TF-IDF ]
+                        if "T" in FirstNgrams[ngram_text]:
+                            FirstNgrams[ngram_text]["T"].append(tfidfScore)
+                        else: 
+                            FirstNgrams[ngram_text]["T"] = [tfidfScore]
+
+                if len(terms)>1:
+                    calc.addCompleteSubGraph(terms)
+
+        return { "G":calc.G , "TERMS": ID2NGram , "metrics":FirstNgrams }
+
+    def do_coocmatrix__MOV(self , TERMS , G , n=150 , type='node_link'):
+        import pandas as pd
+        from copy import copy
+        import numpy as np
+        import networkx as nx
+        from networkx.readwrite import json_graph
+        from gargantext_web.api import JsonHttpResponse
+        from analysis.louvain import best_partition
+
+        matrix = defaultdict(lambda : defaultdict(float))
+        ids    = dict()
+        labels = dict()
+        weight = dict()
+
+        for e in G.edges_iter():
+            n1 = e[0]
+            n2 = e[1]
+            w = G[n1][n2]['weight']
+            # print("\t",n1," <=> ",n2, " : ", G[n1][n2]['weight'],"\t",TERMS[n1]," <=> ",TERMS[n2], " : ", G[n1][n2]['weight'])
+
+            ids[TERMS[n1]] = n1
+            ids[TERMS[n2]] = n2
+
+            labels[n1] = TERMS[n1]
+            labels[n2] = TERMS[n2]
+
+            matrix[n1][n2] = w
+            matrix[n2][n1] = w
+
+            weight[TERMS[n2]] = weight.get(TERMS[n2], 0) + w
+            weight[TERMS[n1]] = weight.get(TERMS[n1], 0) + w
+        print("\n===================\nNUMBER OF NGRAMS:",len(weight.keys()))
+        df = pd.DataFrame(matrix).fillna(0)
+        x = copy(df.values)
+        x = x / x.sum(axis=1)
+
+        # Removing unconnected nodes
+        threshold = min(x.max(axis=1))
+        matrix_filtered = np.where(x >= threshold, 1, 0)
+        #matrix_filtered = np.where(x > threshold, x, 0)
+        #matrix_filtered = matrix_filtered.resize((90,90))
+        G = nx.from_numpy_matrix(matrix_filtered)
+        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
+        print("NUMBER OF NODES:",len(G))
+        partition = best_partition(G)
+
+        data = []
+        if type == "node_link":
+            for community in set(partition.values()):
+                #print(community)
+                G.add_node("cluster " + str(community), hidden=1)
+            for node in G.nodes():
+                try:
+                    #node,type(labels[node])
+                    G.node[node]['label']   = node
+                    G.node[node]['name']    = node
+                    G.node[node]['pk']      = ids[str(node)]
+                    G.node[node]['size']    = weight[node]
+                    G.node[node]['group']   = partition[node]
+                    G.add_edge(node, "cluster " + str(partition[node]), weight=3)
+                except Exception as error:
+                    print(error)
+            print("IMA IN node_link CASE")
+            data = json_graph.node_link_data(G)
+
+        elif type == "adjacency":
+            for node in G.nodes():
+                try:
+                    #node,type(labels[node])
+                    #G.node[node]['label']   = node
+                    G.node[node]['name']    = node
+                    #G.node[node]['size']    = weight[node]
+                    G.node[node]['group']   = partition[node]
+                    #G.add_edge(node, partition[node], weight=3)
+                except Exception as error:
+                    print(error)
+            print("IMA IN adjacency CASE")
+            data = json_graph.node_link_data(G)
+
+        print("* * * * FINISHED * * * *")
+        return data
+
+        
 
     def workflow__MOV(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
         import time
@@ -420,21 +572,33 @@ class Node(CTENode):
 
         print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
         start = time.time()
-        FreqList = self.extract_ngrams__MOV(theMetadata , keys=['title',] )
+        FreqList = self.extract_ngrams__MOV(theMetadata , keys=['title'] )
         end = time.time()
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams__MOV() [s]",(end - start))
 
-        # start = time.time()
-        # print("LOG::TIME: In workflow()    do_tfidf()")
-        # self.do_tfidf__MOV( FreqList )
-        # end = time.time()
-        # total += (end - start)
-        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        # # # print("LOG::TIME: In workflow()    / do_tfidf()")
+        start = time.time()
+        print("LOG::TIME: In workflow()    do_tfidf()")
+        resultDict = self.do_tfidf__MOV( FreqList , theMetadata)
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+        # # print("LOG::TIME: In workflow()    / do_tfidf()")
 
 
+        # print("\n= = = = = = = = = = = = = = = =")
+        # print("NUMBER OF NGRAMS:",len(resultDict["G"]))
+        # # M = resultDict["metrics"]
+        # # Metrics2 = sorted(M, key=lambda x: M[x]['C'])
 
+        # # for i in Metrics2:
+        # #     print("as: ",i,":",M[i])
+        # print("= = = = = = = = = = = = = = = =\n")
+
+        jsongraph = self.do_coocmatrix__MOV ( resultDict["TERMS"] , resultDict["G"] , n=150)
+
+        import pprint
+        pprint.pprint(jsongraph)
 
 
         # # # this is not working

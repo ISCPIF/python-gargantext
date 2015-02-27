@@ -25,7 +25,7 @@ class PubmedFileParser(FileParser):
             metadata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
-                # "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
+                "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
                 "title2"            : 'MedlineCitation/Article/VernacularTitle',
                 "language_iso3"     : 'MedlineCitation/Article/Language',
                 "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',

@@ -103,7 +103,9 @@ class FileParser:
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
                 try:
-                    metadata_list += self.parse(zipArchive.open(filename, "r"))
+                    f = zipArchive.open(filename, 'r')
+                    metadata_list += self.parse(f)
+                    f.close()
                 except Exception as error:
                     print(error)
         # ...otherwise, let's parse it directly!
@@ -111,6 +113,8 @@ class FileParser:
             try:
                 for metadata in self._parse(file):
                     metadata_list.append(self.format_metadata(metadata))
+                if hasattr(file, 'close'):
+                    file.close()
             except Exception as error:
                 print(error)
         # return the list of formatted metadata

@@ -1,21 +1,20 @@
 # Without this, we couldn't use the Django environment
-
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext_web.settings")
 os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 
-
-
-
-# perform a bulk insert, just to see
-
+# database tools
 from gargantext_web.db import *
+from parsing.corpustools import *
+
+
+
 
 user = session.query(User).first()
 project = session.query(Node).filter(Node.name == 'A').first()
 corpus = Node(
     parent_id = project.id,
-    name = 'Test 123',
+    name = 'Test 456',
     type_id = cache.NodeType['Corpus'].id,
     user_id = user.id,
 )
@@ -23,13 +22,16 @@ corpus = Node(
 session.add(corpus)
 session.commit()
 
-# 
-
-from parsing.corpus import *
-
 add_resource(corpus,
     file = './data_samples/pubmed_result.xml',
     type_id = cache.ResourceType['pubmed'].id,
 )
 parse_resources(corpus)
-extract_ngrams(corpus, ('abstract', ))
+extract_ngrams(corpus, ('title', ))
+
+
+
+# print(corpus)
+# corpus = session.query(Node).filter(Node.id == 72771).first()
+# corpus = session.query(Node).filter(Node.id == 73017).first()
+compute_tfidf(corpus)

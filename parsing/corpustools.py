@@ -2,11 +2,30 @@ from collections import defaultdict
 from datetime import datetime
 from random import random
 from hashlib import md5
+from time import time
+from math import log
 
 from gargantext_web.db import *
 
 from .FileParsers import *
 
+
+
+class DebugTime:
+
+    def __init__(self, prefix):
+        self.prefix = prefix
+        self.message = None
+        self.time = None
+
+    def __del__(self):
+        if self.message is not None and self.time is not None:
+            print('%s - %s: %.4f' % (self.prefix, self.message, time() - self.time))
+
+    def show(self, message):
+        self.__del__()
+        self.message = message
+        self.time = time()
 
 
 # keep all the parsers in a cache
@@ -72,6 +91,7 @@ def add_resource(corpus, **kwargs):
 
 
 def parse_resources(corpus, user=None, user_id=None):
+    dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
     session = Session()
     corpus_id = corpus.id
     type_id = cache.NodeType['Document'].id
@@ -88,7 +108,7 @@ def parse_resources(corpus, user=None, user_id=None):
         .filter(Node_Resource.parsed == False)
     )
     # make a new node for every parsed document of the corpus
-    print('PARSE RESOURCES: retrieve documents')
+    dbg.show('analyze documents')
     nodes = list()
     for resource, resourcetype in resources_query:
         parser = parsers[resourcetype.name]
@@ -115,17 +135,21 @@ def parse_resources(corpus, user=None, user_id=None):
             #
             # TODO: mark node-resources associations as parsed
             # 
-    print('PARSE RESOURCES: insert documents')
+    dbg.show('insert documents')
     session.add_all(nodes)
     session.commit()
     # now, index the metadata
-    print('PARSE RESOURCES: insert metadata')
+    dbg.show('insert metadata')
     node_metadata_lists = defaultdict(list)
+    metadata_types = {
+        metadata.name: metadata
+        for metadata in session.query(Metadata)
+    }
     for node in nodes:
         node_id = node.id
         for metadata_key, metadata_value in node.metadata.items():
             try:
-                metadata = cache.Metadata[metadata_key]
+                metadata = metadata_types[metadata_key]
             except KeyError:
                 continue
             if metadata.type == 'string':
@@ -171,6 +195,7 @@ class NgramsExtractors(defaultdict):
 ngramsextractors = NgramsExtractors()
 
 def extract_ngrams(corpus, keys):
+    dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the metadata associated with the given keys
     columns = [Node.id, Node.language_id] + [Node.metadata[key] for key in keys]
@@ -180,7 +205,7 @@ def extract_ngrams(corpus, keys):
         .filter(Node.type_id == cache.NodeType['Document'].id)
     )
     # prepare data to be inserted
-    print('EXTRACT NGRAMS: find ngrams')
+    dbg.show('find ngrams')
     ngrams_data = set()
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in metadata_query:
@@ -199,7 +224,7 @@ def extract_ngrams(corpus, keys):
                         (n, terms)
                     )
     # insert ngrams to temporary table
-    print('EXTRACT NGRAMS: find ngrams ids')
+    dbg.show('find ngrams ids')
     db, cursor = get_cursor()
     cursor.execute('''
         CREATE TEMPORARY TABLE tmp__ngrams (
@@ -249,7 +274,7 @@ def extract_ngrams(corpus, keys):
     for row in cursor.fetchall():
         ngram_ids[row[1]] = row[0]
     # 
-    print('EXTRACT NGRAMS: insert associations')
+    dbg.show('insert associations')
     node_ngram_data = list()
     for node_id, ngrams in node_ngram_list.items():
         for terms, weight in ngrams.items():
@@ -257,4 +282,117 @@ def extract_ngrams(corpus, keys):
             node_ngram_data.append((node_id, ngram_id, weight, ))
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)
     # commit to database
+    db.commit()
+
+
+
+# tfidf calculation
+
+def compute_tfidf(corpus):
+    dbg = DebugTime('Corpus #%d - tfidf' % corpus.id)
+    # compute terms frequency sum
+    dbg.show('calculate terms frequencies sums')
+    db, cursor = get_cursor()
+    cursor.execute('''
+        CREATE TEMPORARY TABLE tmp__st (
+            node_id INT NOT NULL,
+            frequency DOUBLE PRECISION NOT NULL
+        )
+    ''')
+    cursor.execute('''
+        INSERT INTO
+            tmp__st (node_id, frequency)
+        SELECT
+            node_ngram.node_id,
+            SUM(node_ngram.weight) AS frequency
+        FROM
+            %s AS node
+        INNER JOIN
+            %s AS node_ngram ON node_ngram.node_id = node.id
+        WHERE
+            node.parent_id = %d
+        GROUP BY
+            node_ngram.node_id
+    ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
+    # compute normalized terms frequencies
+    dbg.show('normalize terms frequencies')
+    cursor.execute('''
+        CREATE TEMPORARY TABLE tmp__tf (
+            node_id INT NOT NULL,
+            ngram_id INT NOT NULL,
+            frequency DOUBLE PRECISION NOT NULL
+        )
+    ''')
+    cursor.execute('''
+        INSERT INTO
+            tmp__tf (node_id, ngram_id, frequency)
+        SELECT
+            node_ngram.node_id,
+            node_ngram.ngram_id,
+            (node_ngram.weight / node.frequency) AS frequency
+        FROM
+            %s AS node_ngram
+        INNER JOIN
+            tmp__st AS node ON node.node_id = node_ngram.node_id
+    ''' % (Node_Ngram.__table__.name, ))
+    # show off
+    dbg.show('compute idf')
+    cursor.execute('''
+        CREATE TEMPORARY TABLE tmp__idf (
+            ngram_id INT NOT NULL,
+            idf DOUBLE PRECISION NOT NULL
+        )
+    ''')
+    cursor.execute('''
+        INSERT INTO
+            tmp__idf(ngram_id, idf)
+        SELECT
+            node_ngram.ngram_id,
+            -ln(COUNT(*))
+        FROM
+            %s AS node
+        INNER JOIN
+            %s AS node_ngram ON node_ngram.node_id = node.id
+        WHERE
+            node.parent_id = %d
+        GROUP BY
+            node_ngram.ngram_id
+    ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
+    cursor.execute('SELECT COUNT(*) FROM tmp__st')
+    D = cursor.fetchone()[0]
+    lnD = log(D)
+    cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
+    # show off
+    dbg.show('compute results, a.k.a tfidf')
+    cursor.execute('''
+        INSERT INTO
+            %s (nodex_id, nodey_id, ngram_id, score)
+        SELECT
+            %d AS nodex_id,
+            tf.node_id AS nodey_id,
+            tf.ngram_id AS ngram_id,
+            (tf.frequency * idf.idf) AS score
+        FROM
+            tmp__idf AS idf
+        INNER JOIN
+            tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
+    ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
+    # show off
+    cursor.execute('''
+        SELECT
+            node.name,
+            ngram.terms,
+            node_node_ngram.score AS tfidf
+        FROM
+            %s AS node_node_ngram
+        INNER JOIN
+            %s AS node ON node.id = node_node_ngram.nodey_id
+        INNER JOIN
+            %s AS ngram ON ngram.id = node_node_ngram.ngram_id
+        WHERE
+            node_node_ngram.nodex_id = %d
+        ORDER BY
+            score DESC
+    ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
+    # the end!
     db.commit()

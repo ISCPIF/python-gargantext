@@ -12,7 +12,7 @@ from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
 
 def project(request, project_id):
@@ -120,6 +120,7 @@ def project(request, project_id):
             try:
                 parse_resources(corpus)
                 extract_ngrams(corpus, ['title'])
+                compute_tfidf(corpus)
             except Exception as error:
                 print('WORKFLOW ERROR')
                 print(error)

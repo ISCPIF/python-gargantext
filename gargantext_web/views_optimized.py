@@ -7,6 +7,7 @@ from sqlalchemy.orm import aliased
 
 from collections import defaultdict
 from datetime import datetime
+from threading import Thread
 
 from node.admin import CustomForm
 from gargantext_web.db import *
@@ -118,9 +119,15 @@ def project(request, project_id):
             )
             # let's start the workflow
             try:
-                parse_resources(corpus)
-                extract_ngrams(corpus, ['title'])
-                compute_tfidf(corpus)
+                def apply_workflow(corpus):
+                    parse_resources(corpus)
+                    extract_ngrams(corpus, ['title'])
+                    compute_tfidf(corpus)
+                if DEBUG:
+                    apply_workflow(corpus)
+                else:
+                    thread = Thread(target=apply_workflow, args=(corpus, ), daemon=True)
+                    thread.start()
             except Exception as error:
                 print('WORKFLOW ERROR')
                 print(error)

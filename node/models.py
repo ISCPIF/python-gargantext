@@ -62,7 +62,7 @@ class Resource(models.Model):
         return self.file
 
 class NodeType(models.Model):
-    name        = models.CharField(max_length=200, unique=True)
+    name        = models.CharField(max_length=255, unique=True)
     def __str__(self):
         return self.name
 
@@ -113,7 +113,7 @@ class Node(CTENode):
 
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
-    name        = models.CharField(max_length=200)
+    name        = models.CharField(max_length=255)
     
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     
@@ -179,7 +179,7 @@ class Node(CTENode):
         for i, metadata_values in enumerate(metadata_list):
             if verbose:
                 print(i, end='\r', flush=True)
-            name = metadata_values.get('title', '')[:200]
+            name = metadata_values.get('title', '')[:255]
             language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
             if isinstance(language, tuple):
                 language = language[0]

@@ -123,7 +123,7 @@ def parse_resources(corpus, user=None, user_id=None):
                 language_id = None
             # create new node
             node = Node(
-                name = metadata_dict.get('title', ''),
+                name = metadata_dict.get('title', '')[:255],
                 parent_id = corpus_id,
                 user_id = user_id,
                 type_id = type_id,
@@ -135,7 +135,7 @@ def parse_resources(corpus, user=None, user_id=None):
             #
             # TODO: mark node-resources associations as parsed
             # 
-    dbg.show('insert documents')
+    dbg.show('insert %d documents' % len(nodes))
     session.add_all(nodes)
     session.commit()
     # now, index the metadata
@@ -206,15 +206,24 @@ def extract_ngrams(corpus, keys):
     )
     # prepare data to be inserted
     dbg.show('find ngrams')
+    languages_by_id = {
+        language.id: language.iso2
+        for language in session.query(Language)
+    }
     ngrams_data = set()
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in metadata_query:
         node_id = nodeinfo[0]
         language_id = nodeinfo[1]
-        language_iso2 = default_language_iso2 if language_id is None else cache.Language[language_id].iso2
+        if language_id is None:
+            language_iso2 = default_language_iso2
+        else:
+            language_iso2 = languages_by_id.get(language_id, None)
+        if language_iso2 is None:
+            continue
         ngramsextractor = ngramsextractors[language_iso2]
         for text in nodeinfo[2:]:
-            if text is not None:
+            if text is not None and len(text):
                 ngrams = ngramsextractor.extract_ngrams(text)
                 for ngram in ngrams:
                     terms = ' '.join([token for token, tag in ngram]).lower()
@@ -224,7 +233,7 @@ def extract_ngrams(corpus, keys):
                         (n, terms)
                     )
     # insert ngrams to temporary table
-    dbg.show('find ngrams ids')
+    dbg.show('find ids for the %d ngrams' % len(ngrams_data))
     db, cursor = get_cursor()
     cursor.execute('''
         CREATE TEMPORARY TABLE tmp__ngrams (
@@ -281,6 +290,7 @@ def extract_ngrams(corpus, keys):
             ngram_id = ngram_ids[terms]
             node_ngram_data.append((node_id, ngram_id, weight, ))
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)
+    dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database
     db.commit()
 
@@ -363,7 +373,7 @@ def compute_tfidf(corpus):
     lnD = log(D)
     cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
     # show off
-    dbg.show('compute results, a.k.a tfidf')
+    dbg.show('insert tfidf for %d documents' % D)
     cursor.execute('''
         INSERT INTO
             %s (nodex_id, nodey_id, ngram_id, score)
@@ -377,7 +387,7 @@ def compute_tfidf(corpus):
         INNER JOIN
             tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
     ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
-    # show off
+    # # show off
     # cursor.execute('''
     #     SELECT
     #         node.name,

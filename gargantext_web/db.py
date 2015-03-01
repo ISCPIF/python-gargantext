@@ -2,7 +2,7 @@ from gargantext_web import settings
 from node import models
 
 
-__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert']
+__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
 
 
 # initialize sqlalchemy
@@ -97,14 +97,17 @@ def literalquery(statement, dialect=None):
 
 # SQLAlchemy session management
 
-def get_sessionmaker():
-    from django.db import connections
-    from sqlalchemy.orm import sessionmaker
+def get_engine():
     from sqlalchemy import create_engine
     url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
         **settings.DATABASES['default']
     )
-    engine = create_engine(url, use_native_hstore=True)
+    return create_engine(url, use_native_hstore=True)
+
+engine = get_engine()
+
+def get_sessionmaker():
+    from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
 Session = get_sessionmaker()
@@ -164,45 +167,42 @@ cache = Cache()
 
 import psycopg2
 
+def get_cursor():
+    db_settings = settings.DATABASES['default']
+    db = psycopg2.connect(**{
+        'database': db_settings['NAME'],
+        'user':     db_settings['USER'],
+        'password': db_settings['PASSWORD'],
+        'host':     db_settings['HOST'],
+    })
+    return db, db.cursor()
+
 class bulk_insert:
 
-    def __init__(self, table, data):
+    def __init__(self, table, keys, data, cursor=None):
         # prepare the iterator
         self.iter = iter(data)
-        try:
-            first_row = next(self.iter)
-        except StopIteration:
-            return
-        self.first_values = first_row.values()
         # template
-        self.template = '%s' + (len(self.first_values) - 1) * '\t%s' + '\n'
+        self.template = '%s' + (len(keys) - 1) * '\t%s' + '\n'
         # prepare the cursor
-        db_settings = settings.DATABASES['default']
-        db = psycopg2.connect({
-            'user':     db_settings['USER'],
-            'password': db_settings['PASSWORD'],
-            'name':     db_settings['NAME'],
-            'host':     db_settings['HOST'],
-        })
-        cursor = db.cursor()
+        if cursor is None:
+            db, cursor = get_cursor()
+            mustcommit = True
+        else:
+            mustcommit = False
         # insert data
         if not isinstance(table, str):
-            table = table.__tablename__
-        keys = first_row.keys()
+            table = table.__table__.name
         cursor.copy_from(self, table, columns=keys)
-        # commit data
-        db.commit()
-
+        # commit if necessary
+        if mustcommit:
+            db.commit()
 
     def read(self, size=None):
-        if self.first_values is not None:
-            line = self.first_values
-        else:
-            try:
-                line = next(self.iter).values()
-            except StopIteration:
-                return ''
-        return self.template % line
+        try:
+            return self.template % next(self.iter)
+        except StopIteration:
+            return ''
 
     readline = read
 

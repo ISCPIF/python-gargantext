@@ -32,3 +32,4 @@ add_resource(corpus,
     type_id = cache.ResourceType['pubmed'].id,
 )
 parse_resources(corpus)
+extract_ngrams(corpus, ('abstract', ))

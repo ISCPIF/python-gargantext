@@ -104,7 +104,7 @@ class NodeManager(CTENodeManager):
         return getattr(self.get_queryset(), name, *args)
 
 class Metadata(models.Model):
-    name        = models.CharField(max_length=32, db_index=True)
+    name        = models.CharField(max_length=32, unique=True)
     type        = models.CharField(max_length=16, db_index=True)
         
 class Node(CTENode):

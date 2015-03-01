@@ -10,9 +10,9 @@ from datetime import datetime
 
 from node.admin import CustomForm
 from gargantext_web.db import *
-from gargantext_web.settings import DEBUG
+from gargantext_web.settings import DEBUG, MEDIA_ROOT
 
-from parsing.corpus import parse_resources
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams
 
 
 def project(request, project_id):
@@ -46,8 +46,8 @@ def project(request, project_id):
     corpus_query = (session
         .query(Node, Resource, func.count(ChildrenNode.id))
         .outerjoin(ChildrenNode, ChildrenNode.parent_id == Node.id)
-        .join(Node_Resource, Node_Resource.node_id == Node.id)
-        .join(Resource, Resource.id == Node_Resource.resource_id)
+        .outerjoin(Node_Resource, Node_Resource.node_id == Node.id)
+        .outerjoin(Resource, Resource.id == Node_Resource.resource_id)
         .filter(Node.parent_id == project.id)
         .group_by(Node, Resource)
         .order_by(Node.name)
@@ -56,8 +56,11 @@ def project(request, project_id):
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
     for corpus, resource, document_count in corpus_query:
-        resourcetype = cache.ResourceType[resource.type_id]
-        resourcetype_name = resourcetype.name
+        if resource is None:
+            resourcetype_name = '(no resource)'
+        else:
+            resourcetype = cache.ResourceType[resource.type_id]
+            resourcetype_name = resourcetype.name
         corpora_by_resourcetype[resourcetype_name].append({
             'id': corpus.id,
             'name': corpus.name,
@@ -93,28 +96,30 @@ def project(request, project_id):
             else:
                 language_id = None
             # corpus node instanciation as a Django model
-            from node import models
-            dj_corpus = models.Node(
+            corpus = Node(
                 name = name,
                 user_id = request.user.id,
                 parent_id = project_id,
                 type_id = cache.NodeType['Corpus'].id,
                 language_id = language_id,
             )
-            dj_corpus.save()
+            session.add(corpus)
+            session.commit()
+            # save the uploaded file
+            filepath = '%s/corpora/%s/%s' % (MEDIA_ROOT, request.user.username, thefile._name)
+            f = open(filepath, 'wb')
+            f.write(thefile.read())
+            f.close()
             # add the uploaded resource to the corpus
-            dj_corpus.add_resource(
+            add_resource(corpus,
                 user_id = request.user.id,
                 type_id = resourcetype.id,
-                file = thefile,
+                file = filepath,
             )
             # let's start the workflow
             try:
-                parse_resources(dj_corpus, user_id=request.user.id)
-                # if DEBUG is True:
-                #     dj_corpus.workflow()
-                # else:
-                #     dj_corpus.workflow.apply_async((), countdown=3)
+                parse_resources(corpus)
+                extract_ngrams(corpus, ['title'])
             except Exception as error:
                 print('WORKFLOW ERROR')
                 print(error)
@@ -138,3 +143,4 @@ def project(request, project_id):
         'cooclists'     : '',
         'number'        : corpora_count,
     })
+

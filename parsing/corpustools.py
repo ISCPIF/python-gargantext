@@ -378,21 +378,23 @@ def compute_tfidf(corpus):
             tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
     ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
     # show off
-    cursor.execute('''
-        SELECT
-            node.name,
-            ngram.terms,
-            node_node_ngram.score AS tfidf
-        FROM
-            %s AS node_node_ngram
-        INNER JOIN
-            %s AS node ON node.id = node_node_ngram.nodey_id
-        INNER JOIN
-            %s AS ngram ON ngram.id = node_node_ngram.ngram_id
-        WHERE
-            node_node_ngram.nodex_id = %d
-        ORDER BY
-            score DESC
-    ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
+    # cursor.execute('''
+    #     SELECT
+    #         node.name,
+    #         ngram.terms,
+    #         node_node_ngram.score AS tfidf
+    #     FROM
+    #         %s AS node_node_ngram
+    #     INNER JOIN
+    #         %s AS node ON node.id = node_node_ngram.nodey_id
+    #     INNER JOIN
+    #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
+    #     WHERE
+    #         node_node_ngram.nodex_id = %d
+    #     ORDER BY
+    #         score DESC
+    # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
+    # for row in cursor.fetchall():
+    #     print(row)
     # the end!
     db.commit()

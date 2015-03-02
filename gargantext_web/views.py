@@ -25,6 +25,7 @@ from django import forms
 from collections import defaultdict
 
 from parsing.FileParsers import *
+import os
 
 # SOME FUNCTIONS
 
@@ -282,9 +283,8 @@ def project(request, project_id):
     cooclists       = ""#.children.filter(type=type_cooclist)
     
     for corpus in corpora:
-        # print("corpus", corpus.pk , corpus.name , corpus.type_id)
-
         docs_count =  Node.objects.filter(parent=corpus, type=type_document).count()
+        # print("corpus:", corpus.pk , " | name:",corpus.name , " | type:",corpus.type_id , " | #docs:",docs_count)
         docs_total += docs_count
         
         corpus_view = dict()
@@ -727,6 +727,7 @@ def graph(request, project_id, corpus_id):
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
+            'graphfile' : "hola_mundo",\
             }))
     
     return HttpResponse(html)
@@ -839,18 +840,23 @@ def send_csv(request, corpus_id):
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
 import json
-
+from gargantext_web.settings import MEDIA_ROOT
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
-    '''
-    import time
-    print("In node_link() START")
-    start = time.time()
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
-    end = time.time()
-    print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" get_cooc() [s]",(end - start))
-    print("In node_link() END")
+    '''   
+
+    data = []
+    
+    corpus = Node.objects.get(id=corpus_id)
+    filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent.id, corpus_id)
+    print("file exists?:",os.path.isfile(filename))
+    if os.path.isfile(filename):
+        json_data = open(filename,"r")
+        data = json.load(json_data)
+        json_data.close()
+    else:
+        data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):

@@ -287,16 +287,6 @@ class Node(CTENode):
         for p in proc:
             p.join()
 
-
-    def pushScore( self , FINAL , n1,n2, score):
-        if not FINAL.has_key(n1):
-            FINAL[n1]=[]
-        FINAL[n1].append(score)
-        
-        if not FINAL.has_key(n2):
-            FINAL[n2]=[]
-        FINAL[n2].append(score)
-
     def parse_resources__MOV(self, verbose=False):
         # parse all resources into a list of metadata
         metadata_list = []
@@ -436,10 +426,12 @@ class Node(CTENode):
             docID = i[0]
             associations = i[1]
 
+            # [ considering just {2,3}-grams ]
             termsCount = 0
             for ngram_text, weight in associations.items():
                 if ngram_text in NGram2ID: # considering just {2,3}-grams
                     termsCount+=1
+            # [ / considering just {2,3}-grams ]
 
             ngrams_by_document = termsCount # i re-calculed this because of *02*
             terms = []
@@ -562,12 +554,12 @@ class Node(CTENode):
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources()__MOV [s]",(end - start))
 
-        # print("LOG::TIME: In workflow()    writeMetadata__MOV()")
-        # start = time.time()
-        # self.writeMetadata__MOV( metadata_list=theMetadata )
-        # end = time.time()
-        # total += (end - start)
-        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
+        print("LOG::TIME: In workflow()    writeMetadata__MOV()")
+        start = time.time()
+        self.writeMetadata__MOV( metadata_list=theMetadata )
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
 
 
         print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
@@ -585,33 +577,28 @@ class Node(CTENode):
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
         # # print("LOG::TIME: In workflow()    / do_tfidf()")
 
-
-        # print("\n= = = = = = = = = = = = = = = =")
-        # print("NUMBER OF NGRAMS:",len(resultDict["G"]))
-        # # M = resultDict["metrics"]
-        # # Metrics2 = sorted(M, key=lambda x: M[x]['C'])
-
-        # # for i in Metrics2:
-        # #     print("as: ",i,":",M[i])
-        # print("= = = = = = = = = = = = = = = =\n")
-
+        start = time.time()
+        print("LOG::TIME: In workflow()    do_coocmatrix()")
         jsongraph = self.do_coocmatrix__MOV ( resultDict["TERMS"] , resultDict["G"] , n=150)
+        end = time.time()
+        total += (end - start)
+        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_coocmatrix() [s]",(end - start))
 
-        import pprint
-        pprint.pprint(jsongraph)
+        print("the user:",self.user)
+        print("the project id:",self.parent.id)
+        print("the corpus id:",self.id)
+        # timestamp = str(datetime.datetime.now().isoformat())
+        # # filename = MEDIA_ROOT + '/corpora/%s/%s_%s__%s.json' % (self.user , self.parent.id, self.id , timestamp)
+        filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (self.user , self.parent.id, self.id)
+        import json
+        f = open(filename,"w")
+        f.write( json.dumps(jsongraph) )
+        f.close()
 
 
         # # # this is not working
         # # self.runInParallel( self.writeMetadata__MOV( metadata_list=theMetadata ) , self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] ) )
         
-        # start = time.time()
-        # print("LOG::TIME: In workflow()    do_tfidf()")
-        # from analysis.functions import do_tfidf
-        # do_tfidf(self)
-        # end = time.time()
-        # total += (end - start)
-        # print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        # # # print("LOG::TIME: In workflow()    / do_tfidf()")
         print("LOG::TIME:_ "+datetime.datetime.now().isoformat()+"   In workflow() END")
 
 

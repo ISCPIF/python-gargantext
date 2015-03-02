@@ -84,13 +84,10 @@
 												<ul>
 														{% for corpus in corpora %}
 														<li> {% ifnotequal corpus.count 0 %}
-																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}"> 
-																			{{corpus.name}}
-																		</a>
-																		, {{ corpus.count }} Documents 
-																 {% else %}
-																 {{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
-																 {% endifnotequal %}
+																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} </a> , {{ corpus.count }} Documents 
+															 {% else %}
+																 	{{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
+															 {% endifnotequal %}
 																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='
 																		<ul>

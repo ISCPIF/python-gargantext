@@ -245,27 +245,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     return data
 
 
-#def tfidf(corpus, document, ngram):
-#    '''
-#    Compute TF-IDF (Term Frequency - Inverse Document Frequency)
-#    See: http://en.wikipedia.org/wiki/Tf%E2%80%93idf
-#    '''
-#    try:
-#        occurences_of_ngram = Node_Ngram.objects.get(node=document, ngram=ngram).weight
-#        ngrams_by_document = sum([ x.weight for x in Node_Ngram.objects.filter(node=document)])
-#        term_frequency = occurences_of_ngram / ngrams_by_document
-#    
-#        xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
-#        yy = Node_Ngram.objects.filter(ngram=ngram).count() # filter: ON node.parent=corpus
-#        inverse_document_frequency= log(xx/yy)
-#        
-#        # result = tf * idf
-#        result = term_frequency * inverse_document_frequency
-#    except Exception as error:
-#        print(error, ngram)
-#        result = 0
-#    return result
-
 from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):

@@ -4,7 +4,7 @@ import socketserver
 
 # Server parameters
 server_host = 'localhost'
-server_port = 1234
+server_port = 7777
 server_type_server = socketserver.TCPServer
 server_type_client = socket.AF_INET, socket.SOCK_STREAM
 server_timeout = 2.0

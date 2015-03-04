@@ -69,4 +69,3 @@ class Tagger:
             tokens_tags += self.tag_tokens(tokens, False)
         self.tagging_end()
         return tokens_tags
-

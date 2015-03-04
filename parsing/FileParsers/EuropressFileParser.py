@@ -48,11 +48,9 @@ class EuropressFileParser(FileParser):
                 print(error)
             
 
-        except:
-            return []
+        except Exception as error:
+            print(error)
 
-        # initialize the list of metadata
-        metadata_list = []
         # parse all the articles, one by one
         try:
             for html_article in html_articles:
@@ -201,16 +199,9 @@ class EuropressFileParser(FileParser):
                   #metadata_str = {}
                     for key, value in metadata.items():
                         metadata[key] = value.decode() if isinstance(value, bytes) else value
-                    metadata_list.append(metadata)
+                    yield metadata
                     count += 1
         
         except Exception as error:
             print(error)
             pass
-
-#       from pprint import pprint
-#       pprint(metadata_list)
-#       return []
-        return metadata_list
-
-

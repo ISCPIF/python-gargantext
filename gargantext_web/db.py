@@ -1,16 +1,52 @@
-from node import models
 from gargantext_web import settings
+from node import models
 
 
-__all__ = ['literalquery', 'session', 'cache']
+__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
 
+
+# initialize sqlalchemy
+
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+
+engine = create_engine('postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
+    **settings.DATABASES['default']
+))
+Base = automap_base()
+Base.prepare(engine, reflect=True)
+
+# model representation
+
+def model_repr(modelname):
+    def _repr(obj):
+        result = '<' + modelname
+        isfirst = True
+        for key, value in obj.__dict__.items():
+            if key[0] != '_':
+                value = repr(value)
+                if len(value) > 64:
+                    value = value[:30] + '....' + value[-30:]
+                if isfirst:
+                    isfirst = False
+                else:
+                    result += ','
+                result += ' ' + key + '=' + value
+        result += '>'
+        return result
+    return _repr
 
 # map the Django models found in node.models to SQLAlchemy models
 
 for model_name, model in models.__dict__.items():
-    if hasattr(model, 'sa'):
-        globals()[model_name] = model.sa
-        __all__.append(model_name)
+    if hasattr(model, '_meta'):
+        table_name = model._meta.db_table
+        if hasattr(Base.classes, table_name):
+            sqla_model = getattr(Base.classes, table_name)
+            setattr(sqla_model, '__repr__', model_repr(model_name))
+            globals()[model_name] = sqla_model
+            __all__.append(model_name)
 
 NodeNgram = Node_Ngram
 
@@ -61,16 +97,17 @@ def literalquery(statement, dialect=None):
 
 # SQLAlchemy session management
 
-def get_sessionmaker():
-    from django.db import connections
-    from sqlalchemy.orm import sessionmaker
+def get_engine():
     from sqlalchemy import create_engine
-    alias = 'default'
-    connection = connections[alias]
     url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
         **settings.DATABASES['default']
     )
-    engine = create_engine(url, use_native_hstore=True)
+    return create_engine(url, use_native_hstore=True)
+
+engine = get_engine()
+
+def get_sessionmaker():
+    from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
 Session = get_sessionmaker()
@@ -84,7 +121,7 @@ from sqlalchemy import or_
 class ModelCache(dict):
 
     def __init__(self, model, preload=False):
-        self._model = model.sa
+        self._model = globals()[model.__name__]
         self._columns_names = [column.name for column in model._meta.fields if column.unique]
         self._columns = [getattr(self._model, column_name) for column_name in self._columns_names]
         self._columns_validators = []
@@ -92,20 +129,17 @@ class ModelCache(dict):
             self.preload()
 
     def __missing__(self, key):
-        for column in self._columns:
-            conditions = []
-            try:
-                formatted_key = column.type.python_type(key)
-                conditions.append(column == key)
-            except ValueError:
-                pass
-        if formatted_key in self:
-            self[key] = self[formatted_key]
-        else:
-            element = session.query(self._model).filter(or_(*conditions)).first()
-            if element is None:
-                raise KeyError
-            self[key] = element
+        conditions = [
+            (column == key)
+            for column in self._columns
+            if key.__class__ == column.type.python_type
+        ]
+        if len(conditions) == 0:
+            raise KeyError
+        element = session.query(self._model).filter(or_(*conditions)).first()
+        if element is None:
+            raise KeyError
+        self[key] = element
         return element
 
     def preload(self):
@@ -127,3 +161,48 @@ class Cache:
         return modelcache
 
 cache = Cache()
+
+
+# Insert many elements at once
+
+import psycopg2
+
+def get_cursor():
+    db_settings = settings.DATABASES['default']
+    db = psycopg2.connect(**{
+        'database': db_settings['NAME'],
+        'user':     db_settings['USER'],
+        'password': db_settings['PASSWORD'],
+        'host':     db_settings['HOST'],
+    })
+    return db, db.cursor()
+
+class bulk_insert:
+
+    def __init__(self, table, keys, data, cursor=None):
+        # prepare the iterator
+        self.iter = iter(data)
+        # template
+        self.template = '%s' + (len(keys) - 1) * '\t%s' + '\n'
+        # prepare the cursor
+        if cursor is None:
+            db, cursor = get_cursor()
+            mustcommit = True
+        else:
+            mustcommit = False
+        # insert data
+        if not isinstance(table, str):
+            table = table.__table__.name
+        cursor.copy_from(self, table, columns=keys)
+        # commit if necessary
+        if mustcommit:
+            db.commit()
+
+    def read(self, size=None):
+        try:
+            return self.template % next(self.iter)
+        except StopIteration:
+            return ''
+
+    readline = read
+

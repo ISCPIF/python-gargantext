@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth.views import login
 
-from gargantext_web import views
+from gargantext_web import views, views_optimized
 
 import gargantext_web.api
 import scrap_pubmed.views as pubmedscrapper
@@ -31,7 +31,7 @@ urlpatterns = patterns('',
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/delete/$', views.delete_project),
-    url(r'^project/(\d+)/$', views.project),
+    url(r'^project/(\d+)/$', views_optimized.project),
     
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),

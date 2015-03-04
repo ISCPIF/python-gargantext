@@ -3,6 +3,8 @@ from lxml import etree
 from .FileParser import FileParser
 from ..NgramsExtractors import *
 
+from collections import defaultdict
+
 class PubmedFileParser(FileParser):
     
     def _parse(self, file):
@@ -13,7 +15,7 @@ class PubmedFileParser(FileParser):
         # parse all the articles, one by one
         for xml_article in xml_articles:
             # extract data from the document
-            metadata = {}
+            metadata = defaultdict(str)
             metadata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
@@ -34,7 +36,9 @@ class PubmedFileParser(FileParser):
                             for xml_author in xml_node
                         ])
                     else:
-                        metadata[key] = xml_node.text
+                        if metadata[key]:
+                            metadata[key] += '\n'
+                        metadata[key] += xml_node.text
                 except:
                     pass
             yield metadata

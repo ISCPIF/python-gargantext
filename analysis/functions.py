@@ -160,14 +160,12 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
         print("Coocurrences do not exist yet, create it.")
         whitelist = create_whitelist(request.user, corpus, size=n)
-        print("PRINTING WHITELIST:", whitelist)
         cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
-        print(cooccurrence_node.id, "Cooc created")
     else:
         cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
-        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms," : ",cooccurrence.score)
+        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
         ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
         ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
 
@@ -179,8 +177,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 
         weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
         weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
-
-    print("\n===================\nNUMBER OF NGRAMS_2:",len(weight.keys()))
 
     df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)
@@ -194,7 +190,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
-    print("NUMBER OF NODES_2",len(G))
     # Removing too connected nodes (find automatic way to do it)
     #    outdeg = G.degree()
     #    to_remove = [n for n in outdeg if outdeg[n] >= 10]

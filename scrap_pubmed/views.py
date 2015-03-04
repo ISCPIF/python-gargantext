@@ -31,7 +31,7 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 100
+		N = 10
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
@@ -73,8 +73,6 @@ def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
 	if request.method == "POST":
-
-		
 		query = request.POST["query"]
 		name = request.POST["string"]
 
@@ -101,14 +99,12 @@ def doTheQuery(request , project_id):
 		type_id = NodeType.objects.get(name='Document').id
 		user_id = User.objects.get( username=request.user ).id
 
-
 		corpus = Node(
 			user=request.user,
 			parent=parent,
 			type=node_type,
 			name=name,
 		)
-
 		corpus.save()
 
 		tasks = MedlineFetcher()
@@ -132,12 +128,12 @@ def doTheQuery(request , project_id):
 		# do the WorkFlow
 		try:
 			if DEBUG is True:
-				# corpus.workflow() # old times...
-				corpus.workflow__MOV()
+				corpus.workflow() # old times...
+				# corpus.workflow__MOV()
 				# corpus.write_everything_to_DB()
 			else:
-				# corpus.workflow.apply_async((), countdown=3)
-				corpus.workflow__MOV() # synchronous! because is faaast
+				corpus.workflow.apply_async((), countdown=3)
+				# corpus.workflow__MOV() # synchronous! because is faaast
 				# corpus.write_everything_to_DB.apply_async((), countdown=3) # asynchronous
 
 

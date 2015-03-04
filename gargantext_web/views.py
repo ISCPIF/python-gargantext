@@ -312,14 +312,11 @@ def project(request, project_id):
 
     if docs_total == 0 or docs_total is None:
         docs_total = 1
-
-
     # The donut will show: percentage by  
     donut = [ {'source': key, 
                 'count': donut_part[key] , 
                 'part' : round(donut_part[key] * 100 / docs_total) } \
                         for key in donut_part.keys() ]
-
 
     dauser = User.objects.get( username=user )
     groups = len(dauser.groups.filter(name="PubMed_0.1"))
@@ -330,8 +327,6 @@ def project(request, project_id):
         form = CustomForm(request.POST, request.FILES)
 
         if form.is_valid():
-
-
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
             resource_type = ResourceType.objects.get(name=str( form.cleaned_data['type'] ))
@@ -364,9 +359,7 @@ def project(request, project_id):
                             type=node_type,
                             name=name,
                             )
-
                 corpus.save()
-
                 corpus.add_resource(
                         user=request.user,
                         type=resource_type,
@@ -386,12 +379,10 @@ def project(request, project_id):
 
                 return HttpResponseRedirect('/project/' + str(project_id))
 
-                
             except Exception as error:
                 print('ee', error)
                 form = CorpusForm(request=request)
                 formResource = ResourceForm()
-
 
         else:
             print("bad form, bad form")
@@ -409,8 +400,7 @@ def project(request, project_id):
                 })
     else:
         form = CustomForm()
-
-       
+  
     return render(request, 'project.html', {
             'form'          : form,
             'user'          : user,
@@ -666,8 +656,6 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     # return HttpResponse(html)
     return HttpResponse( serializer.data , content_type='application/json')
 
-
-
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
     return HttpResponseRedirect('/projects/')
@@ -675,7 +663,6 @@ def delete_project(request, node_id):
 def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
-
 
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
@@ -731,10 +718,6 @@ def graph(request, project_id, corpus_id):
             }))
     
     return HttpResponse(html)
-
-
-
-
 
 def exploration(request):
     if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
@@ -793,8 +776,6 @@ def corpus_csv(request, project_id, corpus_id):
 
     return response
 
-
-
 def send_csv(request, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
@@ -834,7 +815,6 @@ def send_csv(request, corpus_id):
     cursor.close()
 
     return response
-
 
 # To get the data
 from gargantext_web.api import JsonHttpResponse

@@ -222,12 +222,14 @@ class Node(CTENode):
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):
             for key, weight in keys.items():
-                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[ngram] += weight
         else:
             for key in keys:
-                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
         Node_Ngram.objects.bulk_create([
@@ -318,18 +320,21 @@ class Node(CTENode):
             language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
             if isinstance(language, tuple):
                 language = language[0]
-            Node(
+            node = Node(
                 user_id  = user_id,
                 type_id  = type_id,
                 name     = name,
                 parent   = self,
                 language_id = language.id if language else None,
                 metadata = metadata_values
-            ).save()
+            )
+            node.save()
+            metadata_values["id"] = node.id
         # # make metadata filterable
         self.children.all().make_metadata_filterable()
         # # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
+        return metadata_list
 
     def extract_ngrams__MOV(self, array , keys , ngramsextractorscache=None, ngramscaches=None):
         if ngramsextractorscache is None:
@@ -369,7 +374,7 @@ class Node(CTENode):
                             associations[terms] += 1
 
             if(len(associations)>0):
-                results.append( [i , associations] )
+                results.append( [metadata["id"] , associations] )
             
             i+=1
         return results
@@ -421,7 +426,7 @@ class Node(CTENode):
             ngramid+=1
         # *03* [ / making dictionaries  for  NGram_Text <=> NGram_ID ]
 
-
+        docs_X_terms = {}
         for i in FreqList: # foreach ID in Doc:
             docID = i[0]
             associations = i[1]
@@ -435,9 +440,10 @@ class Node(CTENode):
 
             ngrams_by_document = termsCount # i re-calculed this because of *02*
             terms = []
+            terms_occ = []
             if ngrams_by_document > 0:
                 for ngram_text, weight in associations.items():
-                    if ngram_text in NGram2ID: 
+                    if ngram_text in NGram2ID:
                         terms.append(NGram2ID[ngram_text])
                         # [ calculating TF-IDF ]
                         occurrences_of_ngram = weight
@@ -446,6 +452,9 @@ class Node(CTENode):
                         yy = FirstNgrams[ngram_text]["C"]
                         inverse_document_frequency= log(xx/yy) #log base e
                         tfidfScore = term_frequency*inverse_document_frequency
+
+                        terms_occ.append( [ NGram2ID[ngram_text] ,  round(tfidfScore,3) ]  )
+
                         # [ / calculating TF-IDF ]
                         if "T" in FirstNgrams[ngram_text]:
                             FirstNgrams[ngram_text]["T"].append(tfidfScore)
@@ -453,9 +462,13 @@ class Node(CTENode):
                             FirstNgrams[ngram_text]["T"] = [tfidfScore]
 
                 if len(terms)>1:
+                    docs_X_terms[docID] = terms_occ
+                    # print("docid:",docID)
+                    # for i in terms:
+                    #     print("\t",ID2NGram[i])
                     calc.addCompleteSubGraph(terms)
 
-        return { "G":calc.G , "TERMS": ID2NGram , "metrics":FirstNgrams }
+        return { "G":calc.G , "TERMS": ID2NGram , "ii":docs_X_terms ,"metrics":FirstNgrams }
 
     def do_coocmatrix__MOV(self , TERMS , G , n=150 , type='node_link'):
         import pandas as pd
@@ -475,20 +488,19 @@ class Node(CTENode):
             n1 = e[0]
             n2 = e[1]
             w = G[n1][n2]['weight']
-            # print("\t",n1," <=> ",n2, " : ", G[n1][n2]['weight'],"\t",TERMS[n1]," <=> ",TERMS[n2], " : ", G[n1][n2]['weight'])
-
+            # print(n1," <=> ",n2, " : ", G[n1][n2]['weight'],"\t",TERMS[n1]," <=> ",TERMS[n2], "\t", G[n1][n2]['weight'])
             ids[TERMS[n1]] = n1
             ids[TERMS[n2]] = n2
 
             labels[n1] = TERMS[n1]
             labels[n2] = TERMS[n2]
 
-            matrix[n1][n2] = w
-            matrix[n2][n1] = w
+            matrix[ n1 ][ n2 ] = w
+            matrix[ n2 ][ n1 ] = w
 
-            weight[TERMS[n2]] = weight.get(TERMS[n2], 0) + w
-            weight[TERMS[n1]] = weight.get(TERMS[n1], 0) + w
-        print("\n===================\nNUMBER OF NGRAMS:",len(weight.keys()))
+            weight[n2] = weight.get( n2, 0) + w
+            weight[n1] = weight.get( n1, 0) + w
+
         df = pd.DataFrame(matrix).fillna(0)
         x = copy(df.values)
         x = x / x.sum(axis=1)
@@ -499,27 +511,23 @@ class Node(CTENode):
         #matrix_filtered = np.where(x > threshold, x, 0)
         #matrix_filtered = matrix_filtered.resize((90,90))
         G = nx.from_numpy_matrix(matrix_filtered)
-        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
-        print("NUMBER OF NODES:",len(G))
+        # G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
+
         partition = best_partition(G)
 
         data = []
         if type == "node_link":
             for community in set(partition.values()):
-                #print(community)
                 G.add_node("cluster " + str(community), hidden=1)
             for node in G.nodes():
                 try:
-                    #node,type(labels[node])
-                    G.node[node]['label']   = node
-                    G.node[node]['name']    = node
-                    G.node[node]['pk']      = ids[str(node)]
+                    G.node[node]['label']   = TERMS[node]
+                    G.node[node]['pk']      = node
                     G.node[node]['size']    = weight[node]
                     G.node[node]['group']   = partition[node]
                     G.add_edge(node, "cluster " + str(partition[node]), weight=3)
                 except Exception as error:
-                    print(error)
-            print("IMA IN node_link CASE")
+                    print("ERROR:",error)
             data = json_graph.node_link_data(G)
 
         elif type == "adjacency":
@@ -533,10 +541,8 @@ class Node(CTENode):
                     #G.add_edge(node, partition[node], weight=3)
                 except Exception as error:
                     print(error)
-            print("IMA IN adjacency CASE")
             data = json_graph.node_link_data(G)
-
-        print("* * * * FINISHED * * * *")
+        
         return data
 
         
@@ -554,13 +560,13 @@ class Node(CTENode):
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources()__MOV [s]",(end - start))
 
+        
         print("LOG::TIME: In workflow()    writeMetadata__MOV()")
         start = time.time()
-        self.writeMetadata__MOV( metadata_list=theMetadata )
+        theMetadata = self.writeMetadata__MOV( metadata_list=theMetadata )
         end = time.time()
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
-
 
         print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
         start = time.time()
@@ -580,9 +586,13 @@ class Node(CTENode):
         start = time.time()
         print("LOG::TIME: In workflow()    do_coocmatrix()")
         jsongraph = self.do_coocmatrix__MOV ( resultDict["TERMS"] , resultDict["G"] , n=150)
+        jsongraph["stats"] = resultDict["ii"]
         end = time.time()
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_coocmatrix() [s]",(end - start))
+
+        # import pprint
+        # pprint.pprint(jsongraph)
 
         print("the user:",self.user)
         print("the project id:",self.parent.id)

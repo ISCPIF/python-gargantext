@@ -132,8 +132,6 @@ class CustomForm(forms.Form):
         #     raise forms.ValidationError(_('We need a zip pls.'))
         return file_
 
-
-
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)
     def __init__(self, *args, **kwargs):

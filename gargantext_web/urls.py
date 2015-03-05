@@ -51,6 +51,7 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
     url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
+    url(r'^api/tfidf2/(\d+)/(\w+)$', views.tfidf2),
 
     # Data management
     url(r'^api$', gargantext_web.api.Root),

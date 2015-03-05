@@ -912,6 +912,35 @@ def nodeinfo(request , node_id):
     return HttpResponse(html)
 
 
+def tfidf2(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    docsids = ngram_id.split("a")
+
+    tfidf_list = []
+    for i in docsids:
+        pub = Node.objects.get(id=i)
+        finalpub = {}
+        finalpub["id"] = pub.id
+        pubmetadata = pub.metadata
+        if "title" in pubmetadata: finalpub["title"] = pubmetadata['title']
+        if "publication_date" in pubmetadata: finalpub["publication_date"] = pubmetadata['publication_date']
+        if "journal" in pubmetadata: finalpub["journal"] = pubmetadata['journal']
+        if "authors" in pubmetadata: finalpub["authors"] = pubmetadata['authors']
+        if "fields" in pubmetadata: finalpub["fields"] = pubmetadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
+    
+    data = json.dumps(tfidf_list) 
+
+
+
+    # data = ["hola","mundo"]
+    return JsonHttpResponse(data)
+
 def tfidf(request, corpus_id, ngram_id):
     """
     Takes IDs of corpus and ngram and returns list of relevent documents in json format

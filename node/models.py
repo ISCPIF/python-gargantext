@@ -24,6 +24,9 @@ from gargantext_web.settings import MEDIA_ROOT
 from celery.contrib.methods import task_method
 from celery import current_app
 
+import os
+import subprocess
+
 
 # Some usefull functions
 # TODO: start the function name with an underscore (private)
@@ -278,8 +281,6 @@ class Node(CTENode):
         self.metadata['Processing'] = 0
         self.save()
 
-
-
     def runInParallel(self, *fns):
         proc = []
         for fn in fns:
@@ -484,6 +485,7 @@ class Node(CTENode):
         labels = dict()
         weight = dict()
 
+        print("PRINTING NUMBER OF NODES 01:",len(G))
         for e in G.edges_iter():
             n1 = e[0]
             n2 = e[1]
@@ -528,6 +530,7 @@ class Node(CTENode):
                     G.add_edge(node, "cluster " + str(partition[node]), weight=3)
                 except Exception as error:
                     print("ERROR:",error)
+            print("PRINTING NUMBER OF NODES 02:",len(G))
             data = json_graph.node_link_data(G)
 
         elif type == "adjacency":
@@ -545,13 +548,19 @@ class Node(CTENode):
         
         return data
 
-        
-
     def workflow__MOV(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
         import time
         total = 0
         self.metadata['Processing'] = 1
         self.save()
+
+        # # pwd = subprocess.Popen("cd /srv/gargantext/parsing/Taggers/nlpserver && pwd", stdout=subprocess.PIPE).stdout.read()
+        # # print(subprocess.Popen(['ls', '-lah'], stdout=subprocess.PIPE).communicate()[0].decode('utf-8'))
+        # print("activating nlpserver:")
+        # command = 'cd parsing/Taggers/nlpserver; python3 server.py'
+        # process = subprocess.Popen(command,stdout=subprocess.PIPE , stderr=subprocess.DEVNULL , shell=True)
+        
+
 
         print("LOG::TIME: In workflow()    parse_resources__MOV()")
         start = time.time()
@@ -575,6 +584,9 @@ class Node(CTENode):
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams__MOV() [s]",(end - start))
 
+        # process.kill()
+        # print("ok, process killed")
+
         start = time.time()
         print("LOG::TIME: In workflow()    do_tfidf()")
         resultDict = self.do_tfidf__MOV( FreqList , theMetadata)
@@ -590,9 +602,6 @@ class Node(CTENode):
         end = time.time()
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_coocmatrix() [s]",(end - start))
-
-        # import pprint
-        # pprint.pprint(jsongraph)
 
         print("the user:",self.user)
         print("the project id:",self.parent.id)

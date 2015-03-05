@@ -374,41 +374,42 @@ def compute_tfidf(corpus):
     ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
     cursor.execute('SELECT COUNT(*) FROM tmp__st')
     D = cursor.fetchone()[0]
-    lnD = log(D)
-    cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
-    # show off
-    dbg.show('insert tfidf for %d documents' % D)
-    cursor.execute('''
-        INSERT INTO
-            %s (nodex_id, nodey_id, ngram_id, score)
-        SELECT
-            %d AS nodex_id,
-            tf.node_id AS nodey_id,
-            tf.ngram_id AS ngram_id,
-            (tf.frequency * idf.idf) AS score
-        FROM
-            tmp__idf AS idf
-        INNER JOIN
-            tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
-    ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
-    # # show off
-    # cursor.execute('''
-    #     SELECT
-    #         node.name,
-    #         ngram.terms,
-    #         node_node_ngram.score AS tfidf
-    #     FROM
-    #         %s AS node_node_ngram
-    #     INNER JOIN
-    #         %s AS node ON node.id = node_node_ngram.nodey_id
-    #     INNER JOIN
-    #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
-    #     WHERE
-    #         node_node_ngram.nodex_id = %d
-    #     ORDER BY
-    #         score DESC
-    # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
-    # for row in cursor.fetchall():
-    #     print(row)
-    # the end!
-    db.commit()
+    if D>0:
+        lnD = log(D)
+        cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
+        # show off
+        dbg.show('insert tfidf for %d documents' % D)
+        cursor.execute('''
+            INSERT INTO
+                %s (nodex_id, nodey_id, ngram_id, score)
+            SELECT
+                %d AS nodex_id,
+                tf.node_id AS nodey_id,
+                tf.ngram_id AS ngram_id,
+                (tf.frequency * idf.idf) AS score
+            FROM
+                tmp__idf AS idf
+            INNER JOIN
+                tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
+        ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
+        # # show off
+        # cursor.execute('''
+        #     SELECT
+        #         node.name,
+        #         ngram.terms,
+        #         node_node_ngram.score AS tfidf
+        #     FROM
+        #         %s AS node_node_ngram
+        #     INNER JOIN
+        #         %s AS node ON node.id = node_node_ngram.nodey_id
+        #     INNER JOIN
+        #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
+        #     WHERE
+        #         node_node_ngram.nodex_id = %d
+        #     ORDER BY
+        #         score DESC
+        # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
+        # for row in cursor.fetchall():
+        #     print(row)
+        # the end!
+        db.commit()

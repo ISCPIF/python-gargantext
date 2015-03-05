@@ -92,7 +92,7 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
                 if key in metadata_cache:
                     metadata = metadata_cache[key]
                     if metadata.type == 'string':
-                        value = value[:255]
+                        value = value[:200]
                     data.append(Node_Metadata(**{
                         'node_id' : node.id,
                         'metadata_id' : metadata.id,
@@ -189,7 +189,7 @@ class Node(CTENode):
         for i, metadata_values in enumerate(metadata_list):
             if verbose:
                 print(i, end='\r', flush=True)
-            name = metadata_values.get('title', '')[:255]
+            name = metadata_values.get('title', '')[:200]
             language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
             if isinstance(language, tuple):
                 language = language[0]

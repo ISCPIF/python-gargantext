@@ -123,7 +123,7 @@ def parse_resources(corpus, user=None, user_id=None):
                 language_id = None
             # create new node
             node = Node(
-                name = metadata_dict.get('title', '')[:255],
+                name = metadata_dict.get('title', '')[:200],
                 parent_id = corpus_id,
                 user_id = user_id,
                 type_id = type_id,
@@ -287,8 +287,11 @@ def extract_ngrams(corpus, keys):
     node_ngram_data = list()
     for node_id, ngrams in node_ngram_list.items():
         for terms, weight in ngrams.items():
-            ngram_id = ngram_ids[terms]
-            node_ngram_data.append((node_id, ngram_id, weight, ))
+            try:
+                ngram_id = ngram_ids[terms]
+                node_ngram_data.append((node_id, ngram_id, weight, ))
+            except Exception as e:
+                print("err01:",e)
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)
     dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database

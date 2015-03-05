@@ -290,6 +290,7 @@
 					var typefield = $("#id_type").val()!=""
 					var filefield = $("#id_file").val()!="" 
 					if( namefield && typefield && filefield ) {
+						alert(typefield)
 						$("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
 						$("#submit_thing").prop('onclick',null);
 						$( "#id_form" ).submit();

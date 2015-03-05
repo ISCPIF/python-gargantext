@@ -87,7 +87,8 @@ def project(request, project_id):
             # extract information from the form
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
-            resourcetype = cache.ResourceType[form.cleaned_data['type']]
+            print("thetype:",form.cleaned_data['type']) # <-- e.g: im receiving "isi" 
+            resourcetype = cache.ResourceType[form.cleaned_data['type']] # e.g: here it converts to "pubmed" idk why
             # which default language shall be used?
             if resourcetype.name == "europress_french":
                 language_id = cache.Language['fr'].id
@@ -96,6 +97,8 @@ def project(request, project_id):
             else:
                 language_id = None
             # corpus node instanciation as a Django model
+            print("name:",name)
+            print("resourcetype.name:",resourcetype.name)
             corpus = Node(
                 name = name,
                 user_id = request.user.id,

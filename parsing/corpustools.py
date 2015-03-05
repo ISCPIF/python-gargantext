@@ -195,7 +195,6 @@ class NgramsExtractors(defaultdict):
 ngramsextractors = NgramsExtractors()
 
 def extract_ngrams(corpus, keys):
-    print("yoloo")
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the metadata associated with the given keys

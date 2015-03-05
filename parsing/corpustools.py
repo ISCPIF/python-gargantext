@@ -195,6 +195,7 @@ class NgramsExtractors(defaultdict):
 ngramsextractors = NgramsExtractors()
 
 def extract_ngrams(corpus, keys):
+    print("yoloo")
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the metadata associated with the given keys
@@ -224,7 +225,7 @@ def extract_ngrams(corpus, keys):
         ngramsextractor = ngramsextractors[language_iso2]
         for text in nodeinfo[2:]:
             if text is not None and len(text):
-                ngrams = ngramsextractor.extract_ngrams(text)
+                ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
                 for ngram in ngrams:
                     terms = ' '.join([token for token, tag in ngram]).lower()
                     n = len(ngram)

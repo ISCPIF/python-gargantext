@@ -134,8 +134,8 @@ class ModelCache(dict):
             for column in self._columns
             if key.__class__ == column.type.python_type
         ]
-        if len(conditions) == 0:
-            raise KeyError
+        # if len(conditions) == 0:
+        #     raise KeyError
         element = session.query(self._model).filter(or_(*conditions)).first()
         if element is None:
             raise KeyError

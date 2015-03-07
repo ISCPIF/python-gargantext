@@ -46,7 +46,7 @@ urlpatterns = patterns('',
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
-    url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
+    url(r'^api/tfidf/(\d+)/(\d+(?:,\d+)+)$', views_optimized.tfidf),
 
     # Data management
     url(r'^api$', gargantext_web.api.Root),

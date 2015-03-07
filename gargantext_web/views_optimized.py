@@ -12,6 +12,7 @@ from threading import Thread
 from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
+from gargantext_web.api import JsonHttpResponse
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
@@ -152,3 +153,32 @@ def project(request, project_id):
         'number'        : corpora_count,
     })
 
+def tfidf(request, corpus_id, ngram_ids, limit=6):
+    """Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    # filter input
+    ngram_ids = ngram_ids.split(',')
+    # request data
+    nodes_query = (session
+        .query(Node, func.sum(NodeNodeNgram.score))
+        .join(NodeNodeNgram, NodeNodeNgram.nodey_id == Node.id)
+        .filter(NodeNodeNgram.nodex_id == corpus_id)
+        .filter(NodeNodeNgram.ngram_id.in_(ngram_ids))
+        .group_by(Node)
+        .order_by(func.sum(NodeNodeNgram.score).desc())
+        .limit(limit)
+    )
+    # convert query result to a list of dicts
+    nodes_list = []
+    for node, score in nodes_query:
+        node_dict = {
+            'id': node.id,
+            'score': score,
+        }
+        for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
+            if key in node.metadata:
+                node_dict[key] = node.metadata[key]
+        nodes_list.append(node_dict)
+    # return the result
+    return JsonHttpResponse(nodes_list)

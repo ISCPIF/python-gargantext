@@ -200,7 +200,9 @@ class bulk_insert:
 
     def read(self, size=None):
         try:
-            return self.template % next(self.iter)
+            return self.template % tuple(
+                str(x).replace('\r', '').replace('\n', '\\n').replace('\t', '\\t') for x in next(self.iter)
+            )
         except StopIteration:
             return ''
 

@@ -44,7 +44,7 @@ def paragraph_gargantua(size_target=500):
     return(' '.join(paragraph))
 
 
-def random_letter(mot, size_min=6):
+def random_letter(mot, size_min=5):
     '''
     
     Functions that randomize order letters of a 

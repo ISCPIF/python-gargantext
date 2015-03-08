@@ -24,7 +24,7 @@ urlpatterns = patterns('',
     url(r'^css/bootstrap.css$', views.css),
     
     # User Home view
-    url(r'^$', views.home),
+    url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
     url(r'^maintenance/', views.get_maintenance),
     

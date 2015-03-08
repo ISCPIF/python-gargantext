@@ -184,8 +184,8 @@ def get_maintenance(request):
     
     return HttpResponse(html)
 
-
-def home(request):
+from gargantext_web import home
+def home_view(request):
     '''
     Home describes the platform.
     A video draws the narratives.
@@ -198,6 +198,9 @@ def home(request):
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'paragraph_gargantua': home.paragraph_gargantua(),\
+            'paragraph_lorem' : home.paragraph_lorem(),\
+            'paragraph_tutoreil': home.paragraph_tutoreil(),\
             }))
     
     return HttpResponse(html)

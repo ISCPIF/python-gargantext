@@ -35,7 +35,7 @@ def paragraph_gargantua(size_target=500):
     chapter_number = 1
     
     while paragraph_size < size_target and chapter_number < 6:
-        chapitre = open('/home/alexandre/bibliotheque/R/Rabelais/Gargantua_chapter_' + str(chapter_number) + '.txt', 'r')
+        chapitre = open('/srv/gargantext/static/docs/gargantua_book/gargantua_chapter_' + str(chapter_number) + '.txt', 'r')
         paragraph.append(random.choice(chapitre.readlines()).strip())
         chapitre.close()
         paragraph_size = len(' '.join(paragraph))

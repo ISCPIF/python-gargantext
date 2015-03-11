@@ -220,16 +220,21 @@ class EuropressFileParser(FileParser):
                     if len(metadata['text'])>0 and format_europresse == 50: 
                         metadata['doi'] = str(metadata['text'][-9])
                         metadata['text'].pop()
+# Here add separator for paragraphs
                         metadata['text'] = str(' '.join(metadata['text']))
                         metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
                     elif format_europresse == 1:
                         metadata['doi'] = ' '.join(html_article.xpath(doi_xpath))
                         metadata['text'] = metadata['text'][:-9]
+# Here add separator for paragraphs
                         metadata['text'] = str(' '.join(metadata['text']))
 
                     else: 
                         metadata['doi'] = "not found"
-
+                    
+                    metadata['length_words'] = len(metadata['text'].split(' '))
+                    metadata['length_letters'] = len(metadata['text'])
+                    
                     metadata['bdd']  = u'europresse'
                     metadata['url']  = u''
                     

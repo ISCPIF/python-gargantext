@@ -94,10 +94,10 @@ class EuropressFileParser(FileParser):
                             format_journal = re.compile('(.*), (.*)', re.UNICODE)
                             test_journal = format_journal.match(name.text)
                             if test_journal is not None:
-                                metadata['source'] = test_journal.group(1)
+                                metadata['journal'] = test_journal.group(1)
                                 metadata['volume'] = test_journal.group(2)
                             else:
-                                metadata['source'] = name.text.encode(codif)
+                                metadata['journal'] = name.text.encode(codif)
 
                     for header in html_article.xpath(header_xpath):
                         try:
@@ -169,7 +169,7 @@ class EuropressFileParser(FileParser):
                             metadata['page'] = test_page.group(1).encode(codif)
 
                     metadata['title'] = html_article.xpath(title_xpath).encode(codif)
-                    metadata['text']  = html_article.xpath(text_xpath)
+                    metadata['abstract']  = html_article.xpath(text_xpath)
                    
                     line = 0
                     br_tag = 10
@@ -215,25 +215,25 @@ class EuropressFileParser(FileParser):
                     metadata['publication_year']  = metadata['publication_date'].strftime('%Y')
                     metadata['publication_month'] = metadata['publication_date'].strftime('%m')
                     metadata['publication_day']  = metadata['publication_date'].strftime('%d')
-                    metadata['publication_date'] = ""
+                    metadata.pop('publication_date')
                     
-                    if len(metadata['text'])>0 and format_europresse == 50: 
-                        metadata['doi'] = str(metadata['text'][-9])
-                        metadata['text'].pop()
+                    if len(metadata['abstract'])>0 and format_europresse == 50: 
+                        metadata['doi'] = str(metadata['abstract'][-9])
+                        metadata['abstract'].pop()
 # Here add separator for paragraphs
-                        metadata['text'] = str(' '.join(metadata['text']))
-                        metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
+                        metadata['abstract'] = str(' '.join(metadata['abstract']))
+                        metadata['abstract'] = str(re.sub('Tous droits réservés.*$', '', metadata['abstract']))
                     elif format_europresse == 1:
                         metadata['doi'] = ' '.join(html_article.xpath(doi_xpath))
-                        metadata['text'] = metadata['text'][:-9]
+                        metadata['abstract'] = metadata['abstract'][:-9]
 # Here add separator for paragraphs
-                        metadata['text'] = str(' '.join(metadata['text']))
+                        metadata['abstract'] = str(' '.join(metadata['abstract']))
 
                     else: 
                         metadata['doi'] = "not found"
                     
-                    metadata['length_words'] = len(metadata['text'].split(' '))
-                    metadata['length_letters'] = len(metadata['text'])
+                    metadata['length_words'] = len(metadata['abstract'].split(' '))
+                    metadata['length_letters'] = len(metadata['abstract'])
                     
                     metadata['bdd']  = u'europresse'
                     metadata['url']  = u''

@@ -149,7 +149,7 @@ class ModelCache(dict):
                 key = getattr(element, column_name)
                 self[key] = element
 
-class Cache:
+class Cache():
 
     def __getattr__(self, key):
         try:

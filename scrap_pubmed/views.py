@@ -128,12 +128,12 @@ def doTheQuery(request , project_id):
 		# do the WorkFlow
 		try:
 			if DEBUG is True:
-				corpus.workflow() # old times...
-				# corpus.workflow__MOV()
+				# corpus.workflow() # old times...
+				corpus.workflow__MOV()
 				# corpus.write_everything_to_DB()
 			else:
-				corpus.workflow.apply_async((), countdown=3)
-				# corpus.workflow__MOV() # synchronous! because is faaast
+				# corpus.workflow.apply_async((), countdown=3)
+				corpus.workflow__MOV().apply_async((), countdown=3) # synchronous! because is faaast
 				# corpus.write_everything_to_DB.apply_async((), countdown=3) # asynchronous
 
 

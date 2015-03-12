@@ -321,15 +321,18 @@ class Node(CTENode):
             language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
             if isinstance(language, tuple):
                 language = language[0]
-            node = Node(
-                user_id  = user_id,
-                type_id  = type_id,
-                name     = name,
-                parent   = self,
-                language_id = language.id if language else None,
-                metadata = metadata_values
-            )
-            node.save()
+            try:
+                node = Node(
+                    user_id  = user_id,
+                    type_id  = type_id,
+                    name     = name,
+                    parent   = self,
+                    language_id = language.id if language else None,
+                    metadata = metadata_values
+                )
+                node.save()
+            except Exception as e:
+                print("ERR::node.models.writeMetadata__MOV ")
             metadata_values["id"] = node.id
         # # make metadata filterable
         self.children.all().make_metadata_filterable()
@@ -341,10 +344,8 @@ class Node(CTENode):
         if ngramsextractorscache is None:
             ngramsextractorscache = NgramsExtractorsCache()
         langages_cache = LanguagesCache()
-
         if ngramscaches is None:
             ngramscaches = NgramsCaches()
-
         results = []
         i = 0
         for metadata in array:
@@ -352,11 +353,9 @@ class Node(CTENode):
             language = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
             if isinstance(language, tuple):
                 language = language[0]
-
             extractor = ngramsextractorscache[language]
             ngrams = ngramscaches[language]
             # theText = []
-
             if isinstance(keys, dict):
                 for key, weight in keys.items():
                     if key in metadata:
@@ -373,10 +372,8 @@ class Node(CTENode):
                         for ngram in extractor.extract_ngrams(text2process):
                             terms = ' '.join([token for token, tag in ngram]).strip().lower()
                             associations[terms] += 1
-
             if(len(associations)>0):
                 results.append( [metadata["id"] , associations] )
-            
             i+=1
         return results
     

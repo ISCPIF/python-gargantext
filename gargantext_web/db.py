@@ -130,12 +130,10 @@ class ModelCache(dict):
 
     def __missing__(self, key):
         conditions = [
-            (column == key)
+            (column == str(key))
             for column in self._columns
-            if key.__class__ == column.type.python_type
+            if column.type.python_type == str or key.__class__ == column.type.python_type
         ]
-        # if len(conditions) == 0:
-        #     raise KeyError
         element = session.query(self._model).filter(or_(*conditions)).first()
         if element is None:
             raise KeyError

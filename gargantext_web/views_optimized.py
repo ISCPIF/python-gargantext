@@ -57,19 +57,23 @@ def project(request, project_id):
     corpora_by_resourcetype = defaultdict(list)
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
+
+    corpusID_dict = {}
     for corpus, resource, document_count in corpus_query:
-        if resource is None:
-            resourcetype_name = '(no resource)'
-        else:
-            resourcetype = cache.ResourceType[resource.type_id]
-            resourcetype_name = resourcetype.name
-        corpora_by_resourcetype[resourcetype_name].append({
-            'id': corpus.id,
-            'name': corpus.name,
-            'count': document_count,
-        })
-        documents_count_by_resourcetype[resourcetype_name] += document_count
-        corpora_count += 1
+        if not corpus.id in corpusID_dict:
+            if resource is None:
+                resourcetype_name = '(no resource)'
+            else:
+                resourcetype = cache.ResourceType[resource.type_id]
+                resourcetype_name = resourcetype.name
+            corpusID_dict[corpus.id] = True
+            corpora_by_resourcetype[resourcetype_name].append({
+                'id': corpus.id,
+                'name': corpus.name,
+                'count': document_count,
+            })
+            documents_count_by_resourcetype[resourcetype_name] += document_count
+            corpora_count += 1
 
     # do the donut
     total_documents_count = sum(documents_count_by_resourcetype.values())

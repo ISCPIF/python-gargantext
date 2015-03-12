@@ -46,34 +46,30 @@ def project(request, project_id):
     # Let's find out about the children nodes of the project
     ChildrenNode = aliased(Node)
     corpus_query = (session
-        .query(Node, Resource, func.count(ChildrenNode.id))
+        .query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
         .outerjoin(ChildrenNode, ChildrenNode.parent_id == Node.id)
         .outerjoin(Node_Resource, Node_Resource.node_id == Node.id)
         .outerjoin(Resource, Resource.id == Node_Resource.resource_id)
         .filter(Node.parent_id == project.id)
-        .group_by(Node, Resource)
+        .group_by(Node.id, Node.name, Resource.type_id)
         .order_by(Node.name)
     )
     corpora_by_resourcetype = defaultdict(list)
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
-
-    corpusID_dict = {}
-    for corpus, resource, document_count in corpus_query:
-        if not corpus.id in corpusID_dict:
-            if resource is None:
-                resourcetype_name = '(no resource)'
-            else:
-                resourcetype = cache.ResourceType[resource.type_id]
-                resourcetype_name = resourcetype.name
-            corpusID_dict[corpus.id] = True
-            corpora_by_resourcetype[resourcetype_name].append({
-                'id': corpus.id,
-                'name': corpus.name,
-                'count': document_count,
-            })
-            documents_count_by_resourcetype[resourcetype_name] += document_count
-            corpora_count += 1
+    for corpus_id, corpus_name, resource_type_id, document_count in corpus_query:
+        if resource_type_id is None:
+            resourcetype_name = '(no resource)'
+        else:
+            resourcetype = cache.ResourceType[resource_type_id]
+            resourcetype_name = resourcetype.name
+        corpora_by_resourcetype[resourcetype_name].append({
+            'id': corpus_id,
+            'name': corpus_name,
+            'count': document_count,
+        })
+        documents_count_by_resourcetype[resourcetype_name] += document_count
+        corpora_count += 1
 
     # do the donut
     total_documents_count = sum(documents_count_by_resourcetype.values())

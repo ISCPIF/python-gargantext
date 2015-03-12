@@ -791,9 +791,9 @@ def send_csv(request, corpus_id):
 
     cursor.execute("""
     SELECT
-        metadata -> 'publication_year' as year,
-        metadata -> 'publication_month' as month,
-        metadata -> 'publication_day' as day,
+        metadata ->> 'publication_year' as year,
+        metadata ->> 'publication_month' as month,
+        metadata ->> 'publication_day' as day,
         COUNT(*)
     FROM
         node_node AS n

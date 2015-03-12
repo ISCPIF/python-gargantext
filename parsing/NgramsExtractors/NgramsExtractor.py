@@ -1,4 +1,4 @@
-from ..Taggers import Tagger
+from ..Taggers import TurboTagger
 import nltk
 
 
@@ -19,7 +19,7 @@ class NgramsExtractor:
         self.stop()
         
     def start(self):
-        self.tagger = Tagger()
+        self.tagger = TurboTagger()
         
     def stop(self):
         pass

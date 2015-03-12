@@ -5,6 +5,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 
+from node import models
 from node.models import Language, ResourceType, Resource, \
         Node, NodeType, Node_Resource, Project, Corpus, \
         Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
@@ -24,15 +25,18 @@ from django import forms
 from collections import defaultdict
 
 from parsing.FileParsers import *
+import os
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG
+from gargantext_web.settings import DEBUG, STATIC_ROOT, MAINTENANCE
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
+
+from scrap_pubmed.admin import Logger
 
 def login_user(request):
     logout(request)
@@ -47,7 +51,9 @@ def login_user(request):
 
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/projects/')
+                print("MAINTENANCE:",MAINTENANCE)
+                if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
+                else: return HttpResponseRedirect('/projects/')
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
 
@@ -55,6 +61,51 @@ def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/')
     # Redirect to a success page.
+
+def logo(request):
+    template = get_template('logo.svg')
+    group = "mines"
+    #group = "cnrs"
+    if group == "cnrs":
+        color = "#093558"
+    else:
+        color = "#ff8080"
+    svg_data = template.render(Context({\
+            'color': color,\
+            }))
+    return HttpResponse(svg_data, mimetype="image/svg+xml")
+
+def css(request):
+    template = get_template('bootstrap.css')
+    css = dict()
+    group = "mines"
+    #group = "cnrs"
+
+    if group == "mines":
+        css['color']        = '#666666'
+        css['background']   = '#f8f8f7'
+        css['a']            = '#bd2525'
+        css['focus']        = '#7d1818'
+        css['hr']           = '#eaafae'
+        css['text']         = '#a2a3a2'
+        css['form']         = '#a5817f'
+        css['help']         = '#a6a6a6'
+    else:
+        css['color']        = '#E2E7EB'
+        css['background']   = '#8C9DAD' #container background
+        css['a']            = '#093558'
+        css['focus']        = '#556F86'
+        css['hr']           = '#426A8A'
+        css['text']         = '#214A6D'
+        css['form']         = '#093558'
+        css['help']         = '#093558'
+    
+    css_data = template.render(Context({\
+            'css': css,\
+            }))
+    return HttpResponse(css_data, mimetype="text/css")
+
+
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -97,26 +148,44 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
-from gargantext_web import team
-def about(request):
+from gargantext_web import about
+def get_about(request):
     '''
     About Gargantext, the team and sponsors
     '''
-    template = get_template('about.html')
-    user = request.user
-    date = datetime.datetime.now()
-    members = team.get_team()
+    template    = get_template('about.html')
+    user        = request.user
+    date        = datetime.datetime.now()
+    
+    members     = about.get_team()
+    sponsors    = about.get_sponsors()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
+            'sponsors':sponsors,\
             }))
     
     return HttpResponse(html)
 
+def get_maintenance(request):
+    '''
+    Gargantext out of service
+    '''
+    template    = get_template('maintenance.html')
+    user        = request.user
+    date        = datetime.datetime.now()
 
-def home(request):
+    html = template.render(Context({\
+            'user': user,\
+            'date': date,\
+            }))
+    
+    return HttpResponse(html)
+
+from gargantext_web import home
+def home_view(request):
     '''
     Home describes the platform.
     A video draws the narratives.
@@ -129,6 +198,9 @@ def home(request):
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'paragraph_gargantua': home.paragraph_gargantua(),\
+            'paragraph_lorem' : home.paragraph_lorem(),\
+            'paragraph_tutoreil': home.paragraph_tutoreil(),\
             }))
     
     return HttpResponse(html)
@@ -141,11 +213,13 @@ def projects(request):
     '''
     if not request.user.is_authenticated():
         return redirect('/auth/')
-    
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
+
     t = get_template('projects.html')
     
     user = request.user
     date = datetime.datetime.now()
+    print(Logger.write("STATIC_ROOT"))
     
     project_type = NodeType.objects.get(name='Project')
     projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
@@ -170,6 +244,179 @@ def projects(request):
         })
 
 
+def project(request, project_id):
+    '''
+    This view represents all corpora in a panoramic way.
+    The title sums all corpora
+    The donut summerizes composition of the project.
+    The list of lists enalbles to navigate throw it.
+    '''
+
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+
+    try:
+        offset = str(project_id)
+    except ValueError:
+        raise Http404()
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
+    user = request.user
+    date = datetime.datetime.now()
+    
+    type_corpus     = NodeType.objects.get(name='Corpus')
+    type_document   = NodeType.objects.get(name='Document')
+    
+#    type_whitelist  = NodeType.objects.get(name='WhiteList')
+#    type_blacklist  = NodeType.objects.get(name='BlackList')
+#    type_cooclist   = NodeType.objects.get(name='Cooccurrence')
+
+    project = Node.objects.get(id=project_id)
+    corpora = Node.objects.filter(parent=project, type=type_corpus)
+    number  = len(corpora)
+
+    # DONUT corpora representation
+    list_corpora    = defaultdict(list)
+    donut_part      = defaultdict(int)
+    docs_total      = 0
+    
+    # List of resources
+    # filter for each project here
+    whitelists      = ""#.children.filter(type=type_whitelist)
+    blacklists      = ""#.children.filter(type=type_blacklist)
+    cooclists       = ""#.children.filter(type=type_cooclist)
+    
+    for corpus in corpora:
+        docs_count =  Node.objects.filter(parent=corpus, type=type_document).count()
+        # print("corpus:", corpus.pk , " | name:",corpus.name , " | type:",corpus.type_id , " | #docs:",docs_count)
+        docs_total += docs_count
+        
+        corpus_view = dict()
+        corpus_view['id']         = corpus.pk
+        corpus_view['name']       = corpus.name
+        corpus_view['count']      = docs_count
+
+        #just get first element of the corpora and get his type.
+
+        resource_corpus = Node_Resource.objects.filter(node=corpus)
+        if len(resource_corpus)>0:
+            # print(Node_Resource.objects.filter(node=corpus).all())
+            corpus_type = Node_Resource.objects.filter(node=corpus)[0].resource.type
+            list_corpora[corpus_type].append(corpus_view)
+            donut_part[corpus_type] += docs_count
+        else: print(" Node_Resource = this.corpus(",corpus.pk,") ... nothing, why?")
+
+        ## For avoiding to list repeated elements, like when u use the dynamic query (per each xml, 1)
+        # for node_resource in Node_Resource.objects.filter(node=corpus):
+        #     print( "node_resource.id:",node_resource.id , node_resource.resource.file )
+        #     donut_part[node_resource.resource.type] += docs_count
+        #     list_corpora[node_resource.resource.type.name].append(corpus_view)
+            # print(node_resource.resource.type.name)
+    list_corpora = dict(list_corpora)
+
+    if docs_total == 0 or docs_total is None:
+        docs_total = 1
+    # The donut will show: percentage by  
+    donut = [ {'source': key, 
+                'count': donut_part[key] , 
+                'part' : round(donut_part[key] * 100 / docs_total) } \
+                        for key in donut_part.keys() ]
+
+    dauser = User.objects.get( username=user )
+    groups = len(dauser.groups.filter(name="PubMed_0.1"))
+    print("*groupslen*:",groups)
+
+    if request.method == 'POST':
+
+        form = CustomForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            thefile = form.cleaned_data['file']
+            resource_type = ResourceType.objects.get(name=str( form.cleaned_data['type'] ))
+
+            print("-------------")
+            print(name,"|",resource_type,"|",thefile)
+            print("-------------")
+
+            try:
+                parent      = Node.objects.get(id=project_id)
+                node_type   = NodeType.objects.get(name='Corpus')
+                
+                if resource_type.name == "europress_french":
+                    language    = Language.objects.get(iso2='fr')
+                elif resource_type.name == "europress_english":
+                    language    = Language.objects.get(iso2='en')
+                
+                try:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            language=language,
+                            name=name,
+                            )
+                except:
+                    corpus = Node(
+                            user=request.user,
+                            parent=parent,
+                            type=node_type,
+                            name=name,
+                            )
+                corpus.save()
+                corpus.add_resource(
+                        user=request.user,
+                        type=resource_type,
+                        file=thefile
+                        )
+
+                try:
+                    #corpus.parse_and_extract_ngrams()
+                    #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
+                    if DEBUG is True:
+                        corpus.workflow()
+                    else:
+                        corpus.workflow.apply_async((), countdown=3)
+
+                except Exception as error:
+                    print(error)
+
+                return HttpResponseRedirect('/project/' + str(project_id))
+
+            except Exception as error:
+                print('ee', error)
+                form = CorpusForm(request=request)
+                formResource = ResourceForm()
+
+        else:
+            print("bad form, bad form")
+            return render(request, 'project.html', {
+                    'form'          : form,
+                    'user'          : user,
+                    'date'          : date,
+                    'project'       : project,
+                    'donut'         : donut,
+                    'list_corpora'  : list_corpora,
+                    'whitelists'    : whitelists,
+                    'blacklists'    : blacklists,
+                    'cooclists'     : cooclists,
+                    'number'        : number,
+                })
+    else:
+        form = CustomForm()
+  
+    return render(request, 'project.html', {
+            'form'          : form,
+            'user'          : user,
+            'date'          : date,
+            'project'       : project,
+            'donut'         : donut,
+            'list_corpora'  : list_corpora,
+            'whitelists'    : whitelists,
+            'blacklists'    : blacklists,
+            'cooclists'     : cooclists,
+            'number'        : number,
+        })
+
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -179,6 +426,7 @@ def corpus(request, project_id, corpus_id):
         offset = str(corpus_id)
     except ValueError:
         raise Http404()
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
 
     t = get_template('corpus.html')
     
@@ -253,12 +501,18 @@ def corpus(request, project_id, corpus_id):
         print(chart)
     except Exception as error:
         print(error)
-       
+    
+    try:
+        processing = corpus.metadata['Processing']
+    except:
+        processing = 0
+
     html = t.render(Context({\
             'user': user,\
             'date': date,\
             'project': project,\
             'corpus' : corpus,\
+            'processing' : processing,\
 #            'documents': documents,\
             'number' : number,\
             'dates' : chart,\
@@ -405,8 +659,6 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     # return HttpResponse(html)
     return HttpResponse( serializer.data , content_type='application/json')
 
-
-
 def delete_project(request, node_id):
     Node.objects.filter(id=node_id).all().delete()
     return HttpResponseRedirect('/projects/')
@@ -415,9 +667,9 @@ def delete_corpus(request, project_id, corpus_id):
     Node.objects.filter(id=corpus_id).all().delete()
     return HttpResponseRedirect('/project/' + project_id)
 
-
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
@@ -434,6 +686,7 @@ def chart(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def matrix(request, project_id, corpus_id):
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
@@ -451,6 +704,7 @@ def matrix(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def graph(request, project_id, corpus_id):
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -463,15 +717,13 @@ def graph(request, project_id, corpus_id):
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
+            'graphfile' : "hola_mundo",\
             }))
     
     return HttpResponse(html)
 
-
-
-
-
 def exploration(request):
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('exploration.html')
     user = request.user
     date = datetime.datetime.now()
@@ -484,6 +736,7 @@ def exploration(request):
     return HttpResponse(html)
 
 def explorer_chart(request):
+    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
@@ -526,8 +779,6 @@ def corpus_csv(request, project_id, corpus_id):
 
     return response
 
-
-
 def send_csv(request, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
@@ -568,20 +819,27 @@ def send_csv(request, corpus_id):
 
     return response
 
-
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
 import json
-
+from gargantext_web.settings import MEDIA_ROOT
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
-    '''
+    '''   
 
-    print("In node_link() START")
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
-    print("In node_link() END")
+    data = []
+    
+    corpus = Node.objects.get(id=corpus_id)
+    filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent.id, corpus_id)
+    print("file exists?:",os.path.isfile(filename))
+    if os.path.isfile(filename):
+        json_data = open(filename,"r")
+        data = json.load(json_data)
+        json_data.close()
+    else:
+        data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):
@@ -655,3 +913,75 @@ def nodeinfo(request , node_id):
         'node_id' : node_id,
     }))    
     return HttpResponse(html)
+
+
+def tfidf2(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    docsids = ngram_id.split("a")
+
+    tfidf_list = []
+    for i in docsids:
+        pub = Node.objects.get(id=i)
+        finalpub = {}
+        finalpub["id"] = pub.id
+        pubmetadata = pub.metadata
+        if "title" in pubmetadata: finalpub["title"] = pubmetadata['title']
+        if "publication_date" in pubmetadata: finalpub["publication_date"] = pubmetadata['publication_date']
+        if "journal" in pubmetadata: finalpub["journal"] = pubmetadata['journal']
+        if "authors" in pubmetadata: finalpub["authors"] = pubmetadata['authors']
+        if "fields" in pubmetadata: finalpub["fields"] = pubmetadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
+    
+    data = json.dumps(tfidf_list) 
+
+
+
+    # data = ["hola","mundo"]
+    return JsonHttpResponse(data)
+
+def tfidf(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    ngramsids = ngram_id.split("a")
+
+    corpus = Node.objects.get(id=corpus_id)
+    ngram  = Ngram.objects.get(id=ngramsids[0])#not used
+    
+    print("********web/views.tfidf*******")
+    print("first ngram:")
+    print(ngram)
+    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
+    # print(node_node_ngrams)
+    goodDict = {}
+    for x in node_node_ngrams:
+        goodDict[x.nodey.id] = x.nodey
+    # print("imma here")
+    # print("arguments... nodes ids:")
+    # print(ngramsids)
+    # print ("with tfidf:")
+    # print(node_node_ngrams)
+    # print("corpus:")
+    # print(NodeNodeNgram.objects.filter(nodex=corpus))
+    tfidf_list = []
+    for x in goodDict:
+        pub = goodDict[x] # getting the unique publication
+        finalpub = {}
+        finalpub["id"] = pub.id
+        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
+        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
+        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
+        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
+        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
+    
+    data = json.dumps(tfidf_list) 
+    return JsonHttpResponse(data)

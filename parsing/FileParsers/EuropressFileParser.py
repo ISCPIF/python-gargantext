@@ -41,12 +41,43 @@ class EuropressFileParser(FileParser):
             html = etree.fromstring(contents, html_parser)
             
             try:
+                
+                format_europresse = 50
                 html_articles = html.xpath('/html/body/table/tbody')
+
                 if len(html_articles) < 1:
                     html_articles = html.xpath('/html/body/table')
+                    
+                    if len(html_articles) < 1:
+                        format_europresse = 1
+                        html_articles = html.xpath('//div[@id="docContain"]')
             except Exception as error:
                 print(error)
             
+            if format_europresse == 50:
+                name_xpath = "./tr/td/span[@class = 'DocPublicationName']"
+                header_xpath = "//span[@class = 'DocHeader']"
+                title_xpath = "string(./tr/td/span[@class = 'TitreArticleVisu'])"
+                text_xpath  = "./tr/td/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()"
+            elif format_europresse == 1:
+                name_xpath = "//span[@class = 'DocPublicationName']"
+                header_xpath = "//span[@class = 'DocHeader']"
+                title_xpath = "string(//div[@class = 'titreArticleVisu'])"
+                text_xpath  = "./descendant::*[\
+                        not(\
+                           self::div[@class='Doc-SourceText'] \
+                        or self::span[@class='DocHeader'] \
+                        or self::span[@class='DocPublicationName'] \
+                        or self::span[@id='docNameVisu'] \
+                        or self::span[@class='DocHeader'] \
+                        or self::div[@class='titreArticleVisu'] \
+                        or self::span[@id='docNameContType'] \
+                        or descendant-or-self::span[@id='ucPubliC_lblCertificatIssuedTo'] \
+                        or descendant-or-self::span[@id='ucPubliC_lblEndDate'] \
+                        or self::td[@class='txtCertificat'] \
+                        )]/text()"
+                doi_xpath  = "//span[@id='ucPubliC_lblNodoc']/text()"
+                
 
         except Exception as error:
             print(error)
@@ -58,19 +89,20 @@ class EuropressFileParser(FileParser):
                 metadata = {}
                 
                 if len(html_article):
-                    for name in html_article.xpath("./tr/td/span[@class = 'DocPublicationName']"):
+                    for name in html_article.xpath(name_xpath):
                         if name.text is not None:
                             format_journal = re.compile('(.*), (.*)', re.UNICODE)
                             test_journal = format_journal.match(name.text)
                             if test_journal is not None:
-                                metadata['source'] = test_journal.group(1)
+                                metadata['journal'] = test_journal.group(1)
                                 metadata['volume'] = test_journal.group(2)
                             else:
-                                metadata['source'] = name.text.encode(codif)
+                                metadata['journal'] = name.text.encode(codif)
 
-                    for header in html_article.xpath("./tr/td/span[@class = 'DocHeader']"):
+                    for header in html_article.xpath(header_xpath):
                         try:
                             text = header.text
+                            #print("header", text)
                         except Exception as error:
                             print(error)
 
@@ -136,8 +168,8 @@ class EuropressFileParser(FileParser):
                         if test_page is not None:
                             metadata['page'] = test_page.group(1).encode(codif)
 
-                    metadata['title'] = html_article.xpath("string(./tr/td/span[@class = 'TitreArticleVisu'])").encode(codif)
-                    metadata['text']  = html_article.xpath("./tr/td/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()")
+                    metadata['title'] = html_article.xpath(title_xpath).encode(codif)
+                    metadata['abstract']  = html_article.xpath(text_xpath)
                    
                     line = 0
                     br_tag = 10
@@ -183,16 +215,26 @@ class EuropressFileParser(FileParser):
                     metadata['publication_year']  = metadata['publication_date'].strftime('%Y')
                     metadata['publication_month'] = metadata['publication_date'].strftime('%m')
                     metadata['publication_day']  = metadata['publication_date'].strftime('%d')
-                    metadata['publication_date'] = ""
+                    metadata.pop('publication_date')
                     
-                    if len(metadata['text'])>0: 
-                        metadata['doi'] = str(metadata['text'][-9])
-                        metadata['text'].pop()
-                        metadata['text'] = str(' '.join(metadata['text']))
-                        metadata['text'] = str(re.sub('Tous droits réservés.*$', '', metadata['text']))
+                    if len(metadata['abstract'])>0 and format_europresse == 50: 
+                        metadata['doi'] = str(metadata['abstract'][-9])
+                        metadata['abstract'].pop()
+# Here add separator for paragraphs
+                        metadata['abstract'] = str(' '.join(metadata['abstract']))
+                        metadata['abstract'] = str(re.sub('Tous droits réservés.*$', '', metadata['abstract']))
+                    elif format_europresse == 1:
+                        metadata['doi'] = ' '.join(html_article.xpath(doi_xpath))
+                        metadata['abstract'] = metadata['abstract'][:-9]
+# Here add separator for paragraphs
+                        metadata['abstract'] = str(' '.join(metadata['abstract']))
 
-                    else: metadata['doi'] = "not found"
-
+                    else: 
+                        metadata['doi'] = "not found"
+                    
+                    metadata['length_words'] = len(metadata['abstract'].split(' '))
+                    metadata['length_letters'] = len(metadata['abstract'])
+                    
                     metadata['bdd']  = u'europresse'
                     metadata['url']  = u''
                     
@@ -201,7 +243,8 @@ class EuropressFileParser(FileParser):
                         metadata[key] = value.decode() if isinstance(value, bytes) else value
                     yield metadata
                     count += 1
-        
+            file.close()
+
         except Exception as error:
             print(error)
             pass

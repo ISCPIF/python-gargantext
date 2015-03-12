@@ -6,6 +6,7 @@ from django.contrib.auth.views import login
 from gargantext_web import views, views_optimized
 
 import gargantext_web.api
+import scrap_pubmed.views as pubmedscrapper
 
 
 admin.autodiscover()
@@ -19,10 +20,13 @@ urlpatterns = patterns('',
 
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
+    url(r'^img/logo.svg$', views.logo),
+    url(r'^css/bootstrap.css$', views.css),
     
     # User Home view
-    url(r'^$', views.home),
-    url(r'^about/', views.about),
+    url(r'^$', views.home_view),
+    url(r'^about/', views.get_about),
+    url(r'^maintenance/', views.get_maintenance),
     
     # Project Management
     url(r'^projects/$', views.projects),
@@ -47,16 +51,18 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link),
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
     url(r'^api/tfidf/(\d+)/(\d+(?:,\d+)+)$', views_optimized.tfidf),
+    # url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
+    url(r'^api/tfidf2/(\d+)/(\w+)$', views.tfidf2),
 
     # Data management
     url(r'^api$', gargantext_web.api.Root),
+    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
+    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
     # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
-    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
-    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
 
     url(r'^api/project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpusJSON),
 
@@ -65,7 +71,13 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),
     url(r'^nodeinfo/(\d+)$', views.nodeinfo),
     url(r'^tests/mvc$', views.tests_mvc),
-    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments)
+    url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
+
+    url(r'^tests/istextquery$', pubmedscrapper.getGlobalStatsISTEXT),
+    url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
+    url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
+    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX)
+
 )
 
 

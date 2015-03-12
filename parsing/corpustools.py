@@ -123,7 +123,7 @@ def parse_resources(corpus, user=None, user_id=None):
                 language_id = None
             # create new node
             node = Node(
-                name = metadata_dict.get('title', '')[:255],
+                name = metadata_dict.get('title', '')[:200],
                 parent_id = corpus_id,
                 user_id = user_id,
                 type_id = type_id,
@@ -224,7 +224,7 @@ def extract_ngrams(corpus, keys):
         ngramsextractor = ngramsextractors[language_iso2]
         for text in nodeinfo[2:]:
             if text is not None and len(text):
-                ngrams = ngramsextractor.extract_ngrams(text)
+                ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
                 for ngram in ngrams:
                     terms = ' '.join([token for token, tag in ngram]).lower()
                     n = len(ngram)
@@ -287,8 +287,11 @@ def extract_ngrams(corpus, keys):
     node_ngram_data = list()
     for node_id, ngrams in node_ngram_list.items():
         for terms, weight in ngrams.items():
-            ngram_id = ngram_ids[terms]
-            node_ngram_data.append((node_id, ngram_id, weight, ))
+            try:
+                ngram_id = ngram_ids[terms]
+                node_ngram_data.append((node_id, ngram_id, weight, ))
+            except Exception as e:
+                print("err01:",e)
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)
     dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database
@@ -370,41 +373,42 @@ def compute_tfidf(corpus):
     ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
     cursor.execute('SELECT COUNT(*) FROM tmp__st')
     D = cursor.fetchone()[0]
-    lnD = log(D)
-    cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
-    # show off
-    dbg.show('insert tfidf for %d documents' % D)
-    cursor.execute('''
-        INSERT INTO
-            %s (nodex_id, nodey_id, ngram_id, score)
-        SELECT
-            %d AS nodex_id,
-            tf.node_id AS nodey_id,
-            tf.ngram_id AS ngram_id,
-            (tf.frequency * idf.idf) AS score
-        FROM
-            tmp__idf AS idf
-        INNER JOIN
-            tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
-    ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
-    # # show off
-    # cursor.execute('''
-    #     SELECT
-    #         node.name,
-    #         ngram.terms,
-    #         node_node_ngram.score AS tfidf
-    #     FROM
-    #         %s AS node_node_ngram
-    #     INNER JOIN
-    #         %s AS node ON node.id = node_node_ngram.nodey_id
-    #     INNER JOIN
-    #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
-    #     WHERE
-    #         node_node_ngram.nodex_id = %d
-    #     ORDER BY
-    #         score DESC
-    # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
-    # for row in cursor.fetchall():
-    #     print(row)
-    # the end!
-    db.commit()
+    if D>0:
+        lnD = log(D)
+        cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
+        # show off
+        dbg.show('insert tfidf for %d documents' % D)
+        cursor.execute('''
+            INSERT INTO
+                %s (nodex_id, nodey_id, ngram_id, score)
+            SELECT
+                %d AS nodex_id,
+                tf.node_id AS nodey_id,
+                tf.ngram_id AS ngram_id,
+                (tf.frequency * idf.idf) AS score
+            FROM
+                tmp__idf AS idf
+            INNER JOIN
+                tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
+        ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
+        # # show off
+        # cursor.execute('''
+        #     SELECT
+        #         node.name,
+        #         ngram.terms,
+        #         node_node_ngram.score AS tfidf
+        #     FROM
+        #         %s AS node_node_ngram
+        #     INNER JOIN
+        #         %s AS node ON node.id = node_node_ngram.nodey_id
+        #     INNER JOIN
+        #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
+        #     WHERE
+        #         node_node_ngram.nodex_id = %d
+        #     ORDER BY
+        #         score DESC
+        # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
+        # for row in cursor.fetchall():
+        #     print(row)
+        # the end!
+        db.commit()

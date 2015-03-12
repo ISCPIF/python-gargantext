@@ -98,12 +98,9 @@ from django import forms
 
 from django.utils.translation import ugettext_lazy as _
 class CustomForm(forms.Form):
-    name = forms.CharField( label='Name', max_length=199 , required=True)
-    parsing_options = ResourceType.objects.all().values_list('id', 'name')
-    type = forms.IntegerField( widget=forms.Select( choices= parsing_options) , required=True )
+    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
+    type = ModelChoiceField( ResourceType.objects.all() , widget=forms.Select(attrs={'onchange':'CustomForSelect( $("option:selected", this).text() );'}) )
     file = forms.FileField()
-
-
 
     # Description: clean_file()
     """
@@ -120,20 +117,15 @@ class CustomForm(forms.Form):
     """
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
-        #Filename length
-        if len(file_.name)>30:
-            from datetime import datetime
-            file_.name = str(datetime.now().microsecond)
-            # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
+        # #Filename length
+        # if len(file_.name)>30:
+        #     from datetime import datetime
+        #     file_.name = str(datetime.now().microsecond)
+        #     # raise forms.ValidationError(_('Come on dude, name too long. Now is:'+file_.name))
         #File size
-        if len(file_)>128 * 1024 * 1024:
-            raise forms.ValidationError(_('File too heavy! (<128MB).'))
-        ## File type:
-        # if file_.content_type == "application/zip":
-        #     raise forms.ValidationError(_('We need a zip pls.'))
+        if len(file_)>1024 ** 3:
+            raise forms.ValidationError(_('File too heavy! (>1GB).'))
         return file_
-
-
 
 class CorpusForm(ModelForm):
     #parent = ModelChoiceField(EmptyQuerySet)

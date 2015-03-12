@@ -83,13 +83,13 @@ def project(request, project_id):
 
     # deal with the form
     if request.method == 'POST':
-        # fomr validation
+        # form validation
         form = CustomForm(request.POST, request.FILES)
         if form.is_valid():
             # extract information from the form
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
-            resourcetype = cache.ResourceType[form.cleaned_data['type']]
+            resourcetype = cache.ResourceType[form.cleaned_data['type']] # e.g: here it converts to "pubmed" idk why
             # which default language shall be used?
             if resourcetype.name == "europress_french":
                 language_id = cache.Language['fr'].id

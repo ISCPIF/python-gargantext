@@ -31,11 +31,11 @@ def create_whitelist(user, corpus, size=100):
     black_list = Node.objects.create(name='BlackList Corpus ' + str(corpus.id), user=user, parent=corpus, type=blacklist_type)
 
     # delete avant pour éviter les doublons
-#    try:
-#        Node_Ngram.objects.filter(node=white_list).all().delete()
-#    except:
-#        print('First time we compute cooc')
-#
+    #    try:
+    #        Node_Ngram.objects.filter(node=white_list).all().delete()
+    #    except:
+    #        print('First time we compute cooc')
+    #
     query_whitelist = """
         INSERT INTO node_node_ngram (node_id, ngram_id, weight)
         SELECT
@@ -68,7 +68,8 @@ def create_whitelist(user, corpus, size=100):
             %d
         ;
     """  % (white_list.id, corpus.id, type_document.id, size)
-
+    print("PRINTING QYERY OF WHITELIST:")
+    print(query_whitelist)
     cursor.execute(query_whitelist)
 
     return white_list
@@ -160,12 +161,11 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
         print("Coocurrences do not exist yet, create it.")
         whitelist = create_whitelist(request.user, corpus, size=n)
         cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
-        print(cooccurrence_node.id, "Cooc created")
     else:
         cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
 
     for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
-        
+        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
         ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
         ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
 
@@ -177,7 +177,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 
         weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
         weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
-
 
     df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)
@@ -191,11 +190,10 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
-    
     # Removing too connected nodes (find automatic way to do it)
-#    outdeg = G.degree()
-#    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-#    G.remove_nodes_from(to_remove)
+    #    outdeg = G.degree()
+    #    to_remove = [n for n in outdeg if outdeg[n] >= 10]
+    #    G.remove_nodes_from(to_remove)
 
     partition = best_partition(G)
     
@@ -212,7 +210,6 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
                 G.add_edge(node, "cluster " + str(partition[node]), weight=3)
-#            G.node[node]['color'] = '19,180,300'
             except Exception as error:
                 print(error)
 
@@ -227,61 +224,46 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 #G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
                 #G.add_edge(node, partition[node], weight=3)
-#            G.node[node]['color'] = '19,180,300'
             except Exception as error:
                 print(error)
         data = json_graph.node_link_data(G)
      
 
-#    data = json_graph.node_link_data(G, attrs={\
-#            'source':'source',\
-#            'target':'target',\
-#            'weight':'weight',\
-#            #'label':'label',\
-#            #'color':'color',\
-#            'id':'id',})
+    #    data = json_graph.node_link_data(G, attrs={\
+    #            'source':'source',\
+    #            'target':'target',\
+    #            'weight':'weight',\
+    #            #'label':'label',\
+    #            #'color':'color',\
+    #            'id':'id',})
     #print(data)
     return data
 
 
-#def tfidf(corpus, document, ngram):
-#    '''
-#    Compute TF-IDF (Term Frequency - Inverse Document Frequency)
-#    See: http://en.wikipedia.org/wiki/Tf%E2%80%93idf
-#    '''
-#    try:
-#        occurences_of_ngram = Node_Ngram.objects.get(node=document, ngram=ngram).weight
-#        ngrams_by_document = sum([ x.weight for x in Node_Ngram.objects.filter(node=document)])
-#        term_frequency = occurences_of_ngram / ngrams_by_document
-#    
-#        xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
-#        yy = Node_Ngram.objects.filter(ngram=ngram).count() # filter: ON node.parent=corpus
-#        inverse_document_frequency= log(xx/yy)
-#        
-#        # result = tf * idf
-#        result = term_frequency * inverse_document_frequency
-#    except Exception as error:
-#        print(error, ngram)
-#        result = 0
-#    return result
-
 from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):
-    print("doing tfidf")
+    # print("=========== doing tfidf ===========")
     with transaction.atomic():
         if reset==True:
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
         
         if isinstance(corpus, Node) and corpus.type.name == "Corpus":
+            # print("\n- - - - - - - - - - ")
+            # # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
+                # print("the doc:",document)
                 for node_ngram in Node_Ngram.objects.filter(node=document):
+                    # print("\tngram:",node_ngram.ngram)
                     try:
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
+                        # print("\t\tTRY")
                     except:
                         score = tfidf(corpus, document, node_ngram.ngram)
                         nnn = NodeNodeNgram(nodex=corpus, nodey=node_ngram.node, ngram=node_ngram.ngram, score=score)
                         nnn.save()
+                        # print("\t\t",node_ngram.ngram," : ",score)
+            # print("- - - - - - - - - - \n")
         else:
             print("Only corpus implemented yet, you put instead:", type(corpus))
 

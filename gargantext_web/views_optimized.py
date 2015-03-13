@@ -27,6 +27,7 @@ def project(request, project_id):
         project_id = int(project_id)
     except ValueError:
         raise Http404()
+    
     # do we have a valid project?
     project = (session
         .query(Node)

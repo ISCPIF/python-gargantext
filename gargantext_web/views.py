@@ -39,7 +39,7 @@ from django.contrib.auth import authenticate, login, logout
 from scrap_pubmed.admin import Logger
 
 from gargantext_web.db import *
-
+from sqlalchemy import or_, func
 
 def login_user(request):
     logout(request)
@@ -441,66 +441,11 @@ def corpus(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus  = Node.objects.get(id=corpus_id)
+    project = cache.Node[project_id]
+    corpus  = cache.Node[corpus_id]
     
-    type_doc = NodeType.objects.get(name="Document")
-    number = Node.objects.filter(parent=corpus, type=type_doc).count()
-
-#    try:
-#        sources = defaultdict(int)
-#        for document in documents.all():
-#            sources[document.metadata['journal']] += 1
-#        
-#        sources_donut = []
-#        
-#        for source in sources.keys():
-#            source_count = dict()
-#            source_count['count'] = source['count']
-#            try:
-#                source_count['part'] = round(source_count['count'] * 100 / number)
-#            except:
-#                source_count['part'] = None
-#            source_count['source'] = source['source']
-#            sources_donut.append(source_count)
-#    except:
-#        sources_donut = []
-    # Do a javascript query/api for that
-#    query_date = """
-#        SELECT
-#            id,
-#            metadata -> 'publication_year' as year,
-#            metadata -> 'publication_month' as month, 
-#            metadata -> 'publication_day' as day,
-#            metadata -> 'title'
-#        FROM
-#            node_node AS n
-#        WHERE
-#            n.parent_id = %d
-#        ORDER BY
-#            year, month, day DESC
-#        LIMIT
-#            20
-#        OFFSET
-#            %d
-#    """ % (corpus.id, 0)
-#    try:
-#        cursor = connection.cursor()
-#
-#        cursor.execute(query_date)
-#        documents = list()
-#        while True:
-#            document = dict()
-#            row = cursor.fetchone()
-#            
-#            if row is None:
-#                break
-#            document['id']      = row[0]
-#            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
-#            document['title']   = row[4]
-#            documents.append(document)
-#    except Exception as error:
-#        print(error)
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     try:
         chart = dict()
@@ -667,12 +612,25 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     # return HttpResponse(html)
     return HttpResponse( serializer.data , content_type='application/json')
 
-def delete_project(request, node_id):
-    Node.objects.filter(id=node_id).all().delete()
-    return HttpResponseRedirect('/projects/')
+def delete_node(request, node_id):
 
-def delete_corpus(request, project_id, corpus_id):
-    Node.objects.filter(id=corpus_id).all().delete()
+    #nodes = session.query(Node).filter(or_(Node.id == node_id, Node.parent_id == node_id)).all()
+    node = session.query(Node).filter(Node.id == node_id).first()
+    session.delete(node)
+    session.flush()
+    
+    if node.type_id == cache.NodeType['Project'].id:
+        return HttpResponseRedirect('/projects/')
+    elif node.type_id == cache.NodeType['Corpus'].id:
+        return HttpResponseRedirect('/project/' + node_id)
+
+
+def delete_corpus(request, project_id, node_id):
+    node = session.query(Node).filter(Node.id == node_id).first()
+    session.delete(node)
+    session.commit()
+    session.flush()
+    
     return HttpResponseRedirect('/project/' + project_id)
 
 def chart(request, project_id, corpus_id):

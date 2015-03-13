@@ -61,3 +61,4 @@ sympy==0.7.5
 tornado==4.0.1
 uWSGI==2.0.7
 ujson==1.33
+jsonfield==1.0.3

@@ -93,3 +93,15 @@ if settings.DEBUG:
         }),
 )
 
+if settings.MAINTENANCE:
+    urlpatterns = patterns('',
+    url(r'^img/logo.svg$', views.logo),
+    url(r'^css/bootstrap.css$', views.css),
+    
+    url(r'^$', views.home_view),
+    url(r'^about/', views.get_about),
+    
+    url(r'^.*', views.get_maintenance),
+    )
+
+

@@ -29,7 +29,7 @@ import os
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG, STATIC_ROOT, MAINTENANCE
+from gargantext_web.settings import DEBUG, STATIC_ROOT
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -54,9 +54,7 @@ def login_user(request):
 
             if user.is_active:
                 login(request, user)
-                print("MAINTENANCE:",MAINTENANCE)
-                if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
-                else: return HttpResponseRedirect('/projects/')
+                return HttpResponseRedirect('/projects/')
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
 
@@ -216,7 +214,6 @@ def projects(request):
     '''
     if not request.user.is_authenticated():
         return redirect('/auth/')
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
 
     t = get_template('projects.html')
     
@@ -267,7 +264,6 @@ def project(request, project_id):
         offset = str(project_id)
     except ValueError:
         raise Http404()
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     user = request.user
     date = datetime.datetime.now()
     
@@ -434,7 +430,6 @@ def corpus(request, project_id, corpus_id):
         offset = str(corpus_id)
     except ValueError:
         raise Http404()
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
 
     t = get_template('corpus.html')
     
@@ -635,7 +630,6 @@ def delete_corpus(request, project_id, node_id):
 
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
@@ -652,7 +646,6 @@ def chart(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def matrix(request, project_id, corpus_id):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
@@ -670,7 +663,6 @@ def matrix(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def graph(request, project_id, corpus_id):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -689,7 +681,6 @@ def graph(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def exploration(request):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('exploration.html')
     user = request.user
     date = datetime.datetime.now()
@@ -702,7 +693,6 @@ def exploration(request):
     return HttpResponse(html)
 
 def explorer_chart(request):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()

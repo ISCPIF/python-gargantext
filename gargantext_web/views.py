@@ -38,6 +38,9 @@ from django.contrib.auth import authenticate, login, logout
 
 from scrap_pubmed.admin import Logger
 
+from gargantext_web.db import *
+
+
 def login_user(request):
     logout(request)
     username = password = ''
@@ -217,12 +220,15 @@ def projects(request):
 
     t = get_template('projects.html')
     
-    user = request.user
+    user_id         = cache.User[request.user.username].id
+    project_type_id = cache.NodeType['Project'].id
+
     date = datetime.datetime.now()
     print(Logger.write("STATIC_ROOT"))
     
-    project_type = NodeType.objects.get(name='Project')
-    projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
+    projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
+
+    #projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
     number = len(projects)
  
     form = ProjectForm()
@@ -231,7 +237,9 @@ def projects(request):
         # TODO : protect from sql injection here
         name = str(request.POST['name'])
         if name != "" :
-            Project(name=name, type=project_type, user=user).save()
+            new_project = Project(name=name, type_id=project_type_id, user_id=user_id)
+            session.add(new_project)
+            session.commit()
             return HttpResponseRedirect('/projects/')
     else:
         form = ProjectForm()

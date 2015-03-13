@@ -30,8 +30,8 @@ urlpatterns = patterns('',
     
     # Project Management
     url(r'^projects/$', views.projects),
-    url(r'^project/(\d+)/delete/$', views.delete_project),
     url(r'^project/(\d+)/$', views_optimized.project),
+    url(r'^project/(\d+)/delete/$', views.delete_project),
     
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),

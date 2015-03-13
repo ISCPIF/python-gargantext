@@ -41,6 +41,8 @@ from scrap_pubmed.admin import Logger
 from gargantext_web.db import *
 from sqlalchemy import or_, func
 
+from gargantext_web import about
+
 def login_user(request):
     logout(request)
     username = password = ''
@@ -149,7 +151,6 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
-from gargantext_web import about
 def get_about(request):
     '''
     About Gargantext, the team and sponsors
@@ -436,8 +437,9 @@ def corpus(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
     
-    project = cache.Node[project_id]
-    corpus  = cache.Node[corpus_id]
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+
     
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
@@ -445,6 +447,9 @@ def corpus(request, project_id, corpus_id):
     try:
         chart = dict()
         chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
+        # TODO write with sqlalchemy
+        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
+        
         chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
         print(chart)
     except Exception as error:

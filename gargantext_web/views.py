@@ -639,8 +639,8 @@ def chart(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus  = Node.objects.get(id=corpus_id)
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     
     html = t.render(Context({
         'user'      : user,

@@ -672,8 +672,8 @@ def graph(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
             'user'      : user,\
@@ -721,9 +721,9 @@ def corpus_csv(request, project_id, corpus_id):
 
     writer = csv.writer(response)
 
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
-    documents = Node.objects.filter(parent=corpus, type=type_document)
+    corpus_id = session.query(Node.id).filter(Node.id==corpus_id).first()
+    type_document_id = cache.NodeType['Document'].id
+    documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
 
     keys = list(documents[0].metadata.keys())
     writer.writerow(keys)

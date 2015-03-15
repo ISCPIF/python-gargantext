@@ -187,6 +187,7 @@ class NodesChildrenDuplicates(APIView):
         # get the minimum ID for each of the nodes sharing the same metadata
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
+        # TODO with new orm
         duplicate_nodes =  models.Node.objects.filter( parent_id=node_id ).exclude(id__in=kept_node_ids)
         # # delete the stuff
         # delete_query = (session
@@ -585,7 +586,7 @@ class Nodes(APIView):
     # it should take the subnodes into account as well,
     # for better constistency...
     def delete(self, request, node_id):
-        node = models.Node.objects.filter(id = node_id)
+        node = session.query(Node).filter(Node.id == node_id).first()
         msgres = ""
         try:
             node.delete()
@@ -605,7 +606,7 @@ class CorpusController:
             corpus_id = int(corpus_id)
         except:
             raise ValidationError('Corpora are identified by an integer.', 400)
-        corpusQuery = Node.objects.filter(id = corpus_id)
+        corpusQuery = session.query(Node).filter(Node.id == corpus_id).first()
         # print(str(corpusQuery))
         # raise Http404("C'est toujours ça de pris.")
         if not corpusQuery:

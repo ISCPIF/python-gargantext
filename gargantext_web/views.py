@@ -496,12 +496,12 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
+    type_document_id = cache.NodeType['Document'].id
     # retrieving all the documents
     # documents  = corpus.children.all()
-    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
+    documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
     number = len(documents)
 
     filtered_docs = []

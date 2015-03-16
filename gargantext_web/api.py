@@ -423,7 +423,7 @@ class NodesChildrenQueries(APIView):
             )
 
         # starting the query!
-        document_type_id = session.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
+        document_type_id = cache.NodeType['Document'].id ##session.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
         query = (session
             .query(*fields_list)
             .select_from(Node)

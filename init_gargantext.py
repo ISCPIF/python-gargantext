@@ -11,18 +11,18 @@ from node.models import *
 
 
 # Reset: all data
-
-tables_to_empty = [
-    Node,
-    Node_Metadata,
-    Metadata,
-    NodeType,
-    ResourceType,
-    Resource,
-]
-for table in tables_to_empty:
-    print('Empty table "%s"...' % (table._meta.db_table, ))
-    table.objects.all().delete()
+#
+#tables_to_empty = [
+#    Node,
+#    Node_Metadata,
+#    Metadata,
+#    NodeType,
+#    ResourceType,
+#    Resource,
+#]
+#for table in tables_to_empty:
+#    print('Empty table "%s"...' % (table._meta.db_table, ))
+#    table.objects.all().delete()
 
 
 # Integration: metadata types
@@ -205,19 +205,19 @@ except:
     corpus_pubmed = Node(parent=project, name='PubMed corpus', type=typeCorpus, user=me)
     corpus_pubmed.save()
 
-print('Initialize resource...')
-corpus_pubmed.add_resource(
-    # file='./data_samples/pubmed.zip',
-    #file='./data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
-    file='/srv/gargantext_lib/data_samples/pubmed.xml',
-    type=typePubmed,
-    user=me
-)
-
-for resource in corpus_pubmed.get_resources():
-    print('Resource #%d - %s - %s' % (resource.id, resource.digest, resource.file))
-    
-# print('Parse corpus #%d...' % (corpus_pubmed.id, ))
+#print('Initialize resource...')
+#corpus_pubmed.add_resource(
+#    # file='./data_samples/pubmed.zip',
+#    #file='./data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
+#    file='/srv/gargantext_lib/data_samples/pubmed.xml',
+#    type=typePubmed,
+#    user=me
+#)
+#
+#for resource in corpus_pubmed.get_resources():
+#    print('Resource #%d - %s - %s' % (resource.id, resource.digest, resource.file))
+#    
+## print('Parse corpus #%d...' % (corpus_pubmed.id, ))
 # corpus_pubmed.parse_resources(verbose=True)
 # print('Extract corpus #%d...' % (corpus_pubmed.id, ))
 # corpus_pubmed.children.all().extract_ngrams(['title',])

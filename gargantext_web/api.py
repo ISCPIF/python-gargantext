@@ -1,6 +1,7 @@
 from django.http import HttpResponseNotFound, HttpResponse, Http404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 from django.db.models import Avg, Max, Min, Count, Sum
 # from node.models import Language, ResourceType, Resource
@@ -9,6 +10,8 @@ from django.db.models import Avg, Max, Min, Count, Sum
 from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
+
+import json
 
 from .db import *
 
@@ -578,7 +581,8 @@ class Nodes(APIView):
             'id': node.id,
             'name': node.name,
             # 'type': node.type__name,
-            'metadata': dict(node.metadata),
+            #'metadata': dict(node.metadata),
+            'metadata': node.metadata,
         })
 
     # deleting node by id

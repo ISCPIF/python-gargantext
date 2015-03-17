@@ -619,8 +619,8 @@ def node_link(request, corpus_id):
 
     data = []
     
-    corpus = Node.objects.get(id=corpus_id)
-    filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent.id, corpus_id)
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
     print("file exists?:",os.path.isfile(filename))
     if os.path.isfile(filename):
         json_data = open(filename,"r")

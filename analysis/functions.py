@@ -1,6 +1,4 @@
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Node_Ngram, NodeNgramNgram, NodeNodeNgram
+from gargantext_web.db import *
 
 from collections import defaultdict
 from django.db import connection, transaction
@@ -13,23 +11,20 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-def create_whitelist(user, corpus, size=100):
+def create_whitelist(user, corpus_id, size=100):
     cursor = connection.cursor()
     
-    try:
-        whitelist_type = NodeType.objects.get(name='WhiteList')
-        blacklist_type = NodeType.objects.get(name='BlackList')
-        type_document  = NodeType.objects.get(name='Document')
-    except:
-        whitelist_type = NodeType(name='WhiteList')
-        whitelist_type.save()
+    whitelist_type_id = cache.NodeType['WhiteList'].id
+    blacklist_type_id = cache.NodeType['BlackList'].id
+    type_document_id  = cache.NodeType['Document'].id
+
+    white_list = Node(name='WhiteList Corpus ' + str(corpus_id), user_id=user.id, parent_id=corpus_id, type_id=whitelist_type_id)
+    black_list = Node(name='BlackList Corpus ' + str(corpus_id), user_id=user.id, parent_id=corpus_id, type_id=blacklist_type_id)
     
-        blacklist_type = NodeType(name='BlackList')
-        blacklist_type.save()
-
-    white_list = Node.objects.create(name='WhiteList Corpus ' + str(corpus.id), user=user, parent=corpus, type=whitelist_type)
-    black_list = Node.objects.create(name='BlackList Corpus ' + str(corpus.id), user=user, parent=corpus, type=blacklist_type)
-
+    session.add(white_list)
+    session.add(black_list)
+    
+    session.commit()
     # delete avant pour éviter les doublons
     #    try:
     #        Node_Ngram.objects.filter(node=white_list).all().delete()
@@ -67,7 +62,7 @@ def create_whitelist(user, corpus, size=100):
         LIMIT
             %d
         ;
-    """  % (white_list.id, corpus.id, type_document.id, size)
+    """  % (white_list.id, int(corpus_id), int(type_document_id), size)
     print("PRINTING QYERY OF WHITELIST:")
     print(query_whitelist)
     cursor.execute(query_whitelist)
@@ -75,21 +70,21 @@ def create_whitelist(user, corpus, size=100):
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=None, year_end=None):
+def create_cooc(user=None, corpus_id=None, whitelist=None, size=150, year_start=None, year_end=None):
     cursor = connection.cursor()
 
-    try:
-        cooc_type  = NodeType.objects.get(name='Cooccurrence')
-    except:
-        cooc_type = NodeType(name='Cooccurrence')
-        cooc_type.save()
-    # pour les tests on supprime les cooc
-    Node.objects.filter(type=cooc_type, parent=corpus).delete()
+    cooc_type_id  = cache.NodeType['Cooccurrence'].id
 
-    cooc = Node.objects.create(user=user,\
-                           parent=corpus,\
-                           type=cooc_type,\
-                           name="Cooccurrences corpus " + str(corpus.pk))
+    # pour les tests on supprime les cooc
+    #session.Node.objects.filter(type=cooc_type, parent=corpus).delete()
+
+    cooc = Node(user_id=user.id,\
+                           parent_id=corpus_id,\
+                           type_id=cooc_type_id,\
+                           name="Cooccurrences corpus " + str(corpus_id))
+
+    session.add(cooc)
+    session.commit()
 
     query_cooc = """
     INSERT INTO node_nodengramngram (node_id, "ngramx_id", "ngramy_id", score)
@@ -134,10 +129,10 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=Non
         score DESC
     LIMIT
         %d
-    """ % (cooc.pk, corpus.id, whitelist.id, whitelist.id, size)
+    """ % (cooc.id, corpus.id, whitelist.id, whitelist.id, size)
 
     cursor.execute(query_cooc)
-    return cooc
+    return cooc.id
 
 def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150):
     import pandas as pd
@@ -154,29 +149,28 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     labels = dict()
     weight = dict()
 
-    corpus = Node.objects.get(id=corpus_id)
-    type_cooc = NodeType.objects.get(name="Cooccurrence")
+    type_cooc_id = cache.NodeType['Cooccurrence'].id
 
-    if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
+    if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
         print("Coocurrences do not exist yet, create it.")
-        whitelist = create_whitelist(request.user, corpus, size=n)
-        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
+        whitelist = create_whitelist(request.user, corpus_id=corpus_id, size=n)
+        cooccurrence_node_id = create_cooc(user=request.user, corpus_id=corpus_id, whitelist=whitelist, size=n)
     else:
-        cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
+        cooccurrence_node_id = session.query(Node.id).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first()
 
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
+    for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooccurrence_node_id).all():
         # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-        ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
-        ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
+        ids[cooccurrence.ngramx_id] = cooccurrence.ngramx_id
+        ids[cooccurrence.ngramy_id] = cooccurrence.ngramy_id
 
-        labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
-        labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
+        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()
+        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()
 
-        matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
-        matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
+        matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
+        matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
 
-        weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
-        weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
+        weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
+        weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
 
     df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)

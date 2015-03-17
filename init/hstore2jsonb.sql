@@ -19,9 +19,6 @@ ALTER COLUMN metadata
 SET DEFAULT '{}'::json
 ;
 
--- for JSONB ?
--- ALTER TABLE ONLY node_node ALTER COLUMN metadata TYPE JSONB USING metadata::text::jsonb;
-
 
 ALTER TABLE ONLY node_node
 ALTER COLUMN metadata

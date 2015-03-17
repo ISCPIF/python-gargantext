@@ -632,7 +632,7 @@ class Node_Metadata(models.Model):
 
 class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource', on_delete=models.CASCADE)
-    resource = models.ForeignKey(Resource)
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     parsed   = models.BooleanField(default=False)
             
 class Node_Ngram(models.Model):

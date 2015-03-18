@@ -51,6 +51,10 @@ class ResourceType(models.Model):
     def __str__(self):
         return self.name
 
+class NgramTag(models.Model):
+    tag              = models.CharField(max_length=4, unique=True)
+    description      = models.CharField(max_length=255, unique=True)
+
 class Ngram(models.Model):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     n           = models.IntegerField()
@@ -694,14 +698,9 @@ class NodeNodeNgram(models.Model):
 
 
 class NgramNgram(models.Model):
-    ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
-    token      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    ngram      = models.ForeignKey(Ngram, related_name='ngram', on_delete=models.CASCADE)
+    token      = models.ForeignKey(Ngram, related_name='token', on_delete=models.CASCADE)
     index      = models.IntegerField()
-
-
-class NgramTag(models.Model):
-    tag              = models.CharField(max_length=4, unique=True)
-    description      = models.CharField(max_length=255, unique=True)
 
 
 

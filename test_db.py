@@ -24,7 +24,7 @@ session.commit()
 
 add_resource(corpus,
     # file = './data_samples/pubmed_result.xml',
-    file = './data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
+    file = '/srv/gargantext_lib/data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
     type_id = cache.ResourceType['pubmed'].id,
 )
 parse_resources(corpus)

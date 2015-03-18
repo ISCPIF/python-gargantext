@@ -87,10 +87,12 @@ def project(request, project_id):
         # form validation
         form = CustomForm(request.POST, request.FILES)
         if form.is_valid():
+            
             # extract information from the form
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
-            resourcetype = cache.ResourceType[form.cleaned_data['type']] # e.g: here it converts to "pubmed" idk why
+            resourcetype = cache.ResourceType[form.cleaned_data['type']]
+            
             # which default language shall be used?
             if resourcetype.name == "europress_french":
                 language_id = cache.Language['fr'].id
@@ -98,6 +100,7 @@ def project(request, project_id):
                 language_id = cache.Language['en'].id
             else:
                 language_id = None
+            
             # corpus node instanciation as a Django model
             corpus = Node(
                 name = name,

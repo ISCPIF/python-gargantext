@@ -20,6 +20,8 @@ urlpatterns = patterns('',
 
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
+    
+    # Dynamic CSS
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
     
@@ -31,8 +33,8 @@ urlpatterns = patterns('',
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
-    url(r'^project/(\d+)/delete/$', views.delete_node),
-    url(r'^delete/(\d+)$', views.delete_node),
+    url(r'^project/(\d+)/delete/$', views.delete_node), # => api.delete(children but not if copies...)
+    url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
     
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
@@ -48,18 +50,19 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
     
     # Data management
-    url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),
-    url(r'^corpus/(\d+)/node_link.json$', views.node_link),
-    url(r'^corpus/(\d+)/adjacency.json$', views.adjacency),
+    url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
+    url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
+    url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
+    
     url(r'^api/tfidf/(\d+)/(\d+(?:,\d+)+)$', views_optimized.tfidf),
     # url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
     url(r'^api/tfidf2/(\d+)/(\w+)$', views.tfidf2),
 
     # Data management
-    url(r'^api$', gargantext_web.api.Root),
+    #url(r'^api$', gargantext_web.api.Root), # = ?
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
-    url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),
+    url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
     url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
@@ -69,12 +72,13 @@ urlpatterns = patterns('',
 
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
-    url(r'^ngrams$', views.ngrams),
-    url(r'^nodeinfo/(\d+)$', views.nodeinfo),
+    # Provisory tests
+    url(r'^ngrams$', views.ngrams),  # to be removed 
+    url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
     url(r'^tests/mvc$', views.tests_mvc),
     url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
 
-    url(r'^tests/istextquery$', pubmedscrapper.getGlobalStatsISTEXT),
+    url(r'^tests/istextquery$', pubmedscrapper.getGlobalStatsISTEXT), # api/query?type=istext ?
     url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX)

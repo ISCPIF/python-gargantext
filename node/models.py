@@ -56,6 +56,7 @@ class Ngram(models.Model):
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
+    tag         = models.ForeignKey(NgramTag, blank=True)
     
     def __str__(self):
         return self.terms
@@ -691,15 +692,16 @@ class NodeNodeNgram(models.Model):
     def __str__(self):
         return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
-class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
-    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
-    
+
+class NgramNgram(models.Model):
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    token      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    index      = models.IntegerField()
 
-    score       = models.FloatField(default=0)
 
-    def __str__(self):
-        return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
+class NgramTag(models.Model):
+    tag              = models.CharField(max_length=4, unique=True)
+    description      = models.CharField(max_length=255, unique=True)
+
 
 

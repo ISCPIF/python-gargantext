@@ -7,14 +7,18 @@ __all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine
 
 # initialize sqlalchemy
 
+from sqlalchemy.orm import Session, mapper
 from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey
+from sqlalchemy.types import Integer, String, DateTime
+from sqlalchemy.dialects.postgresql import JSON
 
 engine = create_engine('postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
     **settings.DATABASES['default']
 ))
 Base = automap_base()
+
 Base.prepare(engine, reflect=True)
 
 # model representation
@@ -39,16 +43,50 @@ def model_repr(modelname):
 
 # map the Django models found in node.models to SQLAlchemy models
 
-for model_name, model in models.__dict__.items():
-    if hasattr(model, '_meta'):
-        table_name = model._meta.db_table
-        if hasattr(Base.classes, table_name):
-            sqla_model = getattr(Base.classes, table_name)
-            setattr(sqla_model, '__repr__', model_repr(model_name))
-            globals()[model_name] = sqla_model
-            __all__.append(model_name)
+def map_models(models, __all__=__all__):
+    for model_name, model in models.__dict__.items():
+        if hasattr(model, '_meta') :
+            table_name = model._meta.db_table
+            print(table_name)
+            if hasattr(Base.classes, table_name):
+                sqla_model = getattr(Base.classes, table_name)
+                print(sqla_model, model_repr(model_name))
+                setattr(sqla_model, '__repr__', model_repr(model_name))
+                globals()[model_name] = sqla_model
+                __all__.append(model_name)
+
+map_models(models, __all__=__all__)
 
 NodeNgram = Node_Ngram
+
+
+#from sqlalchemy.sql import expression
+#from sqlalchemy.ext.compiler import compiles
+#from sqlalchemy.types import DateTime
+#class utcnow(expression.FunctionElement):
+#    type = DateTime()
+##@compiles(utcnow, 'postgresql')
+#
+
+#class Node(Base):
+#    __tablename__   = 'node_node'
+#    __table_args__  = {'extend_existing':True}
+#    id              = Column(Integer, primary_key=True)
+#    parent_id       = Column(Integer)
+#    user_id         = Column(Integer, ForeignKey('user.id'), nullable=False )
+#    type_id         = Column(Integer, ForeignKey('node_node_type.id'))
+#    name            = Column(String(255), nullable=False)
+#    
+#    language_id     = Column(Integer, ForeignKey('language.id', ondelete='SET NULL'))
+#    
+#    date            = Column(DateTime(), server_default=utcnow())
+#    metadat        = Column(JSON, nullable=False, default={})
+#
+#    #ngrams        = Column(k:only
+#
+
+
+
 
 
 # debugging tool, to translate SQLAlchemy queries to string

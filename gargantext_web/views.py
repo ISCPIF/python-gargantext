@@ -6,9 +6,9 @@ from django.template.loader import get_template
 from django.template import Context
 
 from node import models
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
+#from node.models import Language, ResourceType, Resource, \
+#        Node, NodeType, Node_Resource, Project, Corpus, \
+#        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
 from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
 
@@ -39,6 +39,7 @@ from django.contrib.auth import authenticate, login, logout
 from scrap_pubmed.admin import Logger
 
 from gargantext_web.db import *
+
 from sqlalchemy import or_, func
 
 from gargantext_web import about
@@ -443,10 +444,27 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
 def delete_node(request, node_id):
 
     #nodes = session.query(Node).filter(or_(Node.id == node_id, Node.parent_id == node_id)).all()
-    node = session.query(Node).filter(Node.id == node_id).first()
-    session.delete(node)
-    session.flush()
     
+#    try:
+#        resources = session.query(Node_Resource).filter(Node_Resource.node_id==node_id).all()
+#        if resources is not None:
+#            for resource in resources:
+#                session.delete(resource)
+#    
+#    except Exception as error:
+#        print(error)
+#   
+#    node = session.query(Node).filter(Node.id == node_id).first()
+#    if node is not None:
+#        session.delete(node)
+#    session.commit()
+    
+    
+    node = models.Node.get(id=node_id)
+    node.delete()
+    #children.all().delete()
+
+
     if node.type_id == cache.NodeType['Project'].id:
         return HttpResponseRedirect('/projects/')
     elif node.type_id == cache.NodeType['Corpus'].id:
@@ -454,10 +472,19 @@ def delete_node(request, node_id):
 
 
 def delete_corpus(request, project_id, node_id):
-    node = session.query(Node).filter(Node.id == node_id).first()
-    session.delete(node)
-    session.commit()
-    session.flush()
+    # ORM Django
+    node = models.Node.objects.get(id=node_id)
+    try:
+        node.children.delete()
+    except Exception as error:
+        print(error)
+    node.delete()
+
+    # SQLA Django
+#    node = session.query(Node).filter(Node.id == node_id).first()
+#    session.delete(node)
+#    session.commit()
+#    session.flush()
     
     return HttpResponseRedirect('/project/' + project_id)
 

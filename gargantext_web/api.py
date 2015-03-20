@@ -11,7 +11,6 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-import jsonfield
 
 from .db import *
 

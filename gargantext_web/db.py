@@ -54,6 +54,7 @@ for model_name, model in models.__dict__.items():
 
 
 NodeNgram = Node_Ngram
+NodeResource = Node_Resource
 
 
 # debugging tool, to translate SQLAlchemy queries to string

@@ -60,35 +60,6 @@ map_models(models, __all__=__all__)
 NodeNgram = Node_Ngram
 
 
-#from sqlalchemy.sql import expression
-#from sqlalchemy.ext.compiler import compiles
-#from sqlalchemy.types import DateTime
-#class utcnow(expression.FunctionElement):
-#    type = DateTime()
-##@compiles(utcnow, 'postgresql')
-#
-
-#class Node(Base):
-#    __tablename__   = 'node_node'
-#    __table_args__  = {'extend_existing':True}
-#    id              = Column(Integer, primary_key=True)
-#    parent_id       = Column(Integer)
-#    user_id         = Column(Integer, ForeignKey('user.id'), nullable=False )
-#    type_id         = Column(Integer, ForeignKey('node_node_type.id'))
-#    name            = Column(String(255), nullable=False)
-#    
-#    language_id     = Column(Integer, ForeignKey('language.id', ondelete='SET NULL'))
-#    
-#    date            = Column(DateTime(), server_default=utcnow())
-#    metadat        = Column(JSON, nullable=False, default={})
-#
-#    #ngrams        = Column(k:only
-#
-
-
-
-
-
 # debugging tool, to translate SQLAlchemy queries to string
 
 def literalquery(statement, dialect=None):

@@ -3,7 +3,8 @@ from django.utils import timezone
 
 from django.contrib.auth.models import User
 
-import jsonfield
+from django_pgjson.fields import JsonBField
+
 from cte_tree.models import CTENode, CTENodeManager
 # from cte_tree.query import CTEQuerySet
 #from cte_tree.fields import DepthField, PathField, OrderingField
@@ -40,7 +41,7 @@ class Language(models.Model):
     iso2        = models.CharField(max_length=2, unique=True)
     iso3        = models.CharField(max_length=3, unique=True)
     fullname    = models.CharField(max_length=255, unique=True)
-    implemented = models.BooleanField(blank=True)
+    implemented = models.BooleanField(blank=True, default=True)
     
     def __str__(self):
         return self.fullname
@@ -131,7 +132,7 @@ class Node(CTENode):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     
     date        = models.DateField(default=timezone.now, blank=True)
-    metadata    = jsonfield.JSONField()#blank=True, load_kwargs={'object_pairs_hook': collections.OrderedDict})
+    metadata    = JsonBField(null=False, default={})
 
     ngrams      = models.ManyToManyField(through='Node_Ngram', to='Ngram')
 

@@ -148,14 +148,14 @@ class CorpusAdmin(NodeAdmin):
 
 ######################################################################
 
-class DocumentForm(ModelForm):
-    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=3))
+#class DocumentForm(ModelForm):
+#    parent = ModelChoiceField(Node.objects.filter(user_id=1, type_id=3))
 
-class DocumentAdmin(NodeAdmin):
-    _parent_nodetype_name = 'Corpus'
-    _nodetype_name = 'Document'
-    form = DocumentForm
-
+#class DocumentAdmin(NodeAdmin):
+#    _parent_nodetype_name = 'Corpus'
+#    _nodetype_name = 'Document'
+#    form = DocumentForm
+#
 class LanguageAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
@@ -171,7 +171,7 @@ admin.site.register(Language, LanguageAdmin)
 admin.site.register(NodeType)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Corpus, CorpusAdmin)
-admin.site.register(Document, DocumentAdmin)
+admin.site.register(Document)#, DocumentAdmin)
 
 
 admin.site.register(Node_Resource)

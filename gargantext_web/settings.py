@@ -63,7 +63,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'south',
+    #'south',
     'cte_tree',
     'node',
     'ngram',

@@ -33,12 +33,10 @@ urlpatterns = patterns('',
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
-    url(r'^project/(\d+)/delete/$', views.delete_node), # => api.delete(children but not if copies...)
-    url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
+    url(r'^delete/(\d+)$', views.trash_node), # => api.node('id' = id, children = 'True', copies = False)
     
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/delete/$', views.delete_corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
     

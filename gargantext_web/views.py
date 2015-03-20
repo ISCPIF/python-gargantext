@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.db import transaction
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.template import Context
 
@@ -30,7 +30,8 @@ import os
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG, STATIC_ROOT
+from gargantext_web import settings
+
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -441,6 +442,44 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     # return HttpResponse(html)
     return HttpResponse( serializer.data , content_type='application/json')
 
+
+def empty_trash():
+    nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()
+    with transaction.atomic():
+        for node in nodes:
+            try:
+                node.children.delete()
+            except Exception as error:
+                print(error)
+
+            node.delete()
+
+
+def trash_node(request, node_id):
+    
+    # do we have a valid user?
+    user = request.user
+    node = session.query(Node).filter(Node.id == node_id).first()
+    
+    if not user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    if node.user_id != user.id:
+        return HttpResponseForbidden()
+
+    previous_type_id = node.type_id
+    node.type_id = cache.NodeType['Trash'].id
+    session.add(node)
+    session.commit()
+    
+    if previous_type_id == cache.NodeType['Project'].id:
+        return HttpResponseRedirect('/projects/')
+    elif previous_type_id == cache.NodeType['Corpus'].id:
+        return HttpResponseRedirect('/project/' + str(session.query(Node.id).filter(Node.id==node.parent_id).first()[0]))
+
+    if settings.DEBUG == True:
+        empty_trash()
+
+
 def delete_node(request, node_id):
 
     #nodes = session.query(Node).filter(or_(Node.id == node_id, Node.parent_id == node_id)).all()
@@ -643,7 +682,6 @@ def send_csv(request, corpus_id):
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
 import json
-from gargantext_web.settings import MEDIA_ROOT
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
@@ -652,7 +690,7 @@ def node_link(request, corpus_id):
     data = []
     
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
-    filename = MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
+    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
     print("file exists?:",os.path.isfile(filename))
     if os.path.isfile(filename):
         json_data = open(filename,"r")

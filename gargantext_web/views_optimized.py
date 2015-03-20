@@ -52,6 +52,7 @@ def project(request, project_id):
         .outerjoin(Node_Resource, Node_Resource.node_id == Node.id)
         .outerjoin(Resource, Resource.id == Node_Resource.resource_id)
         .filter(Node.parent_id == project.id)
+        .filter(Node.type_id == cache.NodeType['Corpus'].id)
         .group_by(Node.id, Node.name, Resource.type_id)
         .order_by(Node.name)
     )

@@ -7,7 +7,8 @@
 #NodeType.objects.all().delete()
 
 
-from node.models import Node, NodeType, Project, Corpus, Document, Ngram, Node_Ngram, User, Language, ResourceType
+from node.models import *
+
 
 
 import pycountry
@@ -31,14 +32,8 @@ except:
     me = User(username='pksm3')
     me.save()
 
-
-try:
-    typeProject = NodeType.objects.get(name='Root')
-except Exception as error:
-    print(error)
-    typeProject = NodeType(name='Root')
-    typeProject.save()  
-
+for node_type in ['Trash', 'Root', ]:
+    NodeType.objects.get_or_create(name=node_type)
 
 try:
     typeProject = NodeType.objects.get(name='Project')

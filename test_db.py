@@ -4,6 +4,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext_web.settings")
 os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 
 # database tools
+from node import models
 from gargantext_web.db import *
 from parsing.corpustools import *
 
@@ -11,7 +12,9 @@ from parsing.corpustools import *
 
 
 user = session.query(User).first()
+
 project = session.query(Node).filter(Node.name == 'A').first()
+
 corpus = Node(
     parent_id = project.id,
     name = 'Test 456',

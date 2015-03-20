@@ -43,19 +43,15 @@ def model_repr(modelname):
 
 # map the Django models found in node.models to SQLAlchemy models
 
-def map_models(models, __all__=__all__):
-    for model_name, model in models.__dict__.items():
-        if hasattr(model, '_meta') :
-            table_name = model._meta.db_table
-            print(table_name)
-            if hasattr(Base.classes, table_name):
-                sqla_model = getattr(Base.classes, table_name)
-                print(sqla_model, model_repr(model_name))
-                setattr(sqla_model, '__repr__', model_repr(model_name))
-                globals()[model_name] = sqla_model
-                __all__.append(model_name)
+for model_name, model in models.__dict__.items():
+    if hasattr(model, '_meta') :
+        table_name = model._meta.db_table
+        if hasattr(Base.classes, table_name):
+            sqla_model = getattr(Base.classes, table_name)
+            setattr(sqla_model, '__repr__', model_repr(model_name))
+            globals()[model_name] = sqla_model
+            __all__.append(model_name)
 
-map_models(models, __all__=__all__)
 
 NodeNgram = Node_Ngram
 

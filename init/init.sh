@@ -11,4 +11,4 @@ sleep 2
 #../manage.py shell < init.py
 ../manage.py shell < ../init_gargantext.py
 
-psql -d gargandb -f hstore2jsonb.sql
+#psql -d gargandb -f hstore2jsonb.sql

@@ -61,7 +61,7 @@ class Ngram(models.Model):
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
-    tag         = models.ForeignKey(NgramTag, blank=True)
+    tag         = models.ForeignKey(NgramTag, blank=True, null=True)
     
     def __str__(self):
         return self.terms

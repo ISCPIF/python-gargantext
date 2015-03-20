@@ -1,5 +1,5 @@
 ALTER TABLE ONLY node_node ALTER COLUMN date SET DEFAULT CURRENT_DATE;
-ALTER TABLE ONLY node_node ALTER COLUMN metadata SET DEFAULT ''::hstore;
+-- ALTER TABLE ONLY node_node ALTER COLUMN metadata SET DEFAULT ''::hstore;
 
 -- ALTER TABLE ONLY node_node ALTER COLUMN metadata TYPE JSONB;
 

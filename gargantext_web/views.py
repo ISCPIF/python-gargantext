@@ -77,8 +77,7 @@ def logo(request):
     svg_data = template.render(Context({\
             'color': color,\
             }))
-    #return HttpResponse(svg_data, mimetype="image/svg+xml")
-    return HttpResponse(svg_data)
+    return HttpResponse(svg_data, content_type="image/svg+xml")
 
 def css(request):
     template = get_template('bootstrap.css')

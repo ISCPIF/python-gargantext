@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.db import transaction
 
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
@@ -458,11 +459,14 @@ def delete_node(request, node_id):
 #        session.delete(node)
 #    session.commit()
     
-    
-    node = models.Node.get(id=node_id)
-    node.delete()
-    #children.all().delete()
+    node = models.Node.objects.get(id=node_id)
+    with transaction.atomic():
+        try:
+            node.children.delete()
+        except Exception as error:
+            print(error)
 
+        node.delete()
 
     if node.type_id == cache.NodeType['Project'].id:
         return HttpResponseRedirect('/projects/')
@@ -472,12 +476,13 @@ def delete_node(request, node_id):
 
 def delete_corpus(request, project_id, node_id):
     # ORM Django
-    node = models.Node.objects.get(id=node_id)
-    try:
-        node.children.delete()
-    except Exception as error:
-        print(error)
-    node.delete()
+    with transaction.atomic():
+        node = models.Node.objects.get(id=node_id)
+        try:
+            node.children.delete()
+        except Exception as error:
+            print(error)
+        node.delete()
 
     # SQLA Django
 #    node = session.query(Node).filter(Node.id == node_id).first()

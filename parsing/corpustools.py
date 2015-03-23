@@ -151,6 +151,7 @@ def parse_resources(corpus, user=None, user_id=None):
             try:
                 metadata = metadata_types[metadata_key]
             except KeyError:
+                # Why silent continue here ?
                 continue
             if metadata.type == 'string':
                 metadata_value = metadata_value[:255]

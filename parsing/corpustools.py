@@ -211,7 +211,11 @@ def extract_ngrams(corpus, keys):
         language.id: language.iso2
         for language in session.query(Language)
     }
+    
     ngrams_data = set()
+    ngrams_language_data = set()
+    ngrams_tag_data = set()
+
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in metadata_query:
         node_id = nodeinfo[0]
@@ -227,12 +231,25 @@ def extract_ngrams(corpus, keys):
             if text is not None and len(text):
                 ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
                 for ngram in ngrams:
-                    terms = ' '.join([token for token, tag in ngram]).lower()
                     n = len(ngram)
+                    terms    = ' '.join([token for token, tag in ngram]).lower()
+
+                    # TODO BUG here
+                    if n == 1:
+                        tag_id   = cache.Tag[ngram[0][1]].id
+                        #tag_id   =  1
+                        #print('tag_id', tag_id)
+                    elif n > 1:
+                        tag_id   = cache.Tag['NN'].id
+                        #tag_id   =  14
+                        #print('tag_id_2', tag_id)
+
                     node_ngram_list[node_id][terms] += 1
-                    ngrams_data.add(
-                        (n, terms)
-                    )
+                    
+                    ngrams_data.add((n, terms))
+                    ngrams_language_data.add((terms, language_id))
+                    ngrams_tag_data.add((terms, tag_id))
+
     # insert ngrams to temporary table
     dbg.show('find ids for the %d ngrams' % len(ngrams_data))
     db, cursor = get_cursor()
@@ -256,6 +273,7 @@ def extract_ngrams(corpus, keys):
             ngram.terms = tmp__ngrams.terms
     ''' % (Ngram.__table__.name, ))
     # insert, then get the ids back
+    
     cursor.execute('''
         INSERT INTO
             %s (n, terms)
@@ -266,6 +284,8 @@ def extract_ngrams(corpus, keys):
         WHERE
             id IS NULL
     ''' % (Ngram.__table__.name, ))
+    
+    
     cursor.execute('''
         UPDATE
             tmp__ngrams
@@ -278,11 +298,13 @@ def extract_ngrams(corpus, keys):
         AND
             tmp__ngrams.id IS NULL
     ''' % (Ngram.__table__.name, ))
+    
     # get all ids
     ngram_ids = dict()
     cursor.execute('SELECT id, terms FROM tmp__ngrams')
     for row in cursor.fetchall():
         ngram_ids[row[1]] = row[0]
+    
     # 
     dbg.show('insert associations')
     node_ngram_data = list()

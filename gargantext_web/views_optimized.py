@@ -46,6 +46,8 @@ def project(request, project_id):
 
     # Let's find out about the children nodes of the project
     ChildrenNode = aliased(Node)
+    # This query is giving you the wrong number of docs from the pubmedquerier (x 5)
+    #  ... sqlalchemy.func is the guilty
     corpus_query = (session
         .query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
         .outerjoin(ChildrenNode, ChildrenNode.parent_id == Node.id)
@@ -74,6 +76,7 @@ def project(request, project_id):
             })
             documents_count_by_resourcetype[resourcetype_name] += document_count
             corpora_count += 1
+            corpusID_dict[corpus_id]=True
 
     # do the donut
     total_documents_count = sum(documents_count_by_resourcetype.values())

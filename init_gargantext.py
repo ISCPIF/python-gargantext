@@ -77,112 +77,27 @@ except:
 
 print('Initialize node types...')
 
-try:
-    typeProject = NodeType.objects.get(name='Root')
-except Exception as error:
-    print(error)
-    typeProject = NodeType(name='Root')
-    typeProject.save()  
+node_types = [
+        'Root', 'Trash',
+        'Project', 'Corpus', 'Document', 
+        'Stem', 'Lem', 'Tfidf', 
+        'Synonym', 
+        'MiamList', 'StopList',
+        'Cooccurrence',
+        ]
 
-try:
-    typeProject = NodeType.objects.get(name='Project')
-except Exception as error:
-    print(error)
-    typeProject = NodeType(name='Project')
-    typeProject.save()  
-
-try:
-    typeCorpus  = NodeType.objects.get(name='Corpus')
-except Exception as error:
-    print(error)
-    typeCorpus  = NodeType(name='Corpus')
-    typeCorpus.save()
-    
-try:
-    typeDoc     = NodeType.objects.get(name='Document')
-except Exception as error:
-    print(error)
-    typeDoc     = NodeType(name='Document')
-    typeDoc.save()
-
-try:
-    typeStem     = NodeType.objects.get(name='Stem')
-except Exception as error:
-    print(error)
-    typeStem     = NodeType(name='Stem')
-    typeStem.save()
-
-try:
-    typeTfidf     = NodeType.objects.get(name='Tfidf')
-except Exception as error:
-    print(error)
-    typeTfidf     = NodeType(name='Tfidf')
-    typeTfidf.save()
-
-try:
-    typeDoc     = NodeType.objects.get(name='WhiteList')
-except Exception as error:
-    print(error)
-    typeDoc     = NodeType(name='WhiteList')
-    typeDoc.save()
-
-try:
-    typeDoc     = NodeType.objects.get(name='BlackList')
-except Exception as error:
-    print(error)
-    typeDoc     = NodeType(name='BlackList')
-    typeDoc.save()
-
-try:
-    typeDoc     = NodeType.objects.get(name='Synonyme')
-except Exception as error:
-    print(error)
-    typeDoc     = NodeType(name='Synonyme')
-    typeDoc.save()
-
-try:
-    typeDoc     = NodeType.objects.get(name='Cooccurrence')
-except Exception as error:
-    print(error)
-    typeDoc     = NodeType(name='Cooccurrence')
-    typeDoc.save()
-
-
+for node_type in node_types:
+    NodeType.objects.get_or_create(name=node_type)
 
 # Integration: resource types
 
 print('Initialize resource...')
-try:
-    typePubmed      = ResourceType.objects.get(name='pubmed')
-    typeIsi         = ResourceType.objects.get(name='isi')
-    typeRis         = ResourceType.objects.get(name='ris')
-    typePresseFr    = ResourceType.objects.get(name='europress_french')
-    typePresseEn    = ResourceType.objects.get(name='europress_english')
 
-except Exception as error:
-    print(error)
-    
-    typePubmed = ResourceType(name='pubmed')
-    typePubmed.save()  
-    
-    typeIsi    = ResourceType(name='isi')
-    typeIsi.save()
-    
-    typeRis    = ResourceType(name='ris')
-    typeRis.save()
-    
-    typePresseFr = ResourceType(name='europress_french')
-    typePresseFr.save()
-    
-    typePresseEn = ResourceType(name='europress_english')
-    typePresseEn.save()
+resources = [
+        'pubmed', 'isi', 'ris', 'europress_french', 'europress_english']
 
-# Integration Node Stem
-try:
-    stem = Node.objects.get(name='Stem')
-except:
-    stem = Node(name='Stem', type=typeStem, user=me)
-    stem.save()
+for resource in resources:
+    NodeType.objects.get_or_create(name=resource)
 
 
 
@@ -198,13 +113,13 @@ except:
 
 # Integration: corpus
 
-print('Initialize corpus...')
-try:
-    corpus_pubmed = Node.objects.get(name='PubMed corpus')
-except:
-    corpus_pubmed = Node(parent=project, name='PubMed corpus', type=typeCorpus, user=me)
-    corpus_pubmed.save()
-
+#print('Initialize corpus...')
+#try:
+#    corpus_pubmed = Node.objects.get(name='PubMed corpus')
+#except:
+#    corpus_pubmed = Node(parent=project, name='PubMed corpus', type=typeCorpus, user=me)
+#    corpus_pubmed.save()
+#
 #print('Initialize resource...')
 #corpus_pubmed.add_resource(
 #    # file='./data_samples/pubmed.zip',
@@ -222,5 +137,22 @@ except:
 # print('Extract corpus #%d...' % (corpus_pubmed.id, ))
 # corpus_pubmed.children.all().extract_ngrams(['title',])
 # print('Parsed corpus #%d.' % (corpus_pubmed.id, ))
+
+
+
+
+from gargantext_web.db import *
+
+# Instantiante table NgramTag:
+f = open("part_of_speech_labels.txt", 'r')
+
+for line in f.readlines():
+    name, description = line.strip().split('\t')
+    _tag = Tag(name=name, description=description)
+    session.add(_tag)
+session.commit()
+f.close()
+
+
 
 exit()

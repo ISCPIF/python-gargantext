@@ -135,13 +135,7 @@ except Exception as error:
 #Node.objects.all().delete()
 
 
-# In[9]:
 
-try:
-    project = Node.objects.get(name='Bees project')
-except:
-    project = Node(name='Bees project', type=typeProject, user=me)
-    project.save()
 
 try:
     stem = Node.objects.get(name='Stem')
@@ -151,5 +145,18 @@ except:
 
 
 
+
+
+from gargantext_web.db import *
+
+# Instantiante table NgramTag:
+f = open("part_of_speech_labels.txt", 'r')
+
+for line in f.readlines():
+    name, description = line.strip().split('\t')
+    _tag = Tag(name=name, description=description)
+    session.add(_tag)
+session.commit()
+f.close()
 
 

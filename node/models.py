@@ -55,6 +55,8 @@ class ResourceType(models.Model):
 class Tag(models.Model):
     name             = models.CharField(max_length=4, unique=True)
     description      = models.CharField(max_length=255, unique=True)
+    def __str__(self):
+        return self.name
 
 
 class Ngram(models.Model):
@@ -72,7 +74,6 @@ class NgramTag(models.Model):
     tag     = models.ForeignKey(Tag)
     def __str__(self):
         return "%s: %s" % (self.ngram.terms, self.tag.name)
-
 
 class NgramLanguage(models.Model):
     ngram        = models.ForeignKey(Ngram, on_delete=models.CASCADE)

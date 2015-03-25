@@ -10,7 +10,6 @@
 from node.models import *
 
 
-
 import pycountry
 
 for language in pycountry.languages:
@@ -149,6 +148,7 @@ try:
 except:
     stem = Node(name='Stem', type=typeStem, user=me)
     stem.save()
+
 
 
 

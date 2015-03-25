@@ -129,8 +129,9 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=150, year_start=
         score DESC
     LIMIT
         %d
-    """ % (cooc.id, corpus.id, whitelist.id, whitelist.id, size)
+    """ % (cooc.id, corpus_id, whitelist.id, whitelist.id, size)
 
+    print(query_cooc)
     cursor.execute(query_cooc)
     return cooc.id
 

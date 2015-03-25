@@ -135,7 +135,7 @@ class ModelCache(dict):
             self.preload()
 
     def __missing__(self, key):
-        print(key)
+        #print(key)
         conditions = [
             (column == str(key))
             for column in self._columns

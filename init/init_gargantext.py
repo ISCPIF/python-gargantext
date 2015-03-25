@@ -4,11 +4,13 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext_web.settings")
 os.environ.setdefault("DJANGO_HSTORE_GLOBAL_REGISTER", "False")
 
-
 # We're gonna use all the models!
 
-from node.models import *
+# Django models
+from node import models
 
+# SQLA models
+from gargantext_web.db import *
 
 # Reset: all data
 #
@@ -42,7 +44,7 @@ metadata = {
     'journal': 'string',
 }
 for name, type in metadata.items():
-    Metadata(name=name, type=type).save()
+    models.Metadata(name=name, type=type).save()
 
 
 # Integration: languages
@@ -66,12 +68,16 @@ french  = Language.objects.get(iso2='fr')
 # Integration: users
 
 print('Initialize users...')
-try:
-    me = User.objects.get(username='alexandre')
-except:
-    me = User(username='alexandre')
-    me.save()
+me = models.User.objects.get_or_create(username='alexandre')
+gargantua = models.User.objects.get_or_create(username='gargantua')
+node_root = Node(user_id=gargantua.id, type_id=cache.NodeType['Root'].id, name='Root')
+node_stem = Node(user_id=gargantua.id, type_id=cache.NodeType['Stem'].id, name='Stem', parent_id=node_root.id)
+node_lem = Node(user_id=gargantua.id, type_id=cache.NodeType['Lem'].id, name='Lem', parent_id=node_root.id)
 
+session.add(node_root)
+session.add(node_stem)
+session.add(node_lem)
+session.commit()
 
 # Integration: node types
 
@@ -87,7 +93,7 @@ node_types = [
         ]
 
 for node_type in node_types:
-    NodeType.objects.get_or_create(name=node_type)
+    models.NodeType.objects.get_or_create(name=node_type)
 
 # Integration: resource types
 
@@ -97,7 +103,8 @@ resources = [
         'pubmed', 'isi', 'ris', 'europress_french', 'europress_english']
 
 for resource in resources:
-    ResourceType.objects.get_or_create(name=resource)
+    models.ResourceType.objects.get_or_create(name=resource)
+
 
 
 # TODO 
@@ -145,7 +152,6 @@ for resource in resources:
 
 
 
-from gargantext_web.db import *
 
 # Instantiante table NgramTag:
 f = open("part_of_speech_labels.txt", 'r')

@@ -164,19 +164,19 @@ def doTheQuery(request , project_id):
 			
 		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
-		try: parse_resources(corpus)
-		except Exception as error: print("!OK parse:",error)
-
-		try: extract_ngrams(corpus, ['title'])
-		except Exception as error: print("!OK ngrams:",error)
-
-		# try: compute_tfidf(corpus)
-		# except Exception as error: print("!OK tfidf:",error)
-		
-		# # except Exception as error:
-		# # 	print('WORKFLOW ERROR')
-		# # 	print(error)
-		# # # redirect to the main project page
+		try:
+			def apply_workflow(corpus):
+				parse_resources(corpus)
+				extract_ngrams(corpus, ['title'])
+				compute_tfidf(corpus)
+			if DEBUG:
+				apply_workflow(corpus)
+			else:
+				thread = threading.Thread(target=apply_workflow, args=(corpus, ), daemon=True)
+				thread.start()
+		except Exception as error:
+			print('WORKFLOW ERROR')
+			print(error)
 		return HttpResponseRedirect('/project/' + str(project_id))
 
 	data = alist

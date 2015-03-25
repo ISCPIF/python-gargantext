@@ -63,8 +63,8 @@ def create_whitelist(user, corpus_id, size=100):
             %d
         ;
     """  % (white_list.id, int(corpus_id), int(type_document_id), size)
-    print("PRINTING QYERY OF WHITELIST:")
-    print(query_whitelist)
+    # print("PRINTING QYERY OF WHITELIST:")
+    # print(query_whitelist)
     cursor.execute(query_whitelist)
 
     return white_list
@@ -131,7 +131,7 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=150, year_start=
         %d
     """ % (cooc.id, corpus_id, whitelist.id, whitelist.id, size)
 
-    print(query_cooc)
+    # print(query_cooc)
     cursor.execute(query_cooc)
     return cooc.id
 
@@ -161,11 +161,12 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
 
     for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooccurrence_node_id).all():
         # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-        ids[cooccurrence.ngramx_id] = cooccurrence.ngramx_id
-        ids[cooccurrence.ngramy_id] = cooccurrence.ngramy_id
 
-        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()
-        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()
+        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
+        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
+
+        ids[labels[cooccurrence.ngramx_id]] = cooccurrence.ngramx_id
+        ids[labels[cooccurrence.ngramy_id]] = cooccurrence.ngramy_id
 
         matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
         matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
@@ -176,6 +177,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
+
+    # import pprint
+    # pprint.pprint(ids)
 
     # Removing unconnected nodes
     threshold = min(x.max(axis=1))
@@ -193,20 +197,18 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     partition = best_partition(G)
     
     if type == "node_link":
-        for community in set(partition.values()):
-            #print(community)
-            G.add_node("cluster " + str(community), hidden=1)
+        
         for node in G.nodes():
             try:
                 #node,type(labels[node])
+                G.node[node]['id'] = ids[node]
                 G.node[node]['label']   = node
-                G.node[node]['name']    = node
-                G.node[node]['pk']      = ids[str(node)]
-                G.node[node]['size']    = weight[node]
+                # G.node[node]['pk']      = ids[str(node)]
+                G.node[node]['size']    = weight[ids[node]]
                 G.node[node]['group']   = partition[node]
-                G.add_edge(node, "cluster " + str(partition[node]), weight=3)
+                # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
-                print(error)
+                print("error01: ",error)
 
         data = json_graph.node_link_data(G)
     
@@ -220,7 +222,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 G.node[node]['group']   = partition[node]
                 #G.add_edge(node, partition[node], weight=3)
             except Exception as error:
-                print(error)
+                print("error02: ",error)
         data = json_graph.node_link_data(G)
      
 

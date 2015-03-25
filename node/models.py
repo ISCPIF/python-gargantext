@@ -52,19 +52,34 @@ class ResourceType(models.Model):
     def __str__(self):
         return self.name
 
-class NgramTag(models.Model):
-    tag              = models.CharField(max_length=4, unique=True)
+class Tag(models.Model):
+    name             = models.CharField(max_length=4, unique=True)
     description      = models.CharField(max_length=255, unique=True)
+    def __str__(self):
+        return self.name
+
 
 class Ngram(models.Model):
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    language    = models.ManyToManyField(blank=True, null=True, through='NgramLanguage', to='Language')
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
-    tag         = models.ForeignKey(NgramTag, blank=True, null=True)
+    tag         = models.ManyToManyField(blank=True, null=True, through='NgramTag', to='Tag')
     
     def __str__(self):
         return self.terms
+
+class NgramTag(models.Model):
+    ngram   = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    tag     = models.ForeignKey(Tag)
+    def __str__(self):
+        return "%s: %s" % (self.ngram.terms, self.tag.name)
+
+class NgramLanguage(models.Model):
+    ngram        = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    language     = models.ForeignKey(Language)
+    def __str__(self):
+        return "%s: %s" % (self.ngram.terms, self.language.fullname)
 
 
 class Resource(models.Model):

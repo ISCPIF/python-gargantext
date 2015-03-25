@@ -1,18 +1,13 @@
-from django.shortcuts import redirect
-from django.shortcuts import render
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 from django.contrib.auth.models import User, Group
 
 from scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
 
-from gargantext_web.api import JsonHttpResponse
 from urllib.request import urlopen, urlretrieve
 import json
 
-from gargantext_web.settings import MEDIA_ROOT
 # from datetime import datetime
 import time
 import datetime
@@ -21,9 +16,23 @@ import threading
 from django.core.files import File
 from gargantext_web.settings import DEBUG
 
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
+
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
+
+from collections import defaultdict
+import threading
+
+from node.admin import CustomForm
+from gargantext_web.db import *
+from gargantext_web.settings import DEBUG, MEDIA_ROOT
+from gargantext_web.api import JsonHttpResponse
+
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
 
 def getGlobalStats(request ):
@@ -31,7 +40,7 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 100
+		N = 10
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
@@ -72,17 +81,57 @@ def getGlobalStatsISTEXT(request ):
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
+	# SQLAlchemy session
+	session = Session()
+
+	# do we have a valid project id?
+	try:
+		project_id = int(project_id)
+	except ValueError:
+		raise Http404()
+
+	# do we have a valid project?
+	project = (session
+		.query(Node)
+		.filter(Node.id == project_id)
+		.filter(Node.type_id == cache.NodeType['Project'].id)
+	).first()
+
+	if project is None:
+		raise Http404()
+
+	# do we have a valid user?
+	user = request.user
+	if not user.is_authenticated():
+		return redirect('/login/?next=%s' % request.path)
+	if project.user_id != user.id:
+		return HttpResponseForbidden()
+
+
 	if request.method == "POST":
-		# query = request.POST["query"]
-		# name = request.POST["string"]
+		query = request.POST["query"]
+		name = request.POST["string"]
 
-		# instancia = MedlineFetcher()
-		# thequeries = json.loads(query)
+		instancia = MedlineFetcher()
+		thequeries = json.loads(query)
 
-		# urlreqs = []
-		# for yearquery in thequeries:
-		# 	urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
-		# alist = ["tudo fixe" , "tudo bem"]
+		urlreqs = []
+		for yearquery in thequeries:
+			urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
+		alist = ["tudo fixe" , "tudo bem"]
+
+		resourcetype = cache.ResourceType["pubmed"]
+
+		# corpus node instanciation as a Django model
+		corpus = Node(
+			name = name,
+			user_id = request.user.id,
+			parent_id = project_id,
+			type_id = cache.NodeType['Corpus'].id,
+			language_id = None,
+		)
+		session.add(corpus)
+		session.commit()
 
 		# """
 		# urlreqs: List of urls to query.
@@ -91,57 +140,44 @@ def doTheQuery(request , project_id):
 		# 	eFetchResult.read()  # this will output the XML... normally you write this to a XML-file.
 		# """
 
-		# thefile = "how we do this here?"
-		# resource_type = ResourceType.objects.get(name="pubmed" )
 
-		# parent      = Node.objects.get(id=project_id)
-		# node_type   = NodeType.objects.get(name='Corpus')
-		# type_id = NodeType.objects.get(name='Document').id
-		# user_id = User.objects.get( username=request.user ).id
+		tasks = MedlineFetcher()
+		for i in range(8):
+			t = threading.Thread(target=tasks.worker2) #thing to do
+			t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+			t.start()
+		for url in urlreqs:
+			filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
+			tasks.q.put( [url , filename]) #put a task in th queue
+		tasks.q.join() # wait until everything is finished
 
-		# corpus = Node(
-		# 	user=request.user,
-		# 	parent=parent,
-		# 	type=node_type,
-		# 	name=name,
-		# )
-		# corpus.save()
-
-		# tasks = MedlineFetcher()
-		# for i in range(8):
-		# 	t = threading.Thread(target=tasks.worker2) #thing to do
-		# 	t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-		# 	t.start()
-		# for url in urlreqs:
-		# 	filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
-		# 	tasks.q.put( [url , filename]) #put a task in th queue
-		# tasks.q.join() # wait until everything is finished
-
-		# dwnldsOK = 0
-		# for filename in tasks.firstResults:
-		# 	if filename!=False:
-		# 		corpus.add_resource( user=request.user, type=resource_type, file=filename )
-		# 		dwnldsOK+=1
+		dwnldsOK = 0
+		for filename in tasks.firstResults:
+			if filename!=False:
+				# add the uploaded resource to the corpus
+				add_resource(corpus,
+					user_id = request.user.id,
+					type_id = resourcetype.id,
+					file = filename,
+				)
+				dwnldsOK+=1
 			
-		# if dwnldsOK == 0: return JsonHttpResponse(["fail"])
+		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
-		# # do the WorkFlow
-		# try:
-		# 	if DEBUG is True:
-		# 		# corpus.workflow() # old times...
-		# 		corpus.workflow__MOV()
-		# 		# corpus.write_everything_to_DB()
-		# 	else:
-		# 		# corpus.workflow.apply_async((), countdown=3)
-		# 		corpus.workflow__MOV().apply_async((), countdown=3) # synchronous! because is faaast
-		# 		# corpus.write_everything_to_DB.apply_async((), countdown=3) # asynchronous
+		try: parse_resources(corpus)
+		except Exception as error: print("!OK parse:",error)
 
+		try: extract_ngrams(corpus, ['title'])
+		except Exception as error: print("!OK ngrams:",error)
 
-		# 	return JsonHttpResponse(["workflow","finished"])
-		# except Exception as error:
-		# 	print(error)
-
-		return JsonHttpResponse(["out of service for the moment"])
+		# try: compute_tfidf(corpus)
+		# except Exception as error: print("!OK tfidf:",error)
+		
+		# # except Exception as error:
+		# # 	print('WORKFLOW ERROR')
+		# # 	print(error)
+		# # # redirect to the main project page
+		return HttpResponseRedirect('/project/' + str(project_id))
 
 	data = alist
 	return JsonHttpResponse(data)

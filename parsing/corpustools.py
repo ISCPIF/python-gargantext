@@ -206,34 +206,54 @@ def extract_ngrams(corpus, keys):
         .filter(Node.type_id == cache.NodeType['Document'].id)
     )
     # prepare data to be inserted
+    print("\n= = = = = =")
     dbg.show('find ngrams')
+    print('000001')
     languages_by_id = {
         language.id: language.iso2
         for language in session.query(Language)
     }
     
+    print('000002')
     ngrams_data = set()
     ngrams_language_data = set()
     ngrams_tag_data = set()
 
+    print('000003')
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in metadata_query:
+        print('\t000004')
         node_id = nodeinfo[0]
         language_id = nodeinfo[1]
+
         if language_id is None:
             language_iso2 = default_language_iso2
         else:
             language_iso2 = languages_by_id.get(language_id, None)
         if language_iso2 is None:
             continue
+
+        print('\t000005')
+        print('\t',language_iso2)
         ngramsextractor = ngramsextractors[language_iso2]
+        print('\t',ngramsextractor)
+        print('\t000006')
         for text in nodeinfo[2:]:
             if text is not None and len(text):
+                print('\t\t000007')
                 ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
+                # print(ngrams)
+                print('\t\t000008')
                 for ngram in ngrams:
+                    print('\t\t\t000009')
+                    print('\t\t\t',ngram)
                     n = len(ngram)
+                    print('\t\t\tn:',n)
+                    print('\t\t\t000010')
                     terms    = ' '.join([token for token, tag in ngram]).lower()
-
+                    print('\t\t\t000011')
+                    import pprint
+                    pprint.pprint(cache.Tag)
                     # TODO BUG here
                     if n == 1:
                         tag_id   = cache.Tag[ngram[0][1]].id
@@ -243,13 +263,20 @@ def extract_ngrams(corpus, keys):
                         tag_id   = cache.Tag['NN'].id
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
-
+                    print('\t\t\t000012')
                     node_ngram_list[node_id][terms] += 1
-                    
+                    print('\t\t\t000013')
                     ngrams_data.add((n, terms))
+                    print('\t\t\t000014')
                     ngrams_language_data.add((terms, language_id))
+                    print('\t\t\t000015')
                     ngrams_tag_data.add((terms, tag_id))
-
+                    print('\t\t\t000016')
+                print('\t\t000018')
+        print('\t\t000019')
+        # dbg.show('\t000007')
+    
+    print('000020')
     # insert ngrams to temporary table
     dbg.show('find ids for the %d ngrams' % len(ngrams_data))
     db, cursor = get_cursor()
@@ -320,10 +347,10 @@ def extract_ngrams(corpus, keys):
     # commit to database
     db.commit()
 
+    print("= = = = = =\n")
 
 
 # tfidf calculation
-
 def compute_tfidf(corpus):
     dbg = DebugTime('Corpus #%d - tfidf' % corpus.id)
     # compute terms frequency sum

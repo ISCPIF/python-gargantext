@@ -83,7 +83,7 @@ node_types = [
         'Stem', 'Lem', 'Tfidf', 
         'Synonym', 
         'MiamList', 'StopList',
-        'Cooccurrence',
+        'Cooccurrence', 'WhiteList', 'BlackList'
         ]
 
 for node_type in node_types:
@@ -97,7 +97,7 @@ resources = [
         'pubmed', 'isi', 'ris', 'europress_french', 'europress_english']
 
 for resource in resources:
-    NodeType.objects.get_or_create(name=resource)
+    ResourceType.objects.get_or_create(name=resource)
 
 
 # TODO 

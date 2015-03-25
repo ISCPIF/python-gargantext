@@ -61,7 +61,7 @@ def project(request, project_id):
     corpora_count = 0
     corpusID_dict = {}
     for corpus_id, corpus_name, resource_type_id, document_count in corpus_query:
-        if not corpus.id in corpusID_dict:
+        if not corpus_id in corpusID_dict:
             if resource_type_id is None:
                 resourcetype_name = '(no resource)'
             else:

@@ -100,16 +100,20 @@ for resource in resources:
     NodeType.objects.get_or_create(name=resource)
 
 
+# TODO 
+# here some tests
+# add a new project and some corpora to test it
+
 
 # Integration: project
-
-print('Initialize project...')
-try:
-    project = Node.objects.get(name='Bees project')
-except:
-    project = Node(name='Bees project', type=typeProject, user=me)
-    project.save()
-
+#
+#print('Initialize project...')
+#try:
+#    project = Node.objects.get(name='Bees project')
+#except:
+#    project = Node(name='Bees project', type=typeProject, user=me)
+#    project.save()
+#
 
 # Integration: corpus
 
@@ -151,8 +155,8 @@ for line in f.readlines():
     _tag = Tag(name=name, description=description)
     session.add(_tag)
 session.commit()
-f.close()
 
+f.close()
 
 
 exit()

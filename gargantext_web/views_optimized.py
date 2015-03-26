@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
-from sqlalchemy import func
+from sqlalchemy import func, and_, or_
 from sqlalchemy.orm import aliased
 
 from collections import defaultdict
@@ -48,22 +48,33 @@ def project(request, project_id):
     # Let's find out about the children nodes of the project
     ChildrenNode = aliased(Node)
     # This query is giving you the wrong number of docs from the pubmedquerier (x 5)
-    #  ... sqlalchemy.func is the guilty
+    #  ... sqlalchemy.func by Resource.type_id is the guilty
+    # ISSUE L51
     corpus_query = (session
-        .query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
-        .outerjoin(ChildrenNode, ChildrenNode.parent_id == Node.id)
-        .outerjoin(Node_Resource, Node_Resource.node_id == Node.id)
-        .outerjoin(Resource, Resource.id == Node_Resource.resource_id)
+        .query(Node.id, Node.name, func.count(ChildrenNode.id))
+        #.query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
+        #.join(Node_Resource, Node_Resource.node_id == Node.id)
+        #.join(Resource, Resource.id == Node_Resource.resource_id)
         .filter(Node.parent_id == project.id)
         .filter(Node.type_id == cache.NodeType['Corpus'].id)
-        .group_by(Node.id, Node.name, Resource.type_id)
+        .filter(and_(ChildrenNode.parent_id  == Node.id, ChildrenNode.type_id  == cache.NodeType['Document'].id))
+        .group_by(Node.id, Node.name)
         .order_by(Node.name)
+        .all()
     )
     corpora_by_resourcetype = defaultdict(list)
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
     corpusID_dict = {}
-    for corpus_id, corpus_name, resource_type_id, document_count in corpus_query:
+    for corpus_id, corpus_name, document_count in corpus_query:
+        
+        # Not optimized GOTO ISSUE L51
+        resource_type_id = (session.query(Resource.type_id)
+                                   .join(Node_Resource, Node_Resource.resource_id == Resource.id)
+                                   .join(Node, Node.id == Node_Resource.node_id )
+                                   .filter(Node.id==corpus_id)
+                                   .first())[0]
+        
         if not corpus_id in corpusID_dict:
             if resource_type_id is None:
                 resourcetype_name = '(no resource)'

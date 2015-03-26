@@ -671,14 +671,14 @@ function parseSimpleJSON( data , seed ) {
         label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
         size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
-        iscluster = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
-        if (iscluster==1) {
-        	iscluster=true;
-        	clusters.push(i)
-        }
+        // iscluster = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
+        // if (iscluster==1) {
+        // 	iscluster=true;
+        // 	clusters.push(i)
+        // }
 
         var node = ({
-            id: i ,
+            id: pk ,
             label:label, 
             size:size, 
             x:rand.getRandom(), 
@@ -688,10 +688,11 @@ function parseSimpleJSON( data , seed ) {
             group:group,
             color:color,
             pk:pk,
-            iscluster: iscluster
+            lock:false,
+            iscluster: false
         });  // The graph node
-        
-        Nodes[i] = node;
+        pr(node)
+        Nodes[pk] = node;
 
         if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
         if(parseInt(node.size) > parseInt(maxNodeSize)) maxNodeSize= node.size; 
@@ -722,14 +723,15 @@ function parseSimpleJSON( data , seed ) {
                 targetID:   target,
                 lock : false,
                 label:      "",
-                iscluster:(!Nodes[source].iscluster && !Nodes[target].iscluster)?false:true ,
+                iscluster:false ,
                 weight: (edgesNodes[i].w)?edgesNodes[i].w:1
         };
 
         if(edge.weight < minEdgeWeight) minEdgeWeight= edge.weight;
         if(edge.weight > maxEdgeWeight) maxEdgeWeight= edge.weight;
 
-
+        // pr(edge.targetID)
+        // // pr(Nodes[edge.sourceID].label+"->"+Nodes[edge.targetID].label)
         idS=Nodes[edge.sourceID].type;
         idT=Nodes[edge.targetID].type;
 

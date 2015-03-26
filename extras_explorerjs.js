@@ -177,9 +177,9 @@ function getTopPapers(type){
         		theids.push(parseInt(Nodes[i].pk))
         	}
         }
+        
         pr("the IDs of the selectioons")
         pr(theids)
-
         $.ajax({
             type: 'GET',
             url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),

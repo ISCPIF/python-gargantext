@@ -52,7 +52,7 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
     
-    url(r'^api/tfidf/(\d+)/(\d+(?:,\d+)+)$', views_optimized.tfidf),
+    url(r'^api/tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
     # url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
     url(r'^api/tfidf2/(\d+)/(\w+)$', views.tfidf2),
 

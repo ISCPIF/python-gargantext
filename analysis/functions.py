@@ -197,11 +197,11 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     partition = best_partition(G)
     
     if type == "node_link":
-        
+
         for node in G.nodes():
             try:
                 #node,type(labels[node])
-                G.node[node]['id'] = ids[node]
+                G.node[node]['pk'] = ids[node]
                 G.node[node]['label']   = node
                 # G.node[node]['pk']      = ids[str(node)]
                 G.node[node]['size']    = weight[ids[node]]
@@ -209,8 +209,21 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
                 print("error01: ",error)
-
+        
         data = json_graph.node_link_data(G)
+
+        links = []
+        i=1
+        for e in G.edges_iter():
+            s = e[0]
+            t = e[1]
+            info = { "id":i , "source":ids[s] , "target":ids[t]}
+            # print(info)
+            links.append(info)
+            i+=1
+        # print(data)
+        data["links"] = []
+        data["links"] = links
     
     elif type == "adjacency":
         for node in G.nodes():

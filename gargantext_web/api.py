@@ -590,7 +590,7 @@ class Nodes(APIView):
     # for better constistency...
     def delete(self, request, node_id):
         node = session.query(Node).filter(Node.id == node_id).first()
-        msgres = ""
+        msgres = str()
         try:
             node.delete()
             msgres = node_id+" deleted!"
@@ -611,7 +611,7 @@ class CorpusController:
             raise ValidationError('Corpora are identified by an integer.', 400)
         corpusQuery = session.query(Node).filter(Node.id == corpus_id).first()
         # print(str(corpusQuery))
-        # raise Http404("C'est toujours ça de pris.")
+        # raise Http404("404 error.")
         if not corpusQuery:
             raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()

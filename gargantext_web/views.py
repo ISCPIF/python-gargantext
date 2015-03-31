@@ -455,7 +455,21 @@ def empty_trash():
             node.delete()
 
 
-def trash_node(request, node_id):
+def move_to_trash(node_id):
+    try:
+        node = session.query(Node).filter(Node.id == node_id).first()
+        
+        previous_type_id = node.type_id
+        node.type_id = cache.NodeType['Trash'].id
+        
+        session.add(node)
+        session.commit()
+        return(previous_type_id)
+    except Exception as error:
+        print("can not move to trash Node" + node_id + ":" + error)
+
+
+def delete_node(request, node_id):
     
     # do we have a valid user?
     user = request.user
@@ -466,51 +480,17 @@ def trash_node(request, node_id):
     if node.user_id != user.id:
         return HttpResponseForbidden()
 
-    previous_type_id = node.type_id
-    node.type_id = cache.NodeType['Trash'].id
-    session.add(node)
-    session.commit()
-    
-    if previous_type_id == cache.NodeType['Project'].id:
+    previous_type_id = move_to_trash(node_id)
+
+    if previous_type_id == cache.NodeType['Corpus'].id:
+        return HttpResponseRedirect('/project/' + str(node.parent_id))
+    else:
         return HttpResponseRedirect('/projects/')
-    elif previous_type_id == cache.NodeType['Corpus'].id:
-        return HttpResponseRedirect('/project/' + str(session.query(Node.id).filter(Node.id==node.parent_id).first()[0]))
+    
 
     if settings.DEBUG == True:
         empty_trash()
 
-
-def delete_node(request, node_id):
-
-    #nodes = session.query(Node).filter(or_(Node.id == node_id, Node.parent_id == node_id)).all()
-    
-#    try:
-#        resources = session.query(Node_Resource).filter(Node_Resource.node_id==node_id).all()
-#        if resources is not None:
-#            for resource in resources:
-#                session.delete(resource)
-#    
-#    except Exception as error:
-#        print(error)
-#   
-#    node = session.query(Node).filter(Node.id == node_id).first()
-#    if node is not None:
-#        session.delete(node)
-#    session.commit()
-    
-    node = models.Node.objects.get(id=node_id)
-    with transaction.atomic():
-        try:
-            node.children.delete()
-        except Exception as error:
-            print(error)
-
-        node.delete()
-
-    if node.type_id == cache.NodeType['Project'].id:
-        return HttpResponseRedirect('/projects/')
-    elif node.type_id == cache.NodeType['Corpus'].id:
-        return HttpResponseRedirect('/project/' + node_id)
 
 
 def delete_corpus(request, project_id, node_id):

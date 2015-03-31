@@ -11,9 +11,9 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-from gargantext_web.views import trash_node
+from gargantext_web.views import move_to_trash
 from .db import *
-
+from node import models
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -200,7 +200,7 @@ class NodesChildrenDuplicates(APIView):
         count = len(duplicate_nodes)
         for node in duplicate_nodes:
             print("deleting node ",node.id)
-            node.delete()
+            move_to_trash(node.id)
         # print(delete_query)
         # # delete_query.delete(synchronize_session=True)
         # session.flush()
@@ -579,6 +579,7 @@ class Nodes(APIView):
         return JsonHttpResponse({
             'id': node.id,
             'name': node.name,
+            'parent_id': node.parent_id,
             'type': cache.NodeType[node.type_id].name,
             # 'type': node.type__name,
             #'metadata': dict(node.metadata),
@@ -598,11 +599,7 @@ class Nodes(APIView):
         
         try:
             
-            previous_type_id = node.type_id
-            node.type_id = cache.NodeType['Trash'].id
-            session.add(node)
-            session.commit()
-            
+            move_to_trash(node_id)
             msgres = node_id+" moved to Trash"
         
         except Exception as error:

@@ -11,7 +11,7 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-
+from gargantext_web.views import trash_node
 from .db import *
 
 
@@ -579,6 +579,7 @@ class Nodes(APIView):
         return JsonHttpResponse({
             'id': node.id,
             'name': node.name,
+            'type': cache.NodeType[node.type_id].name,
             # 'type': node.type__name,
             #'metadata': dict(node.metadata),
             'metadata': node.metadata,
@@ -589,13 +590,23 @@ class Nodes(APIView):
     # it should take the subnodes into account as well,
     # for better constistency...
     def delete(self, request, node_id):
+        
+        user = request.user
         node = session.query(Node).filter(Node.id == node_id).first()
+        
         msgres = str()
+        
         try:
-            node.delete()
+            
+            previous_type_id = node.type_id
+            node.type_id = cache.NodeType['Trash'].id
+            session.add(node)
+            session.commit()
+            
             msgres = node_id+" deleted!"
-        except:
-            msgres ="error deleting: "+node_id
+        
+        except Exception as error:
+            msgres ="error deleting : " + node_id + str(error)
 
         return JsonHttpResponse({
             'deleted': msgres,

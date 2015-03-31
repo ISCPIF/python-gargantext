@@ -603,7 +603,7 @@ class Nodes(APIView):
             session.add(node)
             session.commit()
             
-            msgres = node_id+" deleted!"
+            msgres = node_id+" moved to Trash"
         
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)

@@ -556,7 +556,7 @@ class NodesList(APIView):
     def get(self, request):
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
-            .filter(Node.user_id == request.session._session_cache['_auth_user_id'])
+            .filter(Node.user_id == str(request.user.id))
             .join(NodeType)
         )
         if 'type' in request.GET:

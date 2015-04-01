@@ -47,9 +47,13 @@ _ngrams_order_columns = {
 }
 
 
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException as _APIException
+
 
 class APIException(_APIException):
     def __init__(self, message, code=500):
@@ -552,11 +556,13 @@ class NodesChildrenQueries(APIView):
 
 
 class NodesList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get(self, request):
+        print("user id : " + str(request.user))
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
-            .filter(Node.user_id == str(request.user.id))
+            .filter(Node.user_id == int(request.user.id))
             .join(NodeType)
         )
         if 'type' in request.GET:

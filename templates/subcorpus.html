@@ -19,18 +19,21 @@
 
 {% if documents %}
 
-
-          <div id="delAll" style="visibility: hidden;">
-              <button onclick="deleteDuplicates(theurl);">Delete Duplicates</button>
-          </div>
-
-
 <ul>
 {% for doc in documents %}
     {% if doc.date %}
     <li><div id="doc_{{doc.id}}"> <b>{{ doc.date }}</b>: <a target="_blank" href="/nodeinfo/{{doc.id}}">{{ doc.name}}</a> , @ {{ doc.metadata.source}}</div></li>
     {% endif %}
 {% endfor %}
+
+
+          <div id="delAll" style="visibility: hidden;">
+							<center>
+              <button onclick="deleteDuplicates(theurl);">Delete all Duplicates in one click</button>
+							</center>
+          </div>
+
+
 </ul>
 
 <script>

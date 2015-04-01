@@ -7,7 +7,7 @@
 #NodeType.objects.all().delete()
 
 
-from node.models import Node, NodeType, Project, Corpus, Document, Ngram, Node_Ngram, User, Language, ResourceType
+from node.models import *
 
 
 import pycountry
@@ -31,14 +31,8 @@ except:
     me = User(username='pksm3')
     me.save()
 
-
-try:
-    typeProject = NodeType.objects.get(name='Root')
-except Exception as error:
-    print(error)
-    typeProject = NodeType(name='Root')
-    typeProject.save()  
-
+for node_type in ['Trash', 'Root', ]:
+    NodeType.objects.get_or_create(name=node_type)
 
 try:
     typeProject = NodeType.objects.get(name='Project')
@@ -141,13 +135,7 @@ except Exception as error:
 #Node.objects.all().delete()
 
 
-# In[9]:
 
-try:
-    project = Node.objects.get(name='Bees project')
-except:
-    project = Node(name='Bees project', type=typeProject, user=me)
-    project.save()
 
 try:
     stem = Node.objects.get(name='Stem')
@@ -156,5 +144,19 @@ except:
     stem.save()
 
 
+
+
+
+from gargantext_web.db import *
+
+# Instantiante table NgramTag:
+f = open("part_of_speech_labels.txt", 'r')
+
+for line in f.readlines():
+    name, description = line.strip().split('\t')
+    _tag = Tag(name=name, description=description)
+    session.add(_tag)
+session.commit()
+f.close()
 
 

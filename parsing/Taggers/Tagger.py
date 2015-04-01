@@ -58,9 +58,11 @@ class Tagger:
         if single:
             self.tagging_end()
         return []
-        
+    
+
     """Send a text to be tagged.
     """
+    # Not used right now
     def tag_text(self, text):
         tokens_tags = []
         self.tagging_start()
@@ -69,4 +71,3 @@ class Tagger:
             tokens_tags += self.tag_tokens(tokens, False)
         self.tagging_end()
         return tokens_tags
-

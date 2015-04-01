@@ -1,18 +1,13 @@
-from django.shortcuts import redirect
-from django.shortcuts import render
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 from django.contrib.auth.models import User, Group
 
 from scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
 
-from gargantext_web.api import JsonHttpResponse
 from urllib.request import urlopen, urlretrieve
 import json
 
-from gargantext_web.settings import MEDIA_ROOT
 # from datetime import datetime
 import time
 import datetime
@@ -21,9 +16,23 @@ import threading
 from django.core.files import File
 from gargantext_web.settings import DEBUG
 
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
+
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
+
+from collections import defaultdict
+import threading
+
+from node.admin import CustomForm
+from gargantext_web.db import *
+from gargantext_web.settings import DEBUG, MEDIA_ROOT
+from gargantext_web.api import JsonHttpResponse
+
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
 
 def getGlobalStats(request ):
@@ -31,7 +40,7 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 100
+		N = 1000
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
@@ -72,9 +81,34 @@ def getGlobalStatsISTEXT(request ):
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
-	if request.method == "POST":
+	# SQLAlchemy session
+	session = Session()
 
-		
+	# do we have a valid project id?
+	try:
+		project_id = int(project_id)
+	except ValueError:
+		raise Http404()
+
+	# do we have a valid project?
+	project = (session
+		.query(Node)
+		.filter(Node.id == project_id)
+		.filter(Node.type_id == cache.NodeType['Project'].id)
+	).first()
+
+	if project is None:
+		raise Http404()
+
+	# do we have a valid user?
+	user = request.user
+	if not user.is_authenticated():
+		return redirect('/login/?next=%s' % request.path)
+	if project.user_id != user.id:
+		return HttpResponseForbidden()
+
+
+	if request.method == "POST":
 		query = request.POST["query"]
 		name = request.POST["string"]
 
@@ -86,30 +120,26 @@ def doTheQuery(request , project_id):
 			urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
 		alist = ["tudo fixe" , "tudo bem"]
 
-		"""
-		urlreqs: List of urls to query.
-		- Then, to each url in urlreqs you do:
-			eFetchResult = urlopen(url)
-			eFetchResult.read()  # this will output the XML... normally you write this to a XML-file.
-		"""
+		resourcetype = cache.ResourceType["pubmed"]
 
-		thefile = "how we do this here?"
-		resource_type = ResourceType.objects.get(name="pubmed" )
-
-		parent      = Node.objects.get(id=project_id)
-		node_type   = NodeType.objects.get(name='Corpus')
-		type_id = NodeType.objects.get(name='Document').id
-		user_id = User.objects.get( username=request.user ).id
-
-
+		# corpus node instanciation as a Django model
 		corpus = Node(
-			user=request.user,
-			parent=parent,
-			type=node_type,
-			name=name,
+			name = name,
+			user_id = request.user.id,
+			parent_id = project_id,
+			type_id = cache.NodeType['Corpus'].id,
+			language_id = None,
 		)
+		session.add(corpus)
+		session.commit()
 
-		corpus.save()
+		# """
+		# urlreqs: List of urls to query.
+		# - Then, to each url in urlreqs you do:
+		# 	eFetchResult = urlopen(url)
+		# 	eFetchResult.read()  # this will output the XML... normally you write this to a XML-file.
+		# """
+
 
 		tasks = MedlineFetcher()
 		for i in range(8):
@@ -124,24 +154,30 @@ def doTheQuery(request , project_id):
 		dwnldsOK = 0
 		for filename in tasks.firstResults:
 			if filename!=False:
-				corpus.add_resource( user=request.user, type=resource_type, file=filename )
+				# add the uploaded resource to the corpus
+				add_resource(corpus,
+					user_id = request.user.id,
+					type_id = resourcetype.id,
+					file = filename,
+				)
 				dwnldsOK+=1
 			
 		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
-		# do the WorkFlow
 		try:
-			if DEBUG is True:
-				corpus.workflow()
-				# corpus.workflow__MOV()
+			def apply_workflow(corpus):
+				parse_resources(corpus)
+				extract_ngrams(corpus, ['title'])
+				compute_tfidf(corpus)
+			if DEBUG:
+				apply_workflow(corpus)
 			else:
-				corpus.workflow.apply_async((), countdown=3)
-
-			return JsonHttpResponse(["workflow","finished"])
+				thread = threading.Thread(target=apply_workflow, args=(corpus, ), daemon=True)
+				thread.start()
 		except Exception as error:
+			print('WORKFLOW ERROR')
 			print(error)
-
-		return JsonHttpResponse(["workflow","finished","outside the try-except"])
+		return HttpResponseRedirect('/project/' + str(project_id))
 
 	data = alist
 	return JsonHttpResponse(data)
@@ -164,59 +200,59 @@ def testISTEX(request , project_id):
 		print(query_string , query , N)
 
 
-		urlreqs = []
-		pagesize = 50
-		tasks = MedlineFetcher()
-		chunks = list(tasks.chunks(range(N), pagesize))
-		for k in chunks:
-			if (k[0]+pagesize)>N: pagesize = N-k[0]
-			urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
-		print(urlreqs)
+		# urlreqs = []
+		# pagesize = 50
+		# tasks = MedlineFetcher()
+		# chunks = list(tasks.chunks(range(N), pagesize))
+		# for k in chunks:
+		# 	if (k[0]+pagesize)>N: pagesize = N-k[0]
+		# 	urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
+		# print(urlreqs)
 
-		urlreqs = ["http://localhost/374255" , "http://localhost/374278" ]
-		print(urlreqs)
+		# urlreqs = ["http://localhost/374255" , "http://localhost/374278" ]
+		# print(urlreqs)
 
-		resource_type = ResourceType.objects.get(name="istext" )
+		# resource_type = ResourceType.objects.get(name="istext" )
 
-		parent      = Node.objects.get(id=project_id)
-		node_type   = NodeType.objects.get(name='Corpus')
-		type_id = NodeType.objects.get(name='Document').id
-		user_id = User.objects.get( username=request.user ).id
+		# parent      = Node.objects.get(id=project_id)
+		# node_type   = NodeType.objects.get(name='Corpus')
+		# type_id = NodeType.objects.get(name='Document').id
+		# user_id = User.objects.get( username=request.user ).id
 
-		corpus = Node(
-			user=request.user,
-			parent=parent,
-			type=node_type,
-			name=query,
-		)
+		# corpus = Node(
+		# 	user=request.user,
+		# 	parent=parent,
+		# 	type=node_type,
+		# 	name=query,
+		# )
 
-		corpus.save()
+		# corpus.save()
 
-		# configuring your queue with the event
-		for i in range(8):
-			t = threading.Thread(target=tasks.worker2) #thing to do
-			t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-			t.start()
-		for url in urlreqs:
-			filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.now().microsecond))
-			tasks.q.put( [url , filename]) #put a task in th queue
-		tasks.q.join() # wait until everything is finished
-		for filename in tasks.firstResults:
-			corpus.add_resource( user=request.user, type=resource_type, file=filename )
+		# # configuring your queue with the event
+		# for i in range(8):
+		# 	t = threading.Thread(target=tasks.worker2) #thing to do
+		# 	t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+		# 	t.start()
+		# for url in urlreqs:
+		# 	filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.now().microsecond))
+		# 	tasks.q.put( [url , filename]) #put a task in th queue
+		# tasks.q.join() # wait until everything is finished
+		# for filename in tasks.firstResults:
+		# 	corpus.add_resource( user=request.user, type=resource_type, file=filename )
 
 
-		corpus.save()
-		print("DEBUG:",DEBUG)
-		# do the WorkFlow
-		try:
-			if DEBUG is True:
-				corpus.workflow()
-			else:
-				corpus.workflow.apply_async((), countdown=3)
+		# corpus.save()
+		# print("DEBUG:",DEBUG)
+		# # do the WorkFlow
+		# try:
+		# 	if DEBUG is True:
+		# 		corpus.workflow()
+		# 	else:
+		# 		corpus.workflow.apply_async((), countdown=3)
 
-			return JsonHttpResponse(["workflow","finished"])
-		except Exception as error:
-			print(error)
+		# 	return JsonHttpResponse(["workflow","finished"])
+		# except Exception as error:
+		# 	print(error)
 
 	data = [query_string,query,N]
 	return JsonHttpResponse(data)

@@ -1,14 +1,15 @@
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.db import transaction
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.template import Context
 
 from node import models
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
+#from node.models import Language, ResourceType, Resource, \
+#        Node, NodeType, Node_Resource, Project, Corpus, \
+#        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
 from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
 
@@ -25,10 +26,12 @@ from django import forms
 from collections import defaultdict
 
 from parsing.FileParsers import *
+import os
 
 # SOME FUNCTIONS
 
-from gargantext_web.settings import DEBUG, STATIC_ROOT, MAINTENANCE
+from gargantext_web import settings
+
 from django.http import *
 from django.shortcuts import render_to_response,redirect
 from django.template import RequestContext
@@ -36,6 +39,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
 from scrap_pubmed.admin import Logger
+
+from gargantext_web.db import *
+
+from sqlalchemy import or_, func
+
+from gargantext_web import about
 
 def login_user(request):
     logout(request)
@@ -50,9 +59,7 @@ def login_user(request):
 
             if user.is_active:
                 login(request, user)
-                print("MAINTENANCE:",MAINTENANCE)
-                if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
-                else: return HttpResponseRedirect('/projects/')
+                return HttpResponseRedirect('/projects/')
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
 
@@ -72,7 +79,7 @@ def logo(request):
     svg_data = template.render(Context({\
             'color': color,\
             }))
-    return HttpResponse(svg_data, mimetype="image/svg+xml")
+    return HttpResponse(svg_data, content_type="image/svg+xml")
 
 def css(request):
     template = get_template('bootstrap.css')
@@ -147,7 +154,6 @@ def date_range(start_dt, end_dt = None, format=None):
 
 # SOME VIEWS
 
-from gargantext_web import about
 def get_about(request):
     '''
     About Gargantext, the team and sponsors
@@ -183,8 +189,8 @@ def get_maintenance(request):
     
     return HttpResponse(html)
 
-
-def home(request):
+from gargantext_web import home
+def home_view(request):
     '''
     Home describes the platform.
     A video draws the narratives.
@@ -197,6 +203,9 @@ def home(request):
     html = t.render(Context({\
             'user': user,\
             'date': date,\
+            'paragraph_gargantua': home.paragraph_gargantua(),\
+            'paragraph_lorem' : home.paragraph_lorem(),\
+            'paragraph_tutoreil': home.paragraph_tutoreil(),\
             }))
     
     return HttpResponse(html)
@@ -209,16 +218,17 @@ def projects(request):
     '''
     if not request.user.is_authenticated():
         return redirect('/auth/')
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
 
     t = get_template('projects.html')
     
-    user = request.user
+    user_id         = cache.User[request.user.username].id
+    project_type_id = cache.NodeType['Project'].id
+
     date = datetime.datetime.now()
     print(Logger.write("STATIC_ROOT"))
     
-    project_type = NodeType.objects.get(name='Project')
-    projects = Node.objects.filter(user=user, type_id = project_type.id).order_by("-date")
+    projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
+
     number = len(projects)
  
     form = ProjectForm()
@@ -227,7 +237,9 @@ def projects(request):
         # TODO : protect from sql injection here
         name = str(request.POST['name'])
         if name != "" :
-            Project(name=name, type=project_type, user=user).save()
+            new_project = Project(name=name, type_id=project_type_id, user_id=user_id)
+            session.add(new_project)
+            session.commit()
             return HttpResponseRedirect('/projects/')
     else:
         form = ProjectForm()
@@ -240,190 +252,6 @@ def projects(request):
         })
 
 
-def project(request, project_id):
-    '''
-    This view represents all corpora in a panoramic way.
-    The title sums all corpora
-    The donut summerizes composition of the project.
-    The list of lists enalbles to navigate throw it.
-    '''
-
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-
-    try:
-        offset = str(project_id)
-    except ValueError:
-        raise Http404()
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
-    user = request.user
-    date = datetime.datetime.now()
-    
-    type_corpus     = NodeType.objects.get(name='Corpus')
-    type_document   = NodeType.objects.get(name='Document')
-    
-#    type_whitelist  = NodeType.objects.get(name='WhiteList')
-#    type_blacklist  = NodeType.objects.get(name='BlackList')
-#    type_cooclist   = NodeType.objects.get(name='Cooccurrence')
-
-    project = Node.objects.get(id=project_id)
-    corpora = Node.objects.filter(parent=project, type=type_corpus)
-    number  = len(corpora)
-
-    # DONUT corpora representation
-    list_corpora    = defaultdict(list)
-    donut_part      = defaultdict(int)
-    docs_total      = 0
-    
-    # List of resources
-    # filter for each project here
-    whitelists      = ""#.children.filter(type=type_whitelist)
-    blacklists      = ""#.children.filter(type=type_blacklist)
-    cooclists       = ""#.children.filter(type=type_cooclist)
-    
-    for corpus in corpora:
-        # print("corpus", corpus.pk , corpus.name , corpus.type_id)
-
-        docs_count =  Node.objects.filter(parent=corpus, type=type_document).count()
-        docs_total += docs_count
-        
-        corpus_view = dict()
-        corpus_view['id']         = corpus.pk
-        corpus_view['name']       = corpus.name
-        corpus_view['count']      = docs_count
-
-        #just get first element of the corpora and get his type.
-
-        resource_corpus = Node_Resource.objects.filter(node=corpus)
-        if len(resource_corpus)>0:
-            # print(Node_Resource.objects.filter(node=corpus).all())
-            corpus_type = Node_Resource.objects.filter(node=corpus)[0].resource.type
-            list_corpora[corpus_type].append(corpus_view)
-            donut_part[corpus_type] += docs_count
-        else: print(" Node_Resource = this.corpus(",corpus.pk,") ... nothing, why?")
-
-        ## For avoiding to list repeated elements, like when u use the dynamic query (per each xml, 1)
-        # for node_resource in Node_Resource.objects.filter(node=corpus):
-        #     print( "node_resource.id:",node_resource.id , node_resource.resource.file )
-        #     donut_part[node_resource.resource.type] += docs_count
-        #     list_corpora[node_resource.resource.type.name].append(corpus_view)
-            # print(node_resource.resource.type.name)
-    list_corpora = dict(list_corpora)
-
-    if docs_total == 0 or docs_total is None:
-        docs_total = 1
-
-
-    # The donut will show: percentage by  
-    donut = [ {'source': key, 
-                'count': donut_part[key] , 
-                'part' : round(donut_part[key] * 100 / docs_total) } \
-                        for key in donut_part.keys() ]
-
-
-    dauser = User.objects.get( username=user )
-    groups = len(dauser.groups.filter(name="PubMed_0.1"))
-    print("*groupslen*:",groups)
-
-    if request.method == 'POST':
-
-        form = CustomForm(request.POST, request.FILES)
-
-        if form.is_valid():
-
-
-            name = form.cleaned_data['name']
-            thefile = form.cleaned_data['file']
-            resource_type = ResourceType.objects.get(name=str( form.cleaned_data['type'] ))
-
-            print("-------------")
-            print(name,"|",resource_type,"|",thefile)
-            print("-------------")
-
-            try:
-                parent      = Node.objects.get(id=project_id)
-                node_type   = NodeType.objects.get(name='Corpus')
-                
-                if resource_type.name == "europress_french":
-                    language    = Language.objects.get(iso2='fr')
-                elif resource_type.name == "europress_english":
-                    language    = Language.objects.get(iso2='en')
-                
-                try:
-                    corpus = Node(
-                            user=request.user,
-                            parent=parent,
-                            type=node_type,
-                            language=language,
-                            name=name,
-                            )
-                except:
-                    corpus = Node(
-                            user=request.user,
-                            parent=parent,
-                            type=node_type,
-                            name=name,
-                            )
-
-                corpus.save()
-
-                corpus.add_resource(
-                        user=request.user,
-                        type=resource_type,
-                        file=thefile
-                        )
-
-                try:
-                    #corpus.parse_and_extract_ngrams()
-                    #corpus.parse_and_extract_ngrams.apply_async((), countdown=3)
-                    if DEBUG is True:
-                        corpus.workflow()
-                    else:
-                        corpus.workflow.apply_async((), countdown=3)
-
-                except Exception as error:
-                    print(error)
-
-                return HttpResponseRedirect('/project/' + str(project_id))
-
-                
-            except Exception as error:
-                print('ee', error)
-                form = CorpusForm(request=request)
-                formResource = ResourceForm()
-
-
-        else:
-            print("bad form, bad form")
-            return render(request, 'project.html', {
-                    'form'          : form,
-                    'user'          : user,
-                    'date'          : date,
-                    'project'       : project,
-                    'donut'         : donut,
-                    'list_corpora'  : list_corpora,
-                    'whitelists'    : whitelists,
-                    'blacklists'    : blacklists,
-                    'cooclists'     : cooclists,
-                    'number'        : number,
-                })
-    else:
-        form = CustomForm()
-
-       
-    return render(request, 'project.html', {
-            'form'          : form,
-            'user'          : user,
-            'date'          : date,
-            'project'       : project,
-            'donut'         : donut,
-            'list_corpora'  : list_corpora,
-            'whitelists'    : whitelists,
-            'blacklists'    : blacklists,
-            'cooclists'     : cooclists,
-            'number'        : number,
-        })
-
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -433,77 +261,25 @@ def corpus(request, project_id, corpus_id):
         offset = str(corpus_id)
     except ValueError:
         raise Http404()
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
 
     t = get_template('corpus.html')
     
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus  = Node.objects.get(id=corpus_id)
-    
-    type_doc = NodeType.objects.get(name="Document")
-    number = Node.objects.filter(parent=corpus, type=type_doc).count()
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
 
-#    try:
-#        sources = defaultdict(int)
-#        for document in documents.all():
-#            sources[document.metadata['journal']] += 1
-#        
-#        sources_donut = []
-#        
-#        for source in sources.keys():
-#            source_count = dict()
-#            source_count['count'] = source['count']
-#            try:
-#                source_count['part'] = round(source_count['count'] * 100 / number)
-#            except:
-#                source_count['part'] = None
-#            source_count['source'] = source['source']
-#            sources_donut.append(source_count)
-#    except:
-#        sources_donut = []
-    # Do a javascript query/api for that
-#    query_date = """
-#        SELECT
-#            id,
-#            metadata -> 'publication_year' as year,
-#            metadata -> 'publication_month' as month, 
-#            metadata -> 'publication_day' as day,
-#            metadata -> 'title'
-#        FROM
-#            node_node AS n
-#        WHERE
-#            n.parent_id = %d
-#        ORDER BY
-#            year, month, day DESC
-#        LIMIT
-#            20
-#        OFFSET
-#            %d
-#    """ % (corpus.id, 0)
-#    try:
-#        cursor = connection.cursor()
-#
-#        cursor.execute(query_date)
-#        documents = list()
-#        while True:
-#            document = dict()
-#            row = cursor.fetchone()
-#            
-#            if row is None:
-#                break
-#            document['id']      = row[0]
-#            document['date']    = row[1] + '/' + row[2] + '/' + row[3]
-#            document['title']   = row[4]
-#            documents.append(document)
-#    except Exception as error:
-#        print(error)
+    
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     try:
         chart = dict()
         chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
+        # TODO write with sqlalchemy
+        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
+        
         chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
         print(chart)
     except Exception as error:
@@ -550,12 +326,12 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
+    type_document_id = cache.NodeType['Document'].id
     # retrieving all the documents
     # documents  = corpus.children.all()
-    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
+    documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
     number = len(documents)
 
     filtered_docs = []
@@ -667,25 +443,82 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
     return HttpResponse( serializer.data , content_type='application/json')
 
 
+def empty_trash():
+    nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()
+    with transaction.atomic():
+        for node in nodes:
+            try:
+                node.children.delete()
+            except Exception as error:
+                print(error)
 
-def delete_project(request, node_id):
-    Node.objects.filter(id=node_id).all().delete()
-    return HttpResponseRedirect('/projects/')
+            node.delete()
 
-def delete_corpus(request, project_id, corpus_id):
-    Node.objects.filter(id=corpus_id).all().delete()
+
+def move_to_trash(node_id):
+    try:
+        node = session.query(Node).filter(Node.id == node_id).first()
+        
+        previous_type_id = node.type_id
+        node.type_id = cache.NodeType['Trash'].id
+        
+        session.add(node)
+        session.commit()
+        return(previous_type_id)
+    except Exception as error:
+        print("can not move to trash Node" + node_id + ":" + error)
+
+
+def delete_node(request, node_id):
+    
+    # do we have a valid user?
+    user = request.user
+    node = session.query(Node).filter(Node.id == node_id).first()
+    
+    if not user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    if node.user_id != user.id:
+        return HttpResponseForbidden()
+
+    previous_type_id = move_to_trash(node_id)
+
+    if previous_type_id == cache.NodeType['Corpus'].id:
+        return HttpResponseRedirect('/project/' + str(node.parent_id))
+    else:
+        return HttpResponseRedirect('/projects/')
+    
+
+    if settings.DEBUG == True:
+        empty_trash()
+
+
+
+def delete_corpus(request, project_id, node_id):
+    # ORM Django
+    with transaction.atomic():
+        node = models.Node.objects.get(id=node_id)
+        try:
+            node.children.delete()
+        except Exception as error:
+            print(error)
+        node.delete()
+
+    # SQLA Django
+#    node = session.query(Node).filter(Node.id == node_id).first()
+#    session.delete(node)
+#    session.commit()
+#    session.flush()
+    
     return HttpResponseRedirect('/project/' + project_id)
-
 
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus  = Node.objects.get(id=corpus_id)
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     
     html = t.render(Context({
         'user'      : user,
@@ -696,13 +529,12 @@ def chart(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def matrix(request, project_id, corpus_id):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
             'user'      : user,\
@@ -714,29 +546,24 @@ def matrix(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def graph(request, project_id, corpus_id):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
     
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
+            'graphfile' : "hola_mundo",\
             }))
     
     return HttpResponse(html)
 
-
-
-
-
 def exploration(request):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('exploration.html')
     user = request.user
     date = datetime.datetime.now()
@@ -749,7 +576,6 @@ def exploration(request):
     return HttpResponse(html)
 
 def explorer_chart(request):
-    if MAINTENANCE: return HttpResponseRedirect('/maintenance/')
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
@@ -773,9 +599,9 @@ def corpus_csv(request, project_id, corpus_id):
 
     writer = csv.writer(response)
 
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
-    documents = Node.objects.filter(parent=corpus, type=type_document)
+    corpus_id = session.query(Node.id).filter(Node.id==corpus_id).first()
+    type_document_id = cache.NodeType['Document'].id
+    documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
 
     keys = list(documents[0].metadata.keys())
     writer.writerow(keys)
@@ -792,8 +618,6 @@ def corpus_csv(request, project_id, corpus_id):
 
     return response
 
-
-
 def send_csv(request, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
@@ -806,9 +630,9 @@ def send_csv(request, corpus_id):
 
     cursor.execute("""
     SELECT
-        metadata -> 'publication_year' as year,
-        metadata -> 'publication_month' as month,
-        metadata -> 'publication_day' as day,
+        metadata ->> 'publication_year' as year,
+        metadata ->> 'publication_month' as month,
+        metadata ->> 'publication_day' as day,
         COUNT(*)
     FROM
         node_node AS n
@@ -834,23 +658,26 @@ def send_csv(request, corpus_id):
 
     return response
 
-
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
 import json
-
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
-    '''
-    import time
-    print("In node_link() START")
-    start = time.time()
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
-    end = time.time()
-    print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" get_cooc() [s]",(end - start))
-    print("In node_link() END")
+    '''   
+
+    data = []
+    
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
+    print("file exists?:",os.path.isfile(filename))
+    if os.path.isfile(filename):
+        json_data = open(filename,"r")
+        data = json.load(json_data)
+        json_data.close()
+    else:
+        data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):
@@ -925,6 +752,35 @@ def nodeinfo(request , node_id):
     }))    
     return HttpResponse(html)
 
+
+def tfidf2(request, corpus_id, ngram_id):
+    """
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+    """
+    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
+    docsids = ngram_id.split("a")
+
+    tfidf_list = []
+    for i in docsids:
+        pub = Node.objects.get(id=i)
+        finalpub = {}
+        finalpub["id"] = pub.id
+        pubmetadata = pub.metadata
+        if "title" in pubmetadata: finalpub["title"] = pubmetadata['title']
+        if "publication_date" in pubmetadata: finalpub["publication_date"] = pubmetadata['publication_date']
+        if "journal" in pubmetadata: finalpub["journal"] = pubmetadata['journal']
+        if "authors" in pubmetadata: finalpub["authors"] = pubmetadata['authors']
+        if "fields" in pubmetadata: finalpub["fields"] = pubmetadata['fields']
+        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
+        if len(tfidf_list)==6: break # max 6 papers
+    
+    data = json.dumps(tfidf_list) 
+
+
+
+    # data = ["hola","mundo"]
+    return JsonHttpResponse(data)
 
 def tfidf(request, corpus_id, ngram_id):
     """

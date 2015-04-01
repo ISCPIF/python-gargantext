@@ -40,7 +40,7 @@ class MedlineFetcher:
 
         "Get number of results for query 'query' in variable 'count'"
         "Get also 'queryKey' and 'webEnv', which are used by function 'medlineEfetch'"
-        print(query)
+        # print(query)
         origQuery = query
         query = query.replace(' ', '%20')
             
@@ -79,7 +79,7 @@ class MedlineFetcher:
 
         queryNoSpace = query.replace(' ', '') # No space in directory and file names, avoids stupid errors
         
-        print ("LOG::TIME: ",'medlineEfetchRAW :Query "' , query , '"\t:\t' , count , ' results')
+        # print ("LOG::TIME: ",'medlineEfetchRAW :Query "' , query , '"\t:\t' , count , ' results')
 
         retstart = 0
         eFetch = '%s/efetch.fcgi?email=youremail@example.org&rettype=%s&retmode=xml&retstart=%s&retmax=%s&db=%s&query_key=%s&WebEnv=%s' %(self.pubMedEutilsURL, self.reportType, retstart, retmax, self.pubMedDB, queryKey, webEnv)
@@ -94,7 +94,7 @@ class MedlineFetcher:
     def downloadFile(self, item):
         url = item[0]
         filename = item[1]
-        print("\tin test_downloadFile:")
+        # print("\tin test_downloadFile:")
         # print(url,filename)
         data = urlopen(url)
         f = codecs.open(filename, "w" ,encoding='utf-8')
@@ -110,7 +110,7 @@ class MedlineFetcher:
     def test_downloadFile(self, item):
         url = item[0]
         filename = item[1]
-        print("\tin downloadFile:")
+        # print("\tin downloadFile:")
         data = urlopen(url)
         return data
 
@@ -119,7 +119,7 @@ class MedlineFetcher:
         # time.sleep(1) # pretend to do some lengthy work.
         returnvalue = self.medlineEsearch(item)
         with self.lock:
-            print(threading.current_thread().name, item)
+            # print(threading.current_thread().name, item)
             return returnvalue
 
     # The worker thread pulls an item from the queue and processes it
@@ -160,13 +160,13 @@ class MedlineFetcher:
 
         N = 0
 
-        print ("MedlineFetcher::serialFetcher :")
+        # print ("MedlineFetcher::serialFetcher :")
         thequeries = []
         globalresults = []
         for i in range(yearsNumber):
             year = str(2015 - i)
-            print ('YEAR ' + year)
-            print ('---------\n')
+            # print ('YEAR ' + year)
+            # print ('---------\n')
             pubmedquery = str(year) + '[dp] '+query
             self.q.put( pubmedquery ) #put task in the queue
         
@@ -196,5 +196,6 @@ class MedlineFetcher:
             retmax_forthisyear = int(round(globalLimit*proportion))
             query["retmax"] = retmax_forthisyear
             if query["retmax"]==0: query["retmax"]+=1
+            print(query["string"],"\t[",k,">",query["retmax"],"]")
 
         return thequeries

@@ -60,6 +60,7 @@ def tfidf(corpus, document, ngram):
                 .filter(NodeNgram.ngram_id == ngram.id)\
                 .count()
         
+        # print("\t\t\t","occs:",occurrences_of_ngram," || ngramsbydoc:",ngrams_by_document," || TF = occ/ngramsbydoc:",term_frequency," |||||| x:",xx," || y:",yy," || IDF = log(x/y):",log(xx/yy))
         inverse_document_frequency= log(xx/yy)
 
         # result = tf * idf

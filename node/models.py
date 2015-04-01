@@ -1,9 +1,10 @@
-from django.db import models
+from django_pg import models
 from django.utils import timezone
 
 from django.contrib.auth.models import User
 
-from django_hstore import hstore
+from django_pgjson.fields import JsonBField
+
 from cte_tree.models import CTENode, CTENodeManager
 # from cte_tree.query import CTEQuerySet
 #from cte_tree.fields import DepthField, PathField, OrderingField
@@ -14,7 +15,9 @@ from parsing.FileParsers import *
 from time import time
 import datetime
 from multiprocessing import Process
+from math import log
 
+import collections
 from collections import defaultdict
 import hashlib
 
@@ -22,6 +25,9 @@ from gargantext_web.settings import MEDIA_ROOT
 
 from celery.contrib.methods import task_method
 from celery import current_app
+
+import os
+import subprocess
 
 
 # Some usefull functions
@@ -35,7 +41,7 @@ class Language(models.Model):
     iso2        = models.CharField(max_length=2, unique=True)
     iso3        = models.CharField(max_length=3, unique=True)
     fullname    = models.CharField(max_length=255, unique=True)
-    implemented = models.BooleanField(blank=True)
+    implemented = models.BooleanField(blank=True, default=True)
     
     def __str__(self):
         return self.fullname
@@ -46,14 +52,34 @@ class ResourceType(models.Model):
     def __str__(self):
         return self.name
 
+class Tag(models.Model):
+    name             = models.CharField(max_length=4, unique=True)
+    description      = models.CharField(max_length=255, unique=True)
+    def __str__(self):
+        return self.name
+
+
 class Ngram(models.Model):
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
+    language    = models.ManyToManyField(blank=True, null=True, through='NgramLanguage', to='Language')
     n           = models.IntegerField()
     terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
+    tag         = models.ManyToManyField(blank=True, null=True, through='NgramTag', to='Tag')
     
     def __str__(self):
         return self.terms
+
+class NgramTag(models.Model):
+    ngram   = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    tag     = models.ForeignKey(Tag)
+    def __str__(self):
+        return "%s: %s" % (self.ngram.terms, self.tag.name)
+
+class NgramLanguage(models.Model):
+    ngram        = models.ForeignKey(Ngram, on_delete=models.CASCADE)
+    language     = models.ForeignKey(Language)
+    def __str__(self):
+        return "%s: %s" % (self.ngram.terms, self.language.fullname)
 
 
 class Resource(models.Model):
@@ -66,7 +92,7 @@ class Resource(models.Model):
         return self.file
 
 class NodeType(models.Model):
-    name        = models.CharField(max_length=200, unique=True)
+    name        = models.CharField(max_length=255, unique=True)
     def __str__(self):
         return self.name
 
@@ -88,7 +114,7 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
                 if key in metadata_cache:
                     metadata = metadata_cache[key]
                     if metadata.type == 'string':
-                        value = value[:255]
+                        value = value[:200]
                     data.append(Node_Metadata(**{
                         'node_id' : node.id,
                         'metadata_id' : metadata.id,
@@ -107,7 +133,7 @@ class NodeManager(CTENodeManager):
         return getattr(self.get_queryset(), name, *args)
 
 class Metadata(models.Model):
-    name        = models.CharField(max_length=32, db_index=True)
+    name        = models.CharField(max_length=32, unique=True)
     type        = models.CharField(max_length=16, db_index=True)
         
 class Node(CTENode):
@@ -116,12 +142,12 @@ class Node(CTENode):
 
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
-    name        = models.CharField(max_length=200)
+    name        = models.CharField(max_length=255)
     
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     
     date        = models.DateField(default=timezone.now, blank=True)
-    metadata    = hstore.DictionaryField(blank=True)
+    metadata    = JsonBField(null=False, default={})
 
     ngrams      = models.ManyToManyField(through='Node_Ngram', to='Ngram')
 
@@ -221,21 +247,16 @@ class Node(CTENode):
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):
             for key, weight in keys.items():
-                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[ngram] += weight
         else:
             for key in keys:
-                for ngram in extractor.extract_ngrams(self.metadata[key]):
+                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
-
-        import pprint
-        pprint.pprint(associations)
-        print(" - - - - - ")
-        #print(associations)
-        # insert the occurrences in the database
-        # print(associations.items())
         Node_Ngram.objects.bulk_create([
             Node_Ngram(
                 node   = self,
@@ -281,150 +302,7 @@ class Node(CTENode):
         print("In workflow() END")
         self.metadata['Processing'] = 0
         self.save()
-
-
-
-
-    def parse_resources__MOV(self, verbose=False):
-        # parse all resources into a list of metadata
-        metadata_list = []
-        print("not parsed resources:")
-        print(self.node_resource.filter(parsed=False))
-        print("= = = = = = = = =  = =\n")
-        for node_resource in self.node_resource.filter(parsed=False):
-            resource = node_resource.resource
-            parser = defaultdict(lambda:FileParser.FileParser, {
-                'istext'    : ISText,
-                'pubmed'    : PubmedFileParser,
-                'isi'       : IsiFileParser,
-                'ris'       : RisFileParser,
-                'europress' : EuropressFileParser,
-                'europress_french'  : EuropressFileParser,
-                'europress_english' : EuropressFileParser,
-            })[resource.type.name]()
-            metadata_list += parser.parse(str(resource.file))
-        self.node_resource.update(parsed=True) #writing to DB
-        return metadata_list
-
-    def writeMetadata__MOV(self, metadata_list=None , verbose=False):
-        type_id = NodeType.objects.get(name='Document').id
-        user_id = self.user.id
-        langages_cache = LanguagesCache()
-        # # insert the new resources in the database!
-        for i, metadata_values in enumerate(metadata_list):
-            name = metadata_values.get('title', '')[:200]
-            language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
-            if isinstance(language, tuple):
-                language = language[0]
-            Node(
-                user_id  = user_id,
-                type_id  = type_id,
-                name     = name,
-                parent   = self,
-                language_id = language.id if language else None,
-                metadata = metadata_values
-            ).save()
-            metadata_list[i]["thelang"] = language
-        # # make metadata filterable
-        self.children.all().make_metadata_filterable()
-        # # mark the resources as parsed for this node
-        self.node_resource.update(parsed=True)
-
-    def extract_ngrams__MOV(self, array , keys , ngramsextractorscache=None, ngramscaches=None):
-        if ngramsextractorscache is None:
-            ngramsextractorscache = NgramsExtractorsCache()
-        langages_cache = LanguagesCache()
-
-        if ngramscaches is None:
-            ngramscaches = NgramsCaches()
-
-        for metadata in array:
-            associations = defaultdict(float) # float or int?
-            language = langages_cache[metadata['language_iso2']] if 'language_iso2' in metadata else None,
-            if isinstance(language, tuple):
-                language = language[0]
-            metadata["thelang"] = language
-            extractor = ngramsextractorscache[language]
-            ngrams = ngramscaches[language]
-            # print("\t\t number of req keys:",len(keys)," AND isdict?:",isinstance(keys, dict))
-            if isinstance(keys, dict):
-                for key, weight in keys.items():
-                    if key in metadata:
-                        for ngram in extractor.extract_ngrams(metadata[key]):
-                            terms = ' '.join([token for token, tag in ngram])
-                            associations[ngram] += weight
-            else:
-                for key in keys:
-                    if key in metadata:
-                        # print("the_content:[[[[[[__",metadata[key],"__]]]]]]")
-                        for ngram in extractor.extract_ngrams(metadata[key]):
-                            terms = ' '.join([token for token, tag in ngram])
-                            associations[terms] += 1
-            if len(associations.items())>0:
-                Node_Ngram.objects.bulk_create([
-                    Node_Ngram(
-                        node   = self,
-                        ngram  = ngrams[ngram_text],
-                        weight = weight
-                    )
-                    for ngram_text, weight in associations.items()
-                ])
-                # for ngram_text, weight in associations.items():
-                #     print("ngram_text:",ngram_text,"  | weight:",weight, " | ngrams[ngram_text]:",ngrams[ngram_text])
-    
-    def runInParallel(self, *fns):
-        proc = []
-        for fn in fns:
-            p = Process(target=fn)
-            p.start()
-            proc.append(p)
-        for p in proc:
-            p.join()
-
-    def workflow__MOV(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
-        import time
-        total = 0
-        self.metadata['Processing'] = 1
-        self.save()
-
-        print("LOG::TIME: In workflow()    parse_resources__MOV()")
-        start = time.time()
-        theMetadata = self.parse_resources__MOV()
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources()__MOV [s]",(end - start))
-
-        print("LOG::TIME: In workflow()    writeMetadata__MOV()")
-        start = time.time()
-        self.writeMetadata__MOV( metadata_list=theMetadata )
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" writeMetadata__MOV() [s]",(end - start))
-
-
-        print("LOG::TIME: In workflow()    extract_ngrams__MOV()")
-        start = time.time()
-        self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] )
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams__MOV() [s]",(end - start))
-
-        # # this is not working
-        # self.runInParallel( self.writeMetadata__MOV( metadata_list=theMetadata ) , self.extract_ngrams__MOV(theMetadata , keys=['title','abstract',] ) )
         
-        start = time.time()
-        print("LOG::TIME: In workflow()    do_tfidf()")
-        from analysis.functions import do_tfidf
-        do_tfidf(self)
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        # # print("LOG::TIME: In workflow()    / do_tfidf()")
-        print("LOG::TIME:_ "+datetime.datetime.now().isoformat()+"   In workflow() END")
-
-
-        self.metadata['Processing'] = 0
-        self.save()
 
 class Node_Metadata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)
@@ -437,7 +315,7 @@ class Node_Metadata(models.Model):
 
 class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource', on_delete=models.CASCADE)
-    resource = models.ForeignKey(Resource)
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     parsed   = models.BooleanField(default=False)
             
 class Node_Ngram(models.Model):
@@ -495,15 +373,11 @@ class NodeNodeNgram(models.Model):
     def __str__(self):
         return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
-class NodeNodeNgram(models.Model):
-    nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
-    nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
-    
-    ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 
-    score       = models.FloatField(default=0)
+class NgramNgram(models.Model):
+    ngram      = models.ForeignKey(Ngram, related_name='ngram', on_delete=models.CASCADE)
+    token      = models.ForeignKey(Ngram, related_name='token', on_delete=models.CASCADE)
+    index      = models.IntegerField()
 
-    def __str__(self):
-        return "%s: %s / %s = %s" % (self.nodex.name, self.nodey.name, self.ngram.terms, self.score)
 
 

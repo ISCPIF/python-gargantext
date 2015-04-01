@@ -1,6 +1,7 @@
 from django.http import HttpResponseNotFound, HttpResponse, Http404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 from django.db.models import Avg, Max, Min, Count, Sum
 # from node.models import Language, ResourceType, Resource
@@ -10,8 +11,9 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
+from gargantext_web.views import move_to_trash
 from .db import *
-
+from node import models
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -45,9 +47,13 @@ _ngrams_order_columns = {
 }
 
 
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException as _APIException
+
 
 class APIException(_APIException):
     def __init__(self, message, code=500):
@@ -82,7 +88,7 @@ class NodesChildrenNgrams(APIView):
     def get(self, request, node_id):
         # query ngrams
         ParentNode = aliased(Node)
-        ngrams_query = (Ngram
+        ngrams_query = (session
             .query(Ngram.terms, func.count().label('count'))
             # .query(Ngram.id, Ngram.terms, func.count().label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -128,7 +134,7 @@ class NodesChildrenDuplicates(APIView):
             raise APIException('Missing GET parameter: "keys"', 400)
         keys = request.GET['keys'].split(',')
         # metadata retrieval
-        metadata_query = (Metadata
+        metadata_query = (session
             .query(Metadata)
             .filter(Metadata.name.in_(keys))
         )
@@ -187,6 +193,7 @@ class NodesChildrenDuplicates(APIView):
         # get the minimum ID for each of the nodes sharing the same metadata
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
+        # TODO with new orm
         duplicate_nodes =  models.Node.objects.filter( parent_id=node_id ).exclude(id__in=kept_node_ids)
         # # delete the stuff
         # delete_query = (session
@@ -197,7 +204,7 @@ class NodesChildrenDuplicates(APIView):
         count = len(duplicate_nodes)
         for node in duplicate_nodes:
             print("deleting node ",node.id)
-            node.delete()
+            move_to_trash(node.id)
         # print(delete_query)
         # # delete_query.delete(synchronize_session=True)
         # session.flush()
@@ -213,7 +220,7 @@ class NodesChildrenMetatadata(APIView):
         
         # query metadata keys
         ParentNode = aliased(Node)
-        metadata_query = (Metadata
+        metadata_query = (session
             .query(Metadata)
             .join(Node_Metadata, Node_Metadata.metadata_id == Metadata.id)
             .join(Node, Node.id == Node_Metadata.node_id)
@@ -233,7 +240,7 @@ class NodesChildrenMetatadata(APIView):
             values_to = None
             if metadata.type != 'text':
                 value_column = getattr(Node_Metadata, 'value_' + metadata.type)
-                node_metadata_query = (Node_Metadata
+                node_metadata_query = (session
                     .query(value_column)
                     .join(Node, Node.id == Node_Metadata.node_id)
                     .filter(Node.parent_id == node_id)
@@ -381,9 +388,9 @@ class NodesChildrenQueries(APIView):
         for field_name in fields_names:
             split_field_name = field_name.split('.')
             if split_field_name[0] == 'metadata':
-                metadata = Metadata.query(Metadata).filter(Metadata.name == split_field_name[1]).first()
+                metadata = session.query(Metadata).filter(Metadata.name == split_field_name[1]).first()
                 if metadata is None:
-                    metadata_query = Metadata.query(Metadata.name).order_by(Metadata.name)
+                    metadata_query = session.query(Metadata.name).order_by(Metadata.name)
                     metadata_names = [metadata.name for metadata in metadata_query.all()]
                     raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)
                 # check or create Node_Metadata alias; join if necessary
@@ -422,7 +429,7 @@ class NodesChildrenQueries(APIView):
             )
 
         # starting the query!
-        document_type_id = NodeType.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
+        document_type_id = cache.NodeType['Document'].id ##session.query(NodeType.id).filter(NodeType.name == 'Document').scalar()
         query = (session
             .query(*fields_list)
             .select_from(Node)
@@ -451,9 +458,9 @@ class NodesChildrenQueries(APIView):
             # 
             if field[0] == 'metadata':
                 # which metadata?
-                metadata = Metadata.query(Metadata).filter(Metadata.name == field[1]).first()
+                metadata = session.query(Metadata).filter(Metadata.name == field[1]).first()
                 if metadata is None:
-                    metadata_query = Metadata.query(Metadata.name).order_by(Metadata.name)
+                    metadata_query = session.query(Metadata.name).order_by(Metadata.name)
                     metadata_names = [metadata.name for metadata in metadata_query.all()]
                     raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)                
                 # check or create Node_Metadata alias; join if necessary
@@ -475,7 +482,7 @@ class NodesChildrenQueries(APIView):
                 ))
             elif field[0] == 'ngrams': 
                 query = query.filter(
-                    Node.id.in_(Node_Metadata
+                    Node.id.in_(session
                         .query(Node_Ngram.node_id)
                         .filter(Node_Ngram.ngram_id == Ngram.id)
                         .filter(operator(
@@ -549,11 +556,13 @@ class NodesChildrenQueries(APIView):
 
 
 class NodesList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get(self, request):
-        query = (Node
+        print("user id : " + str(request.user))
+        query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
-            .filter(Node.user_id == request.session._session_cache['_auth_user_id'])
+            .filter(Node.user_id == int(request.user.id))
             .join(NodeType)
         )
         if 'type' in request.GET:
@@ -576,8 +585,11 @@ class Nodes(APIView):
         return JsonHttpResponse({
             'id': node.id,
             'name': node.name,
+            'parent_id': node.parent_id,
+            'type': cache.NodeType[node.type_id].name,
             # 'type': node.type__name,
-            'metadata': dict(node.metadata),
+            #'metadata': dict(node.metadata),
+            'metadata': node.metadata,
         })
 
     # deleting node by id
@@ -585,13 +597,19 @@ class Nodes(APIView):
     # it should take the subnodes into account as well,
     # for better constistency...
     def delete(self, request, node_id):
-        node = models.Node.objects.filter(id = node_id)
-        msgres = ""
+        
+        user = request.user
+        node = session.query(Node).filter(Node.id == node_id).first()
+        
+        msgres = str()
+        
         try:
-            node.delete()
-            msgres = node_id+" deleted!"
-        except:
-            msgres ="error deleting: "+node_id
+            
+            move_to_trash(node_id)
+            msgres = node_id+" moved to Trash"
+        
+        except Exception as error:
+            msgres ="error deleting : " + node_id + str(error)
 
         return JsonHttpResponse({
             'deleted': msgres,
@@ -605,9 +623,9 @@ class CorpusController:
             corpus_id = int(corpus_id)
         except:
             raise ValidationError('Corpora are identified by an integer.', 400)
-        corpusQuery = Node.objects.filter(id = corpus_id)
+        corpusQuery = session.query(Node).filter(Node.id == corpus_id).first()
         # print(str(corpusQuery))
-        # raise Http404("C'est toujours ça de pris.")
+        # raise Http404("404 error.")
         if not corpusQuery:
             raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()
@@ -626,7 +644,7 @@ class CorpusController:
 
         # build query
         ParentNode = aliased(Node)
-        query = (Ngram
+        query = (session
             .query(Ngram.terms, func.count('*'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)

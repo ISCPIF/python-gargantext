@@ -1,6 +1,4 @@
-from node.models import Language, ResourceType, Resource, \
-        Node, NodeType, Node_Resource, Project, Corpus, \
-        Node_Ngram, NodeNgramNgram, NodeNodeNgram
+from gargantext_web.db import *
 
 from collections import defaultdict
 from django.db import connection, transaction
@@ -13,29 +11,26 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-def create_whitelist(user, corpus, size=100):
+def create_whitelist(user, corpus_id, size=100):
     cursor = connection.cursor()
     
-    try:
-        whitelist_type = NodeType.objects.get(name='WhiteList')
-        blacklist_type = NodeType.objects.get(name='BlackList')
-        type_document  = NodeType.objects.get(name='Document')
-    except:
-        whitelist_type = NodeType(name='WhiteList')
-        whitelist_type.save()
+    whitelist_type_id = cache.NodeType['WhiteList'].id
+    blacklist_type_id = cache.NodeType['BlackList'].id
+    type_document_id  = cache.NodeType['Document'].id
+
+    white_list = Node(name='WhiteList Corpus ' + str(corpus_id), user_id=user.id, parent_id=corpus_id, type_id=whitelist_type_id)
+    black_list = Node(name='BlackList Corpus ' + str(corpus_id), user_id=user.id, parent_id=corpus_id, type_id=blacklist_type_id)
     
-        blacklist_type = NodeType(name='BlackList')
-        blacklist_type.save()
-
-    white_list = Node.objects.create(name='WhiteList Corpus ' + str(corpus.id), user=user, parent=corpus, type=whitelist_type)
-    black_list = Node.objects.create(name='BlackList Corpus ' + str(corpus.id), user=user, parent=corpus, type=blacklist_type)
-
+    session.add(white_list)
+    session.add(black_list)
+    
+    session.commit()
     # delete avant pour éviter les doublons
-#    try:
-#        Node_Ngram.objects.filter(node=white_list).all().delete()
-#    except:
-#        print('First time we compute cooc')
-#
+    #    try:
+    #        Node_Ngram.objects.filter(node=white_list).all().delete()
+    #    except:
+    #        print('First time we compute cooc')
+    #
     query_whitelist = """
         INSERT INTO node_node_ngram (node_id, ngram_id, weight)
         SELECT
@@ -67,28 +62,29 @@ def create_whitelist(user, corpus, size=100):
         LIMIT
             %d
         ;
-    """  % (white_list.id, corpus.id, type_document.id, size)
-
+    """  % (white_list.id, int(corpus_id), int(type_document_id), size)
+    # print("PRINTING QYERY OF WHITELIST:")
+    # print(query_whitelist)
     cursor.execute(query_whitelist)
 
     return white_list
 
 #def create_cooc(user, corpus, whitelist, blacklist, synonymes):
-def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=None, year_end=None):
+def create_cooc(user=None, corpus_id=None, whitelist=None, size=150, year_start=None, year_end=None):
     cursor = connection.cursor()
 
-    try:
-        cooc_type  = NodeType.objects.get(name='Cooccurrence')
-    except:
-        cooc_type = NodeType(name='Cooccurrence')
-        cooc_type.save()
-    # pour les tests on supprime les cooc
-    Node.objects.filter(type=cooc_type, parent=corpus).delete()
+    cooc_type_id  = cache.NodeType['Cooccurrence'].id
 
-    cooc = Node.objects.create(user=user,\
-                           parent=corpus,\
-                           type=cooc_type,\
-                           name="Cooccurrences corpus " + str(corpus.pk))
+    # pour les tests on supprime les cooc
+    #session.Node.objects.filter(type=cooc_type, parent=corpus).delete()
+
+    cooc = Node(user_id=user.id,\
+                           parent_id=corpus_id,\
+                           type_id=cooc_type_id,\
+                           name="Cooccurrences corpus " + str(corpus_id))
+
+    session.add(cooc)
+    session.commit()
 
     query_cooc = """
     INSERT INTO node_nodengramngram (node_id, "ngramx_id", "ngramy_id", score)
@@ -133,10 +129,11 @@ def create_cooc(user=None, corpus=None, whitelist=None, size=150, year_start=Non
         score DESC
     LIMIT
         %d
-    """ % (cooc.pk, corpus.id, whitelist.id, whitelist.id, size)
+    """ % (cooc.id, corpus_id, whitelist.id, whitelist.id, size)
 
+    # print(query_cooc)
     cursor.execute(query_cooc)
-    return cooc
+    return cooc.id
 
 def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150):
     import pandas as pd
@@ -153,35 +150,36 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     labels = dict()
     weight = dict()
 
-    corpus = Node.objects.get(id=corpus_id)
-    type_cooc = NodeType.objects.get(name="Cooccurrence")
+    type_cooc_id = cache.NodeType['Cooccurrence'].id
 
-    if Node.objects.filter(type=type_cooc, parent=corpus).first() is None:
+    if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
         print("Coocurrences do not exist yet, create it.")
-        whitelist = create_whitelist(request.user, corpus, size=n)
-        cooccurrence_node = create_cooc(user=request.user, corpus=corpus, whitelist=whitelist, size=n)
-        print(cooccurrence_node.id, "Cooc created")
+        whitelist = create_whitelist(request.user, corpus_id=corpus_id, size=n)
+        cooccurrence_node_id = create_cooc(user=request.user, corpus_id=corpus_id, whitelist=whitelist, size=n)
     else:
-        cooccurrence_node = Node.objects.filter(type=type_cooc, parent=corpus).first()
+        cooccurrence_node_id = session.query(Node.id).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first()
 
-    for cooccurrence in NodeNgramNgram.objects.filter(node=cooccurrence_node):
-        
-        ids[cooccurrence.ngramx.terms] = cooccurrence.ngramx.id
-        ids[cooccurrence.ngramy.terms] = cooccurrence.ngramy.id
+    for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooccurrence_node_id).all():
+        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
 
-        labels[cooccurrence.ngramx.id] = cooccurrence.ngramx.terms
-        labels[cooccurrence.ngramy.id] = cooccurrence.ngramy.terms
+        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
+        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
 
-        matrix[cooccurrence.ngramx.id][cooccurrence.ngramy.id] = cooccurrence.score
-        matrix[cooccurrence.ngramy.id][cooccurrence.ngramx.id] = cooccurrence.score
+        ids[labels[cooccurrence.ngramx_id]] = cooccurrence.ngramx_id
+        ids[labels[cooccurrence.ngramy_id]] = cooccurrence.ngramy_id
 
-        weight[cooccurrence.ngramy.terms] = weight.get(cooccurrence.ngramy.terms, 0) + cooccurrence.score
-        weight[cooccurrence.ngramx.terms] = weight.get(cooccurrence.ngramx.terms, 0) + cooccurrence.score
+        matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
+        matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
 
+        weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
+        weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
 
     df = pd.DataFrame(matrix).fillna(0)
     x = copy(df.values)
     x = x / x.sum(axis=1)
+
+    # import pprint
+    # pprint.pprint(ids)
 
     # Removing unconnected nodes
     threshold = min(x.max(axis=1))
@@ -191,32 +189,41 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
     G = nx.from_numpy_matrix(matrix_filtered)
     G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(df.columns)])))
     #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
-    
     # Removing too connected nodes (find automatic way to do it)
-#    outdeg = G.degree()
-#    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-#    G.remove_nodes_from(to_remove)
+    #    outdeg = G.degree()
+    #    to_remove = [n for n in outdeg if outdeg[n] >= 10]
+    #    G.remove_nodes_from(to_remove)
 
     partition = best_partition(G)
     
     if type == "node_link":
-        for community in set(partition.values()):
-            #print(community)
-            G.add_node("cluster " + str(community), hidden=1)
+
         for node in G.nodes():
             try:
                 #node,type(labels[node])
+                G.node[node]['pk'] = ids[node]
                 G.node[node]['label']   = node
-                G.node[node]['name']    = node
-                G.node[node]['pk']      = ids[str(node)]
-                G.node[node]['size']    = weight[node]
+                # G.node[node]['pk']      = ids[str(node)]
+                G.node[node]['size']    = weight[ids[node]]
                 G.node[node]['group']   = partition[node]
-                G.add_edge(node, "cluster " + str(partition[node]), weight=3)
-#            G.node[node]['color'] = '19,180,300'
+                # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
-                print(error)
-
+                print("error01: ",error)
+        
         data = json_graph.node_link_data(G)
+
+        links = []
+        i=1
+        for e in G.edges_iter():
+            s = e[0]
+            t = e[1]
+            info = { "id":i , "source":ids[s] , "target":ids[t]}
+            # print(info)
+            links.append(info)
+            i+=1
+        # print(data)
+        data["links"] = []
+        data["links"] = links
     
     elif type == "adjacency":
         for node in G.nodes():
@@ -227,48 +234,26 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', n=150
                 #G.node[node]['size']    = weight[node]
                 G.node[node]['group']   = partition[node]
                 #G.add_edge(node, partition[node], weight=3)
-#            G.node[node]['color'] = '19,180,300'
             except Exception as error:
-                print(error)
+                print("error02: ",error)
         data = json_graph.node_link_data(G)
      
 
-#    data = json_graph.node_link_data(G, attrs={\
-#            'source':'source',\
-#            'target':'target',\
-#            'weight':'weight',\
-#            #'label':'label',\
-#            #'color':'color',\
-#            'id':'id',})
+    #    data = json_graph.node_link_data(G, attrs={\
+    #            'source':'source',\
+    #            'target':'target',\
+    #            'weight':'weight',\
+    #            #'label':'label',\
+    #            #'color':'color',\
+    #            'id':'id',})
     #print(data)
     return data
 
 
-#def tfidf(corpus, document, ngram):
-#    '''
-#    Compute TF-IDF (Term Frequency - Inverse Document Frequency)
-#    See: http://en.wikipedia.org/wiki/Tf%E2%80%93idf
-#    '''
-#    try:
-#        occurences_of_ngram = Node_Ngram.objects.get(node=document, ngram=ngram).weight
-#        ngrams_by_document = sum([ x.weight for x in Node_Ngram.objects.filter(node=document)])
-#        term_frequency = occurences_of_ngram / ngrams_by_document
-#    
-#        xx = Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")).count()
-#        yy = Node_Ngram.objects.filter(ngram=ngram).count() # filter: ON node.parent=corpus
-#        inverse_document_frequency= log(xx/yy)
-#        
-#        # result = tf * idf
-#        result = term_frequency * inverse_document_frequency
-#    except Exception as error:
-#        print(error, ngram)
-#        result = 0
-#    return result
-
 from analysis.tfidf import tfidf
 
 def do_tfidf(corpus, reset=True):
-    print("=========== doing tfidf ===========")
+    # print("=========== doing tfidf ===========")
     with transaction.atomic():
         if reset==True:
             NodeNodeNgram.objects.filter(nodex=corpus).delete()
@@ -278,8 +263,7 @@ def do_tfidf(corpus, reset=True):
             # # for i in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
             for document in Node.objects.filter(parent=corpus, type=NodeType.objects.get(name="Document")):
                 # print("the doc:",document)
-                somevariable = Node_Ngram.objects.filter(node=document)
-                for node_ngram in somevariable:
+                for node_ngram in Node_Ngram.objects.filter(node=document):
                     # print("\tngram:",node_ngram.ngram)
                     try:
                         nnn = NodeNodeNgram.objects.get(nodex=corpus, nodey=document, ngram=node_ngram.ngram)
@@ -288,7 +272,7 @@ def do_tfidf(corpus, reset=True):
                         score = tfidf(corpus, document, node_ngram.ngram)
                         nnn = NodeNodeNgram(nodex=corpus, nodey=node_ngram.node, ngram=node_ngram.ngram, score=score)
                         nnn.save()
-                        # print("\t\tEXC: ",score)
+                        # print("\t\t",node_ngram.ngram," : ",score)
             # print("- - - - - - - - - - \n")
         else:
             print("Only corpus implemented yet, you put instead:", type(corpus))

@@ -84,19 +84,16 @@
 												<ul>
 														{% for corpus in corpora %}
 														<li> {% ifnotequal corpus.count 0 %}
-																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}"> 
-																			{{corpus.name}}
-																		</a>
-																		, {{ corpus.count }} Documents 
-																 {% else %}
-																 {{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
-																 {% endifnotequal %}
+																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} </a> , {{ corpus.count }} Documents 
+															 {% else %}
+																 	{{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
+															 {% endifnotequal %}
 																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='
 																		<ul>
 																		<li> Rename </li>
 																		<li> Add new documents </li>
-																		<li><a href="/project/{{ project.id }}/corpus/{{ corpus.id}}/delete">Delete</a></li>
+																		<li><a href="/delete/{{corpus.id}}">Delete</a></li>
 																		</ul>
 																		'>Manage</button>
 																</li>
@@ -330,7 +327,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 100 sample!")
+					$("#submit_thing").html("Process a 1000 sample!")
 
 		            thequeries = data
 		            var N=0,k=0;
@@ -427,8 +424,8 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			//if(selected=="pubmed" || selected=="istext") {
-			if(selected=="pubmed") {
+			if(selected=="pubmed" || selected=="istext") {
+			// if(selected=="pubmed") {
 				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 
 				$("#pubmedcrawl").show();

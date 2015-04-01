@@ -63,12 +63,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'south',
+    'django_pg',
     'cte_tree',
     'node',
     'ngram',
     'scrap_pubmed',
-    'django_hstore',
     'djcelery',
     'aldjemy',
     'rest_framework',
@@ -83,6 +82,16 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+REST_SESSION_LOGIN = False
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+   'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
 
 WSGI_APPLICATION = 'wsgi.application'
 

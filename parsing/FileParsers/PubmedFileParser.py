@@ -25,6 +25,7 @@ class PubmedFileParser(FileParser):
             metadata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
+                "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
                 "title2"            : 'MedlineCitation/Article/VernacularTitle',
                 "language_iso3"     : 'MedlineCitation/Article/Language',
                 "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
@@ -101,7 +102,6 @@ class PubmedFileParser(FileParser):
                 if "realdate_day_" in metadata: metadata.pop("realdate_day_")
                 if "title2" in metadata: metadata.pop("title2")
                 
-                # print(metadata)
                 metadata_list.append(metadata)
         # return the list of metadata
         return metadata_list

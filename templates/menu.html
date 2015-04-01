@@ -17,16 +17,16 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-					<a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="/img/logo.svg"></a>
+					<a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="/img/logo.svg" title="Back to home."></a>
         </div>
         
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
 							<!-- <li><a href="/admin/">Admin/</a></li> --!>
-            <li><a href="/about/">About</a>
+            <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">About</a>
 						</li>
 						{% if user.is_authenticated %}
-            <li><a href="/projects/">Projects</a></li>
+            <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
 						{% endif %}
 						{% if project %}
 						<li><a href="/project/{{project.id}}">{{project.name}}</a></li>
@@ -40,14 +40,14 @@
 
 				<ul class="nav pull-right">
 						<li class="dropdown">
-								<a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
+								<a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
 
 								</a>
 								<ul class="dropdown-menu">
-										<li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" target="blank" >Report Feedback</a></li>
+										<li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">Report Feedback</a></li>
 										<li class="divider"></li>
 								{% if user.is_authenticated %}
-										<li><a tabindex="-1" href="/auth/logout">Logout</a></li>
+										<li><a tabindex="-1" href="/auth/logout" title="Click here to logout especially on public devices">Logout</a></li>
 										{% else %}
 										<li><a tabindex="-1" href="/auth/">Login</a></li>
 								{% endif %}
@@ -66,8 +66,8 @@
 <hr>
 
 <footer>
-		<p>Gargantext, version 1.0.6, <a href="http://www.cnrs.fr" target="blank">Copyrights CNRS {{ date.year }}</a>, 
-		<a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank">Licence aGPLV3</a>.</p>
+		<p>Gargantext, version 1.0.6, <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">Copyrights CNRS {{ date.year }}</a>, 
+		<a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank" title="Legal instructions of the project.">Licence aGPLV3</a>.</p>
 </footer>
 
 

@@ -9,15 +9,24 @@ from .settings import implemented_methods
 class NLPClient:
 
     def __init__(self):
-        self._socket = socket.socket(*server_type_client)
-        self._socket.connect((server_host, server_port))
+        self._socket = None
         for method_name in dir(self):
             if method_name[0] != '_':
                 if method_name.upper() not in implemented_methods:
                     setattr(self, method_name, self._notimplemented)
 
     def __del__(self):
-        self._socket.close()
+        self._disconnect()
+
+    def _connect(self):
+        self._disconnect()
+        self._socket = socket.socket(*server_type_client)
+        self._socket.connect((server_host, server_port))
+
+    def _disconnect(self):
+        if self._socket is not None:
+            self._socket.close()
+            self._socket = None
 
     def _notimplemented(self, *args, **kwargs):
         raise NotImplementedError(
@@ -51,7 +60,7 @@ class NLPClient:
         data += language + '\n'
         data += re.sub(r'\n+', '\n', text)
         data += '\n\n'
-        self.__init__()
+        self._connect()
         self._socket.sendall(data.encode())
         sentence = []
         if keys is None:
@@ -73,7 +82,6 @@ class NLPClient:
                     continue
                 values = line.split('\t')
                 sentence.append(dict(zip(keys, line.split('\t'))))
-        self.__del__()
 
     def tokenize(self, text, language='english', asdict=False):
         keys = ('token', ) if asdict else None

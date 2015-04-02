@@ -108,6 +108,7 @@ try:
     typePubmed = ResourceType.objects.get(name='pubmed')
     typeIsi    = ResourceType.objects.get(name='isi')
     typeRis    = ResourceType.objects.get(name='ris')
+    typeJstor    = ResourceType.objects.get(name='RIS (Jstor)')
     typePresseFrench = ResourceType.objects.get(name='europress_french')
     typePresseEnglish = ResourceType.objects.get(name='europress_english')
 
@@ -122,6 +123,9 @@ except Exception as error:
     
     typeRis    = ResourceType(name='ris')
     typeRis.save()
+    
+    typeJstor    = ResourceType(name='RIS (Jstor)')
+    typeJstor.save()
     
     typePresseFrench = ResourceType(name='europress_french')
     typePresseFrench.save()

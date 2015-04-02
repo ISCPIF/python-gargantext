@@ -35,9 +35,11 @@ class Parsers(defaultdict):
         'pubmed'            : PubmedFileParser,
         'isi'               : IsiFileParser,
         'ris'               : RisFileParser,
+        'RIS (Jstor)'       : JstorFileParser,
         'europress'         : EuropressFileParser,
         'europress_french'  : EuropressFileParser,
         'europress_english' : EuropressFileParser,
+        
     }
 
     def __missing__(self, key):

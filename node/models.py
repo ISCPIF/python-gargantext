@@ -195,11 +195,12 @@ class Node(CTENode):
         for node_resource in self.node_resource.filter(parsed=False):
             resource = node_resource.resource
             parser = defaultdict(lambda:FileParser.FileParser, {
-                'istext'    : ISText,
-                'pubmed'    : PubmedFileParser,
-                'isi'       : IsiFileParser,
-                'ris'       : RisFileParser,
-                'europress' : EuropressFileParser,
+                'istext'            : ISText,
+                'pubmed'            : PubmedFileParser,
+                'isi'               : IsiFileParser,
+                'ris'               : RisFileParser,
+                'RIS (Jstor)'       : JstorFileParser,
+                'europress'         : EuropressFileParser,
                 'europress_french'  : EuropressFileParser,
                 'europress_english' : EuropressFileParser,
             })[resource.type.name]()

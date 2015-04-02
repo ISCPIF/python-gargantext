@@ -17,7 +17,7 @@ PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-CELERY_IMPORTS=("node.models",)
+CELERY_IMPORTS=("node.models","gargantext_web")
 
 
 # Quick-start development settings - unsuitable for production

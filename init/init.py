@@ -104,34 +104,15 @@ except Exception as error:
 
 # In[33]:
 
-try:
-    typePubmed = ResourceType.objects.get(name='pubmed')
-    typeIsi    = ResourceType.objects.get(name='isi')
-    typeRis    = ResourceType.objects.get(name='ris')
-    typeJstor    = ResourceType.objects.get(name='RIS (Jstor)')
-    typePresseFrench = ResourceType.objects.get(name='europress_french')
-    typePresseEnglish = ResourceType.objects.get(name='europress_english')
+from parsing.parsers_config import parsers
 
-except Exception as error:
-    print(error)
-    
-    typePubmed = ResourceType(name='pubmed')
-    typePubmed.save()
-    
-    typeIsi    = ResourceType(name='isi')
-    typeIsi.save()
-    
-    typeRis    = ResourceType(name='ris')
-    typeRis.save()
-    
-    typeJstor    = ResourceType(name='RIS (Jstor)')
-    typeJstor.save()
-    
-    typePresseFrench = ResourceType(name='europress_french')
-    typePresseFrench.save()
-    
-    typePresseEnglish = ResourceType(name='europress_english')
-    typePresseEnglish.save()
+ResourceType.objects.all().delete()
+
+for key in parsers.keys():
+    try:
+        ResourceType.objects.get_or_create(name=key)
+    except Exception as error:
+        print("Ressource Error: ", error)
 
 
 # In[34]:

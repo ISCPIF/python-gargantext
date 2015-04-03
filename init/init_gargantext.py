@@ -54,15 +54,12 @@ import pycountry
 Language.objects.all().delete()
 for language in pycountry.languages:
     if 'alpha2' in language.__dict__:
-        Language(
+        models.Language(
             iso2 = language.alpha2,
             iso3 = language.bibliographic,
             fullname = language.name,
             implemented = 1 if language.alpha2 in ['en', 'fr'] else 0,
         ).save()
-
-english = Language.objects.get(iso2='en')
-french  = Language.objects.get(iso2='fr')
 
 
 # Integration: users
@@ -103,51 +100,6 @@ from parsing.parsers_config import parsers
 
 for parser in parsers.keys():
     models.ResourceType.objects.get_or_create(name=parser)
-
-
-
-# TODO 
-# here some tests
-# add a new project and some corpora to test it
-
-
-# Integration: project
-#
-#print('Initialize project...')
-#try:
-#    project = Node.objects.get(name='Bees project')
-#except:
-#    project = Node(name='Bees project', type=typeProject, user=me)
-#    project.save()
-#
-
-# Integration: corpus
-
-#print('Initialize corpus...')
-#try:
-#    corpus_pubmed = Node.objects.get(name='PubMed corpus')
-#except:
-#    corpus_pubmed = Node(parent=project, name='PubMed corpus', type=typeCorpus, user=me)
-#    corpus_pubmed.save()
-#
-#print('Initialize resource...')
-#corpus_pubmed.add_resource(
-#    # file='./data_samples/pubmed.zip',
-#    #file='./data_samples/pubmed_2013-04-01_HoneyBeesBeeBees.xml',
-#    file='/srv/gargantext_lib/data_samples/pubmed.xml',
-#    type=typePubmed,
-#    user=me
-#)
-#
-#for resource in corpus_pubmed.get_resources():
-#    print('Resource #%d - %s - %s' % (resource.id, resource.digest, resource.file))
-#    
-## print('Parse corpus #%d...' % (corpus_pubmed.id, ))
-# corpus_pubmed.parse_resources(verbose=True)
-# print('Extract corpus #%d...' % (corpus_pubmed.id, ))
-# corpus_pubmed.children.all().extract_ngrams(['title',])
-# print('Parsed corpus #%d.' % (corpus_pubmed.id, ))
-
 
 
 

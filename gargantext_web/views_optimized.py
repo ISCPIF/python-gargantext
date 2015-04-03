@@ -144,12 +144,12 @@ def project(request, project_id):
             )
             # let's start the workflow
             try:
-                apply_workflow(corpus)
-#                if DEBUG:
-#                    apply_workflow(corpus)
-#                else:
-#                    thread = Thread(target=apply_workflow, args=(corpus, ), daemon=True)
-#                    thread.start()
+                if DEBUG is not True:
+                    apply_workflow.apply_async((corpus.id,),)
+                else:
+                   #apply_workflow(corpus)
+                   thread = Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
+                   thread.start()
             except Exception as error:
                 print('WORKFLOW ERROR')
                 print(error)

@@ -28,20 +28,29 @@ app.conf.update(
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
-
-
-
 from celery import shared_task
+
+#@app.task(bind=True)
+@shared_task
+def debug_task(request):
+    print('Request: {0!r}'.format(request))
+
+from gargantext_web.db import *
+
+@shared_task
+def apply_sum(x, y):
+    print(x+y)
+    print(session.query(Node.name).first())
+
+
+
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
 
 @shared_task
-def apply_workflow(corpus):
+def apply_workflow(corpus_id):
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
     parse_resources(corpus)
     extract_ngrams(corpus, ['title'])
     compute_tfidf(corpus)

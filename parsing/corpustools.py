@@ -7,7 +7,7 @@ from math import log
 
 from gargantext_web.db import *
 
-
+from .parsers_config import parsers as _parsers
 
 
 class DebugTime:
@@ -29,10 +29,13 @@ class DebugTime:
 
 # keep all the parsers in a cache
 class Parsers(defaultdict):
-    from .parsers_config import parsers as _parsers
+
+    def __init__(self):
+        self._parsers = _parsers
 
     def __missing__(self, key):
-        if key not in self._parsers:
+        #print(self._parsers.keys())
+        if key not in self._parsers.keys():
             raise NotImplementedError('No such parser: "%s"' % (key))
         parser = self._parsers[key]()
         self[key] = parser

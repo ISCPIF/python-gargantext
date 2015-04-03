@@ -4,6 +4,7 @@ psql -d gargandb -f init.sql
 
 sleep 2
 ../manage.py syncdb
+
 psql -d gargandb -f init2.sql
 
 

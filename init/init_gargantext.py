@@ -99,11 +99,10 @@ for node_type in node_types:
 
 print('Initialize resource...')
 
-resources = [
-        'pubmed', 'isi', 'ris', 'europress_french', 'europress_english']
+from parsing.parsers_config import parsers
 
-for resource in resources:
-    models.ResourceType.objects.get_or_create(name=resource)
+for parser in parsers.keys():
+    models.ResourceType.objects.get_or_create(name=parser)
 
 
 

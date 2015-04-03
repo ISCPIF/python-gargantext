@@ -7,7 +7,6 @@ from math import log
 
 from gargantext_web.db import *
 
-from .FileParsers import *
 
 
 
@@ -30,17 +29,7 @@ class DebugTime:
 
 # keep all the parsers in a cache
 class Parsers(defaultdict):
-
-    _parsers = {
-        'pubmed'            : PubmedFileParser,
-        'isi'               : IsiFileParser,
-        'ris'               : RisFileParser,
-        'RIS (Jstor)'       : JstorFileParser,
-        'europress'         : EuropressFileParser,
-        'europress_french'  : EuropressFileParser,
-        'europress_english' : EuropressFileParser,
-        
-    }
+    from .parsers_config import parsers as _parsers
 
     def __missing__(self, key):
         if key not in self._parsers:

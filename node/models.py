@@ -29,6 +29,7 @@ from celery import current_app
 import os
 import subprocess
 
+from parsing.parsers_config import parsers
 
 # Some usefull functions
 # TODO: start the function name with an underscore (private)
@@ -194,16 +195,19 @@ class Node(CTENode):
         print("= = = = = = = = =  = =\n")
         for node_resource in self.node_resource.filter(parsed=False):
             resource = node_resource.resource
-            parser = defaultdict(lambda:FileParser.FileParser, {
-                'istext'            : ISText,
-                'pubmed'            : PubmedFileParser,
-                'isi'               : IsiFileParser,
-                'ris'               : RisFileParser,
-                'RIS (Jstor)'       : JstorFileParser,
-                'europress'         : EuropressFileParser,
-                'europress_french'  : EuropressFileParser,
-                'europress_english' : EuropressFileParser,
-            })[resource.type.name]()
+            parser = defaultdict(lambda:FileParser.FileParser, parsers
+#                    {
+#                'istext'            : ISText,
+#                'pubmed'            : PubmedFileParser,
+#                'isi'               : IsiFileParser,
+#                'ris'               : RisFileParser,
+#                'RIS (Jstor)'       : JstorFileParser,
+#                'europress'         : EuropressFileParser,
+#                'europress_french'  : EuropressFileParser,
+#                'europress_english' : EuropressFileParser,
+#            }
+                    
+                    )[resource.type.name]()
             metadata_list += parser.parse(str(resource.file))
         type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()

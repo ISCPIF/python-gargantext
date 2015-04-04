@@ -25,7 +25,7 @@ app.conf.update(
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
-app.config_from_object('django.conf:settings')
+#app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 from celery import shared_task
@@ -35,14 +35,12 @@ from celery import shared_task
 def debug_task(request):
     print('Request: {0!r}'.format(request))
 
-from gargantext_web.db import *
+from gargantext_web.db import session, Node
 
 @shared_task
 def apply_sum(x, y):
     print(x+y)
     print(session.query(Node.name).first())
-
-
 
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf

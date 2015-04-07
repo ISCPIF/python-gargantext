@@ -7,6 +7,7 @@ from sqlalchemy.orm import aliased
 
 from collections import defaultdict
 from datetime import datetime
+from time import sleep
 from threading import Thread
 
 from node.admin import CustomForm
@@ -51,7 +52,7 @@ def project(request, project_id):
     #  ... sqlalchemy.func by Resource.type_id is the guilty
     # ISSUE L51
     corpus_query = (session
-        .query(Node.id, Node.name, func.count(ChildrenNode.id))
+        .query(Node.id, Node.name, func.count(ChildrenNode.id), Node.metadata['Processing'])
         #.query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
         #.join(Node_Resource, Node_Resource.node_id == Node.id)
         #.join(Resource, Resource.id == Node_Resource.resource_id)
@@ -66,8 +67,10 @@ def project(request, project_id):
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
     corpusID_dict = {}
-    for corpus_id, corpus_name, document_count in corpus_query:
-        
+    
+
+    for corpus_id, corpus_name, document_count, processing in corpus_query:
+        print(corpus_id, processing)
         # Not optimized GOTO ISSUE L51
         resource_type_id = (session.query(Resource.type_id)
                                    .join(Node_Resource, Node_Resource.resource_id == Resource.id)
@@ -82,9 +85,10 @@ def project(request, project_id):
                 resourcetype = cache.ResourceType[resource_type_id]
                 resourcetype_name = resourcetype.name
             corpora_by_resourcetype[resourcetype_name].append({
-                'id': corpus_id,
-                'name': corpus_name,
-                'count': document_count,
+                'id'        : corpus_id,
+                'name'      : corpus_name,
+                'count'     : document_count,
+                'processing': processing,
             })
             documents_count_by_resourcetype[resourcetype_name] += document_count
             corpora_count += 1
@@ -121,11 +125,12 @@ def project(request, project_id):
             
             # corpus node instanciation as a Django model
             corpus = Node(
-                name = name,
-                user_id = request.user.id,
-                parent_id = project_id,
-                type_id = cache.NodeType['Corpus'].id,
+                name        = name,
+                user_id     = request.user.id,
+                parent_id   = project_id,
+                type_id     = cache.NodeType['Corpus'].id,
                 language_id = language_id,
+                metadata    = {'Processing' : 1,}
             )
             session.add(corpus)
             session.commit()
@@ -152,11 +157,14 @@ def project(request, project_id):
                 print('WORKFLOW ERROR')
                 print(error)
             # redirect to the main project page
+            # TODO need to wait before response (need corpus update) 
+            sleep(1)
             return HttpResponseRedirect('/project/' + str(project_id))
         else:
             print('ERROR: BAD FORM')
     else:
         form = CustomForm()
+
 
     # HTML output
     return render(request, 'project.html', {

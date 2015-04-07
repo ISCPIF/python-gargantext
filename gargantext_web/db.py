@@ -2,6 +2,7 @@ from gargantext_web import settings
 from node import models
 
 
+
 __all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
 
 

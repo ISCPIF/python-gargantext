@@ -70,7 +70,7 @@ def project(request, project_id):
     
 
     for corpus_id, corpus_name, document_count, processing in corpus_query:
-        print(corpus_id, processing)
+        #print(corpus_id, processing)
         # Not optimized GOTO ISSUE L51
         resource_type_id = (session.query(Resource.type_id)
                                    .join(Node_Resource, Node_Resource.resource_id == Resource.id)

@@ -81,9 +81,6 @@ def getGlobalStatsISTEXT(request ):
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
 
-	# SQLAlchemy session
-	session = Session()
-
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)

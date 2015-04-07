@@ -14,6 +14,7 @@ from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from gargantext_web.api import JsonHttpResponse
 import json
+import re
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
@@ -95,7 +96,7 @@ def project(request, project_id):
     # do the donut
     total_documents_count = sum(documents_count_by_resourcetype.values())
     donut = [
-        {   'source': key, 
+        {   'source': re.sub(' \(.*$', '', key), 
             'count': value,
             'part' : round(value * 100 / total_documents_count) if total_documents_count else 0,
         }

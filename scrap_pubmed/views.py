@@ -40,7 +40,7 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 1000
+		N = 100
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
@@ -120,7 +120,7 @@ def doTheQuery(request , project_id):
 			urlreqs.append( instancia.medlineEfetchRAW( yearquery ) )
 		alist = ["tudo fixe" , "tudo bem"]
 
-		resourcetype = cache.ResourceType["pubmed"]
+		resourcetype = cache.ResourceType["Pubmed (xml format)"]
 
 		# corpus node instanciation as a Django model
 		corpus = Node(

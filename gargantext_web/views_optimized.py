@@ -115,9 +115,9 @@ def project(request, project_id):
             resourcetype = cache.ResourceType[form.cleaned_data['type']]
             
             # which default language shall be used?
-            if resourcetype.name == "europress_french":
+            if resourcetype.name == "Europress (French)":
                 language_id = cache.Language['fr'].id
-            elif resourcetype.name == "europress_english":
+            elif resourcetype.name == "Europress (English)":
                 language_id = cache.Language['en'].id
             else:
                 language_id = None

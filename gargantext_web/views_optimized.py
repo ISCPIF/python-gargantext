@@ -23,9 +23,6 @@ from gargantext_web.celery import apply_workflow
 
 def project(request, project_id):
 
-    # SQLAlchemy session
-    session = Session()
-
     # do we have a valid project id?
     try:
         project_id = int(project_id)

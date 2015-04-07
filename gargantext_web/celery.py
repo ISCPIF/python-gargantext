@@ -49,7 +49,24 @@ from parsing.corpustools import add_resource, parse_resources, extract_ngrams, c
 @shared_task
 def apply_workflow(corpus_id):
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
+#
+#    corpus_django = models.Node.objects.get(id=corpus_id).first()
+#    
+#    corpus_django.metadata['Processing'] = 1
+#    corpus_django.save()
+#    
+#    corpus.metadata['Processing'] = 1
+#    session.add(corpus)
+#    session.flush()
+
     parse_resources(corpus)
+    
+#    corpus.metadata['Processing'] = 0
+#    session.add(corpus)
+##    session.flush()
+#    corpus_django.metadata['Processing'] = 1
+#    corpus_django.save()
+# 
     extract_ngrams(corpus, ['title'])
     compute_tfidf(corpus)
 

@@ -312,7 +312,7 @@
 
 			var theType = $("#id_type option:selected").html();
 
-			if(theType=="pubmed") {
+			if(theType=="Pubmed (xml format)") {
 			    $.ajax({
 				  // contentType: "application/json",
 			      url: window.location.origin+"/tests/pubmedquery",
@@ -416,7 +416,7 @@
 
 				$( "#id_name" ).on('input',function(e){
 					console.log($(this).val())
-					if(theType=="pubmed") testPUBMED( $(this).val() )
+					if(theType=="Pubmed (xml format)") testPUBMED( $(this).val() )
 				}); 
 			}
 		}
@@ -424,7 +424,7 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			if(selected=="pubmed" || selected=="istext") {
+			if(selected=="Pubmed (xml format)" || selected=="istext") {
 			// if(selected=="pubmed") {
 				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 

@@ -46,6 +46,8 @@ from sqlalchemy import or_, func
 
 from gargantext_web import about
 
+
+
 def login_user(request):
     logout(request)
     username = password = ''
@@ -199,7 +201,6 @@ def home_view(request):
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
-
     html = t.render(Context({\
             'user': user,\
             'date': date,\

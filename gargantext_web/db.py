@@ -2,6 +2,7 @@ from gargantext_web import settings
 from node import models
 
 
+
 __all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
 
 
@@ -56,6 +57,23 @@ for model_name, model in models.__dict__.items():
 NodeNgram = Node_Ngram
 NodeResource = Node_Resource
 
+# manually declare the Node table...
+from datetime import datetime
+from sqlalchemy.types import *
+from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship, aliased
+
+# class Node(Base):
+#     __tablename__ = 'node_node'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('auth_user.id', ondelete='CASCADE'), index=True, nullable=False)
+#     type_id = Column(Integer, ForeignKey('node_nodetype.id', ondelete='CASCADE'), index=True, nullable=False)
+#     name = Column(String(255))
+#     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
+#     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
+#     metadata = Column(JSONB, default={}, nullable=False)
+
 
 # debugging tool, to translate SQLAlchemy queries to string
 
@@ -67,7 +85,6 @@ def literalquery(statement, dialect=None):
     purposes only. Executing SQL statements with inline-rendered user values is
     extremely insecure.
     """
-    from datetime import datetime
     import sqlalchemy.orm
     if isinstance(statement, sqlalchemy.orm.Query):
         if dialect is None:

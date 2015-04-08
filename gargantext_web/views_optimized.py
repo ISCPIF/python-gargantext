@@ -147,7 +147,7 @@ def project(request, project_id):
             )
             # let's start the workflow
             try:
-                if DEBUG is True:
+                if DEBUG is False:
                     apply_workflow.apply_async((corpus.id,),)
                 else:
                    #apply_workflow(corpus)

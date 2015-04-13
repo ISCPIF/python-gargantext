@@ -1,8 +1,10 @@
 #!/bin/dash
 
 
-sudo mkdir /srv/gargantext_env
-sudo chown gargantua:www-data /srv/gargantext_env
+mkdir /srv/gargantext_env
+chown -R gargantua:www-data /srv/gargantext_env
+
+su gargantua
 
 pyvenv3 /srv/gargantext_env
 

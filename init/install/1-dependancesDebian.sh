@@ -1,45 +1,45 @@
 #!/bin/dash
 
-# TODO do apt-get install --force-yes 
+# TODO do apt-get install --force-yes --force-yes 
 
 
-apt-get install postgresql
-apt-get install postgresql-contrib
-apt-get install rabbitmq-server
-apt-get install tmux
+apt-get install --force-yes postgresql
+apt-get install --force-yes postgresql-contrib
+apt-get install --force-yes rabbitmq-server
+apt-get install --force-yes tmux
 
-apt-get install python3.4-venv
-#apt-get install python-virtualenv
+apt-get install --force-yes python3.4-venv
+#apt-get install --force-yes python-virtualenv
 
-apt-get install libpng12-dev
-apt-get install libpng-dev
-apt-get install libfreetype6-dev
-apt-get install python-dev
-apt-get install libpq-dev
-apt-get install libpq-dev
+apt-get install --force-yes libpng12-dev
+apt-get install --force-yes libpng-dev
+apt-get install --force-yes libfreetype6-dev
+apt-get install --force-yes python-dev
+apt-get install --force-yes libpq-dev
+apt-get install --force-yes libpq-dev
 
-apt-get build-dep python-matplotlib
-apt-get install python-matplotlib
+#apt-get build-dep python-matplotlib
+#apt-get install --force-yes python-matplotlib
 
 #Paquets Debian a installer
-# easy_install -U distribute (matplotlib)
+# easy_install --force-yes -U distribute (matplotlib)
 #lxml
-apt-get install libffi-dev
-apt-get install libxml2-dev
-apt-get install libxslt1-dev
+apt-get install --force-yes libffi-dev
+apt-get install --force-yes libxml2-dev
+apt-get install --force-yes libxslt1-dev
 
 # ipython readline
-apt-get install libncurses5-dev
-apt-get install pandoc
+apt-get install --force-yes libncurses5-dev
+apt-get install --force-yes pandoc
 
 # scipy:
-apt-get install gfortran
-apt-get install libopenblas-dev
-apt-get install liblapack-dev
+apt-get install --force-yes gfortran
+apt-get install --force-yes libopenblas-dev
+apt-get install --force-yes liblapack-dev
 
 #nlpserver
-apt-get install libgflags-dev
-aptitude install libgoogle-glog-dev
+apt-get install --force-yes libgflags-dev
+aptitude install --force-yes libgoogle-glog-dev
 
 # MElt
 # soon
@@ -47,10 +47,10 @@ aptitude install libgoogle-glog-dev
 ## SERVER Configuration
 
 # server configuration
-apt-get install nginx
+apt-get install --force-yes nginx
 
 # UWSGI with pcre support
-apt-get install libpcre3 libpcre3-dev
-apt-get install python3-pip
-pip3 install uwsgi
+apt-get install --force-yes libpcre3 libpcre3-dev
+apt-get install --force-yes python3-pip
+pip3 install --force-yes uwsgi
 

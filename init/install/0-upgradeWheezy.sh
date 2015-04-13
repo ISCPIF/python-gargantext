@@ -1,14 +1,17 @@
 #!/bin/bash
 
-sudo aptitude install postfix
+apt-get install sudo
+
+sudo apt-get install postfix
 # copy from tina
-cp configurations/postfix/main.cf
+sudo cp 0*cf /etc/postfix/main.cf
 sudo postfix reload
 
 sed -i 's/wheezy/jessie/g' /etc/apt/sources.list
 sudo aptitude update
 sudo aptitude dist-upgrade
 
+# dpkg-reconfigure locales => add GB
 
 ssh-keygen
 

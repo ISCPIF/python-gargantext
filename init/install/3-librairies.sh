@@ -11,5 +11,5 @@ tar xvjf /tmp/gargantext_lib.tar.bz2
 sudo chown -R gargantua:www-data /srv/gargantext_lib
 
 cd /srv/gargantext_lib/js
-git clone git@github.com:PkSM3/garg.git
+git pull origin master git@github.com:PkSM3/garg.git
 

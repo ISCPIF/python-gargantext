@@ -39,10 +39,10 @@ In PostreSQL
 
 3)  psql
 
-4)  CREATE USER alexandre WITH PASSWORD 'C8kdcUrAQy66U';
+4)  CREATE USER gargantua WITH PASSWORD 'C8kdcUrAQy66U';
     (see gargantext_web/settings.py, DATABASES = { ... })
     
-5)  CREATE DATABASE gargandb WITH OWNER alexandre;
+5)  CREATE DATABASE gargandb WITH OWNER gargantua;
 
 6)  Ctrl + D
 

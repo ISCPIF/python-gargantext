@@ -7,6 +7,7 @@ apt-get install --force-yes postgresql
 apt-get install --force-yes postgresql-contrib
 apt-get install --force-yes rabbitmq-server
 apt-get install --force-yes tmux
+apt-get install --force-yes uwsgi uwsgi-plugin-python3
 
 apt-get install --force-yes python3.4-venv
 #apt-get install --force-yes python-virtualenv

@@ -13,7 +13,7 @@ pip install --upgrade pip
 pip install -r 3-requirements.txt
 
 pip3 install git+https://github.com/mathieurodic/aldjemy.git
-patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
+patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/patches/cte_tree.models.diff
 
 
 

@@ -69,9 +69,8 @@ TEMPLATE_DIRS = (
 )
 
 
-#ALLOWED_HOSTS = ['*',]
-ALLOWED_HOSTS = ['localhost', 'master.polemic.be', 'beta.gargantext.org']
-
+ALLOWED_HOSTS = ['*',]
+#ALLOWED_HOSTS = ['localhost', 'master.polemic.be', 'beta.gargantext.org']
 
 
 # Application definition

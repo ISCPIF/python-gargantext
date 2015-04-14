@@ -167,7 +167,7 @@ def doTheQuery(request , project_id):
 				extract_ngrams(corpus, ['title'])
 				compute_tfidf(corpus)
 			if DEBUG:
-				apply_workflow(corpus)
+				apply_workflow.apply_async(corpus)
 			else:
 				thread = threading.Thread(target=apply_workflow, args=(corpus, ), daemon=True)
 				thread.start()

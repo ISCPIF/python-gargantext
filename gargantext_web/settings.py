@@ -71,13 +71,10 @@ TEMPLATE_DIRS = (
 
 #ALLOWED_HOSTS = ['*',]
 ALLOWED_HOSTS = ['localhost', 
-                'stable.gargantext.org', 
-                'iscpif.gargantext.org', 
-                'mines.gargantext.org', 
-                'garg-dev.iscpif.fr', 
-                'garg-stable.iscpif.fr', 
-                'dev.gargantext.org', 
-                'beta.gargantext.org']
+                'gargantext.org', 
+                '*.gargantext.org', 
+                '*.iscpif.fr', 
+                ]
 
 
 # Application definition

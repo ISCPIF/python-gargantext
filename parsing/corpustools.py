@@ -231,11 +231,13 @@ def extract_ngrams(corpus, keys):
                     terms    = ' '.join([token for token, tag in ngram]).lower()
                     # TODO BUG here
                     if n == 1:
-                        tag_id   = cache.Tag[ngram[0][1]].id
-                        #tag_id   =  1
+                        #tag_id   = cache.Tag[ngram[0][1]].id
+                        tag_id   =  1
                         #print('tag_id', tag_id)
                     elif n > 1:
-                        tag_id   = cache.Tag['NN'].id
+                        tag_id   =  1
+                        #tag_id   = cache.Tag[ngram[0][1]].id
+                        #tag_id   = cache.Tag['NN'].id
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
                     node_ngram_list[node_id][terms] += 1

@@ -69,8 +69,13 @@ TEMPLATE_DIRS = (
 )
 
 
-ALLOWED_HOSTS = ['*',]
-#ALLOWED_HOSTS = ['localhost', 'master.polemic.be', 'beta.gargantext.org']
+#ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['localhost', 
+                'stable.gargantext.org', 
+                'iscpif.gargantext.org', 
+                'mines.gargantext.org', 
+                'dev.gargantext.org', 
+                'beta.gargantext.org']
 
 
 # Application definition

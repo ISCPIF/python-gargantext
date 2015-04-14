@@ -60,6 +60,7 @@ def apply_workflow(corpus_id):
         corpus_django = models.Node.objects.get(id=corpus_id)
         corpus_django.metadata['Processing'] = 0
         corpus_django.save()
+        print("-" *60)
         
         #TODO With SLA ORM (KO why?)
 #        corpus.metadata['Processing'] = 0

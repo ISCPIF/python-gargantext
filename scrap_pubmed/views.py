@@ -34,6 +34,7 @@ from gargantext_web.api import JsonHttpResponse
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
+from gargantext_web.celery import apply_workflow
 
 def getGlobalStats(request ):
 	print(request.method)
@@ -126,6 +127,7 @@ def doTheQuery(request , project_id):
 			parent_id = project_id,
 			type_id = cache.NodeType['Corpus'].id,
 			language_id = None,
+                        metadata    = {'Processing' : 1,}
 		)
 		session.add(corpus)
 		session.commit()
@@ -162,14 +164,10 @@ def doTheQuery(request , project_id):
 		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
 		try:
-			def apply_workflow(corpus):
-				parse_resources(corpus)
-				extract_ngrams(corpus, ['title'])
-				compute_tfidf(corpus)
 			if DEBUG:
-				apply_workflow.apply_async(corpus)
+				apply_workflow.apply_async((corpus.id,),)
 			else:
-				thread = threading.Thread(target=apply_workflow, args=(corpus, ), daemon=True)
+				thread = threading.Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
 				thread.start()
 		except Exception as error:
 			print('WORKFLOW ERROR')

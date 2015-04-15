@@ -158,7 +158,7 @@ def project(request, project_id):
                 print(error)
             # redirect to the main project page
             # TODO need to wait before response (need corpus update) 
-            sleep(1)
+            sleep(2)
             return HttpResponseRedirect('/project/' + str(project_id))
         else:
             print('ERROR: BAD FORM')

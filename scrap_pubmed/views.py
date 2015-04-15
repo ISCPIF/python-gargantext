@@ -173,7 +173,7 @@ def doTheQuery(request , project_id):
 		except Exception as error:
 			print('WORKFLOW ERROR')
 			print(error)
-                sleep(2)
+		sleep(1)
 		return HttpResponseRedirect('/project/' + str(project_id))
 
 	data = alist

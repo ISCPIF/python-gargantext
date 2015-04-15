@@ -288,8 +288,10 @@ def corpus(request, project_id, corpus_id):
     
     try:
         processing = corpus.metadata['Processing']
-    except:
+    except Exception as error:
+        print(error)
         processing = 0
+    print('processing', processing)
 
     html = t.render(Context({\
             'user': user,\

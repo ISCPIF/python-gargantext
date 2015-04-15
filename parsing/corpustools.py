@@ -33,6 +33,7 @@ class Parsers(defaultdict):
 
     _parsers = {
         'pubmed'            : PubmedFileParser,
+        'istex'             : ISText,
         'isi'               : IsiFileParser,
         'ris'               : RisFileParser,
         'europress'         : EuropressFileParser,

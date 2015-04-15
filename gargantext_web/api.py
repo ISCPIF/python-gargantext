@@ -11,9 +11,9 @@ from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
-
+from gargantext_web.views import move_to_trash
 from .db import *
-
+from node import models
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -47,9 +47,13 @@ _ngrams_order_columns = {
 }
 
 
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException as _APIException
+
 
 class APIException(_APIException):
     def __init__(self, message, code=500):
@@ -200,7 +204,7 @@ class NodesChildrenDuplicates(APIView):
         count = len(duplicate_nodes)
         for node in duplicate_nodes:
             print("deleting node ",node.id)
-            node.delete()
+            move_to_trash(node.id)
         # print(delete_query)
         # # delete_query.delete(synchronize_session=True)
         # session.flush()
@@ -552,11 +556,13 @@ class NodesChildrenQueries(APIView):
 
 
 class NodesList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get(self, request):
+        print("user id : " + str(request.user))
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
-            .filter(Node.user_id == request.session._session_cache['_auth_user_id'])
+            .filter(Node.user_id == int(request.user.id))
             .join(NodeType)
         )
         if 'type' in request.GET:
@@ -579,6 +585,8 @@ class Nodes(APIView):
         return JsonHttpResponse({
             'id': node.id,
             'name': node.name,
+            'parent_id': node.parent_id,
+            'type': cache.NodeType[node.type_id].name,
             # 'type': node.type__name,
             #'metadata': dict(node.metadata),
             'metadata': node.metadata,
@@ -589,13 +597,19 @@ class Nodes(APIView):
     # it should take the subnodes into account as well,
     # for better constistency...
     def delete(self, request, node_id):
+        
+        user = request.user
         node = session.query(Node).filter(Node.id == node_id).first()
-        msgres = ""
+        
+        msgres = str()
+        
         try:
-            node.delete()
-            msgres = node_id+" deleted!"
-        except:
-            msgres ="error deleting: "+node_id
+            
+            move_to_trash(node_id)
+            msgres = node_id+" moved to Trash"
+        
+        except Exception as error:
+            msgres ="error deleting : " + node_id + str(error)
 
         return JsonHttpResponse({
             'deleted': msgres,
@@ -611,7 +625,7 @@ class CorpusController:
             raise ValidationError('Corpora are identified by an integer.', 400)
         corpusQuery = session.query(Node).filter(Node.id == corpus_id).first()
         # print(str(corpusQuery))
-        # raise Http404("C'est toujours ça de pris.")
+        # raise Http404("404 error.")
         if not corpusQuery:
             raise Http404("No such corpus: %d" % (corpus_id, ))
         corpus = corpusQuery.first()

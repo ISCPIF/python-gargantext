@@ -14,11 +14,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROJECT_PATH = os.path.join(BASE_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 
+
+######################################################################
+# ASYNCHRONOUS TASKS
+
 import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-CELERY_IMPORTS=("node.models",)
 
+CELERY_IMPORTS=("node.models","gargantext_web.celery")
+
+
+#
+#from celery import Celery
+#
+#app = Celery('gargantext_web')
+#
+#app.conf.update(
+#    CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend',
+#)
+#
+#
+#app.conf.update(
+#    CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend',
+#)
+#
+
+######################################################################
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -48,8 +70,16 @@ TEMPLATE_DIRS = (
 
 
 #ALLOWED_HOSTS = ['*',]
-ALLOWED_HOSTS = ['localhost', 'master.polemic.be', 'beta.gargantext.org']
-
+ALLOWED_HOSTS = ['localhost', 
+                'gargantext.org', 
+                'stable.gargantext.org', 
+                'dev.gargantext.org', 
+                'iscpif.gargantext.org', 
+                'mines.gargantext.org', 
+                'beta.gargantext.org', 
+                'garg-dev.iscpif.fr', 
+                'garg-stable.iscpif.fr', 
+                ]
 
 
 # Application definition
@@ -82,6 +112,16 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+REST_SESSION_LOGIN = False
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+   'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
 
 WSGI_APPLICATION = 'wsgi.application'
 
@@ -93,7 +133,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'gargandb',
-        'USER': 'alexandre',
+        'USER': 'gargantua',
         'PASSWORD': 'C8kdcUrAQy66U',
         #'USER': 'gargantext',
         #'PASSWORD': 'C8krdcURAQy99U',

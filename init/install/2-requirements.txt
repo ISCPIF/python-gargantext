@@ -5,14 +5,14 @@ MarkupSafe==0.23
 Pillow==2.5.3
 Pygments==1.6
 RandomWords==0.1.12
-SQLAlchemy==0.9.8
+SQLAlchemy==0.9.9
 South==1.0
 aldjemy==0.3.10
 amqp==1.4.6
 anyjson==0.3.3
 bibtexparser==0.6.0
-billiard==3.3.0.18
-celery==3.1.15
+billiard==3.3.0.19
+celery==3.1.17
 certifi==14.05.14
 cffi==0.8.6
 chardet==2.3.0
@@ -36,7 +36,7 @@ djangorestframework==3.0.0
 gensim==0.10.3
 graphviz==0.4
 ipython==2.2.0
-kombu==3.0.23
+kombu==3.0.24
 lxml==3.4.1
 #matplotlib==1.4.0
 networkx==1.9
@@ -52,7 +52,7 @@ pydot2==1.0.33
 pyparsing==2.0.2
 python-dateutil==2.2
 python-igraph==0.7
-pytz==2014.7
+pytz==2015.2
 pyzmq==14.3.1
 readline==6.2.4.1
 redis==2.10.3

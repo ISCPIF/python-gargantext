@@ -7,8 +7,7 @@ from math import log
 
 from gargantext_web.db import *
 
-from .FileParsers import *
-
+from .parsers_config import parsers as _parsers
 
 
 class DebugTime:
@@ -31,18 +30,12 @@ class DebugTime:
 # keep all the parsers in a cache
 class Parsers(defaultdict):
 
-    _parsers = {
-        'pubmed'            : PubmedFileParser,
-        'istex'             : ISText,
-        'isi'               : IsiFileParser,
-        'ris'               : RisFileParser,
-        'europress'         : EuropressFileParser,
-        'europress_french'  : EuropressFileParser,
-        'europress_english' : EuropressFileParser,
-    }
+    def __init__(self):
+        self._parsers = _parsers
 
     def __missing__(self, key):
-        if key not in self._parsers:
+        #print(self._parsers.keys())
+        if key not in self._parsers.keys():
             raise NotImplementedError('No such parser: "%s"' % (key))
         parser = self._parsers[key]()
         self[key] = parser
@@ -238,11 +231,13 @@ def extract_ngrams(corpus, keys):
                     terms    = ' '.join([token for token, tag in ngram]).lower()
                     # TODO BUG here
                     if n == 1:
-                        tag_id   = cache.Tag[ngram[0][1]].id
-                        #tag_id   =  1
+                        #tag_id   = cache.Tag[ngram[0][1]].id
+                        tag_id   =  1
                         #print('tag_id', tag_id)
                     elif n > 1:
-                        tag_id   = cache.Tag['NN'].id
+                        tag_id   =  1
+                        #tag_id   = cache.Tag[ngram[0][1]].id
+                        #tag_id   = cache.Tag['NN'].id
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
                     node_ngram_list[node_id][terms] += 1

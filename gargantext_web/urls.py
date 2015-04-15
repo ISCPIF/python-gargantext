@@ -33,7 +33,7 @@ urlpatterns = patterns('',
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
-    url(r'^delete/(\d+)$', views.trash_node), # => api.node('id' = id, children = 'True', copies = False)
+    url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
     
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),

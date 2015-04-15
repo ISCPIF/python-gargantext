@@ -39,10 +39,10 @@ In PostreSQL
 
 3)  psql
 
-4)  CREATE USER alexandre WITH PASSWORD 'C8kdcUrAQy66U';
+4)  CREATE USER gargantua WITH PASSWORD 'C8kdcUrAQy66U';
     (see gargantext_web/settings.py, DATABASES = { ... })
     
-5)  CREATE DATABASE gargandb WITH OWNER alexandre;
+5)  CREATE DATABASE gargandb WITH OWNER gargantua;
 
 6)  Ctrl + D
 
@@ -80,7 +80,7 @@ Last steps of configuration
     Warning: for ln, path has to be absolute!
 
 5)  patch CTE:
-    patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/cte_tree.models.diff
+    patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/patches/cte_tree.models.diff
 
 6)  init nodetypes and main variables
     /srv/gargantext/manage.py shell < /srv/gargantext/init/init.py

@@ -25,7 +25,7 @@ def get_session():
     from aldjemy.core import get_engine
     alias = 'default'
     connection = connections[alias]
-    engine = create_engine("postgresql+psycopg2://alexandre:C8kdcUrAQy66U@localhost/gargandb",
+    engine = create_engine("postgresql+psycopg2://gargantua:C8kdcUrAQy66U@localhost/gargandb",
             use_native_hstore=True)
     Session = sessionmaker(bind=engine)
     return Session()

@@ -83,11 +83,12 @@
 										<li>{{ key }}</li>
 												<ul>
 														{% for corpus in corpora %}
-														<li> {% ifnotequal corpus.count 0 %}
-																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} </a> , {{ corpus.count }} Documents 
-															 {% else %}
+														<li> 
+                               {% ifequal corpus.processing 1 %}
 																 	{{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
-															 {% endifnotequal %}
+															 {% else %}
+																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} </a> , {{ corpus.count }} Documents 
+															 {% endifequal %}
 																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='
 																		<ul>
@@ -321,7 +322,7 @@
 			console.log("theType:")
 			console.log(theType)
 
-			if(theType=="pubmed") {
+			if(theType=="Pubmed (xml format)") {
 			    $.ajax({
 				  // contentType: "application/json",
 			      url: window.location.origin+"/tests/pubmedquery",
@@ -336,7 +337,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 1000 sample!")
+					$("#submit_thing").html("Process a 100 sample!")
 
 		            thequeries = data
 		            var N=0,k=0;
@@ -425,7 +426,7 @@
 
 				$( "#id_name" ).on('input',function(e){
 					console.log($(this).val())
-					if(theType=="pubmed") testPUBMED( $(this).val() )
+					if(theType=="Pubmed (xml format)") testPUBMED( $(this).val() )
 				}); 
 			}
 		}
@@ -433,7 +434,7 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			if(selected=="pubmed" || selected=="istex") {
+			if(selected=="Pubmed (xml format)" || selected=="istext") {
 			// if(selected=="pubmed") {
 				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 

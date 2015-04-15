@@ -321,7 +321,7 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     import datetime
     dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
     datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
-
+    # print (dateini,"\t",datefin)
     t = get_template('subcorpus.html')
     
     user = request.user
@@ -339,14 +339,20 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     # filtering documents by range-date
     for doc in documents:
         if "publication_date" in doc.metadata:
-            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
-            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
-            if dateini <= realdate <= datefin:
-                doc.date = realdate
-                filtered_docs.append(doc)
-
+            try:
+                realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+                if dateini <= realdate <= datefin:
+                    doc.date = realdate
+                    filtered_docs.append(doc)
+            except Exception as e:
+                print ("pag error01 detail:",e)
+                print("pag error01 doc:",doc)
+    # import pprint
+    # pprint.pprint(filtered_docs)
     # ordering from most recent to the older.
     ordered = sorted(filtered_docs, key=lambda x: x.date)
+
 
     # pages of 10 elements. Like a sir.
     paginator = Paginator(ordered, 10)
@@ -385,14 +391,13 @@ def subcorpusJSON(request, project_id, corpus_id, start , end ):
         offset = str(end)
     except ValueError:
         raise Http404()
-
     # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
     import datetime
     dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
     datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
 
     t = get_template('subcorpus.html')
-    
+    print(dateini , "\t" , datefin)
     user = request.user
     date = datetime.datetime.now()
     

@@ -58,7 +58,7 @@ def apply_workflow(corpus_id):
         
         # With Django ORM 
         corpus_django = models.Node.objects.get(id=corpus_id)
-        corpus_django.metadata['Processing'] = 0
+        corpus_django.metadata['Processing'] = "2"
         corpus_django.save()
         print("-" *60)
         
@@ -73,5 +73,12 @@ def apply_workflow(corpus_id):
        
     extract_ngrams(corpus, ['title'])
     compute_tfidf(corpus)
+    
+    try:
+        corpus_django.metadata['Processing'] = 0
+        corpus_django.save()
+    except Exception as error:
+        print(error)
+
 
 

@@ -131,7 +131,7 @@
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-                {% if processing == "1" %}
+                {% if processing >= "1" %}
                 <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
                 {% else %}
 								<h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>

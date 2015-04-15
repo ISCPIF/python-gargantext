@@ -1,3 +1,6 @@
+
+import os
+
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
@@ -14,6 +17,7 @@ from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from gargantext_web.api import JsonHttpResponse
+
 import json
 import re
 
@@ -134,7 +138,15 @@ def project(request, project_id):
             )
             session.add(corpus)
             session.commit()
-            # save the uploaded file
+            
+            # If user is new, folder does not exist yet, create it then
+            dirpath = '%s/corpora/%s' % (MEDIA_ROOT, request.user.username)
+
+            if not os.path.exists(dirpath):
+                print("Creating folder %s" % dirpath)
+                os.makedirs(dirpath)
+            
+            # Save the uploaded file
             filepath = '%s/corpora/%s/%s' % (MEDIA_ROOT, request.user.username, thefile._name)
             f = open(filepath, 'wb')
             f.write(thefile.read())
@@ -158,7 +170,7 @@ def project(request, project_id):
                 print(error)
             # redirect to the main project page
             # TODO need to wait before response (need corpus update) 
-            sleep(1)
+            sleep(2)
             return HttpResponseRedirect('/project/' + str(project_id))
         else:
             print('ERROR: BAD FORM')

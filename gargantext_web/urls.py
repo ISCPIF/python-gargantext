@@ -102,6 +102,7 @@ if settings.MAINTENANCE:
     
     url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
+    url(r'^admin/', include(admin.site.urls)),
     
     url(r'^.*', views.get_maintenance),
     )

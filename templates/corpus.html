@@ -277,7 +277,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             });
 
             var orderDates = Object.keys(justdates).reverse();
-            
+            // console.log(orderDates)
             latest = orderDates[0].split("/")
             oldest = orderDates[orderDates.length-1].split("/")
 

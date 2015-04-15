@@ -277,15 +277,10 @@
 		function bringDaNoise() {
 			var theresults = $("#theresults").html()
 			if( theresults && theresults.search("No results")==-1 ) {
-				var origQuery = $("#id_name").val()
 				console.log("we've in dynamic mode")
 				$("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
 				$("#submit_thing").prop('onclick',null);
-				var theType = $("#id_type option:selected").html();
-				if(theType=="pubmed") doTheQuery();
-				if(theType=="istex") {
-					testISTEX(origQuery.replace(" ","+"),1000)
-				}
+				doTheQuery();
 			}
 			else {
 				console.log("we dont have nothing inside results div")
@@ -301,13 +296,12 @@
 						$( "#id_form" ).submit();
 					}
 				}
+
 			}
 		}
 
 		function getGlobalResults(value){
 			console.log("in getGlobalResults()")
-			console.log("value:")
-			console.log(value)
 			// AJAX to django
 			var pubmedquery = $("#id_name").val()
 			var Npubs = $("#id_N").val();
@@ -318,8 +312,6 @@
 			$("#"+value.id).prop('onclick',null);
 
 			var theType = $("#id_type option:selected").html();
-			console.log("theType:")
-			console.log(theType)
 
 			if(theType=="Pubmed (xml format)") {
 			    $.ajax({
@@ -357,7 +349,7 @@
 			    });	
 			}
 
-			if(theType=="istex") {
+			if(theType=="istext") {
 				console.log(window.location.origin+"tests/istextquery")
 			    $.ajax({
 				  // contentType: "application/json",
@@ -484,7 +476,7 @@
 			var origQuery = query
 
 
-			var pubmedifiedQuery = { query : query , string: query , N:Npubs}
+			var pubmedifiedQuery = { query : query , string: query }
 			// console.log(pubmedifiedQuery)
 
 			var projectid = window.location.href.split("project")[1].replace(/\//g, '')//replace all the slashes
@@ -500,7 +492,7 @@
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
 		        console.log(data)
-		        location.reload();
+		        // location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

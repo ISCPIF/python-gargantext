@@ -3,7 +3,7 @@ from django.template.loader import get_template
 from django.template import Context
 from django.contrib.auth.models import User, Group
 
-from scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
+from scrappers.scrap_pubmed.MedlineFetcherDavid2015 import MedlineFetcher
 
 from urllib.request import urlopen, urlretrieve
 import json

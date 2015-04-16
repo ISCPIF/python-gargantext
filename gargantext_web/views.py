@@ -38,7 +38,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
-from scrap_pubmed.admin import Logger
+from scrappers.scrap_pubmed.admin import Logger
 
 from gargantext_web.db import *
 

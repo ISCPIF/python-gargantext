@@ -4,18 +4,22 @@ from .FileParser import FileParser
 
 class RisFileParser(FileParser):
 
-    _parameters = {
-        b"ER":  {"type": "delimiter"},
-        b"TI":  {"type": "metadata", "key": "title", "separator": " "},
-        b"ST":  {"type": "metadata", "key": "subtitle", "separator": " "},
-        b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
-        b"UR":  {"type": "metadata", "key": "doi"},
-        b"PY":  {"type": "metadata", "key": "publication_year"},
-        b"PD":  {"type": "metadata", "key": "publication_month"},
-        b"LA":  {"type": "metadata", "key": "language_iso2"},
-        b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
-        b"WC":  {"type": "metadata", "key": "fields"},
-    }
+    def __init__(self):
+        super(FileParser, self).__init__()
+        self._parameters = {
+            b"ER":  {"type": "delimiter"},
+            b"TI":  {"type": "metadata", "key": "title", "separator": " "},
+            b"ST":  {"type": "metadata", "key": "subtitle", "separator": " "},
+            b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
+            b"UR":  {"type": "metadata", "key": "doi"},
+            b"PY":  {"type": "metadata", "key": "publication_year"},
+            b"PD":  {"type": "metadata", "key": "publication_month"},
+            b"LA":  {"type": "metadata", "key": "language_iso2"},
+            b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
+            b"WC":  {"type": "metadata", "key": "fields"},
+        }
+        
+        self._begin = 6
 
     def _parse(self, file):
         metadata = {}
@@ -43,7 +47,7 @@ class RisFileParser(FileParser):
                     last_key = parameter_key
                     last_values = []
                 try:
-                    last_values.append(line[6:-1].decode())
+                    last_values.append(line[self._begin:-1].decode())
                 except Exception as error:
                     print(error)
         # if a metadata object is left in memory, yield it as well

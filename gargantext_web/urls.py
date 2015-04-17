@@ -6,7 +6,7 @@ from django.contrib.auth.views import login
 from gargantext_web import views, views_optimized
 
 import gargantext_web.api
-import scrap_pubmed.views as pubmedscrapper
+import scrappers.scrap_pubmed.views as pubmedscrapper
 
 
 admin.autodiscover()
@@ -102,6 +102,7 @@ if settings.MAINTENANCE:
     
     url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
+    url(r'^admin/', include(admin.site.urls)),
     
     url(r'^.*', views.get_maintenance),
     )

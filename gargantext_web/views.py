@@ -39,7 +39,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
-from scrap_pubmed.admin import Logger
+from scrappers.scrap_pubmed.admin import Logger
 
 from gargantext_web.db import *
 
@@ -259,8 +259,8 @@ def corpus(request, project_id, corpus_id):
         return redirect('/login/?next=%s' % request.path)
     
     try:
-        offset = str(project_id)
-        offset = str(corpus_id)
+        offset = int(project_id)
+        offset = int(corpus_id)
     except ValueError:
         raise Http404()
 
@@ -289,8 +289,10 @@ def corpus(request, project_id, corpus_id):
     
     try:
         processing = corpus.metadata['Processing']
-    except:
+    except Exception as error:
+        print(error)
         processing = 0
+    print('processing', processing)
 
     html = t.render(Context({\
             'user': user,\

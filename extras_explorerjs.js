@@ -152,6 +152,61 @@ function getGlobalDBs(){
     }
 }
 
+
+function genericGetTopPapers(theids , corpus_id , thediv) {
+    $("#"+thediv).show();
+    $.ajax({
+        type: 'GET',
+        url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
+        //contentType: "application/json",
+        //dataType: 'json',
+        success : function(data){ 
+            pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
+            var arraydata = $.parseJSON(data)
+            console.log(arraydata)
+            var output = "<ul style='padding: 0px; margin: 13px;'>"
+            for(var i in arraydata) {
+                var pub = arraydata[i]
+                var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+                var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
+
+                var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
+
+                if(pub["journal"]) ifjournal = "<br>Published in <a>"+pub["journal"]+"</a>";
+                if(pub["authors"]) {
+                    ifauthors = "By "+pub["authors"]+"";
+                    if(pub["authors"] == "not found") {
+                        if(pub["source"])
+                            ifauthors = "By "+pub["source"]+"";
+                        else ifauthors = ""
+                    } else  ifauthors = ""
+                }
+                if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
+                if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
+                
+                var jsstuff = "if(wnws_buffer!=null) {wnws_buffer.close();} "
+                var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
+                jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
+
+                output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
+                output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                output +="</li>\n";
+                // for(var j in pub) {
+                //  if(j!="abstract")
+                //      output += "<li><b>"+j+"</b>: "+pub[j]+"</li>\n";
+                // }
+                output += "<br>"
+            }
+            output += "</ul>"
+            $("#"+thediv).html(output);
+            $("#"+thediv).show();
+        },
+        error: function(){ 
+            pr('Page Not found: getTopPapers()');
+        }
+    });
+}
+
 //DataFolderMode
 function getTopPapers(type){
     if(getAdditionalInfo){
@@ -229,7 +284,61 @@ function getTopPapers(type){
                 pr('Page Not found: getTopPapers()');
             }
         });
+
+
+        for(var i in corpusesList) {
+            var c_id = i;
+            var text = corpusesList[i]["name"]
+            console.log(theid+" : "+text)
+            genericGetTopPapers(theids , c_id , ("top_"+text) )
+        }
     }
+}
+
+function printCorpuses() {
+    var corpuses = $('input[name=optradio]:checked');
+    var count = 3
+    for(var c in corpuses) {
+        if(isNaN(parseInt(c)))
+            break;
+        count++;
+        var thename = $.trim( corpuses.parent().text() ).split(' ').join('_');
+        corpusesList[corpuses[c].id] = { "name": thename , "count":count }
+        // console.log(corpuses[c].id+" : "+$.trim( corpuses.parent().text() )   );
+    }
+    $("#closecorpuses").click();
+
+
+    $("#tab-container-top").html("");
+    var string = ""
+    string += "<ul class='etabs'>"+"\n";
+    string += "\t"+"<li id='tabmed' class='tab active'><a href='#tabs3'>Main Pubs</a></li>"+"\n";
+    for(var i in corpusesList) {
+        var text = corpusesList[i]["name"]
+        var c = corpusesList[i]["count"]
+        string += "\t"+"<li id='tab_"+text+"' class='tab'><a href='#tabs"+c+"'>"+text+" Pubs</a></li>"+"\n";
+    }
+    
+    string += "</ul>"+"\n";
+    string += "<div class='panel-container'>"+"\n";
+    string += "\t"+'<div id="tabs3">'+"\n";
+    string += "\t\t"+'<div id="topPapers"></div>'+"\n";
+    string += "\t"+'</div>'+"\n";
+
+
+    for(var i in corpusesList) {
+        var text = corpusesList[i]["name"]
+        var c = corpusesList[i]["count"]
+        string += "\t"+'<div id="tabs'+c+'">'+"\n";
+        string += "\t\t"+'<div id="top_'+text+'"></div>'+"\n";
+        string += "\t"+'</div>'+"\n";
+    }
+    string += "</div>"+"\n";
+    $("#tab-container-top").html(string);
+    console.log(string)
+    console.log(" - - -- -- - ")
+    console.log(corpusesList)
+
 }
 
 

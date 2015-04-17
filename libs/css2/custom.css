@@ -136,7 +136,7 @@
 /* ZOOM IN OUT */
 
 #ctlzoom {
-    position: absolute; right: 300px; bottom: 5px; list-style: none; padding: 0; margin: 0;/*EDIT*/
+    position: absolute; right: 400px; bottom: 5px; list-style: none; padding: 0; margin: 0;/*EDIT*/
 }
 
 #ctlzoom li {

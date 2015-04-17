@@ -10,6 +10,7 @@ var getAdditionalInfo=true;//for topPapers div
 
 var mainfile=false;
 getUrlParam.file = $("#graphid").html();
+var corpusesList = {}
 
 var dataFolderTree = {};
 var gexfDict={};

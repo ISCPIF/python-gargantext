@@ -199,8 +199,12 @@ def tfidf(request, corpus_id, ngram_ids):
         .order_by(func.sum(NodeNodeNgram.score).desc())
         .limit(limit)
     )
+    # print("\n")
+    # print("in TFIDF:")
+    # print("\tcorpus_id:",corpus_id)
     # convert query result to a list of dicts
     for node, score in nodes_query:
+        print("\t corpus:",corpus_id,"\t",node.name)
         node_dict = {
             'id': node.id,
             'score': score,
@@ -210,5 +214,6 @@ def tfidf(request, corpus_id, ngram_ids):
                 node_dict[key] = node.metadata[key]
         nodes_list.append(node_dict)
 
+    # print("= = = = = = = = \n")
     data = json.dumps(nodes_list) 
     return JsonHttpResponse(data)

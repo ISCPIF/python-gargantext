@@ -27,6 +27,7 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 import os
+import json
 
 # SOME FUNCTIONS
 
@@ -305,6 +306,56 @@ def corpus(request, project_id, corpus_id):
     return HttpResponse(html)
 
 
+def newpaginatorJSON(request , project_id , corpus_id):
+
+    results = ["hola" , "mundo"]
+
+    # t = get_template('tests/newpag/thetable.html')
+    
+    project = session.query(Node).filter(Node.id==project_id).first()
+    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
+    type_document_id = cache.NodeType['Document'].id
+    documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
+
+    filtered_docs = []
+    for doc in documents:
+        if "publication_date" in doc.metadata:
+            try:
+                realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
+                # doc.date = realdate
+                resdict = {}
+                resdict["id"] = doc.id 
+                resdict["date"] = realdate
+                resdict["name"] =  doc.name
+                filtered_docs.append( resdict )
+            except Exception as e:
+                print ("pag2 error01 detail:",e)
+                print("pag2 error01 doc:",doc)
+    results = sorted(filtered_docs, key=lambda x: x["date"])
+    for i in results:
+        i["date"] = i["date"].strftime("%Y-%m-%d")
+
+    finaldict = {
+        "records":results,
+        "queryRecordCount":10,
+        "totalRecordCount":len(results)
+    }
+    return JsonHttpResponse(finaldict)
+    # html = t.render(Context({\
+    #         # 'user': user,\
+    #         # 'date': date,\
+    #         'project': project_id,\
+    #         'corpus' : corpus_id,\
+    #         # 'documents': results,\
+    #         # 'number' : len(filtered_docs),\
+    #         # 'dates' : chart,\
+    #         }))
+    
+    # return HttpResponse(html)
+
+
+# Im using this actually
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 def subcorpus(request, project_id, corpus_id, start , end ):
     if not request.user.is_authenticated():
@@ -380,7 +431,6 @@ def subcorpus(request, project_id, corpus_id, start , end ):
     return HttpResponse(html)
 
 
-import json
 def subcorpusJSON(request, project_id, corpus_id, start , end ):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -559,11 +609,34 @@ def graph(request, project_id, corpus_id):
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
+
+    user_id         = cache.User[request.user.username].id
+    project_type_id = cache.NodeType['Project'].id
+    corpus_type_id = cache.NodeType['Corpus'].id
+
+    results = {}
+    projs = session.query(Node).filter(Node.type_id==project_type_id).all()
+    for i in projs:
+        # print(i.id , i.name)
+        if i.id not in results: results[i.id] = {}
+        results[i.id]["proj_name"] = i.name
+        results[i.id]["corpuses"] = []
+        corpuses = session.query(Node).filter(Node.parent_id==i.id , Node.type_id==corpus_type_id).all()
+        for j in corpuses:
+            if int(j.id)!=int(corpus_id):
+                info = { "id":j.id , "name":j.name }
+                results[i.id]["corpuses"].append(info)
+                # print("\t",j.id , j.name)
+
+    import pprint
+    pprint.pprint(results)
+
     html = t.render(Context({\
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
+            'corpusinfo'   : results,\
             'graphfile' : "hola_mundo",\
             }))
     
@@ -667,7 +740,6 @@ def send_csv(request, corpus_id):
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
-import json
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.

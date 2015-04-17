@@ -282,7 +282,7 @@
 				$("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
 				$("#submit_thing").prop('onclick',null);
 				var theType = $("#id_type option:selected").html();
-				if(theType=="pubmed") doTheQuery();
+				if(theType=="Pubmed (xml format)") doTheQuery();
 				if(theType=="istex") {
 					testISTEX(origQuery.replace(" ","+"),1000)
 				}

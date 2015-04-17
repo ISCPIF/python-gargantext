@@ -79,8 +79,8 @@ urlpatterns = patterns('',
     url(r'^tests/istextquery$', pubmedscrapper.getGlobalStatsISTEXT), # api/query?type=istext ?
     url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
-    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX)
-
+    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
+    url(r'^tests/paginator/project/(\d+)/corpus/(\d+)/$', views.newpaginatorJSON)
 )
 
 

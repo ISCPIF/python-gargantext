@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
 <link rel="stylesheet" href="{% static "js/libs/jquery/jquery-ui.css" %}" media="screen">
-<link rel="stylesheet" href="{% static "js/libs/bootstrap/css/bootstrap.css" %}" media="screen">
+<!-- <link rel="stylesheet" href="{% static "js/libs/bootstrap/css/bootstrap.css" %}" media="screen"> -->
 <link rel="stylesheet" href="{% static "js/libs/css2/freshslider.css" %}" media="screen">
 <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %}" media="screen">
 <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %}" media="screen">
@@ -260,13 +260,13 @@
 
         </div>
         
-        <div id="topPapers"></div>
-        <!--
+        <!-- <div id="topPapers"></div> -->
+        
         <div id="tab-container-top" class='tab-container'>
 
            <ul class='etabs'>
              <li id="tabmed" class='tab active'><a href="#tabs3">Medline Pubs</a></li>
-             <li id="tabgps" class='tab'><a href="#tabs4">+</a></li>
+             <li id="tabgps" class='tab'><a onclick="$('#corpuses').modal('show');">+</a></li>
            </ul>
 
            <div class='panel-container'>
@@ -278,7 +278,7 @@
               </div>
            </div>
         </div>
-        -->
+        
 
 
 
@@ -343,6 +343,70 @@
       <div class="modal-footer">
         <button id="closesavemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" onclick="saveGraph();">Save File</button>
+      </div>
+
+    </div>
+  </div>
+</div> 
+
+
+
+<div id="corpuses" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Corpus Comparison</h4>
+      </div>
+
+
+
+      <div class="modal-body form-horizontal">
+        Chose another corpus to compare with:
+        <div class="form-group">
+          <label class="col-lg-2 control-label"> </label>
+          <div class="col-lg-10">
+
+
+              <form id="corpuses_form" role="form">
+
+                <ul>
+
+                  {% if corpusinfo  %}
+                    {% for k1, v1 in corpusinfo.items %}
+                        {% if v1.corpuses|length > 0  %}
+                            <br><li><a href="/project/{{k1}}/">{{v1.proj_name}}</a><br>
+                              <ul style="list-style-type: none;">
+                              {% for c in v1.corpuses %}
+                                <li>
+                                  <div class="radio">
+                                    <label><input type="radio" id="{{c.id}}" name="optradio">
+                                      <a href="/project/{{k1}}/corpus/{{c.id}}/">{{c.name}}</a>
+                                    </label>
+                                  </div>
+                                </li>
+                              {% endfor %}
+                              </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                  {% endif %}
+
+                </ul>
+
+              </form>
+
+
+          </div>
+        </div>
+      </div>
+
+
+      <div class="modal-footer">
+        <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick='printCorpuses();'>Add Tab</button>
       </div>
 
     </div>

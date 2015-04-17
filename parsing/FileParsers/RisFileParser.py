@@ -7,6 +7,7 @@ class RisFileParser(FileParser):
     _parameters = {
         b"ER":  {"type": "delimiter"},
         b"TI":  {"type": "metadata", "key": "title", "separator": " "},
+        b"ST":  {"type": "metadata", "key": "subtitle", "separator": " "},
         b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
         b"UR":  {"type": "metadata", "key": "doi"},
         b"PY":  {"type": "metadata", "key": "publication_year"},
@@ -42,9 +43,10 @@ class RisFileParser(FileParser):
                     last_key = parameter_key
                     last_values = []
                 try:
-                    last_values.append(line[3:-1].decode())
+                    last_values.append(line[6:-1].decode())
                 except Exception as error:
                     print(error)
         # if a metadata object is left in memory, yield it as well
         if metadata:
+            #print(metadata['title'])
             yield metadata

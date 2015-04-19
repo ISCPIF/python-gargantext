@@ -5,7 +5,11 @@ from .RisFileParser import RisFileParser
 class IsiFileParser(RisFileParser):
     
     def __init__(self):
+        
         super(RisFileParser, self).__init__()
+        
+        self._begin = 3
+        
         self._parameters = {
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "metadata", "key": "title", "separator": " "},
@@ -18,4 +22,3 @@ class IsiFileParser(RisFileParser):
             b"WC":  {"type": "metadata", "key": "fields"},
         }
 
-        self._begin = 3

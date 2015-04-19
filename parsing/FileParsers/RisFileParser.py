@@ -1,11 +1,17 @@
 from django.db import transaction
 from .FileParser import FileParser
 
+from ..Caches import LanguagesCache
 
 class RisFileParser(FileParser):
 
-    def __init__(self):
+    def __init__(self, language_cache=None):
+        
         super(FileParser, self).__init__()
+        self._languages_cache = LanguagesCache() if language_cache is None else language_cache
+        
+        self._begin = 6
+        
         self._parameters = {
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "metadata", "key": "title", "separator": " "},
@@ -19,7 +25,6 @@ class RisFileParser(FileParser):
             b"WC":  {"type": "metadata", "key": "fields"},
         }
         
-        self._begin = 6
 
     def _parse(self, file):
         metadata = {}

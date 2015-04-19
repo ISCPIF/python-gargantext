@@ -4,9 +4,12 @@ from .RisFileParser import RisFileParser
 class JstorFileParser(RisFileParser):
  
     def __init__(self):
+        
         super(RisFileParser, self).__init__()
+        
+        self._begin = 3
 
-        _parameters = {
+        self._parameters = {
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "metadata", "key": "title", "separator": " "},
             b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
@@ -18,4 +21,3 @@ class JstorFileParser(RisFileParser):
             b"WC":  {"type": "metadata", "key": "fields"},
         }
 
-        begin = 3

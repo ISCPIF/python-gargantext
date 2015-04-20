@@ -97,7 +97,7 @@ INSTALLED_APPS = (
     'cte_tree',
     'node',
     'ngram',
-    'scrap_pubmed',
+    'scrappers.scrap_pubmed',
     'djcelery',
     'aldjemy',
     'rest_framework',

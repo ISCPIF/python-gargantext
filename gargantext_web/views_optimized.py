@@ -26,6 +26,9 @@ from parsing.corpustools import add_resource, parse_resources, extract_ngrams, c
 
 from gargantext_web.celery import apply_workflow
 
+from admin.utils import ensure_dir
+
+
 def project(request, project_id):
 
     # do we have a valid project id?
@@ -140,11 +143,7 @@ def project(request, project_id):
             session.commit()
             
             # If user is new, folder does not exist yet, create it then
-            dirpath = '%s/corpora/%s' % (MEDIA_ROOT, request.user.username)
-
-            if not os.path.exists(dirpath):
-                print("Creating folder %s" % dirpath)
-                os.makedirs(dirpath)
+            ensure_dir(request.user)
             
             # Save the uploaded file
             filepath = '%s/corpora/%s/%s' % (MEDIA_ROOT, request.user.username, thefile._name)

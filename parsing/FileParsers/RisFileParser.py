@@ -1,20 +1,30 @@
 from django.db import transaction
 from .FileParser import FileParser
 
+from ..Caches import LanguagesCache
 
 class RisFileParser(FileParser):
 
-    _parameters = {
-        b"ER":  {"type": "delimiter"},
-        b"TI":  {"type": "metadata", "key": "title", "separator": " "},
-        b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
-        b"UR":  {"type": "metadata", "key": "doi"},
-        b"PY":  {"type": "metadata", "key": "publication_year"},
-        b"PD":  {"type": "metadata", "key": "publication_month"},
-        b"LA":  {"type": "metadata", "key": "language_iso2"},
-        b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
-        b"WC":  {"type": "metadata", "key": "fields"},
-    }
+    def __init__(self, language_cache=None):
+        
+        super(FileParser, self).__init__()
+        self._languages_cache = LanguagesCache() if language_cache is None else language_cache
+        
+        self._begin = 6
+        
+        self._parameters = {
+            b"ER":  {"type": "delimiter"},
+            b"TI":  {"type": "metadata", "key": "title", "separator": " "},
+            b"ST":  {"type": "metadata", "key": "subtitle", "separator": " "},
+            b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
+            b"UR":  {"type": "metadata", "key": "doi"},
+            b"PY":  {"type": "metadata", "key": "publication_year"},
+            b"PD":  {"type": "metadata", "key": "publication_month"},
+            b"LA":  {"type": "metadata", "key": "language_iso2"},
+            b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
+            b"WC":  {"type": "metadata", "key": "fields"},
+        }
+        
 
     def _parse(self, file):
         metadata = {}
@@ -42,9 +52,10 @@ class RisFileParser(FileParser):
                     last_key = parameter_key
                     last_values = []
                 try:
-                    last_values.append(line[3:-1].decode())
+                    last_values.append(line[self._begin:-1].decode())
                 except Exception as error:
                     print(error)
         # if a metadata object is left in memory, yield it as well
         if metadata:
+            #print(metadata['title'])
             yield metadata

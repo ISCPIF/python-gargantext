@@ -219,9 +219,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
 
         #n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
         # Generic: 
-        #m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
+        m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
         # Specific: 
-        m_index = pd.Index.intersection(x.index, m.index[:matrix_size])
+        #m_index = pd.Index.intersection(x.index, m.index[:matrix_size])
         
         x_index = m_index# pd.Index.union(n_index, m_index)
         xx = x[list(x_index)].T[list(x_index)]

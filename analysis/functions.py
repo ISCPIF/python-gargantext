@@ -208,7 +208,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         n = ( xs + ys) / (2 * (x.shape[0] -1))
         # top specific
         m = ( xs - ys) / (2 * (x.shape[0] -1))
-        m = pd.DataFrame.abs(m)
+        #m = pd.DataFrame.abs(m)
         
         n = n.sort(inplace=False)
         m = m.sort(inplace=False)

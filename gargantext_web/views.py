@@ -308,13 +308,67 @@ def corpus(request, project_id, corpus_id):
     return HttpResponse(html)
 
 
-def newpaginatorJSON(request , project_id , corpus_id):
+def corpus_trial(request, project_id, corpus_id):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+    except ValueError:
+        raise Http404()
+
+    t = get_template('corpus_trial.html')
+    
+    user = request.user
+    date = datetime.datetime.now()
+    
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+
+    
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+
+    try:
+        chart = dict()
+        chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
+        # TODO write with sqlalchemy
+        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
+        
+        chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
+        print(chart)
+    except Exception as error:
+        print(error)
+    
+    try:
+        processing = corpus.metadata['Processing']
+    except Exception as error:
+        print(error)
+        processing = 0
+    print('processing', processing)
+
+    html = t.render(Context({\
+            'user': user,\
+            'date': date,\
+            'project': project,\
+            'corpus' : corpus,\
+            'processing' : processing,\
+#            'documents': documents,\
+            'number' : number,\
+            'dates' : chart,\
+            }))
+    
+    return HttpResponse(html)
+
+
+def newpaginatorJSON(request , corpus_id):
 
     results = ["hola" , "mundo"]
 
     # t = get_template('tests/newpag/thetable.html')
     
-    project = session.query(Node).filter(Node.id==project_id).first()
+    # project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
     documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
@@ -344,17 +398,6 @@ def newpaginatorJSON(request , project_id , corpus_id):
         "totalRecordCount":len(results)
     }
     return JsonHttpResponse(finaldict)
-    # html = t.render(Context({\
-    #         # 'user': user,\
-    #         # 'date': date,\
-    #         'project': project_id,\
-    #         'corpus' : corpus_id,\
-    #         # 'documents': results,\
-    #         # 'number' : len(filtered_docs),\
-    #         # 'dates' : chart,\
-    #         }))
-    
-    # return HttpResponse(html)
 
 
 # Im using this actually

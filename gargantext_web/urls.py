@@ -80,7 +80,8 @@ urlpatterns = patterns('',
     url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
-    url(r'^tests/paginator/project/(\d+)/corpus/(\d+)/$', views.newpaginatorJSON)
+    url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
+    url(r'^tests/project/(\d+)/corpus/(\d+)/$', views.corpus_trial)
 )
 
 

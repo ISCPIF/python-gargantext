@@ -128,6 +128,8 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=size, year_start
         whitelistY.node_id = %s
     AND
         nngX.ngram_id < nngY.ngram_id   --  so we only get distinct pairs of ngrams
+    AND
+        score > 2
         
     GROUP BY
         ngX.id,
@@ -205,7 +207,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         ys = x.sum(axis=0) - x
     
         # top inclus
-        n = ( xs + ys) / (2 * (x.shape[0] -1))
+        #n = ( xs + ys) / (2 * (x.shape[0] -1))
         # top specific
         m = ( xs - ys) / (2 * (x.shape[0] -1))
         #m = pd.DataFrame.abs(m)

@@ -28,6 +28,9 @@
 ##app.config_from_object('django.conf:settings')
 #app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 #
+
+from admin.utils import PrintException
+
 from celery import shared_task
 from node import models
 
@@ -67,18 +70,19 @@ def apply_workflow(corpus_id):
 #        session.add(corpus)
 #        session.flush()
 
-    except Exception as error:
-        print(error)
+    except :
+        PrintException()
 
        
-    extract_ngrams(corpus, ['title'])
+    #extract_ngrams(corpus, ['title',])
+    extract_ngrams(corpus, ['title', 'abstract'])
     compute_tfidf(corpus)
     
     try:
         corpus_django.metadata['Processing'] = 0
         corpus_django.save()
-    except Exception as error:
-        print(error)
+    except :
+        PrintException()
 
 
 

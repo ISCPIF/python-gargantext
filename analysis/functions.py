@@ -209,7 +209,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         # top generic
         #m = ( xs - ys) / (2 * (x.shape[0] -1))
         # top generic ?
-        m = ( ys - ss) / (2 * (x.shape[0] -1))
+        m = ( ys - xs) / (2 * (x.shape[0] -1))
         #m = pd.DataFrame.abs(m)
         
         #n = n.sort(inplace=False)

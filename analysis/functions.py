@@ -66,7 +66,7 @@ def create_whitelist(user, corpus_id, size=size):
         GROUP BY
             ngX.id
         Having
-            COUNT(*) >= 1
+            COUNT(*) >= 3
         ORDER BY
             occurrences DESC
         LIMIT
@@ -128,8 +128,6 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=size, year_start
         whitelistY.node_id = %s
     AND
         nngX.ngram_id < nngY.ngram_id   --  so we only get distinct pairs of ngrams
-    AND
-        score > 2
         
     GROUP BY
         ngX.id,
@@ -208,8 +206,10 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
     
         # top inclus
         #n = ( xs + ys) / (2 * (x.shape[0] -1))
-        # top specific
+        # top specific ?
         m = ( xs - ys) / (2 * (x.shape[0] -1))
+        # top generic ?
+        #m = ( ys - ss) / (2 * (x.shape[0] -1))
         #m = pd.DataFrame.abs(m)
         
         n = n.sort(inplace=False)

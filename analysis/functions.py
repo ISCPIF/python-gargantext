@@ -212,15 +212,15 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         #m = ( ys - ss) / (2 * (x.shape[0] -1))
         #m = pd.DataFrame.abs(m)
         
-        n = n.sort(inplace=False)
+        #n = n.sort(inplace=False)
         m = m.sort(inplace=False)
         
         matrix_size = int(round(size/2,0))
 
-        n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
+        #n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
         m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
         
-        x_index = pd.Index.union(n_index, m_index)
+        x_index = m_index# pd.Index.union(n_index, m_index)
         xx = x[list(x_index)].T[list(x_index)]
 
         # import pprint

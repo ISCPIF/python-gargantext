@@ -215,7 +215,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         #n = n.sort(inplace=False)
         m = m.sort(inplace=False)
         
-        matrix_size = int(round(size/2,0))
+        matrix_size = int(round(size/5,0))
 
         #n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
         m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])

@@ -86,7 +86,7 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-						<p onclick="updateDocuments2();" class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
+						<p onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
         </a>
       </h4>
     </div>
@@ -167,131 +167,102 @@
 
 <script>
 
-
-var datesbuffer = false;
-var latest,oldest;
-
-var clickinchart = false;
-
 function pr(msg) {
     console.log(msg)
 }
 
-function dateToInt(todayTime) {
-    var month = (todayTime .getMonth() + 1);
-    var day = (todayTime .getDate());
-    var year = (todayTime .getFullYear());
-    if(month<10) month = "0"+month;
-    if(day<10) day = "0"+day;
-    return year+"-"+month+"-"+day;
-}
+var latest,oldest;
 
-function updateDocuments2() {
-
-    var isCollapsed=false;
-    var accordiontext = $("#collapseOne").attr("class")
-    if(accordiontext.indexOf("collapse in")>-1) isCollapsed=true;
-
-    if(!isCollapsed) {
-        pr("it was not-collapsed and now it is collapsed")
-        
-        var TimeRange = AjaxRecords;
-
-        if(datesbuffer) {
-            pr("\t\tapplying some timerange!!")
-            var dataini = dateToInt(datesbuffer[0])
-            var datafin = dateToInt(datesbuffer[1])
-            pr("show me the pubs of the selected period")
-            pr("\tfrom ["+dataini+"] to ["+datafin+"]")
-
-            TimeRange = []
-            for (var i in AjaxRecords) {
-                if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
-                    pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id+"|"+RecDict[AjaxRecords[i].id] )
-                    TimeRange.push(AjaxRecords[i])
-                }
-            }            
+var TheBuffer = false
+function Push2Buffer( NewVal ) {
+    if ( TheBuffer == false) {
+        if( ! NewVal ) {
+            var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
+            NewVal = limits;
         }
-        pr("\t\tupdating the table!!")
-        MyTable = $('#my-ajax-table').dynatable({
-            dataset: {
-                records: TimeRange
-            },
-            features: {
-                pushState: false,
-                sort: false
-            },
-            writers: {
-              _rowWriter: ulWriter
-              // _cellWriter: customCellWriter
-            }
-        });
-
-        MyTable.data('dynatable').settings.dataset.originalRecords = []
-        MyTable.data('dynatable').settings.dataset.originalRecords = TimeRange;
-        MyTable.data('dynatable').process();
+        console.log( " - - - - - - " )
+        console.log( "\tchanging to:" )
+        console.log( NewVal )
+        TheBuffer = NewVal;
+        Final_UpdateTable( "changerange" )
+        console.log( "- - - - - - -\n" )
+        return 1;
     }
 
+    if ( TheBuffer != false ) {
+        var past = TheBuffer[0]+"_"+TheBuffer[1]
+
+        if( ! NewVal ) {
+            var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
+            NewVal = limits;
+        }
+        var now = NewVal[0]+"_"+NewVal[1]
+        
+        if ( past != now ) {
+            console.log( " - - - - - - " )
+            console.log( "\tchanging to:" )
+            console.log( NewVal )
+            TheBuffer = NewVal;
+            Final_UpdateTable( "changerange" )
+            console.log( "- - - - - - -\n" )
+        }
+        return 1;
+    }
 }
 
-// I've clicked "Read Documents":
-function updateDocuments(timerange) {
 
-    pr("offset left: "+$( "#collapseOne" ).offset().left)
-    pr("The Class:")
+function Final_UpdateTable( action ) {
+    // (1) Identifying if the button is collapsed:   
     var isCollapsed=false;
     var accordiontext = $("#collapseOne").attr("class")
-    if(accordiontext.indexOf("collapse in")>-1) isCollapsed=true;
-
-    pr("is it collapsed????" +isCollapsed)
-    // // if "Read Documents" collapsible is close, then... show some me pubs!
-    // if ( pagenav || $( "#collapseOne" ).offset().left == 0) {
-    $.doTimeout( 500, function(){
-        if ( isCollapsed ) {
-            pr("\tso doing something!!") 
-            // if u havent select a timerange from the blue chart, then show me all pubs
-            var TimeRange = AjaxRecords;
-        
-            // ELSE, there's some timerange selected in the blue chart, so show me the pubs of that period
-            if(timerange && datesbuffer) {
-                pr("\t\tapplying some timerange!!")
-                var dataini = dateToInt(datesbuffer[0])
-                var datafin = dateToInt(datesbuffer[1])
-                pr("show me the pubs of the selected period")
-                pr("\tfrom ["+dataini+"] to ["+datafin+"]")
-
-                TimeRange = []
-                for (var i in AjaxRecords) {
-                    if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
-                        pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id+"|"+RecDict[AjaxRecords[i].id] )
-                        TimeRange.push(AjaxRecords[i])
-                    }
-                }
-
-            }
+    if(accordiontext.indexOf("collapse in")>-1) 
+        isCollapsed=true;
 
 
-            pr("\t\tupdating the table!!")
-            MyTable = $('#my-ajax-table').dynatable({
-                dataset: {
-                    records: TimeRange
-                },
-                features: {
-                    pushState: false,
-                    sort: false
-                },
-                writers: {
-                  _rowWriter: ulWriter
-                  // _cellWriter: customCellWriter
-                }
-            });
+    var UpdateTable = false
+    if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
+        UpdateTable = true;
+    }
 
-            MyTable.data('dynatable').settings.dataset.originalRecords = []
-            MyTable.data('dynatable').settings.dataset.originalRecords = TimeRange;
-            MyTable.data('dynatable').process();
+    pr("update table??: "+UpdateTable)
 
+    if ( ! UpdateTable ) return false; //stop whatever you wanted to do.
+
+
+
+    var TimeRange = AjaxRecords;
+
+    var dataini = TheBuffer[0].toISOString().split("T")[0]
+    var datafin = TheBuffer[1].toISOString().split("T")[0]
+    pr("show me the pubs of the selected period")
+    pr("\tfrom ["+dataini+"] to ["+datafin+"]")
+
+    TimeRange = []
+    for (var i in AjaxRecords) {
+        if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
+            // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id+"|"+RecDict[AjaxRecords[i].id] )
+            TimeRange.push(AjaxRecords[i])
+        }
+    }
+    
+    MyTable = $('#my-ajax-table').dynatable({
+        dataset: {
+            records: TimeRange
+        },
+        features: {
+            pushState: false,
+            sort: false
+        },
+        writers: {
+          _rowWriter: ulWriter
+          // _cellWriter: customCellWriter
         }
     });
+    MyTable.data('dynatable').settings.dataset.originalRecords = []
+    MyTable.data('dynatable').settings.dataset.originalRecords = TimeRange;
+    
+    MyTable.data('dynatable').paginationPage.set(1);
+    MyTable.data('dynatable').process();
 }
 
 //          STEP 01:
@@ -313,15 +284,12 @@ $.ajax({
   }
 });
 
+
+
 //          STEP 02:
 //      D3.js: Interactive timerange.
-// var gainOrLossChart = dc.pieChart("#gain-loss-chart");
-// var fluctuationChart = dc.barChart("#fluctuation-chart");
-// var quarterChart = dc.pieChart("#quarter-chart");
-// var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
 var moveChart = dc.compositeChart("#monthly-move-chart"); 
 var volumeChart = dc.barChart("#monthly-volume-chart");
-// var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
 d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             // since its a csv file we need to format the data a bit
             var dateFormat = d3.time.format("%Y/%m/%d");
@@ -347,6 +315,8 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             var t1_year = latest[0]
             var t1_month = latest[1]
             var t1_day = latest[2]
+
+            // TheBuffer = [new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)];
 
             // feed it through crossfilter
             var ndx = crossfilter(data);
@@ -435,17 +405,16 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     .renderlet(function (chart) {
                         chart.select("g.y").style("display", "none");
                         moveChart.filter(chart.filter());
-                        datesbuffer = chart.filter();
                     })
                     .on("filtered", function (chart) {
                         dc.events.trigger(function () {
                             var chartfilt = chart.filter()
-
+                            // tricky part: identifying when the moveChart changes.
                             if(chartfilt) {
-                                updateDocuments(true);
+                                Push2Buffer ( chart.filter() )
                             } else {
-                                if(datesbuffer) {
-                                    updateDocuments(false)
+                                if(TheBuffer) {
+                                    Push2Buffer ( false )
                                 }
                             }
                             moveChart.focus(chartfilt);
@@ -453,18 +422,6 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     });
 
             dc.renderAll();
-
-            // $(".chartBody").on("mousedown", function (evt) {
-            //         pr("clickinchart = [true]")
-            //         clickinchart = true;
-            //   });
-
-            // $("body").on("mouseup", function (evt) {
-            //     if(clickinchart) {
-            //         pr("mouseup! clickinchart [true] -> [false]")
-            //         clickinchart=false
-            //     }
-            // });
         }
 );
 
@@ -539,6 +496,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr>' + tr + '</tr>';
 }
 
+// (3) Get records and metadata for paginator
 $.ajax({
   url: '/tests/paginator/corpus/'+corpusid,
   success: function(data){
@@ -546,11 +504,16 @@ $.ajax({
     for(var i in data.records) {
       var orig_id = parseInt(data.records[i].id)
       var arr_id = parseInt(i)
-      RecDict[orig_id] = arr_id
+      RecDict[orig_id] = arr_id;
+      data.records[i]["name"] = '<a target="_blank" href="/nodeinfo/'+orig_id+'">'+data.records[i]["name"]+'</a>'
       data.records[i]["del"] = false
       // console.log(data.records[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+data.records[i]["name"])
     }
     AjaxRecords = data.records; // backup!!
+
+    var t0 = AjaxRecords[0].date.split("-")
+    var t1 = AjaxRecords.slice(-1)[0].date.split("-")
+    TheBuffer = [new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])];
 
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
@@ -564,7 +527,7 @@ $.ajax({
                   // _cellWriter: customCellWriter
                 }
               });
-    console.log(RecDict)
+    // console.log(RecDict)
   }
 });
 

@@ -86,7 +86,7 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-						<p onclick="updateDocuments();" class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
+						<p onclick="updateDocuments2();" class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
         </a>
       </h4>
     </div>
@@ -96,6 +96,7 @@
 				
                     <table id="my-ajax-table" class="table table-bordered">
                       <thead>
+                        <th data-dynatable-column="id">ID</th>
                         <th data-dynatable-column="date">Date</th>
                         <th data-dynatable-column="name">Title</th>
                         <th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>
@@ -170,6 +171,8 @@
 var datesbuffer = false;
 var latest,oldest;
 
+var clickinchart = false;
+
 function pr(msg) {
     console.log(msg)
 }
@@ -180,67 +183,119 @@ function dateToInt(todayTime) {
     var year = (todayTime .getFullYear());
     if(month<10) month = "0"+month;
     if(day<10) day = "0"+day;
-    return year+""+month+""+day;
+    return year+"-"+month+"-"+day;
 }
 
+function updateDocuments2() {
 
-// I've clicked "Read Documents":
-function updateDocuments(pagenumber,pagenav) {
+    var isCollapsed=false;
+    var accordiontext = $("#collapseOne").attr("class")
+    if(accordiontext.indexOf("collapse in")>-1) isCollapsed=true;
 
-    pagenav = (pagenav)?pagenav:true;
-    pagenumber = (pagenumber)?pagenumber:1;
-    pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
-    pr("offset left: "+$( "#collapseOne" ).offset().left)
-    // if "Read Documents" collapsible is close, then... show some me pubs!
-    if ( pagenav || $( "#collapseOne" ).offset().left == 0) {
+    if(!isCollapsed) {
+        pr("it was not-collapsed and now it is collapsed")
+        
+        var TimeRange = AjaxRecords;
 
-        // Here u ask for the server some paginated results (pubs)
-        // if u havent select a timerange from the blue chart, then show me all pubs
-        if(!datesbuffer) {
-
-            var dataini = oldest.join("")
-            var datafin = latest.join("")
-            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
-
-            var base = window.location.href;
-            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
-            pr("theurl:   "+theurl)
-
-            $.ajax({
-              url: theurl,
-              success: function(data) {
-                // console.log(data)
-                $('#subcorpusdiv').html(data);
-                return true;
-              }
-            });
-        } 
-        // there's some timerange selected in the blue chart, so show me the pubs of that period
-        else {
+        if(datesbuffer) {
+            pr("\t\tapplying some timerange!!")
             var dataini = dateToInt(datesbuffer[0])
             var datafin = dateToInt(datesbuffer[1])
-            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
+            pr("show me the pubs of the selected period")
+            pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
-            var base = window.location.href;
-            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
-            pr("theurl:   "+theurl)
-
-            $.ajax({
-              url: theurl,
-              success: function(data) {
-                // console.log(data)
-                $('#subcorpusdiv').html(data);
-              }
-            });
-
+            TimeRange = []
+            for (var i in AjaxRecords) {
+                if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
+                    pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id+"|"+RecDict[AjaxRecords[i].id] )
+                    TimeRange.push(AjaxRecords[i])
+                }
+            }            
         }
+        pr("\t\tupdating the table!!")
+        MyTable = $('#my-ajax-table').dynatable({
+            dataset: {
+                records: TimeRange
+            },
+            features: {
+                pushState: false,
+                sort: false
+            },
+            writers: {
+              _rowWriter: ulWriter
+              // _cellWriter: customCellWriter
+            }
+        });
 
+        MyTable.data('dynatable').settings.dataset.originalRecords = []
+        MyTable.data('dynatable').settings.dataset.originalRecords = TimeRange;
+        MyTable.data('dynatable').process();
     }
-    //else: "Read Documents" collapsible is open!, so do nothing 
+
 }
 
+// I've clicked "Read Documents":
+function updateDocuments(timerange) {
 
-// Get all the duplicates using the Django-Garg API
+    pr("offset left: "+$( "#collapseOne" ).offset().left)
+    pr("The Class:")
+    var isCollapsed=false;
+    var accordiontext = $("#collapseOne").attr("class")
+    if(accordiontext.indexOf("collapse in")>-1) isCollapsed=true;
+
+    pr("is it collapsed????" +isCollapsed)
+    // // if "Read Documents" collapsible is close, then... show some me pubs!
+    // if ( pagenav || $( "#collapseOne" ).offset().left == 0) {
+    $.doTimeout( 500, function(){
+        if ( isCollapsed ) {
+            pr("\tso doing something!!") 
+            // if u havent select a timerange from the blue chart, then show me all pubs
+            var TimeRange = AjaxRecords;
+        
+            // ELSE, there's some timerange selected in the blue chart, so show me the pubs of that period
+            if(timerange && datesbuffer) {
+                pr("\t\tapplying some timerange!!")
+                var dataini = dateToInt(datesbuffer[0])
+                var datafin = dateToInt(datesbuffer[1])
+                pr("show me the pubs of the selected period")
+                pr("\tfrom ["+dataini+"] to ["+datafin+"]")
+
+                TimeRange = []
+                for (var i in AjaxRecords) {
+                    if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
+                        pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id+"|"+RecDict[AjaxRecords[i].id] )
+                        TimeRange.push(AjaxRecords[i])
+                    }
+                }
+
+            }
+
+
+            pr("\t\tupdating the table!!")
+            MyTable = $('#my-ajax-table').dynatable({
+                dataset: {
+                    records: TimeRange
+                },
+                features: {
+                    pushState: false,
+                    sort: false
+                },
+                writers: {
+                  _rowWriter: ulWriter
+                  // _cellWriter: customCellWriter
+                }
+            });
+
+            MyTable.data('dynatable').settings.dataset.originalRecords = []
+            MyTable.data('dynatable').settings.dataset.originalRecords = TimeRange;
+            MyTable.data('dynatable').process();
+
+        }
+    });
+}
+
+//          STEP 01:
+//      Get all the duplicates using the Django-Garg API
 var current_docs = {}
 var BIS_dict = {}
 var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
@@ -258,6 +313,8 @@ $.ajax({
   }
 });
 
+//          STEP 02:
+//      D3.js: Interactive timerange.
 // var gainOrLossChart = dc.pieChart("#gain-loss-chart");
 // var fluctuationChart = dc.barChart("#fluctuation-chart");
 // var quarterChart = dc.pieChart("#quarter-chart");
@@ -265,16 +322,6 @@ $.ajax({
 var moveChart = dc.compositeChart("#monthly-move-chart"); 
 var volumeChart = dc.barChart("#monthly-volume-chart");
 // var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
-
-// set dc.js version in title
-d3.selectAll("#version").text(dc.version);
-
-// load data from a csv file
-//
-//
-//
-
-// D3.js: Interactive timerange.
 d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             // since its a csv file we need to format the data a bit
             var dateFormat = d3.time.format("%Y/%m/%d");
@@ -392,30 +439,54 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
                     })
                     .on("filtered", function (chart) {
                         dc.events.trigger(function () {
-                            moveChart.focus(chart.filter());
+                            var chartfilt = chart.filter()
+
+                            if(chartfilt) {
+                                updateDocuments(true);
+                            } else {
+                                if(datesbuffer) {
+                                    updateDocuments(false)
+                                }
+                            }
+                            moveChart.focus(chartfilt);
                         });
                     });
 
             dc.renderAll();
+
+            // $(".chartBody").on("mousedown", function (evt) {
+            //         pr("clickinchart = [true]")
+            //         clickinchart = true;
+            //   });
+
+            // $("body").on("mouseup", function (evt) {
+            //     if(clickinchart) {
+            //         pr("mouseup! clickinchart [true] -> [false]")
+            //         clickinchart=false
+            //     }
+            // });
         }
 );
 
 
-</script>
-
-<script type="text/javascript" src="{% static "js/jquery/jquery.ba-dotimeout.min.js"%}"></script>
-
-<script>
 
 var MyTable;
 var RecDict={};
+var AjaxRecords = []
 
-function getElement(rec_id) {
+function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
+  // return AjaxRecords[rec_id]
+}
+
+function getRecords() {
+  return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
 function transformContent2(rec_id) {
-  var elem = getElement(rec_id);
+  // pr("\t\ttransformContent2: "+rec_id)
+  var elem = AjaxRecords[rec_id];
+  // pr("\t\t\t"+elem.date)
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
@@ -435,12 +506,14 @@ function overRide(elem) {
   var id = elem.id
   var val = elem.checked
   MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
+  AjaxRecords[id]["del"] = val;
   console.log(MyTable.data('dynatable').settings.dataset.originalRecords[id])
   MyTable.data('dynatable').dom.update();
 }
 
 function transformContent(rec_id , header , content) {
   if(header=="del") {
+    // pr("\t\ttransformContent1: "+rec_id)
     if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
     if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   } else return content;
@@ -448,13 +521,17 @@ function transformContent(rec_id , header , content) {
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
+  // pr("\tulWriter: "+record.id)
   var tr = '';
   var cp_rec = {}
   if(!MyTable) {
     for(var i in record) {
       cp_rec[i] = transformContent(RecDict[record.id], i , record[i])
     }
-  } else cp_rec = transformContent2(RecDict[record.id])
+  } else {
+    // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
+    cp_rec = transformContent2(RecDict[record.id])
+  }
   // grab the record's attribute for each column
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
@@ -462,8 +539,6 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr>' + tr + '</tr>';
 }
 
-
-var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
 $.ajax({
   url: '/tests/paginator/corpus/'+corpusid,
   success: function(data){
@@ -475,6 +550,8 @@ $.ajax({
       data.records[i]["del"] = false
       // console.log(data.records[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+data.records[i]["name"])
     }
+    AjaxRecords = data.records; // backup!!
+
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
                   records: data.records
@@ -492,8 +569,10 @@ $.ajax({
 });
 
 
+
 </script>
 
+<script type="text/javascript" src="{% static "js/jquery/jquery.ba-dotimeout.min.js"%}"></script>
 
 
 {% endblock %}

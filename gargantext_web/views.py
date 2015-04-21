@@ -570,6 +570,31 @@ def move_to_trash(node_id):
         print("can not move to trash Node" + node_id + ":" + error)
 
 
+
+def move_to_trash_multiple(request):
+    user = request.user
+    if not user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+
+    results = ["operation","failed"]
+
+    if request.method == "POST":
+        nodes2trash = json.loads(request.POST["nodeids"])
+        print("nodes to the trash:")
+        print(nodes2trash)
+        nodes = session.query(Node).filter(Node.id.in_(nodes2trash)).all()
+        for node in nodes:
+            node.type_id = cache.NodeType['Trash'].id
+            session.add(node)
+
+        session.commit()
+
+        results = ["tudo","fixe"]
+
+    return JsonHttpResponse(results)
+
+
+
 def delete_node(request, node_id):
     
     # do we have a valid user?

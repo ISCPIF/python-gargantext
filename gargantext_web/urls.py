@@ -81,7 +81,8 @@ urlpatterns = patterns('',
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
     url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
-    url(r'^tests/project/(\d+)/corpus/(\d+)/$', views.corpus_trial)
+    url(r'^tests/project/(\d+)/corpus/(\d+)/$', views.corpus_trial),
+    url(r'^tests/move2trash/$' , views.move_to_trash_multiple )
 )
 
 

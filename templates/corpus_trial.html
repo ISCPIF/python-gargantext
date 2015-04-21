@@ -92,8 +92,12 @@
     </div>
     <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
       <div class="panel-body">
+                <p align="right">
+                    <button id="move2trash" class="btn btn-primary btn-lg" >Move to trash!</button>
+
+                    <!-- <p onclick='console.log("move to trash bitches")' class="btn btn-primary btn-lg" align="left">Move to Trash!</p> -->
+                </p>
 				<p align="right">
-				
                     <table id="my-ajax-table" class="table table-bordered">
                       <thead>
                         <th data-dynatable-column="id">ID</th>
@@ -104,6 +108,7 @@
                       <tbody>
                       </tbody>
                     </table>
+                </p>
 
 
       </div>
@@ -171,6 +176,24 @@ function pr(msg) {
     console.log(msg)
 }
 
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 var latest,oldest;
 
 var TheBuffer = false
@@ -209,7 +232,6 @@ function Push2Buffer( NewVal ) {
         return 1;
     }
 }
-
 
 function Final_UpdateTable( action ) {
     // (1) Identifying if the button is collapsed:   
@@ -287,6 +309,7 @@ $.ajax({
 
 
 //          STEP 02:
+//        TO BE REMOVED!
 //      D3.js: Interactive timerange.
 var moveChart = dc.compositeChart("#monthly-move-chart"); 
 var volumeChart = dc.barChart("#monthly-volume-chart");
@@ -319,6 +342,8 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
             // TheBuffer = [new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)];
 
             // feed it through crossfilter
+            console.log("crossfilter shit:")
+            console.log(data)
             var ndx = crossfilter(data);
             var all = ndx.groupAll();
 
@@ -430,6 +455,7 @@ d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
 var MyTable;
 var RecDict={};
 var AjaxRecords = []
+var Garbage = {}
 
 function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
@@ -462,9 +488,19 @@ function transformContent2(rec_id) {
 function overRide(elem) {
   var id = elem.id
   var val = elem.checked
-  MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
+  console.log("striking: ")
+  console.log(AjaxRecords[id])
+  // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
   AjaxRecords[id]["del"] = val;
-  console.log(MyTable.data('dynatable').settings.dataset.originalRecords[id])
+
+  if(val) {
+    Garbage[id] = true;
+  } else {
+    delete Garbage[id];
+  }
+  if(Object.keys(Garbage).length>0) $("#move2trash").show();
+  else $("#move2trash").hide();
+  // console.log(MyTable.data('dynatable').settings.dataset.originalRecords[id])
   MyTable.data('dynatable').dom.update();
 }
 
@@ -511,9 +547,52 @@ $.ajax({
     }
     AjaxRecords = data.records; // backup!!
 
+    // $("#move2trash").prop('disabled', true);
+
+    $("#move2trash").click(function(){
+
+        var ids2trash = []
+        for(var i in Garbage)
+            ids2trash.push(AjaxRecords[i].id);
+
+
+        console.log("ids to the trash:")
+        console.log(ids2trash)
+
+
+        $.ajax({
+          url: "/tests/move2trash/",
+          data: "nodeids="+JSON.stringify(ids2trash),
+          type: 'POST',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function(data) {
+            console.log("in #move2trash")
+            console.log(data)
+            location.reload();
+          },
+            error: function(result) {
+                console.log("Data not found in #move2trash");
+                console.log(result)
+            }
+        });
+
+
+    });    
+
+    $("#move2trash").hide();
+
+
     var t0 = AjaxRecords[0].date.split("-")
     var t1 = AjaxRecords.slice(-1)[0].date.split("-")
     TheBuffer = [new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])];
+
+
+    // TO-DO: here we could plug this data inside the dc.js
+    //... but i need additionally in the JSON the "volume" attribute per each timestamp
+    //... or maybe do in memory: group by date and count the frecuency.
+
 
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {

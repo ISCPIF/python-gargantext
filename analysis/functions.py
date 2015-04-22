@@ -204,24 +204,22 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         xs = x.sum(axis=1) - x
         ys = x.sum(axis=0) - x
     
-        # top inclus
+        # top inclus ou exclus
         #n = ( xs + ys) / (2 * (x.shape[0] -1))
-        # top generic
-        #m = ( xs - ys) / (2 * (x.shape[0] -1))
-        # top generic ?
-        m = ( ys - xs) / (2 * (x.shape[0] -1))
+        # top generic or specific
+        m = ( xs - ys) / (2 * (x.shape[0] -1))
         #m = pd.DataFrame.abs(m)
         
         #n = n.sort(inplace=False)
         m = m.sort(inplace=False)
         
         matrix_size = int(round(size/5,0))
-
+        # TODO user the generic score for the node size
         #n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
         # Generic: 
-        m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
-        # Specific: 
         #m_index = pd.Index.intersection(x.index, m.index[:matrix_size])
+        # Specific: 
+        m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
         
         x_index = m_index# pd.Index.union(n_index, m_index)
         xx = x[list(x_index)].T[list(x_index)]

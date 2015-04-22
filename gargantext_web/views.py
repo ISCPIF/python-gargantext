@@ -318,7 +318,7 @@ def corpus_trial(request, project_id, corpus_id):
     except ValueError:
         raise Http404()
 
-    t = get_template('corpus_trial.html')
+    t = get_template('corpus.html')
     
     user = request.user
     date = datetime.datetime.now()
@@ -373,6 +373,7 @@ def newpaginatorJSON(request , corpus_id):
     type_document_id = cache.NodeType['Document'].id
     documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
+
     filtered_docs = []
     for doc in documents:
         if "publication_date" in doc.metadata:
@@ -391,6 +392,7 @@ def newpaginatorJSON(request , corpus_id):
     results = sorted(filtered_docs, key=lambda x: x["date"])
     for i in results:
         i["date"] = i["date"].strftime("%Y-%m-%d")
+        print( i["date"] , i["id"] , i["name"])
 
     finaldict = {
         "records":results,

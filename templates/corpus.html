@@ -9,6 +9,8 @@
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
 <link rel="stylesheet" type="text/css" href="{% static "css/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.dynatable.css"%}"/>
+
 
 <script type="text/javascript" src="{% static "js/charts/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
@@ -30,70 +32,84 @@
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-		<div class="jumbotron">
-								{% if project %}
-								<h1>{{ project.name }}, {{ corpus.name }}
-							 	</h1>
-								{% endif %}
+        <div class="jumbotron">
+                                {% if project %}
+                                <h1>{{ project.name }}, {{ corpus.name }}
+                                </h1>
+                                {% endif %}
 
-							{% if corpus %}
-							<p>
-							{{ number}} docs, Created on {{ corpus.date }} 
-							</p>
-							{% endif %}
+                            {% if corpus %}
+                            <p>
+                            {{ number}} docs, Created on {{ corpus.date }} 
+                            </p>
+                            {% endif %}
 
-							<!--						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-						<a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-						<a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
+                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
+                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
+                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
 
-						{% if number == 0 %}
-						<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-						{% endif %}
-	
-		</div>
+                        {% if number == 0 %}
+                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
+                        {% endif %}
+    
+        </div>
 </div>
 
-				<div class="container">
-						<div class="container">
+                <div class="container">
+                        <div class="container">
 
-							<div class="row">
-									<div id="monthly-move-chart">
-									<center>
-									<strong>Title</strong> (Blue bars: all,  Green line: zoom)
-											<a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-													style="display: none;">reset</a>
-											<div class="clearfix"></div>
-									</center>
-									</div>
-							</div>
+                            <div class="row">
+                                    <div id="monthly-move-chart">
+                                    <center>
+                                    <strong>Title</strong> (Blue bars: all,  Green line: zoom)
+                                            <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
+                                                    style="display: none;">reset</a>
+                                            <div class="clearfix"></div>
+                                    </center>
+                                    </div>
+                            </div>
 
-							<div class="row">
-									<div id="monthly-volume-chart"></div>
-									<p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
-							</div>
-					</div>
-						<p align="center">
-						<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+                            <div class="row">
+                                    <div id="monthly-volume-chart"></div>
+                                    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
+                            </div>
+                    </div>
+                        <p align="center">
+                        <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
 
 
 <div class="container">
-		<div class="jumbotron">
+        <div class="jumbotron">
 
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
   <div class="panel panel-body">
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-						<p onclick="updateDocuments();" class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
+                        <p onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" align="right">Read documents</h2></p>
         </a>
       </h4>
     </div>
     <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
       <div class="panel-body">
-				<p align="right">
-				
-                <!--{% include "subcorpus.html" %}-->
-                <div id="subcorpusdiv"></div>
+                <p align="right">
+                    <button id="move2trash" class="btn btn-primary btn-lg" >Move to trash!</button>
+
+                    <!-- <p onclick='console.log("move to trash bitches")' class="btn btn-primary btn-lg" align="left">Move to Trash!</p> -->
+                </p>
+                <p align="right">
+                    <table id="my-ajax-table" class="table table-bordered">
+                      <thead>
+                        <!-- <th data-dynatable-column="id">ID</th> -->
+                        <th data-dynatable-column="date">Date</th>
+                        <th data-dynatable-column="name">Title</th>
+                        <th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                </p>
+
 
       </div>
     </div>
@@ -104,293 +120,58 @@
 
 
 <div class="container">
-		<div class="row">
-				<div class="col-md-4">
-						<div class="jumbotron">
-						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
-						<ol>
-								<li>Count</li> <!-- read, compute -->
-								<li>Filter</li> <!-- count, compute -->
-								<li>Compare</li> <!-- select, cut -->
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-					</div>
-				</div>
+        <div class="row">
+                <div class="col-md-4">
+                        <div class="jumbotron">
+                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
+                        <ol>
+                                <li>Count</li> <!-- read, compute -->
+                                <li>Filter</li> <!-- count, compute -->
+                                <li>Compare</li> <!-- select, cut -->
+                        </ol>
+                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+                    </div>
+                </div>
 
-				<div class="col-md-4">
-						<div class="jumbotron">
-								<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
+                <div class="col-md-4">
+                        <div class="jumbotron">
+                                <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
+                        <ol>
+                                <li>Sort</li>
+                                <li>Group</li>
+                                <li>Cluster</li>
+                        </ol>
+                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+                        </div>
+                </div>
 
-				<div class="col-md-4">
-						<div class="jumbotron">
+                <div class="col-md-4">
+                        <div class="jumbotron">
                 {% if processing >= "1" %}
                 <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
                 {% else %}
-								<h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
+                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
                 {% endif %}
-						<ol>
-								<li>Visualize</li>
-								<li>Explore</li>
-								<li>Read</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
-		</div>
+                        <ol>
+                                <li>Visualize</li>
+                                <li>Explore</li>
+                                <li>Read</li>
+                        </ol>
+                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+                        </div>
+                </div>
+        </div>
 </div>
 
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+
+<!-- custom-lib for dynatable.js and dc.js -->
+<script type="text/javascript" src="{% static "js/dyna_chart_and_table.js" %}"></script>
 
 
 
-<script>
-
-
-var datesbuffer = false;
-var latest,oldest;
-
-function pr(msg) {
-    console.log(msg)
-}
-
-function dateToInt(todayTime) {
-    var month = (todayTime .getMonth() + 1);
-    var day = (todayTime .getDate());
-    var year = (todayTime .getFullYear());
-    if(month<10) month = "0"+month;
-    if(day<10) day = "0"+day;
-    return year+""+month+""+day;
-}
-
-
-// I've clicked "Read Documents":
-function updateDocuments(pagenumber,pagenav) {
-
-    pagenav = (pagenav)?pagenav:true;
-    pagenumber = (pagenumber)?pagenumber:1;
-    pr("in here   pagenav:"+pagenav+" - pagenumber:"+pagenumber)
-    pr("offset left: "+$( "#collapseOne" ).offset().left)
-    // if "Read Documents" collapsible is close, then... show some me pubs!
-    if ( pagenav || $( "#collapseOne" ).offset().left == 0) {
-
-        // Here u ask for the server some paginated results (pubs)
-        // if u havent select a timerange from the blue chart, then show me all pubs
-        if(!datesbuffer) {
-
-            var dataini = oldest.join("")
-            var datafin = latest.join("")
-            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
-
-            var base = window.location.href;
-            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
-            pr("theurl:   "+theurl)
-
-            $.ajax({
-              url: theurl,
-              success: function(data) {
-                // console.log(data)
-                $('#subcorpusdiv').html(data);
-                return true;
-              }
-            });
-        } 
-        // there's some timerange selected in the blue chart, so show me the pubs of that period
-        else {
-            var dataini = dateToInt(datesbuffer[0])
-            var datafin = dateToInt(datesbuffer[1])
-            //http://localhost:8000/project/37525/corpus/37526/timerange/20040117/20040125?page=1
-
-            var base = window.location.href;
-            var theurl = base+"timerange/"+dataini+"/"+datafin+"?page="+pagenumber;
-            pr("theurl:   "+theurl)
-
-            $.ajax({
-              url: theurl,
-              success: function(data) {
-                // console.log(data)
-                $('#subcorpusdiv').html(data);
-              }
-            });
-
-        }
-
-    }
-    //else: "Read Documents" collapsible is open!, so do nothing 
-}
-
-
-
-var current_docs = {}
-var BIS_dict = {}
-var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
-var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
-$.ajax({
-  url: theurl,
-  success: function(data) {
-    bisarray = data.data
-    for(var i in bisarray) {
-        untitlebis = bisarray[i].values
-        BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
-    }
-    pr(BIS_dict)
-    if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
-  }
-});
-
-// var gainOrLossChart = dc.pieChart("#gain-loss-chart");
-// var fluctuationChart = dc.barChart("#fluctuation-chart");
-// var quarterChart = dc.pieChart("#quarter-chart");
-// var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
-var moveChart = dc.compositeChart("#monthly-move-chart"); 
-var volumeChart = dc.barChart("#monthly-volume-chart");
-// var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
-
-// set dc.js version in title
-d3.selectAll("#version").text(dc.version);
-
-// load data from a csv file
-//
-//
-//
-//
-d3.csv("/chart/corpus/{{ corpus.id }}/data.csv", function (data) {
-            // since its a csv file we need to format the data a bit
-            var dateFormat = d3.time.format("%Y/%m/%d");
-            var numberFormat = d3.format(".2f");
-
-            var justdates = {}
-            data.forEach(function (e) {
-                e.dd = dateFormat.parse(e.date);
-                e.month = d3.time.month(e.dd); // pre-calculate month for better performance
-                justdates[e.date] = true;
-            });
-
-            var orderDates = Object.keys(justdates).reverse();
-            // console.log(orderDates)
-            latest = orderDates[0].split("/")
-            oldest = orderDates[orderDates.length-1].split("/")
-
-            var t0_year = oldest[0]
-            var t0_month = oldest[1]
-            var t0_day = oldest[2]
-
-
-            var t1_year = latest[0]
-            var t1_month = latest[1]
-            var t1_day = latest[2]
-
-            // feed it through crossfilter
-            var ndx = crossfilter(data);
-            var all = ndx.groupAll();
-
-            //volumeChart:(1)
-            //moveChart:(1)
-            // monthly index avg fluctuation in percentage
-            var moveMonths = ndx.dimension(function (d) {
-                return d.month;
-            });
-
-            //moveChart:(3)
-            var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-                return d.volume;
-                //return Math.abs(+d.close - +d.open);
-            });
-
-            //volumeChart:(2)
-            var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
-                return d.volume / 500000;
-            });
-
-            //moveChart:(2)
-            var indexAvgByMonthGroup = moveMonths.group().reduce(
-                    function (p, v) {
-                        ++p.days;
-                        p.total += (+v.open + +v.close) / 2;
-                        p.avg = Math.round(p.total / p.days);
-                        return p;
-                    },
-                    function (p, v) {
-                        --p.days;
-                        p.total -= (+v.open + +v.close) / 2;
-                        p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
-                        return p;
-                    },
-                    function () {
-                        return {days: 0, total: 0, avg: 0};
-                    }
-            );
-
-
-            moveChart.width(800)
-                    .height(150)
-                    .transitionDuration(1000)
-                    .margins({top: 10, right: 50, bottom: 25, left: 40})
-                    .dimension(moveMonths)
-                    .group(indexAvgByMonthGroup)
-                    .valueAccessor(function (d) {
-                        return d.value.avg;
-                    })
-					.x(d3.time.scale().domain([new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)]))
-                    .round(d3.time.month.round)
-                    .xUnits(d3.time.months)
-                    .elasticY(true)
-                    .renderHorizontalGridLines(true)
-                    .brushOn(false)
-                    .compose([
-                        dc.lineChart(moveChart).group(indexAvgByMonthGroup)
-                                .valueAccessor(function (d) {
-                                    return d.value.avg;
-                                })
-                                .renderArea(true)
-                                .stack(monthlyMoveGroup, function (d) {
-                                    return d.value;
-                                })
-                                .title(function (d) {
-                                    var value = d.value.avg ? d.value.avg : d.value;
-                                    if (isNaN(value)) value = 0;
-                                    return dateFormat(d.key) + "\n" + numberFormat(value);
-                                })
-                    ])
-                    .xAxis();
-
-            volumeChart.width(800)
-                    .height(100)
-                    .margins({top: 0, right: 50, bottom: 20, left: 40})
-                    .dimension(moveMonths)
-                    .group(volumeByMonthGroup)
-                    .centerBar(true)
-                    .gap(0)
-                    .x(d3.time.scale().domain([new Date(t0_year,t0_month,t0_day), new Date(t1_year,t1_month,t1_day)]))
-                    .round(d3.time.month.round)
-                    .xUnits(d3.time.months)
-                    .renderlet(function (chart) {
-                        chart.select("g.y").style("display", "none");
-                        moveChart.filter(chart.filter());
-                        datesbuffer = chart.filter();
-                    })
-                    .on("filtered", function (chart) {
-                        dc.events.trigger(function () {
-                            moveChart.focus(chart.filter());
-                        });
-                    });
-
-            dc.renderAll();
-        }
-);
-
-
-</script>
-
-<script type="text/javascript" src="{% static "js/jquery/jquery.ba-dotimeout.min.js"%}"></script>
 
 {% endblock %}

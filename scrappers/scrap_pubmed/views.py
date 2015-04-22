@@ -37,6 +37,8 @@ from parsing.corpustools import add_resource, parse_resources, extract_ngrams, c
 from gargantext_web.celery import apply_workflow
 from time import sleep
 
+from admin.utils import ensure_dir
+
 def getGlobalStats(request ):
 	print(request.method)
 	alist = ["bar","foo"]
@@ -141,7 +143,9 @@ def doTheQuery(request , project_id):
 		# """
 
 
+		ensure_dir(request.user)
 		tasks = MedlineFetcher()
+
 		for i in range(8):
 			t = threading.Thread(target=tasks.worker2) #thing to do
 			t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.

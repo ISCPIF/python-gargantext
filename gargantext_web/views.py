@@ -254,61 +254,8 @@ def projects(request):
         })
 
 
+
 def corpus(request, project_id, corpus_id):
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-    
-    try:
-        offset = int(project_id)
-        offset = int(corpus_id)
-    except ValueError:
-        raise Http404()
-
-    t = get_template('corpus.html')
-    
-    user = request.user
-    date = datetime.datetime.now()
-    
-    project = cache.Node[int(project_id)]
-    corpus  = cache.Node[int(corpus_id)]
-
-    
-    type_doc_id = cache.NodeType['Document'].id
-    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
-
-    try:
-        chart = dict()
-        chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
-        # TODO write with sqlalchemy
-        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
-        
-        chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
-        print(chart)
-    except Exception as error:
-        print(error)
-    
-    try:
-        processing = corpus.metadata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
-    print('processing', processing)
-
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'corpus' : corpus,\
-            'processing' : processing,\
-#            'documents': documents,\
-            'number' : number,\
-            'dates' : chart,\
-            }))
-    
-    return HttpResponse(html)
-
-
-def corpus_trial(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     
@@ -392,7 +339,7 @@ def newpaginatorJSON(request , corpus_id):
     results = sorted(filtered_docs, key=lambda x: x["date"])
     for i in results:
         i["date"] = i["date"].strftime("%Y-%m-%d")
-        print( i["date"] , i["id"] , i["name"])
+        # print( i["date"] , i["id"] , i["name"])
 
     finaldict = {
         "records":results,
@@ -400,150 +347,6 @@ def newpaginatorJSON(request , corpus_id):
         "totalRecordCount":len(results)
     }
     return JsonHttpResponse(finaldict)
-
-
-# Im using this actually
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-def subcorpus(request, project_id, corpus_id, start , end ):
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-    try:
-        offset = str(project_id)
-        offset = str(corpus_id)
-        offset = str(start)
-        offset = str(end)
-    except ValueError:
-        raise Http404()
-
-    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
-    import datetime
-    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
-    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
-    # print (dateini,"\t",datefin)
-    t = get_template('subcorpus.html')
-    
-    user = request.user
-    date = datetime.datetime.now()
-    
-    project = session.query(Node).filter(Node.id==project_id).first()
-    corpus  = session.query(Node).filter(Node.id==corpus_id).first()
-    type_document_id = cache.NodeType['Document'].id
-    # retrieving all the documents
-    # documents  = corpus.children.all()
-    documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
-    number = len(documents)
-
-    filtered_docs = []
-    # filtering documents by range-date
-    for doc in documents:
-        if "publication_date" in doc.metadata:
-            try:
-                realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
-                realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
-                if dateini <= realdate <= datefin:
-                    doc.date = realdate
-                    filtered_docs.append(doc)
-            except Exception as e:
-                print ("pag error01 detail:",e)
-                print("pag error01 doc:",doc)
-    # import pprint
-    # pprint.pprint(filtered_docs)
-    # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date)
-
-
-    # pages of 10 elements. Like a sir.
-    paginator = Paginator(ordered, 10)
-
-    page = request.GET.get('page')
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        results = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        results = paginator.page(paginator.num_pages)
-
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'corpus' : corpus,\
-            'documents': results,\
-            # 'number' : len(filtered_docs),\
-            # 'dates' : chart,\
-            }))
-    
-    return HttpResponse(html)
-
-
-def subcorpusJSON(request, project_id, corpus_id, start , end ):
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-    try:
-        offset = str(project_id)
-        offset = str(corpus_id)
-        offset = str(start)
-        offset = str(end)
-    except ValueError:
-        raise Http404()
-    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
-    import datetime
-    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
-    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
-
-    t = get_template('subcorpus.html')
-    print(dateini , "\t" , datefin)
-    user = request.user
-    date = datetime.datetime.now()
-    
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
-    # retrieving all the documents
-    # documents  = corpus.children.all()
-    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
-    number = len(documents)
-
-    filtered_docs = []
-    # filtering documents by range-date
-    for doc in documents:
-        if "publication_date" in doc.metadata:
-            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
-            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
-            if dateini <= realdate <= datefin:
-                doc.date = realdate
-                filtered_docs.append(doc)
-
-    # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date)
-
-    # pages of 10 elements. Like a sir.
-    paginator = Paginator(ordered, 10)
-
-    page = request.GET.get('page')
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        results = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        results = paginator.page(paginator.num_pages)
-
-    from rest_framework.pagination import PaginationSerializer
-
-    serializer = PaginationSerializer(instance=results)
-    print(serializer.data)
- 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
-            }))
-    # return HttpResponse(html)
-    return HttpResponse( serializer.data , content_type='application/json')
 
 
 def empty_trash():

@@ -1,5 +1,3 @@
-console.log("hola mundo")
-
 
 function pr(msg) {
     console.log(msg)
@@ -121,18 +119,18 @@ var current_docs = {}
 var BIS_dict = {}
 var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
 var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
-$.ajax({
-  url: theurl,
-  success: function(data) {
-    bisarray = data.data
-    for(var i in bisarray) {
-        untitlebis = bisarray[i].values
-        BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
-    }
-    pr(BIS_dict)
-    if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
-  }
-});
+// $.ajax({
+//   url: theurl,
+//   success: function(data) {
+//     bisarray = data.data
+//     for(var i in bisarray) {
+//         untitlebis = bisarray[i].values
+//         BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
+//     }
+//     pr(BIS_dict)
+//     if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
+//   }
+// });
 
 
 
@@ -424,6 +422,3 @@ $.ajax({
     // console.log(RecDict)
   }
 });
-
-
-console.log("the end")

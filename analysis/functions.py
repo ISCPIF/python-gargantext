@@ -192,8 +192,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
 
         x = pd.DataFrame(matrix).fillna(0)
         y = pd.DataFrame(matrix).fillna(0)
-#    x = copy(df.values)
-#    y = copy(df.values)
+        
         #xo = diag_null(x)
         #y = diag_null(y)
         
@@ -205,9 +204,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         ys = x.sum(axis=0) - x
     
         # top inclus ou exclus
-        n = ( xs + ys) / (2 * (x.shape[0] -1))
+        n = ( xs + ys) / (2 * (x.shape[0] - 1))
         # top generic or specific
-        m = ( xs - ys) / (2 * (x.shape[0] -1))
+        m = ( xs - ys) / (2 * (x.shape[0] - 1))
         
         n = n.sort(inplace=False)
         m = m.sort(inplace=False)
@@ -215,10 +214,10 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         print(n)
         print(m)
         
-        nodes_included = int(round(size/20,0))
+        nodes_included = 300 #int(round(size/20,0))
         #nodes_excluded = int(round(size/10,0))
         
-        nodes_specific = int(round(size/10,0))
+        nodes_specific = 300 #int(round(size/10,0))
         #nodes_generic = int(round(size/10,0))
         
         # TODO user the included score for the node size
@@ -248,11 +247,10 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
         
         #print(G)
-        #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
         # Removing too connected nodes (find automatic way to do it)
-        #    outdeg = G.degree()
-        #    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-        #    G.remove_nodes_from(to_remove)
+        outdeg = G.degree()
+        to_remove = [n for n in outdeg if outdeg[n] <= 1]
+        G.remove_nodes_from(to_remove)
 
         partition = best_partition(G)
     except:

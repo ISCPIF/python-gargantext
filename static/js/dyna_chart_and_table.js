@@ -70,8 +70,8 @@ function Final_UpdateTable( action ) {
     var UpdateTable = false
     if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
         UpdateTable = true;
-        $("#corpusdisplayer").html("Close Corpus")
-    } else $("#corpusdisplayer").html("Open Corpus")
+        $("#corpusdisplayer").html("Close Folder")
+    } else $("#corpusdisplayer").html("Open Folder")
 
     pr("update table??: "+UpdateTable)
 

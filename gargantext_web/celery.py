@@ -71,7 +71,7 @@ def apply_workflow(corpus_id):
         print(error)
 
        
-    extract_ngrams(corpus, ['title'])
+    extract_ngrams(corpus, ['title', 'abstract'])
     compute_tfidf(corpus)
     
     try:

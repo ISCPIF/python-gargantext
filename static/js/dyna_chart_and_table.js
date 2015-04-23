@@ -70,7 +70,8 @@ function Final_UpdateTable( action ) {
     var UpdateTable = false
     if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
         UpdateTable = true;
-    }
+        $("#corpusdisplayer").html("Close Corpus")
+    } else $("#corpusdisplayer").html("Open Corpus")
 
     pr("update table??: "+UpdateTable)
 
@@ -220,205 +221,232 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 // (3) Get records and metadata for paginator
-$.ajax({
-  url: '/tests/paginator/corpus/'+corpusid,
-  success: function(data){
-    console.log(data)
 
-    var justdates = {}
-    for(var i in data.records) {
-      var orig_id = parseInt(data.records[i].id)
-      var arr_id = parseInt(i)
-      RecDict[orig_id] = arr_id;
-      data.records[i]["name"] = '<a target="_blank" href="/nodeinfo/'+orig_id+'">'+data.records[i]["name"]+'</a>'
-      data.records[i]["del"] = false
+function Main() {
+  MyTable;
+  RecDict={};
+  AjaxRecords = []
+  Garbage = {}
+  $.ajax({
+    url: '/tests/paginator/corpus/'+corpusid,
+    success: function(data){
+      console.log(data)
 
-      var date = data.records[i]["date"];  
-      if ( ! justdates[date] ) justdates[date] = 0;
-      justdates[date]++;
-      // console.log(data.records[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+data.records[i]["name"])
-    }
-    AjaxRecords = data.records; // backup!!
+      var justdates = {}
+      for(var i in data.records) {
+        var orig_id = parseInt(data.records[i].id)
+        var arr_id = parseInt(i)
+        RecDict[orig_id] = arr_id;
+        data.records[i]["name"] = '<a target="_blank" href="/nodeinfo/'+orig_id+'">'+data.records[i]["name"]+'</a>'
+        data.records[i]["del"] = false
 
-    // $("#move2trash").prop('disabled', true);
+        var date = data.records[i]["date"];  
+        if ( ! justdates[date] ) justdates[date] = 0;
+        justdates[date]++;
+        // console.log(data.records[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+data.records[i]["name"])
+      }
+      AjaxRecords = data.records; // backup!!
 
-    $("#move2trash")
-    .click(function(){
+      // $("#move2trash").prop('disabled', true);
 
-        var ids2trash = []
-        for(var i in Garbage)
+      $("#move2trash")
+      .click(function(){
+
+          var ids2trash = []
+          for(var i in Garbage) {
             ids2trash.push(AjaxRecords[i].id);
+          }
 
 
-        console.log("ids to the trash:")
-        console.log(ids2trash)
+          console.log("ids to the trash:")
+          console.log(ids2trash)
 
 
-        $.ajax({
-          url: "/tests/move2trash/",
-          data: "nodeids="+JSON.stringify(ids2trash),
-          type: 'POST',
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-          },
-          success: function(data) {
-            console.log("in #move2trash")
-            console.log(data)
-            location.reload();
-          },
-            error: function(result) {
-                console.log("Data not found in #move2trash");
-                console.log(result)
-            }
-        });
-    })
-    .hide();
-
-
-    var t0 = AjaxRecords[0].date.split("-").map(Number)
-    var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
-    oldest = t0;
-    latest = t1;
-
-
-    TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2])];
-
-
-    var arrayd3 = []
-    for(var e in data.records) {
-        var date = data.records[e]["date"]; 
-        if(justdates[date]!=false) {
-            var info = {}
-            info.date = date
-            info.dd = dateFormat.parse(date)
-            info.month = d3.time.month(info.dd)
-            info.volume = justdates[date]
-            arrayd3.push(info)
-            justdates[date] = false;
-        }
-    }
-
-    for(var i in justdates)
-        delete justdates[i];
-    delete justdates;
-
-    var ndx = crossfilter(arrayd3);
-    var all = ndx.groupAll();
-
-    //volumeChart:(1)
-    //moveChart:(1)
-    // monthly index avg fluctuation in percentage
-    var moveMonths = ndx.dimension(function (d) {
-        return d.month;
-    });
-
-    //moveChart:(3)
-    var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-        return d.volume;
-        //return Math.abs(+d.close - +d.open);
-    });
-
-    //volumeChart:(2)
-    var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
-        return d.volume / 500000;
-    });
-
-    //moveChart:(2)
-    var indexAvgByMonthGroup = moveMonths.group().reduce(
-            function (p, v) {
-                ++p.days;
-                p.total += (+v.open + +v.close) / 2;
-                p.avg = Math.round(p.total / p.days);
-                return p;
+          $.ajax({
+            url: "/tests/move2trash/",
+            data: "nodeids="+JSON.stringify(ids2trash),
+            type: 'POST',
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
             },
-            function (p, v) {
-                --p.days;
-                p.total -= (+v.open + +v.close) / 2;
-                p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
-                return p;
+            success: function(data) {
+              console.log("in #move2trash")
+              console.log(data)
+              location.reload();
             },
-            function () {
-                return {days: 0, total: 0, avg: 0};
-            }
-    );
+              error: function(result) {
+                  console.log("Data not found in #move2trash");
+                  console.log(result)
+              }
+          });
+      })
+      .hide();
 
 
-    moveChart.width(800)
-            .height(150)
-            .transitionDuration(1000)
-            .margins({top: 10, right: 50, bottom: 25, left: 40})
-            .dimension(moveMonths)
-            .group(indexAvgByMonthGroup)
-            .valueAccessor(function (d) {
-                return d.value.avg;
-            })
-            .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
-            .round(d3.time.month.round)
-            .xUnits(d3.time.months)
-            .elasticY(true)
-            .renderHorizontalGridLines(true)
-            .brushOn(false)
-            .compose([
-                dc.lineChart(moveChart).group(indexAvgByMonthGroup)
-                        .valueAccessor(function (d) {
-                            return d.value.avg;
-                        })
-                        .renderArea(true)
-                        .stack(monthlyMoveGroup, function (d) {
-                            return d.value;
-                        })
-                        .title(function (d) {
-                            var value = d.value.avg ? d.value.avg : d.value;
-                            if (isNaN(value)) value = 0;
-                            return dateFormat(d.key) + "\n" + numberFormat(value);
-                        })
-            ])
-            .xAxis();
-
-    volumeChart.width(800)
-            .height(100)
-            .margins({top: 0, right: 50, bottom: 20, left: 40})
-            .dimension(moveMonths)
-            .group(volumeByMonthGroup)
-            .centerBar(true)
-            .gap(0)
-            .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
-            .round(d3.time.month.round)
-            .xUnits(d3.time.months)
-            .renderlet(function (chart) {
-                chart.select("g.y").style("display", "none");
-                moveChart.filter(chart.filter());
-            })
-            .on("filtered", function (chart) {
-                dc.events.trigger(function () {
-                    var chartfilt = chart.filter()
-                    // tricky part: identifying when the moveChart changes.
-                    if(chartfilt) {
-                        Push2Buffer ( chart.filter() )
-                    } else {
-                        if(TheBuffer) {
-                            Push2Buffer ( false )
-                        }
-                    }
-                    moveChart.focus(chartfilt);
-                });
-            });
-
-    dc.renderAll();
+      var t0 = AjaxRecords[0].date.split("-").map(Number)
+      var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
+      oldest = t0;
+      latest = t1;
 
 
-    MyTable = $('#my-ajax-table').dynatable({
-                dataset: {
-                  records: data.records
-                },
-                features: {
-                  sort: false //i need to fix the sorting function... the current one just sucks
-                },
-                writers: {
-                  _rowWriter: ulWriter
-                  // _cellWriter: customCellWriter
-                }
+      TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2])];
+
+
+      var arrayd3 = []
+      for(var e in data.records) {
+          var date = data.records[e]["date"]; 
+          if(justdates[date]!=false) {
+              var info = {}
+              info.date = date
+              info.dd = dateFormat.parse(date)
+              info.month = d3.time.month(info.dd)
+              info.volume = justdates[date]
+              arrayd3.push(info)
+              justdates[date] = false;
+          }
+      }
+
+      for(var i in justdates)
+          delete justdates[i];
+      delete justdates;
+
+      var ndx = crossfilter(arrayd3);
+      var all = ndx.groupAll();
+
+      //volumeChart:(1)
+      //moveChart:(1)
+      // monthly index avg fluctuation in percentage
+      var moveMonths = ndx.dimension(function (d) {
+          return d.month;
+      });
+
+      //moveChart:(3)
+      var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
+          return d.volume;
+          //return Math.abs(+d.close - +d.open);
+      });
+
+      //volumeChart:(2)
+      var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
+          return d.volume / 500000;
+      });
+
+      //moveChart:(2)
+      var indexAvgByMonthGroup = moveMonths.group().reduce(
+              function (p, v) {
+                  ++p.days;
+                  p.total += (+v.open + +v.close) / 2;
+                  p.avg = Math.round(p.total / p.days);
+                  return p;
+              },
+              function (p, v) {
+                  --p.days;
+                  p.total -= (+v.open + +v.close) / 2;
+                  p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
+                  return p;
+              },
+              function () {
+                  return {days: 0, total: 0, avg: 0};
+              }
+      );
+
+
+      moveChart.width(800)
+              .height(150)
+              .transitionDuration(1000)
+              .margins({top: 10, right: 50, bottom: 25, left: 40})
+              .dimension(moveMonths)
+              .group(indexAvgByMonthGroup)
+              .valueAccessor(function (d) {
+                  return d.value.avg;
+              })
+              .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+              .round(d3.time.month.round)
+              .xUnits(d3.time.months)
+              .elasticY(true)
+              .renderHorizontalGridLines(true)
+              .brushOn(false)
+              .compose([
+                  dc.lineChart(moveChart).group(indexAvgByMonthGroup)
+                          .valueAccessor(function (d) {
+                              return d.value.avg;
+                          })
+                          .renderArea(true)
+                          .stack(monthlyMoveGroup, function (d) {
+                              return d.value;
+                          })
+                          .title(function (d) {
+                              var value = d.value.avg ? d.value.avg : d.value;
+                              if (isNaN(value)) value = 0;
+                              return dateFormat(d.key) + "\n" + numberFormat(value);
+                          })
+              ])
+              .xAxis();
+
+      volumeChart.width(800)
+              .height(100)
+              .margins({top: 0, right: 50, bottom: 20, left: 40})
+              .dimension(moveMonths)
+              .group(volumeByMonthGroup)
+              .centerBar(true)
+              .gap(0)
+              .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+              .round(d3.time.month.round)
+              .xUnits(d3.time.months)
+              .renderlet(function (chart) {
+                  chart.select("g.y").style("display", "none");
+                  moveChart.filter(chart.filter());
+              })
+              .on("filtered", function (chart) {
+                  dc.events.trigger(function () {
+                      var chartfilt = chart.filter()
+                      // tricky part: identifying when the moveChart changes.
+                      if(chartfilt) {
+                          Push2Buffer ( chart.filter() )
+                      } else {
+                          if(TheBuffer) {
+                              Push2Buffer ( false )
+                          }
+                      }
+                      moveChart.focus(chartfilt);
+                  });
               });
-    // console.log(RecDict)
-  }
-});
+
+      dc.renderAll();
+
+      // var newcontent = '<table id="my-ajax-table" class="table table-bordered">'
+      // newcontent += '  <thead>'
+      // newcontent += '    <th width="100px;" data-dynatable-column="date">Date</th>'
+      // newcontent += '    <th data-dynatable-column="name">Title</th>'
+      // newcontent += '    <th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>'
+      // newcontent += '  </thead>'
+      // newcontent += '  <tbody>'
+      // newcontent += '  </tbody>'
+      // newcontent += '</table>'
+
+      // $('#my-ajax-table').html(newcontent)
+
+      MyTable = $('#my-ajax-table').dynatable({
+                  dataset: {
+                    records: data.records
+                  },
+                  features: {
+                    pushState: false,
+                    sort: false //i need to fix the sorting function... the current one just sucks
+                  },
+                  writers: {
+                    _rowWriter: ulWriter
+                    // _cellWriter: customCellWriter
+                  }
+                });
+
+      if ( $(".imadiv").length>0 ) return 1;
+      $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
+      $(".dynatable-record-count").insertAfter(".imadiv")
+      $(".dynatable-pagination-links").insertAfter(".imadiv")
+      // console.log(RecDict)
+    }
+  });
+}
+
+Main();

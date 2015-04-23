@@ -227,7 +227,7 @@ def projects(request):
     project_type_id = cache.NodeType['Project'].id
 
     date = datetime.datetime.now()
-    print(Logger.write("STATIC_ROOT"))
+    # print(Logger.write("STATIC_ROOT"))
     
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
 

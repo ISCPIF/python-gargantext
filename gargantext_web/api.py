@@ -611,9 +611,6 @@ class Nodes(APIView):
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
 
-        return JsonHttpResponse({
-            'deleted': msgres,
-        })
 
 class CorpusController:
 

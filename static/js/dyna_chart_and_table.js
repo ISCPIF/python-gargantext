@@ -221,12 +221,6 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 // (3) Get records and metadata for paginator
-
-function Main() {
-  MyTable;
-  RecDict={};
-  AjaxRecords = []
-  Garbage = {}
   $.ajax({
     url: '/tests/paginator/corpus/'+corpusid,
     success: function(data){
@@ -257,10 +251,8 @@ function Main() {
             ids2trash.push(AjaxRecords[i].id);
           }
 
-
           console.log("ids to the trash:")
           console.log(ids2trash)
-
 
           $.ajax({
             url: "/tests/move2trash/",
@@ -414,18 +406,6 @@ function Main() {
 
       dc.renderAll();
 
-      // var newcontent = '<table id="my-ajax-table" class="table table-bordered">'
-      // newcontent += '  <thead>'
-      // newcontent += '    <th width="100px;" data-dynatable-column="date">Date</th>'
-      // newcontent += '    <th data-dynatable-column="name">Title</th>'
-      // newcontent += '    <th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>'
-      // newcontent += '  </thead>'
-      // newcontent += '  <tbody>'
-      // newcontent += '  </tbody>'
-      // newcontent += '</table>'
-
-      // $('#my-ajax-table').html(newcontent)
-
       MyTable = $('#my-ajax-table').dynatable({
                   dataset: {
                     records: data.records
@@ -447,6 +427,3 @@ function Main() {
       // console.log(RecDict)
     }
   });
-}
-
-Main();

@@ -134,34 +134,34 @@ th a {
 
 
 <div class="container">
-        <div class="row">
-                <div class="col-md-4">
-                        <div class="jumbotron">
-                        <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
-                        <ol>
-                                <li>Count</li> <!-- read, compute -->
-                                <li>Filter</li> <!-- count, compute -->
-                                <li>Compare</li> <!-- select, cut -->
-                        </ol>
-                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-                    </div>
-                </div>
+		<div class="row">
+				<div class="col-md-4">
+						<div class="jumbotron">
+						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
+						<ol>
+								<li>Count</li> <!-- read, compute -->
+								<li>Filter</li> <!-- count, compute -->
+								<li>Compare</li> <!-- select, cut -->
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+					</div>
+				</div>
 
-                <div class="col-md-4">
-                        <div class="jumbotron">
-                                <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
-                        <ol>
-                                <li>Sort</li>
-                                <li>Group</li>
-                                <li>Cluster</li>
-                        </ol>
-                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-                        </div>
-                </div>
+				<div class="col-md-4">
+						<div class="jumbotron">
+										<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
+						<ol>
+								<li>Sort</li>
+								<li>Group</li>
+								<li>Cluster</li>
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+						</div>
+				</div>
 
-                <div class="col-md-4">
-                        <div class="jumbotron">
-                {% if processing >= "1" %}
+				<div class="col-md-4">
+						<div class="jumbotron">
+                {% if processing == "1" %}
                 <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
                 {% else %}
                                 <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>

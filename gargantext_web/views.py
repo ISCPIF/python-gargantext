@@ -273,7 +273,6 @@ def corpus(request, project_id, corpus_id):
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
 
-    
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 

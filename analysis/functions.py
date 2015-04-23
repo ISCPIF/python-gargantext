@@ -248,8 +248,8 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         
         #print(G)
         # Removing too connected nodes (find automatic way to do it)
-        outdeg = G.degree()
-        to_remove = [n for n in outdeg if outdeg[n] <= 1]
+        degree = G.degree()
+        to_remove = [n for n in degree if degree[n] <= 1]
         G.remove_nodes_from(to_remove)
 
         partition = best_partition(G)

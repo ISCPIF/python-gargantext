@@ -13,8 +13,8 @@ class PubmedFileParser(FileParser):
         # parse all the articles, one by one
         for xml_article in xml_articles:
             # extract data from the document
-            metadata = {}
-            metadata_path = {
+            hyperdata = {}
+            hyperdata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
                 "language_iso3"     : 'MedlineCitation/Article/Language',
@@ -25,16 +25,16 @@ class PubmedFileParser(FileParser):
                 "publication_day"   : 'MedlineCitation/DateCreated/Day',
                 "authors"           : 'MedlineCitation/Article/AuthorList',
             }
-            for key, path in metadata_path.items():
+            for key, path in hyperdata_path.items():
                 try:
                     xml_node = xml_article.find(path)
                     if key == 'authors':
-                        metadata[key] = ', '.join([
+                        hyperdata[key] = ', '.join([
                             xml_author.find('ForeName').text + ' ' + xml_author.find('LastName').text
                             for xml_author in xml_node
                         ])
                     else:
-                        metadata[key] = xml_node.text
+                        hyperdata[key] = xml_node.text
                 except:
                     pass
-            yield metadata
+            yield hyperdata

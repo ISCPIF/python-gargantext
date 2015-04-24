@@ -49,7 +49,7 @@ from admin.utils import PrintException
 
 def update_processing(corpus, step=0):
     try:
-        corpus.metadata['Processing'] = step
+        corpus.hyperdata['Processing'] = step
         corpus.save()
     except :
         PrintException()

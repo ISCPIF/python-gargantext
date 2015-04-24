@@ -177,14 +177,14 @@ class MedlineFetcher:
             # globalresults = self.medlineEsearch(pubmedquery)
             if globalresults["count"]>0:
                 N+=globalresults["count"]
-                querymetadata = { 
+                queryhyperdata = { 
                     "string": globalresults["query"] , 
                     "count": globalresults["count"] , 
                     "queryKey":globalresults["queryKey"] , 
                     "webEnv":globalresults["webEnv"] , 
                     "retmax":0 
                 }
-                thequeries.append ( querymetadata )
+                thequeries.append ( queryhyperdata )
 
         print("Total Number:", N,"publications")
         print("And i want just:",globalLimit,"publications")

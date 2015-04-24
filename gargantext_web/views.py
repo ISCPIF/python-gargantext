@@ -215,7 +215,7 @@ def home_view(request):
 def projects(request):
     '''
     This view show all projects for each user.
-    Each project is described with metadata that are updateded on each following view.
+    Each project is described with hyperdata that are updateded on each following view.
     To each project, we can link a resource that can be an image.
     '''
     if not request.user.is_authenticated():
@@ -277,7 +277,7 @@ def corpus(request, project_id, corpus_id):
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     try:
-        processing = corpus.metadata['Processing']
+        processing = corpus.hyperdata['Processing']
     except Exception as error:
         print(error)
         processing = 0
@@ -310,9 +310,9 @@ def newpaginatorJSON(request , corpus_id):
 
     filtered_docs = []
     for doc in documents:
-        if "publication_date" in doc.metadata:
+        if "publication_date" in doc.hyperdata:
             try:
-                realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = doc.hyperdata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
                 # doc.date = realdate
                 resdict = {}
@@ -544,14 +544,14 @@ def corpus_csv(request, project_id, corpus_id):
     type_document_id = cache.NodeType['Document'].id
     documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
 
-    keys = list(documents[0].metadata.keys())
+    keys = list(documents[0].hyperdata.keys())
     writer.writerow(keys)
 
     for doc in documents:
         data = list()
         for key in keys:
             try:
-                data.append(doc.metadata[key])
+                data.append(doc.hyperdata[key])
             except:
                 data.append("")
         writer.writerow(data)
@@ -571,9 +571,9 @@ def send_csv(request, corpus_id):
 
     cursor.execute("""
     SELECT
-        metadata ->> 'publication_year' as year,
-        metadata ->> 'publication_month' as month,
-        metadata ->> 'publication_day' as day,
+        hyperdata ->> 'publication_year' as year,
+        hyperdata ->> 'publication_month' as month,
+        hyperdata ->> 'publication_day' as day,
         COUNT(*)
     FROM
         node_node AS n
@@ -593,7 +593,7 @@ def send_csv(request, corpus_id):
             break
         if row[0] is not None and row[1] is not None and row[2] is not None and row[3] is not None:
             writer.writerow([ str(row[0]) + '/' + str(row[1]) + '/' + str(row[2])  , str(row[3]) ])
-        #dates['last']['day'] = documents.last().metadata['publication_day'])
+        #dates['last']['day'] = documents.last().hyperdata['publication_day'])
 
     cursor.close()
 
@@ -706,12 +706,12 @@ def tfidf2(request, corpus_id, ngram_id):
         pub = Node.objects.get(id=i)
         finalpub = {}
         finalpub["id"] = pub.id
-        pubmetadata = pub.metadata
-        if "title" in pubmetadata: finalpub["title"] = pubmetadata['title']
-        if "publication_date" in pubmetadata: finalpub["publication_date"] = pubmetadata['publication_date']
-        if "journal" in pubmetadata: finalpub["journal"] = pubmetadata['journal']
-        if "authors" in pubmetadata: finalpub["authors"] = pubmetadata['authors']
-        if "fields" in pubmetadata: finalpub["fields"] = pubmetadata['fields']
+        pubhyperdata = pub.hyperdata
+        if "title" in pubhyperdata: finalpub["title"] = pubhyperdata['title']
+        if "publication_date" in pubhyperdata: finalpub["publication_date"] = pubhyperdata['publication_date']
+        if "journal" in pubhyperdata: finalpub["journal"] = pubhyperdata['journal']
+        if "authors" in pubhyperdata: finalpub["authors"] = pubhyperdata['authors']
+        if "fields" in pubhyperdata: finalpub["fields"] = pubhyperdata['fields']
         tfidf_list.append(finalpub) # doing a dictionary with only available atributes
         if len(tfidf_list)==6: break # max 6 papers
     
@@ -753,11 +753,11 @@ def tfidf(request, corpus_id, ngram_id):
         pub = goodDict[x] # getting the unique publication
         finalpub = {}
         finalpub["id"] = pub.id
-        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
-        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
-        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
-        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
-        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        if "title" in pub.hyperdata: finalpub["title"] = pub.hyperdata['title']
+        if "publication_date" in pub.hyperdata: finalpub["publication_date"] = pub.hyperdata['publication_date']
+        if "journal" in pub.hyperdata: finalpub["journal"] = pub.hyperdata['journal']
+        if "authors" in pub.hyperdata: finalpub["authors"] = pub.hyperdata['authors']
+        if "fields" in pub.hyperdata: finalpub["fields"] = pub.hyperdata['fields']
         tfidf_list.append(finalpub) # doing a dictionary with only available atributes
         if len(tfidf_list)==6: break # max 6 papers
     

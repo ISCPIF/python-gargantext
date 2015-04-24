@@ -107,21 +107,21 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
         for node in self:
             node.extract_ngrams(keys, ngramsextractorscache, ngramscaches)
 
-    def make_metadata_filterable(self):
-        metadata_cache = {metadata.name: metadata for metadata in Metadata.objects.all()}
+    def make_hyperdata_filterable(self):
+        hyperdata_cache = {hyperdata.name: hyperdata for hyperdata in Hyperdata.objects.all()}
         data = []
         for node in self:
-            for key, value in node.metadata.items():
-                if key in metadata_cache:
-                    metadata = metadata_cache[key]
-                    if metadata.type == 'string':
+            for key, value in node.hyperdata.items():
+                if key in hyperdata_cache:
+                    hyperdata = hyperdata_cache[key]
+                    if hyperdata.type == 'string':
                         value = value[:200]
-                    data.append(Node_Metadata(**{
+                    data.append(Node_Hyperdata(**{
                         'node_id' : node.id,
-                        'metadata_id' : metadata.id,
-                        ('value_'+metadata.type) : value,
+                        'hyperdata_id' : hyperdata.id,
+                        ('value_'+hyperdata.type) : value,
                     }))
-        Node_Metadata.objects.bulk_create(data)
+        Node_Hyperdata.objects.bulk_create(data)
     
 class NodeManager(CTENodeManager):
     """Methods available from Node.object."""
@@ -133,7 +133,7 @@ class NodeManager(CTENodeManager):
             raise AttributeError
         return getattr(self.get_queryset(), name, *args)
 
-class Metadata(models.Model):
+class Hyperdata(models.Model):
     name        = models.CharField(max_length=32, unique=True)
     type        = models.CharField(max_length=16, db_index=True)
         
@@ -148,7 +148,7 @@ class Node(CTENode):
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
     
     date        = models.DateField(default=timezone.now, blank=True)
-    metadata    = JsonBField(null=False, default={})
+    hyperdata    = JsonBField(null=False, default={})
 
     ngrams      = models.ManyToManyField(through='Node_Ngram', to='Ngram')
 
@@ -188,8 +188,8 @@ class Node(CTENode):
         return resource
     
     def parse_resources(self, verbose=False):
-        # parse all resources into a list of metadata
-        metadata_list = []
+        # parse all resources into a list of hyperdata
+        hyperdata_list = []
         print("not parsed resources:")
         print(self.node_resource.filter(parsed=False))
         print("= = = = = = = = =  = =\n")
@@ -208,30 +208,30 @@ class Node(CTENode):
 #            }
                     
                     )[resource.type.name]()
-            metadata_list += parser.parse(str(resource.file))
+            hyperdata_list += parser.parse(str(resource.file))
         type_id = NodeType.objects.get(name='Document').id
         langages_cache = LanguagesCache()
         user_id = self.user.id
         # insert the new resources in the database!
-        for i, metadata_values in enumerate(metadata_list):
+        for i, hyperdata_values in enumerate(hyperdata_list):
             if verbose:
                 print(i, end='\r', flush=True)
-            name = metadata_values.get('title', '')[:200]
-            language = langages_cache[metadata_values['language_iso2']] if 'language_iso2' in metadata_values else None,
+            name = hyperdata_values.get('title', '')[:200]
+            language = langages_cache[hyperdata_values['language_iso2']] if 'language_iso2' in hyperdata_values else None,
             if isinstance(language, tuple):
                 language = language[0]
-            # print("metadata_values:")
-            # print("\t",metadata_values,"\n- - - - - - - - - - - - ")
+            # print("hyperdata_values:")
+            # print("\t",hyperdata_values,"\n- - - - - - - - - - - - ")
             Node(
                 user_id  = user_id,
                 type_id  = type_id,
                 name     = name,
                 parent   = self,
                 language_id = language.id if language else None,
-                metadata = metadata_values
+                hyperdata = hyperdata_values
             ).save()
-        # make metadata filterable
-        self.children.all().make_metadata_filterable()
+        # make hyperdata filterable
+        self.children.all().make_hyperdata_filterable()
 
         # mark the resources as parsed for this node
         self.node_resource.update(parsed=True)
@@ -252,13 +252,13 @@ class Node(CTENode):
         associations = defaultdict(float) # float or int?
         if isinstance(keys, dict):
             for key, weight in keys.items():
-                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
                 for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[ngram] += weight
         else:
             for key in keys:
-                text2process = str(self.metadata[key]).replace('[','').replace(']','')
+                text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
                 for ngram in extractor.extract_ngrams(text2process):
                     terms = ' '.join([token for token, tag in ngram])
                     associations[terms] += 1
@@ -277,7 +277,7 @@ class Node(CTENode):
         total = 0
         print("LOG::TIME: In workflow()    parse_resources()")
         start = time.time()
-        self.metadata['Processing'] = 1
+        self.hyperdata['Processing'] = 1
         self.save()
         self.parse_resources()
         end = time.time()
@@ -305,13 +305,13 @@ class Node(CTENode):
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
         print("LOG::TIME: In workflow()    / do_tfidf()")
         print("In workflow() END")
-        self.metadata['Processing'] = 0
+        self.hyperdata['Processing'] = 0
         self.save()
         
 
-class Node_Metadata(models.Model):
+class Node_Hyperdata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)
-    metadata    = models.ForeignKey(Metadata)
+    hyperdata    = models.ForeignKey(Hyperdata)
     value_int   = models.IntegerField(null=True, db_index=True)
     value_float = models.FloatField(null=True, db_index=True)
     value_string = models.CharField(max_length=255, null=True, db_index=True)

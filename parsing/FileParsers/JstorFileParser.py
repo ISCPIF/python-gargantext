@@ -11,13 +11,13 @@ class JstorFileParser(RisFileParser):
 
         self._parameters = {
             b"ER":  {"type": "delimiter"},
-            b"TI":  {"type": "metadata", "key": "title", "separator": " "},
-            b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
-            b"UR":  {"type": "metadata", "key": "doi"},
-            b"Y1":  {"type": "metadata", "key": "publication_year"},
-            b"PD":  {"type": "metadata", "key": "publication_month"},
-            b"LA":  {"type": "metadata", "key": "language_iso2"},
-            b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
-            b"WC":  {"type": "metadata", "key": "fields"},
+            b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
+            b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
+            b"UR":  {"type": "hyperdata", "key": "doi"},
+            b"Y1":  {"type": "hyperdata", "key": "publication_year"},
+            b"PD":  {"type": "hyperdata", "key": "publication_month"},
+            b"LA":  {"type": "hyperdata", "key": "language_iso2"},
+            b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+            b"WC":  {"type": "hyperdata", "key": "fields"},
         }
 

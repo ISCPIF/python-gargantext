@@ -71,7 +71,7 @@ from sqlalchemy.orm import relationship, aliased
 #     name = Column(String(255))
 #     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
 #     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
-#     metadata = Column(JSONB, default={}, nullable=False)
+#     hyperdata = Column(JSONB, default={}, nullable=False)
 
 
 # debugging tool, to translate SQLAlchemy queries to string

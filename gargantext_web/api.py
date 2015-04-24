@@ -133,22 +133,22 @@ class NodesChildrenDuplicates(APIView):
         if 'keys' not in request.GET:
             raise APIException('Missing GET parameter: "keys"', 400)
         keys = request.GET['keys'].split(',')
-        # metadata retrieval
-        metadata_query = (session
-            .query(Metadata)
-            .filter(Metadata.name.in_(keys))
+        # hyperdata retrieval
+        hyperdata_query = (session
+            .query(Hyperdata)
+            .filter(Hyperdata.name.in_(keys))
         )
         # build query elements
         columns = []
         aliases = []
-        for metadata in metadata_query:
+        for hyperdata in hyperdata_query:
             # aliases
-            _Metadata = aliased(Metadata)
-            _Node_Metadata = aliased(Node_Metadata)
-            aliases.append(_Node_Metadata)
+            _Hyperdata = aliased(Hyperdata)
+            _Node_Hyperdata = aliased(Node_Hyperdata)
+            aliases.append(_Node_Hyperdata)
             # what shall we retrieve?
             columns.append(
-                getattr(_Node_Metadata, 'value_' + metadata.type)
+                getattr(_Node_Hyperdata, 'value_' + hyperdata.type)
             )
         # build the query
         groups = list(columns)
@@ -156,9 +156,9 @@ class NodesChildrenDuplicates(APIView):
             .query(*(extra_columns + [func.count()] + columns))
             .select_from(Node)
         )
-        for _Node_Metadata, metadata in zip(aliases, metadata_query):
-            duplicates_query = duplicates_query.outerjoin(_Node_Metadata, _Node_Metadata.node_id == Node.id)
-            duplicates_query = duplicates_query.filter(_Node_Metadata.metadata_id == metadata.id)
+        for _Node_Hyperdata, hyperdata in zip(aliases, hyperdata_query):
+            duplicates_query = duplicates_query.outerjoin(_Node_Hyperdata, _Node_Hyperdata.node_id == Node.id)
+            duplicates_query = duplicates_query.filter(_Node_Hyperdata.hyperdata_id == hyperdata.id)
         duplicates_query = duplicates_query.filter(Node.parent_id == node_id)
         duplicates_query = duplicates_query.group_by(*columns)
         duplicates_query = duplicates_query.order_by(func.count().desc())
@@ -190,7 +190,7 @@ class NodesChildrenDuplicates(APIView):
         })
 
     def delete(self, request, node_id):
-        # get the minimum ID for each of the nodes sharing the same metadata
+        # get the minimum ID for each of the nodes sharing the same hyperdata
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
         # TODO with new orm
@@ -218,19 +218,19 @@ class NodesChildrenMetatadata(APIView):
 
     def get(self, request, node_id):
         
-        # query metadata keys
+        # query hyperdata keys
         ParentNode = aliased(Node)
-        metadata_query = (session
-            .query(Metadata)
-            .join(Node_Metadata, Node_Metadata.metadata_id == Metadata.id)
-            .join(Node, Node.id == Node_Metadata.node_id)
+        hyperdata_query = (session
+            .query(Hyperdata)
+            .join(Node_Hyperdata, Node_Hyperdata.hyperdata_id == Hyperdata.id)
+            .join(Node, Node.id == Node_Hyperdata.node_id)
             .filter(Node.parent_id == node_id)
-            .group_by(Metadata)
+            .group_by(Hyperdata)
         )
 
-        # build a collection with the metadata keys
+        # build a collection with the hyperdata keys
         collection = []
-        for metadata in metadata_query:
+        for hyperdata in hyperdata_query:
             valuesCount = 0
             values = None
 
@@ -238,31 +238,31 @@ class NodesChildrenMetatadata(APIView):
             values_count = None
             values_from = None
             values_to = None
-            if metadata.type != 'text':
-                value_column = getattr(Node_Metadata, 'value_' + metadata.type)
-                node_metadata_query = (session
+            if hyperdata.type != 'text':
+                value_column = getattr(Node_Hyperdata, 'value_' + hyperdata.type)
+                node_hyperdata_query = (session
                     .query(value_column)
-                    .join(Node, Node.id == Node_Metadata.node_id)
+                    .join(Node, Node.id == Node_Hyperdata.node_id)
                     .filter(Node.parent_id == node_id)
-                    .filter(Node_Metadata.metadata_id == metadata.id)
+                    .filter(Node_Hyperdata.hyperdata_id == hyperdata.id)
                     .group_by(value_column)
                     .order_by(value_column)
                 )
-                values_count = node_metadata_query.count()
-                # values_count, values_from, values_to = node_metadata_query.first()
+                values_count = node_hyperdata_query.count()
+                # values_count, values_from, values_to = node_hyperdata_query.first()
 
             # if there is less than 32 values, retrieve them
             values = None
             if isinstance(values_count, int) and values_count <= 48:
-                if metadata.type == 'datetime':
-                    values = [row[0].isoformat() for row in node_metadata_query.all()]
+                if hyperdata.type == 'datetime':
+                    values = [row[0].isoformat() for row in node_hyperdata_query.all()]
                 else:
-                    values = [row[0] for row in node_metadata_query.all()]
+                    values = [row[0] for row in node_hyperdata_query.all()]
 
-            # adding this metadata to the collection
+            # adding this hyperdata to the collection
             collection.append({
-                'key': metadata.name,
-                'type': metadata.type,
+                'key': hyperdata.name,
+                'type': hyperdata.type,
                 'values': values,
                 'valuesFrom': values_from,
                 'valuesTo': values_to,
@@ -302,7 +302,7 @@ class NodesChildrenQueries(APIView):
 
         # parse field
         field_objects = {
-            'metadata': None,
+            'hyperdata': None,
             'ngrams': ['terms', 'n'],
         }
         field = field.split('.')
@@ -333,10 +333,10 @@ class NodesChildrenQueries(APIView):
                 },
                 "retrieve": {
                     "type": "fields",
-                    "list": ["name", "metadata.publication_date"]
+                    "list": ["name", "hyperdata.publication_date"]
                 },
                 "filters": [
-                    {"field": "metadata.publication_date", "operator": ">", "value": "2010-01-01 00:00:00"},
+                    {"field": "hyperdata.publication_date", "operator": ">", "value": "2010-01-01 00:00:00"},
                     {"field": "ngrams.terms", "operator": "in", "value": ["bee", "bees"]}
                 ],
                 "sort": ["name"]
@@ -350,7 +350,7 @@ class NodesChildrenQueries(APIView):
                 },
                 "retrieve": {
                     "type": "fields",
-                    "list": ["name", "metadata.publication_date"]
+                    "list": ["name", "hyperdata.publication_date"]
                 },
                 "results": [
                     {"id": 12, "name": "A document about bees", "publication_date": "2014-12-03 10:00:00"},
@@ -359,7 +359,7 @@ class NodesChildrenQueries(APIView):
             }
         """
 
-        metadata_aliases = {}
+        hyperdata_aliases = {}
 
         # validate query
         query_fields = {'pagination', 'retrieve', 'sort', 'filters'}
@@ -387,22 +387,22 @@ class NodesChildrenQueries(APIView):
 
         for field_name in fields_names:
             split_field_name = field_name.split('.')
-            if split_field_name[0] == 'metadata':
-                metadata = session.query(Metadata).filter(Metadata.name == split_field_name[1]).first()
-                if metadata is None:
-                    metadata_query = session.query(Metadata.name).order_by(Metadata.name)
-                    metadata_names = [metadata.name for metadata in metadata_query.all()]
-                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)
-                # check or create Node_Metadata alias; join if necessary
-                if metadata.id in metadata_aliases:
-                    metadata_alias = metadata_aliases[metadata.id]
+            if split_field_name[0] == 'hyperdata':
+                hyperdata = session.query(Hyperdata).filter(Hyperdata.name == split_field_name[1]).first()
+                if hyperdata is None:
+                    hyperdata_query = session.query(Hyperdata.name).order_by(Hyperdata.name)
+                    hyperdata_names = [hyperdata.name for hyperdata in hyperdata_query.all()]
+                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(hyperdata_names), field[1]), 400)
+                # check or create Node_Hyperdata alias; join if necessary
+                if hyperdata.id in hyperdata_aliases:
+                    hyperdata_alias = hyperdata_aliases[hyperdata.id]
                 else:
-                    metadata_alias = metadata_aliases[metadata.id] = aliased(Node_Metadata)
-                field = getattr(metadata_alias, 'value_' + metadata.type)
+                    hyperdata_alias = hyperdata_aliases[hyperdata.id] = aliased(Node_Hyperdata)
+                field = getattr(hyperdata_alias, 'value_' + hyperdata.type)
                 # operation on field
                 if len(split_field_name) > 2:
                     # datetime truncation
-                    if metadata.type == 'datetime':
+                    if hyperdata.type == 'datetime':
                         datepart = split_field_name[2]
                         accepted_dateparts = ['year', 'month', 'day', 'hour', 'minute']
                         if datepart not in accepted_dateparts:
@@ -444,11 +444,11 @@ class NodesChildrenQueries(APIView):
                 .join(Ngram, Ngram.id == Node_Ngram.ngram_id)
             )
 
-        # join metadata aliases
-        for metadata_id, metadata_alias in metadata_aliases.items():
+        # join hyperdata aliases
+        for hyperdata_id, hyperdata_alias in hyperdata_aliases.items():
             query = (query
-                .join(metadata_alias, metadata_alias.node_id == Node.id)
-                .filter(metadata_alias.metadata_id == metadata_id)
+                .join(hyperdata_alias, hyperdata_alias.node_id == Node.id)
+                .filter(hyperdata_alias.hyperdata_id == hyperdata_id)
             )
 
         # filtering
@@ -456,28 +456,28 @@ class NodesChildrenQueries(APIView):
             # parameters extraction & validation
             field, operator, value = self._parse_filter(filter)
             # 
-            if field[0] == 'metadata':
-                # which metadata?
-                metadata = session.query(Metadata).filter(Metadata.name == field[1]).first()
-                if metadata is None:
-                    metadata_query = session.query(Metadata.name).order_by(Metadata.name)
-                    metadata_names = [metadata.name for metadata in metadata_query.all()]
-                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(metadata_names), field[1]), 400)                
-                # check or create Node_Metadata alias; join if necessary
-                if metadata.id in metadata_aliases:
-                    metadata_alias = metadata_aliases[metadata.id]
+            if field[0] == 'hyperdata':
+                # which hyperdata?
+                hyperdata = session.query(Hyperdata).filter(Hyperdata.name == field[1]).first()
+                if hyperdata is None:
+                    hyperdata_query = session.query(Hyperdata.name).order_by(Hyperdata.name)
+                    hyperdata_names = [hyperdata.name for hyperdata in hyperdata_query.all()]
+                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(hyperdata_names), field[1]), 400)                
+                # check or create Node_Hyperdata alias; join if necessary
+                if hyperdata.id in hyperdata_aliases:
+                    hyperdata_alias = hyperdata_aliases[hyperdata.id]
                 else:
-                    metadata_alias = metadata_aliases[metadata.id] = aliased(Node_Metadata)
+                    hyperdata_alias = hyperdata_aliases[hyperdata.id] = aliased(Node_Hyperdata)
                     query = (query
-                        .join(metadata_alias, metadata_alias.node_id == Node.id)
-                        .filter(metadata_alias.metadata_id == metadata.id)
+                        .join(hyperdata_alias, hyperdata_alias.node_id == Node.id)
+                        .filter(hyperdata_alias.hyperdata_id == hyperdata.id)
                     )
                 # adjust date
-                if metadata.type == 'datetime':
+                if hyperdata.type == 'datetime':
                     value = value + '2000-01-01T00:00:00Z'[len(value):]
                 # filter query
                 query = query.filter(operator(
-                    getattr(metadata_alias, 'value_' + metadata.type),
+                    getattr(hyperdata_alias, 'value_' + hyperdata.type),
                     value
                 ))
             elif field[0] == 'ngrams': 
@@ -588,8 +588,8 @@ class Nodes(APIView):
             'parent_id': node.parent_id,
             'type': cache.NodeType[node.type_id].name,
             # 'type': node.type__name,
-            #'metadata': dict(node.metadata),
-            'metadata': node.metadata,
+            #'hyperdata': dict(node.hyperdata),
+            'hyperdata': node.hyperdata,
         })
 
     # deleting node by id

@@ -185,7 +185,7 @@ science.children.count()
 
 # In[25]:
 
-science.children.last().metadata
+science.children.last().hyperdata
 
 
 # In[26]:

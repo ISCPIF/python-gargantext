@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 #import os
 #import djcelery
 #
@@ -46,39 +45,31 @@ def apply_sum(x, y):
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
 
+from admin.utils import PrintException
+
+def update_processing(corpus, step=0):
+    try:
+        corpus.metadata['Processing'] = step
+        corpus.save()
+    except :
+        PrintException()
+
 
 @shared_task
 def apply_workflow(corpus_id):
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    corpus_django = models.Node.objects.get(id=corpus_id)
 
+    update_processing(corpus_django, 1)
     parse_resources(corpus)
     
-    try:
-        print("-" *60)
-        
-        # With Django ORM 
-        corpus_django = models.Node.objects.get(id=corpus_id)
-        corpus_django.metadata['Processing'] = "2"
-        corpus_django.save()
-        print("-" *60)
-        
-        #TODO With SLA ORM (KO why?)
-#        corpus.metadata['Processing'] = 0
-#        session.add(corpus)
-#        session.flush()
-
-    except Exception as error:
-        print(error)
-
-       
+    update_processing(corpus_django, 2)
     extract_ngrams(corpus, ['title', 'abstract'])
+    
+    update_processing(corpus_django, 3)
     compute_tfidf(corpus)
     
-    try:
-        corpus_django.metadata['Processing'] = 0
-        corpus_django.save()
-    except Exception as error:
-        print(error)
+    update_processing(corpus_django, 0)
 
 
 

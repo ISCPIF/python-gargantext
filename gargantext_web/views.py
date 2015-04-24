@@ -277,17 +277,6 @@ def corpus(request, project_id, corpus_id):
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     try:
-        chart = dict()
-        chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
-        # TODO write with sqlalchemy
-        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
-        
-        chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
-        print(chart)
-    except Exception as error:
-        print(error)
-    
-    try:
         processing = corpus.metadata['Processing']
     except Exception as error:
         print(error)
@@ -302,7 +291,6 @@ def corpus(request, project_id, corpus_id):
             'processing' : processing,\
 #            'documents': documents,\
             'number' : number,\
-            'dates' : chart,\
             }))
     
     return HttpResponse(html)

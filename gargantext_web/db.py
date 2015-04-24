@@ -63,15 +63,15 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, aliased
 
-# class Node(Base):
-#     __tablename__ = 'node_node'
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey('auth_user.id', ondelete='CASCADE'), index=True, nullable=False)
-#     type_id = Column(Integer, ForeignKey('node_nodetype.id', ondelete='CASCADE'), index=True, nullable=False)
-#     name = Column(String(255))
-#     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
-#     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
-#     hyperdata = Column(JSONB, default={}, nullable=False)
+class Node(Base):
+     __tablename__ = 'node_node'
+     id = Column(Integer, primary_key=True)
+     user_id = Column(Integer, ForeignKey('auth_user.id', ondelete='CASCADE'), index=True, nullable=False)
+     type_id = Column(Integer, ForeignKey('node_nodetype.id', ondelete='CASCADE'), index=True, nullable=False)
+     name = Column(String(255))
+     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
+     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
+     hyperdata = Column(JSONB, default={}, nullable=False)
 
 
 # debugging tool, to translate SQLAlchemy queries to string

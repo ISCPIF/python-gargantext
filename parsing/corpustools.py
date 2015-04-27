@@ -45,7 +45,7 @@ parsers = Parsers()
 
 
 
-# resources managment
+# resources management
 
 def add_resource(corpus, **kwargs):
     # only for tests

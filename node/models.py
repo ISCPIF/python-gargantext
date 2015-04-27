@@ -38,6 +38,30 @@ def _upload_to(instance, filename):
 
 # All classes here
 
+class Group(models.Model):
+    creator       = models.ForeignKey(User)
+    name          = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.creator, self.name
+
+class UserGroup(models.Model):
+    user     = models.ForeignKey(User)
+    group    = models.ForeignKey(Group)
+    
+    def __str__(self):
+        return self.user, self.group
+
+
+class NodeGroup(models.Model):
+    node     = models.ForeignKey(Node)
+    group    = models.ForeignKey(Group)
+    rights   = models.CharField(max_length=1, unique=True)
+    
+    def __str__(self):
+        return self.node, self.group, self.rights
+
+
 class Language(models.Model):
     iso2        = models.CharField(max_length=2, unique=True)
     iso3        = models.CharField(max_length=3, unique=True)
@@ -58,7 +82,6 @@ class Tag(models.Model):
     description      = models.CharField(max_length=255, unique=True)
     def __str__(self):
         return self.name
-
 
 class Ngram(models.Model):
     language    = models.ManyToManyField(blank=True, null=True, through='NgramLanguage', to='Language')
@@ -81,7 +104,6 @@ class NgramLanguage(models.Model):
     language     = models.ForeignKey(Language)
     def __str__(self):
         return "%s: %s" % (self.ngram.terms, self.language.fullname)
-
 
 class Resource(models.Model):
     user        = models.ForeignKey(User)

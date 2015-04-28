@@ -38,30 +38,6 @@ def _upload_to(instance, filename):
 
 # All classes here
 
-class Group(models.Model):
-    creator       = models.ForeignKey(User)
-    name          = models.CharField(max_length=255, unique=True)
-
-    def __str__(self):
-        return self.creator, self.name
-
-class UserGroup(models.Model):
-    user     = models.ForeignKey(User)
-    group    = models.ForeignKey(Group)
-    
-    def __str__(self):
-        return self.user, self.group
-
-
-class NodeGroup(models.Model):
-    node     = models.ForeignKey(Node)
-    group    = models.ForeignKey(Group)
-    rights   = models.CharField(max_length=1, unique=True)
-    
-    def __str__(self):
-        return self.node, self.group, self.rights
-
-
 class Language(models.Model):
     iso2        = models.CharField(max_length=2, unique=True)
     iso3        = models.CharField(max_length=3, unique=True)
@@ -406,5 +382,45 @@ class NgramNgram(models.Model):
     token      = models.ForeignKey(Ngram, related_name='token', on_delete=models.CASCADE)
     index      = models.IntegerField()
 
+
+# Core Collaboration Structure
+
+class Group(models.Model):
+    '''
+    The creator of the group is a user who 
+        - is in it
+        - has all acccess by defautl
+    '''
+    creator       = models.ForeignKey(User)
+    name          = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.creator, self.name
+
+class UserGroup(models.Model):
+    '''
+    User can have rights to the group:
+        - access (read)
+        - add/remove users from it (write)
+    '''
+    user     = models.ForeignKey(User)
+    group    = models.ForeignKey(Group)
+    rights   = models.CharField(max_length=1, unique=True)
+    
+    def __str__(self):
+        return self.user, self.group
+
+class NodeGroup(models.Model):
+    '''
+    User can have rights on the node:
+        - can read (read as "r" rights)
+        - can modify, remove (write as "w" rights)
+    '''
+    node     = models.ForeignKey(Node)
+    group    = models.ForeignKey(Group)
+    rights   = models.CharField(max_length=1, unique=True)
+    
+    def __str__(self):
+        return self.node, self.group, self.rights
 
 

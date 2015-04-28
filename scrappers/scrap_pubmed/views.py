@@ -49,7 +49,6 @@ def getGlobalStats(request ):
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		instancia = MedlineFetcher()
-		# alist = instancia.serialFetcher( 5, query , int(request.POST["N"]) )
 		alist = instancia.serialFetcher( 5, query , N )
 
 	data = alist

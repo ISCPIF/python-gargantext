@@ -393,6 +393,7 @@ class Group(models.Model):
     '''
     creator       = models.ForeignKey(User)
     name          = models.CharField(max_length=255, unique=True)
+    parameters    = JsonBField(null=False, default={})
 
     def __str__(self):
         return self.creator, self.name

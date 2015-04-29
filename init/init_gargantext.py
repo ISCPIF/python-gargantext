@@ -16,8 +16,8 @@ from gargantext_web.db import *
 #
 #tables_to_empty = [
 #    Node,
-#    Node_Metadata,
-#    Metadata,
+#    Node_Hyperdata,
+#    Hyperdata,
 #    NodeType,
 #    ResourceType,
 #    Resource,
@@ -27,10 +27,10 @@ from gargantext_web.db import *
 #    table.objects.all().delete()
 
 
-# Integration: metadata types
+# Integration: hyperdata types
 
-print('Initialize metadata...')
-metadata = {
+print('Initialize hyperdata...')
+hyperdata = {
     'publication_date': 'datetime',
     'authors': 'string',
     'language_fullname': 'string',
@@ -43,8 +43,8 @@ metadata = {
     'doi': 'string',
     'journal': 'string',
 }
-for name, type in metadata.items():
-    models.Metadata(name=name, type=type).save()
+for name, type in hyperdata.items():
+    models.Hyperdata(name=name, type=type).save()
 
 
 # Integration: languages

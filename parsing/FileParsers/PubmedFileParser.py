@@ -16,13 +16,13 @@ class PubmedFileParser(FileParser):
         else: xml = etree.parse(file, parser=xml_parser)
 
         xml_articles = xml.findall('PubmedArticle')
-        # initialize the list of metadata
-        metadata_list = []
+        # initialize the list of hyperdata
+        hyperdata_list = []
         # parse all the articles, one by one
         for xml_article in xml_articles:
             # extract data from the document
-            metadata = {}
-            metadata_path = {
+            hyperdata = {}
+            hyperdata_path = {
                 "journal"           : 'MedlineCitation/Article/Journal/Title',
                 "title"             : 'MedlineCitation/Article/ArticleTitle',
                 "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
@@ -38,44 +38,44 @@ class PubmedFileParser(FileParser):
                 "publication_day"   : 'MedlineCitation/DateCreated/Day',
                 "authors"           : 'MedlineCitation/Article/AuthorList',
             }
-            for key, path in metadata_path.items():
+            for key, path in hyperdata_path.items():
                 try:
                     xml_node = xml_article.find(path)
                     # Authors tag
                     if key == 'authors':
-                        metadata[key] = ', '.join([
+                        hyperdata[key] = ', '.join([
                             xml_author.find('ForeName').text + ' ' + xml_author.find('LastName').text
                             for xml_author in xml_node
                         ])
                     else:
-                        metadata[key] = xml_node.text
+                        hyperdata[key] = xml_node.text
 
                 except:
                     pass
 
             #Title-Decision
             Title=""
-            if not metadata["title"] or metadata["title"]=="":
-                if "title2" in metadata:
-                    metadata["title"] = metadata["title2"]
-                else: metadata["title"] = ""
+            if not hyperdata["title"] or hyperdata["title"]=="":
+                if "title2" in hyperdata:
+                    hyperdata["title"] = hyperdata["title2"]
+                else: hyperdata["title"] = ""
 
             # Date-Decision
             # forge.iscpif.fr/issues/1418
             RealDate = ""
-            if "realdate_full_" in metadata:
-                RealDate = metadata["realdate_full_"]
+            if "realdate_full_" in hyperdata:
+                RealDate = hyperdata["realdate_full_"]
             else:
-                if "realdate_year_" in metadata: RealDate+=metadata["realdate_year_"]
-                if "realdate_month_" in metadata: RealDate+=" "+metadata["realdate_month_"]
-                if "realdate_day_" in metadata: RealDate+=" "+metadata["realdate_day_"]
-            metadata["realdate_full_"] = RealDate
+                if "realdate_year_" in hyperdata: RealDate+=hyperdata["realdate_year_"]
+                if "realdate_month_" in hyperdata: RealDate+=" "+hyperdata["realdate_month_"]
+                if "realdate_day_" in hyperdata: RealDate+=" "+hyperdata["realdate_day_"]
+            hyperdata["realdate_full_"] = RealDate
             RealDate = RealDate.split("-")[0]
 
             PubmedDate = ""
-            if "publication_year" in metadata: PubmedDate+=metadata["publication_year"]
-            if "publication_month" in metadata: PubmedDate+=" "+metadata["publication_month"]
-            if "publication_day" in metadata: PubmedDate+=" "+metadata["publication_day"]
+            if "publication_year" in hyperdata: PubmedDate+=hyperdata["publication_year"]
+            if "publication_month" in hyperdata: PubmedDate+=" "+hyperdata["publication_month"]
+            if "publication_day" in hyperdata: PubmedDate+=" "+hyperdata["publication_day"]
 
             Decision=""
             if len(RealDate)>4:
@@ -94,14 +94,14 @@ class PubmedFileParser(FileParser):
                 except: Decision=False
 
             if Decision!=False:
-                if "publication_year" in metadata: metadata["publication_year"] = str(Decision.year)
-                if "publication_month" in metadata: metadata["publication_month"] = str(Decision.month)
-                if "publication_day" in metadata: metadata["publication_day"] = str(Decision.day)
-                if "realdate_year_" in metadata: metadata.pop("realdate_year_")
-                if "realdate_month_" in metadata: metadata.pop("realdate_month_")
-                if "realdate_day_" in metadata: metadata.pop("realdate_day_")
-                if "title2" in metadata: metadata.pop("title2")
+                if "publication_year" in hyperdata: hyperdata["publication_year"] = str(Decision.year)
+                if "publication_month" in hyperdata: hyperdata["publication_month"] = str(Decision.month)
+                if "publication_day" in hyperdata: hyperdata["publication_day"] = str(Decision.day)
+                if "realdate_year_" in hyperdata: hyperdata.pop("realdate_year_")
+                if "realdate_month_" in hyperdata: hyperdata.pop("realdate_month_")
+                if "realdate_day_" in hyperdata: hyperdata.pop("realdate_day_")
+                if "title2" in hyperdata: hyperdata.pop("title2")
                 
-                metadata_list.append(metadata)
-        # return the list of metadata
-        return metadata_list
+                hyperdata_list.append(hyperdata)
+        # return the list of hyperdata
+        return hyperdata_list

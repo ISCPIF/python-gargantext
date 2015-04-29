@@ -220,7 +220,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr>' + tr + '</tr>';
 }
 
-// (3) Get records and metadata for paginator
+// (3) Get records and hyperdata for paginator
   $.ajax({
     url: '/tests/paginator/corpus/'+corpusid,
     success: function(data){

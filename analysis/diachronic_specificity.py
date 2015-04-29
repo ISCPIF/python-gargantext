@@ -13,8 +13,8 @@ NodeNgram = models.Node_Ngram.sa
 NodeNodeNgram = models.NodeNodeNgram.sa
 NodeNgramNgram = models.NodeNgramNgram.sa
 Ngram = models.Ngram.sa
-Node_Metadata = models.Node_Metadata.sa
-Metadata = models.Metadata.sa
+Node_Hyperdata = models.Node_Hyperdata.sa
+Hyperdata = models.Hyperdata.sa
 Node = models.Node.sa
 Corpus = models.Corpus.sa
 
@@ -50,18 +50,18 @@ def diachronic_specificity(corpus_id, terms, order=True):
     Nowadays, the measure is rather simple: distance of frequency of period from mean of frequency of all corpus.
     '''
     ngram_frequency_query = (session
-        .query(Node.metadata['publication_year'], func.count('*'))
+        .query(Node.hyperdata['publication_year'], func.count('*'))
         .join(NodeNgram, Node.id == NodeNgram.node_id)
         .join(Ngram, Ngram.id == NodeNgram.ngram_id)
         .filter(Ngram.terms == terms)
         .filter(Node.parent_id == corpus_id)
-        .group_by(Node.metadata['publication_year'])
+        .group_by(Node.hyperdata['publication_year'])
     )
 
     document_year_sum_query = (session
-        .query(Node.metadata['publication_year'], func.count('*'))
+        .query(Node.hyperdata['publication_year'], func.count('*'))
         .filter(Node.parent_id == corpus_id)
-        .group_by(Node.metadata['publication_year'])
+        .group_by(Node.hyperdata['publication_year'])
     )
             
             

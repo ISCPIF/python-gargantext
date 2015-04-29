@@ -59,7 +59,7 @@ def project(request, project_id):
     #  ... sqlalchemy.func by Resource.type_id is the guilty
     # ISSUE L51
     corpus_query = (session
-        .query(Node.id, Node.name, func.count(ChildrenNode.id), Node.metadata['Processing'])
+        .query(Node.id, Node.name, func.count(ChildrenNode.id), Node.hyperdata['Processing'])
         #.query(Node.id, Node.name, Resource.type_id, func.count(ChildrenNode.id))
         #.join(Node_Resource, Node_Resource.node_id == Node.id)
         #.join(Resource, Resource.id == Node_Resource.resource_id)
@@ -137,7 +137,7 @@ def project(request, project_id):
                 parent_id   = project_id,
                 type_id     = cache.NodeType['Corpus'].id,
                 language_id = language_id,
-                metadata    = {'Processing' : 1,}
+                hyperdata    = {'Processing' : 1,}
             )
             session.add(corpus)
             session.commit()
@@ -221,8 +221,8 @@ def tfidf(request, corpus_id, ngram_ids):
             'score': score,
         }
         for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
-            if key in node.metadata:
-                node_dict[key] = node.metadata[key]
+            if key in node.hyperdata:
+                node_dict[key] = node.hyperdata[key]
         nodes_list.append(node_dict)
 
     # print("= = = = = = = = \n")

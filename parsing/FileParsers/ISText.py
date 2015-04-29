@@ -13,8 +13,8 @@ class ISText(FileParser):
         data = json.load(json_data)
         json_data.close()
         json_docs = data["hits"]
-        metadata_list = []
-        metadata_path = {
+        hyperdata_list = []
+        hyperdata_path = {
             "id"                : "id",
             "source"           : 'corpusName',
             "title"             : 'title',
@@ -27,65 +27,65 @@ class ISText(FileParser):
             "authorsRAW"        : 'author',
             "keywords"          : "keywords"
         }
-        metadata = {}
+        hyperdata = {}
         import pprint
         import datetime
         for json_doc in json_docs:
-            for key, path in metadata_path.items():
+            for key, path in hyperdata_path.items():
                 try:
                     # print(path," ==> ",len(json_doc[path]))
-                    metadata[key] = json_doc[path]
+                    hyperdata[key] = json_doc[path]
                 except: pass
 
-            # print("|",metadata["publication_date"])
+            # print("|",hyperdata["publication_date"])
 
-            if "doi" in metadata: metadata["doi"] = metadata["doi"][0]
+            if "doi" in hyperdata: hyperdata["doi"] = hyperdata["doi"][0]
             
             keywords = []
-            if "keywords" in metadata:
-                for keyw in metadata["keywords"]:
+            if "keywords" in hyperdata:
+                for keyw in hyperdata["keywords"]:
                     keywords.append(keyw["value"] )
-                metadata["keywords"] = ", ".join( keywords )
+                hyperdata["keywords"] = ", ".join( keywords )
 
             moredate=False
             moresource=False
-            if "host" in metadata:
+            if "host" in hyperdata:
 
-                if "genre" in metadata["host"] and len(metadata["host"]["genre"])>0:
-                    if "genre" in metadata and len(metadata["genre"])==0:
-                        metadata["genre"] = metadata["host"]["genre"]
+                if "genre" in hyperdata["host"] and len(hyperdata["host"]["genre"])>0:
+                    if "genre" in hyperdata and len(hyperdata["genre"])==0:
+                        hyperdata["genre"] = hyperdata["host"]["genre"]
 
-                # print(metadata["host"])
-                if "pubdate" in metadata["host"]:
-                    onebuffer = metadata["publication_date"]
-                    metadata["publication_date"] = []
-                    metadata["publication_date"].append(onebuffer)
-                    metadata["publication_date"].append( metadata["host"]["pubdate"] )
+                # print(hyperdata["host"])
+                if "pubdate" in hyperdata["host"]:
+                    onebuffer = hyperdata["publication_date"]
+                    hyperdata["publication_date"] = []
+                    hyperdata["publication_date"].append(onebuffer)
+                    hyperdata["publication_date"].append( hyperdata["host"]["pubdate"] )
 
-                if "title" in metadata["host"]:
-                    metadata["journal"] = metadata["host"]["title"]
+                if "title" in hyperdata["host"]:
+                    hyperdata["journal"] = hyperdata["host"]["title"]
 
             authors=False
-            if "authorsRAW" in metadata:
+            if "authorsRAW" in hyperdata:
                 names = []
-                for author in metadata["authorsRAW"]: 
+                for author in hyperdata["authorsRAW"]: 
                     names.append(author["name"])
-                metadata["authors"] = ", ".join(names)
+                hyperdata["authors"] = ", ".join(names)
 
-            if "host" in metadata: metadata.pop("host")
-            if "genre" in metadata:
-                if len(metadata["genre"])==0:
-                    metadata.pop("genre")
+            if "host" in hyperdata: hyperdata.pop("host")
+            if "genre" in hyperdata:
+                if len(hyperdata["genre"])==0:
+                    hyperdata.pop("genre")
             
-            if "publication_date" in metadata and isinstance(metadata["publication_date"], list):
-                if len(metadata["publication_date"])>1:
-                    d1 = metadata["publication_date"][0]
-                    d2 = metadata["publication_date"][1]
+            if "publication_date" in hyperdata and isinstance(hyperdata["publication_date"], list):
+                if len(hyperdata["publication_date"])>1:
+                    d1 = hyperdata["publication_date"][0]
+                    d2 = hyperdata["publication_date"][1]
                     # print("date1:",d1)
                     # print("date2:",d2)
                     if len(d1)==len(d2):
-                        metadata["publication_date"] = d2
-                        # if int(d1)>int(d2): metadata["publication_date"] = d2
+                        hyperdata["publication_date"] = d2
+                        # if int(d1)>int(d2): hyperdata["publication_date"] = d2
                     else:
                         fulldate = ""
                         year = d2[:4]
@@ -96,17 +96,17 @@ class ISText(FileParser):
                             if len(d2)>6:
                                 day = d2[6:8]
                                 fulldate+="-"+day
-                        metadata["publication_date"] = fulldate
+                        hyperdata["publication_date"] = fulldate
                 else:
                     if "copyrightdate" in json_doc: 
-                        metadata["publication_date"] = json_doc["copyrightdate"]
+                        hyperdata["publication_date"] = json_doc["copyrightdate"]
             else:
                 if "copyrightdate" in json_doc:
-                    metadata["publication_date"] = json_doc["copyrightdate"]
+                    hyperdata["publication_date"] = json_doc["copyrightdate"]
             
-            print("||",metadata["title"])
-            metadata_list.append(metadata)
+            print("||",hyperdata["title"])
+            hyperdata_list.append(hyperdata)
             print("=============================")
 
-        print("\nlen list:",len(metadata_list))
-        return metadata_list
+        print("\nlen list:",len(hyperdata_list))
+        return hyperdata_list

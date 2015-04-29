@@ -202,12 +202,13 @@ def home_view(request):
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'paragraph_gargantua': home.paragraph_gargantua(),\
-            'paragraph_lorem' : home.paragraph_lorem(),\
-            'paragraph_tutoreil': home.paragraph_tutoreil(),\
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'paragraph_gargantua': home.paragraph_gargantua(),
+            'paragraph_lorem' : home.paragraph_lorem(),
+            'paragraph_tutoreil': home.paragraph_tutoreil(),
             }))
     
     return HttpResponse(html)
@@ -247,6 +248,7 @@ def projects(request):
         form = ProjectForm()
 
     return render(request, 'projects.html', {
+        'debug': settings.DEBUG,
         'date': date,
         'form': form,
         'number': number,
@@ -283,14 +285,15 @@ def corpus(request, project_id, corpus_id):
         processing = 0
     print('processing', processing)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'corpus' : corpus,\
-            'processing' : processing,\
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
 #            'documents': documents,\
-            'number' : number,\
+            'number' : number,
             }))
     
     return HttpResponse(html)
@@ -439,6 +442,7 @@ def chart(request, project_id, corpus_id):
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     
     html = t.render(Context({
+        'debug': settings.DEBUG,
         'user'      : user,
         'date'      : date,
         'project'   : project,
@@ -455,6 +459,7 @@ def matrix(request, project_id, corpus_id):
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
@@ -494,6 +499,7 @@ def graph(request, project_id, corpus_id):
     pprint.pprint(results)
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
@@ -510,6 +516,7 @@ def exploration(request):
     date = datetime.datetime.now()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user': user,\
             'date': date,\
             }))
@@ -522,6 +529,7 @@ def explorer_chart(request):
     date = datetime.datetime.now()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user': user,\
             'date': date,\
             }))

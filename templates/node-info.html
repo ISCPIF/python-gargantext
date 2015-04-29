@@ -40,7 +40,7 @@
 {% block content %}
 {% if node_id %}
 <div id="nodeid" style="visibility: hidden;" >{{node_id}}</div>
-<div id="metadata"></div>
+<div id="hyperdata"></div>
 {% endif %}
 
 
@@ -60,7 +60,7 @@
 
     var node_id = $("#nodeid").html()
 	var img = '<center><img src="'+window.location.origin+'/static/img/ajax-loader.gif" width="30%"></img></center>';
-	$("#metadata").html(img);
+	$("#hyperdata").html(img);
 
     $.ajax({
         type: 'GET',
@@ -69,7 +69,7 @@
         //dataType: 'json',
         success : function(data){
         	console.log( window.location.origin+'/api/nodes/'+node_id )
-        	jsondata = data.metadata
+        	jsondata = data.hyperdata
         	console.log(jsondata)
         	var output = ""
         	// if(jsondata.title) output += "Title:<br>"+jsondata.title+"<br>";
@@ -92,7 +92,7 @@
         	}
         	output += "</div>"
 
-            $("#metadata").html(output);
+            $("#hyperdata").html(output);
         },
         error: function(){ 
             console.log('Page Not found: getTopPapers()');

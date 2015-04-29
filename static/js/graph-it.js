@@ -187,7 +187,7 @@ container.prepend(', corpus ');
 var selectProject = $('<select>').prependTo(container);
 container.prepend('In the project ');
 
-var metadataCollection;
+var hyperdataCollection;
 var corpusId;
 
 // how shall we group the data?
@@ -205,7 +205,7 @@ var buttonView = $('<button>').text('Graph it!').click(function(e) {
         liDataset = $(liDataset);
         var getData = {
             mesured:      liDataset.find('*[name]').first().val(),
-            parameters:   ['metadata.publication_date'],
+            parameters:   ['hyperdata.publication_date'],
             filters:      [],
             format:       'json',
         };
@@ -225,17 +225,17 @@ var buttonView = $('<button>').text('Graph it!').click(function(e) {
 }).insertAfter(ulDatasets).hide();
 
 
-// Load metadata
+// Load hyperdata
 selectCorpus.change(function() {
     corpusId = selectCorpus.val();
     emWait.show();
     ulDatasets.empty();
-    $.get('/api/corpus/' + corpusId + '/metadata', function(collection) {
+    $.get('/api/corpus/' + corpusId + '/hyperdata', function(collection) {
         // Unleash the power of the filter!
         emWait.hide();
         buttonAddDataset.show();
         buttonView.show();
-        metadataCollection = collection;
+        hyperdataCollection = collection;
         buttonAddDataset.click();
     });
 });
@@ -289,7 +289,7 @@ buttonAddDataset.click(function() {
         .appendTo(liDataset);
     // Add a filter when asked
     var ulFilters = $('<ul>').appendTo(liDataset);
-    var addFilter = function(metadataCollection) {
+    var addFilter = function(hyperdataCollection) {
         var liFilter = $('<li>').appendTo(ulFilters);
         liFilter.append('...where the ');
         // Type of filter: ngrams
@@ -301,25 +301,25 @@ buttonAddDataset.click(function() {
             .attr('name', 'ngrams.in')
             .appendTo(spanNgrams);
         spanNgrams.append(' (comma-separated ngrams)')
-        // Type of filter: metadata
-        $('<option>').text('metadata').appendTo(selectType);
-        var spanMetadata = $('<span>').appendTo(liFilter).hide();
-        var selectMetadata = $('<select>').appendTo(spanMetadata);
-        var spanMetadataValue = $('<span>').appendTo(spanMetadata);
-        $.each(metadataCollection, function(i, metadata) {
+        // Type of filter: hyperdata
+        $('<option>').text('hyperdata').appendTo(selectType);
+        var spanHyperdata = $('<span>').appendTo(liFilter).hide();
+        var selectHyperdata = $('<select>').appendTo(spanHyperdata);
+        var spanHyperdataValue = $('<span>').appendTo(spanHyperdata);
+        $.each(hyperdataCollection, function(i, hyperdata) {
             $('<option>')
-                .appendTo(selectMetadata)
-                .text(metadata.text)
-                .data(metadata);
+                .appendTo(selectHyperdata)
+                .text(hyperdata.text)
+                .data(hyperdata);
         });
-        // How do we present the metadata?
-        selectMetadata.change(function() {
-            var metadata = selectMetadata.find(':selected').data();
-            spanMetadataValue.empty();
-            if (metadata.type == 'datetime') {
-                spanMetadataValue.append(' is between ');
-                $('<input>').appendTo(spanMetadataValue)
-                    .attr('name', 'metadata.' + metadata.key + '.gt')
+        // How do we present the hyperdata?
+        selectHyperdata.change(function() {
+            var hyperdata = selectHyperdata.find(':selected').data();
+            spanHyperdataValue.empty();
+            if (hyperdata.type == 'datetime') {
+                spanHyperdataValue.append(' is between ');
+                $('<input>').appendTo(spanHyperdataValue)
+                    .attr('name', 'hyperdata.' + hyperdata.key + '.gt')
                     .datepicker({dateFormat: 'yy-mm-dd'})
                     .blur(function() {
                         var input = $(this);
@@ -327,9 +327,9 @@ buttonAddDataset.click(function() {
                         date += '2000-01-01'.substr(date.length);
                         input.val(date);
                     });
-                spanMetadataValue.append(' and ');
-                $('<input>').appendTo(spanMetadataValue)
-                    .attr('name', 'metadata.' + metadata.key + '.lt')
+                spanHyperdataValue.append(' and ');
+                $('<input>').appendTo(spanHyperdataValue)
+                    .attr('name', 'hyperdata.' + hyperdata.key + '.lt')
                     .datepicker({dateFormat: 'yy-mm-dd'})
                     .blur(function() {
                         var input = $(this);
@@ -337,41 +337,41 @@ buttonAddDataset.click(function() {
                         date += '2000-01-01'.substr(date.length);
                         input.val(date);
                     });
-            } else if (metadata.values) {
-                $('<span>').text(' is ').appendTo(spanMetadataValue);
-                var selectMetadataValue = $('<select>')
-                    .attr('name', 'metadata.' + metadata.key + '.eq')
-                    .appendTo(spanMetadataValue);
-                $.each(metadata.values, function(i, value) {
+            } else if (hyperdata.values) {
+                $('<span>').text(' is ').appendTo(spanHyperdataValue);
+                var selectHyperdataValue = $('<select>')
+                    .attr('name', 'hyperdata.' + hyperdata.key + '.eq')
+                    .appendTo(spanHyperdataValue);
+                $.each(hyperdata.values, function(i, value) {
                     $('<option>')
                         .text(value)
-                        .appendTo(selectMetadataValue);
+                        .appendTo(selectHyperdataValue);
                 });
-                selectMetadataValue.change().focus();
+                selectHyperdataValue.change().focus();
             } else {
-                spanMetadataValue.append(' contains ');
+                spanHyperdataValue.append(' contains ');
                 $('<input>')
-                    .attr('name', 'metadata.' + metadata.key + '.contains')
-                    .appendTo(spanMetadataValue)
+                    .attr('name', 'hyperdata.' + hyperdata.key + '.contains')
+                    .appendTo(spanHyperdataValue)
                     .focus();
             }
         }).change();
-        // Ngram or metadata?
+        // Ngram or hyperdata?
         selectType.change(function() {
             var spans = liFilter.children().filter('span').hide();
             switch (selectType.val()) {
                 case 'ngrams':
                     spanNgrams.show().find('input').focus();
                     break;
-                case 'metadata':
-                    spanMetadata.show();
+                case 'hyperdata':
+                    spanHyperdata.show();
                     break;
             }
         }).change();
     };
 
     buttonFilter.click(function(e) {
-        addFilter(metadataCollection);
+        addFilter(hyperdataCollection);
     });
 });
 

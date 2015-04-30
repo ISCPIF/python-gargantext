@@ -8,7 +8,7 @@ import dateutil.parser
 from .FileParser import FileParser
 from ..NgramsExtractors import *
 
-
+from admin.utils import PrintException
 
 class EuropressFileParser(FileParser):
   
@@ -29,8 +29,8 @@ class EuropressFileParser(FileParser):
         if encoding != "utf-8":
             try:
                 contents = contents.decode("latin1", errors='replace').encode(codif)
-            except Exception as error:
-                print(error)
+            except:
+                PrintException()
 #                try:
 #                    contents = contents.decode(encoding, errors='replace').encode(codif)
 #                except Exception as error:
@@ -40,7 +40,7 @@ class EuropressFileParser(FileParser):
             html_parser = etree.HTMLParser(encoding=codif)
             html = etree.fromstring(contents, html_parser)
             
-            try:
+            try :
                 
                 format_europresse = 50
                 html_articles = html.xpath('/html/body/table/tbody')
@@ -51,19 +51,19 @@ class EuropressFileParser(FileParser):
                     if len(html_articles) < 1:
                         format_europresse = 1
                         html_articles = html.xpath('//div[@id="docContain"]')
-            except Exception as error:
-                print(error)
+            except :
+                PrintException()
             
-            if format_europresse == 50:
-                name_xpath = "./tr/td/span[@class = 'DocPublicationName']"
-                header_xpath = "//span[@class = 'DocHeader']"
-                title_xpath = "string(./tr/td/span[@class = 'TitreArticleVisu'])"
-                text_xpath  = "./tr/td/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()"
-            elif format_europresse == 1:
-                name_xpath = "//span[@class = 'DocPublicationName']"
-                header_xpath = "//span[@class = 'DocHeader']"
-                title_xpath = "string(//div[@class = 'titreArticleVisu'])"
-                text_xpath  = "./descendant::*[\
+            if format_europresse == 50 :
+                name_xpath      = "./tr/td/span[@class = 'DocPublicationName']"
+                header_xpath    = "./tr/td/span[@class = 'DocHeader']"
+                title_xpath     = "string(./tr/td/span[@class = 'TitreArticleVisu'])"
+                text_xpath      = "./tr/td/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()"
+            elif format_europresse == 1 :
+                name_xpath      = "//span[@class = 'DocPublicationName']"
+                header_xpath    = "//span[@class = 'DocHeader']"
+                title_xpath     = "string(//div[@class = 'titreArticleVisu'])"
+                text_xpath      = "./descendant::*[\
                         not(\
                            self::div[@class='Doc-SourceText'] \
                         or self::span[@class='DocHeader'] \
@@ -79,8 +79,8 @@ class EuropressFileParser(FileParser):
                 doi_xpath  = "//span[@id='ucPubliC_lblNodoc']/text()"
                 
 
-        except Exception as error:
-            print(error)
+        except Exception as error :
+            PrintException()
 
         # parse all the articles, one by one
         try:
@@ -98,8 +98,19 @@ class EuropressFileParser(FileParser):
                                 hyperdata['volume'] = test_journal.group(2)
                             else:
                                 hyperdata['journal'] = name.text.encode(codif)
+                    
+                    countbis = 0
 
                     for header in html_article.xpath(header_xpath):
+#                        print(count)
+#                        countbis += 1
+                        
+#                        try:
+#                            print('109', hyperdata['publication_date'])
+#                        except:
+#                            print('no date yet')
+#                            pass
+                        
                         try:
                             text = header.text
                             #print("header", text)
@@ -145,12 +156,10 @@ class EuropressFileParser(FileParser):
                                         hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                                         # hyperdata['publication_date'] = dateutil.parser.parse(text)
                                     except Exception as error:
-                                        print(error)
-                                        print(text)
+                                        print(error, text)
                                         pass
                         
-                        
-                        
+
                         if test_date_en is not None:
                             localeEncoding = "en_GB.UTF-8"
                             locale.setlocale(locale.LC_ALL, localeEncoding)
@@ -167,6 +176,13 @@ class EuropressFileParser(FileParser):
                         
                         if test_page is not None:
                             hyperdata['page'] = test_page.group(1).encode(codif)
+                    
+                    try:
+                        print('183', hyperdata['publication_date'])
+                    except:
+                        print('no date yet')
+                        pass
+                        
 
                     hyperdata['title'] = html_article.xpath(title_xpath).encode(codif)
                     hyperdata['abstract']  = html_article.xpath(text_xpath)
@@ -190,7 +206,7 @@ class EuropressFileParser(FileParser):
                             line = 0
                             br_tag = 10
                     
-                    
+                                       
                     try:
                         if hyperdata['publication_date'] is not None or hyperdata['publication_date'] != '':
                             try:
@@ -215,7 +231,7 @@ class EuropressFileParser(FileParser):
                     hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
                     hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
                     hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
-                    hyperdata.pop('publication_date')
+                    #hyperdata.pop('publication_date')
                     
                     if len(hyperdata['abstract'])>0 and format_europresse == 50: 
                         hyperdata['doi'] = str(hyperdata['abstract'][-9])

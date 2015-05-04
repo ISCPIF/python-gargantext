@@ -43,13 +43,13 @@ class Language(models.Model):
     iso3        = models.CharField(max_length=3, unique=True)
     fullname    = models.CharField(max_length=255, unique=True)
     implemented = models.BooleanField(blank=True, default=True)
-    
+
     def __str__(self):
         return self.fullname
 
 class ResourceType(models.Model):
     name    = models.CharField(max_length=255, unique=True)
-    
+
     def __str__(self):
         return self.name
 
@@ -65,7 +65,7 @@ class Ngram(models.Model):
     terms       = models.CharField(max_length=255, unique=True)
     nodes       = models.ManyToManyField(through='Node_Ngram', to='Node')
     tag         = models.ManyToManyField(blank=True, null=True, through='NgramTag', to='Tag')
-    
+
     def __str__(self):
         return self.terms
 
@@ -120,21 +120,21 @@ class NodeQuerySet(CTENodeManager.CTEQuerySet):
                         ('value_'+hyperdata.type) : value,
                     }))
         Node_Hyperdata.objects.bulk_create(data)
-    
+
 class NodeManager(CTENodeManager):
     """Methods available from Node.object."""
     def get_queryset(self):
         self._ensure_parameters()
         return NodeQuerySet(self.model, using=self._db)
     def __getattr__(self, name, *args):
-        if name.startswith("_"): 
+        if name.startswith("_"):
             raise AttributeError
         return getattr(self.get_queryset(), name, *args)
 
 class Hyperdata(models.Model):
     name        = models.CharField(max_length=32, unique=True)
     type        = models.CharField(max_length=16, db_index=True)
-        
+
 class Node(CTENode):
     """The node."""
     objects     = NodeManager()
@@ -142,9 +142,9 @@ class Node(CTENode):
     user        = models.ForeignKey(User)
     type        = models.ForeignKey(NodeType)
     name        = models.CharField(max_length=255)
-    
+
     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
-    
+
     date        = models.DateField(default=timezone.now, blank=True)
     hyperdata    = JsonBField(null=False, default={})
 
@@ -152,7 +152,7 @@ class Node(CTENode):
 
     def __str__(self):
         return self.name
-    
+
     def get_resources(self):
         return Resource.objects.select_related('node_resource').filter(node_resource__node = self)
 
@@ -184,7 +184,7 @@ class Node(CTENode):
         )
         node_resource.save()
         return resource
-    
+
     def parse_resources(self, verbose=False):
         # parse all resources into a list of hyperdata
         hyperdata_list = []
@@ -204,7 +204,7 @@ class Node(CTENode):
 #                'europress_french'  : EuropressFileParser,
 #                'europress_english' : EuropressFileParser,
 #            }
-                    
+
                     )[resource.type.name]()
             hyperdata_list += parser.parse(str(resource.file))
         type_id = NodeType.objects.get(name='Document').id
@@ -293,7 +293,7 @@ class Node(CTENode):
         total += (end - start)
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
         print("LOG::TIME: In workflow()    / extract_ngrams()")
-        
+
         start = time.time()
         print("In workflow()    do_tfidf()")
         from analysis.functions import do_tfidf
@@ -305,7 +305,6 @@ class Node(CTENode):
         print("In workflow() END")
         self.hyperdata['Processing'] = 0
         self.save()
-        
 
 class Node_Hyperdata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)
@@ -320,7 +319,7 @@ class Node_Resource(models.Model):
     node     = models.ForeignKey(Node, related_name='node_resource', on_delete=models.CASCADE)
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     parsed   = models.BooleanField(default=False)
-            
+
 class Node_Ngram(models.Model):
     node   = models.ForeignKey(Node, on_delete=models.CASCADE)
     ngram  = models.ForeignKey(Ngram)
@@ -355,7 +354,7 @@ class Document(Node):
 
 class NodeNgramNgram(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)
-    
+
     ngramx      = models.ForeignKey(Ngram, related_name="nodengramngramx", on_delete=models.CASCADE)
     ngramy      = models.ForeignKey(Ngram, related_name="nodengramngramy", on_delete=models.CASCADE)
 
@@ -368,7 +367,7 @@ class NodeNgramNgram(models.Model):
 class NodeNodeNgram(models.Model):
     nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)
     nodey        = models.ForeignKey(Node, related_name="nodey", on_delete=models.CASCADE)
-    
+
     ngram      = models.ForeignKey(Ngram, on_delete=models.CASCADE)
 
     score       = models.FloatField(default=0)
@@ -387,7 +386,7 @@ class NgramNgram(models.Model):
 
 class Group(models.Model):
     '''
-    The creator of the group is a user who 
+    The creator of the group is a user who
         - is in it
         - has all acccess by defautl
     '''
@@ -407,7 +406,7 @@ class UserGroup(models.Model):
     user     = models.ForeignKey(User)
     group    = models.ForeignKey(Group)
     rights   = models.CharField(max_length=1, unique=True)
-    
+
     def __str__(self):
         return self.user, self.group
 
@@ -420,7 +419,7 @@ class NodeGroup(models.Model):
     node     = models.ForeignKey(Node)
     group    = models.ForeignKey(Group)
     rights   = models.CharField(max_length=1, unique=True)
-    
+
     def __str__(self):
         return self.node, self.group, self.rights
 

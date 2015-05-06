@@ -200,6 +200,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
             output += "</ul>"
             $("#"+thediv).html(output);
             $("#"+thediv).show();
+            
         },
         error: function(){ 
             pr('Page Not found: getTopPapers()');

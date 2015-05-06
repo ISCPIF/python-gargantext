@@ -691,7 +691,7 @@ function parseSimpleJSON( data , seed ) {
             lock:false,
             iscluster: false
         });  // The graph node
-        pr(node)
+        // pr(node)
         Nodes[pk] = node;
 
         if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
@@ -709,6 +709,7 @@ function parseSimpleJSON( data , seed ) {
             updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
     }
 
+    clustersBy("group");
 
     var edgeId = 0;
     var edgesNodes = data.links;
@@ -761,7 +762,6 @@ function parseSimpleJSON( data , seed ) {
         }
     }
 
-    clustersBy("group");
 
     NodeWeightFilter ( "#sliderANodeWeight" ,  "type" , "Document" , "size") 
 

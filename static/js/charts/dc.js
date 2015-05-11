@@ -342,7 +342,7 @@ dc.events.trigger = function(closure, delay) {
     dc.events.current = closure;
 
     setTimeout(function() {
-        if (closure == dc.events.current)
+        if (closure == dc.events.current) 
             closure();
     }, delay);
 };

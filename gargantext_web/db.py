@@ -2,7 +2,6 @@ from gargantext_web import settings
 from node import models
 
 
-
 __all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
 
 
@@ -45,7 +44,7 @@ def model_repr(modelname):
 # map the Django models found in node.models to SQLAlchemy models
 
 for model_name, model in models.__dict__.items():
-    if hasattr(model, '_meta') :
+    if hasattr(model, '_meta'):
         table_name = model._meta.db_table
         if hasattr(Base.classes, table_name):
             sqla_model = getattr(Base.classes, table_name)
@@ -64,15 +63,19 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, aliased
 
-# class Node(Base):
+#class Node(Base):
 #     __tablename__ = 'node_node'
+#     __table_args__ = {'auto_load':True, 'extend_existing':True}
 #     id = Column(Integer, primary_key=True)
 #     user_id = Column(Integer, ForeignKey('auth_user.id', ondelete='CASCADE'), index=True, nullable=False)
 #     type_id = Column(Integer, ForeignKey('node_nodetype.id', ondelete='CASCADE'), index=True, nullable=False)
 #     name = Column(String(255))
 #     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
 #     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
-#     metadata = Column(JSONB, default={}, nullable=False)
+#     hyperdata = Column(JSONB, default={}, nullable=False)
+#
+#     def __repr__(self):
+#        return '<Id %r>' % self.id
 
 
 # debugging tool, to translate SQLAlchemy queries to string

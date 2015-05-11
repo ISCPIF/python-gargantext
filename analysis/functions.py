@@ -21,7 +21,7 @@ def create_synonymes(user, corpus):
 
 size = 1000 
 
-def create_whitelist(user, corpus_id, size=size):
+def create_whitelist(user, corpus_id, size=size, count_min=2):
     cursor = connection.cursor()
     
     whitelist_type_id = cache.NodeType['WhiteList'].id
@@ -66,13 +66,13 @@ def create_whitelist(user, corpus_id, size=size):
         GROUP BY
             ngX.id
         Having
-            COUNT(*) >= 3
+            COUNT(*) >= %d
         ORDER BY
             occurrences DESC
         LIMIT
             %d
         ;
-    """  % (white_list.id, int(corpus_id), int(type_document_id), size)
+    """  % (white_list.id, int(corpus_id), int(type_document_id), count_min, size)
     # print("PRINTING QYERY OF WHITELIST:")
     # print(query_whitelist)
     cursor.execute(query_whitelist)
@@ -192,8 +192,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
 
         x = pd.DataFrame(matrix).fillna(0)
         y = pd.DataFrame(matrix).fillna(0)
-#    x = copy(df.values)
-#    y = copy(df.values)
+        
         #xo = diag_null(x)
         #y = diag_null(y)
         
@@ -205,23 +204,30 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         ys = x.sum(axis=0) - x
     
         # top inclus ou exclus
-        #n = ( xs + ys) / (2 * (x.shape[0] -1))
+        n = ( xs + ys) / (2 * (x.shape[0] - 1))
         # top generic or specific
-        m = ( xs - ys) / (2 * (x.shape[0] -1))
-        #m = pd.DataFrame.abs(m)
+        m = ( xs - ys) / (2 * (x.shape[0] - 1))
         
-        #n = n.sort(inplace=False)
+        n = n.sort(inplace=False)
         m = m.sort(inplace=False)
         
-        matrix_size = int(round(size/5,0))
-        # TODO user the generic score for the node size
-        #n_index = pd.Index.intersection(x.index, n.index[-matrix_size:])
-        # Generic: 
-        #m_index = pd.Index.intersection(x.index, m.index[:matrix_size])
-        # Specific: 
-        m_index = pd.Index.intersection(x.index, m.index[-matrix_size:])
+        print(n)
+        print(m)
         
-        x_index = m_index# pd.Index.union(n_index, m_index)
+        nodes_included = 300 #int(round(size/20,0))
+        #nodes_excluded = int(round(size/10,0))
+        
+        nodes_specific = 300 #int(round(size/10,0))
+        #nodes_generic = int(round(size/10,0))
+        
+        # TODO user the included score for the node size
+        n_index = pd.Index.intersection(x.index, n.index[:nodes_included])
+        # Generic: 
+        #m_index = pd.Index.intersection(x.index, m.index[:nodes_generic])
+        # Specific: 
+        m_index = pd.Index.intersection(x.index, m.index[-nodes_specific:])
+        
+        x_index = pd.Index.union(n_index, m_index)
         xx = x[list(x_index)].T[list(x_index)]
 
         # import pprint
@@ -241,11 +247,10 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
         
         #print(G)
-        #G = nx.relabel_nodes(G, dict(enumerate(df.columns)))
         # Removing too connected nodes (find automatic way to do it)
-        #    outdeg = G.degree()
-        #    to_remove = [n for n in outdeg if outdeg[n] >= 10]
-        #    G.remove_nodes_from(to_remove)
+        degree = G.degree()
+        to_remove = [n for n in degree if degree[n] <= 1]
+        G.remove_nodes_from(to_remove)
 
         partition = best_partition(G)
     except:

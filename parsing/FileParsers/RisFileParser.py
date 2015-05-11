@@ -14,20 +14,20 @@ class RisFileParser(FileParser):
         
         self._parameters = {
             b"ER":  {"type": "delimiter"},
-            b"TI":  {"type": "metadata", "key": "title", "separator": " "},
-            b"ST":  {"type": "metadata", "key": "subtitle", "separator": " "},
-            b"AU":  {"type": "metadata", "key": "authors", "separator": ", "},
-            b"UR":  {"type": "metadata", "key": "doi"},
-            b"PY":  {"type": "metadata", "key": "publication_year"},
-            b"PD":  {"type": "metadata", "key": "publication_month"},
-            b"LA":  {"type": "metadata", "key": "language_iso2"},
-            b"AB":  {"type": "metadata", "key": "abstract", "separator": " "},
-            b"WC":  {"type": "metadata", "key": "fields"},
+            b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
+            b"ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
+            b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
+            b"UR":  {"type": "hyperdata", "key": "doi"},
+            b"PY":  {"type": "hyperdata", "key": "publication_year"},
+            b"PD":  {"type": "hyperdata", "key": "publication_month"},
+            b"LA":  {"type": "hyperdata", "key": "language_iso2"},
+            b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+            b"WC":  {"type": "hyperdata", "key": "fields"},
         }
         
 
     def _parse(self, file):
-        metadata = {}
+        hyperdata = {}
         last_key = None
         last_values = []
         # browse every line of the file
@@ -39,23 +39,23 @@ class RisFileParser(FileParser):
                     if last_key in self._parameters:
                         # translate the parameter key
                         parameter = self._parameters[last_key]
-                        if parameter["type"] == "metadata":
+                        if parameter["type"] == "hyperdata":
                             separator = parameter["separator"] if "separator" in parameter else ""
-                            metadata[parameter["key"]] = separator.join(last_values)
+                            hyperdata[parameter["key"]] = separator.join(last_values)
                         elif parameter["type"] == "delimiter":
-                            if 'language_fullname' not in metadata.keys():
-                                if 'language_iso3' not in metadata.keys():
-                                    if 'language_iso2' not in metadata.keys():
-                                        metadata['language_iso2'] = 'en'
-                            yield metadata
-                            metadata = {}
+                            if 'language_fullname' not in hyperdata.keys():
+                                if 'language_iso3' not in hyperdata.keys():
+                                    if 'language_iso2' not in hyperdata.keys():
+                                        hyperdata['language_iso2'] = 'en'
+                            yield hyperdata
+                            hyperdata = {}
                     last_key = parameter_key
                     last_values = []
                 try:
                     last_values.append(line[self._begin:-1].decode())
                 except Exception as error:
                     print(error)
-        # if a metadata object is left in memory, yield it as well
-        if metadata:
-            #print(metadata['title'])
-            yield metadata
+        # if a hyperdata object is left in memory, yield it as well
+        if hyperdata:
+            #print(hyperdata['title'])
+            yield hyperdata

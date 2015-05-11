@@ -27,6 +27,7 @@ from collections import defaultdict
 
 from parsing.FileParsers import *
 import os
+import json
 
 # SOME FUNCTIONS
 
@@ -201,12 +202,13 @@ def home_view(request):
     t = get_template('home.html')
     user = request.user
     date = datetime.datetime.now()
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'paragraph_gargantua': home.paragraph_gargantua(),\
-            'paragraph_lorem' : home.paragraph_lorem(),\
-            'paragraph_tutoreil': home.paragraph_tutoreil(),\
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'paragraph_gargantua': home.paragraph_gargantua(),
+            'paragraph_lorem' : home.paragraph_lorem(),
+            'paragraph_tutoreil': home.paragraph_tutoreil(),
             }))
     
     return HttpResponse(html)
@@ -214,7 +216,7 @@ def home_view(request):
 def projects(request):
     '''
     This view show all projects for each user.
-    Each project is described with metadata that are updateded on each following view.
+    Each project is described with hyperdata that are updateded on each following view.
     To each project, we can link a resource that can be an image.
     '''
     if not request.user.is_authenticated():
@@ -226,7 +228,7 @@ def projects(request):
     project_type_id = cache.NodeType['Project'].id
 
     date = datetime.datetime.now()
-    print(Logger.write("STATIC_ROOT"))
+    # print(Logger.write("STATIC_ROOT"))
     
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
 
@@ -246,11 +248,13 @@ def projects(request):
         form = ProjectForm()
 
     return render(request, 'projects.html', {
+        'debug': settings.DEBUG,
         'date': date,
         'form': form,
         'number': number,
         'projects': projects
         })
+
 
 
 def corpus(request, project_id, corpus_id):
@@ -271,184 +275,68 @@ def corpus(request, project_id, corpus_id):
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
 
-    
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     try:
-        chart = dict()
-        chart['first'] = parse(corpus.children.first().metadata['publication_date']).strftime("%Y, %m, %d")
-        # TODO write with sqlalchemy
-        #chart['first'] = parse(session.query(Node.metadata['publication_date']).filter(Node.parent_id==corpus.id, Node.type_id==type_doc_id).first()).strftime("%Y, %m, %d")
-        
-        chart['last']  = parse(corpus.children.last().metadata['publication_date']).strftime("%Y, %m, %d")
-        print(chart)
-    except Exception as error:
-        print(error)
-    
-    try:
-        processing = corpus.metadata['Processing']
+        processing = corpus.hyperdata['Processing']
     except Exception as error:
         print(error)
         processing = 0
     print('processing', processing)
 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'corpus' : corpus,\
-            'processing' : processing,\
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
 #            'documents': documents,\
-            'number' : number,\
-            'dates' : chart,\
+            'number' : number,
             }))
     
     return HttpResponse(html)
 
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-def subcorpus(request, project_id, corpus_id, start , end ):
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-    try:
-        offset = str(project_id)
-        offset = str(corpus_id)
-        offset = str(start)
-        offset = str(end)
-    except ValueError:
-        raise Http404()
+def newpaginatorJSON(request , corpus_id):
 
-    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
-    import datetime
-    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
-    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
-    # print (dateini,"\t",datefin)
-    t = get_template('subcorpus.html')
+    results = ["hola" , "mundo"]
+
+    # t = get_template('tests/newpag/thetable.html')
     
-    user = request.user
-    date = datetime.datetime.now()
-    
-    project = session.query(Node).filter(Node.id==project_id).first()
+    # project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
-    # retrieving all the documents
-    # documents  = corpus.children.all()
     documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
-    number = len(documents)
+
 
     filtered_docs = []
-    # filtering documents by range-date
     for doc in documents:
-        if "publication_date" in doc.metadata:
+        if "publication_date" in doc.hyperdata:
             try:
-                realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = doc.hyperdata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
-                if dateini <= realdate <= datefin:
-                    doc.date = realdate
-                    filtered_docs.append(doc)
+                # doc.date = realdate
+                resdict = {}
+                resdict["id"] = doc.id 
+                resdict["date"] = realdate
+                resdict["name"] =  doc.name
+                filtered_docs.append( resdict )
             except Exception as e:
-                print ("pag error01 detail:",e)
-                print("pag error01 doc:",doc)
-    # import pprint
-    # pprint.pprint(filtered_docs)
-    # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date)
+                print ("pag2 error01 detail:",e)
+                print("pag2 error01 doc:",doc)
+    results = sorted(filtered_docs, key=lambda x: x["date"])
+    for i in results:
+        i["date"] = i["date"].strftime("%Y-%m-%d")
+        # print( i["date"] , i["id"] , i["name"])
 
-
-    # pages of 10 elements. Like a sir.
-    paginator = Paginator(ordered, 10)
-
-    page = request.GET.get('page')
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        results = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        results = paginator.page(paginator.num_pages)
-
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'project': project,\
-            'corpus' : corpus,\
-            'documents': results,\
-            # 'number' : len(filtered_docs),\
-            # 'dates' : chart,\
-            }))
-    
-    return HttpResponse(html)
-
-
-import json
-def subcorpusJSON(request, project_id, corpus_id, start , end ):
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-    try:
-        offset = str(project_id)
-        offset = str(corpus_id)
-        offset = str(start)
-        offset = str(end)
-    except ValueError:
-        raise Http404()
-    # parameters received via web. Format = (yearmonthday = 20150106 = 06 jan 2015)
-    import datetime
-    dateini = datetime.datetime.strptime(str(start), '%Y%m%d').date()
-    datefin = datetime.datetime.strptime(str(end), '%Y%m%d').date()
-
-    t = get_template('subcorpus.html')
-    print(dateini , "\t" , datefin)
-    user = request.user
-    date = datetime.datetime.now()
-    
-    project = Node.objects.get(id=project_id)
-    corpus = Node.objects.get(id=corpus_id)
-    type_document = NodeType.objects.get(name="Document")
-    # retrieving all the documents
-    # documents  = corpus.children.all()
-    documents  = corpus.__class__.objects.filter(parent_id=corpus_id , type = type_document )
-    number = len(documents)
-
-    filtered_docs = []
-    # filtering documents by range-date
-    for doc in documents:
-        if "publication_date" in doc.metadata:
-            realdate = doc.metadata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
-            realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
-            if dateini <= realdate <= datefin:
-                doc.date = realdate
-                filtered_docs.append(doc)
-
-    # ordering from most recent to the older.
-    ordered = sorted(filtered_docs, key=lambda x: x.date)
-
-    # pages of 10 elements. Like a sir.
-    paginator = Paginator(ordered, 10)
-
-    page = request.GET.get('page')
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        results = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        results = paginator.page(paginator.num_pages)
-
-    from rest_framework.pagination import PaginationSerializer
-
-    serializer = PaginationSerializer(instance=results)
-    print(serializer.data)
- 
-    html = t.render(Context({\
-            'user': user,\
-            'date': date,\
-            'corpus': corpus,\
-            }))
-    # return HttpResponse(html)
-    return HttpResponse( serializer.data , content_type='application/json')
+    finaldict = {
+        "records":results,
+        "queryRecordCount":10,
+        "totalRecordCount":len(results)
+    }
+    return JsonHttpResponse(finaldict)
 
 
 def empty_trash():
@@ -475,6 +363,31 @@ def move_to_trash(node_id):
         return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + node_id + ":" + error)
+
+
+
+def move_to_trash_multiple(request):
+    user = request.user
+    if not user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+
+    results = ["operation","failed"]
+
+    if request.method == "POST":
+        nodes2trash = json.loads(request.POST["nodeids"])
+        print("nodes to the trash:")
+        print(nodes2trash)
+        nodes = session.query(Node).filter(Node.id.in_(nodes2trash)).all()
+        for node in nodes:
+            node.type_id = cache.NodeType['Trash'].id
+            session.add(node)
+
+        session.commit()
+
+        results = ["tudo","fixe"]
+
+    return JsonHttpResponse(results)
+
 
 
 def delete_node(request, node_id):
@@ -529,6 +442,7 @@ def chart(request, project_id, corpus_id):
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     
     html = t.render(Context({
+        'debug': settings.DEBUG,
         'user'      : user,
         'date'      : date,
         'project'   : project,
@@ -545,6 +459,7 @@ def matrix(request, project_id, corpus_id):
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
@@ -561,11 +476,35 @@ def graph(request, project_id, corpus_id):
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
+
+    user_id         = cache.User[request.user.username].id
+    project_type_id = cache.NodeType['Project'].id
+    corpus_type_id = cache.NodeType['Corpus'].id
+
+    results = {}
+    projs = session.query(Node).filter(Node.type_id==project_type_id).all()
+    for i in projs:
+        # print(i.id , i.name)
+        if i.id not in results: results[i.id] = {}
+        results[i.id]["proj_name"] = i.name
+        results[i.id]["corpuses"] = []
+        corpuses = session.query(Node).filter(Node.parent_id==i.id , Node.type_id==corpus_type_id).all()
+        for j in corpuses:
+            if int(j.id)!=int(corpus_id):
+                info = { "id":j.id , "name":j.name }
+                results[i.id]["corpuses"].append(info)
+                # print("\t",j.id , j.name)
+
+    import pprint
+    pprint.pprint(results)
+
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
+            'corpusinfo'   : results,\
             'graphfile' : "hola_mundo",\
             }))
     
@@ -577,6 +516,7 @@ def exploration(request):
     date = datetime.datetime.now()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user': user,\
             'date': date,\
             }))
@@ -589,6 +529,7 @@ def explorer_chart(request):
     date = datetime.datetime.now()
 
     html = t.render(Context({\
+            'debug': settings.DEBUG,
             'user': user,\
             'date': date,\
             }))
@@ -611,14 +552,14 @@ def corpus_csv(request, project_id, corpus_id):
     type_document_id = cache.NodeType['Document'].id
     documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
 
-    keys = list(documents[0].metadata.keys())
+    keys = list(documents[0].hyperdata.keys())
     writer.writerow(keys)
 
     for doc in documents:
         data = list()
         for key in keys:
             try:
-                data.append(doc.metadata[key])
+                data.append(doc.hyperdata[key])
             except:
                 data.append("")
         writer.writerow(data)
@@ -638,9 +579,9 @@ def send_csv(request, corpus_id):
 
     cursor.execute("""
     SELECT
-        metadata ->> 'publication_year' as year,
-        metadata ->> 'publication_month' as month,
-        metadata ->> 'publication_day' as day,
+        hyperdata ->> 'publication_year' as year,
+        hyperdata ->> 'publication_month' as month,
+        hyperdata ->> 'publication_day' as day,
         COUNT(*)
     FROM
         node_node AS n
@@ -660,7 +601,7 @@ def send_csv(request, corpus_id):
             break
         if row[0] is not None and row[1] is not None and row[2] is not None and row[3] is not None:
             writer.writerow([ str(row[0]) + '/' + str(row[1]) + '/' + str(row[2])  , str(row[3]) ])
-        #dates['last']['day'] = documents.last().metadata['publication_day'])
+        #dates['last']['day'] = documents.last().hyperdata['publication_day'])
 
     cursor.close()
 
@@ -669,7 +610,6 @@ def send_csv(request, corpus_id):
 # To get the data
 from gargantext_web.api import JsonHttpResponse
 from analysis.functions import get_cooc
-import json
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
@@ -774,12 +714,12 @@ def tfidf2(request, corpus_id, ngram_id):
         pub = Node.objects.get(id=i)
         finalpub = {}
         finalpub["id"] = pub.id
-        pubmetadata = pub.metadata
-        if "title" in pubmetadata: finalpub["title"] = pubmetadata['title']
-        if "publication_date" in pubmetadata: finalpub["publication_date"] = pubmetadata['publication_date']
-        if "journal" in pubmetadata: finalpub["journal"] = pubmetadata['journal']
-        if "authors" in pubmetadata: finalpub["authors"] = pubmetadata['authors']
-        if "fields" in pubmetadata: finalpub["fields"] = pubmetadata['fields']
+        pubhyperdata = pub.hyperdata
+        if "title" in pubhyperdata: finalpub["title"] = pubhyperdata['title']
+        if "publication_date" in pubhyperdata: finalpub["publication_date"] = pubhyperdata['publication_date']
+        if "journal" in pubhyperdata: finalpub["journal"] = pubhyperdata['journal']
+        if "authors" in pubhyperdata: finalpub["authors"] = pubhyperdata['authors']
+        if "fields" in pubhyperdata: finalpub["fields"] = pubhyperdata['fields']
         tfidf_list.append(finalpub) # doing a dictionary with only available atributes
         if len(tfidf_list)==6: break # max 6 papers
     
@@ -821,11 +761,11 @@ def tfidf(request, corpus_id, ngram_id):
         pub = goodDict[x] # getting the unique publication
         finalpub = {}
         finalpub["id"] = pub.id
-        if "title" in pub.metadata: finalpub["title"] = pub.metadata['title']
-        if "publication_date" in pub.metadata: finalpub["publication_date"] = pub.metadata['publication_date']
-        if "journal" in pub.metadata: finalpub["journal"] = pub.metadata['journal']
-        if "authors" in pub.metadata: finalpub["authors"] = pub.metadata['authors']
-        if "fields" in pub.metadata: finalpub["fields"] = pub.metadata['fields']
+        if "title" in pub.hyperdata: finalpub["title"] = pub.hyperdata['title']
+        if "publication_date" in pub.hyperdata: finalpub["publication_date"] = pub.hyperdata['publication_date']
+        if "journal" in pub.hyperdata: finalpub["journal"] = pub.hyperdata['journal']
+        if "authors" in pub.hyperdata: finalpub["authors"] = pub.hyperdata['authors']
+        if "fields" in pub.hyperdata: finalpub["fields"] = pub.hyperdata['fields']
         tfidf_list.append(finalpub) # doing a dictionary with only available atributes
         if len(tfidf_list)==6: break # max 6 papers
     

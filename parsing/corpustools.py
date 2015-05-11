@@ -45,7 +45,7 @@ parsers = Parsers()
 
 
 
-# resources managment
+# resources management
 
 def add_resource(corpus, **kwargs):
     # only for tests
@@ -106,23 +106,23 @@ def parse_resources(corpus, user=None, user_id=None):
     nodes = list()
     for resource, resourcetype in resources_query:
         parser = parsers[resourcetype.name]
-        for metadata_dict in parser.parse(resource.file):
-            # retrieve language ID from metadata
-            if 'language_iso2' in metadata_dict:
+        for hyperdata_dict in parser.parse(resource.file):
+            # retrieve language ID from hyperdata
+            if 'language_iso2' in hyperdata_dict:
                 try:
-                    language_id = cache.Language[metadata_dict['language_iso2']].id
+                    language_id = cache.Language[hyperdata_dict['language_iso2']].id
                 except KeyError:
                     language_id = None
             else:
                 language_id = None
             # create new node
             node = Node(
-                name = metadata_dict.get('title', '')[:200],
+                name = hyperdata_dict.get('title', '')[:200],
                 parent_id = corpus_id,
                 user_id = user_id,
                 type_id = type_id,
                 language_id = language_id,
-                metadata = metadata_dict,
+                hyperdata = hyperdata_dict,
                 date = datetime.utcnow(),
             )
             nodes.append(node)
@@ -132,30 +132,30 @@ def parse_resources(corpus, user=None, user_id=None):
     dbg.show('insert %d documents' % len(nodes))
     session.add_all(nodes)
     session.commit()
-    # now, index the metadata
-    dbg.show('insert metadata')
-    node_metadata_lists = defaultdict(list)
-    metadata_types = {
-        metadata.name: metadata
-        for metadata in session.query(Metadata)
+    # now, index the hyperdata
+    dbg.show('insert hyperdata')
+    node_hyperdata_lists = defaultdict(list)
+    hyperdata_types = {
+        hyperdata.name: hyperdata
+        for hyperdata in session.query(Hyperdata)
     }
     for node in nodes:
         node_id = node.id
-        for metadata_key, metadata_value in node.metadata.items():
+        for hyperdata_key, hyperdata_value in node.hyperdata.items():
             try:
-                metadata = metadata_types[metadata_key]
+                hyperdata = hyperdata_types[hyperdata_key]
             except KeyError:
                 # Why silent continue here ?
                 continue
-            if metadata.type == 'string':
-                metadata_value = metadata_value[:255]
-            node_metadata_lists[metadata.type].append((
+            if hyperdata.type == 'string':
+                hyperdata_value = hyperdata_value[:255]
+            node_hyperdata_lists[hyperdata.type].append((
                 node_id,
-                metadata.id,
-                metadata_value,
+                hyperdata.id,
+                hyperdata_value,
             ))
-    for key, values in node_metadata_lists.items():
-        bulk_insert(Node_Metadata, ['node_id', 'metadata_id', 'value_'+key], values)
+    for key, values in node_hyperdata_lists.items():
+        bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
     # mark the corpus as parsed
     corpus.parsed = True
 
@@ -192,9 +192,9 @@ ngramsextractors = NgramsExtractors()
 def extract_ngrams(corpus, keys):
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
-    # query the metadata associated with the given keys
-    columns = [Node.id, Node.language_id] + [Node.metadata[key] for key in keys]
-    metadata_query = (session
+    # query the hyperdata associated with the given keys
+    columns = [Node.id, Node.language_id] + [Node.hyperdata[key] for key in keys]
+    hyperdata_query = (session
         .query(*columns)
         .filter(Node.parent_id == corpus.id)
         .filter(Node.type_id == cache.NodeType['Document'].id)
@@ -211,7 +211,7 @@ def extract_ngrams(corpus, keys):
     ngrams_tag_data = set()
 
     node_ngram_list = defaultdict(lambda: defaultdict(int))
-    for nodeinfo in metadata_query:
+    for nodeinfo in hyperdata_query:
         node_id = nodeinfo[0]
         language_id = nodeinfo[1]
 

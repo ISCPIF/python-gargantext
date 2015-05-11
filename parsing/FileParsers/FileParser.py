@@ -19,8 +19,8 @@ class FileParser:
         return encoding.get('encoding', 'UTF-8')
     
     
-    def format_metadata_dates(self, metadata):
-        """Format the dates found in the metadata.
+    def format_hyperdata_dates(self, hyperdata):
+        """Format the dates found in the hyperdata.
         Examples:
             {"publication_date": "2014-10-23 09:57:42"}
             -> {"publication_date": "2014-10-23 09:57:42", "publication_year": "2014", ...}
@@ -29,64 +29,64 @@ class FileParser:
         """
         
         # First, check the split dates...
-        prefixes = [key[:-5] for key in metadata.keys() if key[-5:] == "_year"]
+        prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
         for prefix in prefixes:
-            date_string = metadata[prefix + "_year"]
+            date_string = hyperdata[prefix + "_year"]
             key = prefix + "_month"
-            if key in metadata:
-                date_string += " " + metadata[key]
+            if key in hyperdata:
+                date_string += " " + hyperdata[key]
                 key = prefix + "_day"
-                if key in metadata:
-                    date_string += " " + metadata[key]
+                if key in hyperdata:
+                    date_string += " " + hyperdata[key]
                     key = prefix + "_hour"
-                    if key in metadata:
-                        date_string += " " + metadata[key]
+                    if key in hyperdata:
+                        date_string += " " + hyperdata[key]
                         key = prefix + "_minute"
-                        if key in metadata:
-                            date_string += ":" + metadata[key]
+                        if key in hyperdata:
+                            date_string += ":" + hyperdata[key]
                             key = prefix + "_second"
-                            if key in metadata:
-                                date_string += ":" + metadata[key]
+                            if key in hyperdata:
+                                date_string += ":" + hyperdata[key]
             try:
-                metadata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
+                hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
             except:
                 pass
         
         # ...then parse all the "date" fields, to parse it into separate elements
-        prefixes = [key[:-5] for key in metadata.keys() if key[-5:] == "_date"]
+        prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_date"]
         for prefix in prefixes:
-            date = dateutil.parser.parse(metadata[prefix + "_date"])
-            metadata[prefix + "_year"]      = date.strftime("%Y")
-            metadata[prefix + "_month"]     = date.strftime("%m")
-            metadata[prefix + "_day"]       = date.strftime("%d")
-            metadata[prefix + "_hour"]      = date.strftime("%H")
-            metadata[prefix + "_minute"]    = date.strftime("%M")
-            metadata[prefix + "_second"]    = date.strftime("%S")
+            date = dateutil.parser.parse(hyperdata[prefix + "_date"])
+            hyperdata[prefix + "_year"]      = date.strftime("%Y")
+            hyperdata[prefix + "_month"]     = date.strftime("%m")
+            hyperdata[prefix + "_day"]       = date.strftime("%d")
+            hyperdata[prefix + "_hour"]      = date.strftime("%H")
+            hyperdata[prefix + "_minute"]    = date.strftime("%M")
+            hyperdata[prefix + "_second"]    = date.strftime("%S")
                 
         # finally, return the transformed result!
-        return metadata
+        return hyperdata
         
-    def format_metadata_languages(self, metadata):
-        """format the languages found in the metadata."""
+    def format_hyperdata_languages(self, hyperdata):
+        """format the languages found in the hyperdata."""
         language = None
         for key in ["fullname", "iso3", "iso2"]:
             language_key = "language_" + key
-            if language_key in metadata:
-                language_symbol = metadata[language_key]
+            if language_key in hyperdata:
+                language_symbol = hyperdata[language_key]
                 language = self._languages_cache[language_symbol]
                 if language:
                     break
         if language:
-            metadata["language_iso2"]       = language.iso2
-            metadata["language_iso3"]       = language.iso3
-            metadata["language_fullname"]   = language.fullname
-        return metadata
+            hyperdata["language_iso2"]       = language.iso2
+            hyperdata["language_iso3"]       = language.iso3
+            hyperdata["language_fullname"]   = language.fullname
+        return hyperdata
         
-    def format_metadata(self, metadata):
-        """Format the metadata."""
-        metadata = self.format_metadata_dates(metadata)
-        metadata = self.format_metadata_languages(metadata)
-        return metadata
+    def format_hyperdata(self, hyperdata):
+        """Format the hyperdata."""
+        hyperdata = self.format_hyperdata_dates(hyperdata)
+        hyperdata = self.format_hyperdata_languages(hyperdata)
+        return hyperdata
     
     
     def _parse(self, file):
@@ -96,28 +96,28 @@ class FileParser:
     def parse(self, file):
         """Parse the file, and its children files found in the file.
         """
-        # initialize the list of metadata
-        metadata_list = []
+        # initialize the list of hyperdata
+        hyperdata_list = []
         # is the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
                 try:
                     f = zipArchive.open(filename, 'r')
-                    metadata_list += self.parse(f)
+                    hyperdata_list += self.parse(f)
                     f.close()
                 except Exception as error:
                     print(error)
         # ...otherwise, let's parse it directly!
         else:
             try:
-                for metadata in self._parse(file):
-                    metadata_list.append(self.format_metadata(metadata))
+                for hyperdata in self._parse(file):
+                    hyperdata_list.append(self.format_hyperdata(hyperdata))
                 if hasattr(file, 'close'):
                     file.close()
             except Exception as error:
                 print(error)
-        # return the list of formatted metadata
-        return metadata_list
+        # return the list of formatted hyperdata
+        return hyperdata_list
 
 

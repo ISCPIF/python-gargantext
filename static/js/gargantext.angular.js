@@ -189,7 +189,7 @@ gargantext.controller("QueryController", function($scope, $http) {
             // change view to loading mode
             $scope.loading = true;
             // query parameters: columns
-            var retrieve = {type: 'fields', list: ['id', 'name', 'metadata.publication_date']};
+            var retrieve = {type: 'fields', list: ['id', 'name', 'hyperdata.publication_date']};
             // query parameters: pagination
             var pagination = $scope.pagination;
             // query parameters: sort
@@ -268,13 +268,13 @@ gargantext.controller("DatasetController", function($scope, $http) {
     };
     // update entities depending on the selected corpus
     $scope.updateEntities = function() {
-        var url = '/api/nodes/' + $scope.corpusId + '/children/metadata';
+        var url = '/api/nodes/' + $scope.corpusId + '/children/hyperdata';
         $scope.entities = undefined;
         $scope.filters = [];
         $http.get(url, {cache: true}).success(function(response){
             $scope.entities = [
                 {
-                    key: 'metadata',
+                    key: 'hyperdata',
                     columns: response.data
                 },
                 {
@@ -520,10 +520,10 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             var query = dataset.query;
             var data = {
                 filters: query.filters,
-                sort: ['metadata.publication_date.day'],
+                sort: ['hyperdata.publication_date.day'],
                 retrieve: {
                     type: 'aggregates',
-                    list: ['metadata.publication_date.day', query.mesured]
+                    list: ['hyperdata.publication_date.day', query.mesured]
                 }
             };
             // request to the server
@@ -569,7 +569,7 @@ setTimeout(function(){
         $('div.corpus select').change();
     //     $('div.filters button').last().click();
     //     var d = $('li.dataset').last();
-    //     d.find('select').last().val('metadata').change();
+    //     d.find('select').last().val('hyperdata').change();
     //     d.find('select').last().val('publication_date').change();
     //     d.find('select').last().val('>').change();
     //     d.find('input').last().val('2010').change();
@@ -580,7 +580,7 @@ setTimeout(function(){
     //     // d.find('select').change();
     //     // // second dataset's filter
     //     // d.find('div.filters button').last().click();
-    //     // d.find('select').last().val('metadata').change();
+    //     // d.find('select').last().val('hyperdata').change();
     //     // d.find('select').last().val('abstract').change();
     //     // d.find('select').last().val('contains').change();
     //     // d.find('input').last().val('dea').change();

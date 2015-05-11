@@ -62,7 +62,7 @@ class NodeAdmin(admin.ModelAdmin):
                                                 parent  = nodeParent,\
                                                 user    = request.user,\
                                                 name    = obj.name,\
-                                                metadata= obj.metadata,\
+                                                hyperdata= obj.hyperdata,\
                                                 )
             
             #nodeParent.save()
@@ -85,7 +85,7 @@ from django.db.models.query import EmptyQuerySet
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
-        exclude = ['ngrams', 'metadata', 'parent', 'user', 'type', 'language', 'date']
+        exclude = ['ngrams', 'hyperdata', 'parent', 'user', 'type', 'language', 'date']
 
 class ResourceForm(ModelForm):
     class Meta:
@@ -139,7 +139,7 @@ class CorpusForm(ModelForm):
     
     class Meta:
         model   = Corpus
-        exclude = ['parent', 'user', 'language', 'type', 'ngrams', 'metadata', 'date']
+        exclude = ['parent', 'user', 'language', 'type', 'ngrams', 'hyperdata', 'date']
 
 class CorpusAdmin(NodeAdmin):
     _parent_nodetype_name = 'Project'

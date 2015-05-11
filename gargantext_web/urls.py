@@ -39,8 +39,6 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
-    
-    url(r'^project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpus),
 
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
@@ -61,12 +59,10 @@ urlpatterns = patterns('',
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
-    url(r'^api/nodes/(\d+)/children/metadata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
+    url(r'^api/nodes/(\d+)/children/hyperdata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
     # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
-
-    url(r'^api/project/(\d+)/corpus/(\d+)/timerange/(\d+)/(\d+)$', views.subcorpusJSON),
 
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
@@ -79,8 +75,9 @@ urlpatterns = patterns('',
     url(r'^tests/istextquery$', pubmedscrapper.getGlobalStatsISTEXT), # api/query?type=istext ?
     url(r'^tests/pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'^tests/project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),
-    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX)
-
+    url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
+    url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
+    url(r'^tests/move2trash/$' , views.move_to_trash_multiple )
 )
 
 

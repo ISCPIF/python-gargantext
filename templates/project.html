@@ -280,7 +280,12 @@
 				console.log("we've in dynamic mode")
 				$("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
 				$("#submit_thing").prop('onclick',null);
-				doTheQuery();
+
+				var theType = $("#id_type option:selected").html();
+				if(theType=="Pubmed (xml format)") doTheQuery();
+				if(theType=="istex") {
+					testISTEX(origQuery.replace(" ","+"),1000)
+				}
 			}
 			else {
 				console.log("we dont have nothing inside results div")
@@ -328,7 +333,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 100 sample!")
+					$("#submit_thing").html("Process a 1000 sample!")
 
 		            thequeries = data
 		            var N=0,k=0;
@@ -365,7 +370,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 100 sample!")
+					$("#submit_thing").html("Process a 1000 sample!")
 
 		            thequeries = data
 		            var N=data.length,k=0;

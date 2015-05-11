@@ -49,7 +49,6 @@ def getGlobalStats(request ):
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		instancia = MedlineFetcher()
-		# alist = instancia.serialFetcher( 5, query , int(request.POST["N"]) )
 		alist = instancia.serialFetcher( 5, query , N )
 
 	data = alist
@@ -130,7 +129,7 @@ def doTheQuery(request , project_id):
 			parent_id = project_id,
 			type_id = cache.NodeType['Corpus'].id,
 			language_id = None,
-                        metadata    = {'Processing' : 1,}
+                        hyperdata    = {'Processing' : 1,}
 		)
 		session.add(corpus)
 		session.commit()

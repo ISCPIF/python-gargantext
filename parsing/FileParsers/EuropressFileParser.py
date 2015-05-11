@@ -11,7 +11,7 @@ from ..NgramsExtractors import *
 from admin.utils import PrintException
 
 class EuropressFileParser(FileParser):
-  
+
     def _parse(self, file):
 
         localeEncoding = "fr_FR"
@@ -39,21 +39,21 @@ class EuropressFileParser(FileParser):
         try:
             html_parser = etree.HTMLParser(encoding=codif)
             html = etree.fromstring(contents, html_parser)
-            
+
             try :
-                
+
                 format_europresse = 50
                 html_articles = html.xpath('/html/body/table/tbody')
 
                 if len(html_articles) < 1:
                     html_articles = html.xpath('/html/body/table')
-                    
+
                     if len(html_articles) < 1:
                         format_europresse = 1
                         html_articles = html.xpath('//div[@id="docContain"]')
             except :
                 PrintException()
-            
+
             if format_europresse == 50 :
                 name_xpath      = "./tr/td/span[@class = 'DocPublicationName']"
                 header_xpath    = "./tr/td/span[@class = 'DocHeader']"
@@ -77,7 +77,7 @@ class EuropressFileParser(FileParser):
                         or self::td[@class='txtCertificat'] \
                         )]/text()"
                 doi_xpath  = "//span[@id='ucPubliC_lblNodoc']/text()"
-                
+
 
         except Exception as error :
             PrintException()
@@ -85,9 +85,9 @@ class EuropressFileParser(FileParser):
         # parse all the articles, one by one
         try:
             for html_article in html_articles:
-                
+
                 hyperdata = {}
-                
+
                 if len(html_article):
                     for name in html_article.xpath(name_xpath):
                         if name.text is not None:
@@ -98,26 +98,26 @@ class EuropressFileParser(FileParser):
                                 hyperdata['volume'] = test_journal.group(2)
                             else:
                                 hyperdata['journal'] = name.text.encode(codif)
-                    
+
                     countbis = 0
 
                     for header in html_article.xpath(header_xpath):
 #                        print(count)
 #                        countbis += 1
-                        
+
 #                        try:
 #                            print('109', hyperdata['publication_date'])
 #                        except:
 #                            print('no date yet')
 #                            pass
-                        
+
                         try:
                             text = header.text
                             #print("header", text)
                         except Exception as error:
                             print(error)
 
-                        
+
                         if isinstance(text, bytes):
                             text = text.decode(encoding)
                         format_date_fr = re.compile('\d*\s*\w+\s+\d{4}', re.UNICODE)
@@ -134,9 +134,9 @@ class EuropressFileParser(FileParser):
                             test_date_en = None
                             test_sect = None
                             test_page = None
-                        
-                        
-                        
+
+
+
                         if test_date_fr is not None:
                             self.localeEncoding = "fr_FR"
                             locale.setlocale(locale.LC_ALL, localeEncoding)
@@ -158,7 +158,7 @@ class EuropressFileParser(FileParser):
                                     except Exception as error:
                                         print(error, text)
                                         pass
-                        
+
 
                         if test_date_en is not None:
                             localeEncoding = "en_GB.UTF-8"
@@ -173,20 +173,20 @@ class EuropressFileParser(FileParser):
 
                         if test_sect is not None:
                             hyperdata['section'] = test_sect.group(1).encode(codif)
-                        
+
                         if test_page is not None:
                             hyperdata['page'] = test_page.group(1).encode(codif)
-                    
-                    try:
-                        print('183', hyperdata['publication_date'])
-                    except:
-                        print('no date yet')
-                        pass
-                        
+
+#                    try:
+#                        print('183', hyperdata['publication_date'])
+#                    except:
+#                        print('no date yet')
+#                        pass
+#
 
                     hyperdata['title'] = html_article.xpath(title_xpath).encode(codif)
                     hyperdata['abstract']  = html_article.xpath(text_xpath)
-                   
+
                     line = 0
                     br_tag = 10
                     for i in html_articles[count].iter():
@@ -205,13 +205,13 @@ class EuropressFileParser(FileParser):
                                 hyperdata['authors'] = 'not found'
                             line = 0
                             br_tag = 10
-                    
-                                       
+
+
                     try:
                         if hyperdata['publication_date'] is not None or hyperdata['publication_date'] != '':
                             try:
                                 back = hyperdata['publication_date']
-                            except Exception as e: 
+                            except Exception as e:
                                 #print(e)
                                 pass
                         else:
@@ -226,14 +226,14 @@ class EuropressFileParser(FileParser):
                     #hyperdata['language_iso2'] = 'fr'
                     #elif lang == 'en':
                     #    hyperdata['language_iso2'] = 'en'
-                    
-                    
+
+
                     hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
                     hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
                     hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
                     #hyperdata.pop('publication_date')
-                    
-                    if len(hyperdata['abstract'])>0 and format_europresse == 50: 
+
+                    if len(hyperdata['abstract'])>0 and format_europresse == 50:
                         hyperdata['doi'] = str(hyperdata['abstract'][-9])
                         hyperdata['abstract'].pop()
 # Here add separator for paragraphs
@@ -245,15 +245,15 @@ class EuropressFileParser(FileParser):
 # Here add separator for paragraphs
                         hyperdata['abstract'] = str(' '.join(hyperdata['abstract']))
 
-                    else: 
+                    else:
                         hyperdata['doi'] = "not found"
-                    
+
                     hyperdata['length_words'] = len(hyperdata['abstract'].split(' '))
                     hyperdata['length_letters'] = len(hyperdata['abstract'])
-                    
+
                     hyperdata['bdd']  = u'europresse'
                     hyperdata['url']  = u''
-                    
+
                   #hyperdata_str = {}
                     for key, value in hyperdata.items():
                         hyperdata[key] = value.decode() if isinstance(value, bytes) else value

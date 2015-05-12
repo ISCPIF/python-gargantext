@@ -128,7 +128,7 @@ def parse_resources(corpus, user=None, user_id=None):
             nodes.append(node)
             #
             # TODO: mark node-resources associations as parsed
-            # 
+            #
     dbg.show('insert %d documents' % len(nodes))
     session.add_all(nodes)
     session.commit()
@@ -205,7 +205,7 @@ def extract_ngrams(corpus, keys):
         language.id: language.iso2
         for language in session.query(Language)
     }
-    
+
     ngrams_data = set()
     ngrams_language_data = set()
     ngrams_tag_data = set()
@@ -241,7 +241,7 @@ def extract_ngrams(corpus, keys):
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
                     node_ngram_list[node_id][terms] += 1
-                    ngrams_data.add((n, terms))
+                    ngrams_data.add((n, terms[:255]))
                     ngrams_language_data.add((terms, language_id))
                     ngrams_tag_data.add((terms, tag_id))
 
@@ -268,7 +268,7 @@ def extract_ngrams(corpus, keys):
             ngram.terms = tmp__ngrams.terms
     ''' % (Ngram.__table__.name, ))
     # insert, then get the ids back
-    
+
     cursor.execute('''
         INSERT INTO
             %s (n, terms)
@@ -279,8 +279,8 @@ def extract_ngrams(corpus, keys):
         WHERE
             id IS NULL
     ''' % (Ngram.__table__.name, ))
-    
-    
+
+
     cursor.execute('''
         UPDATE
             tmp__ngrams
@@ -293,14 +293,14 @@ def extract_ngrams(corpus, keys):
         AND
             tmp__ngrams.id IS NULL
     ''' % (Ngram.__table__.name, ))
-    
+
     # get all ids
     ngram_ids = dict()
     cursor.execute('SELECT id, terms FROM tmp__ngrams')
     for row in cursor.fetchall():
         ngram_ids[row[1]] = row[0]
-    
-    # 
+
+    #
     dbg.show('insert associations')
     node_ngram_data = list()
     for node_id, ngrams in node_ngram_list.items():

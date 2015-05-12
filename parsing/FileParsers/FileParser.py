@@ -1,9 +1,14 @@
 import collections
+import datetime
 import dateutil.parser
 import zipfile
 import chardet
+import re
 
 from ..Caches import LanguagesCache
+
+
+DEFAULT_DATE = datetime.datetime(datetime.MINYEAR, 1, 1)
 
 
 class FileParser:
@@ -29,34 +34,43 @@ class FileParser:
         """
 
         # First, check the split dates...
-        prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
-        for prefix in prefixes:
-            date_string = hyperdata[prefix + "_year"]
-            key = prefix + "_month"
-            if key in hyperdata:
-                date_string += " " + hyperdata[key]
-                key = prefix + "_day"
+        date_to_parse = hyperdata.get('publication_date_to_parse', None)
+        if date_to_parse is not None:
+            date_string = re.sub('\/+', '', date_to_parse)
+            hyperdata['publication' + "_date"] = dateutil.parser.parse(
+                date_string,
+                default=DEFAULT_DATE
+            ).strftime("%Y-%m-%d %H:%M:%S")
+
+        else:
+            prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
+            for prefix in prefixes:
+                date_string = hyperdata[prefix + "_year"]
+                key = prefix + "_month"
                 if key in hyperdata:
                     date_string += " " + hyperdata[key]
-                    key = prefix + "_hour"
+                    key = prefix + "_day"
                     if key in hyperdata:
                         date_string += " " + hyperdata[key]
-                        key = prefix + "_minute"
+                        key = prefix + "_hour"
                         if key in hyperdata:
-                            date_string += ":" + hyperdata[key]
-                            key = prefix + "_second"
+                            date_string += " " + hyperdata[key]
+                            key = prefix + "_minute"
                             if key in hyperdata:
                                 date_string += ":" + hyperdata[key]
-            try:
-                hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
-            except:
-                pass
+                                key = prefix + "_second"
+                                if key in hyperdata:
+                                    date_string += ":" + hyperdata[key]
+                try:
+                    hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
+                except:
+                    pass
 
         # ...then parse all the "date" fields, to parse it into separate elements
         prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_date"]
         for prefix in prefixes:
             date = dateutil.parser.parse(hyperdata[prefix + "_date"])
-            print('date')
+            #print(date)
 
             hyperdata[prefix + "_year"]      = date.strftime("%Y")
             hyperdata[prefix + "_month"]     = date.strftime("%m")

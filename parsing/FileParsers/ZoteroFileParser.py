@@ -13,7 +13,7 @@ class ZoteroFileParser(RisFileParser):
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
             b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
             b"UR":  {"type": "hyperdata", "key": "doi"},
-            b"DA":  {"type": "hyperdata", "key": "publication_date"},
+            b"DA":  {"type": "hyperdata", "key": "publication_date_to_parse"},
             b"PY":  {"type": "hyperdata", "key": "publication_year"},
             b"PD":  {"type": "hyperdata", "key": "publication_month"},
             b"LA":  {"type": "hyperdata", "key": "language_iso2"},

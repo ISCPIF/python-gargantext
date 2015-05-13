@@ -38,10 +38,15 @@ class FileParser:
         if date_string is not None:
             date_string = re.sub(r'\/\/+', '', date_string)
             date_string = re.sub(r'undefined', '', date_string)
-            hyperdata['publication' + "_date"] = dateutil.parser.parse(
-                date_string,
-                default=DEFAULT_DATE
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                hyperdata['publication' + "_date"] = dateutil.parser.parse(
+                    date_string,
+                    default=DEFAULT_DATE
+                ).strftime("%Y-%m-%d %H:%M:%S")
+            except:
+                print('Parser Zotero, Date not parsed for:', date_string)
+                hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 
         elif hyperdata.get('publication_year', None) is not None:
             prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]

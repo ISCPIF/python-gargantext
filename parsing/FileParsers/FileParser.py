@@ -34,9 +34,10 @@ class FileParser:
         """
 
         # First, check the split dates...
-        date_to_parse = hyperdata.get('publication_date_to_parse', None)
-        if date_to_parse is not None:
-            date_string = re.sub(r'\/\/+', '', date_to_parse)
+        date_string = hyperdata.get('publication_date_to_parse', None)
+        if date_string is not None:
+            date_string = re.sub(r'\/\/+', '', date_string)
+            date_string = re.sub(r'undefined', '', date_string)
             hyperdata['publication' + "_date"] = dateutil.parser.parse(
                 date_string,
                 default=DEFAULT_DATE
@@ -66,7 +67,7 @@ class FileParser:
                 except:
                     pass
         else:
-            hyperdata['publication_date'] = datetime.datetime.now()
+            hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # ...then parse all the "date" fields, to parse it into separate elements
         prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_date"]

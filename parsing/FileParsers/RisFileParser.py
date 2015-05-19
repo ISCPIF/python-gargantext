@@ -3,15 +3,17 @@ from .FileParser import FileParser
 
 from ..Caches import LanguagesCache
 
+from admin.utils import PrintException
+
 class RisFileParser(FileParser):
 
     def __init__(self, language_cache=None):
-        
+
         super(FileParser, self).__init__()
         self._languages_cache = LanguagesCache() if language_cache is None else language_cache
-        
+
         self._begin = 6
-        
+
         self._parameters = {
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
@@ -24,7 +26,7 @@ class RisFileParser(FileParser):
             b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
             b"WC":  {"type": "hyperdata", "key": "fields"},
         }
-        
+
 
     def _parse(self, file):
         hyperdata = {}
@@ -57,5 +59,11 @@ class RisFileParser(FileParser):
                     print(error)
         # if a hyperdata object is left in memory, yield it as well
         if hyperdata:
+#            try:
+#                if hyperdata['date_to_parse']:
+#                    print(hyperdata['date_to_parse'])
+#            except:
+#                pass
+#
             #print(hyperdata['title'])
             yield hyperdata

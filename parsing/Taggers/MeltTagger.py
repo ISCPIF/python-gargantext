@@ -52,19 +52,19 @@ class MeltTagger(Tagger):
 
     def start(self, language='fr', melt_data_path='melttagger'):
         basepath = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(basepath, melt_data_path, language)
+        path = os.path.join(basepath, melt_data_path)
         self._pos_tagger = POSTagger()
-        self._pos_tagger.load_tag_dictionary('%s/tag_dict.json' % path)
-        self._pos_tagger.load_lexicon('%s/lexicon.json' % path)
-        self._pos_tagger.load_model('%s' % path)
+        self._pos_tagger.load_tag_dictionary('%s/%s/tag_dict.json' % (path, language))
+        self._pos_tagger.load_lexicon('%s/%s/lexicon.json' % (path, language))
+        self._pos_tagger.load_model('%s/%s' % (path, language))
         self._preprocessing_commands = (
             # ('/usr/local/bin/clean_noisy_characters.sh', ),
-            # ('/usr/local/bin/MElt_normalizer.pl', '-nc', '-c', '-d', '/usr/local/share/melt/normalization/%s' % language, '-l', language, ),
-            ('/usr/local/share/melt/segmenteur.pl', '-a', '-ca', '-af=/usr/local/share/melt/pctabr', '-p', 'r'),
+            ('%s/MElt_normalizer.pl' % path, '-nc', '-c', '-d', '%s/%s' % (path, language), '-l', language, ),
+            ('%s/segmenteur.pl' % path, '-a', '-ca', '-af=%s/pctabr' % path, '-p', 'r'),
         )
         self._lemmatization_commands = (
-            ('/usr/local/bin/MElt_postprocess.pl', '-npp', '-l', language),
-            ('MElt_lemmatizer.pl', '-m', '/usr/local/share/melt/%s' % language),
+            ('%s/MElt_postprocess.pl' % path, '-npp', '-l', language),
+            ('%s/MElt_lemmatizer.pl' % path, '-m', '%s/%s' % (path, language)),
         )
 
     def stop(self):

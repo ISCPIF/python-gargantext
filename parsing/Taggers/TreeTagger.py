@@ -10,7 +10,7 @@ import time
 class identity_dict(dict):
     def __missing__(self, key):
         return key
-    
+
 _tag_replacements = identity_dict({
     "NOM": "NN",
     "NAM": "NN",
@@ -45,8 +45,8 @@ def _readOutput(output, buffer):
 Shall be used for french texts.
 """
 class TreeTagger(Tagger):
-    
-    def start(self, treeTaggerPath = "./parsing/Taggers/treetagger"):
+
+    def start(self, treeTaggerPath = "./parsing/Taggers/lib/treetagger"):
         binaryFile = "%s/bin/tree-tagger" % treeTaggerPath
         tagcmdlist = [
             binaryFile,
@@ -67,7 +67,7 @@ class TreeTagger(Tagger):
         self._input, self._output = self._popen.stdin, self._popen.stdout
         # self._thread = threading.Thread(target=_readOutput, args=(self._output, self.buffer, )).start()
         # self.buffer = OutputBuffer()
-        
+
     def stop(self):
         # terminates the 'treetagger' process
         try:
@@ -75,20 +75,20 @@ class TreeTagger(Tagger):
             self._popen.terminate()
         except:
             pass
-        
+
     def tagging_start(self):
         self.buffer = []
         self._thread = threading.Thread(target=_readOutput, args=(self._output, self.buffer, ))
         self._thread.start()
         self._input.write(b"<block>\n")
-        
+
     def tagging_end(self):
         self._input.write(b"<block/>\n")
         # sends some dummy tokens, then wait for the text to be treated
         self.tag_tokens("Les sanglots longs des violons de l ' automne bercent mon coeur d ' une langueur monotone .".split(), False)
         self._thread.join()
-        
-        
+
+
     def tag_tokens(self, tokens, single=True):
         if single:
             self.tagging_start()
@@ -97,7 +97,7 @@ class TreeTagger(Tagger):
         if single:
             self.tagging_end()
             return self.buffer
-            
+
     def tag_text(self, text):
         self.tagging_start()
         for line in text.split('\n'):

@@ -49,8 +49,7 @@ CELERY_IMPORTS=("node.models","gargantext_web.celery")
 SECRET_KEY = 'bt)3n9v&a02cu7^^=+u_t2tmn8ex5fvx8$x4r*j*pb1yawd+rz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = False
 MAINTENANCE = False
 
 TEMPLATE_DEBUG = False
@@ -71,17 +70,17 @@ TEMPLATE_DIRS = (
 
 
 #ALLOWED_HOSTS = ['*',]
-ALLOWED_HOSTS = ['localhost', 
-                'gargantext.org', 
-                'stable.gargantext.org', 
-                'dev.gargantext.org', 
-                'iscpif.gargantext.org', 
-                'gargantext.iscpif.fr', 
-                'mines.gargantext.org', 
-                'pasteur.gargantext.org', 
-                'beta.gargantext.org', 
-                'garg-dev.iscpif.fr', 
-                'garg-stable.iscpif.fr', 
+ALLOWED_HOSTS = ['localhost',
+                'gargantext.org',
+                'stable.gargantext.org',
+                'dev.gargantext.org',
+                'iscpif.gargantext.org',
+                'gargantext.iscpif.fr',
+                'mines.gargantext.org',
+                'pasteur.gargantext.org',
+                'beta.gargantext.org',
+                'garg-dev.iscpif.fr',
+                'garg-stable.iscpif.fr',
                 ]
 
 

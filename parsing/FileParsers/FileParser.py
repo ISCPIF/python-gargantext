@@ -34,17 +34,19 @@ class FileParser:
         """
 
         # First, check the split dates...
+        # This part mainly deal with Zotero data but can be usefull for others
+        # parts
         date_string = hyperdata.get('publication_date_to_parse', None)
         if date_string is not None:
-            date_string = re.sub(r'\/\/+', '', date_string)
-            date_string = re.sub(r'undefined', '', date_string)
+            date_string = re.sub(r'\/\/+(\w*|\d*)', '', date_string)
+            #date_string = re.sub(r'undefined', '', date_string)
             try:
                 hyperdata['publication' + "_date"] = dateutil.parser.parse(
                     date_string,
                     default=DEFAULT_DATE
                 ).strftime("%Y-%m-%d %H:%M:%S")
-            except:
-                print('Parser Zotero, Date not parsed for:', date_string)
+            except Exception as error:
+                print(error, 'Parser Zotero, Date not parsed for:', date_string)
                 hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 

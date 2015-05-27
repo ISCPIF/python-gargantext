@@ -200,6 +200,8 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
             output += "</ul>"
             $("#"+thediv).html(output);
             $("#"+thediv).show();
+
+            $('#tab-container-top').easytabs({updateHash:false});
             
         },
         error: function(){ 

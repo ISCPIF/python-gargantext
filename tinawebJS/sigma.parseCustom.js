@@ -680,7 +680,7 @@ function parseSimpleJSON( data , seed ) {
         var node = ({
             id: pk ,
             label:label, 
-            size:size, 
+            size:Math.log(size), 
             x:rand.getRandom(), 
             y:rand.getRandom(), 
             type:catSoc,

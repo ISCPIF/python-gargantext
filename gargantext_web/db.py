@@ -2,7 +2,8 @@ from gargantext_web import settings
 from node import models
 
 
-__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
+__all__ = ['literalquery', 'session', 'cache', 'Session',
+           'bulk_insert', 'engine', 'get_cursor']
 
 
 # initialize sqlalchemy
@@ -112,7 +113,7 @@ def literalquery(statement, dialect=None):
                 return str(value)
             elif isinstance(value, datetime):
                 return repr(str(value))
-            else: 
+            else:
                 if isinstance(value, str):
                     return value.encode('UTF-8')
                 else:

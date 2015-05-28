@@ -7,7 +7,7 @@ from django.db.models import Avg, Max, Min, Count, Sum
 # from node.models import Language, ResourceType, Resource
 # from node.models import Node, NodeType, Node_Resource, Project, Corpus
 
-from sqlalchemy import text, distinct
+from sqlalchemy import text, distinct, or_
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
@@ -69,7 +69,7 @@ _operators = {
     ">":            lambda field, value: (field > value),
     "<=":           lambda field, value: (field <= value),
     ">=":           lambda field, value: (field >= value),
-    "in":           lambda field, value: (field.in_(value)),
+    "in":           lambda field, value: (or_(*tuple(field == x for x in value))),
     "contains":     lambda field, value: (field.contains(value)),
     "startswith":   lambda field, value: (field.startswith(value)),
 }
@@ -480,14 +480,14 @@ class NodesChildrenQueries(APIView):
                     getattr(hyperdata_alias, 'value_' + hyperdata.type),
                     value
                 ))
-            elif field[0] == 'ngrams': 
+            elif field[0] == 'ngrams':
                 query = query.filter(
                     Node.id.in_(session
                         .query(Node_Ngram.node_id)
-                        .filter(Node_Ngram.ngram_id == Ngram.id)
+                        .join(Ngram, Ngram.id == Node_Ngram.ngram_id)
                         .filter(operator(
                             getattr(Ngram, field[1]),
-                            value
+                            map(lambda x: x.replace('-', ' '), value)
                         ))
                     )
                 )

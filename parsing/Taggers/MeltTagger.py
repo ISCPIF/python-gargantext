@@ -58,7 +58,6 @@ class MeltTagger(Tagger):
         self._pos_tagger.load_lexicon('%s/%s/lexicon.json' % (path, language))
         self._pos_tagger.load_model('%s/%s' % (path, language))
         self._preprocessing_commands = (
-            # ('/usr/local/bin/clean_noisy_characters.sh', ),
             ('%s/MElt_normalizer.pl' % path, '-nc', '-c', '-d', '%s/%s' % (path, language), '-l', language, ),
             ('%s/segmenteur.pl' % path, '-a', '-ca', '-af=%s/pctabr' % path, '-p', 'r'),
         )
@@ -93,15 +92,16 @@ class MeltTagger(Tagger):
             tagged_tokens = self._pos_tagger.tag_token_sequence(tokens)
             for token in tagged_tokens:
                 if len(token.string):
-                    yield (token.string, _tag_replacements[token.label], )
+                    yield (token.string, token.label, )
 
     def tag_text(self, text, lemmatize=True):
         tagged_tokens = self._tag(text)
+        # without lemmatization
         if not lemmatize:
-            for tagged_token in tagged_tokens:
-                yield tagged_token
+            for form, tag in tagged_tokens:
+                yield (form, _tag_replacements[tag])
             return
-        # lemmatization
+        # with lemmatization
         command_input = ' '.join(
             '%s/%s' % (token, tag)
             for token, tag in tagged_tokens
@@ -110,4 +110,4 @@ class MeltTagger(Tagger):
         for token in lemmatized.split():
             if len(token):
                 values = token.split('/')
-                yield (values[0], values[1], values[2].replace('*', ''))
+                yield (values[0], _tag_replacements[values[1]], values[2].replace('*', ''))

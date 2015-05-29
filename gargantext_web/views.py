@@ -255,6 +255,43 @@ def projects(request):
         'projects': projects
         })
 
+def get_ngrams(request , project_id , corpus_id ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+    except ValueError:
+        raise Http404()
+
+    t = get_template('tests/ngrams.html')
+    
+    user = cache.User[request.user.username].id
+    date = datetime.datetime.now()
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+    try:
+        processing = corpus.hyperdata['Processing']
+    except Exception as error:
+        print(error)
+        processing = 0
+
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
+            'number' : number,
+            }))
+
+    return HttpResponse(html)
+
+
 def test_ngrams(request , project_id, corpus_id ):
     results = ["hola" , "mundo"]
 
@@ -314,13 +351,14 @@ def test_ngrams(request , project_id, corpus_id ):
         NgramOccs = session.query(Node_Ngram).filter( Node_Ngram.node_id==doc.id).all()
         for ngram in NgramOccs:
             if ngram.ngram_id not in Ngrams_Scores:
-                Ngrams_Scores[ngram.ngram_id] = {
+                Ngrams_Scores[ngram.ngram_id] = {} 
+                Ngrams_Scores[ngram.ngram_id]["scores"] = {
                     "occ_sum": 0.0,
                     "occ_uniq": 0.0,
                     "tfidf_sum": 0.0
                 }
-            Ngrams_Scores[ngram.ngram_id]["occ_sum"]+=ngram.weight
-            Ngrams_Scores[ngram.ngram_id]["occ_uniq"]+=1
+            Ngrams_Scores[ngram.ngram_id]["scores"]["occ_sum"]+=ngram.weight
+            Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]+=1
             # print("\t" , ngram.ngram_id , "\t" , ngram.weight )
     ## Getting the Effective nro de OCCS / >##
 
@@ -343,7 +381,7 @@ def test_ngrams(request , project_id, corpus_id ):
 
     NgramTFIDF = session.query(NodeNodeNgram).filter( NodeNodeNgram.nodex_id==corpus_id ).all()
     for ngram in NgramTFIDF:
-        Ngrams_Scores[ngram.ngram_id]["tfidf_sum"] += ngram.score
+        Ngrams_Scores[ngram.ngram_id]["scores"]["tfidf_sum"] += ngram.score
         # print( "docid:", ngram.nodey_id , ngram.ngram_id  , ngram.score)
 
 
@@ -360,10 +398,28 @@ def test_ngrams(request , project_id, corpus_id ):
 
     # id   | nodex_id | nodey_id | ngram_id |       score        
 
-    
+
+    ngrams_ids = Ngrams_Scores.keys()
+    Metrics = {
+        "ngrams":[],
+        "scores": {
+            "nb_docs":len(documents),
+            "nb_ngrams":len(ngrams_ids)
+        }
+    }
 
 
-    return JsonHttpResponse(results)
+
+    query = session.query(Ngram).filter(Ngram.id.in_( ngrams_ids ))
+    ngrams_data = query.all()
+    for ngram in ngrams_data:
+        Ngrams_Scores[ngram.id]["name"] = ngram.terms
+        Ngrams_Scores[ngram.id]["id"] = ngram.id
+        Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
+
+
+
+    return JsonHttpResponse(Metrics)
 
 
 

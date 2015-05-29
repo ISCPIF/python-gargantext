@@ -78,7 +78,8 @@ urlpatterns = patterns('',
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
     url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
     url(r'^tests/move2trash/$' , views.move_to_trash_multiple ),
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams$', views.test_ngrams)
+    url(r'^project/(\d+)/corpus/(\d+)/ngrams$', views.get_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', views.test_ngrams)
 )
 
 

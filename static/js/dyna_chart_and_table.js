@@ -359,7 +359,8 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
               .renderHorizontalGridLines(true)
               .brushOn(false)
               .compose([
-                  dc.lineChart(moveChart).group(indexAvgByMonthGroup)
+                  dc.lineChart(moveChart)
+                          .group(indexAvgByMonthGroup)
                           .valueAccessor(function (d) {
                               return d.value.avg;
                           })

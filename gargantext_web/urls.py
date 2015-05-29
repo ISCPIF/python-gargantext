@@ -12,7 +12,7 @@ import scrappers.scrap_pubmed.views as pubmedscrapper
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    
+
     # Admin views
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', include(admin.site.urls)),
@@ -20,21 +20,21 @@ urlpatterns = patterns('',
 
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
-    
+
     # Dynamic CSS
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
-    
+
     # User Home view
     url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
     url(r'^maintenance/', views.get_maintenance),
-    
+
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
     url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
-    
+
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
@@ -44,15 +44,13 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
     url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
     url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
-    
+
     # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
     url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
-    
+
     url(r'^api/tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
-    # url(r'^api/tfidf/(\d+)/(\w+)$', views.tfidf),
-    url(r'^api/tfidf2/(\d+)/(\w+)$', views.tfidf2),
 
     # Data management
     #url(r'^api$', gargantext_web.api.Root), # = ?
@@ -67,7 +65,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
     # Provisory tests
-    url(r'^ngrams$', views.ngrams),  # to be removed 
+    url(r'^ngrams$', views.ngrams),  # to be removed
     url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
     url(r'^tests/mvc$', views.tests_mvc),
     url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
@@ -96,11 +94,11 @@ if settings.MAINTENANCE:
     urlpatterns = patterns('',
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
-    
+
     url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
     url(r'^admin/', include(admin.site.urls)),
-    
+
     url(r'^.*', views.get_maintenance),
     )
 

@@ -1,19 +1,15 @@
-from django.http import HttpResponseNotFound, HttpResponse, Http404
+from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from django.db.models import Avg, Max, Min, Count, Sum
-# from node.models import Language, ResourceType, Resource
-# from node.models import Node, NodeType, Node_Resource, Project, Corpus
-
-from sqlalchemy import text, distinct
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
 from gargantext_web.views import move_to_trash
 from .db import *
 from node import models
+
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -49,7 +45,6 @@ _ngrams_order_columns = {
 
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException as _APIException
@@ -128,8 +123,10 @@ class NodesChildrenNgrams(APIView):
 
 class NodesChildrenDuplicates(APIView):
 
-    def _fetch_duplicates(self, request, node_id, extra_columns=[], min_count=1):
+    def _fetch_duplicates(self, request, node_id, extra_columns=None, min_count=1):
         # input validation
+        if extra_columns is None:
+            extra_columns = []
         if 'keys' not in request.GET:
             raise APIException('Missing GET parameter: "keys"', 400)
         keys = request.GET['keys'].split(',')
@@ -194,7 +191,7 @@ class NodesChildrenDuplicates(APIView):
         kept_node_ids_query = self._fetch_duplicates(request, node_id, [func.min(Node.id).label('id')], 0)
         kept_node_ids = [kept_node.id for kept_node in kept_node_ids_query]
         # TODO with new orm
-        duplicate_nodes =  models.Node.objects.filter( parent_id=node_id ).exclude(id__in=kept_node_ids)
+        duplicate_nodes = models.Node.objects.filter( parent_id=node_id ).exclude(id__in=kept_node_ids)
         # # delete the stuff
         # delete_query = (session
         #     .query(Node)
@@ -217,7 +214,7 @@ class NodesChildrenDuplicates(APIView):
 class NodesChildrenMetatadata(APIView):
 
     def get(self, request, node_id):
-        
+
         # query hyperdata keys
         ParentNode = aliased(Node)
         hyperdata_query = (session
@@ -278,7 +275,7 @@ class NodesChildrenMetatadata(APIView):
 class NodesChildrenQueries(APIView):
 
     def _parse_filter(self, filter):
-            
+
         # validate filter keys
         filter_keys = {'field', 'operator', 'value'}
         if set(filter) != filter_keys:
@@ -378,7 +375,7 @@ class NodesChildrenQueries(APIView):
             raise APIException('In the query\'s "retrieve" parameter, a "list" should be provided as an array', 400)
         if retrieve['type'] not in retrieve_types:
             raise APIException('Unrecognized "type": "%s" in the query\'s "retrieve" parameter. Possible values are: "%s".' % (retrieve['type'], '", "'.join(retrieve_types), ), 400)
-        
+
         if retrieve['type'] == 'fields':
             fields_names = ['id'] + retrieve['list'] if 'id' not in retrieve['list'] else retrieve['list']
         elif retrieve['type'] == 'aggregates':
@@ -455,14 +452,14 @@ class NodesChildrenQueries(APIView):
         for filter in request.DATA.get('filters', []):
             # parameters extraction & validation
             field, operator, value = self._parse_filter(filter)
-            # 
+            #
             if field[0] == 'hyperdata':
                 # which hyperdata?
                 hyperdata = session.query(Hyperdata).filter(Hyperdata.name == field[1]).first()
                 if hyperdata is None:
                     hyperdata_query = session.query(Hyperdata.name).order_by(Hyperdata.name)
                     hyperdata_names = [hyperdata.name for hyperdata in hyperdata_query.all()]
-                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(hyperdata_names), field[1]), 400)                
+                    raise APIException('Invalid key for "%s" in parameter "field", should be one of the following values: "%s". "%s" was found instead' % (field[0], '", "'.join(hyperdata_names), field[1]), 400)
                 # check or create Node_Hyperdata alias; join if necessary
                 if hyperdata.id in hyperdata_aliases:
                     hyperdata_alias = hyperdata_aliases[hyperdata.id]
@@ -480,7 +477,7 @@ class NodesChildrenQueries(APIView):
                     getattr(hyperdata_alias, 'value_' + hyperdata.type),
                     value
                 ))
-            elif field[0] == 'ngrams': 
+            elif field[0] == 'ngrams':
                 query = query.filter(
                     Node.id.in_(session
                         .query(Node_Ngram.node_id)
@@ -597,17 +594,17 @@ class Nodes(APIView):
     # it should take the subnodes into account as well,
     # for better constistency...
     def delete(self, request, node_id):
-        
+
         user = request.user
         node = session.query(Node).filter(Node.id == node_id).first()
-        
+
         msgres = str()
-        
+
         try:
-            
+
             move_to_trash(node_id)
             msgres = node_id+" moved to Trash"
-        
+
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
 
@@ -632,7 +629,7 @@ class CorpusController:
         #     raise Http403("Unauthorized access.")
         return corpus
 
-    
+
     @classmethod
     def ngrams(cls, request, node_id):
 
@@ -667,5 +664,3 @@ class CorpusController:
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
-
-   

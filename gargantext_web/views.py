@@ -108,7 +108,7 @@ def css(request):
         css['text']         = '#214A6D'
         css['form']         = '#093558'
         css['help']         = '#093558'
-    
+
     css_data = template.render(Context({\
             'css': css,\
             }))
@@ -140,7 +140,7 @@ def date_range(start_dt, end_dt = None, format=None):
     elif format == "years":
         form = "%Y"
         d = 365
-    
+
     elif format == "months":
         form = "%Y-%m"
         d = 30
@@ -164,7 +164,7 @@ def get_about(request):
     template    = get_template('about.html')
     user        = request.user
     date        = datetime.datetime.now()
-    
+
     members     = about.get_team()
     sponsors    = about.get_sponsors()
 
@@ -174,7 +174,7 @@ def get_about(request):
             'team': members,\
             'sponsors':sponsors,\
             }))
-    
+
     return HttpResponse(html)
 
 def get_maintenance(request):
@@ -189,7 +189,7 @@ def get_maintenance(request):
             'user': user,\
             'date': date,\
             }))
-    
+
     return HttpResponse(html)
 
 from gargantext_web import home
@@ -210,7 +210,7 @@ def home_view(request):
             'paragraph_lorem' : home.paragraph_lorem(),
             'paragraph_tutoreil': home.paragraph_tutoreil(),
             }))
-    
+
     return HttpResponse(html)
 
 def projects(request):
@@ -223,17 +223,17 @@ def projects(request):
         return redirect('/auth/')
 
     t = get_template('projects.html')
-    
+
     user_id         = cache.User[request.user.username].id
     project_type_id = cache.NodeType['Project'].id
 
     date = datetime.datetime.now()
     # print(Logger.write("STATIC_ROOT"))
-    
+
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
 
     number = len(projects)
- 
+
     form = ProjectForm()
     if request.method == 'POST':
         # form = ProjectForm(request.POST)
@@ -260,7 +260,7 @@ def projects(request):
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -268,10 +268,10 @@ def corpus(request, project_id, corpus_id):
         raise Http404()
 
     t = get_template('corpus.html')
-    
+
     user = request.user
     date = datetime.datetime.now()
-    
+
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
 
@@ -295,7 +295,7 @@ def corpus(request, project_id, corpus_id):
 #            'documents': documents,\
             'number' : number,
             }))
-    
+
     return HttpResponse(html)
 
 
@@ -304,7 +304,7 @@ def newpaginatorJSON(request , corpus_id):
     results = ["hola" , "mundo"]
 
     # t = get_template('tests/newpag/thetable.html')
-    
+
     # project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
@@ -319,7 +319,7 @@ def newpaginatorJSON(request , corpus_id):
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
                 # doc.date = realdate
                 resdict = {}
-                resdict["id"] = doc.id 
+                resdict["id"] = doc.id
                 resdict["date"] = realdate
                 resdict["name"] =  doc.name
                 filtered_docs.append( resdict )
@@ -354,10 +354,10 @@ def empty_trash():
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
-        
+
         previous_type_id = node.type_id
         node.type_id = cache.NodeType['Trash'].id
-        
+
         session.add(node)
         session.commit()
         return(previous_type_id)
@@ -391,11 +391,11 @@ def move_to_trash_multiple(request):
 
 
 def delete_node(request, node_id):
-    
+
     # do we have a valid user?
     user = request.user
     node = session.query(Node).filter(Node.id == node_id).first()
-    
+
     if not user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     if node.user_id != user.id:
@@ -407,7 +407,7 @@ def delete_node(request, node_id):
         return HttpResponseRedirect('/project/' + str(node.parent_id))
     else:
         return HttpResponseRedirect('/projects/')
-    
+
 
     if settings.DEBUG == True:
         empty_trash()
@@ -429,7 +429,7 @@ def delete_corpus(request, project_id, node_id):
 #    session.delete(node)
 #    session.commit()
 #    session.flush()
-    
+
     return HttpResponseRedirect('/project/' + project_id)
 
 def chart(request, project_id, corpus_id):
@@ -437,24 +437,24 @@ def chart(request, project_id, corpus_id):
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
-    
+
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
-    
+
     html = t.render(Context({
         'debug': settings.DEBUG,
         'user'      : user,
         'date'      : date,
         'project'   : project,
         'corpus'    : corpus,
-    }))    
+    }))
     return HttpResponse(html)
 
 def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
-    
+
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -465,14 +465,14 @@ def matrix(request, project_id, corpus_id):
             'corpus'    : corpus,\
             'project'   : project,\
             }))
-    
+
     return HttpResponse(html)
 
 def graph(request, project_id, corpus_id):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
-    
+
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -507,7 +507,7 @@ def graph(request, project_id, corpus_id):
             'corpusinfo'   : results,\
             'graphfile' : "hola_mundo",\
             }))
-    
+
     return HttpResponse(html)
 
 def exploration(request):
@@ -520,7 +520,7 @@ def exploration(request):
             'user': user,\
             'date': date,\
             }))
-    
+
     return HttpResponse(html)
 
 def explorer_chart(request):
@@ -533,7 +533,7 @@ def explorer_chart(request):
             'user': user,\
             'date': date,\
             }))
-    
+
     return HttpResponse(html)
 
 import csv
@@ -613,10 +613,10 @@ from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
-    '''   
+    '''
 
     data = []
-    
+
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
     print("file exists?:",os.path.isfile(filename))
@@ -643,7 +643,7 @@ def graph_it(request):
     html = t.render(Context({
         'user': user,
         'date': date,
-    }))    
+    }))
     return HttpResponse(html)
 
 def tests_mvc(request):
@@ -654,7 +654,7 @@ def tests_mvc(request):
     html = t.render(Context({
         'user': user,
         'date': date,
-    }))    
+    }))
     return HttpResponse(html)
 
 def tests_mvc_listdocuments(request):
@@ -665,14 +665,14 @@ def tests_mvc_listdocuments(request):
     html = t.render(Context({
         'user': user,
         'date': date,
-    }))    
+    }))
     return HttpResponse(html)
 
 def ngrams(request):
     '''The ngrams list.'''
     t = get_template('ngrams.html')
     ngrams_list = list()
-    
+
     for node_ngram in Node_Ngram.objects.filter(node_id=81246)[:20]:
         ngrams_list.append(node_ngram.ngram)
 
@@ -682,7 +682,7 @@ def ngrams(request):
         'user': user,
         'date': date,
         'ngrams' : ngrams_list,
-    }))    
+    }))
     return HttpResponse(html)
 
 
@@ -690,84 +690,14 @@ def nodeinfo(request , node_id):
     '''Structure of the popUp for topPapers div '''
     t = get_template('node-info.html')
     ngrams_list = ["hola","mundo"]
-    
+
     user = request.user
     date = datetime.datetime.now()
     html = t.render(Context({
         'user': user,
         'date': date,
         'node_id' : node_id,
-    }))    
+    }))
     return HttpResponse(html)
 
 
-def tfidf2(request, corpus_id, ngram_id):
-    """
-    Takes IDs of corpus and ngram and returns list of relevent documents in json format
-    according to TFIDF score (order is decreasing).
-    """
-    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
-    docsids = ngram_id.split("a")
-
-    tfidf_list = []
-    for i in docsids:
-        pub = Node.objects.get(id=i)
-        finalpub = {}
-        finalpub["id"] = pub.id
-        pubhyperdata = pub.hyperdata
-        if "title" in pubhyperdata: finalpub["title"] = pubhyperdata['title']
-        if "publication_date" in pubhyperdata: finalpub["publication_date"] = pubhyperdata['publication_date']
-        if "journal" in pubhyperdata: finalpub["journal"] = pubhyperdata['journal']
-        if "authors" in pubhyperdata: finalpub["authors"] = pubhyperdata['authors']
-        if "fields" in pubhyperdata: finalpub["fields"] = pubhyperdata['fields']
-        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
-        if len(tfidf_list)==6: break # max 6 papers
-    
-    data = json.dumps(tfidf_list) 
-
-
-
-    # data = ["hola","mundo"]
-    return JsonHttpResponse(data)
-
-def tfidf(request, corpus_id, ngram_id):
-    """
-    Takes IDs of corpus and ngram and returns list of relevent documents in json format
-    according to TFIDF score (order is decreasing).
-    """
-    #it will receive something like:  api/tfidf/corpus_id/NGRAM1aNGRAM2aNGRAM3aNGRAM4...
-    ngramsids = ngram_id.split("a")
-
-    corpus = Node.objects.get(id=corpus_id)
-    ngram  = Ngram.objects.get(id=ngramsids[0])#not used
-    
-    print("********web/views.tfidf*******")
-    print("first ngram:")
-    print(ngram)
-    node_node_ngrams = NodeNodeNgram.objects.filter(nodex=corpus, ngram__in=ngramsids).order_by('-score')
-    # print(node_node_ngrams)
-    goodDict = {}
-    for x in node_node_ngrams:
-        goodDict[x.nodey.id] = x.nodey
-    # print("imma here")
-    # print("arguments... nodes ids:")
-    # print(ngramsids)
-    # print ("with tfidf:")
-    # print(node_node_ngrams)
-    # print("corpus:")
-    # print(NodeNodeNgram.objects.filter(nodex=corpus))
-    tfidf_list = []
-    for x in goodDict:
-        pub = goodDict[x] # getting the unique publication
-        finalpub = {}
-        finalpub["id"] = pub.id
-        if "title" in pub.hyperdata: finalpub["title"] = pub.hyperdata['title']
-        if "publication_date" in pub.hyperdata: finalpub["publication_date"] = pub.hyperdata['publication_date']
-        if "journal" in pub.hyperdata: finalpub["journal"] = pub.hyperdata['journal']
-        if "authors" in pub.hyperdata: finalpub["authors"] = pub.hyperdata['authors']
-        if "fields" in pub.hyperdata: finalpub["fields"] = pub.hyperdata['fields']
-        tfidf_list.append(finalpub) # doing a dictionary with only available atributes
-        if len(tfidf_list)==6: break # max 6 papers
-    
-    data = json.dumps(tfidf_list) 
-    return JsonHttpResponse(data)

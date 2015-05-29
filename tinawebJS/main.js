@@ -640,15 +640,16 @@ function theListeners(){
     //finished
     $("#sliderANodeSize").freshslider({
         step:1,
-        min:1,
-        max:25,
-        value:1,
+        min:-20,
+        max:20,
+        value:0,
         bgcolor:"#27c470",
         onchange:function(value){
             $.doTimeout(100,function (){
                    partialGraph.iterNodes(function (n) {
                        if(Nodes[n.id].type==catSoc) {
-                           n.size = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3;
+			   var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
+                           n.size = (newval<1.0)?1:newval;
                            sizeMult[catSoc] = parseFloat(value-1)*0.3;
                        }
                    });
@@ -661,14 +662,15 @@ function theListeners(){
     $("#sliderBNodeSize").freshslider({
         step:1,
         min:1,
-        max:25,
+        max:20,
         value:1,
         bgcolor:"#FFA500",
         onchange:function(value){
             $.doTimeout(100,function (){
                    partialGraph.iterNodes(function (n) {
                        if(Nodes[n.id].type==catSem) {
-                           n.size = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3;
+			   var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
+                           n.size = (newval<1.0)?1:newval;
                            sizeMult[catSem] = parseFloat(value-1)*0.3;
                        }
                    });

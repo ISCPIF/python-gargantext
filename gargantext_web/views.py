@@ -482,7 +482,7 @@ def graph(request, project_id, corpus_id):
     corpus_type_id = cache.NodeType['Corpus'].id
 
     results = {}
-    projs = session.query(Node).filter(Node.type_id==project_type_id).all()
+    projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id).all()
     for i in projs:
         # print(i.id , i.name)
         if i.id not in results: results[i.id] = {}

@@ -2,7 +2,6 @@
 
 # TODO do apt-get install --force-yes --force-yes 
 
-
 apt-get install --force-yes postgresql
 apt-get install --force-yes postgresql-contrib
 apt-get install --force-yes rabbitmq-server
@@ -40,7 +39,7 @@ apt-get install --force-yes liblapack-dev
 
 #nlpserver
 apt-get install --force-yes libgflags-dev
-aptitude install --force-yes libgoogle-glog-dev
+apt-get install --force-yes libgoogle-glog-dev
 
 # MElt
 # soon

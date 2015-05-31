@@ -41,29 +41,15 @@ class Document(APIView):
         # return formatted result
         return Response(data)
 
-
-class DocumentNgram(APIView):
-    """Read and Write Annotations"""
-    renderer_classes = (JSONRenderer,)
-
-    def post(self, request, doc_id, ngram_id):
-        """
-        TODO update one annotation (document level)
-        associated with one Document (add edge)
-        """
-        annotationDict = json.loads(request.POST.get("annotation"))
-
-        return Response({})
-
-
 class NgramList(APIView):
     """Read and Write Annotations"""
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, list_id):
-        """Get All for on Document ID"""
-        # TODO remove local level
-        data = { '%s' % list_id : [
+        """Get All for on List ID"""
+        doc_id = request.GET.get('docId')
+        # TODO DB query
+        data = { '%s' % list_id : { '%s' % doc_id : [
             {
                 'uuid': '1',
                 'text': 'what',
@@ -190,7 +176,7 @@ class NgramList(APIView):
                 'level': 'local',
                 'occurrences': 3
             }
-        ]}
+        ]}}
         return Response(data)
 
 
@@ -198,20 +184,24 @@ class Ngram(APIView):
     """Read and Write Annotations"""
     renderer_classes = (JSONRenderer,)
 
-    def post(self, request, list_id, ngram_id=None):
-        """
-        TODO update one annotation
-        associated with one Document (add edge)
-        """
-        annotationDict = json.loads(request.POST.get("annotation"))
-
-        return Response({})
-
     def delete(self, request, list_id, ngram_id):
         """
         TODO Delete one annotation by id
         associated with one Document (remove edge)
         """
+        doc_id = request.GET.get('docId')
         annotationId = request.GET.get("annotationId")
-
+        print(annotationDict)
+        # TODO DB query
         return Response({})
+
+    def post(self, request, list_id, ngram_id):
+        """
+        TODO update one annotation (document level)
+        associated with one Document (add edge)
+        """
+        doc_id = request.GET.get('docId')
+        annotationDict = json.loads(request.POST.get("annotation"))
+        print(annotationDict)
+        # TODO DB query
+        return Response(annotationDict)

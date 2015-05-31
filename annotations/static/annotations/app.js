@@ -5,6 +5,11 @@
 
   window.annotationsApp = angular.module('annotationsApp', ['annotationsAppHttp']);
 
+  window.annotationsApp.config(function($interpolateProvider) {
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+  });
+
   window.annotationsApp.directive('keywordTemplate', function () {
     return {
       templateUrl: function ($element, $attributes) {
@@ -13,11 +18,11 @@
     };
   });
 
-  window.annotationsApp.controller('ExtraAnnotationController', ['$scope', '$rootScope', '$element', 'AnnotationHttpService',
-    function ($scope, $rootScope, $element, AnnotationHttpService) {
+  window.annotationsApp.controller('ExtraAnnotationController', ['$scope', '$rootScope', '$element', 'NgramHttpService',
+    function ($scope, $rootScope, $element, NgramHttpService) {
     // TODO use the tooltip ?
     $scope.onDeleteClick = function () {
-      AnnotationHttpService.delete($scope.keyword, $rootScope);
+      NgramHttpService.delete($scope.keyword, $rootScope);
     };
   }]);
 
@@ -47,8 +52,8 @@
     };
   });
 
-  window.annotationsApp.controller('AnnotationMenuController', ['$scope', '$rootScope', '$element', '$timeout', 'AnnotationHttpService',
-    function ($scope, $rootScope, $element, $timeout, AnnotationHttpService) {
+  window.annotationsApp.controller('AnnotationMenuController', ['$scope', '$rootScope', '$element', '$timeout', 'NgramHttpService',
+    function ($scope, $rootScope, $element, $timeout, NgramHttpService) {
     /*
     * Universal text selection
     */
@@ -159,24 +164,35 @@
 
     $scope.onClick = function($event, action, category, level) {
       if (angular.isObject($scope.selection_text)) {
-        // change the existing
+        // change the status of an existing Ngram
         $scope.selection_text.category = category;
         $scope.selection_text.level = level;
 
-        AnnotationHttpService[action]($scope.selection_text, $rootScope);
+        NgramHttpService[action](
+          {
+            'listId': $rootScope.listId,
+            'ngramId': $scope.selection_text.uuid
+          },
+          {'annotation': $scope.selection_text}
+        );
       } else if ($scope.selection_text.trim() !== "") {
         // new annotation from selection
-        AnnotationHttpService[action](AnnotationHttpService.newAnnotationObject($scope.selection_text, category, level), $rootScope);
+        NgramHttpService.post(
+          {
+            'listId': $rootScope.listId
+          },
+          {'annotation' : {'text': $scope.selection_text.trim(), 'category': category, 'level': level}}
+        );
       }
-      // hide selection higlight and the menu
+      // hide selection highlighted text and the menu
       $(".text-panel").removeClass("selection");
       $element.fadeOut(100);
     };
 
   }]);
 
-  window.annotationsApp.controller('IntraTextController', ['$scope', '$rootScope', '$compile', 'AnnotationHttpService',
-    function ($scope, $rootScope, $compile, AnnotationHttpService) {
+  window.annotationsApp.controller('IntraTextController', ['$scope', '$rootScope', '$compile', 'NgramHttpService',
+    function ($scope, $rootScope, $compile, NgramHttpService) {
 
     $scope.extra_stoplist = [];
     $scope.extra_miamlist = [];
@@ -263,7 +279,8 @@
       $scope.extra_miamlist = extra_miamlist;
 
       return {
-        'fullTextHtml': fullText
+        'fullTextHtml': fullText,
+        'abstractTextHtml': abstractText
       };
     }
 
@@ -274,7 +291,11 @@
       $scope.extra_stoplist = [];
       $scope.extra_miamlist = [];
 
-      var result = compileText($rootScope.annotations, angular.copy($rootScope.full_text), angular.copy($rootScope.abstract_text), $rootScope);
+      var result = compileText(
+        $rootScope.annotations,
+        angular.copy($rootScope.full_text),
+        angular.copy($rootScope.abstract_text),
+        $rootScope);
 
       console.log($rootScope.annotations.length);
       console.log(counter);
@@ -287,14 +308,23 @@
       });
     });
 
-    // TODO add the $http request
     function submitNewAnnotation($event, inputEltId, category) {
       if ($event.keyCode !== undefined && $event.keyCode != 13) return;
-
       var value = $(inputEltId).val().trim();
       if (value === "") return;
-      // TODO this will be in a $http success callback, empty if already exist
-      var new_annotation = AnnotationHttpService.post(AnnotationHttpService.newAnnotationObject(value, category, 'local'), $rootScope);
+
+      NgramHttpService.post(
+        {
+          'listId': $rootScope.listId
+        },
+        {'annotation' : {'text': value, 'category': category, 'level': 'local'}},
+        function(data) {
+          // on success
+          if (data) {
+            $rootScope.annotations.push(data);
+          }
+      });
+
       $(inputEltId).val("");
     }
 
@@ -335,45 +365,43 @@
     };
   });
 
-  window.annotationsApp.controller('DocController', ['$scope', '$rootScope', function ($scope, $rootScope) {
-    $rootScope.$on('loadNewDoc', function (event, data) {
-      $scope.title = data.title;
-      $scope.authors = data.authors;
-      $scope.journal = data.journal;
-      $scope.publication_date = data.publication_date;
-      // put in rootScope because used by many components
-      $rootScope.full_text = data.full_text;
-      $rootScope.abstract_text = data.abstract_text;
-    });
+  window.annotationsApp.controller('DocController', ['$scope', '$rootScope', 'NgramListHttpService', 'DocumentHttpService',
+  function ($scope, $rootScope, NgramListHttpService, DocumentHttpService) {
+    //$rootScope.$on('loadNewDoc', function (event, listId, docId) {
+      $rootScope.documentResource = DocumentHttpService.get({docId: $rootScope.docId}, function(data, responseHeaders) {
+        $scope.title = data.title;
+        $scope.authors = data.authors;
+        $scope.journal = data.journal;
+        $scope.publication_date = data.publication_date;
+        // TODO this data have to be deleted
+        $scope.current_page_number = data.current_page_number;
+        $scope.last_page_number = data.last_page_number;
+        // put in rootScope because used by many components
+        $rootScope.docId = data.id;
+        $rootScope.full_text = data.full_text;
+        $rootScope.abstract_text = data.abstract_text;
+        // GET the annotations
+        $rootScope.annotationsResource = NgramListHttpService.get(
+          {'listId': $rootScope.listId, 'docId': $rootScope.docId}
+        ).$promise.then(function(data) {
+          $rootScope.annotations = data[$rootScope.listId.toString()][$rootScope.docId.toString()];
+        });
+      });
+    //});
+    // TODO setup pagination client-side
+    $scope.onPreviousClick = function () {
+      DocumentHttpService.get($scope.docId - 1);
+    };
+    $scope.onNextClick = function () {
+      DocumentHttpService.get($scope.docId + 1);
+    };
   }]);
 
-  window.annotationsApp.controller('PaginationController',
-    ['$scope', '$rootScope', 'DocumentHttpService',
-    function ($scope, $rootScope, DocumentHttpService) {
-
-      $rootScope.$on('loadNewDoc', function (event, data) {
-        $scope.docId = data.id;
-        $scope.current_page_number = data.current_page_number;
-        // TODO change active pagination button
-        $scope.last_page_number = data.last_page_number;
-      });
-      $scope.onPreviousClick = function () {
-        DocumentHttpService.get($scope.docId - 1);
-      };
-      $scope.onNextClick = function () {
-        DocumentHttpService.get($scope.docId + 1);
-      };
-    }
-  ]);
-
-  window.annotationsApp.run(function ($rootScope, DocumentHttpService, AnnotationHttpService) {
+  window.annotationsApp.run(function ($rootScope) {
     /* GET the document node and all the annotations in the list associated */
-    $rootScope.documentResource = DocumentHttpService.get({docId: 4}, function(data, responseHeaders) {
-      $rootScope.$broadcast('loadNewDoc', data);
-    });
-    $rootScope.annotationsResource = AnnotationHttpService.get({listId: 1, docId: 4}, function(data, responseHeaders) {
-      $rootScope.annotations = data['123'];
-    });
+    // TODO debug
+    $rootScope.docId = 4;
+    $rootScope.listId = 1;
   });
 
 })(window);

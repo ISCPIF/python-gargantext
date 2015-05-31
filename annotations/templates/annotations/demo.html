@@ -65,12 +65,12 @@
               </div>
             </div>
           </div>
-          <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController">
+          <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">
             <div class="row-fluid clearfix">
             <div class="col-md-7 col-xs-7">
-              <h3>{{title}}</h3>
+              <h3>{[{title}]}</h3>
             </div>
-            <div class="col-md-5 col-xs-5" ng-controller="PaginationController">
+            <div class="col-md-5 col-xs-5">
               <nav>
                 <ul class="pager">
                   <li ng-if="current_page_number > 1"><a ng-click="onPreviousClick()" href="#">Previous</a></li>
@@ -81,12 +81,14 @@
             </div>
             <div class="row-fluid cleafix">
               <ul class="breadcrumb">
-                <li>{{authors}}</li>
-                <li>{{journal}}</li>
-                <li class="active pull-right">{{publication_date}}</li>
+                <li>{[{authors}]}</li>
+                <li>{[{journal}]}</li>
+                <li class="active pull-right">{[{publication_date}]}</li>
               </ul>
             </div>
-            <blockquote id="abstract-text" class="text-container "></blockquote>
+            <h4>Abstract</h4>
+            <p id="abstract-text" class="text-container"></p>
+            <h4>Article</h4>
             <p id="full-text" class="text-container"></p>
           </div>
         </div> <!-- end of the main row -->

@@ -3,6 +3,9 @@
 
     var http = angular.module('annotationsAppHttp', ['ngResource']);
 
+    /*
+    * Read Document
+    */
     http.factory('DocumentHttpService', function($resource) {
       return $resource(
         window.ANNOTATION_API_URL  + "document" + '/:docId/',
@@ -13,40 +16,51 @@
           get: {
             method: 'GET',
             params: {docId: '@docId'}
-          },
+          }
         }
       );
     });
 
-    http.factory('AnnotationHttpService', function ($resource) {
+    /*
+    * Read Ngram Lists
+    */
+    http.factory('NgramListHttpService', function ($resource) {
       return $resource(
-        window.ANNOTATION_API_URL  + "lists" + '/:listId/',
+        window.ANNOTATION_API_URL  + 'lists' + '/:listId/',
       	{
           listId: '@listId'
         },
   			{
-        	get: {
+          get: {
       			method: 'GET',
       			params: {listId: '@listId'}
-      		},
+      		}
+        }
+      );
+    });
+
+    /*
+    * Create, modify or delete on Ngram of a list
+    */
+    http.factory('NgramHttpService', function ($resource) {
+      return $resource(
+        window.ANNOTATION_API_URL  + 'lists' + '/:listId/ngrams/' + ':ngramId/',
+      	{
+          listId: '@listId'
+        },
+  			{
           post: {
             method: 'POST',
-            params: {listId: '@listId', node: '@node'}
+            params: {'listId': '@listId', 'ngramId': '@ngramId'}
           },
           delete: {
             method: 'DELETE',
-            params: {listId: '@listId', node: '@node'}
+            params: {'listId': '@listId', 'ngramId': '@ngramId'}
           }
         }
       );
+    });
       // return {
-        // TODO check doublesx
-        // get: function (docId) {
-        //   // TODO remove timeout
-        //   $timeout(function () {
-        //     $rootScope.annotations = ;
-        //   });
-        // },
         // newAnnotationObject: function(text, category, level) {
         //   return {
         //     'text': text.trim(),
@@ -95,6 +109,5 @@
         //   });
         // }
       // };
-    });
 
 })(window);

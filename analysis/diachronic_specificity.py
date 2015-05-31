@@ -1,5 +1,7 @@
 import sqlalchemy
-from gargantext_web import api, db
+from gargantext_web import api
+from gargantext_web.db import *
+
 from node import models
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func

@@ -7,10 +7,6 @@ from django.template.loader import get_template
 from django.template import Context
 
 from node import models
-#from node.models import Language, ResourceType, Resource, \
-#        Node, NodeType, Node_Resource, Project, Corpus, \
-#        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
-
 from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
 
 from django.contrib.auth.models import User
@@ -699,5 +695,3 @@ def nodeinfo(request , node_id):
         'node_id' : node_id,
     }))
     return HttpResponse(html)
-
-

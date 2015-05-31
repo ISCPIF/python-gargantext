@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.views import login
 
 from gargantext_web import views, views_optimized
-
+from annotations import urls as annotations_urls
 import gargantext_web.api
 import scrappers.scrap_pubmed.views as pubmedscrapper
 
@@ -64,6 +64,8 @@ urlpatterns = patterns('',
 
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
+    url(r'^annotations/', include(annotations_urls)),
+
     # Provisory tests
     url(r'^ngrams$', views.ngrams),  # to be removed
     url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
@@ -101,5 +103,3 @@ if settings.MAINTENANCE:
 
     url(r'^.*', views.get_maintenance),
     )
-
-

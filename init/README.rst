@@ -4,7 +4,7 @@ Install the requirements
 1)  Install all the Debian packages listed in dependances.deb
     (also: sudo apt-get install postgresql-contrib)
 
-2)  Create a Pythton virtual enironnement
+2)  Create a Python virtual enironnement
 
     On Debian:
     ---------

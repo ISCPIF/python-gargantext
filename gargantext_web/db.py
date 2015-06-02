@@ -1,8 +1,8 @@
-from gargantext_web import settings
+from django.conf import settings
+
 from node import models
 
-
-__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor']
+__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor', 'User']
 
 
 # initialize sqlalchemy
@@ -14,9 +14,16 @@ from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey
 from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import JSON
 
-engine = create_engine('postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
-    **settings.DATABASES['default']
-))
+# SQLAlchemy session management
+def get_engine():
+    from sqlalchemy import create_engine
+    url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
+        **settings.DATABASES['default']
+    )
+    return create_engine(url, use_native_hstore=True)
+
+engine = get_engine()
+
 Base = automap_base()
 
 Base.prepare(engine, reflect=True)
@@ -112,7 +119,7 @@ def literalquery(statement, dialect=None):
                 return str(value)
             elif isinstance(value, datetime):
                 return repr(str(value))
-            else: 
+            else:
                 if isinstance(value, str):
                     return value.encode('UTF-8')
                 else:
@@ -120,17 +127,6 @@ def literalquery(statement, dialect=None):
 
     return LiteralCompiler(dialect, statement)
 
-
-# SQLAlchemy session management
-
-def get_engine():
-    from sqlalchemy import create_engine
-    url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'.format(
-        **settings.DATABASES['default']
-    )
-    return create_engine(url, use_native_hstore=True)
-
-engine = get_engine()
 
 def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
@@ -199,6 +195,7 @@ def get_cursor():
         'user':     db_settings['USER'],
         'password': db_settings['PASSWORD'],
         'host':     db_settings['HOST'],
+        'port':     db_settings['PORT']
     })
     return db, db.cursor()
 
@@ -232,4 +229,3 @@ class bulk_insert:
             return ''
 
     readline = read
-

@@ -174,9 +174,11 @@ def test_ngrams(request , project_id, corpus_id ):
     # ## Getting the unique number of OCCS /> ##
 
 
+    Sum = 0
     NgramTFIDF = session.query(NodeNodeNgram).filter( NodeNodeNgram.nodex_id==corpus_id ).all()
     for ngram in NgramTFIDF:
         Ngrams_Scores[ngram.ngram_id]["scores"]["tfidf_sum"] += ngram.score
+        Sum += Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]
         # print( "docid:", ngram.nodey_id , ngram.ngram_id  , ngram.score)
 
 
@@ -195,24 +197,33 @@ def test_ngrams(request , project_id, corpus_id ):
 
 
     ngrams_ids = Ngrams_Scores.keys()
+
+    import math
+    occs_threshold = math.sqrt(Sum / len(ngrams_ids))
+    print("excluding ngrams with OCCs <",occs_threshold)
+
     Metrics = {
         "ngrams":[],
-        "scores": {
-            "nb_docs":len(documents),
-            "nb_ngrams":len(ngrams_ids)
-        }
+        "scores": {}
     }
-
 
 
     query = session.query(Ngram).filter(Ngram.id.in_( ngrams_ids ))
     ngrams_data = query.all()
     for ngram in ngrams_data:
-        Ngrams_Scores[ngram.id]["name"] = ngram.terms
-        Ngrams_Scores[ngram.id]["id"] = ngram.id
-        Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
+    	if Ngrams_Scores[ngram.id]["scores"]["occ_uniq"] > occs_threshold:
+	        Ngrams_Scores[ngram.id]["name"] = ngram.terms
+	        Ngrams_Scores[ngram.id]["id"] = ngram.id
+	        Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
 
 
+
+    Metrics["scores"] = {
+    	"nb_docs":len(documents),
+    	"orig_nb_ngrams":len(ngrams_ids),
+    	"nb_ngrams":len(Metrics["ngrams"]),
+    	"occs_threshold":occs_threshold
+    }
 
     return JsonHttpResponse(Metrics)
 

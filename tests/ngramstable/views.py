@@ -200,7 +200,6 @@ def test_ngrams(request , project_id, corpus_id ):
 
     import math
     occs_threshold = math.sqrt(Sum / len(ngrams_ids))
-    print("excluding ngrams with OCCs <",occs_threshold)
 
     Metrics = {
         "ngrams":[],
@@ -219,6 +218,7 @@ def test_ngrams(request , project_id, corpus_id ):
 
 
     Metrics["scores"] = {
+    	"initial":"occ_sum",
     	"nb_docs":len(documents),
     	"orig_nb_ngrams":len(ngrams_ids),
     	"nb_ngrams":len(Metrics["ngrams"]),

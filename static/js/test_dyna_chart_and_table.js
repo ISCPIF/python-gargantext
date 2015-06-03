@@ -89,7 +89,7 @@ function Final_UpdateTable( action ) {
 
     TimeRange = []
     for (var i in AjaxRecords) {
-        if(AjaxRecords[i].occs>=dataini && AjaxRecords[i].occs<=datafin){
+        if(AjaxRecords[i].score>=dataini && AjaxRecords[i].score<=datafin){
             // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id )
             TimeRange.push(AjaxRecords[i])
         }
@@ -101,7 +101,7 @@ function Final_UpdateTable( action ) {
         },
         features: {
             pushState: false,
-            sort: false
+            // sort: false
         },
         writers: {
           _rowWriter: ulWriter
@@ -165,12 +165,12 @@ function transformContent2(rec_id) {
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
-    result["occs"] = '<strike>'+elem["occs"]+'</strike>'
+    result["score"] = '<strike>'+elem["score"]+'</strike>'
     result["name"] = '<strike>'+elem["name"]+'</strike>'
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
-    result["occs"] = elem["occs"]
+    result["score"] = elem["score"]
     result["name"] = elem["name"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   }
@@ -180,8 +180,8 @@ function transformContent2(rec_id) {
 function overRide(elem) {
   var id = elem.id
   var val = elem.checked
-  console.log("striking: ")
-  console.log(AjaxRecords[id])
+  // console.log("striking: "+id+" | "+val)
+  // console.log(AjaxRecords[id])
   // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
   AjaxRecords[id]["del"] = val;
 
@@ -221,13 +221,31 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr>' + tr + '</tr>';
 }
 
+function SelectAll( the_checkbox ) {
+  console.log("")
+  console.log(the_checkbox.id)
+  console.log(the_checkbox.checked)
+  $( ":checkbox" ).each(function () {
+    if(this.id != the_checkbox.id) {
+      AjaxRecords[this.id]["del"] = the_checkbox.checked
+        // $(this).trigger('click');
+      }
+      // this.checked=the_checkbox.checked;
+  });
+  MyTable.data('dynatable').dom.update();
+}
 
-console.log(window.location.href+"/ngrams.json")
-$.ajax({
-  url: window.location.href+"/ngrams.json",
-  success: function(data){
+function Main( data , initial) {
 
     var DistributionDict = {}
+    for(var i in DistributionDict)
+        delete DistributionDict[i];
+    delete DistributionDict;
+    DistributionDict = {}
+    AjaxRecords = []
+
+    var FirstScore = initial;
+
     var arrayd3 = []
 
     for(var i in data.ngrams) {
@@ -241,21 +259,13 @@ $.ajax({
       var node_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
-        "occs": le_ngram.scores.occ_uniq,
+        "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
         "del":false
       }
       AjaxRecords.push(node_info)
 
-      if ( ! DistributionDict[node_info.occs] ) DistributionDict[node_info.occs] = 0;
-      DistributionDict[node_info.occs]++;
-
-
-      // var info = {}
-      // info.name = node_info.name
-      // info.volume = node_info.occs;
-      // arrayd3.push(info)
-
-
+      if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
+      DistributionDict[node_info.score]++;
     }
 
     // console.log("The Distribution!:")
@@ -285,17 +295,11 @@ $.ajax({
         return d.x_occ;
     });
 
-
-    // y_frecs = x_occs.group().reduceSum(dc.pluck('y_frec'));
     var y_frecs = x_occs.group().reduceSum(function (d) {
         return d.y_frec;
     });
 
-    // var y_frecs_2  = ndx.dimension(dc.pluck('y_frec'));
-    // var x_occs_2 = y_frecs_2.group().reduceSum(dc.pluck('x_occ'));
-
-
-    console.log("occs: [ "+min_occ+" , "+max_occ+" ] ")
+    console.log("scores: [ "+min_occ+" , "+max_occ+" ] ")
     console.log("frecs: [ "+min_frec+" , "+max_frec+" ] ")
 
 
@@ -370,27 +374,63 @@ $.ajax({
       volumeChart.yAxis().ticks(5)
       volumeChart.render()
 
+    MyTable = $('#my-ajax-table').dynatable({
+                dataset: {
+                  records: AjaxRecords
+                },
+                features: {
+                  pushState: false,
+                  // sort: false //i need to fix the sorting function... the current one just sucks
+                },
+                writers: {
+                  _rowWriter: ulWriter
+                  // _cellWriter: customCellWriter
+                }
+              });
 
 
-
-      MyTable = $('#my-ajax-table').dynatable({
-                  dataset: {
-                    records: AjaxRecords
-                  },
-                  features: {
-                    pushState: false,
-                    sort: false //i need to fix the sorting function... the current one just sucks
-                  },
-                  writers: {
-                    _rowWriter: ulWriter
-                    // _cellWriter: customCellWriter
-                  }
-                });
-
-      if ( $(".imadiv").length>0 ) return 1;
-      $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
-      $(".dynatable-record-count").insertAfter(".imadiv")
-      $(".dynatable-pagination-links").insertAfter(".imadiv")
+    MyTable.data('dynatable').settings.dataset.originalRecords = []
+    MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
     
+    MyTable.data('dynatable').paginationPage.set(1);
+    MyTable.data('dynatable').process();
+    $("#score_column_id").children()[0].text = FirstScore
+    
+    if ( $(".imadiv").length>0 ) return 1;
+    $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
+    $(".dynatable-record-count").insertAfter(".imadiv")
+    $(".dynatable-pagination-links").insertAfter(".imadiv")
+
+    return "OK"
+}
+
+console.log(window.location.href+"/ngrams.json")
+$.ajax({
+  url: window.location.href+"/ngrams.json",
+  success: function(data){
+    var FirstScore = data.scores.initial
+    var possible_scores = Object.keys( data.ngrams[0].scores );
+    var scores_div = '<select id="scores_selector">'+"\n";
+    scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
+    for( var i in possible_scores ) {
+      if(possible_scores[i]!=FirstScore) {
+        scores_div += "\t"+'<option value="'+possible_scores[i]+'">'+possible_scores[i]+'</option>'+"\n"
+      }
+    }
+    var result = Main( data , FirstScore )
+    console.log( result )
+
+
+
+    scores_div += "<select>"+"\n";
+    $("#ScoresBox").html(scores_div)
+    $("#scores_selector").on('change', function() {
+      console.log( this.value )
+      var result = Main( data , this.value )
+      console.log( result )
+    });
+
+
+
   }
 });

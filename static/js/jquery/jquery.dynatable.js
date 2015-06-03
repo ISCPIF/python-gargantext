@@ -206,7 +206,7 @@
   };
 
   processAll = function(skipPushState) {
-    // console.log("i am heeeeere")
+    $("#multiple_selection")[0].checked = false;
     var data = {};
 
     this.$element.trigger('dynatable:beforeProcess', data);

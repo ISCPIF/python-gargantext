@@ -11,6 +11,14 @@ from rest_framework.renderers import JSONRenderer
 from node.models import Node
 from gargantext_web.db import *
 
+from ngram.lists import listIds, listNgramIds, ngramList
+import sqlalchemy
+from sqlalchemy.sql import func
+from sqlalchemy import desc, asc, or_, and_, Date, cast, select
+from sqlalchemy import literal_column
+from sqlalchemy.orm import aliased
+
+
 
 def demo(request):
     """Demo page, temporary"""
@@ -19,6 +27,11 @@ def demo(request):
     }, context_instance=RequestContext(request))
 
 
+# This class below is a duplicate with the class Nodes in
+# /srv/gargantext/gargantext_web/api.py
+# All information you need from Nodes in api.py is in hyperdata
+# You may modify api.py (keeping compatibility) for your own needs
+# See in urls the url pattern to use
 class Document(APIView):
     """Read-only Document"""
     renderer_classes = (JSONRenderer,)
@@ -49,6 +62,23 @@ class NgramList(APIView):
         """Get All for on List ID"""
         doc_id = request.GET.get('docId')
         # TODO DB query
+        # Example with 'MiamList', same with 'StopList'
+        corpus_id = session.query(Node.parent_id).filter(Node.id == doc_id).first()
+        miamlist_ids = listIds(user_id=request.user.id,
+                              corpus_id=corpus_id,
+                              typeList='MiamList')
+
+        miamlist_id, miamlist_name = miamlist_ids[0]
+
+        # ngrams of list_id of corpus_id:
+        corpus_ngram_miam_list = listNgramIds(list_id=miamList_id)
+
+        # ngrams of list_id of corpus_id:
+        doc_ngram_miam_list = listNgramIds(list_id=miamList_id, doc_id=doc_id)
+
+        # now you can model your dict as you want (for doc or corpus level):
+        ngram_id, ngram_text, ngram_occurrences = doc_ngram_miam_list[0]
+
         data = { '%s' % list_id : { '%s' % doc_id : [
             {
                 'uuid': '1',
@@ -193,6 +223,10 @@ class Ngram(APIView):
         annotationId = request.GET.get("annotationId")
         print(annotationDict)
         # TODO DB query
+        # Use the ngramList function in ngram.lists.py for that
+        # It can return True or False
+        ngramList(do='del', ngram_ids=[ngram_id,], list_id=list_id)
+
         return Response({})
 
     def post(self, request, list_id, ngram_id):

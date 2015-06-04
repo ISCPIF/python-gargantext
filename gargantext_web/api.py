@@ -3,16 +3,12 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from django.db.models import Avg, Max, Min, Count, Sum
-# from node.models import Language, ResourceType, Resource
-# from node.models import Node, NodeType, Node_Resource, Project, Corpus
-
 from sqlalchemy import text, distinct, or_
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
 from gargantext_web.views import move_to_trash
-from .db import *
+from gargantext_web.db import *
 from node import models
 
 

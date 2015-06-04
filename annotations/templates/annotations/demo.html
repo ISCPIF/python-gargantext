@@ -1,0 +1,109 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" class="no-js">
+<!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Gargantext corpus annotations editor</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bower_components/angular/angular-csp.css' %}">
+        <link rel="stylesheet" href="{% static 'annotations/app.css' %}">
+        <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+    </head>
+    <body>
+    <!-- TODO integrate this later into the corpus.html django template -->
+    <div id="annotationsApp">
+      <div class="container-fluid">
+        <div class="row-fluid main-panel" ng-controller="IntraTextController">
+          <div class="col-md-4 col-xs-4 tabbable words-panel">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab1" data-toggle="tab">Miamwords</a></li>
+              <li><a href="#tab2" data-toggle="tab">Local stopwords</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab1">
+                <ul class="list-group words-list">
+                  <div ng-if="extra_miamlist.length == 0" class="alert alert-info" role="alert">No extra-text miam-word yet</div>
+
+                  <li ng-repeat="keyword in extra_miamlist | startFrom:currentMiamPage*pageSize | limitTo:pageSize" class="list-group-item">
+                    <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
+                  </li>
+                </ul>
+                <nav ng-class="{invisible: numMiamPages() - 1 == 0}" class="clearfix">
+                  <ul class="pagination pagination-s pull-right words-pagination">
+                    <li ng-class="{disabled: currentMiamPage == 0}"><a ng-click="previousMiamPage()" class="glyphicon glyphicon-backward"></a></li>
+                    <li ng-class="{disabled: currentMiamPage >= numMiamPages()-1}"><a ng-click="nextMiamPage()" class="glyphicon glyphicon-forward"></a></li>
+                  </ul>
+                </nav>
+                <div class="form-group">
+                  <input type="text" class="form-control" id="miamlist-input" ng-keypress="onMiamlistSubmit($event)">
+                  <button type="submit" class="btn btn-default btn-primary" ng-click="onMiamlistSubmit($event)">Add</button>
+                </div>
+              </div>
+              <div class="tab-pane" id="tab2">
+                <ul class="list-group words-list clearfix">
+                  <div ng-if="extra_stoplist.length == 0" class="alert alert-info" role="alert">No extra-text stop-word yet</div>
+                  <li ng-repeat="keyword in extra_stoplist | startFrom:currentStopPage*pageSize | limitTo:pageSize" class="list-group-item"><div ng-controller="ExtraAnnotationController" keyword-template></div></li>
+                </ul>
+                <nav ng-class="{invisible: numStopPages() - 1 == 0}" class="clearfix">
+                  <ul class="pagination pagination-s pull-right words-pagination">
+                    <li ng-class="{disabled: currentStopPage == 0}"><a ng-click="previousStopPage()" class="glyphicon glyphicon-backward"></a></li>
+                    <li ng-class="{disabled: currentStopPage >= numStopPages()-1}"><a ng-click="nextStopPage()" class="glyphicon glyphicon-forward"></a></li>
+                  </ul>
+                </nav>
+                <div class="form-group">
+                  <input type="text" class="form-control" id="stoplist-input" ng-keypress="onStoplistSubmit($event)">
+                  <button type="submit" class="btn btn-default" ng-click="onStoplistSubmit($event)">Exclude</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">
+            <div class="row-fluid clearfix">
+            <div class="col-md-7 col-xs-7">
+              <h3>{[{title}]}</h3>
+            </div>
+            <div class="col-md-5 col-xs-5">
+              <nav>
+                <ul class="pager">
+                  <li ng-if="current_page_number > 1"><a ng-click="onPreviousClick()" href="#">Previous</a></li>
+                  <li ng-if="current_page_number < last_page_number"><a ng-click="onNextClick()" href="#">Next</a></li>
+                </ul>
+              </nav>
+            </div>
+            </div>
+            <div class="row-fluid cleafix">
+              <ul class="breadcrumb">
+                <li>{[{authors}]}</li>
+                <li>{[{journal}]}</li>
+                <li class="active pull-right">{[{publication_date}]}</li>
+              </ul>
+            </div>
+            <h4>Abstract</h4>
+            <p id="abstract-text" class="text-container"></p>
+            <h4>Article</h4>
+            <p id="full-text" class="text-container"></p>
+          </div>
+        </div> <!-- end of the main row -->
+      </div>
+      <!-- this menu is over the text -->
+      <div ng-controller="AnnotationMenuController" id="selection" class="selection-menu" selection-template></div>
+    </div>
+    <!--[if lt IE 7]>
+    <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+  <script type="application/javascript">
+    window.STATIC_URL = "{% static '' %}";
+    window.ANNOTATION_API_URL = "{{ api_url }}";
+  </script>
+  <script src="{% static 'annotations/main.js' %}"></script>
+
+  </body>
+</html>

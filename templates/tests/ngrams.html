@@ -1,0 +1,195 @@
+
+{% extends "menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
+
+<link rel="stylesheet" type="text/css" href="{% static "css/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.dynatable.css"%}"/>
+
+
+<script type="text/javascript" src="{% static "js/charts/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
+<!-- <script type="text/javascript" src="http://localhost/i7/js_examples/DC_linear/dc.js"></script> -->
+<script type="text/javascript" src="{% static "js/charts/dc.js"%}"></script>
+
+
+<style>
+.no-transition {
+  -webkit-transition: height 0.1s;
+  -moz-transition: height 0.1s;
+  -ms-transition: height 0.1s;
+  -o-transition: height 0.1s;
+  transition: height 0.1s;
+}
+th { color: #fff; }
+
+th a {
+  color: #fff;
+  font-weight: normal;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.dynatable-record-count {
+  font-size: 0.7em;
+}
+.dynatable-pagination-links {
+  font-size: 0.7em;  
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+                        {% if project %}
+                            <h1>{{ project.name }}, {{ corpus.name }}
+                            </h1>
+                            {% endif %}
+
+                        {% if corpus %}
+                        <p>
+                        {{ number}} docs, Created on {{ corpus.date }} 
+                        </p>
+                        <div id="stats"></div>
+                        {% endif %}
+
+                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
+                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
+                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
+
+                        {% if number == 0 %}
+                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
+                        {% endif %}
+    
+        </div>
+</div>
+
+                <div class="container">
+                        <div class="container">
+
+                            <div class="row">
+                                    <div id="monthly-move-chart">
+                                    <center>
+                                    <div id="ScoresBox"></div> (Blue bars: all,  Green line: zoom)
+                                            <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
+                                                    style="display: none;">reset</a>
+                                            <div class="clearfix"></div>
+                                    </center>
+                                    </div>
+                            </div>
+
+                            <div class="row">
+                                    <div id="monthly-volume-chart"></div>
+                                    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
+                            </div>
+                    </div>
+                        <p align="center">
+                        <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+
+
+<div class="container">
+        <div class="jumbotron">
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-body">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+           <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
+      <div class="panel-body">
+                <p align="right">
+                    <table id="my-ajax-table" class="table table-bordered">
+                      <thead>
+                        <!-- <th data-dynatable-column="id">ID</th> -->
+                        <th data-dynatable-column="name">Title</th>
+                        <th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>
+                        <th data-dynatable-column="del" data-dynatable-no-sort="true">
+                            <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select
+                        </th>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                </p>
+                <p align="right">
+                    <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
+                </p>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+
+<div class="container">
+		<div class="row">
+				<div class="col-md-4">
+						<div class="jumbotron">
+						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
+						<ol>
+								<li>Count</li> <!-- read, compute -->
+								<li>Filter</li> <!-- count, compute -->
+								<li>Compare</li> <!-- select, cut -->
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+					</div>
+				</div>
+
+				<div class="col-md-4">
+						<div class="jumbotron">
+										<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
+						<ol>
+								<li>Sort</li>
+								<li>Group</li>
+								<li>Cluster</li>
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+						</div>
+				</div>
+
+				<div class="col-md-4">
+						<div class="jumbotron">
+								{% if processing > 0 %}
+                <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
+                {% else %}
+                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
+                {% endif %}
+                        <ol>
+                                <li>Visualize</li>
+                                <li>Explore</li>
+                                <li>Read</li>
+                        </ol>
+                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script src="{% static "js/charts/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+
+<!-- custom-lib for dynatable.js and dc.js -->
+<script type="text/javascript" src="{% static "js/test_dyna_chart_and_table.js" %}"></script>
+
+
+
+
+{% endblock %}

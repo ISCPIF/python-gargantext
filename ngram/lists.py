@@ -33,11 +33,11 @@ def nodeList(user_id=None, corpus_id=None, typeList='MiamList'):
                                     Node.user_id == user_id,
                                     Node.parent_id==corpus_id,
                                     Node.type_id == cache.NodeType[typeList].id
-                                    ).all()
+                                    ).order_by(desc(Node.id)).all()
         elif typeList in root_list:
             nodes = session.query(Node).filter(
                                     Node.type_id == cache.NodeType[typeList].id
-                                    ).all()
+                                    ).order_by(desc(Node.id)).all()
         else:
             print('typeList not supported yet')
             sys.exit(0)

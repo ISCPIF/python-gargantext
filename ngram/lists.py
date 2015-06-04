@@ -63,8 +63,8 @@ def listIds(user_id=None, corpus_id=None, typeList='MiamList'):
 def listNgramIds(list_id=None, typeList=None,
                   corpus_id=None, doc_id=None, user_id=None):
     '''
-    listNgramsIds :: Int | String, Int, Int, Int -> [(Int, Int)]
-    return has types: [(ngram_id, occurrences)]
+    listNgramsIds :: Int | String, Int, Int, Int -> [(Int, String, Int)]
+    return has types: [(ngram_id, ngram_terms, occurrences)]
 
     Return the list of tuples of
     ngram_id and its occurrences according to node_id level.

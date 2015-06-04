@@ -82,9 +82,8 @@ print('Initialize node types...')
 node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
-        'Stem', 'Lem', 'Tfidf',
-        'Synonym',
-        'MiamList', 'StopList',
+        'MiamList', 'StopList', 'MainList',
+        'Stem', 'Lem', 'Group', 'Tfidf',
         'Cooccurrence', 'WhiteList', 'BlackList'
         ]
 
@@ -92,6 +91,20 @@ for node_type in node_types:
     models.NodeType.objects.get_or_create(name=node_type)
 
 # Integration: resource types
+
+print('Initialize users...')
+me = session.query(User).filter(User.username=='alexandre').first()
+gargantua = session.query(User).filter(User.username=='gargantua').first()
+node_root = Node(user_id=gargantua.id, type_id=cache.NodeType['Root'].id, name='Root')
+node_stem = Node(user_id=gargantua.id, type_id=cache.NodeType['Stem'].id, name='Stem', parent_id=node_root.id)
+node_lem = Node(user_id=gargantua.id, type_id=cache.NodeType['Lem'].id, name='Lem', parent_id=node_root.id)
+
+session.add(node_root)
+session.add(node_stem)
+session.add(node_lem)
+session.commit()
+
+
 
 print('Initialize resource...')
 

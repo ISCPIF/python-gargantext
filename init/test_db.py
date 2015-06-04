@@ -35,7 +35,6 @@ extract_ngrams(corpus, ('title', ))
 
 
 
-# print(corpus)
 # corpus = session.query(Node).filter(Node.id == 72771).first()
 # corpus = session.query(Node).filter(Node.id == 73017).first()
 compute_tfidf(corpus)

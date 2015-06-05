@@ -235,18 +235,39 @@ function SelectAll( the_checkbox ) {
   MyTable.data('dynatable').dom.update();
 }
 
-function Main( data , initial) {
+function Main_test( data , initial) {
 
     var DistributionDict = {}
     for(var i in DistributionDict)
         delete DistributionDict[i];
     delete DistributionDict;
     DistributionDict = {}
+
     AjaxRecords = []
 
     var FirstScore = initial;
 
     var arrayd3 = []
+
+
+    $("#div-table").html("")
+    $("#div-table").empty();
+    var div_table = '<p align="right">'+"\n"
+      div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
+      div_table += "\t"+'<thead>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
+      div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select'+"\n"
+      div_table += "\t"+"\t"+'</th>'+"\n"
+      div_table += "\t"+'</thead>'+"\n"
+      div_table += "\t"+'<tbody>'+"\n"
+      div_table += "\t"+'</tbody>'+"\n"
+      div_table += '</table>'+"\n"
+      div_table += '</p>';
+    $("#div-table").html(div_table)
+
+
 
     for(var i in data.ngrams) {
     
@@ -287,7 +308,13 @@ function Main( data , initial) {
     oldest = Number(min_occ);
     latest = Number(max_occ);
 
-    var ndx = crossfilter();
+
+
+
+
+
+    var ndx = false;
+    ndx = crossfilter();
     ndx.add(DistributionList);
 
     // x_occs  = ndx.dimension(dc.pluck('x_occ'));
@@ -320,7 +347,8 @@ function Main( data , initial) {
       // .stack(y_frecs, function (d) {
       //     return d.value;
       // })
-      // .elasticY(true)
+      // .ordinalColors(d3.scale.category10())
+      .elasticY(true)
       // .round(dc.round.floor)
       .renderHorizontalGridLines(true)
       .renderVerticalGridLines(true)
@@ -331,12 +359,11 @@ function Main( data , initial) {
       .title(function (d) {
                   var value = d.value.avg ? d.value.avg : d.value;
                   if (isNaN(value)) value = 0;
-                  return value+" ngrams with occ="+Number(d.key);
+                  return value+" ngrams with "+FirstScore+"="+Number(d.key);
               })
       .xAxis();
     LineChart.yAxis().ticks(5)
     LineChart.render()
-
 
 
     volumeChart.width(800)
@@ -346,8 +373,8 @@ function Main( data , initial) {
             .group(y_frecs)
             .centerBar(true)
             .gap(5)
-            .x(d3.scale.linear().domain([min_occ/2,max_occ]))
-            .y(d3.scale.sqrt().domain([min_frec/2,max_frec]))
+            .x(d3.scale.linear().domain([min_occ/2,max_occ+min_occ]))
+            .y(d3.scale.sqrt().domain([min_frec/2,max_frec+min_frec]))
             // .elasticY(true)
             // // .round(d3.time.month.round)
             // // .xUnits(d3.time.months)
@@ -374,6 +401,11 @@ function Main( data , initial) {
       volumeChart.yAxis().ticks(5)
       volumeChart.render()
 
+      LineChart.filterAll();
+      volumeChart.filterAll();
+      dc.redrawAll();
+
+    MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
                   records: AjaxRecords
@@ -388,14 +420,18 @@ function Main( data , initial) {
                 }
               });
 
-
-    MyTable.data('dynatable').settings.dataset.originalRecords = []
-    MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
+    // MyTable.data('dynatable').settings.dataset.records = []
+    // MyTable.data('dynatable').settings.dataset.originalRecords = []
+    // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
     
     MyTable.data('dynatable').paginationPage.set(1);
+    // MyTable.data('dynatable').process();
+    // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
-    $("#score_column_id").children()[0].text = FirstScore
-    
+
+    // // // $("#score_column_id").children()[0].text = FirstScore
+    // // // // MyTable.data('dynatable').process();
+
     if ( $(".imadiv").length>0 ) return 1;
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
     $(".dynatable-record-count").insertAfter(".imadiv")
@@ -408,25 +444,28 @@ console.log(window.location.href+"/ngrams.json")
 $.ajax({
   url: window.location.href+"/ngrams.json",
   success: function(data){
+
+    // Building the Score-Selector
     var FirstScore = data.scores.initial
     var possible_scores = Object.keys( data.ngrams[0].scores );
-    var scores_div = '<select id="scores_selector">'+"\n";
+    var scores_div = '<select class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
       if(possible_scores[i]!=FirstScore) {
         scores_div += "\t"+'<option value="'+possible_scores[i]+'">'+possible_scores[i]+'</option>'+"\n"
       }
     }
-    var result = Main( data , FirstScore )
+    // Initializing the Charts and Table
+    var result = Main_test( data , FirstScore )
     console.log( result )
 
 
-
+    // Listener for onchange Score-Selector
     scores_div += "<select>"+"\n";
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main( data , this.value )
+      var result = Main_test( data , this.value )
       console.log( result )
     });
 

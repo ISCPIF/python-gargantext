@@ -199,7 +199,7 @@ def test_ngrams(request , project_id, corpus_id ):
     ngrams_ids = Ngrams_Scores.keys()
 
     import math
-    occs_threshold = math.sqrt(Sum / len(ngrams_ids))
+    occs_threshold = min ( 10 , math.sqrt(Sum / len(ngrams_ids)) )
 
     Metrics = {
         "ngrams":[],
@@ -210,15 +210,18 @@ def test_ngrams(request , project_id, corpus_id ):
     query = session.query(Ngram).filter(Ngram.id.in_( ngrams_ids ))
     ngrams_data = query.all()
     for ngram in ngrams_data:
-    	if Ngrams_Scores[ngram.id]["scores"]["occ_uniq"] > occs_threshold:
+    	occ_uniq = Ngrams_Scores[ngram.id]["scores"]["occ_uniq"]
+    	if occ_uniq > occs_threshold:
 	        Ngrams_Scores[ngram.id]["name"] = ngram.terms
 	        Ngrams_Scores[ngram.id]["id"] = ngram.id
+	        Ngrams_Scores[ngram.id]["scores"]["tfidf"] = Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"] / occ_uniq
+	        del Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"]
 	        Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
 
 
 
     Metrics["scores"] = {
-    	"initial":"occ_sum",
+    	"initial":"occ_uniq",
     	"nb_docs":len(documents),
     	"orig_nb_ngrams":len(ngrams_ids),
     	"nb_ngrams":len(Metrics["ngrams"]),

@@ -951,8 +951,10 @@
     };
 
     this.clear = function() {
+
       settings.dataset.sorts = {};
       settings.dataset.sortsKeys.length = 0;
+      settings.dataset.queries = {};
       obj.$element.trigger('dynatable:sorts:cleared');
     };
 

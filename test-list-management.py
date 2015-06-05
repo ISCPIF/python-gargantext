@@ -73,10 +73,33 @@ for typeList in ['MiamList', 'StopList', 'MainList', 'GroupList']:
     #print(n[0][0])
     print('Test having list_id')
     print(n, listNgramIds(list_id=n[0][0])[:3])
+
+
+stop_list_id = listIds(user_id=user.id,
+                       corpus_id=corpus.id,
+                       typeList='StopList')[0][0]
+
+miam_list_id = listIds(user_id=user.id,
+                       corpus_id=corpus.id,
+                       typeList='MiamList')[0][0]
+
+
+print('Stop List', stop_list_id)
+print('Miam List', miam_list_id)
+
+ngram_id = listNgramIds(list_id=miam_list_id)[0][0]
+print('ngram_id', ngram_id)
+
+ngramList(do='add', ngram_ids=[ngram_id,], list_id=stop_list_id)
+
+
+
+
+
 #
-    print('Test having typeList and corpus.id')
-    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, user_id=user.id)[:3])
-#
+#    print('Test having typeList and corpus.id')
+#    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, user_id=user.id)[:3])
+##
 #    print('Test having typeList and corpus.id and doc_id')
 #    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, doc_id=doc_id, user_id=user.id)[:3])
 

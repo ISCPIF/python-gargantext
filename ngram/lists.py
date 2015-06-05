@@ -136,16 +136,22 @@ def ngramList(do=None, ngram_ids=[], list_id=None) :
                             )
 
             for ngram_id in ngram_ids:
+                # First we test to know if ngram exist in database already
+                #ngram = (session.query(Ngram).filter(Ngram.id == ngram_id).first()
                 # Need to be optimized with list of ids
-                ngram = (session.query(NodeNgram)
+                node_ngram = (session.query(NodeNgram)
                         .filter(NodeNgram.ngram_id == ngram_id)
                         .filter(NodeNgram.node_id  == list_id)
                         .first()
                         )
-                if do == 'add':
-                    session.add(ngram)
-                elif do == 'del':
-                    session.delete(ngram)
+                if node_ngram is None :
+                    node_ngram = NodeNgram(node_id = list_id,
+                                          ngram_id=ngram_id,
+                                          weight=1)
+                if do == 'add' :
+                    session.add(node_ngram)
+                elif do == 'del' :
+                    session.delete(node_ngram)
 
             session.commit()
             return(True)

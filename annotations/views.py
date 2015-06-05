@@ -237,5 +237,21 @@ class Ngram(APIView):
         doc_id = request.GET.get('docId')
         annotationDict = json.loads(request.POST.get("annotation"))
         print(annotationDict)
+
+        # There is 2 main actions:
+        # 1) add ngram to the miamList : this step is tricky if the ngram does
+        # exist yet, it is experimental in this case.
+        # But according to your function, you have the ngram_id already
+        # The function is:
+        ngramList(do='add', ngram_ids=[ngram_id,], list_id=list_id)
+        #ngramList(do='add', ngram_ids=[ngram_id,], list_id=list_id)
+        # Note : depending on the list, maybe I should adapt the function to
+        # delete from a list when added to a specific type of list
+
+        # 2) get the list of ngrams of one miamList: for this step see above
+        # Use the ngramList function in ngram.lists.py for that
+
+
+
         # TODO DB query
         return Response(annotationDict)

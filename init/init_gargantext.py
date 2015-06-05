@@ -62,6 +62,7 @@ for language in pycountry.languages:
 
 
 # Integration: users
+<<<<<<< Updated upstream
 
 print('Initialize users...')
 me = models.User.objects.get_or_create(username='alexandre')

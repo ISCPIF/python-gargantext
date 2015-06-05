@@ -13,7 +13,7 @@ from sqlalchemy.orm import aliased
 
 # from gargantext_web.db import Node, get_cursor
 
-def nodeList(user_id=None, corpus_id=None, typeList='MiamList'):
+def listIds(user_id=None, corpus_id=None, typeList='MiamList'):
     '''
     nodeList : get or create NodeList.
     nodeList :: Integer -> Integer -> String -> [Node]
@@ -26,7 +26,7 @@ def nodeList(user_id=None, corpus_id=None, typeList='MiamList'):
 
         # Nodes are either in root_list or user_list
         root_list = ['Stem', 'Lem']
-        user_list   = ['MiamList', 'StopList', 'MainList']
+        user_list   = ['MiamList', 'StopList', 'MainList', 'GroupList']
 
         if typeList in user_list:
             nodes = session.query(Node).filter(
@@ -58,19 +58,122 @@ def nodeList(user_id=None, corpus_id=None, typeList='MiamList'):
     else:
         print("Usage (Warning): Need corpus_id and user_id")
 
-def stopList(user_id=None, corpus_id=None,
+# Some functions to manage ngrams according to the lists
+
+def listNgramIds(list_id=None, typeList=None,
+                  corpus_id=None, doc_id=None, user_id=None):
+    '''
+    listNgramsIds :: Int | String, Int, Int, Int -> [(Int, String, Int)]
+    return has types: [(ngram_id, ngram_terms, occurrences)]
+
+    Return the list of tuples of
+    ngram_id and its occurrences according to node_id level.
+
+    list_id   : Node.id of the list expected
+    typeList  : needed if no list_id, use typeList such as 'MiamList' or 'StopList'
+    corpus_id : needed to get list_id
+    doc_id    : to get specific ngrams related to a document with Node.id=doc_id
+    user_id   : needed to create list if it does not exist
+    '''
+
+    if list_id is None :
+        if corpus_id is not None :
+            if typeList is not None :
+                if user_id is not None :
+                    try:
+                        list_id = listIds(user_id=user_id,
+                                    corpus_id=corpus_id,
+                                    typeList=typeList)[0][0]
+                    except:
+                        PrintException()
+                else:
+                    print('Need a user_id to create list if needed')
+                    sys.exit()
+            else:
+                print('Need a typeList parameter')
+                sys.exit()
+        else:
+            print('Need a node_id to take default list of type' + typeList)
+            sys.exit()
+    else:
+        ListNgram = aliased(NodeNgram)
+        query     = (session.query(Ngram.id, Ngram.terms, func.count())
+                            .join(ListNgram, ListNgram.ngram_id == Ngram.id)
+                            .filter(ListNgram.node_id == list_id)
+                            .group_by(Ngram.id)
+                    )
+        if doc_id is not None :
+            Doc      = aliased(Node)
+            DocNgram = aliased(NodeNgram)
+
+            query = (query
+                         .join(DocNgram, DocNgram.ngram_id == Ngram.id)
+                         .join(Doc, Doc.id == doc_id)
+                         .filter(DocNgram.node_id == Doc.id)
+                    )
+
+        return(query.all())
+
+
+def ngramList(do=None, ngram_ids=[], list_id=None) :
+    '''
+    ,gramList :: ([Int], Int, String) -> Bool
+    Do (delete | add) [ngram_id] (from | to) the list_id
+
+    options:
+        do        = String : action 'del' or 'add'
+        ngram_id  = [Int]  : list of Ngrams id (Ngrams.id)
+        list_id   = Int    : list id (Node.id)
+    '''
+    if do is None or ngram_ids == [] or list_id is None :
+        print('Need more options: do, ngram_id, list_id')
+        sys.exit(0)
+    else:
+        try:
+            node_type_id = (session.query(Node.type_id)
+                            .filter(Node.id == list_id)
+                            .first()
+                            )
+
+            for ngram_id in ngram_ids:
+                # Need to be optimized with list of ids
+                ngram = (session.query(NodeNgram)
+                        .filter(NodeNgram.ngram_id == ngram_id)
+                        .filter(NodeNgram.node_id  == list_id)
+                        .first()
+                        )
+                if do == 'add':
+                    session.add(ngram)
+                elif do == 'del':
+                    session.delete(ngram)
+
+            session.commit()
+            return(True)
+
+        except:
+            PrintException()
+            return(False)
+
+
+
+# Some functions to manage automatically the lists
+
+def doStopList(user_id=None, corpus_id=None,
             stop_id=None,
             reset=False, limit=None
              ):
     '''
-    Compute the stopList and returns its Node.id
+    Compute automatically the stopList and returns its Node.id
+    Algo: TODO tfidf according type of corpora
     '''
 
     if stop_id is None:
-        stop_id = nodeList(user_id=user_id,
+        stop_id = nodeListIds(user_id=user_id,
                             corpus_id=corpus_id,
-                            typeList='StopList')
+                            typeList='StopList')[0]
     # according to type of corpus, choose the right default stopList
+
+
 
 def doList(
             type_list='miam',
@@ -119,7 +222,7 @@ def doList(
 
         for list_ in list_dict.keys():
             if  list_dict[list_]['id'] is None:
-                list_dict[list_]['id'] = nodeList(user_id=user_id,
+                list_dict[list_]['id'] = nodeListIds(user_id=user_id,
                                         corpus_id=corpus_id,
                                         typeList=list_dict[list_]['type'])[0][0]
         # Delete previous List ?

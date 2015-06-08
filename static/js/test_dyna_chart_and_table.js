@@ -165,8 +165,8 @@ function transformContent2(rec_id) {
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
-    result["score"] = '<strike>'+elem["score"]+'</strike>'
-    result["name"] = '<strike>'+elem["name"]+'</strike>'
+    result["score"] = '<div class="to_delete"><i>'+elem["score"]+'</div>'
+    result["name"] = '<div class="to_delete"><i>'+elem["name"]+'</div>'
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
@@ -215,10 +215,13 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
     cp_rec = transformContent2(RecDict[record.id])
   }
   // grab the record's attribute for each column
+  // console.log("\tin ulWriter:")
+  // console.log(record)
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }
-  return '<tr>' + tr + '</tr>';
+  var data_id = RecDict[record.id]
+  return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
 function SelectAll( the_checkbox ) {
@@ -237,6 +240,8 @@ function SelectAll( the_checkbox ) {
 
 function Main_test( data , initial) {
 
+
+
     var DistributionDict = {}
     for(var i in DistributionDict)
         delete DistributionDict[i];
@@ -249,16 +254,15 @@ function Main_test( data , initial) {
 
     var arrayd3 = []
 
-
+    //  div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select'+"\n"
     $("#div-table").html("")
     $("#div-table").empty();
     var div_table = '<p align="right">'+"\n"
-      div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
+      div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
-      div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
-      div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select'+"\n"
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
       div_table += "\t"+'</thead>'+"\n"
       div_table += "\t"+'<tbody>'+"\n"
@@ -267,6 +271,14 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
+
+    var div_stats = "<p>";
+    for(var i in data.scores) {
+      var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
+      div_stats += i+": "+value+" | "
+    }
+    div_stats += "</p>"
+    $("#stats").html(div_stats)
 
 
     for(var i in data.ngrams) {
@@ -401,9 +413,9 @@ function Main_test( data , initial) {
       volumeChart.yAxis().ticks(5)
       volumeChart.render()
 
-      LineChart.filterAll();
-      volumeChart.filterAll();
-      dc.redrawAll();
+    LineChart.filterAll();
+    volumeChart.filterAll();
+    dc.redrawAll();
 
     MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
@@ -418,7 +430,24 @@ function Main_test( data , initial) {
                   _rowWriter: ulWriter
                   // _cellWriter: customCellWriter
                 }
+              })
+              .bind("dynatable:afterUpdate",  function(e, rows) {
+                $(e.target).children("tbody").children().each(function(i) {
+                   $(this).click(function(){
+                     console.log("do stuff here")
+                     var row_nodeid = $(this).data('stuff')
+                     console.log(row_nodeid)
+                     console.log( AjaxRecords[row_nodeid] )
+                     var elem = { "id":row_nodeid , "checked":!AjaxRecords[row_nodeid]["del"] }
+                     overRide(elem);
+
+                    });
+                });
               });
+              // .on('click', 'tr', function() {
+              //    console.log("do stuff here")
+              //    console.log(this)
+              // });
 
     // MyTable.data('dynatable').settings.dataset.records = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
@@ -428,6 +457,8 @@ function Main_test( data , initial) {
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
+
+
 
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();

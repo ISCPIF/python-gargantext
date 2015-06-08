@@ -35,6 +35,21 @@ th a {
   font-size: 0.9em;
 }
 
+tr:hover {
+  cursor: pointer;
+  color: #000;
+  font-weight: bold;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+  background-color: #F5A9A9;
+}
+
+.to_delete {
+  color:red; 
+  opacity: 0.5;
+}
+
 .dynatable-record-count {
   font-size: 0.7em;
 }
@@ -58,7 +73,7 @@ th a {
 
                         {% if corpus %}
                         <p>
-                        {{ number}} docs, Created on {{ corpus.date }} 
+                        Created on {{ corpus.date }} 
                         </p>
                         <div id="stats"></div>
                         {% endif %}

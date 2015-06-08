@@ -163,16 +163,19 @@ function transformContent2(rec_id) {
   var elem = AjaxRecords[rec_id];
   // pr("\t\t\t"+elem.date)
   var result = {}
-  if (elem["del"]) {
+    // console.log("element flag : "+elem["flag"])
+  if (elem["flag"]) {
+    // var the_flag = $("input[type='radio'][name='radios']:checked").val()
+    // // console.log("\tmark as: "+the_flag)
     result["id"] = elem["id"]
-    result["score"] = '<div class="to_delete"><i>'+elem["score"]+'</div>'
-    result["name"] = '<div class="to_delete"><i>'+elem["name"]+'</div>'
-    result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
+    result["score"] = '<div class="'+elem["flag"]+'"><i>'+elem["score"]+'</div>'
+    result["name"] = '<div class="'+elem["flag"]+'"><i>'+elem["name"]+'</div>'
+    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
     result["score"] = elem["score"]
     result["name"] = elem["name"]
-    result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
+    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   }
   return result;
 }
@@ -180,10 +183,10 @@ function transformContent2(rec_id) {
 function overRide(elem) {
   var id = elem.id
   var val = elem.checked
-  // console.log("striking: "+id+" | "+val)
-  // console.log(AjaxRecords[id])
-  // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
-  AjaxRecords[id]["del"] = val;
+  var current_flag = $("input[type='radio'][name='radios']:checked").val()
+  console.log("striking: "+id+" | val_elem: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
+  console.log(AjaxRecords[id])
+  AjaxRecords[id]["flag"] = (current_flag==AjaxRecords[id]["flag"])?false:current_flag;
 
   if(val) Garbage[id] = true;
   else delete Garbage[id];
@@ -194,12 +197,18 @@ function overRide(elem) {
 }
 
 function transformContent(rec_id , header , content) {
-  if(header=="del") {
+  if(header=="flag") {
     // pr("\t\ttransformContent1: "+rec_id)
     if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
     if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   } else return content;
 }
+
+function DeactivateSelectAll() {
+  if( $("#multiple_selection").length>0 )
+    $("#multiple_selection")[0].checked = false;
+}
+
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
@@ -228,12 +237,14 @@ function SelectAll( the_checkbox ) {
   console.log("")
   console.log(the_checkbox.id)
   console.log(the_checkbox.checked)
-  $( ":checkbox" ).each(function () {
-    if(this.id != the_checkbox.id) {
-      AjaxRecords[this.id]["del"] = the_checkbox.checked
-        // $(this).trigger('click');
-      }
-      // this.checked=the_checkbox.checked;
+  var the_flag = $("input[type='radio'][name='radios']:checked").val()
+  $("tbody tr").each(function (i, row) {
+      var id = $(row).data('stuff')
+    // // if(this.id != the_checkbox.id) {
+      AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;//the_checkbox.checked
+    //     // $(this).trigger('click');
+    //   // }
+    //   // this.checked=the_checkbox.checked;
   });
   MyTable.data('dynatable').dom.update();
 }
@@ -262,7 +273,6 @@ function Main_test( data , initial) {
       div_table += "\t"+'<thead>'+"\n"
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
-      // div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
       div_table += "\t"+'</thead>'+"\n"
       div_table += "\t"+'<tbody>'+"\n"
@@ -293,7 +303,7 @@ function Main_test( data , initial) {
         "id" : le_ngram.id,
         "name": le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
-        "del":false
+        "flag":false
       }
       AjaxRecords.push(node_info)
 
@@ -434,12 +444,12 @@ function Main_test( data , initial) {
               .bind("dynatable:afterUpdate",  function(e, rows) {
                 $(e.target).children("tbody").children().each(function(i) {
                    $(this).click(function(){
-                     console.log("do stuff here")
+                     // console.log("do stuff here")
                      var row_nodeid = $(this).data('stuff')
-                     console.log(row_nodeid)
-                     console.log( AjaxRecords[row_nodeid] )
-                     var elem = { "id":row_nodeid , "checked":!AjaxRecords[row_nodeid]["del"] }
-                     overRide(elem);
+                     // console.log(row_nodeid)
+                     // console.log( AjaxRecords[row_nodeid] )
+                     var elem = { "id":row_nodeid , "checked":false }
+                     overRide(elem); //Select one row -> select one ngram
 
                     });
                 });
@@ -467,6 +477,18 @@ function Main_test( data , initial) {
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
+
+
+    var some_div = "";
+    some_div += '<input type="radio" id="radio1" name="radios" onclick="DeactivateSelectAll();" value="to_delete" checked>'
+    some_div += '<label style="color:red;" for="radio1">Delete</label>'
+    some_div += '<input type="radio" id="radio2" onclick="DeactivateSelectAll();" value="to_keep" name="radios">'
+    some_div += '<label style="color:green;" for="radio2">Keep</label>'
+    some_div += '<input type="radio" id="radio3" onclick="DeactivateSelectAll();" value="to_group" name="radios">'
+    some_div += '<label style="color:blue;" for="radio3">Group</label>'
+    var select_all = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'
+    $(".imadiv").html('<div style="float: left; text-align:left;">'+some_div+select_all+'</div><br>');
+
 
     return "OK"
 }

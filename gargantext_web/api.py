@@ -11,7 +11,6 @@ from gargantext_web.views import move_to_trash
 from gargantext_web.db import *
 from node import models
 
-
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 
@@ -44,18 +43,15 @@ _ngrams_order_columns = {
 }
 
 
-
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException as _APIException
 
-
 class APIException(_APIException):
     def __init__(self, message, code=500):
         self.status_code = code
         self.detail = message
-
 
 
 _operators = {
@@ -71,13 +67,13 @@ _operators = {
 }
 
 from rest_framework.decorators import api_view
+
 @api_view(('GET',))
 def Root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
         'snippets': reverse('snippet-list', request=request, format=format)
     })
-
 
 class NodesChildrenNgrams(APIView):
 
@@ -120,7 +116,6 @@ class NodesChildrenNgrams(APIView):
                 for ngram in ngrams_query[offset : offset+limit]
             ],
         })
-
 
 class NodesChildrenDuplicates(APIView):
 
@@ -210,8 +205,6 @@ class NodesChildrenDuplicates(APIView):
             'deleted': count
         })
 
-
-
 class NodesChildrenMetatadata(APIView):
 
     def get(self, request, node_id):
@@ -270,8 +263,6 @@ class NodesChildrenMetatadata(APIView):
         return JsonHttpResponse({
             'data': collection,
         })
-
-
 
 class NodesChildrenQueries(APIView):
 
@@ -551,8 +542,6 @@ class NodesChildrenQueries(APIView):
             "results": results,
         }, 201)
 
-
-
 class NodesList(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
@@ -572,7 +561,6 @@ class NodesList(APIView):
             node._asdict()
             for node in query.all()
         ]})
-
 
 class Nodes(APIView):
 
@@ -608,7 +596,6 @@ class Nodes(APIView):
 
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
-
 
 class CorpusController:
 
@@ -665,3 +652,39 @@ class CorpusController:
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
+
+
+
+from ngram.lists import listIds, ngramList
+
+class ListManagement(APIView):
+    #authentication_classes = (SessionAuthentication, BasicAuthentication)
+    # TODO: Be carefull need authentication!
+
+    def get(self, request, corpus_id):
+        user_id = session.query(User.id).filter(User.username==str(request.user)).first()[0]
+
+        lists = dict()
+        for list_type in ['MiamList', 'StopList']:
+            list_id = list()
+            list_id = listIds(user_id=user_id, corpus_id=int(corpus_id), typeList=list_type)
+            lists[list_type] = int(list_id[0][0])
+#            lists[list_type]['id']['name'] = r[0][1]
+
+        return JsonHttpResponse({
+        'MiamList' : lists['MiamList'],
+        'StopList' : lists['StopList']
+        })
+
+    def post(self, request, corpus_id):
+        list_id   = request.POST.get('list_id')
+        ngram_ids = request.POST.get('ngram_ids')
+        ngramList(do='add', ngram_ids=ngram_ids, list_id=list_id)
+
+    def delete(self, request, corpus_id):
+        list_id   = request.POST.get('list_id')
+        ngram_ids = request.POST.get('ngram_ids')
+        ngramList(do='del', ngram_ids=ngram_ids, list_id=list_id)
+
+
+

@@ -62,6 +62,8 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
     # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
 
+    url(r'^api/corpus/(\d+)/lists$', gargantext_web.api.ListManagement.as_view()),
+
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
 
     url(r'^annotations/', include(annotations_urls)),

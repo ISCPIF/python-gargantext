@@ -264,9 +264,9 @@
 		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 		      },
 		      success: function(data) {
-				console.log("in doTheQuery()")
+				console.log("in doTheQuery() Ajax.Success:")
 		        console.log(data)
-		        location.reload();
+		        //location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in doTheQuery(). Data not found");
@@ -502,7 +502,7 @@
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
 		        console.log(data)
-		        location.reload();
+		        //location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

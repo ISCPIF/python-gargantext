@@ -10,5 +10,6 @@ parsers = {
         'Europress (French)'                : EuropressFileParser,
         'Europress (English)'               : EuropressFileParser,
         'CSVParser'                : CSVParser,
+        'ISTex'                : ISTex,
     }
 

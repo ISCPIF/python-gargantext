@@ -282,8 +282,13 @@
 				$("#submit_thing").prop('onclick',null);
 
 				var theType = $("#id_type option:selected").html();
+				console.log("consoling the typeeee: ")
+				console.log(theType)
 				if(theType=="Pubmed (xml format)") doTheQuery();
-				if(theType=="istex") {
+				if(theType=="ISTex") {
+					var origQuery = $("#id_name").val()
+					console.log("printing the results:")
+					console.log(origQuery)
 					testISTEX(origQuery.replace(" ","+"),1000)
 				}
 			}
@@ -354,7 +359,7 @@
 			    });	
 			}
 
-			if(theType=="istext") {
+			if(theType=="ISTex") {
 				console.log(window.location.origin+"tests/istextquery")
 			    $.ajax({
 				  // contentType: "application/json",
@@ -365,8 +370,7 @@
 			        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 			      },
 			      success: function(data) {
-					console.log("in getGlobalResults")
-			        console.log(data)
+					console.log("in getGlobalResults: Ajax(ISTex)")
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
@@ -374,10 +378,10 @@
 
 		            thequeries = data
 		            var N=data.length,k=0;
-		            console.log("N: "+N)
 		            // for(var i in thequeries) N += thequeries[i].count
 		            if( N>1) {
 		            	var total = JSON.parse(data).total
+		            	console.log("N: "+total)
 		            	$("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+total+" publications.</i><br>")
 		            	$('#submit_thing').prop('disabled', false);
 		            } else {
@@ -422,7 +426,8 @@
 
 				$( "#id_name" ).on('input',function(e){
 					console.log($(this).val())
-					if(theType=="Pubmed (xml format)") testPUBMED( $(this).val() )
+					if(theType=="Pubmed (xml format)") 
+						testPUBMED( $(this).val() )
 				}); 
 			}
 		}
@@ -430,7 +435,7 @@
 		//CSS events for changing the Select element
 		function CustomForSelect( selected ) {
 			// show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-			if(selected=="Pubmed (xml format)" || selected=="istext") {
+			if(selected=="Pubmed (xml format)" || selected=="ISTex") {
 			// if(selected=="pubmed") {
 				console.log("show the button for: "+selected)
 				$("#pubmedcrawl").css("visibility", "visible"); 
@@ -497,7 +502,7 @@
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
 		        console.log(data)
-		        // location.reload();
+		        location.reload();
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

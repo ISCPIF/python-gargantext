@@ -302,9 +302,19 @@ def newpaginatorJSON(request , corpus_id):
     # project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
-    documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
+    user_id = request.user.id
+    # documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
+    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == type_document_id ).all() 
 
+    # for doc in documents:
+    #     print(doc.name)
+    #     if "publication_date" in doc.hyperdata:
+    #         print(doc.hyperdata["publication_date"])
+    #     else: print ("No date")
+    #     print(" - - - - - -   -")
+
+    # print(" = = = = = = = = = = = = = = = == = = = ")
     filtered_docs = []
     for doc in documents:
         if "publication_date" in doc.hyperdata:

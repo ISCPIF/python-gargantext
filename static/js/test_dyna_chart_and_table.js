@@ -211,20 +211,20 @@ function transformContent2(rec_id) {
 function overRide(elem) {
   var id = elem.id
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
-  var val = elem.checked
   var this_newflag = (current_flag==AjaxRecords[id]["flag"])?false:current_flag
 
   console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
   console.log("\t so the new flag is: "+this_newflag)
   
 
-  if(this_newflag)
-    FlagsBuffer[this_newflag][id] = true;
-  else 
-    delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
+  // if(this_newflag)
+  //   FlagsBuffer[this_newflag][id] = true;
+  // else 
+  //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
 
 
-  AjaxRecords[id]["flag"] = this_newflag;
+
+  AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
 
   var sum__selected_elems = 0;
   for(var i in FlagsBuffer)
@@ -255,8 +255,52 @@ function transformContent(rec_id , header , content) {
 function DeactivateSelectAll() {
   if( $("#multiple_selection").length>0 )
     $("#multiple_selection")[0].checked = false;
+
+  if( Object.keys(FlagsBuffer["to_group"]).length ){
+
+
+    $("#savemodal").modal("show").css({
+        'margin-top': function () { //vertical centering
+            console.log($(".modal-content").height())
+            return ($(this).height() / 2);
+        }
+    });
+
+    console.log("OH OH")
+    console.log("There are some nodes in group array!:")
+    // $("#to_group").html( Object.keys(FlagsBuffer["to_group"]).join(" , ") );
+    var labels = []
+    for (var i in FlagsBuffer["to_group"]){
+      var fake_id = i
+      console.log( AjaxRecords[fake_id] )
+      labels.push(AjaxRecords[fake_id].name)
+    //   $("#to_group").htm
+    }
+
+    $("#to_group").html( '<font color="blue">' + labels.join(" , ") + '</div>' );
+  }
 }
 
+
+function Mark_NGram( ngram_id , old_flag , new_flag ) {
+  if(new_flag){
+    for(var f in FlagsBuffer) {
+      if( new_flag==f )
+        FlagsBuffer[f][ngram_id] = true;
+      else 
+        delete FlagsBuffer[f][ngram_id];
+    }
+  } else {
+    delete FlagsBuffer[ old_flag ][ngram_id];
+  }
+  return new_flag;
+}
+
+function GroupNGrams() {
+    for (var i in FlagsBuffer["to_group"]){
+      console.log( AjaxRecords[i] )
+    }  
+}
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
@@ -282,10 +326,21 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 function SelectAll( the_checkbox ) {
-  var the_flag = $("input[type='radio'][name='radios']:checked").val()
+  var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
-      AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;
+      // AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;
+      
+
+      var this_newflag = (the_checkbox.checked)?current_flag:false;
+
+      // console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
+      // console.log("\t so the new flag is: "+this_newflag)
+
+      AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
+
+
+
   });
   MyTable.data('dynatable').dom.update();
 }
@@ -301,6 +356,8 @@ $("#Clean_All").click(function(){
   for(var i in FlagsBuffer)
     for(var j in FlagsBuffer[i])
       delete FlagsBuffer[i][j];
+
+  $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 
 });
 

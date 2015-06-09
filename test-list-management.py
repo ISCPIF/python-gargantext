@@ -36,9 +36,6 @@ if project is None:
 corpus = session.query(Node).filter(Node.parent_id == project.id,
                                     Node.type_id   == cache.NodeType['Corpus'].id).first()
 
-doc_id = session.query(Node.id).filter(Node.parent_id == corpus.id,
-                                       Node.type_id   == cache.NodeType['Document'].id).all()[1]
-
 if corpus is None:
     corpus = Node(
         parent_id = project.id,
@@ -59,6 +56,9 @@ if corpus is None:
     extract_ngrams(corpus, ('title', 'abstract'))
     compute_tfidf(corpus)
 
+doc_id = session.query(Node.id).filter(Node.parent_id == corpus.id,
+                                       Node.type_id   == cache.NodeType['Document'].id).all()[1]
+
 print('Miam list', listIds(typeList='MiamList', corpus_id=corpus.id, user_id=user.id)[0][0])
 
 # Stemming the corpus
@@ -66,17 +66,40 @@ print('Working on corpus:', corpus.id, corpus.name)
 stem_id = stem_corpus(corpus_id=corpus.id)
 print('Stem Node.id is', stem_id)
 
-for typeList in ['MiamList', 'StopList', 'MainList', 'GroupList']:
+for typeList in ['MiamList', 'StopList', 'MainList', 'Group']:
     n = listIds(user_id=user.id,
                            corpus_id=corpus.id,
                            typeList=typeList)
     #print(n[0][0])
     print('Test having list_id')
     print(n, listNgramIds(list_id=n[0][0])[:3])
+
+
+stop_list_id = listIds(user_id=user.id,
+                       corpus_id=corpus.id,
+                       typeList='StopList')[0][0]
+
+miam_list_id = listIds(user_id=user.id,
+                       corpus_id=corpus.id,
+                       typeList='MiamList')[0][0]
+
+
+print('Stop List', stop_list_id)
+print('Miam List', miam_list_id)
+
+ngram_id = listNgramIds(list_id=miam_list_id)[0][0]
+print('ngram_id', ngram_id)
+
+ngramList(do='add', ngram_ids=[ngram_id,], list_id=stop_list_id)
+
+
+
+
+
 #
-    print('Test having typeList and corpus.id')
-    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, user_id=user.id)[:3])
-#
+#    print('Test having typeList and corpus.id')
+#    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, user_id=user.id)[:3])
+##
 #    print('Test having typeList and corpus.id and doc_id')
 #    print(n, listNgramIds(typeList=typeList, corpus_id=corpus.id, doc_id=doc_id, user_id=user.id)[:3])
 

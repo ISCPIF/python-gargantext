@@ -548,7 +548,11 @@ def corpus_csv(request, project_id, corpus_id):
     type_document_id = cache.NodeType['Document'].id
     documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
 
-    keys = list(documents[0].hyperdata.keys())
+    keys_list = list()
+    for d in documents[:10]:
+        keys_list += d.hyperdata.keys()
+    keys = list(set(keys_list))
+
     writer.writerow(keys)
 
     for doc in documents:

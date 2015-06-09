@@ -206,7 +206,10 @@
   };
 
   processAll = function(skipPushState) {
-    // console.log("i am heeeeere")
+    
+    if( $("#multiple_selection").length>0 )
+      $("#multiple_selection")[0].checked = false;
+
     var data = {};
 
     this.$element.trigger('dynatable:beforeProcess', data);
@@ -623,28 +626,32 @@
     // For really advanced sorting,
     // see http://james.padolsey.com/javascript/sorting-elements-with-jquery/
     this.sort = function() {
-      var sort = [].sort,
-          sorts = settings.dataset.sorts,
-          sortsKeys = settings.dataset.sortsKeys,
-          sortTypes = settings.dataset.sortTypes;
+      var sort = [].sort;
+      var sorts = settings.dataset.sorts;
+      var sortsKeys = settings.dataset.sortsKeys;
+      var sortTypes = settings.dataset.sortTypes;
 
       var sortFunction = function(a, b) {
-        // console.log(a)
-        // console.log(b)
-        // console.log(" - -- - - - ")
         var comparison;
         if ($.isEmptyObject(sorts)) {
           comparison = obj.sorts.functions['originalPlacement'](a, b);
         } else {
+          // // console.log( $.isEmptyObject(sorts) )
+          // // console.log(sortsKeys)
+          // console.log("( "+a.name+"|"+a.score+" , "+b.name+"|"+a.score+" )")
           for (var i = 0, len = sortsKeys.length; i < len; i++) {
-            var attr = sortsKeys[i],
-                direction = sorts[attr],
-                sortType = sortTypes[attr] || obj.sorts.guessType(a, b, attr);
-            comparison = obj.sorts.functions[sortType](a, b, attr, direction);
-            // Don't need to sort any further unless this sort is a tie between a and b,
-            // so break the for loop unless tied
+            var attr = sortsKeys[i];
+            var direction = sorts[attr];
+            var sortType = sortTypes[attr] || obj.sorts.guessType(a, b, attr);
+            var comparison = obj.sorts.functions[sortType](a, b, attr, direction);
+            // // console.log("a: "+a+" | b: "+b)
+
+            // console.log("\tattr: "+attr+" | direction: "+direction+" | sortType: "+sortType+" | comparison: "+comparison)
+            // // Don't need to sort any further unless this sort is a tie between a and b,
+            // // so break the for loop unless tied
             if (comparison !== 0) { break; }
           }
+          // console.log(" - -- - - - ")
         }
         return comparison;
       }
@@ -944,8 +951,10 @@
     };
 
     this.clear = function() {
+
       settings.dataset.sorts = {};
       settings.dataset.sortsKeys.length = 0;
+      settings.dataset.queries = {};
       obj.$element.trigger('dynatable:sorts:cleared');
     };
 

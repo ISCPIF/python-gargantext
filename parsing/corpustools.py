@@ -102,10 +102,17 @@ def parse_resources(corpus, user=None, user_id=None):
         .filter(Node_Resource.parsed == False)
     )
     # make a new node for every parsed document of the corpus
+    print("HERE MOFOs")
+    print(resources_query)
     dbg.show('analyze documents')
     nodes = list()
     for resource, resourcetype in resources_query:
+        # print("resource: ",resource)
+        # print("resourcetype:",resourcetype)
+        # print(resourcetype.name)
+        # print(resource.file)
         parser = parsers[resourcetype.name]
+        # print(parser.parse(resource.file))
         for hyperdata_dict in parser.parse(resource.file):
             # retrieve language ID from hyperdata
             if 'language_iso2' in hyperdata_dict:
@@ -116,6 +123,7 @@ def parse_resources(corpus, user=None, user_id=None):
             else:
                 language_id = None
             # create new node
+            # print(hyperdata_dict.get('title', '')[:200])
             node = Node(
                 name = hyperdata_dict.get('title', '')[:200],
                 parent_id = corpus_id,
@@ -154,6 +162,7 @@ def parse_resources(corpus, user=None, user_id=None):
                 hyperdata.id,
                 hyperdata_value,
             ))
+
     for key, values in node_hyperdata_lists.items():
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
     # mark the corpus as parsed

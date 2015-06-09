@@ -4,4 +4,5 @@ from .JstorFileParser import JstorFileParser
 from .ZoteroFileParser import ZoteroFileParser
 from .PubmedFileParser import PubmedFileParser
 from .EuropressFileParser import EuropressFileParser
-from .ISText import ISText
+from .ISTex import ISTex
+from .CSVParser import CSVParser

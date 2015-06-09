@@ -159,7 +159,7 @@ def project(request, project_id):
             # let's start the workflow
             try:
                 if DEBUG is False:
-                    apply_workflow.apply_async((corpus.id,),)
+                    apply_workflow((corpus.id,),)
                 else:
                    #apply_workflow(corpus)
                    thread = Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)

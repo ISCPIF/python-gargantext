@@ -9,7 +9,7 @@ parsers = {
         #'Europress'                        : EuropressFileParser,
         'Europress (French)'                : EuropressFileParser,
         'Europress (English)'               : EuropressFileParser,
-        'CSVParser'                : CSVParser,
-        'ISTex'                : ISTex,
+        'CSVParser'                         : CSVParser,
+        'ISTex'                             : ISTex,
     }
 

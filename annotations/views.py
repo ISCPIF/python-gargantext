@@ -10,28 +10,78 @@ from rest_framework.renderers import JSONRenderer
 
 from node.models import Node
 from gargantext_web.db import *
-
 from ngram.lists import listIds, listNgramIds, ngramList
+
 import sqlalchemy
-from sqlalchemy.sql import func
-from sqlalchemy import desc, asc, or_, and_, Date, cast, select
-from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 
 
-
-def demo(request):
+def main(request, project_id, corpus_id, document_id):
     """Demo page, temporary"""
-    return render_to_response('annotations/demo.html', {
-        'api_url': urljoin(request.get_host(), '/annotations/')
+    return render_to_response('annotations/main.html', {
+        # TODO use reverse()
+        'api_url': urljoin(request.get_host(), '/annotations/'),
+        'nodes_api_url': urljoin(request.get_host(), '/api/')
     }, context_instance=RequestContext(request))
 
 
-# This class below is a duplicate with the class Nodes in
-# /srv/gargantext/gargantext_web/api.py
-# All information you need from Nodes in api.py is in hyperdata
-# You may modify api.py (keeping compatibility) for your own needs
-# See in urls the url pattern to use
+class NgramList(APIView):
+    """Read and Write Annotations"""
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, corpus_id, doc_id):
+        """Get All for a doc id"""
+        # ngrams of list_id of corpus_id:
+        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
+        data = { '%s' % corpus_id : { '%s' % doc_id : [
+            {
+                'uuid': ngram_id,
+                'text': ngram_text,
+                'occurrences': ngram_occurrences,
+                'list_id': list_id,
+            }
+            for ngram_id, ngram_text, ngram_occurrences, list_id in doc_ngram_list]
+        }}
+        return Response(data)
+
+
+class Ngram(APIView):
+    """Action on one Ngram in one list"""
+    def post(self, request, list_id, ngram_id):
+        """
+        Add a ngram in a list
+        """
+        ngramList(do='add', ngram_ids=[ngram_id], list_id=list_id)
+
+    def delete(self, request, list_id, ngram_id):
+        """
+        Remove a ngram from a list
+        """
+        ngramList(do='del', ngram_ids=[ngram_id], list_id=list_id)
+
+
+class CorpusList(APIView):
+    #authentication_classes = (SessionAuthentication, BasicAuthentication)
+    # TODO: Be carefull need authentication!
+
+    def get(self, request, corpus_id):
+        """
+        Return all lists associated with a corpus
+        """
+        user_id = session.query(User.id).filter(User.username==str(request.user)).first()[0]
+        lists = dict()
+
+        for list_type in ['MiamList', 'StopList']:
+            list_id = list()
+            list_id = listIds(user_id=user_id, corpus_id=int(corpus_id), typeList=list_type)
+            lists[list_type] = int(list_id[0][0])
+#            lists[list_type]['id']['name'] = r[0][1]
+
+        return JsonHttpResponse({
+            'MiamList' : lists['MiamList'],
+            'StopList' : lists['StopList']
+         })
+
 class Document(APIView):
     """Read-only Document"""
     renderer_classes = (JSONRenderer,)
@@ -39,7 +89,9 @@ class Document(APIView):
     def get(self, request, doc_id):
         """Document by ID"""
         node = session.query(Node).filter(Node.id == doc_id).first()
-        # TODO 404 if not Document or ID not found
+        if node is None:
+            raise APIException('This node does not exist', 404)
+
         data = {
             'title': node.hyperdata.get('title'),
             'authors': node.hyperdata.get('authors'),
@@ -53,205 +105,3 @@ class Document(APIView):
         }
         # return formatted result
         return Response(data)
-
-class NgramList(APIView):
-    """Read and Write Annotations"""
-    renderer_classes = (JSONRenderer,)
-
-    def get(self, request, list_id):
-        """Get All for on List ID"""
-        doc_id = request.GET.get('docId')
-        # TODO DB query
-        # Example with 'MiamList', same with 'StopList'
-        corpus_id = session.query(Node.parent_id).filter(Node.id == doc_id).first()
-        miamlist_ids = listIds(user_id=request.user.id,
-                              corpus_id=corpus_id,
-                              typeList='MiamList')
-
-        miamlist_id, miamlist_name = miamlist_ids[0]
-
-        # ngrams of list_id of corpus_id:
-        corpus_ngram_miam_list = listNgramIds(list_id=miamList_id)
-
-        # ngrams of list_id of corpus_id:
-        doc_ngram_miam_list = listNgramIds(list_id=miamList_id, doc_id=doc_id)
-
-        # now you can model your dict as you want (for doc or corpus level):
-        ngram_id, ngram_text, ngram_occurrences = doc_ngram_miam_list[0]
-
-        data = { '%s' % list_id : { '%s' % doc_id : [
-            {
-                'uuid': '1',
-                'text': 'what',
-                'category': 'stoplist',
-                'level': 'global',
-                'occurrences': 1
-            },
-            {
-                'uuid': '2',
-                'text': 'rotations',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '3',
-                'text': 'etsy',
-                'category': 'stoplist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '4',
-                'text': 'employees',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '5',
-                'text': '2010',
-                'category': 'stoplist',
-                'level': 'global',
-                'occurrences': 1
-            },
-            {
-                'uuid': '6',
-                'text': 'stoplist keyword',
-                'category': 'stoplist',
-                'level': 'local',
-                'occurrences': 255
-            },
-            {
-                'uuid': '7',
-                'text': 'another stoplist keyword',
-                'category': 'stoplist',
-                'level': 'local',
-                'occurrences': 23
-            },
-            {
-                'uuid': '8',
-                'text': 'dmc-gm5',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '9',
-                'text': 'scale of the GM-series',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '10',
-                'text': 'engineering rotations',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '11',
-                'text': 'pixel electronic viewfinder',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '12',
-                'text': 'viewfinder',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '13',
-                'text': 'pixel electronic',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '14',
-                'text': 'GM',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '15',
-                'text': 'support rotations',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '16',
-                'text': 'miamlist keyword',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '17',
-                'text': 'miamlist keyword',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 1
-            },
-            {
-                'uuid': '18',
-                'text': 'another miamlist keyword',
-                'category': 'miamlist',
-                'level': 'local',
-                'occurrences': 3
-            }
-        ]}}
-        return Response(data)
-
-
-class Ngram(APIView):
-    """Read and Write Annotations"""
-    renderer_classes = (JSONRenderer,)
-
-    def delete(self, request, list_id, ngram_id):
-        """
-        TODO Delete one annotation by id
-        associated with one Document (remove edge)
-        """
-        doc_id = request.GET.get('docId')
-        annotationId = request.GET.get("annotationId")
-        print(annotationDict)
-        # TODO DB query
-        # Use the ngramList function in ngram.lists.py for that
-        # It can return True or False
-        ngramList(do='del', ngram_ids=[ngram_id,], list_id=list_id)
-
-        return Response({})
-
-    def post(self, request, list_id, ngram_id):
-        """
-        TODO update one annotation (document level)
-        associated with one Document (add edge)
-        """
-        doc_id = request.GET.get('docId')
-        annotationDict = json.loads(request.POST.get("annotation"))
-        print(annotationDict)
-
-        # There is 2 main actions:
-        # 1) add ngram to the miamList : this step is tricky if the ngram does
-        # exist yet, it is experimental in this case.
-        # But according to your function, you have the ngram_id already
-        # The function is:
-        ngramList(do='add', ngram_ids=[ngram_id,], list_id=list_id)
-        #ngramList(do='add', ngram_ids=[ngram_id,], list_id=list_id)
-        # Note : depending on the list, maybe I should adapt the function to
-        # delete from a list when added to a specific type of list
-
-        # 2) get the list of ngrams of one miamList: for this step see above
-        # Use the ngramList function in ngram.lists.py for that
-
-
-
-        # TODO DB query
-        return Response(annotationDict)

@@ -562,6 +562,7 @@ class NodesList(APIView):
             for node in query.all()
         ]})
 
+
 class Nodes(APIView):
 
     def get(self, request, node_id):
@@ -652,39 +653,3 @@ class CorpusController:
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
-
-
-
-from ngram.lists import listIds, ngramList
-
-class ListManagement(APIView):
-    #authentication_classes = (SessionAuthentication, BasicAuthentication)
-    # TODO: Be carefull need authentication!
-
-    def get(self, request, corpus_id):
-        user_id = session.query(User.id).filter(User.username==str(request.user)).first()[0]
-
-        lists = dict()
-        for list_type in ['MiamList', 'StopList']:
-            list_id = list()
-            list_id = listIds(user_id=user_id, corpus_id=int(corpus_id), typeList=list_type)
-            lists[list_type] = int(list_id[0][0])
-#            lists[list_type]['id']['name'] = r[0][1]
-
-        return JsonHttpResponse({
-        'MiamList' : lists['MiamList'],
-        'StopList' : lists['StopList']
-        })
-
-    def post(self, request, corpus_id):
-        list_id   = request.POST.get('list_id')
-        ngram_ids = request.POST.get('ngram_ids')
-        ngramList(do='add', ngram_ids=ngram_ids, list_id=list_id)
-
-    def delete(self, request, corpus_id):
-        list_id   = request.POST.get('list_id')
-        ngram_ids = request.POST.get('ngram_ids')
-        ngramList(do='del', ngram_ids=ngram_ids, list_id=list_id)
-
-
-

@@ -39,9 +39,9 @@ for name_, type_ in hyperdata.items():
                          ).first()
                  )
 
-    if hyperdata is None:
-        print('Hyper Data' + name + 'does not existe, creating it')
-        hyperdata = Hyperdata(name=name, type=type_name)
+    if data is None:
+        print('Hyper Data' + name_ + 'does not existe, creating it')
+        hyperdata = Hyperdata(name=name_, type=type_)
         session.add(hyperdata)
 
 session.commit()

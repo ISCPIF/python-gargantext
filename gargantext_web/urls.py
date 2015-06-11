@@ -5,6 +5,8 @@ from django.contrib.auth.views import login
 
 from gargantext_web import views, views_optimized
 from annotations import urls as annotations_urls
+from annotations.views import main as annotations_main_view
+
 import gargantext_web.api
 import scrappers.scrap_pubmed.views as pubmedscrapper
 
@@ -39,6 +41,11 @@ urlpatterns = patterns('',
 
     # Corpus management
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
+    # annotations App
+    url(r'^project/(\d+)/corpus/(\d+)/document/(\d+)/$', annotations_main_view),
+    url(r'^annotations/', include(annotations_urls)),
+
+    #
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
 
@@ -63,12 +70,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
     # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
-
-    url(r'^api/corpus/(\d+)/lists$', gargantext_web.api.ListManagement.as_view()),
-
     url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
-
-    url(r'^annotations/', include(annotations_urls)),
 
     # Provisory tests
     url(r'^ngrams$', views.ngrams),  # to be removed
@@ -100,12 +102,12 @@ if settings.DEBUG:
 
 if settings.MAINTENANCE:
     urlpatterns = patterns('',
-    url(r'^img/logo.svg$', views.logo),
-    url(r'^css/bootstrap.css$', views.css),
+        url(r'^img/logo.svg$', views.logo),
+        url(r'^css/bootstrap.css$', views.css),
 
-    url(r'^$', views.home_view),
-    url(r'^about/', views.get_about),
-    url(r'^admin/', include(admin.site.urls)),
+        url(r'^$', views.home_view),
+        url(r'^about/', views.get_about),
+        url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^.*', views.get_maintenance),
+        url(r'^.*', views.get_maintenance),
     )

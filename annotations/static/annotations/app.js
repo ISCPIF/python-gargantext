@@ -382,9 +382,9 @@
         $rootScope.abstract_text = data.abstract_text;
         // GET the annotations
         $rootScope.annotationsResource = NgramListHttpService.get(
-          {'listId': $rootScope.listId, 'docId': $rootScope.docId}
+          {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
         ).$promise.then(function(data) {
-          $rootScope.annotations = data[$rootScope.listId.toString()][$rootScope.docId.toString()];
+          $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
         });
       });
     //});
@@ -399,9 +399,10 @@
 
   window.annotationsApp.run(function ($rootScope) {
     /* GET the document node and all the annotations in the list associated */
-    // TODO debug
-    $rootScope.docId = 4;
-    $rootScope.listId = 1;
+    var path = window.location.pathname.match(/\/project\/(.*)\/corpus\/(.*)\/document\/(.*)\//)
+    $rootScope.projectId = path[1];
+    $rootScope.corpusId = path[2];
+    $rootScope.docId = path[3];
   });
 
 })(window);

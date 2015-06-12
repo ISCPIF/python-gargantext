@@ -1,4 +1,3 @@
-import sys
 from admin.utils import PrintException
 
 from gargantext_web.db import NodeNgram
@@ -167,10 +166,7 @@ def ngramList(do=None, ngram_ids=None, list_id=None) :
 
 # Some functions to manage automatically the lists
 
-def doStopList(user_id=None, corpus_id=None,
-            stop_id=None,
-            reset=False, limit=None
-             ):
+def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=None):
     '''
     Compute automatically the stopList and returns its Node.id
     Algo: TODO tfidf according type of corpora
@@ -183,9 +179,37 @@ def doStopList(user_id=None, corpus_id=None,
     # according to type of corpus, choose the right default stopList
 
 
+def ngrams2miam(user_id=None, corpus_id=None):
+    '''
+    Create a Miam List only
+    '''
+
+    miam_id = listIds(typeList='MiamList', user_id=user_id, corpus_id=corpus_id)[0][0]
+    print(miam_id)
+
+
+    query = (session.query(
+                literal_column(str(miam_id)).label("node_id"),
+                Ngram.id,
+                func.count(),
+                )
+                .select_from(Ngram)
+                .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
+                .join(Node, NodeNgram.node_id == Node.id)
+                .filter(Node.parent_id == corpus_id)
+                .filter(Node.type_id == cache.NodeType['Document'].id)
+
+                .group_by(Ngram.id)
+                #.limit(10)
+                .all()
+                )
+    bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
+
+
+
 
 def doList(
-        type_list='miam',
+        type_list='MiamList',
         user_id=None, corpus_id=None,
         miam_id=None, stop_id=None, main_id=None,
         lem_id=None, stem_id=None, cvalue_id=None, group_id=None,
@@ -209,9 +233,8 @@ def doList(
         cvalue  = equivalent N-Words according to C-Value (but the main form)
     '''
 
-    if type_list not in ['miam', 'main']:
-        print('Type List supported: \'miam\' or \'main\'')
-        sys.exit(0)
+    if type_list not in ['MiamList', 'MainList']:
+        raise Exception("Type List (%s) not supported, try: \'MiamList\' or \'MainList\'" % type_list)
 
     try:
         list_dict = {
@@ -246,7 +269,7 @@ def doList(
 
     stopNgram = aliased(NodeNgram)
 
-    if 'miam' == type_list:
+    if type_list == 'MiamList' :
         query = (session.query(
                 literal_column(str(list_dict['miam']['id'])).label("node_id"),
                 Ngram.id,
@@ -266,7 +289,7 @@ def doList(
                 .group_by(Ngram.id)
                 )
 
-    elif 'main' == type_list:
+    elif type_list == 'MainList' :
         # Query to get Ngrams for main list
         query = (session.query(
                 literal_column(str(list_dict['main']['id'])).label("node_id"),

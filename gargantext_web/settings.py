@@ -192,7 +192,6 @@ LOGIN_URL = '/auth/'
 GRAPPELLI_ADMIN_TITLE = "Gargantext"
 
 if DEBUG is True or 'GARGANTEXT_DEBUG' in os.environ:
-    DEBUG = True
     try:
         from gargantext_web.local_settings import *
     except ImportError:

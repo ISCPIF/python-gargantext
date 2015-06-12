@@ -23,6 +23,7 @@
     function ($scope, $rootScope, $element, NgramHttpService) {
       // TODO use the tooltip ?
       $scope.onDeleteClick = function () {
+        // TODO not the right params
         NgramHttpService.delete($scope.keyword, $rootScope);
       };
   }]);
@@ -91,9 +92,13 @@
       function toggleMenu(context, annotation){
         $timeout(function() {
           $scope.$apply(function() {
+            $scope.miamListId = _.invert($rootScope.lists)['MiamList'];
+            $scope.stopListId = _.invert($rootScope.lists)['StopList'];;
+
             if (angular.isObject(annotation)) {
               $scope.level = angular.copy(annotation.level);
-              $scope.category = angular.copy(annotation.category);
+              $scope.category = $rootScope.lists[annotation.list_id].toLowerCase();
+              $scope.listId = angular.copy(annotation.list_id);
               // used in onClick
               $scope.selection_text = angular.copy(annotation);
 
@@ -118,7 +123,7 @@
             }
             else if (annotation.trim() !== "") {
               $scope.selection_text = angular.copy(annotation);
-              $scope.level = "Create from current selection";
+              $scope.level = "New Ngram from selection";
               $scope.category = null;
               $scope.local_miamlist = true;
               $scope.local_stoplist = true;
@@ -166,26 +171,34 @@
       $rootScope.$on("positionAnnotationMenu", positionElement);
       $rootScope.$on("toggleAnnotationMenu", toggleMenu);
 
-      $scope.onClick = function($event, action, category, level) {
+      $scope.onClick = function($event, action, listId) {
         if (angular.isObject($scope.selection_text)) {
-          // change the status of an existing Ngram
-          $scope.selection_text.category = category;
+          // action from the menu of an existing Ngram
+          $scope.selection_text.category = $rootScope.lists[listId].toLowerCase();
+          // TODO deprecated
           $scope.selection_text.level = level;
-
-          NgramHttpService[action](
-            {
-              'listId': $rootScope.listId,
+          // delete from the current list
+          NgramHttpService.delete({
+              'listId': $scope.selection_text.list_id,
               'ngramId': $scope.selection_text.uuid
-            },
-            {'annotation': $scope.selection_text}
-          );
+            }).$promise.then(function(data) {
+            // add to the new list
+            NgramHttpService.post(
+              {
+                'listId': listId,
+                'ngramId': $scope.selection_text.uuid
+              }
+            );
+          });
+
         } else if ($scope.selection_text.trim() !== "") {
           // new annotation from selection
           NgramHttpService.post(
             {
-              'listId': $rootScope.listId
+              'listId': listId,
+              'ngramId': 'new'
             },
-            {'annotation' : {'text': $scope.selection_text.trim(), 'category': category, 'level': level}}
+            {'annotation' : {'text': $scope.selection_text.trim()}}
           );
         }
         // hide selection highlighted text and the menu
@@ -313,16 +326,17 @@
         });
       });
 
-      function submitNewAnnotation($event, inputEltId, category) {
+      function submitNewAnnotation($event, inputEltId, listId) {
         if ($event.keyCode !== undefined && $event.keyCode != 13) return;
         var value = $(inputEltId).val().trim();
         if (value === "") return;
 
         NgramHttpService.post(
           {
-            'listId': $rootScope.listId
+            'listId': listId,
+            'ngramId': 'new'
           },
-          {'annotation' : {'text': value, 'category': category, 'level': 'local'}},
+          {'annotation' : {'text': value}},
           function(data) {
             // on success
             if (data) {

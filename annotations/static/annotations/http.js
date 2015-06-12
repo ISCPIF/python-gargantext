@@ -47,7 +47,7 @@
       window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId/',
     	{
         listId: '@listId',
-        ngramId: '@ngramID'
+        ngramId: '@ngramId'
       },
 			{
         post: {

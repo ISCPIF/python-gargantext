@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+from rest_framework.exceptions import APIException
 
 from node.models import Node
 from gargantext_web.db import *
@@ -40,7 +41,7 @@ class NgramList(APIView):
         for list_type in ['MiamList', 'StopList']:
             list_id = list()
             list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
-            lists[list_type] = int(list_id[0][0])
+            lists["%s" % list_id[0][0]] = list_type
 
         # ngrams of list_id of corpus_id:
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
@@ -67,13 +68,27 @@ class Ngram(APIView):
         """
         Add a ngram in a list
         """
-        ngramList(do='add', ngram_ids=[ngram_id], list_id=list_id)
+        ngram_dict = json.loads(request.POST.get('annotation'))
+        if ngram_id == 'new':
+            ngram_dict = json.loads(request.POST.get('annotation'))
+            results = ngramList('create', list_id, ngram_ids=[ngram_dict['text']])
+        else:
+            results = ngramList('add', list_id, ngram_ids=[ngram_id])
+
+        return Response([{
+                'uuid': ngram_id,
+                'text': ngram_text,
+                'occurrences': ngram_occurrences,
+                'list_id': list_id,
+
+            } for ngram_id, ngram_text, ngram_occurrences in results])
 
     def delete(self, request, list_id, ngram_id):
         """
-        Remove a ngram from a list
+        Delete a ngram from a list
         """
-        ngramList(do='del', ngram_ids=[ngram_id], list_id=list_id)
+        return Response({ 'delete' : { '%s' % ngram_id :
+                ngramList(do='del', ngram_ids=[ngram_id], list_id=list_id)}})
 
 
 class Document(APIView):

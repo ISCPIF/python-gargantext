@@ -115,7 +115,7 @@ def listNgramIds(list_id=None, typeList=None,
     return(query.all())
 
 
-def ngramList(do=None, ngram_ids=None, list_id=None) :
+def ngramList(do, list_id, ngram_ids=None) :
     '''
     ngramList :: ([Int], Int, String) -> Bool
     Do (delete | add) [ngram_id] (from | to) the list_id
@@ -125,43 +125,45 @@ def ngramList(do=None, ngram_ids=None, list_id=None) :
         ngram_id  = [Int]  : list of Ngrams id (Ngrams.id)
         list_id   = Int    : list id (Node.id)
     '''
-    if ngram_ids is None:
-        raise Exception('Need at least one ngram id in ngram_ids')
+    results = []
 
-    if do is None or list_id is None :
-        raise Exception('Need more options: do, ngram_id, list_id')
+    if do == 'create':
+        terms = copy(ngram_ids)
+        ngram_ids = []
+        for ngram_term in terms:
+            # TODO set the language correctly
+            ngram = Ngram.objects.get_or_create(terms=ngram_term, n=len(terms.split()),
+                                                language='en')
+            ngram_ids += [ngram.id]
 
+    # TODO there should not be a try/except here, let the code crash as soon as possible
     try:
-        # node_type_id = (session.query(Node.type_id)
-        #                 .filter(Node.id == list_id)
-        #                 .first()
-        #                 )
-
         for ngram_id in ngram_ids:
-            # First we test to know if ngram exist in database already
-            #ngram = (session.query(Ngram).filter(Ngram.id == ngram_id).first()
+            # Fetch the ngram from database
+            ngram = session.query(Ngram.id, Ngram.terms, func.count()).filter(Ngram.id == ngram_id).first()
             # Need to be optimized with list of ids
             node_ngram = (session.query(NodeNgram)
                     .filter(NodeNgram.ngram_id == ngram_id)
                     .filter(NodeNgram.node_id  == list_id)
                     .first()
                     )
+            # create NodeNgram if does not exists
             if node_ngram is None :
-                node_ngram = NodeNgram(node_id = list_id,
-                                      ngram_id=ngram_id,
-                                      weight=1)
+                node_ngram = NodeNgram(node_id = list_id, ngram_id=ngram_id,
+                                       weight=1)
             if do == 'add' :
                 session.add(node_ngram)
+                results += [ngram]
+
             elif do == 'del' :
                 session.delete(node_ngram)
 
         session.commit()
-        return(True)
+        return(results)
 
-    except:
+    except Exception as exc:
         PrintException()
-        return(False)
-
+        raise exc
 
 
 # Some functions to manage automatically the lists

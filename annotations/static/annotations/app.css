@@ -27,13 +27,13 @@
   border-bottom: none;
 }
 
-.miamword {
+.miamlist {
   color: black;
   background-color: rgba(60, 118, 61, 0.5);
   cursor: pointer;
 }
 
-.stopword {
+.stoplist {
   color: black;
   background-color: rgba(169, 68, 66, 0.2);
   cursor: pointer;

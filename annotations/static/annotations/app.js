@@ -23,8 +23,17 @@
     function ($scope, $rootScope, $element, NgramHttpService) {
       // TODO use the tooltip ?
       $scope.onDeleteClick = function () {
-        // TODO not the right params
-        NgramHttpService.delete($scope.keyword, $rootScope);
+        NgramHttpService.delete({
+            'listId': $scope.keyword.list_id,
+            'ngramId': $scope.keyword.uuid
+          }).$promise.then(function(data) {
+            NgramListHttpService.get(
+              {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
+            ).$promise.then(function(data) {
+              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+              $rootScope.lists = data[$rootScope.corpusId.toString()]['lists'];
+            });
+        });
       };
   }]);
 
@@ -89,11 +98,9 @@
         }
       }
 
-      function toggleMenu(context, annotation){
+      function toggleMenu(context, annotation) {
         $timeout(function() {
           $scope.$apply(function() {
-            $scope.miamListId = _.invert($rootScope.lists)['MiamList'];
-            $scope.stopListId = _.invert($rootScope.lists)['StopList'];
 
             if (angular.isObject(annotation)) {
               $scope.level = angular.copy(annotation.level || 'global');
@@ -171,24 +178,26 @@
       $rootScope.$on("positionAnnotationMenu", positionElement);
       $rootScope.$on("toggleAnnotationMenu", toggleMenu);
 
-      $scope.onClick = function($event, action, listId) {
+      $scope.onClick = function($event, action, listId, level) {
         if (angular.isObject($scope.selection_text)) {
-          // action from the menu of an existing Ngram
-          $scope.selection_text.category = $rootScope.lists[listId].toLowerCase();
-          // TODO deprecated
-          $scope.selection_text.level = 'global';
           // delete from the current list
-          NgramHttpService.delete({
-              'listId': $scope.selection_text.list_id,
+          NgramHttpService[action]({
+              'listId': listId,
               'ngramId': $scope.selection_text.uuid
             }).$promise.then(function(data) {
-            // add to the new list
-            NgramHttpService.post(
-              {
-                'listId': listId,
-                'ngramId': $scope.selection_text.uuid
+              // push to $rootScope.annotations
+              if (data && data.uuid && data.text && data.list_id) {
+                // new annotation is returned and added to the $rootScope
+                $rootScope.annotations.push(data);
+              } else {
+                // refresh all annotations
+                NgramListHttpService.get(
+                  {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
+                ).$promise.then(function(data) {
+                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                  $rootScope.lists = data[$rootScope.corpusId.toString()]['lists'];
+                });
               }
-            );
           });
 
         } else if ($scope.selection_text.trim() !== "") {
@@ -308,6 +317,9 @@
         if ($rootScope.annotations === undefined) return;
         if (angular.equals(newValue, oldValue)) return;
 
+        $rootScope.miamListId = _.invert($rootScope.lists)['MiamList'];
+        $rootScope.stopListId = _.invert($rootScope.lists)['StopList'];
+
         $scope.extra_stoplist = [];
         $scope.extra_miamlist = [];
 
@@ -399,15 +411,14 @@
           $scope.journal = data.journal;
           $scope.publication_date = data.publication_date;
           // TODO this data have to be deleted
-          $scope.current_page_number = data.current_page_number;
-          $scope.last_page_number = data.last_page_number;
+          //$scope.current_page_number = data.current_page_number;
+          //$scope.last_page_number = data.last_page_number;
           // put in rootScope because used by many components
           $rootScope.docId = data.id;
           $rootScope.full_text = data.full_text;
           $rootScope.abstract_text = data.abstract_text;
-
-
           // GET the annotations
+          // TODO
           $rootScope.annotationsResource = NgramListHttpService.get(
             {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
           ).$promise.then(function(data) {

@@ -86,13 +86,13 @@
                 <li class="active pull-right">{[{publication_date}]}</li>
               </ul>
             </div>
-            <h4>Abstract</h4>
+            <h4 ng-if="abstract_text != null">Abstract</h4>
             <p id="abstract-text" class="text-container">
-                <div ng-if="abstract_text.length == 0" class="alert alert-info" role="alert">No abstract text</div>
+                <div ng-if="abstract_text == null" class="alert alert-info" role="alert">No abstract text</div>
             </p>
-            <h4>Full Article</h4>
+            <h4 ng-if="full_text != null">Full Article</h4>
             <p id="full-text" class="text-container">
-                <div ng-if="abstract_text.length == 0" class="alert alert-info" role="alert">No full text</div>
+                <div ng-if="full_text == null" class="alert alert-info" role="alert">No full text</div>
             </p>
           </div>
         </div> <!-- end of the main row -->

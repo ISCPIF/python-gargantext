@@ -73,8 +73,7 @@ class NgramEdit(APIView):
         """
         Add a ngram in a list
         """
-        import pudb; pu.db
-        ngram_dict = json.loads(request.POST.get('annotation'))
+        # TODO if Ngram is in miam-list, and adding it to stop-list, then remove it from the previous list
         if ngram_id == 'new':
             ngram_dict = json.loads(request.POST.get('annotation'))
             results = ngramList('create', list_id, ngram_ids=[ngram_dict['text']])
@@ -86,7 +85,6 @@ class NgramEdit(APIView):
                 'text': ngram_text,
                 'occurrences': ngram_occurrences,
                 'list_id': list_id,
-
             } for ngram_id, ngram_text, ngram_occurrences in results])
 
     def delete(self, request, list_id, ngram_id):

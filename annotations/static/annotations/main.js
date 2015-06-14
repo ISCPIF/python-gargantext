@@ -24,6 +24,7 @@ $script([
   //'bower_components/angular-route/angular-route.js',
 ], function() {
   $script([
+    S + 'bower_components/angular-cookies/angular-cookies.min.js',
     S + 'bower_components/angular-resource/angular-resource.min.js'], function() {
     $script([S + 'annotations/http.js', S + 'annotations/app.js'], function() {
       // when all is done, execute bootstrap angular application (replace ng-app directive)

@@ -1,7 +1,12 @@
 (function () {
   'use strict';
 
-  var http = angular.module('annotationsAppHttp', ['ngResource']);
+  var http = angular.module('annotationsAppHttp', ['ngResource', 'ngCookies']);
+
+  http.config(['$httpProvider', function($httpProvider){
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+  }]);
   /*
   * Read Document
   */

@@ -93,10 +93,10 @@
         $timeout(function() {
           $scope.$apply(function() {
             $scope.miamListId = _.invert($rootScope.lists)['MiamList'];
-            $scope.stopListId = _.invert($rootScope.lists)['StopList'];;
+            $scope.stopListId = _.invert($rootScope.lists)['StopList'];
 
             if (angular.isObject(annotation)) {
-              $scope.level = angular.copy(annotation.level);
+              $scope.level = angular.copy(annotation.level || 'global');
               $scope.category = $rootScope.lists[annotation.list_id].toLowerCase();
               $scope.listId = angular.copy(annotation.list_id);
               // used in onClick
@@ -176,7 +176,7 @@
           // action from the menu of an existing Ngram
           $scope.selection_text.category = $rootScope.lists[listId].toLowerCase();
           // TODO deprecated
-          $scope.selection_text.level = level;
+          $scope.selection_text.level = 'global';
           // delete from the current list
           NgramHttpService.delete({
               'listId': $scope.selection_text.list_id,
@@ -222,15 +222,15 @@
       /*
       * Replace the text by and html template
       */
-      function replaceTextByTemplate(text, annotation, template, pattern) {
+      function replaceTextByTemplate(text, annotation, template, pattern, lists) {
         return text.replace(pattern, function(matched) {
           var tpl = angular.element(template);
           tpl.append(matched);
           tpl.attr('title', annotation.tooltip_content);
           tpl.attr('uuid', annotation.uuid);
 
-          if (annotation.category == 'miamlist') tpl.addClass("miamword");
-          if (annotation.category == 'stoplist' && annotation.level == 'local') tpl.addClass("stopword");
+          if ('MiamList' == lists[annotation.list_id]) tpl.addClass("miamword");
+          if ('StopList' == lists[annotation.list_id]) tpl.addClass("stopword");
           //if (annotation.category == 'stoplist' && annotation.level == 'global') tpl.addClass("global-stopword");
 
           return tpl.get(0).outerHTML;
@@ -266,30 +266,32 @@
 
         _.each(sortedSizeAnnotations, function (annotation) {
           // TODO better split to manage two-words with minus sign
+          annotation.category = $rootScope.lists[annotation.list_id].toLowerCase();
           var words = annotation.text.split(" ");
           var pattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
           var textRegexp = new RegExp("\\b"+annotation.text+"\\b", 'igm');
 
           if (pattern.test(fullText) === true) {
-            fullText = replaceTextByTemplate(fullText, annotation, template, pattern);
+            fullText = replaceTextByTemplate(fullText, annotation, template, pattern, $rootScope.lists);
             // TODO remove debug
             counter++;
           } else if (pattern.test(abstractText) === true) {
-            abstractText = replaceTextByTemplate(abstractText, annotation, template, pattern);
+            abstractText = replaceTextByTemplate(abstractText, annotation, template, pattern, $rootScope.lists);
             counter++;
           } else if (!textRegexp.test($rootScope.full_text) && !textRegexp.test($rootScope.abstract_text)) {
-            if (annotation.category == "stoplist" && annotation.level == 'local') {
+            if (annotation.category == "stoplist") {
+              // Deactivated stoplist for the moment
               // if ($.inArray(annotation.uuid, $scope.extra_stoplist.map(function (item) {
-              //     return item.uuid;
-              //   })) == -1) {
-                extra_stoplist = lengthSort(extra_stoplist.concat(annotation), "text");
+              //      return item.uuid;
+              //    })) == -1) {
+              //   extra_stoplist = lengthSort(extra_stoplist.concat(annotation), "text");
               // }
             } else if (annotation.category == "miamlist") {
-              // if ($.inArray(annotation.uuid, $scope.extra_miamlist.map(function (item) {
-              //     return item.uuid;
-              //   })) == -1) {
+              if ($.inArray(annotation.uuid, $scope.extra_miamlist.map(function (item) {
+                  return item.uuid;
+                })) == -1) {
                 extra_miamlist = lengthSort(extra_miamlist.concat(annotation), "text");
-              // }
+              }
             }
           }
         });
@@ -313,7 +315,8 @@
           $rootScope.annotations,
           angular.copy($rootScope.full_text),
           angular.copy($rootScope.abstract_text),
-          $rootScope);
+          $rootScope
+        );
 
         console.log($rootScope.annotations.length);
         console.log(counter);
@@ -348,11 +351,11 @@
       }
 
       $scope.onMiamlistSubmit = function ($event) {
-        submitNewAnnotation($event, "#miamlist-input", "miamlist");
+        submitNewAnnotation($event, "#miamlist-input", _.invert($rootScope.lists)['MiamList']);
       };
       // TODO refactor
       $scope.onStoplistSubmit = function ($event) {
-        submitNewAnnotation($event, "#stoplist-input", "stoplist");
+        submitNewAnnotation($event, "#stoplist-input", _.invert($rootScope.lists)['MiamList']);
       };
       $scope.numStopPages = function () {
         if ($scope.extra_stoplist === undefined) return 0;

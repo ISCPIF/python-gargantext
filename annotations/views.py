@@ -10,13 +10,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import APIException
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
 
 from node.models import Node
 from gargantext_web.db import *
 from ngram.lists import listIds, listNgramIds, ngramList
-
-import sqlalchemy
-from sqlalchemy.orm import aliased
 
 
 @login_required
@@ -37,6 +36,8 @@ class NgramList(APIView):
 
     def get(self, request, corpus_id, doc_id):
         """Get All for a doc id"""
+        corpus_id = int(corpus_id)
+        doc_id = int(doc_id)
         lists = dict()
         for list_type in ['MiamList', 'StopList']:
             list_id = list()
@@ -45,6 +46,8 @@ class NgramList(APIView):
 
         # ngrams of list_id of corpus_id:
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
+        doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
+
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [
                 {
@@ -59,15 +62,18 @@ class NgramList(APIView):
         return Response(data)
 
 
-class Ngram(APIView):
+class NgramEdit(APIView):
     """
     Actions on one Ngram in one list
     """
+    renderer_classes = (JSONRenderer,)
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def post(self, request, list_id, ngram_id):
         """
         Add a ngram in a list
         """
+        import pudb; pu.db
         ngram_dict = json.loads(request.POST.get('annotation'))
         if ngram_id == 'new':
             ngram_dict = json.loads(request.POST.get('annotation'))

@@ -189,7 +189,6 @@ def ngrams2miam(user_id=None, corpus_id=None):
     miam_id = listIds(typeList='MiamList', user_id=user_id, corpus_id=corpus_id)[0][0]
     print(miam_id)
 
-
     query = (session.query(
                 literal_column(str(miam_id)).label("node_id"),
                 Ngram.id,

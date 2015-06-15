@@ -46,7 +46,7 @@ class NgramList(APIView):
 
         # ngrams of list_id of corpus_id:
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
-        doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
+        #doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
 
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [

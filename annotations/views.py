@@ -106,8 +106,8 @@ class NgramEdit(APIView):
         """
         Delete a ngram from a list
         """
-        return Response({ 'delete' : { '%s' % ngram_id :
-                ngramList(do='del', ngram_ids=[ngram_id], list_id=list_id)}})
+        session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).delete()
+        return Response(None, 204)
 
 
 class Document(APIView):

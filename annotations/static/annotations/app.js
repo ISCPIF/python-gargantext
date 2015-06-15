@@ -185,19 +185,12 @@
               'listId': listId,
               'ngramId': $scope.selection_text.uuid
             }).$promise.then(function(data) {
-              // push to $rootScope.annotations
-              if (data && data.uuid && data.text && data.list_id) {
-                // new annotation is returned and added to the $rootScope
-                $rootScope.annotations.push(data);
-              } else {
-                // refresh all annotations
-                NgramListHttpService.get(
-                  {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
-                ).$promise.then(function(data) {
-                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-                  $rootScope.lists = data[$rootScope.corpusId.toString()]['lists'];
-                });
-              }
+              $.each($rootScope.annotations, function(index, element) {
+                if (element.list_id == listId && element.uuid == $scope.selection_text.uuid) {
+                  $rootScope.annotations.splice(index, 1);
+                  return false;
+                }
+              });
           });
 
         } else if ($scope.selection_text.trim() !== "") {

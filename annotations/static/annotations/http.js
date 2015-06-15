@@ -61,7 +61,7 @@
         },
         delete: {
           method: 'DELETE',
-          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+          params: {'listId': '@listId', 'ngramId': '@id'}
         }
       }
     );

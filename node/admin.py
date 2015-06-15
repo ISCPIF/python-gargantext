@@ -98,8 +98,8 @@ from django import forms
 
 from django.utils.translation import ugettext_lazy as _
 class CustomForm(forms.Form):
-    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
     type = ModelChoiceField( ResourceType.objects.all() , widget=forms.Select(attrs={'onchange':'CustomForSelect( $("option:selected", this).text() );'}) )
+    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
     file = forms.FileField()
 
     # Description: clean_file()

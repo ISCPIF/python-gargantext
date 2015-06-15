@@ -159,8 +159,16 @@ function Final_UpdateTable( action ) {
 //      Get all the duplicates using the Django-Garg API
 var current_docs = {}
 var BIS_dict = {}
-var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
-var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
+
+var url_elems = window.location.href.split("/")
+var url_mainIDs = {}
+for(var i=0; i<url_elems.length; i++) {
+  // if the this element is a number:
+  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
+    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
+  }
+}
+var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
 // $.ajax({
 //   url: theurl,
 //   success: function(data) {
@@ -364,14 +372,46 @@ $("#Clean_All").click(function(){
 $("#Save_All").click(function(){
 
   var sum__selected_elems = 0;
+  var poubelle = []
   for(var i in FlagsBuffer)
+    if (Object.keys(FlagsBuffer[i]).length==0) poubelle.push(i)
     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+  for(var i in poubelle)
+    delete FlagsBuffer[poubelle[i]];
 
   if ( sum__selected_elems>0 ) {
     console.log("")
     console.log("Do the ajax conexion with API and send this array to be processed:")
+    for(var i in FlagsBuffer) {
+      var real_ids = []
+      for (var j in FlagsBuffer[i])
+        real_ids.push( AjaxRecords[j].id );
+
+      FlagsBuffer[i] = real_ids
+    
+    }
     console.log(FlagsBuffer)
-    console.log("")
+    var list_id = $("#list_id").val()
+    // '/annotations/lists/'+list_id+'/ngrams/108642'
+
+    console.log(window.location.origin+'/annotations/lists/'+list_id+"/multiple")
+    console.log(real_ids)
+      $.ajax({
+        method: "POST",
+        url: window.location.origin+'/annotations/lists/'+list_id+"/multiple",
+        data: "to_delete="+JSON.stringify(real_ids),
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+        success: function(data){
+              console.log(data)
+        },
+        error: function(result) {
+            console.log("Data not found in #Save_All");
+            console.log(result)
+        }
+      });
+    // console.log("")
   }
 
 });

@@ -271,10 +271,8 @@ def testISTEX(request , project_id):
 				)
 				dwnldsOK+=1	
 		if dwnldsOK == 0: return JsonHttpResponse(["fail"])		
-
-		# print(urlreqs)
-
-
+		###########################
+		###########################
 		try:
 			if not DEBUG:
 				apply_workflow.apply_async((corpus.id,),)

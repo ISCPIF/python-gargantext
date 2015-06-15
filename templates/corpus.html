@@ -5,6 +5,8 @@
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/bootstrap-select.min.css" %}">
+
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
@@ -132,7 +134,6 @@ th a {
 </div>
 </div>
 
-
 <div class="container">
 		<div class="row">
 				<div class="col-md-4">
@@ -178,8 +179,25 @@ th a {
         </div>
 </div>
 
+
+<div id="supmofos">
+  
+
+  <select data-width="100px" dir="ltr" class="selectpicker">
+    <option selected>All</option>
+    <option>Title</option>
+    <option>Date</option>
+    <optgroup label="Duplicates">
+      <option>by DOI</option>
+      <option>by Title</option>
+    </optgroup>
+  </select>
+
+</div>
+
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/bootstrap/bootstrap-select.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->

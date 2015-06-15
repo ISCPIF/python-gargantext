@@ -65,6 +65,18 @@ class WeightedMatrix:
         """
         pass
 
+   def __mul__(self, other):
+    if isinstance(other, Translations):
+        result = WeightedMatrix()
+        for key1, key2_value in self.items.items():
+            for key2, value in self.items:
+                result.items[
+                    other.items.get(key, key)
+                ] = value
+    else:
+        raise TypeError
+    return result
+
 
 class UnweightedList:
 
@@ -181,7 +193,7 @@ class WeightedList:
             for key, value in self.items:
                 result.items[
                     other.items.get(key, key)
-                ] = value
+                ] += value
         else:
             raise TypeError
         return result

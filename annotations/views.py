@@ -73,19 +73,34 @@ class NgramEdit(APIView):
         """
         Add a ngram in a list
         """
-        # TODO if Ngram is in miam-list, and adding it to stop-list, then remove it from the previous list
-        if ngram_id == 'new':
-            ngram_dict = json.loads(request.POST.get('annotation'))
-            results = ngramList('create', list_id, ngram_ids=[ngram_dict['text']])
-        else:
-            results = ngramList('add', list_id, ngram_ids=[ngram_id])
-
-        return Response([{
-                'uuid': ngram_id,
-                'text': ngram_text,
-                'occurrences': ngram_occurrences,
-                'list_id': list_id,
-            } for ngram_id, ngram_text, ngram_occurrences in results])
+        # TODO - if Ngram is in miam-list, and adding it to stop-list,
+        #   then remove it from the previous list
+        list_id = int(list_id)
+        # format the ngram's text
+        ngram_text = request.data.get('annotation', {}).get('text', None)
+        ngram_text = ngram_text.strip().lower()
+        ngram_text = ' '.join(ngram_text.split())
+        # retrieve the ngram's id
+        ngram = session.query(Ngram).filter(Ngram.terms == ngram_text).first()
+        if ngram is None:
+            ngram = Ngram(n=len(ngram_text.split()), terms=ngram_text)
+            session.add(ngram)
+            session.commit()
+        ngram_id = ngram.id
+        # add the ngram to the list if not already done
+        node_ngram = session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).first()
+        if node_ngram is None:
+            node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+            session.add(node_ngram)
+            session.commit()
+        ngram_occurrences = node_ngram.weight
+        # return the response
+        return Response({
+            'uuid': ngram_id,
+            'text': ngram_text,
+            'occurrences': ngram_occurrences,
+            'list_id': list_id,
+        })
 
     def delete(self, request, list_id, ngram_id):
         """

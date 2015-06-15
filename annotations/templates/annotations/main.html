@@ -23,14 +23,14 @@
       <div class="container-fluid">
         <div class="row-fluid main-panel" ng-controller="IntraTextController">
           <div class="col-md-4 col-xs-4 tabbable words-panel">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#tab1" data-toggle="tab">Miamwords</a></li>
-              <li><a href="#tab2" data-toggle="tab">Local stopwords</a></li>
+            <ul class="nav nav-pills nav-justified">
+              <li class="active"><a href="#tab1" data-toggle="tab"><span class="glyphicon glyphicon-tags"></span>&nbsp;&nbsp;Miamwords</a></li>
+              <!--<li><a href="#tab2" data-toggle="tab">Local stopwords</a></li>-->
             </ul>
             <div class="tab-content">
               <div class="tab-pane active" id="tab1">
                 <ul class="list-group words-list">
-                  <div ng-if="extra_miamlist.length == 0" class="alert alert-info" role="alert">No extra-text miam-word yet</div>
+                  <div ng-if="extra_miamlist.length == 0" class="alert alert-info" role="alert">No extra text miam-word yet</div>
 
                   <li ng-repeat="keyword in extra_miamlist | startFrom:currentMiamPage*pageSize | limitTo:pageSize" class="list-group-item">
                     <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
@@ -47,7 +47,7 @@
                   <button type="submit" class="btn btn-default btn-primary" ng-click="onMiamlistSubmit($event)">Add</button>
                 </div>
               </div>
-              <div class="tab-pane" id="tab2">
+              <!--<div class="tab-pane" id="tab2">
                 <ul class="list-group words-list clearfix">
                   <div ng-if="extra_stoplist.length == 0" class="alert alert-info" role="alert">No extra-text stop-word yet</div>
                   <li ng-repeat="keyword in extra_stoplist | startFrom:currentStopPage*pageSize | limitTo:pageSize" class="list-group-item"><div ng-controller="ExtraAnnotationController" keyword-template></div></li>
@@ -62,7 +62,7 @@
                   <input type="text" class="form-control" id="stoplist-input" ng-keypress="onStoplistSubmit($event)">
                   <button type="submit" class="btn btn-default" ng-click="onStoplistSubmit($event)">Exclude</button>
                 </div>
-              </div>
+            </div>-->
             </div>
           </div>
           <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">
@@ -86,10 +86,14 @@
                 <li class="active pull-right">{[{publication_date}]}</li>
               </ul>
             </div>
-            <h4>Abstract</h4>
-            <p id="abstract-text" class="text-container"></p>
-            <h4>Article</h4>
-            <p id="full-text" class="text-container"></p>
+            <h4 ng-if="abstract_text != null">Abstract</h4>
+            <p id="abstract-text" class="text-container">
+                <div ng-if="abstract_text == null" class="alert alert-info" role="alert">No abstract text</div>
+            </p>
+            <h4 ng-if="full_text != null">Full Article</h4>
+            <p id="full-text" class="text-container">
+                <div ng-if="full_text == null" class="alert alert-info" role="alert">No full text</div>
+            </p>
           </div>
         </div> <!-- end of the main row -->
       </div>
@@ -100,8 +104,10 @@
     <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 <![endif]-->
   <script type="application/javascript">
+    /* Constants required for annotations app JS to work */
     window.STATIC_URL = "{% static '' %}";
     window.ANNOTATION_API_URL = "{{ api_url }}";
+    window.NODES_API_URL = "{{ nodes_api_url }}";
   </script>
   <script src="{% static 'annotations/main.js' %}"></script>
 

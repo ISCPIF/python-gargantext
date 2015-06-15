@@ -8,7 +8,8 @@
     "angular": "~1.2.x",
     "angular-loader": "~1.2.x",
     "angular-resource": "~1.2.x",
-    "bootstrap": "~3.x"
+    "bootstrap": "~3.x",
+    "angular-cookies": "1.2"
   },
   "resolutions": {
     "angular": "~1.2.x"

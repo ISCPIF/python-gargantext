@@ -118,7 +118,11 @@ function Final_UpdateTable( action ) {
 //      Get all the duplicates using the Django-Garg API
 var current_docs = {}
 var BIS_dict = {}
-var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
+
+var path = window.location.pathname.match(/\/project\/(.*)\/corpus\/(.*)\//);
+var projectid = path[1]
+var corpusid  = path[2]
+
 var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
 // $.ajax({
 //   url: theurl,
@@ -231,7 +235,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
         var orig_id = parseInt(data.records[i].id)
         var arr_id = parseInt(i)
         RecDict[orig_id] = arr_id;
-        data.records[i]["name"] = '<a target="_blank" href="/nodeinfo/'+orig_id+'">'+data.records[i]["name"]+'</a>'
+        data.records[i]["name"] = '<a target="_blank" href="/project/'+projectid+'/corpus/'+ corpusid + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
         data.records[i]["del"] = false
 
         var date = data.records[i]["date"];  

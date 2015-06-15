@@ -55,7 +55,6 @@ MAINTENANCE = False
 
 TEMPLATE_DEBUG = False
 
-
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes
@@ -187,6 +186,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
 )
 
+LOGIN_URL = '/auth/'
 
 # grappelli custom
 GRAPPELLI_ADMIN_TITLE = "Gargantext"

@@ -9,7 +9,6 @@ from gargantext_web.db import *
 
 from .parsers_config import parsers as _parsers
 
-
 class DebugTime:
 
     def __init__(self, prefix):
@@ -29,7 +28,6 @@ class DebugTime:
 
 # keep all the parsers in a cache
 class Parsers(defaultdict):
-
     def __init__(self):
         self._parsers = _parsers
 
@@ -44,9 +42,7 @@ class Parsers(defaultdict):
 parsers = Parsers()
 
 
-
 # resources management
-
 def add_resource(corpus, **kwargs):
     # only for tests
     session = Session()
@@ -83,7 +79,6 @@ def add_resource(corpus, **kwargs):
     # return result
     return resource
 
-
 def parse_resources(corpus, user=None, user_id=None):
     dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
     session = Session()
@@ -102,8 +97,7 @@ def parse_resources(corpus, user=None, user_id=None):
         .filter(Node_Resource.parsed == False)
     )
     # make a new node for every parsed document of the corpus
-    print("HERE MOFOs")
-    print(resources_query)
+    # print(resources_query)
     dbg.show('analyze documents')
     nodes = list()
     for resource, resourcetype in resources_query:
@@ -147,13 +141,13 @@ def parse_resources(corpus, user=None, user_id=None):
         hyperdata.name: hyperdata
         for hyperdata in session.query(Hyperdata)
     }
+    #print('hyperdata_types', hyperdata_types)
     for node in nodes:
         node_id = node.id
         for hyperdata_key, hyperdata_value in node.hyperdata.items():
             try:
                 hyperdata = hyperdata_types[hyperdata_key]
             except KeyError:
-                # Why silent continue here ?
                 continue
             if hyperdata.type == 'string':
                 hyperdata_value = hyperdata_value[:255]
@@ -163,16 +157,17 @@ def parse_resources(corpus, user=None, user_id=None):
                 hyperdata_value,
             ))
 
+    #print('I am here', node_hyperdata_lists.items())
+
     for key, values in node_hyperdata_lists.items():
+        #print('here', key, values)
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
     # mark the corpus as parsed
     corpus.parsed = True
 
 
 # ngrams extraction
-
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
-
 class NgramsExtractors(defaultdict):
 
     def __init__(self):

@@ -36,7 +36,7 @@ def project(request, project_id):
         project_id = int(project_id)
     except ValueError:
         raise Http404()
-    
+
     # do we have a valid project?
     project = (session
         .query(Node)
@@ -74,7 +74,7 @@ def project(request, project_id):
     documents_count_by_resourcetype = defaultdict(int)
     corpora_count = 0
     corpusID_dict = {}
-    
+
 
     for corpus_id, corpus_name, document_count, processing in corpus_query:
         #print(corpus_id, processing)
@@ -84,7 +84,7 @@ def project(request, project_id):
                                    .join(Node, Node.id == Node_Resource.node_id )
                                    .filter(Node.id==corpus_id)
                                    .first())[0]
-        
+
         if not corpus_id in corpusID_dict:
             if resource_type_id is None:
                 resourcetype_name = '(no resource)'
@@ -104,7 +104,7 @@ def project(request, project_id):
     # do the donut
     total_documents_count = sum(documents_count_by_resourcetype.values())
     donut = [
-        {   'source': re.sub(' \(.*$', '', key), 
+        {   'source': re.sub(' \(.*$', '', key),
             'count': value,
             'part' : round(value * 100 / total_documents_count) if total_documents_count else 0,
         }
@@ -116,12 +116,12 @@ def project(request, project_id):
         # form validation
         form = CustomForm(request.POST, request.FILES)
         if form.is_valid():
-            
+
             # extract information from the form
             name = form.cleaned_data['name']
             thefile = form.cleaned_data['file']
             resourcetype = cache.ResourceType[form.cleaned_data['type']]
-            
+
             # which default language shall be used?
             if resourcetype.name == "Europress (French)":
                 language_id = cache.Language['fr'].id
@@ -129,7 +129,7 @@ def project(request, project_id):
                 language_id = cache.Language['en'].id
             else:
                 language_id = None
-            
+
             # corpus node instanciation as a Django model
             corpus = Node(
                 name        = name,
@@ -141,10 +141,10 @@ def project(request, project_id):
             )
             session.add(corpus)
             session.commit()
-            
+
             # If user is new, folder does not exist yet, create it then
             ensure_dir(request.user)
-            
+
             # Save the uploaded file
             filepath = '%s/corpora/%s/%s' % (MEDIA_ROOT, request.user.username, thefile._name)
             f = open(filepath, 'wb')
@@ -159,7 +159,7 @@ def project(request, project_id):
             # let's start the workflow
             try:
                 if DEBUG is False:
-                    apply_workflow((corpus.id,),)
+                    apply_workflow.apply_async((corpus.id,),)
                 else:
                    #apply_workflow(corpus)
                    thread = Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
@@ -168,7 +168,7 @@ def project(request, project_id):
                 print('WORKFLOW ERROR')
                 print(error)
             # redirect to the main project page
-            # TODO need to wait before response (need corpus update) 
+            # TODO need to wait before response (need corpus update)
             sleep(2)
             return HttpResponseRedirect('/project/' + str(project_id))
         else:
@@ -226,5 +226,5 @@ def tfidf(request, corpus_id, ngram_ids):
         nodes_list.append(node_dict)
 
     # print("= = = = = = = = \n")
-    data = json.dumps(nodes_list) 
+    data = json.dumps(nodes_list)
     return JsonHttpResponse(data)

@@ -17,6 +17,7 @@ def apply_sum(x, y):
 
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
+from ngram.lists import ngrams2miam
 
 from admin.utils import PrintException
 
@@ -34,13 +35,14 @@ def apply_workflow(corpus_id):
 
     update_processing(corpus, 1)
     parse_resources(corpus)
-    
+
     update_processing(corpus, 2)
     extract_ngrams(corpus, ['title', 'abstract'])
-    
+
     update_processing(corpus, 3)
     compute_tfidf(corpus)
-    
+
+    ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)
 
 

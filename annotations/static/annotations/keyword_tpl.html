@@ -1,5 +1,5 @@
-<span ng-if="keyword.category == 'miamlist'" ng-click='onDeleteClick()' class="delete-keyword" data-keyword-id="{{keyword.uuid}}" data-keyword-text="{{keyword.text}}" data-keyword-category="miamlist">×</span>
-<a ng-if="keyword.category == 'miamlist'" href="#" data-toggle="tooltip" class="keyword miamword">{{keyword.text}}</a>
-<span ng-if="keyword.category == 'stoplist'" ng-click='onDeleteClick()' class="delete-keyword" data-keyword-id="{{keyword.uuid}}" data-keyword-text="{{keyword.text}}" data-keyword-category="stoplist">×</span>
-<a ng-if="keyword.category == 'stoplist'" href="#" data-toggle="tooltip" class="keyword stopword">{{keyword.text}}</a>
-<span class="occurrences" data-keyword-id="{{keyword.uuid}}">{{keyword.occurrences}}</span>
+<span ng-if="keyword.category == 'miamlist'" ng-click='onDeleteClick()' class="delete-keyword" data-keyword-id="{[{keyword.uuid}]}" data-keyword-text="{[{keyword.text}]}" data-keyword-category="miamlist">×</span>
+<span ng-if="keyword.category == 'miamlist'" data-toggle="tooltip" class="keyword miamword">{[{keyword.text}]}</span>
+<span ng-if="keyword.category == 'stoplist'" ng-click='onDeleteClick()' class="delete-keyword" data-keyword-id="{[{keyword.uuid}]}" data-keyword-text="{[{keyword.text}]}" data-keyword-category="stoplist">×</span>
+<span ng-if="keyword.category == 'stoplist'" data-toggle="tooltip" class="keyword stopword">{[{keyword.text}]}</span>
+<span class="occurrences" data-keyword-id="{[{keyword.uuid}]}">{[{keyword.occurrences}]}</span>

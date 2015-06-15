@@ -204,11 +204,12 @@
           // new annotation from selection
           NgramHttpService.post(
             {
-              'listId': listId,
-              'ngramId': 'new'
+              'listId': listId
             },
             {'annotation' : {'text': $scope.selection_text.trim()}}
-          );
+          ).$promise.then(function(data) {
+            $rootScope.annotations.push(data);
+          });
         }
         // hide selection highlighted text and the menu
         $(".text-panel").removeClass("selection");

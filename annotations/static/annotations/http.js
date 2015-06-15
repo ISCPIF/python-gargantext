@@ -49,15 +49,15 @@
   */
   http.factory('NgramHttpService', function ($resource) {
     return $resource(
-      window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId/',
+      window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
     	{
         listId: '@listId',
-        ngramId: '@ngramId'
+        ngramId: '@id'
       },
 			{
         post: {
           method: 'POST',
-          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+          params: {'listId': '@listId', 'ngramId': ''}
         },
         delete: {
           method: 'DELETE',

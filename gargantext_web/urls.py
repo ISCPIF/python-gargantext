@@ -86,6 +86,8 @@ urlpatterns = patterns('',
     url(r'^tests/move2trash/$' , views.move_to_trash_multiple ),
     url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', samtest.test_ngrams),
     url(r'^project/(\d+)/corpus/(\d+)/ngrams$', samtest.get_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/journals/journals.json$', samtest.test_journals),
+    url(r'^project/(\d+)/corpus/(\d+)/journals$', samtest.get_journals),
     url(r'^corpus/(\d+)/document/(\d+)/testpage$', samtest.test_test)
 )
 

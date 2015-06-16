@@ -162,6 +162,59 @@ def test_test(request , corpus_id , doc_id):
     return JsonHttpResponse(results)
 
 
+def get_journals(request , project_id , corpus_id ):
+
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+    except ValueError:
+        raise Http404()
+
+    t = get_template('tests/journals.html')
+    
+    user = cache.User[request.user.username].id
+    date = datetime.datetime.now()
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+
+    try:
+        processing = corpus.hyperdata['Processing']
+    except Exception as error:
+        print(error)
+        processing = 0
+
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
+            'number' : number,
+            }))
+
+    return HttpResponse(html)
+
+def test_journals(request , project_id, corpus_id ):
+    results = ["hola" , "mundo"]
+
+    JournalsDict = {}
+
+    user_id = request.user.id
+    document_type_id = cache.NodeType['Document'].id
+    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
+    for doc in documents:
+        if "journal" in doc.hyperdata:
+            journal = doc.hyperdata["journal"]
+            if journal not in JournalsDict:
+                JournalsDict [journal] = 0
+            JournalsDict[journal] += 1
+    return JsonHttpResponse(JournalsDict)
 
 def test_ngrams(request , project_id, corpus_id ):
     results = ["hola" , "mundo"]

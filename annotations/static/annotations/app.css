@@ -60,7 +60,7 @@
 }
 
 .keyword-container {
-  max-width: 200px;
+  /*display: inline-block;*/
 }
 
 .keyword {
@@ -71,6 +71,8 @@
   display: inline-block;
   float: left;
   padding: 5px;
+  margin: .25em;
+  box-shadow: .2em .2em .1em rgba(0, 0, 0, .125);
 }
 
 .words-pagination {

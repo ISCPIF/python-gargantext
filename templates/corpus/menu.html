@@ -62,9 +62,9 @@
 
 		<div class="btn-group btn-group-justified">
 				<center>
-						<a type="button" class="btn btn-default  active" href="/project/{{project.id}}/corpus/{{ corpus.id }}/">{{number}} Documents</a>
-							<a type="button" class="btn btn-default " href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
-							<a type="button" class="btn btn-default " href="/project/{{project.id}}/corpus/{{ corpus.id }}/ngrams">Terms</a>
+				<a type="button" class="btn btn-default {% if view == "Documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/">{{number}} Documents</a>
+							<a type="button" class="btn btn-default {% if view == "Journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
+							<a type="button" class="btn btn-default {% if view == "Terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/ngrams">Terms</a>
 				</center>
 		</div>
 

@@ -287,6 +287,7 @@ def corpus(request, project_id, corpus_id):
             'processing' : processing,
 #            'documents': documents,\
             'number' : number,
+            'view'   : "Documents"
             }))
 
     return HttpResponse(html)

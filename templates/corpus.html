@@ -5,7 +5,7 @@
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/bootstrap-select.min.css" %}">
+<!-- here goes import stylesheet js/bootstrap/bootstrap-multiselect.css, mais ca marche pas-->
 
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
@@ -110,18 +110,7 @@ th a {
     </div>
     <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
       <div class="panel-body">
-                <p align="right">
-                    <table id="my-ajax-table" class="table table-bordered">
-                      <thead>
-                        <!-- <th data-dynatable-column="id">ID</th> -->
-                        <th width="100px;" data-dynatable-column="date">Date</th>
-                        <th data-dynatable-column="name">Title</th>
-                        <th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>
-                      </thead>
-                      <tbody>
-                      </tbody>
-                    </table>
-                </p>
+                  <div id="div-table"></div>
                 <p align="right">
                     <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
                 </p>
@@ -180,24 +169,26 @@ th a {
 </div>
 
 
-<div id="supmofos">
+<div id="filter_search" style="visibility:hidden">
   
 
-  <select data-width="100px" dir="ltr" class="selectpicker">
-    <option selected>All</option>
-    <option>Title</option>
-    <option>Date</option>
-    <optgroup label="Duplicates">
-      <option>by DOI</option>
-      <option>by Title</option>
-    </optgroup>
-  </select>
+<select id="example-single-optgroups" onchange="SearchFilters(this);">
+    <!-- <optgroup label=""> -->
+        <option id="filter_all" value="filter_all">All</option>
+        <!-- <option id="filter_title" value="filter_title">Title</option> -->
+        <!-- <option id="filter_date" value="filter_date">Date</option> -->
+    <!-- </optgroup> -->
+    <!-- <optgroup label="Duplicates"> -->
+        <!-- <option value="filter_doi">By DOI</option> -->
+        <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
+    <!-- </optgroup> -->
+</select>
 
 </div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/bootstrap/bootstrap-select.min.js" %}"></script>
+<!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->

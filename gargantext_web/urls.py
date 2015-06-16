@@ -55,7 +55,7 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/journals', corpus_views.get_journals),
 
     # Terms view
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', corpus_views.test_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', corpus_views.test_ngrams),
     url(r'^project/(\d+)/corpus/(\d+)/terms', corpus_views.get_ngrams),
 
     # Update corpus

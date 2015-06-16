@@ -1,10 +1,11 @@
-from django.shortcuts import redirect
-from django.shortcuts import render
+from admin.utils import PrintException
+from django.shortcuts import redirect, render, render_to_response
+
 from django.db import transaction
 
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
-from django.template import Context
+from django.template import Context, RequestContext
 
 # remove this
 from node import models
@@ -43,7 +44,7 @@ from sqlalchemy import or_, func
 
 from gargantext_web import about
 
-
+from gargantext_web.db import NodeNgram, NodeNgramNgram
 
 def login_user(request):
     logout(request)
@@ -251,6 +252,71 @@ def projects(request):
         })
 
 
+def update(request, project_id, corpus_id, view=None):
+    '''
+    update function:
+        - remove previous computations (temporary lists and coocurrences)
+        - permanent deletion of Trash
+
+    '''
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+        offset = str(view)
+    except ValueError:
+        raise Http404()
+    try:
+        white = (session.query(Node)
+                .filter(Node.parent_id==corpus_id)
+                .filter(Node.type_id  == cache.NodeType['WhiteList'].id)
+                .first()
+                )
+
+        session.query(NodeNgram).filter(NodeNgram.node_id==white.id).delete()
+        session.delete(white)
+
+        cooc = (session.query(Node)
+                .filter(Node.parent_id==corpus_id)
+                .filter(Node.type_id  == cache.NodeType['Cooccurrence'].id)
+                .first()
+                )
+
+        session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc.id).delete()
+        session.delete(cooc)
+
+        session.commit()
+    except :
+        PrintException()
+
+    #return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
+
+
+    nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id, user_id=request.user.id).all()
+    with transaction.atomic():
+        for node in nodes:
+            try:
+                node.children.delete()
+            except Exception as error:
+                print(error)
+
+            node.delete()
+
+
+
+
+    return redirect(request.path.replace('update', ''))
+#
+#    return render_to_response(
+#            request.path,
+#            { 'title': 'User profile' },
+#            context_instance=RequestContext(request)
+#        )
+#
+
+
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -287,7 +353,7 @@ def corpus(request, project_id, corpus_id):
             'processing' : processing,
 #            'documents': documents,\
             'number' : number,
-            'view'   : "Documents"
+            'view'   : "documents"
             }))
 
     return HttpResponse(html)
@@ -626,14 +692,14 @@ def node_link(request, corpus_id):
     data = []
 
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
-    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
-    print("file exists?:",os.path.isfile(filename))
-    if os.path.isfile(filename):
-        json_data = open(filename,"r")
-        data = json.load(json_data)
-        json_data.close()
-    else:
-        data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+#    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
+#    print("file exists?:",os.path.isfile(filename))
+#    if os.path.isfile(filename):
+#        json_data = open(filename,"r")
+#        data = json.load(json_data)
+#        json_data.close()
+#    else:
+    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):

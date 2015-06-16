@@ -128,7 +128,7 @@ def get_ngrams(request , project_id , corpus_id ):
             'processing' : processing,
             'number' : number,
             'list_id': list_id[0][0],
-            'view'   : "Terms",
+            'view'   : "terms",
             }))
 
     return HttpResponse(html)
@@ -195,7 +195,7 @@ def get_journals(request , project_id , corpus_id ):
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
-            'view'   : "Journals",
+            'view'   : "journals",
             }))
 
     return HttpResponse(html)

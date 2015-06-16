@@ -264,7 +264,7 @@
 		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 		      },
 		      success: function(data) {
-				console.log("in doTheQuery()")
+				console.log("in doTheQuery() Ajax.Success:")
 		        console.log(data)
 		        location.reload();
 		      },
@@ -487,7 +487,6 @@
 
 
 			var pubmedifiedQuery = { query : query , string: query }
-			// console.log(pubmedifiedQuery)
 
 			var projectid = window.location.href.split("project")[1].replace(/\//g, '')//replace all the slashes
 

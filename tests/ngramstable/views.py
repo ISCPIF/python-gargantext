@@ -50,7 +50,11 @@ from gargantext_web import about
 from gargantext_web.api import JsonHttpResponse
 
 
-def get_ngrams(request , project_id , corpus_id ):
+from ngram.lists import listIds, listNgramIds, ngramList , doList
+
+
+def test_page(request , project_id , corpus_id):
+
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     
@@ -60,7 +64,7 @@ def get_ngrams(request , project_id , corpus_id ):
     except ValueError:
         raise Http404()
 
-    t = get_template('tests/ngrams.html')
+    t = get_template('tests/test_select-boostrap.html')
     
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
@@ -86,6 +90,131 @@ def get_ngrams(request , project_id , corpus_id ):
 
     return HttpResponse(html)
 
+def get_ngrams(request , project_id , corpus_id ):
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+    except ValueError:
+        raise Http404()
+
+    t = get_template('tests/ngrams.html')
+    
+    user = cache.User[request.user.username].id
+    date = datetime.datetime.now()
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+
+    lists = dict()
+    for list_type in ['MiamList', 'StopList']:
+        list_id = list()
+        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
+        lists["%s" % list_id[0][0]] = list_type
+
+    try:
+        processing = corpus.hyperdata['Processing']
+    except Exception as error:
+        print(error)
+        processing = 0
+
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
+            'number' : number,
+            'list_id': list_id[0][0],
+            }))
+
+    return HttpResponse(html)
+
+
+
+def test_test(request , corpus_id , doc_id):
+    """Get All for a doc id"""
+    corpus_id = int(corpus_id)
+    doc_id = int(doc_id)
+    lists = dict()
+    for list_type in ['StopList']:
+        list_id = list()
+        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
+        lists["%s" % list_id[0][0]] = list_type
+    print(list_id[0][0])
+
+
+    # # # ngrams of list_id of corpus_id:
+    # commeca = "StopList"
+    doc_ngram_list = listNgramIds(corpus_id=corpus_id, list_id=list_id[0][0], doc_id=list_id[0][0], user_id=request.user.id)
+
+    to_del = {}
+    for n in doc_ngram_list:
+        to_del[ n[0] ] = True
+
+    print( to_del.keys() )
+
+    results = [ "hola" , "mundo" ]
+    return JsonHttpResponse(results)
+
+
+def get_journals(request , project_id , corpus_id ):
+
+    if not request.user.is_authenticated():
+        return redirect('/login/?next=%s' % request.path)
+    
+    try:
+        offset = int(project_id)
+        offset = int(corpus_id)
+    except ValueError:
+        raise Http404()
+
+    t = get_template('tests/journals.html')
+    
+    user = cache.User[request.user.username].id
+    date = datetime.datetime.now()
+    project = cache.Node[int(project_id)]
+    corpus  = cache.Node[int(corpus_id)]
+    type_doc_id = cache.NodeType['Document'].id
+    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+
+    try:
+        processing = corpus.hyperdata['Processing']
+    except Exception as error:
+        print(error)
+        processing = 0
+
+    html = t.render(Context({
+            'debug': settings.DEBUG,
+            'user': user,
+            'date': date,
+            'project': project,
+            'corpus' : corpus,
+            'processing' : processing,
+            'number' : number,
+            }))
+
+    return HttpResponse(html)
+
+def test_journals(request , project_id, corpus_id ):
+    results = ["hola" , "mundo"]
+
+    JournalsDict = {}
+
+    user_id = request.user.id
+    document_type_id = cache.NodeType['Document'].id
+    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
+    for doc in documents:
+        if "journal" in doc.hyperdata:
+            journal = doc.hyperdata["journal"]
+            if journal not in JournalsDict:
+                JournalsDict [journal] = 0
+            JournalsDict[journal] += 1
+    return JsonHttpResponse(JournalsDict)
 
 def test_ngrams(request , project_id, corpus_id ):
     results = ["hola" , "mundo"]
@@ -93,6 +222,17 @@ def test_ngrams(request , project_id, corpus_id ):
     user_id = request.user.id
     whitelist_type_id = cache.NodeType['WhiteList'].id
     document_type_id = cache.NodeType['Document'].id
+
+    corpus_id = int(corpus_id)
+    lists = dict()
+    for list_type in ['StopList']:
+        list_id = list()
+        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
+        lists["%s" % list_id[0][0]] = list_type
+    doc_ngram_list = listNgramIds(corpus_id=corpus_id, list_id=list_id[0][0], doc_id=list_id[0][0], user_id=request.user.id)
+    StopList = {}
+    for n in doc_ngram_list:
+        StopList[ n[0] ] = True
 
     # # 13099  clinical benefits
     # # 7492   recent data
@@ -145,15 +285,16 @@ def test_ngrams(request , project_id, corpus_id ):
     for doc in documents:
         NgramOccs = session.query(Node_Ngram).filter( Node_Ngram.node_id==doc.id).all()
         for ngram in NgramOccs:
-            if ngram.ngram_id not in Ngrams_Scores:
-                Ngrams_Scores[ngram.ngram_id] = {} 
-                Ngrams_Scores[ngram.ngram_id]["scores"] = {
-                    "occ_sum": 0.0,
-                    "occ_uniq": 0.0,
-                    "tfidf_sum": 0.0
-                }
-            Ngrams_Scores[ngram.ngram_id]["scores"]["occ_sum"]+=ngram.weight
-            Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]+=1
+            if ngram.ngram_id not in StopList:
+                if ngram.ngram_id not in Ngrams_Scores:
+                    Ngrams_Scores[ngram.ngram_id] = {} 
+                    Ngrams_Scores[ngram.ngram_id]["scores"] = {
+                        "occ_sum": 0.0,
+                        "occ_uniq": 0.0,
+                        "tfidf_sum": 0.0
+                    }
+                Ngrams_Scores[ngram.ngram_id]["scores"]["occ_sum"]+=ngram.weight
+                Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]+=1
             # print("\t" , ngram.ngram_id , "\t" , ngram.weight )
     ## Getting the Effective nro de OCCS / >##
 
@@ -177,9 +318,10 @@ def test_ngrams(request , project_id, corpus_id ):
     Sum = 0
     NgramTFIDF = session.query(NodeNodeNgram).filter( NodeNodeNgram.nodex_id==corpus_id ).all()
     for ngram in NgramTFIDF:
-        Ngrams_Scores[ngram.ngram_id]["scores"]["tfidf_sum"] += ngram.score
-        Sum += Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]
-        # print( "docid:", ngram.nodey_id , ngram.ngram_id  , ngram.score)
+        if ngram.ngram_id not in StopList:
+            Ngrams_Scores[ngram.ngram_id]["scores"]["tfidf_sum"] += ngram.score
+            Sum += Ngrams_Scores[ngram.ngram_id]["scores"]["occ_uniq"]
+            # print( "docid:", ngram.nodey_id , ngram.ngram_id  , ngram.score)
 
 
     # import pprint
@@ -210,13 +352,14 @@ def test_ngrams(request , project_id, corpus_id ):
     query = session.query(Ngram).filter(Ngram.id.in_( ngrams_ids ))
     ngrams_data = query.all()
     for ngram in ngrams_data:
-    	occ_uniq = Ngrams_Scores[ngram.id]["scores"]["occ_uniq"]
-    	if occ_uniq > occs_threshold:
-	        Ngrams_Scores[ngram.id]["name"] = ngram.terms
-	        Ngrams_Scores[ngram.id]["id"] = ngram.id
-	        Ngrams_Scores[ngram.id]["scores"]["tfidf"] = Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"] / occ_uniq
-	        del Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"]
-	        Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
+        if ngram.id not in StopList:
+            occ_uniq = Ngrams_Scores[ngram.id]["scores"]["occ_uniq"]
+            if occ_uniq > occs_threshold:
+                Ngrams_Scores[ngram.id]["name"] = ngram.terms
+                Ngrams_Scores[ngram.id]["id"] = ngram.id
+                Ngrams_Scores[ngram.id]["scores"]["tfidf"] = Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"] / occ_uniq
+                del Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"]
+                Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
 
 
 

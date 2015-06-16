@@ -119,11 +119,15 @@ function Final_UpdateTable( action ) {
 var current_docs = {}
 var BIS_dict = {}
 
-var path = window.location.pathname.match(/\/project\/(.*)\/corpus\/(.*)\//);
-var projectid = path[1]
-var corpusid  = path[2]
-
-var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
+var url_elems = window.location.href.split("/")
+var url_mainIDs = {}
+for(var i=0; i<url_elems.length; i++) {
+  // if the this element is a number:
+  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
+    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
+  }
+}
+var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
 // $.ajax({
 //   url: theurl,
 //   success: function(data) {
@@ -204,6 +208,38 @@ function transformContent(rec_id , header , content) {
   } else return content;
 }
 
+
+$("#move2trash")
+.click(function(){
+
+    var ids2trash = []
+    for(var i in Garbage) {
+      ids2trash.push(AjaxRecords[i].id);
+    }
+
+    console.log("ids to the trash:")
+    console.log(ids2trash)
+
+    $.ajax({
+      url: "/tests/move2trash/",
+      data: "nodeids="+JSON.stringify(ids2trash),
+      type: 'POST',
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+      success: function(data) {
+        console.log("in #move2trash")
+        console.log(data)
+        location.reload();
+      },
+        error: function(result) {
+            console.log("Data not found in #move2trash");
+            console.log(result)
+        }
+    });
+})
+.hide();
+
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
   // pr("\tulWriter: "+record.id)
@@ -224,9 +260,30 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr>' + tr + '</tr>';
 }
 
+
+
+// var div__filter_for_search = ''
+//   div__filter_for_search += '<select data-width="100px" class="selectpicker" multiple  data-max-options="1">';
+//   div__filter_for_search += '  <optgroup label="All" data-max-options="1" selected>';
+//   div__filter_for_search += '    <option>Title</option>';
+//   div__filter_for_search += '    <option>Date</option>';
+//   div__filter_for_search += '  </optgroup>';
+//   div__filter_for_search += '  <optgroup label="Category" data-max-options="1">';
+//   div__filter_for_search += '    <option>Title</option>';
+//   div__filter_for_search += '    <option>Date</option>';
+//   div__filter_for_search += '  </optgroup>';
+//   div__filter_for_search += '  <optgroup label="Duplicates" data-max-options="1">';
+//   div__filter_for_search += '    <option>by DOI</option>';
+//   div__filter_for_search += '    <option>by Title</option>';
+//   div__filter_for_search += '  </optgroup>';
+//   div__filter_for_search += '</select>';
+
+// $("#supmofos").html(div__filter_for_search)
+
+
 // (3) Get records and hyperdata for paginator
   $.ajax({
-    url: '/tests/paginator/corpus/'+corpusid,
+    url: '/tests/paginator/corpus/'+url_mainIDs["corpus"],
     success: function(data){
       console.log(data)
 
@@ -235,7 +292,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
         var orig_id = parseInt(data.records[i].id)
         var arr_id = parseInt(i)
         RecDict[orig_id] = arr_id;
-        data.records[i]["name"] = '<a target="_blank" href="/project/'+projectid+'/corpus/'+ corpusid + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
+        data.records[i]["name"] = '<a target="_blank" href="/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
         data.records[i]["del"] = false
 
         var date = data.records[i]["date"];  
@@ -247,36 +304,6 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 
       // $("#move2trash").prop('disabled', true);
 
-      $("#move2trash")
-      .click(function(){
-
-          var ids2trash = []
-          for(var i in Garbage) {
-            ids2trash.push(AjaxRecords[i].id);
-          }
-
-          console.log("ids to the trash:")
-          console.log(ids2trash)
-
-          $.ajax({
-            url: "/tests/move2trash/",
-            data: "nodeids="+JSON.stringify(ids2trash),
-            type: 'POST',
-            beforeSend: function(xhr) {
-              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-            },
-            success: function(data) {
-              console.log("in #move2trash")
-              console.log(data)
-              location.reload();
-            },
-              error: function(result) {
-                  console.log("Data not found in #move2trash");
-                  console.log(result)
-              }
-          });
-      })
-      .hide();
 
 
       var t0 = AjaxRecords[0].date.split("-").map(Number)
@@ -429,6 +456,13 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
       $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
       $(".dynatable-record-count").insertAfter(".imadiv")
       $(".dynatable-pagination-links").insertAfter(".imadiv")
-      // console.log(RecDict)
+      
+      var the_content = $("#supmofos").html();
+      $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
+      $("#supmofos").remove()
+      // .insertAfter("#dynatable-query-search-my-ajax-table")
+
+
     }
   });
+

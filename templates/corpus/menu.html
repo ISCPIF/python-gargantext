@@ -11,7 +11,7 @@
 				<div class="col-md-4">
 
 						{% if project %}
-						<h1>{{ project.name }}</h1>
+						<h1><a href="/project/{{project.id}}">{{ project.name }}</a></h1>
 						<h2>{{ corpus.name }}</h2>
 						{% endif %}
 										<!--<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->

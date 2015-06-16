@@ -1,4 +1,5 @@
 {% extends "menu.html" %}
+{% load staticfiles %}
 
 {% block corpusBannerTop %}
 
@@ -10,7 +11,7 @@
 				<div class="col-md-4">
 
 						{% if project %}
-						<h1>{{ project.name }}</h1>
+						<h1><a href="/project/{{project.id}}">{{ project.name }}</a></h1>
 						<h2>{{ corpus.name }}</h2>
 						{% endif %}
 										<!--<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
@@ -64,7 +65,10 @@
 				<center>
 				<a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/documents">{{number}} Documents</a>
 							<a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
+						
+							{% if processing == 0 %}
 							<a type="button" class="btn btn-default {% if view == "terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/terms">Terms</a>
+							{% endif %}
 				</center>
 		</div>
 
@@ -104,7 +108,7 @@
 				<div class="col-md-4">
 						<div class="jumbotron">
 								{% if processing > 0 %}
-										<h3> Graph (later)</h3>
+										<h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
                 {% else %}
                                 <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
                 {% endif %}

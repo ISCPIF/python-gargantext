@@ -24,13 +24,13 @@
         <div class="row-fluid main-panel" ng-controller="IntraTextController">
           <div class="col-md-4 col-xs-4 tabbable words-panel">
             <ul class="nav nav-pills nav-justified">
-              <li class="active"><a href="#tab1" data-toggle="tab"><span class="glyphicon glyphicon-tags"></span>&nbsp;&nbsp;Miamwords</a></li>
-              <!--<li><a href="#tab2" data-toggle="tab">Local stopwords</a></li>-->
+              <li class="active"><a href="#tab1" data-toggle="tab">Miamwords</a></li>
+              <li><a href="#tab2" data-toggle="tab">Stopwords</a></li>
             </ul>
             <div class="tab-content">
               <div class="tab-pane active" id="tab1">
+                <div ng-if="extra_miamlist.length == 0" class="alert alert-info" role="alert">No extra text miam-word yet</div>
                 <ul class="list-group words-list">
-                  <div ng-if="extra_miamlist.length == 0" class="alert alert-info" role="alert">No extra text miam-word yet</div>
 
                   <li ng-repeat="keyword in extra_miamlist | startFrom:currentMiamPage*pageSize | limitTo:pageSize" class="list-group-item">
                     <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
@@ -47,22 +47,24 @@
                   <button type="submit" class="btn btn-default btn-primary" ng-click="onMiamlistSubmit($event)">Add</button>
                 </div>
               </div>
-              <!--<div class="tab-pane" id="tab2">
-                <ul class="list-group words-list clearfix">
-                  <div ng-if="extra_stoplist.length == 0" class="alert alert-info" role="alert">No extra-text stop-word yet</div>
-                  <li ng-repeat="keyword in extra_stoplist | startFrom:currentStopPage*pageSize | limitTo:pageSize" class="list-group-item"><div ng-controller="ExtraAnnotationController" keyword-template></div></li>
+              <div class="tab-pane" id="tab2">
+                <div ng-if="extra_stoplist.length == 0" class="alert alert-info" role="alert">No extra text stop-word yet</div>
+                <ul class="list-group words-list">
+                  <li ng-repeat="keyword in extra_stoplist | startFrom:currentStopPage*pageSize | limitTo:pageSize" class="list-group-item">
+                    <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
+                  </li>
                 </ul>
                 <nav ng-class="{invisible: numStopPages() - 1 == 0}" class="clearfix">
                   <ul class="pagination pagination-s pull-right words-pagination">
-                    <li ng-class="{disabled: currentStopPage == 0}"><a ng-click="previousStopPage()" class="glyphicon glyphicon-backward"></a></li>
+                    <li ng-class="{disabled: currentStopPage == 0}"><a ng-click="previousMiamPage()" class="glyphicon glyphicon-backward"></a></li>
                     <li ng-class="{disabled: currentStopPage >= numStopPages()-1}"><a ng-click="nextStopPage()" class="glyphicon glyphicon-forward"></a></li>
                   </ul>
                 </nav>
                 <div class="form-group">
                   <input type="text" class="form-control" id="stoplist-input" ng-keypress="onStoplistSubmit($event)">
-                  <button type="submit" class="btn btn-default" ng-click="onStoplistSubmit($event)">Exclude</button>
+                  <button type="submit" class="btn btn-default btn-primary" ng-click="onStoplistSubmit($event)">Add</button>
                 </div>
-            </div>-->
+              </div>
             </div>
           </div>
           <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">

@@ -21,13 +21,13 @@ def get_team():
              'mail' : 'alexandre+gargantextATdelanoe.org',
              'website' : 'http://alexandre.delanoe.org',
              'picture' : 'alexandre.jpg',
-             'role' : 'project investigator, developer'},
+             'role' : 'principal investigator, developer'},
 
             { 'first_name' : 'David', 'last_name' : 'Chavalarias',
              'mail' : 'david.chavalariasATiscpif.fr',
              'website' : 'http://chavalarias.com',
              'picture' : 'david.jpg',
-             'role':'project investigator'},
+             'role':'principal investigator'},
 
             { 'first_name' : 'Mathieu', 'last_name' : 'Rodic',
              'mail' : '',

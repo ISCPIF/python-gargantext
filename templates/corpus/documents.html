@@ -1,22 +1,20 @@
-
-{% extends "menu.html" %}
+{% extends "corpus/menu.html" %}
 
 {% block css %}
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<!-- here goes import stylesheet js/bootstrap/bootstrap-multiselect.css, mais ca marche pas-->
+
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
 <link rel="stylesheet" type="text/css" href="{% static "css/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.dynatable.css"%}"/>
 
-
 <script type="text/javascript" src="{% static "js/charts/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
-<!-- <script type="text/javascript" src="http://localhost/i7/js_examples/DC_linear/dc.js"></script> -->
 <script type="text/javascript" src="{% static "js/charts/dc.js"%}"></script>
-
 
 <style>
 .no-transition {
@@ -35,73 +33,11 @@ th a {
   font-size: 0.9em;
 }
 
-/*tr:hover {
-  cursor: pointer;
-  color: #000;
-  font-weight: bold;
-}*/
-
-.to_delete {
-  color:red; 
-  opacity: 0.8;
-}
-
-.to_group {
-  color:blue;
-}
-
-
-.to_keep {
-  color:green;
-}
-
 .dynatable-record-count {
   font-size: 0.7em;
 }
 .dynatable-pagination-links {
   font-size: 0.7em;  
-}
-input[type=radio] {
-    display:none;
-}
- 
-input[type=radio] + label {
-    display:inline-block;
-    margin:-2px;
-    padding: 4px 12px;
-    margin-bottom: 0;
-    font-size: 14px;
-    line-height: 20px;
-    color: #333;
-    text-align: center;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.75);
-    vertical-align: middle;
-    cursor: pointer;
-    background-color: #f5f5f5;
-    background-image: -moz-linear-gradient(top,#fff,#e6e6e6);
-    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
-    background-image: -webkit-linear-gradient(top,#fff,#e6e6e6);
-    background-image: -o-linear-gradient(top,#fff,#e6e6e6);
-    background-image: linear-gradient(to bottom,#fff,#e6e6e6);
-    background-repeat: repeat-x;
-    border: 1px solid #ccc;
-    border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-    border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
-    border-bottom-color: #b3b3b3;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-}
- 
-input[type=radio]:checked + label {
-       background-image: none;
-    outline: 0;
-    -webkit-box-shadow: inset 0 2px 4px rgba(0,0,0,0.15),0 1px 2px rgba(0,0,0,0.05);
-    -moz-box-shadow: inset 0 2px 4px rgba(0,0,0,0.15),0 1px 2px rgba(0,0,0,0.05);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15),0 1px 2px rgba(0,0,0,0.05);
-        background-color:#e0e0e0;
 }
 
 </style>
@@ -109,45 +45,21 @@ input[type=radio]:checked + label {
 {% endblock %}
 
 
+
 {% block content %}
-
-<div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                        {% if project %}
-                            <h1>{{ project.name }}, {{ corpus.name }}
-                            </h1>
-                            {% endif %}
-
-                        {% if corpus %}
-                        <p>
-                        Created on {{ corpus.date }} 
-                        </p>
-                        <div id="stats"></div>
-                        {% endif %}
-
-                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
-
-                        {% if number == 0 %}
-                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-                        {% endif %}
-    
-        </div>
-</div>
 
                 <div class="container">
                         <div class="container">
 
                             <div class="row">
-                                    
+                                    <div id="monthly-move-chart">
                                     <center>
-                                    <div id="ScoresBox"></div> <br>(Blue bars: all,  Green line: zoom)
+                                    <strong>Title</strong> (Blue bars: all,  Green line: zoom)
                                             <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
                                                     style="display: none;">reset</a>
                                             <div class="clearfix"></div>
                                     </center>
-                                    <div id="monthly-move-chart"></div>
+                                    </div>
                             </div>
 
                             <div class="row">
@@ -157,6 +69,8 @@ input[type=radio]:checked + label {
                     </div>
                         <p align="center">
                         <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+
+
 
 
 <div class="container">
@@ -174,19 +88,9 @@ input[type=radio]:checked + label {
     <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
       <div class="panel-body">
                   <div id="div-table"></div>
-                <!-- <p align="right">
-                    <table id="my-ajax-table" class="table table-bordered">
-                      <thead>
-                        <th data-dynatable-column="name">Title</th>
-                        <th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>
-                        <th data-dynatable-column="del" data-dynatable-no-sort="true">
-                            <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select
-                        </th>
-                      </thead>
-                      <tbody>
-                      </tbody>
-                    </table>
-                </p> -->
+                <p align="right">
+                    <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
+                </p>
 
 
       </div>
@@ -195,7 +99,6 @@ input[type=radio]:checked + label {
 </div>
 </div>
 </div>
-
 
 <div class="container">
 		<div class="row">
@@ -213,7 +116,8 @@ input[type=radio]:checked + label {
 
 				<div class="col-md-4">
 						<div class="jumbotron">
-										<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
+                            <!-- <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3> -->
+								<h3>Matrix (soon)</h3>
 						<ol>
 								<li>Sort</li>
 								<li>Group</li>
@@ -242,16 +146,33 @@ input[type=radio]:checked + label {
 </div>
 
 
+<div id="filter_search" style="visibility:hidden">
+<select id="example-single-optgroups" onchange="SearchFilters(this);">
+    <!-- <optgroup label=""> -->
+        <option id="filter_all" value="filter_all">All</option>
+        <!-- <option id="filter_title" value="filter_title">Title</option> -->
+        <!-- <option id="filter_date" value="filter_date">Date</option> -->
+    <!-- </optgroup> -->
+    <!-- <optgroup label="Duplicates"> -->
+        <!-- <option value="filter_doi">By DOI</option> -->
+        <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
+    <!-- </optgroup> -->
+</select>
 
+</div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>
+<!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
-<script type="text/javascript" src="{% static "js/Journals_dyna_chart_and_table.js" %}"></script>
+<script type="text/javascript" src="{% static "js/Docs_dyna_chart_and_table.js" %}"></script>
 
 
 
 
 {% endblock %}
+
+
+

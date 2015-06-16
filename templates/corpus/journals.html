@@ -1,10 +1,11 @@
-
-{% extends "menu.html" %}
+{% extends "corpus/menu.html" %}
 
 {% block css %}
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/bootstrap-select.min.css" %}">
+
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
@@ -35,14 +36,10 @@ th a {
   font-size: 0.9em;
 }
 
-tr:hover {
+/*tr:hover {
   cursor: pointer;
   color: #000;
   font-weight: bold;
-}
-/*
-.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-  background-color: #F5A9A9;
 }*/
 
 .to_delete {
@@ -114,36 +111,6 @@ input[type=radio]:checked + label {
 
 
 {% block content %}
-
-
-<input type="hidden" id="list_id" value="{{ list_id }}"></input>
-
-
-<div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                        {% if project %}
-                            <h1>{{ project.name }}, {{ corpus.name }}
-                            </h1>
-                            {% endif %}
-
-                        {% if corpus %}
-                        <p>
-                        Created on {{ corpus.date }} 
-                        </p>
-                        <div id="stats"></div>
-                        {% endif %}
-
-                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
-
-                        {% if number == 0 %}
-                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-                        {% endif %}
-    
-        </div>
-</div>
-
                 <div class="container">
                         <div class="container">
 
@@ -195,10 +162,6 @@ input[type=radio]:checked + label {
                       </tbody>
                     </table>
                 </p> -->
-                <p align="right">
-                    <button id="Clean_All" class="btn btn-warning" disabled>Clean</button>
-                    <button id="Save_All" class="btn btn-primary" disabled>Save</button>
-                </p>
 
 
       </div>
@@ -207,76 +170,6 @@ input[type=radio]:checked + label {
 </div>
 </div>
 </div>
-
-
-<div class="container">
-		<div class="row">
-				<div class="col-md-4">
-						<div class="jumbotron">
-						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
-						<ol>
-								<li>Count</li> <!-- read, compute -->
-								<li>Filter</li> <!-- count, compute -->
-								<li>Compare</li> <!-- select, cut -->
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-					</div>
-				</div>
-
-				<div class="col-md-4">
-						<div class="jumbotron">
-										<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
-
-				<div class="col-md-4">
-						<div class="jumbotron">
-								{% if processing > 0 %}
-                <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
-                {% else %}
-                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
-                {% endif %}
-                        <ol>
-                                <li>Visualize</li>
-                                <li>Explore</li>
-                                <li>Read</li>
-                        </ol>
-                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-                        </div>
-                </div>
-        </div>
-</div>
-
-
-<div id="savemodal" class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Group NGrams</h4>
-      </div>
-
-      <div class="modal-body form-horizontal">
-        Do you want to merge this elements before continuing?:
-        <div id="to_group"></div>
-      </div>
-
-      <div class="modal-footer">
-        <button id="closesavemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="GroupNGrams();">Save</button>
-      </div>
-
-    </div>
-  </div>
-</div> 
 
 
 
@@ -285,7 +178,7 @@ input[type=radio]:checked + label {
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
-<script type="text/javascript" src="{% static "js/NGrams_dyna_chart_and_table.js" %}"></script>
+<script type="text/javascript" src="{% static "js/Journals_dyna_chart_and_table.js" %}"></script>
 
 
 

@@ -97,10 +97,10 @@ def listNgramIds(list_id=None, typeList=None,
 
     ListNgram = aliased(NodeNgram)
     or_args = [ListNgram.node_id == l[0] for l in allLists]
-    query = (session.query(Ngram.id, Ngram.terms, func.count(), ListNgram.node_id)
+    query = (session.query(Ngram.id, Ngram.terms, func.sum(ListNgram.weight), ListNgram.node_id)
             .join(ListNgram, ListNgram.ngram_id == Ngram.id)
             .filter(or_(*or_args))
-            .group_by(Ngram.id, ListNgram)
+            .group_by(Ngram.id, ListNgram.node_id)
             )
 
     if doc_id is not None:

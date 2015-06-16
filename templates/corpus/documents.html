@@ -1,16 +1,16 @@
-
-{% extends "menu.html" %}
+{% extends "corpus/menu.html" %}
 
 {% block css %}
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/bootstrap-select.min.css" %}">
+
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
 <link rel="stylesheet" type="text/css" href="{% static "css/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.dynatable.css"%}"/>
-
 
 <script type="text/javascript" src="{% static "js/charts/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/charts/crossfilter.js"%}"></script>
@@ -45,31 +45,8 @@ th a {
 {% endblock %}
 
 
+
 {% block content %}
-
-<div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                                {% if project %}
-                                <h1>{{ project.name }}, {{ corpus.name }}
-                                </h1>
-                                {% endif %}
-
-                            {% if corpus %}
-                            <p>
-                            {{ number}} docs, Created on {{ corpus.date }} 
-                            </p>
-                            {% endif %}
-
-                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
-
-                        {% if number == 0 %}
-                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-                        {% endif %}
-    
-        </div>
-</div>
 
                 <div class="container">
                         <div class="container">
@@ -92,6 +69,8 @@ th a {
                     </div>
                         <p align="center">
                         <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+
+
 
 
 <div class="container">
@@ -132,60 +111,33 @@ th a {
 </div>
 </div>
 
+<div id="supmofos">
+  
 
-<div class="container">
-		<div class="row">
-				<div class="col-md-4">
-						<div class="jumbotron">
-						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
-						<ol>
-								<li>Count</li> <!-- read, compute -->
-								<li>Filter</li> <!-- count, compute -->
-								<li>Compare</li> <!-- select, cut -->
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-					</div>
-				</div>
+  <select data-width="100px" dir="ltr" class="selectpicker">
+    <option selected>All</option>
+    <option>Title</option>
+    <option>Date</option>
+    <optgroup label="Duplicates">
+      <option>by DOI</option>
+      <option>by Title</option>
+    </optgroup>
+  </select>
 
-				<div class="col-md-4">
-						<div class="jumbotron">
-                            <!-- <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3> -->
-								<h3>Matrix (soon)</h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
-
-				<div class="col-md-4">
-						<div class="jumbotron">
-								{% if processing > 0 %}
-                <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
-                {% else %}
-                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
-                {% endif %}
-                        <ol>
-                                <li>Visualize</li>
-                                <li>Explore</li>
-                                <li>Read</li>
-                        </ol>
-                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-                        </div>
-                </div>
-        </div>
 </div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/bootstrap/bootstrap-select.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
-<script type="text/javascript" src="{% static "js/dyna_chart_and_table.js" %}"></script>
+<script type="text/javascript" src="{% static "js/Docs_dyna_chart_and_table.js" %}"></script>
 
 
 
 
 {% endblock %}
+
+
+

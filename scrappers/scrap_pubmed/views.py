@@ -269,11 +269,10 @@ def testISTEX(request , project_id):
 					type_id = resourcetype.id,
 					file = filename,
 				)
-				dwnldsOK+=1			
-
-		# print(urlreqs)
-
-
+				dwnldsOK+=1	
+		if dwnldsOK == 0: return JsonHttpResponse(["fail"])		
+		###########################
+		###########################
 		try:
 			if not DEBUG:
 				apply_workflow.apply_async((corpus.id,),)
@@ -286,50 +285,6 @@ def testISTEX(request , project_id):
 		sleep(1)
 		return HttpResponseRedirect('/project/' + str(project_id))
 
-
-
-
-		# resource_type = ResourceType.objects.get(name="istext" )
-
-		# parent      = Node.objects.get(id=project_id)
-		# node_type   = NodeType.objects.get(name='Corpus')
-		# type_id = NodeType.objects.get(name='Document').id
-		# user_id = User.objects.get( username=request.user ).id
-
-		# corpus = Node(
-		# 	user=request.user,
-		# 	parent=parent,
-		# 	type=node_type,
-		# 	name=query,
-		# )
-
-		# corpus.save()
-
-		# # configuring your queue with the event
-		# for i in range(8):
-		# 	t = threading.Thread(target=tasks.worker2) #thing to do
-		# 	t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-		# 	t.start()
-		# for url in urlreqs:
-		# 	filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.now().microsecond))
-		# 	tasks.q.put( [url , filename]) #put a task in th queue
-		# tasks.q.join() # wait until everything is finished
-		# for filename in tasks.firstResults:
-		# 	corpus.add_resource( user=request.user, type=resource_type, file=filename )
-
-
-		# corpus.save()
-		# print("DEBUG:",DEBUG)
-		# # do the WorkFlow
-		# try:
-		# 	if DEBUG is True:
-		# 		corpus.workflow()
-		# 	else:
-		# 		corpus.workflow.apply_async((), countdown=3)
-
-		# 	return JsonHttpResponse(["workflow","finished"])
-		# except Exception as error:
-		# 	print(error)
 
 	data = [query_string,query,N]
 	return JsonHttpResponse(data)

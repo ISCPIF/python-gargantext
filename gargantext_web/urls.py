@@ -12,11 +12,13 @@ import scrappers.scrap_pubmed.views as pubmedscrapper
 
 import tests.ngramstable.views as samtest
 
+import gargantext_web.corpus_views as corpus_views
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
 
+    ############################################################################
     # Admin views
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', include(admin.site.urls)),
@@ -25,22 +27,41 @@ urlpatterns = patterns('',
     url(r'^auth/$', views.login_user),
     url(r'^auth/logout/$', views.logout_user),
 
+    ############################################################################
     # Dynamic CSS
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
 
+    ############################################################################
     # User Home view
     url(r'^$', views.home_view),
     url(r'^about/', views.get_about),
     url(r'^maintenance/', views.get_maintenance),
 
+    ############################################################################
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
     url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
 
+    ############################################################################
     # Corpus management
+    # Document view (main)
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/documents', views.corpus),
+
+    # Journals view
+    url(r'^project/(\d+)/corpus/(\d+)/journals/journals.json$', corpus_views.test_journals),
+    url(r'^project/(\d+)/corpus/(\d+)/journals', corpus_views.get_journals),
+
+    # Terms view
+    url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', corpus_views.test_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms', corpus_views.get_ngrams),
+
+    # Update corpus
+    url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update),
+
+    ############################################################################
     # annotations App
     url(r'^project/(\d+)/corpus/(\d+)/document/(\d+)/$', annotations_main_view),
     url(r'^annotations/', include(annotations_urls)),
@@ -48,11 +69,13 @@ urlpatterns = patterns('',
     #
     url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
     url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
+    ############################################################################
 
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
     url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
     url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
+    ############################################################################
 
     # Data management
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
@@ -60,6 +83,7 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
 
     url(r'^api/tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
+    ############################################################################
 
     # Data management
     #url(r'^api$', gargantext_web.api.Root), # = ?
@@ -84,8 +108,7 @@ urlpatterns = patterns('',
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
     url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
     url(r'^tests/move2trash/$' , views.move_to_trash_multiple ),
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', samtest.test_ngrams),
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams$', samtest.get_ngrams)
+    url(r'^corpus/(\d+)/document/(\d+)/testpage$', samtest.test_test)
 )
 
 

@@ -159,8 +159,16 @@ function Final_UpdateTable( action ) {
 //      Get all the duplicates using the Django-Garg API
 var current_docs = {}
 var BIS_dict = {}
-var corpusid = window.location.href.split("corpus")[1].replace(/\//g, '')//replace all the slashes
-var theurl = "/api/nodes/"+corpusid+"/children/duplicates?keys=title&limit=9999"
+
+var url_elems = window.location.href.split("/")
+var url_mainIDs = {}
+for(var i=0; i<url_elems.length; i++) {
+  // if the this element is a number:
+  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
+    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
+  }
+}
+var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
 // $.ajax({
 //   url: theurl,
 //   success: function(data) {
@@ -193,7 +201,6 @@ function transformContent2(rec_id) {
   var result = {}
   // console.log("\t\t\telement flag : "+elem["flag"])
   if (elem["flag"]) {
-
     result["id"] = elem["id"]
     result["score"] = '<div class="'+elem["flag"]+'"><i>'+elem["score"]+'</div>'
     result["name"] = '<div class="'+elem["flag"]+'"><i>'+elem["name"]+'</div>'
@@ -215,29 +222,7 @@ function overRide(elem) {
 
   console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
   console.log("\t so the new flag is: "+this_newflag)
-  
-
-  // if(this_newflag)
-  //   FlagsBuffer[this_newflag][id] = true;
-  // else 
-  //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-
-
-
   AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
-
-  var sum__selected_elems = 0;
-  for(var i in FlagsBuffer)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-
-  console.log("")
-  console.log("Current Buffer size: "+sum__selected_elems)
-  console.log(FlagsBuffer)
-
-  if ( sum__selected_elems>0 )
-    $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
-  else 
-    $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 
   MyTable.data('dynatable').dom.update();
 
@@ -249,36 +234,6 @@ function transformContent(rec_id , header , content) {
     if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
     if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   } else return content;
-}
-
-// Here you have to put the weird case of Change from Group-Mode
-function DeactivateSelectAll() {
-  if( $("#multiple_selection").length>0 )
-    $("#multiple_selection")[0].checked = false;
-
-  if( Object.keys(FlagsBuffer["to_group"]).length ){
-
-
-    $("#savemodal").modal("show").css({
-        'margin-top': function () { //vertical centering
-            console.log($(".modal-content").height())
-            return ($(this).height() / 2);
-        }
-    });
-
-    console.log("OH OH")
-    console.log("There are some nodes in group array!:")
-    // $("#to_group").html( Object.keys(FlagsBuffer["to_group"]).join(" , ") );
-    var labels = []
-    for (var i in FlagsBuffer["to_group"]){
-      var fake_id = i
-      console.log( AjaxRecords[fake_id] )
-      labels.push(AjaxRecords[fake_id].name)
-    //   $("#to_group").htm
-    }
-
-    $("#to_group").html( '<font color="blue">' + labels.join(" , ") + '</div>' );
-  }
 }
 
 
@@ -296,11 +251,6 @@ function Mark_NGram( ngram_id , old_flag , new_flag ) {
   return new_flag;
 }
 
-function GroupNGrams() {
-    for (var i in FlagsBuffer["to_group"]){
-      console.log( AjaxRecords[i] )
-    }  
-}
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
@@ -325,56 +275,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
-function SelectAll( the_checkbox ) {
-  var current_flag = $("input[type='radio'][name='radios']:checked").val()
-  $("tbody tr").each(function (i, row) {
-      var id = $(row).data('stuff')
-      // AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;
-      
 
-      var this_newflag = (the_checkbox.checked)?current_flag:false;
-
-      // console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
-      // console.log("\t so the new flag is: "+this_newflag)
-
-      AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
-
-
-
-  });
-  MyTable.data('dynatable').dom.update();
-}
-
-
-$("#Clean_All").click(function(){
-
-  for(var id in AjaxRecords)
-    AjaxRecords[id]["flag"] = false;
-
-  MyTable.data('dynatable').dom.update();
-
-  for(var i in FlagsBuffer)
-    for(var j in FlagsBuffer[i])
-      delete FlagsBuffer[i][j];
-
-  $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-
-});
-
-$("#Save_All").click(function(){
-
-  var sum__selected_elems = 0;
-  for(var i in FlagsBuffer)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-
-  if ( sum__selected_elems>0 ) {
-    console.log("")
-    console.log("Do the ajax conexion with API and send this array to be processed:")
-    console.log(FlagsBuffer)
-    console.log("")
-  }
-
-});
 
 
 
@@ -400,7 +301,8 @@ function Main_test( data , initial) {
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
-      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="score" data-dynatable-sorts="score">No. Pubs</th>'+"\n"
+      // div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
       div_table += "\t"+'</thead>'+"\n"
       div_table += "\t"+'<tbody>'+"\n"
@@ -410,33 +312,32 @@ function Main_test( data , initial) {
     $("#div-table").html(div_table)
 
 
-    var div_stats = "<p>";
-    for(var i in data.scores) {
-      var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
-      div_stats += i+": "+value+" | "
-    }
-    div_stats += "</p>"
-    $("#stats").html(div_stats)
+    // $("#stats").html(div_stats)
 
 
-    for(var i in data.ngrams) {
+    var ID = 0
+    for(var i in data) {
+      console.log(i)
     
-      var le_ngram = data.ngrams[i]
+      // var le_ngram = data.ngrams[i]
 
-      var orig_id = le_ngram.id
-      var arr_id = parseInt(i)
+      var orig_id = ID
+      var arr_id = parseInt(ID)
       RecDict[orig_id] = arr_id;
 
+      var url_title = encodeURIComponent(i)//.replace(" ","+")
+      // url_title = i.replace(" ","+")
       var node_info = {
-        "id" : le_ngram.id,
-        "name": le_ngram.name,
-        "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
-        "flag":false
+        "id" : ID,
+        "name" : '<a target=_blank href="http://google.com/search?q='+url_title+'">'+i+'</a>',
+        "score": data[i],
       }
       AjaxRecords.push(node_info)
 
       if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
       DistributionDict[node_info.score]++;
+
+      ID++;
     }
 
     // console.log("The Distribution!:")
@@ -457,10 +358,6 @@ function Main_test( data , initial) {
 
     oldest = Number(min_occ);
     latest = Number(max_occ);
-
-
-
-
 
 
     var ndx = false;
@@ -568,16 +465,6 @@ function Main_test( data , initial) {
                   _rowWriter: ulWriter
                   // _cellWriter: customCellWriter
                 }
-              })
-              .bind("dynatable:afterUpdate",  function(e, rows) {
-                $(e.target).children("tbody").children().each(function(i) {
-                   $(this).click(function(){
-                     var row_nodeid = $(this).data('stuff')
-                     var elem = { "id":row_nodeid , "checked":false }
-                     overRide(elem); //Select one row -> select one ngram
-
-                    });
-                });
               });
 
     // MyTable.data('dynatable').settings.dataset.records = []
@@ -599,48 +486,20 @@ function Main_test( data , initial) {
 
 
 
-    var Div_PossibleActions = ""
-    for(var action in PossibleActions) {
-      var a = PossibleActions[action];
-      var ischecked = (Number(action)==0)?"checked":"";
-      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios" onclick="DeactivateSelectAll();" value="'+a.id+'" '+ischecked+'>';
-      Div_PossibleActions += '<label style="color:'+a.color+';" for="radio'+action+'">'+a.name+'</label>';
-    }
-    var Div_SelectAll = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'
-    $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
-
-
     return "OK"
 }
 
-console.log(window.location.href+"/ngrams.json")
+console.log(window.location.href+"/journals.json")
 $.ajax({
-  url: window.location.href+"/ngrams.json",
+  url: window.location.href+"/journals.json",
   success: function(data){
 
-    // Building the Score-Selector
-    var FirstScore = data.scores.initial
-    var possible_scores = Object.keys( data.ngrams[0].scores );
-    var scores_div = '<select class="span1" id="scores_selector">'+"\n";
-    scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
-    for( var i in possible_scores ) {
-      if(possible_scores[i]!=FirstScore) {
-        scores_div += "\t"+'<option value="'+possible_scores[i]+'">'+possible_scores[i]+'</option>'+"\n"
-      }
-    }
-    // Initializing the Charts and Table
-    var result = Main_test( data , FirstScore )
+
+    console.log(data)
+    // // Initializing the Charts and Table
+    var result = Main_test( data , "FirstScore" )
     console.log( result )
 
-
-    // Listener for onchange Score-Selector
-    scores_div += "<select>"+"\n";
-    $("#ScoresBox").html(scores_div)
-    $("#scores_selector").on('change', function() {
-      console.log( this.value )
-      var result = Main_test( data , this.value )
-      console.log( result )
-    });
 
 
 

@@ -24,18 +24,18 @@
       // TODO use the tooltip ?
       $scope.onDeleteClick = function () {
         NgramHttpService.delete({
-            'listId': $scope.keyword.list_id,
-            'ngramId': $scope.keyword.uuid
-          }).$promise.then(function(data) {
-            NgramListHttpService.get(
-              {'corpusId': $rootScope.corpusId, 'docId': $rootScope.docId}
-            ).$promise.then(function(data) {
-              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-              $rootScope.lists = data[$rootScope.corpusId.toString()]['lists'];
-            });
+          'listId': $scope.keyword.list_id,
+          'ngramId': $scope.keyword.uuid
+        }).$promise.then(function(data) {
+          $.each($rootScope.annotations, function(index, element) {
+            if (element.list_id == $scope.keyword.list_id && element.uuid == $scope.keyword.uuid) {
+              $rootScope.annotations.splice(index, 1);
+              return false;
+            }
+          });
         });
-      };
-  }]);
+      }
+    }]);
 
   window.annotationsApp.controller('AnnotationController',
     ['$scope', '$rootScope', '$element',
@@ -324,8 +324,13 @@
           $rootScope
         );
 
-        console.log($rootScope.annotations.length);
-        console.log(counter);
+        $.each($rootScope.annotations, function(index, element) {
+          if (element.list_id == $rootScope.stopListId) {
+            $scope.extra_stoplist.push(element);
+          } else if (element.list_id == $rootScope.miamListId) {
+            $scope.extra_miamlist.push(element);
+          }
+        });
 
         angular.element('#full-text').html(result.fullTextHtml);
         angular.element('#abstract-text').html(result.abstractTextHtml);

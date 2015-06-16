@@ -57,7 +57,7 @@ def test_page(request , project_id , corpus_id):
 
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -65,8 +65,7 @@ def test_page(request , project_id , corpus_id):
         raise Http404()
 
     t = get_template('tests/test_select-boostrap.html')
-    
-    user = cache.User[request.user.username].id
+
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
@@ -80,7 +79,7 @@ def test_page(request , project_id , corpus_id):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': user,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -93,16 +92,15 @@ def test_page(request , project_id , corpus_id):
 def get_ngrams(request , project_id , corpus_id ):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
     except ValueError:
         raise Http404()
 
-    t = get_template('tests/ngrams.html')
-    
-    user = cache.User[request.user.username].id
+    t = get_template('corpus/terms.html')
+
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
@@ -123,13 +121,14 @@ def get_ngrams(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': user,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
             'list_id': list_id[0][0],
+            'view'   : "terms",
             }))
 
     return HttpResponse(html)
@@ -166,15 +165,15 @@ def get_journals(request , project_id , corpus_id ):
 
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
     except ValueError:
         raise Http404()
 
-    t = get_template('tests/journals.html')
-    
+    t = get_template('corpus/journals.html')
+
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
@@ -190,12 +189,13 @@ def get_journals(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': user,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
+            'view'   : "journals",
             }))
 
     return HttpResponse(html)
@@ -242,7 +242,7 @@ def test_ngrams(request , project_id, corpus_id ):
     # # 3944   common form
     # ngram_of_interest = 14279
 
-    # documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all() 
+    # documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
     # to_print = []
 
     # for doc in documents:
@@ -287,7 +287,7 @@ def test_ngrams(request , project_id, corpus_id ):
         for ngram in NgramOccs:
             if ngram.ngram_id not in StopList:
                 if ngram.ngram_id not in Ngrams_Scores:
-                    Ngrams_Scores[ngram.ngram_id] = {} 
+                    Ngrams_Scores[ngram.ngram_id] = {}
                     Ngrams_Scores[ngram.ngram_id]["scores"] = {
                         "occ_sum": 0.0,
                         "occ_uniq": 0.0,
@@ -335,7 +335,7 @@ def test_ngrams(request , project_id, corpus_id ):
     #     nodey_id = document id
     #     ngram_id = duh
 
-    # id   | nodex_id | nodey_id | ngram_id |       score        
+    # id   | nodex_id | nodey_id | ngram_id |       score
 
 
     ngrams_ids = Ngrams_Scores.keys()

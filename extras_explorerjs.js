@@ -250,7 +250,16 @@ function getTopPapers(type){
             	for(var i in arraydata) {
             		var pub = arraydata[i]
             		var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
-            		var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
+
+                    var url_elems = window.location.href.split("/")
+                    var url_mainIDs = {}
+                    for(var i=0; i<url_elems.length; i++) {
+                      if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
+                        url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
+                      }
+                    }
+            		var getpubAPI = window.location.origin+'/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+pub["id"]
+                    
 
                     var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 

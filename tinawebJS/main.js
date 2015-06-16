@@ -648,7 +648,7 @@ function theListeners(){
             $.doTimeout(100,function (){
                    partialGraph.iterNodes(function (n) {
                        if(Nodes[n.id].type==catSoc) {
-			   var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
+			               var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
                            n.size = (newval<1.0)?1:newval;
                            sizeMult[catSoc] = parseFloat(value-1)*0.3;
                        }
@@ -668,10 +668,10 @@ function theListeners(){
         onchange:function(value){
             $.doTimeout(100,function (){
                    partialGraph.iterNodes(function (n) {
-                       if(Nodes[n.id].type==catSem) {
-			   var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
+                       if(Nodes[n.id].type==catSoc) {
+                           var newval = parseFloat(Nodes[n.id].size) + parseFloat((value-1))*0.3
                            n.size = (newval<1.0)?1:newval;
-                           sizeMult[catSem] = parseFloat(value-1)*0.3;
+                           sizeMult[catSoc] = parseFloat(value-1)*0.3;
                        }
                    });
                    partialGraph.draw();

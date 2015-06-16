@@ -1,0 +1,116 @@
+{% extends "menu.html" %}
+
+{% block corpusBannerTop %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+
+
+		<div class="row">
+				<div class="col-md-4">
+
+						{% if project %}
+						<h1>{{ project.name }}</h1>
+						<h2>{{ corpus.name }}</h2>
+						{% endif %}
+										<!--<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
+
+				</div>
+		
+				<div class="col-md-4">
+						{% if corpus %}
+								<br>
+								<p>
+								<center>
+								Creation date:
+								<br>
+								{{ corpus.date }} 
+								</center>
+								</p>
+						{% endif %}
+				</div>
+
+				<div class="col-md-4">
+						<br>
+						<!--<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Rename</a>--!>
+						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
+						<a class="btn btn-default btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
+
+						{% if number == 0 %}
+								<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
+						{% endif %}
+				</div>
+
+
+		<div class="btn-group btn-group-justified">
+				<center>
+						<div class="btn-group">
+						<a type="button" class="btn btn-primary btn-lg active" href="/project/{{project.id}}/corpus/{{ corpus.id }}/">{{number}} Documents</a>
+						</div>
+						<div class="btn-group">
+							<a type="button" class="btn btn-primary btn-lg" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
+						</div>
+						<div class="btn-group">
+							<a type="button" class="btn btn-primary btn-lg" href="/project/{{project.id}}/corpus/{{ corpus.id }}/ngrams">Terms</a>
+						</div>
+				</center>
+		</div>
+</div>
+
+ </div>
+
+{% endblock %}
+
+
+{% block corpusBannerBottom %}
+
+<div class="container">
+		<div class="row">
+				<div class="col-md-4">
+						<div class="jumbotron">
+						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
+						<ol>
+								<li>Count</li> <!-- read, compute -->
+								<li>Filter</li> <!-- count, compute -->
+								<li>Compare</li> <!-- select, cut -->
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+					</div>
+				</div>
+
+				<div class="col-md-4">
+						<div class="jumbotron">
+                            <!-- <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3> -->
+								<h3>Matrix (soon)</h3>
+						<ol>
+								<li>Sort</li>
+								<li>Group</li>
+								<li>Cluster</li>
+						</ol>
+						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+						</div>
+				</div>
+
+				<div class="col-md-4">
+						<div class="jumbotron">
+								{% if processing > 0 %}
+										<h3> Graph (later)</h3>
+                {% else %}
+                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
+                {% endif %}
+                        <ol>
+                                <li>Visualize</li>
+                                <li>Explore</li>
+                                <li>Read</li>
+                        </ol>
+                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
+                        </div>
+                </div>
+        </div>
+</div>
+
+
+{% endblock %}
+
+
+

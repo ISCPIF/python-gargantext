@@ -1,10 +1,11 @@
-
-{% extends "menu.html" %}
+{% extends "corpus/menu.html" %}
 
 {% block css %}
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/bootstrap-select.min.css" %}">
+
 <link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 
@@ -110,32 +111,6 @@ input[type=radio]:checked + label {
 
 
 {% block content %}
-
-<div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                        {% if project %}
-                            <h1>{{ project.name }}, {{ corpus.name }}
-                            </h1>
-                            {% endif %}
-
-                        {% if corpus %}
-                        <p>
-                        Created on {{ corpus.date }} 
-                        </p>
-                        <div id="stats"></div>
-                        {% endif %}
-
-                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
-
-                        {% if number == 0 %}
-                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-                        {% endif %}
-    
-        </div>
-</div>
-
                 <div class="container">
                         <div class="container">
 
@@ -195,52 +170,6 @@ input[type=radio]:checked + label {
 </div>
 </div>
 </div>
-
-
-<div class="container">
-		<div class="row">
-				<div class="col-md-4">
-						<div class="jumbotron">
-						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
-						<ol>
-								<li>Count</li> <!-- read, compute -->
-								<li>Filter</li> <!-- count, compute -->
-								<li>Compare</li> <!-- select, cut -->
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-					</div>
-				</div>
-
-				<div class="col-md-4">
-						<div class="jumbotron">
-										<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
-
-				<div class="col-md-4">
-						<div class="jumbotron">
-								{% if processing > 0 %}
-                <h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
-                {% else %}
-                                <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
-                {% endif %}
-                        <ol>
-                                <li>Visualize</li>
-                                <li>Explore</li>
-                                <li>Read</li>
-                        </ol>
-                        <h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-                        </div>
-                </div>
-        </div>
-</div>
-
 
 
 

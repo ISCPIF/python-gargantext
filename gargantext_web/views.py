@@ -6,9 +6,9 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.template.loader import get_template
 from django.template import Context
 
+# remove this
 from node import models
 from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
-
 from django.contrib.auth.models import User
 
 import datetime
@@ -61,11 +61,11 @@ def login_user(request):
                 return HttpResponseRedirect('/projects/')
     return render_to_response('authentication.html', context_instance=RequestContext(request))
 
-
 def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/')
     # Redirect to a success page.
+
 
 def logo(request):
     template = get_template('logo.svg')
@@ -109,7 +109,6 @@ def css(request):
             'css': css,\
             }))
     return HttpResponse(css_data, mimetype="text/css")
-
 
 
 def query_to_dicts(query_string, *query_args):
@@ -251,6 +250,7 @@ def projects(request):
         'projects': projects
         })
 
+
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -261,9 +261,8 @@ def corpus(request, project_id, corpus_id):
     except ValueError:
         raise Http404()
 
-    t = get_template('corpus.html')
+    t = get_template('corpus/documents.html')
 
-    user = request.user
     date = datetime.datetime.now()
 
     project = cache.Node[int(project_id)]
@@ -281,7 +280,7 @@ def corpus(request, project_id, corpus_id):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': user,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -305,7 +304,7 @@ def newpaginatorJSON(request , corpus_id):
     user_id = request.user.id
     # documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
-    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == type_document_id ).all() 
+    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
     # for doc in documents:
     #     print(doc.name)

@@ -221,8 +221,8 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         n = n.sort(inplace=False)
         m = m.sort(inplace=False)
 
-        print(n)
-        print(m)
+        #print(n)
+        #print(m)
 
         nodes_included = 300 #int(round(size/20,0))
         #nodes_excluded = int(round(size/10,0))
@@ -247,25 +247,25 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         xxx = xx.values
         threshold = min(xxx.max(axis=1))
         matrix_filtered = np.where(xxx >= threshold, xxx, 0)
-
         #matrix_filtered = matrix_filtered.resize((90,90))
     except:
         PrintException()
 
     try:
-        G = nx.from_numpy_matrix(matrix_filtered, create_using=nx.MultiDiGraph())
-        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
+        G = nx.from_numpy_matrix(np.matrix(matrix_filtered))
+        #G = nx.from_numpy_matrix(matrix_filtered, create_using=nx.MultiDiGraph())
 
-        #print(G)
+        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
         # Removing too connected nodes (find automatic way to do it)
         #edges_to_remove = [ e for e in G.edges_iter() if
 
         degree = G.degree()
         nodes_to_remove = [n for n in degree if degree[n] <= 1]
         G.remove_nodes_from(nodes_to_remove)
-
-        partition = best_partition(G)
+        uG = G.to_undirected()
+        partition = best_partition(uG)
     except:
+        print("-" * 30)
         PrintException()
 
 
@@ -281,7 +281,8 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
                 G.node[node]['group']   = partition[node]
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
-                print("error01: ",error)
+                pass#PrintException()
+                #print("error01: ",error)
 
         data = json_graph.node_link_data(G)
 

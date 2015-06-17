@@ -80,7 +80,7 @@
 
 <div class="container">
 		<div class="row">
-				<div class="col-md-4">
+				<div class="col-md-6">
 						<div class="jumbotron">
 						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
 						<ol>
@@ -92,20 +92,8 @@
 					</div>
 				</div>
 
-				<div class="col-md-4">
-						<div class="jumbotron">
-                            <!-- <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3> -->
-								<h3>Matrix (soon)</h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
 
-				<div class="col-md-4">
+				<div class="col-md-6">
 						<div class="jumbotron">
 								{% if processing > 0 %}
 										<h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>

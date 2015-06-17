@@ -345,7 +345,11 @@ def test_ngrams(request , project_id, corpus_id ):
     ngrams_ids = Ngrams_Scores.keys()
 
     import math
-    occs_threshold = min ( 10 , math.sqrt(Sum / len(ngrams_ids)) )
+
+    if len(ngrams_ids) != 0:
+        occs_threshold = min ( 10 , math.sqrt(Sum / len(ngrams_ids)) )
+    else:
+        occs_threshold = 10
 
     Metrics = {
         "ngrams":[],

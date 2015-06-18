@@ -252,7 +252,7 @@ def projects(request):
         })
 
 
-def update(request, project_id, corpus_id, view=None):
+def update_nodes(request, project_id, corpus_id, view):
     '''
     update function:
         - remove previous computations (temporary lists and coocurrences)
@@ -268,15 +268,18 @@ def update(request, project_id, corpus_id, view=None):
         offset = str(view)
     except ValueError:
         raise Http404()
+
     try:
-        white = (session.query(Node)
+        print(corpus_id)
+        whites = (session.query(Node)
                 .filter(Node.parent_id==corpus_id)
                 .filter(Node.type_id  == cache.NodeType['WhiteList'].id)
-                .first()
+                .all()
                 )
-
-        session.query(NodeNgram).filter(NodeNgram.node_id==white.id).delete()
-        session.delete(white)
+        print(whites)
+        for white in whites:
+            session.query(NodeNgram).filter(NodeNgram.node_id==white.id).delete()
+            session.delete(white)
 
         cooc = (session.query(Node)
                 .filter(Node.parent_id==corpus_id)
@@ -286,32 +289,29 @@ def update(request, project_id, corpus_id, view=None):
 
         session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc.id).delete()
         session.delete(cooc)
-
         session.commit()
     except :
         PrintException()
 
-    #return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
-
-
     nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id, user_id=request.user.id).all()
-    with transaction.atomic():
-        for node in nodes:
-            try:
-                node.children.delete()
-            except Exception as error:
-                print(error)
 
-            node.delete()
+    if nodes is not None:
+        with transaction.atomic():
+            for node in nodes:
+                try:
+                    node.children.delete()
+                except Exception as error:
+                    print(error)
+
+                node.delete()
 
 
-
-
-    return redirect(request.path.replace('update', ''))
+    #return redirect(request.path.replace('update', ''))
+    return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
 #
 #    return render_to_response(
 #            request.path,
-#            { 'title': 'User profile' },
+#            { 'title': 'Corpus view' },
 #            context_instance=RequestContext(request)
 #        )
 #

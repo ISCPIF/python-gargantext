@@ -48,18 +48,18 @@ urlpatterns = patterns('',
     # Corpus management
     # Document view (main)
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
-    url(r'^project/(\d+)/corpus/(\d+)/documents', views.corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/documents/?$', views.corpus),
 
     # Journals view
     url(r'^project/(\d+)/corpus/(\d+)/journals/journals.json$', corpus_views.test_journals),
     url(r'^project/(\d+)/corpus/(\d+)/journals', corpus_views.get_journals),
 
     # # Terms view
-    # url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', corpus_views.test_ngrams),
-    # url(r'^project/(\d+)/corpus/(\d+)/terms', corpus_views.get_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', corpus_views.test_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms/?$', corpus_views.get_ngrams),
 
     # Update corpus
-    url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update),
+    url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update_nodes),
 
     ############################################################################
     # annotations App

@@ -622,6 +622,9 @@ function Main_test( data , initial) {
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
     
+    MyTable.data('dynatable').sorts.clear();
+    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
@@ -659,7 +662,7 @@ $.ajax({
     // Building the Score-Selector
     var FirstScore = data.scores.initial
     var possible_scores = Object.keys( data.ngrams[0].scores );
-    var scores_div = '<select class="span1" id="scores_selector">'+"\n";
+    var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
       if(possible_scores[i]!=FirstScore) {

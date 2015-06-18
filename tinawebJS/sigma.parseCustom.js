@@ -626,11 +626,25 @@ function JSONFile( URL ) {
         url: URL,
         contentType: "application/json",
         async: true,
+        beforeSend: function() {
+            console.log("adding an imageeeee")
+            $("#semLoader").css({
+                "top":"40%",
+                "left":"40%",
+                "width":"80px",
+                "position":"absolute",
+                'visibility': 'visible'
+            });
+
+            var theimage = '<img src="'+window.location.origin + '/static/js/libs/img2/loader.gif"></img>';
+            $("#semLoader").html(theimage)
+        },
         success : function(data) {
             
             if(!isUndef(getUrlParam.seed))seed=getUrlParam.seed;
 
             parseSimpleJSON(data,seed)
+            $("#semLoader").hide()
         },
         error: function(){ 
             pr("Page Not found. parseCustom, inside the IF");

@@ -98,7 +98,7 @@ function sigmaLimits(){
 
 function bringTheNoise(pathfile,type){
     
-    $("#semLoader").hide();
+    // $("#semLoader").hide();
     // $('.selectpicker').selectpicker();
 
 

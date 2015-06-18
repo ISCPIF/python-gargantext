@@ -370,15 +370,18 @@ $("#Clean_All").click(function(){
 });
 
 $("#Save_All").click(function(){
-
+  console.log("click in save all 01")
   var sum__selected_elems = 0;
   var poubelle = []
-  for(var i in FlagsBuffer)
-    if (Object.keys(FlagsBuffer[i]).length==0) poubelle.push(i)
+  for(var i in FlagsBuffer) {
+    if (Object.keys(FlagsBuffer[i]).length==0) 
+      poubelle.push(i)
     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+  }
+  console.log("click in save all 02")
   for(var i in poubelle)
     delete FlagsBuffer[poubelle[i]];
-
+  console.log("click in save all 03, sum:"+sum__selected_elems)
   if ( sum__selected_elems>0 ) {
     console.log("")
     console.log("Do the ajax conexion with API and send this array to be processed:")
@@ -497,11 +500,6 @@ function Main_test( data , initial) {
 
     oldest = Number(min_occ);
     latest = Number(max_occ);
-
-
-
-
-
 
     var ndx = false;
     ndx = crossfilter();
@@ -624,6 +622,9 @@ function Main_test( data , initial) {
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
     
+    MyTable.data('dynatable').sorts.clear();
+    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
@@ -661,7 +662,7 @@ $.ajax({
     // Building the Score-Selector
     var FirstScore = data.scores.initial
     var possible_scores = Object.keys( data.ngrams[0].scores );
-    var scores_div = '<select class="span1" id="scores_selector">'+"\n";
+    var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
       if(possible_scores[i]!=FirstScore) {

@@ -29,6 +29,11 @@ def get_team():
              'picture' : 'david.jpg',
              'role':'principal investigator'},
 
+            { 'first_name' : 'Elias', 'last_name' : 'Showk',
+             'mail' : '',
+             'website' : 'https://github.com/elishowk',
+             'picture' : '', 'role' : 'developer'},
+
             { 'first_name' : 'Mathieu', 'last_name' : 'Rodic',
              'mail' : '',
              'website'  : 'http://rodic.fr',
@@ -40,11 +45,6 @@ def get_team():
              'website'  : 'http://www.pksm3.droppages.com',
              'picture' : 'samuel.jpg',
              'role' : 'developer'},
-
-            { 'first_name' : 'Elias', 'last_name' : 'Showk',
-             'mail' : '',
-             'website' : 'https://github.com/elishowk',
-             'picture' : '', 'role' : 'developer'},
 
             #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
             # copy paste the line above and write your informations please

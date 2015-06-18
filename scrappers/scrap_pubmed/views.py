@@ -66,7 +66,7 @@ def getGlobalStatsISTEXT(request ):
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		query_string = query.replace(" ","+")
-		url = "http://api.istex.fr/document/?q="+query_string
+		url = "http://api.istex.fr/document/?q="+query_string+"&output=id,title,abstract,pubdate,corpusName,authors,language"
 
 		tasks = MedlineFetcher()
 

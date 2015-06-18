@@ -127,19 +127,9 @@ for(var i=0; i<url_elems.length; i++) {
     url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
   }
 }
-var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
-// $.ajax({
-//   url: theurl,
-//   success: function(data) {
-//     bisarray = data.data
-//     for(var i in bisarray) {
-//         untitlebis = bisarray[i].values
-//         BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
-//     }
-//     pr(BIS_dict)
-//     if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
-//   }
-// });
+
+
+
 
 
 
@@ -168,7 +158,7 @@ function getRecords() {
 function transformContent2(rec_id) {
   // pr("\t\ttransformContent2: "+rec_id)
   var elem = AjaxRecords[rec_id];
-  // pr("\t\t\t"+elem.date)
+  // pr("\t"+elem.title)
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
@@ -261,208 +251,272 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 
+function Main_test( Data , SearchFilter ) {
 
-// var div__filter_for_search = ''
-//   div__filter_for_search += '<select data-width="100px" class="selectpicker" multiple  data-max-options="1">';
-//   div__filter_for_search += '  <optgroup label="All" data-max-options="1" selected>';
-//   div__filter_for_search += '    <option>Title</option>';
-//   div__filter_for_search += '    <option>Date</option>';
-//   div__filter_for_search += '  </optgroup>';
-//   div__filter_for_search += '  <optgroup label="Category" data-max-options="1">';
-//   div__filter_for_search += '    <option>Title</option>';
-//   div__filter_for_search += '    <option>Date</option>';
-//   div__filter_for_search += '  </optgroup>';
-//   div__filter_for_search += '  <optgroup label="Duplicates" data-max-options="1">';
-//   div__filter_for_search += '    <option>by DOI</option>';
-//   div__filter_for_search += '    <option>by Title</option>';
-//   div__filter_for_search += '  </optgroup>';
-//   div__filter_for_search += '</select>';
-
-// $("#supmofos").html(div__filter_for_search)
+  var DistributionDict = {}
+  for(var i in DistributionDict)
+    delete DistributionDict[i];
+  delete DistributionDict;
+  DistributionDict = {}
 
 
-// (3) Get records and hyperdata for paginator
-  $.ajax({
-    url: '/tests/paginator/corpus/'+url_mainIDs["corpus"],
-    success: function(data){
-      console.log(data)
+  $("#div-table").html("")
+  $("#div-table").empty();
+  var div_table = '<p align="right">'+"\n"
+    div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
+    div_table += "\t"+'<thead>'+"\n"
+    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="date">Date</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>'+"\n"
+    div_table += "\t"+"\t"+'</th>'+"\n"
+    div_table += "\t"+'</thead>'+"\n"
+    div_table += "\t"+'<tbody>'+"\n"
+    div_table += "\t"+'</tbody>'+"\n"
+    div_table += '</table>'+"\n"
+    div_table += '</p>';
+  $("#div-table").html(div_table)
 
-      var justdates = {}
-      for(var i in data.records) {
-        var orig_id = parseInt(data.records[i].id)
-        var arr_id = parseInt(i)
-        RecDict[orig_id] = arr_id;
-        data.records[i]["name"] = '<a target="_blank" href="/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
-        data.records[i]["del"] = false
+  var justdates = {}
+  for(var i in Data) {
+    var date = Data[i]["date"];  
+    if ( ! justdates[date] ) justdates[date] = 0;
+    justdates[date]++;
+    // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["name"])
+  }
 
-        var date = data.records[i]["date"];  
-        if ( ! justdates[date] ) justdates[date] = 0;
-        justdates[date]++;
-        // console.log(data.records[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+data.records[i]["name"])
+
+  // $("#move2trash").prop('disabled', true);
+
+
+
+  var t0 = AjaxRecords[0].date.split("-").map(Number)
+  var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
+  oldest = t0;
+  latest = t1;
+
+
+  TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2])];
+
+
+  var arrayd3 = []
+  for(var e in Data) {
+      var date = Data[e]["date"]; 
+      if(justdates[date]!=false) {
+          var info = {}
+          info.date = date
+          info.dd = dateFormat.parse(date)
+          info.month = d3.time.month(info.dd)
+          info.volume = justdates[date]
+          arrayd3.push(info)
+          justdates[date] = false;
       }
-      AjaxRecords = data.records; // backup!!
+  }
 
-      // $("#move2trash").prop('disabled', true);
+  for(var i in justdates)
+      delete justdates[i];
+  delete justdates;
 
+  var ndx = crossfilter(arrayd3);
+  var all = ndx.groupAll();
 
-
-      var t0 = AjaxRecords[0].date.split("-").map(Number)
-      var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
-      oldest = t0;
-      latest = t1;
-
-
-      TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2])];
-
-
-      var arrayd3 = []
-      for(var e in data.records) {
-          var date = data.records[e]["date"]; 
-          if(justdates[date]!=false) {
-              var info = {}
-              info.date = date
-              info.dd = dateFormat.parse(date)
-              info.month = d3.time.month(info.dd)
-              info.volume = justdates[date]
-              arrayd3.push(info)
-              justdates[date] = false;
-          }
-      }
-
-      for(var i in justdates)
-          delete justdates[i];
-      delete justdates;
-
-      var ndx = crossfilter(arrayd3);
-      var all = ndx.groupAll();
-
-      //volumeChart:(1)
-      //moveChart:(1)
-      // monthly index avg fluctuation in percentage
-      var moveMonths = ndx.dimension(function (d) {
-          return d.month;
-      });
-
-      //moveChart:(3)
-      var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-          return d.volume;
-          //return Math.abs(+d.close - +d.open);
-      });
-
-      //volumeChart:(2)
-      var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
-          return d.volume / 500000;
-      });
-
-      //moveChart:(2)
-      var indexAvgByMonthGroup = moveMonths.group().reduce(
-              function (p, v) {
-                  ++p.days;
-                  p.total += (+v.open + +v.close) / 2;
-                  p.avg = Math.round(p.total / p.days);
-                  return p;
-              },
-              function (p, v) {
-                  --p.days;
-                  p.total -= (+v.open + +v.close) / 2;
-                  p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
-                  return p;
-              },
-              function () {
-                  return {days: 0, total: 0, avg: 0};
-              }
-      );
-
-
-      moveChart.width(800)
-              .height(150)
-              .transitionDuration(1000)
-              .margins({top: 10, right: 50, bottom: 25, left: 40})
-              .dimension(moveMonths)
-              .group(indexAvgByMonthGroup)
-              .valueAccessor(function (d) {
-                  return d.value.avg;
-              })
-              .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
-              .round(d3.time.month.round)
-              .xUnits(d3.time.months)
-              .elasticY(true)
-              .renderHorizontalGridLines(true)
-              .brushOn(false)
-              .compose([
-                  dc.lineChart(moveChart)
-                          .group(indexAvgByMonthGroup)
-                          .valueAccessor(function (d) {
-                              return d.value.avg;
-                          })
-                          .renderArea(true)
-                          .stack(monthlyMoveGroup, function (d) {
-                              return d.value;
-                          })
-                          .title(function (d) {
-                              var value = d.value.avg ? d.value.avg : d.value;
-                              if (isNaN(value)) value = 0;
-                              return dateFormat(d.key) + "\n" + numberFormat(value);
-                          })
-              ])
-              .xAxis();
-
-      volumeChart.width(800)
-              .height(100)
-              .margins({top: 0, right: 50, bottom: 20, left: 40})
-              .dimension(moveMonths)
-              .group(volumeByMonthGroup)
-              .centerBar(true)
-              .gap(0)
-              .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
-              .round(d3.time.month.round)
-              .xUnits(d3.time.months)
-              .renderlet(function (chart) {
-                  chart.select("g.y").style("display", "none");
-                  moveChart.filter(chart.filter());
-              })
-              .on("filtered", function (chart) {
-                  dc.events.trigger(function () {
-                      var chartfilt = chart.filter()
-                      // tricky part: identifying when the moveChart changes.
-                      if(chartfilt) {
-                          Push2Buffer ( chart.filter() )
-                      } else {
-                          if(TheBuffer) {
-                              Push2Buffer ( false )
-                          }
-                      }
-                      moveChart.focus(chartfilt);
-                  });
-              });
-
-      dc.renderAll();
-
-      MyTable = $('#my-ajax-table').dynatable({
-                  dataset: {
-                    records: data.records
-                  },
-                  features: {
-                    pushState: false,
-                    sort: false //i need to fix the sorting function... the current one just sucks
-                  },
-                  writers: {
-                    _rowWriter: ulWriter
-                    // _cellWriter: customCellWriter
-                  }
-                });
-
-      if ( $(".imadiv").length>0 ) return 1;
-      $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
-      $(".dynatable-record-count").insertAfter(".imadiv")
-      $(".dynatable-pagination-links").insertAfter(".imadiv")
-      
-      var the_content = $("#supmofos").html();
-      $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
-      $("#supmofos").remove()
-      // .insertAfter("#dynatable-query-search-my-ajax-table")
-
-
-    }
+  //volumeChart:(1)
+  //moveChart:(1)
+  // monthly index avg fluctuation in percentage
+  var moveMonths = ndx.dimension(function (d) {
+      return d.month;
   });
+
+  //moveChart:(3)
+  var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
+      return d.volume;
+      //return Math.abs(+d.close - +d.open);
+  });
+
+  //volumeChart:(2)
+  var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
+      return d.volume / 500000;
+  });
+
+  //moveChart:(2)
+  var indexAvgByMonthGroup = moveMonths.group().reduce(
+          function (p, v) {
+              ++p.days;
+              p.total += (+v.open + +v.close) / 2;
+              p.avg = Math.round(p.total / p.days);
+              return p;
+          },
+          function (p, v) {
+              --p.days;
+              p.total -= (+v.open + +v.close) / 2;
+              p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
+              return p;
+          },
+          function () {
+              return {days: 0, total: 0, avg: 0};
+          }
+  );
+
+
+  moveChart.width(800)
+          .height(150)
+          .transitionDuration(1000)
+          .margins({top: 10, right: 50, bottom: 25, left: 40})
+          .dimension(moveMonths)
+          .group(indexAvgByMonthGroup)
+          .valueAccessor(function (d) {
+              return d.value.avg;
+          })
+          .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+          .round(d3.time.month.round)
+          .xUnits(d3.time.months)
+          .elasticY(true)
+          .renderHorizontalGridLines(true)
+          .brushOn(false)
+          .compose([
+              dc.lineChart(moveChart)
+                      .group(indexAvgByMonthGroup)
+                      .valueAccessor(function (d) {
+                          return d.value.avg;
+                      })
+                      .renderArea(true)
+                      .stack(monthlyMoveGroup, function (d) {
+                          return d.value;
+                      })
+                      .title(function (d) {
+                          var value = d.value.avg ? d.value.avg : d.value;
+                          if (isNaN(value)) value = 0;
+                          return dateFormat(d.key) + "\n" + numberFormat(value);
+                      })
+          ])
+          .xAxis();
+
+  volumeChart.width(800)
+          .height(100)
+          .margins({top: 0, right: 50, bottom: 20, left: 40})
+          .dimension(moveMonths)
+          .group(volumeByMonthGroup)
+          .centerBar(true)
+          .gap(0)
+          .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+          .round(d3.time.month.round)
+          .xUnits(d3.time.months)
+          .renderlet(function (chart) {
+              chart.select("g.y").style("display", "none");
+              moveChart.filter(chart.filter());
+          })
+          .on("filtered", function (chart) {
+              dc.events.trigger(function () {
+                  var chartfilt = chart.filter()
+                  // tricky part: identifying when the moveChart changes.
+                  if(chartfilt) {
+                      Push2Buffer ( chart.filter() )
+                  } else {
+                      if(TheBuffer) {
+                          Push2Buffer ( false )
+                      }
+                  }
+                  moveChart.focus(chartfilt);
+              });
+          });
+
+  dc.renderAll();
+
+  MyTable = []
+  MyTable = $('#my-ajax-table').dynatable({
+              dataset: {
+                records: Data
+              },
+              features: {
+                pushState: false,
+                // sort: false //i need to fix the sorting function... the current one just sucks
+              },
+              writers: {
+                _rowWriter: ulWriter
+                // _cellWriter: customCellWriter
+              }
+            });
+
+  MyTable.data('dynatable').paginationPage.set(1);
+  MyTable.data('dynatable').process();
+
+  if ( $(".imadiv").length>0 ) return 1;
+  $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
+  $(".dynatable-record-count").insertAfter(".imadiv")
+  $(".dynatable-pagination-links").insertAfter(".imadiv")
+  
+  $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+  $("#"+SearchFilter).attr( "selected" , "selected" )
+
+  var the_content = $("#filter_search").html();
+  $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
+  // .insertAfter("#dynatable-query-search-my-ajax-table")
+  
+  return "OK"
+}
+
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+    var result = Main_test(AjaxRecords , MODE)
+    console.log( result )
+  }
+
+  if( MODE == "filter_dupl-titles") {
+
+    var getDupl_API = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
+    $.ajax({
+      url: getDupl_API,
+      success: function(data) {
+        bisarray = data.data
+        for(var i in bisarray) {
+            titlebis = bisarray[i].values
+            BIS_dict[titlebis[0]] = true;
+        }
+        var Duplicates = []
+        for(var r in AjaxRecords) {
+          if ( BIS_dict[AjaxRecords[r].title] )
+            Duplicates.push( AjaxRecords[r] )
+        }
+        var result = Main_test(Duplicates , MODE)
+        console.log( result )
+
+        MyTable.data('dynatable').sorts.clear();
+        MyTable.data('dynatable').sorts.add('title', 1) // 1=ASCENDING,
+        MyTable.data('dynatable').process();
+      }
+    });
+
+  }
+
+}
+
+
+
+
+// FIRST portion of code to be EXECUTED:
+// (3) Get records and hyperdata for paginator
+$.ajax({
+  url: '/tests/paginator/corpus/'+url_mainIDs["corpus"],
+  success: function(data){
+
+    for(var i in data.records) {
+      var orig_id = parseInt(data.records[i].id)
+      var arr_id = parseInt(i)
+      RecDict[orig_id] = arr_id;
+      data.records[i]["title"] = data.records[i]["name"];
+      data.records[i]["name"] = '<a target="_blank" href="/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
+      data.records[i]["del"] = false
+    }
+    AjaxRecords = data.records; // backup-ing in global variable!
+
+    var result = Main_test(data.records , "filter_all")
+    console.log( result )
+  },
+});
+
+
+
 

@@ -19,7 +19,7 @@ class ISTex(FileParser):
             "source"           : 'corpusName',
             "title"             : 'title',
             "genre"             : "genre",
-            # "language_iso3"     : 'MedlineCitation/Article/Language',
+            "language_iso3"     : 'language',
             "doi"               : 'doi',
             "host"              : 'host',
             "publication_date"  : 'pubdate',
@@ -79,6 +79,8 @@ class ISTex(FileParser):
             RealDate = hyperdata["publication_date"]
             if "publication_date" in hyperdata: hyperdata.pop("publication_date")
 
+            if "language_iso3" in hyperdata:
+                hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
             
             Decision=""
             if len(RealDate)>4:

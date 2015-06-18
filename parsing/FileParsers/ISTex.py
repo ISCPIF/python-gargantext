@@ -27,8 +27,11 @@ class ISTex(FileParser):
             "authorsRAW"        : 'author',
             "keywords"          : "keywords"
         }
+
+        suma = 0
         
         for json_doc in json_docs:
+
             hyperdata = {}
             for key, path in hyperdata_path.items():
                 try:
@@ -83,33 +86,47 @@ class ISTex(FileParser):
                 else:
                     hyperdata["language_iso3"] = "eng"
 
-            RealDate = hyperdata["publication_date"]
-            if "publication_date" in hyperdata: hyperdata.pop("publication_date")
+            if "publication_date" in hyperdata:
+                RealDate = hyperdata["publication_date"]
+                if "publication_date" in hyperdata: 
+                    hyperdata.pop("publication_date")
 
-            
-            Decision=""
-            if len(RealDate)>4:
-                if len(RealDate)>8:
-                    try: Decision = datetime.strptime(RealDate, '%Y-%b-%d').date()
-                    except: 
-                        try: Decision = datetime.strptime(RealDate, '%Y-%m-%d').date()
-                        except: Decision=False
+                if isinstance(RealDate, list):
+                    RealDate = RealDate[0]
+
+                # print( RealDate ," | length:",len(RealDate))
+                Decision=""
+                if len(RealDate)>4:
+                    if len(RealDate)>8:
+                        try: Decision = datetime.strptime(RealDate, '%Y-%b-%d').date()
+                        except: 
+                            try: Decision = datetime.strptime(RealDate, '%Y-%m-%d').date()
+                            except: Decision=False
+                    else: 
+                        try: Decision = datetime.strptime(RealDate, '%Y-%b').date()
+                        except: 
+                            try: Decision = datetime.strptime(RealDate, '%Y-%m').date()
+                            except: Decision=False
                 else: 
-                    try: Decision = datetime.strptime(RealDate, '%Y-%b').date()
-                    except: 
-                        try: Decision = datetime.strptime(RealDate, '%Y-%m-%d').date()
-                        except: Decision=False
-            else: 
-                try: Decision = datetime.strptime(RealDate, '%Y-%m-%d').date()
-                except: Decision=False
-            
-            if Decision!=False:
-                hyperdata["publication_year"] = str(Decision.year)
-                hyperdata["publication_month"] = str(Decision.month)
-                hyperdata["publication_day"] = str(Decision.day)
-                hyperdata_list.append(hyperdata)
-                # print("\t||",hyperdata["title"])
-                # print("\t\t",Decision)
-                # print("=============================")
+                    try: Decision = datetime.strptime(RealDate, '%Y').date()
+                    except: Decision=False
+                
+                if Decision!=False:
+                    hyperdata["publication_year"] = str(Decision.year)
+                    hyperdata["publication_month"] = str(Decision.month)
+                    hyperdata["publication_day"] = str(Decision.day)
+                    hyperdata_list.append(hyperdata)
+                    # print("\t||",hyperdata["title"])
+                    # print("\t\t",Decision)
+                    # print("=============================")
+                # else: 
+                #     suma+=1
+                #     if "pubdate" in json_doc:
+                #         print ("\tfail pubdate:",json_doc["pubdate"])
+                        
+
+        # print ("nb_hits:",len(json_docs))
+        # print("\t - nb_fails:",suma)
+        # print("  -- - - - - - -- - -")
 
         return hyperdata_list

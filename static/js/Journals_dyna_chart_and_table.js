@@ -471,10 +471,16 @@ function Main_test( data , initial) {
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
     
+
+    MyTable.data('dynatable').sorts.clear();
+    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    MyTable.data('dynatable').process();
+
     MyTable.data('dynatable').paginationPage.set(1);
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
+
 
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();

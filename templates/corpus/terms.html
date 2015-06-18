@@ -116,32 +116,6 @@ input[type=radio]:checked + label {
 
 <input type="hidden" id="list_id" value="{{ list_id }}"></input>
 
-
-<div class="container theme-showcase" role="main">
-        <div class="jumbotron">
-                        {% if project %}
-                            <h1>{{ project.name }}, {{ corpus.name }}
-                            </h1>
-                            {% endif %}
-
-                        {% if corpus %}
-                        <p>
-                        Created on {{ corpus.date }} 
-                        </p>
-                        <div id="stats"></div>
-                        {% endif %}
-
-                            <!--                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
-                        <a class="btn btn-primary btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save as</a>
-                        <a class="btn btn-primary btn-lg" role="button" href="/delete/{{ corpus.id }}">Delete</a></p>
-
-                        {% if number == 0 %}
-                        <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
-                        {% endif %}
-    
-        </div>
-</div>
-
                 <div class="container">
                         <div class="container">
 

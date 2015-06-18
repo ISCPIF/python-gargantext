@@ -36,7 +36,7 @@ class ISTex(FileParser):
                     hyperdata[key] = json_doc[path]
                 except: pass
 
-            # print("|",hyperdata["publication_date"])
+            # print("|",hyperdata["language_iso3"])
 
             if "doi" in hyperdata: hyperdata["doi"] = hyperdata["doi"][0]
             
@@ -75,12 +75,12 @@ class ISTex(FileParser):
             if "genre" in hyperdata:
                 if len(hyperdata["genre"])==0:
                     hyperdata.pop("genre")
+            if "language_iso3" in hyperdata:
+                hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
 
             RealDate = hyperdata["publication_date"]
             if "publication_date" in hyperdata: hyperdata.pop("publication_date")
 
-            if "language_iso3" in hyperdata:
-                hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
             
             Decision=""
             if len(RealDate)>4:

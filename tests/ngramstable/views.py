@@ -100,7 +100,7 @@ def get_ngrams(request , project_id , corpus_id ):
     except ValueError:
         raise Http404()
 
-    t = get_template('tests/ngrams.html')
+    t = get_template('corpus/terms.html')
     
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
@@ -173,7 +173,7 @@ def get_journals(request , project_id , corpus_id ):
     except ValueError:
         raise Http404()
 
-    t = get_template('tests/journals.html')
+    t = get_template('corpus/journals.html')
     
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()

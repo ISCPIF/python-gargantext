@@ -370,15 +370,18 @@ $("#Clean_All").click(function(){
 });
 
 $("#Save_All").click(function(){
-
+  console.log("click in save all 01")
   var sum__selected_elems = 0;
   var poubelle = []
-  for(var i in FlagsBuffer)
-    if (Object.keys(FlagsBuffer[i]).length==0) poubelle.push(i)
+  for(var i in FlagsBuffer) {
+    if (Object.keys(FlagsBuffer[i]).length==0) 
+      poubelle.push(i)
     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+  }
+  console.log("click in save all 02")
   for(var i in poubelle)
     delete FlagsBuffer[poubelle[i]];
-
+  console.log("click in save all 03, sum:"+sum__selected_elems)
   if ( sum__selected_elems>0 ) {
     console.log("")
     console.log("Do the ajax conexion with API and send this array to be processed:")
@@ -497,11 +500,6 @@ function Main_test( data , initial) {
 
     oldest = Number(min_occ);
     latest = Number(max_occ);
-
-
-
-
-
 
     var ndx = false;
     ndx = crossfilter();

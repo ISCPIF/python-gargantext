@@ -19,7 +19,7 @@ class ISTex(FileParser):
             "source"           : 'corpusName',
             "title"             : 'title',
             "genre"             : "genre",
-            # "language_iso3"     : 'MedlineCitation/Article/Language',
+            "language_iso3"     : 'language',
             "doi"               : 'doi',
             "host"              : 'host',
             "publication_date"  : 'pubdate',
@@ -34,11 +34,13 @@ class ISTex(FileParser):
                 try:
                     # print(path," ==> ",len(json_doc[path]))
                     hyperdata[key] = json_doc[path]
-                except: pass
+                except:
+                    pass
 
-            # print("|",hyperdata["publication_date"])
+            # print("|",hyperdata["language_iso3"])
 
-            if "doi" in hyperdata: hyperdata["doi"] = hyperdata["doi"][0]
+            if "doi" in hyperdata: 
+                hyperdata["doi"] = hyperdata["doi"][0]
             
             keywords = []
             if "keywords" in hyperdata:
@@ -75,6 +77,11 @@ class ISTex(FileParser):
             if "genre" in hyperdata:
                 if len(hyperdata["genre"])==0:
                     hyperdata.pop("genre")
+            if "language_iso3" in hyperdata:
+                if len(hyperdata["language_iso3"])>0:
+                    hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
+                else:
+                    hyperdata["language_iso3"] = "eng"
 
             RealDate = hyperdata["publication_date"]
             if "publication_date" in hyperdata: hyperdata.pop("publication_date")

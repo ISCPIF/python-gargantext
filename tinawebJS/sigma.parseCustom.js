@@ -619,15 +619,13 @@ function fullExtract(){
 
 function JSONFile( URL ) {
 
-
-    
     return $.ajax({
         type: 'GET',
         url: URL,
         contentType: "application/json",
         async: true,
         beforeSend: function() {
-            console.log("adding an imageeeee")
+            
             $("#semLoader").css({
                 "top":"40%",
                 "left":"40%",

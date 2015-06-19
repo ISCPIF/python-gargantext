@@ -565,9 +565,10 @@ def graph(request, project_id, corpus_id):
                 results[i.id]["corpuses"].append(info)
                 # print("\t",j.id , j.name)
 
-    import pprint
-    pprint.pprint(results)
+    # import pprint
+    # pprint.pprint(results)
 
+    graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
     html = t.render(Context({\
             'debug': settings.DEBUG,
             'user'      : user,\
@@ -575,7 +576,7 @@ def graph(request, project_id, corpus_id):
             'corpus'    : corpus,\
             'project'   : project,\
             'corpusinfo'   : results,\
-            'graphfile' : "hola_mundo",\
+            'graphfile' : graphurl,\
             }))
 
     return HttpResponse(html)

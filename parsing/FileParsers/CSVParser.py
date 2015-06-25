@@ -4,6 +4,9 @@ from .FileParser import FileParser
 from ..NgramsExtractors import *
 from datetime import datetime
 from io import BytesIO
+import csv
+import sys
+csv.field_size_limit(sys.maxsize)
 
 class CSVParser(FileParser):
     
@@ -14,7 +17,7 @@ class CSVParser(FileParser):
 
         import csv
         f = open(file , "r")
-        reader = csv.reader(f)
+        reader = csv.reader(f , delimiter='\t')
 
         counter = 0
         for row in reader:
@@ -36,6 +39,7 @@ class CSVParser(FileParser):
                 pub["publication_year"] = "2014"
                 pub["publication_month"] = "01"
                 pub["publication_day"] = "01"
+                pub["language_iso3"] = "eng"
                 pub["authors"] = [ authors ]
 
                 hyperdata_list.append(pub)

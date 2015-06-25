@@ -408,6 +408,7 @@ $("#Save_All").click(function(){
         },
         success: function(data){
               console.log(data)
+              location.reload()
         },
         error: function(result) {
             console.log("Data not found in #Save_All");

@@ -391,7 +391,12 @@ def newpaginatorJSON(request , corpus_id):
                 resdict = {}
                 resdict["id"] = doc.id
                 resdict["date"] = realdate
-                resdict["name"] =  doc.name
+                resdict["name"] =  ""
+                if doc.name and doc.name!="":
+                    resdict["name"] = doc.name
+                else:
+                    resdict["name"] = doc.hyperdata["doi"]
+
                 filtered_docs.append( resdict )
             except Exception as e:
                 print ("pag2 error01 detail:",e)

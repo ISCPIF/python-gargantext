@@ -40,15 +40,15 @@ class NgramList(APIView):
         """Get All for a doc id"""
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
-        lists = dict()
+        lists = {}
         for list_type in ['MiamList', 'StopList']:
-            list_id = list()
+
             list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
             lists["%s" % list_id[0][0]] = list_type
 
         # ngrams of list_id of corpus_id:
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
-        #doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
+        doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
 
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [

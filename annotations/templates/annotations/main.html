@@ -29,27 +29,27 @@
               </li>
             </ul>
             <div class="tab-content">
-              <div ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
+              <div ng-controller="ExtraTextPaginationController" ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
                 <div ng-if="extraNgramList[listId].length == 0" class="alert alert-info" role="alert">
                   Input any keyword you want to link to this article and the list named '{[{listName}]}'
                 </div>
 
-                <ul class="list-group words-list">
-                  <li ng-repeat="keyword in extraNgramList[listId] | startFrom:currentListPage[listId]*pageSize | limitTo:pageSize" class="list-group-item">
+                <ul class="list-group words-list clearfix">
+                  <li ng-repeat="keyword in extraNgramList[listId] | startFrom:currentListPage * pageSize | limitTo:pageSize" class="list-group-item">
                     <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
                   </li>
                 </ul>
 
-                <nav ng-class="{invisible: totalListPages(listId) - 1 == 0}" class="clearfix">
+                <nav ng-class="{invisible: totalListPages - 1 == 0}" class="clearfix">
                   <ul class="pagination pagination-s pull-right words-pagination">
-                    <li ng-class="{disabled: currentListPage[listId] == 0}"><a ng-click="previousListPage(listId)" class="glyphicon glyphicon-backward"></a></li>
-                    <li ng-class="{disabled: currentListPage[listId] >= totalListPages(listId)-1}"><a ng-click="nextListPage(listId)" class="glyphicon glyphicon-forward"></a></li>
+                    <li ng-class="{disabled: currentListPage == 0}"><a ng-click="previousListPage()" class="glyphicon glyphicon-backward"></a></li>
+                    <li ng-class="{disabled: currentListPage >= totalListPages - 1}"><a ng-click="nextListPage()" class="glyphicon glyphicon-forward"></a></li>
                   </ul>
                 </nav>
 
                 <div class="form-group">
                   <input type="text" class="form-control" id="{[{ listId }]}-input" ng-keypress="onListSubmit($event, listId)">
-                  <button type="submit" class="btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
+                  <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
                 </div>
               </div>
             </div>

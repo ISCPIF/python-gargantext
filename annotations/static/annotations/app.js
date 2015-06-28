@@ -271,15 +271,7 @@
   window.annotationsApp.controller('IntraTextController',
     ['$scope', '$rootScope', '$compile', 'NgramHttpService',
     function ($scope, $rootScope, $compile, NgramHttpService) {
-
-      $scope.extraNgramList = {};
-      $scope.currentListPage = angular.forEach($rootScope.activeLists, function(name, id) {
-        this[id] = 0;
-      }, {});
-
-      $scope.pageSize = 15;
       var counter = 0;
-
       /*
       * Replace the text by an html template for ngram keywords
       */
@@ -314,7 +306,7 @@
       * Match and replace Ngram into the text
       */
       function compileNgramsHtml(annotations, textMapping, $rootScope) {
-        // TODO remove debug counter
+        // TODO remove this debug counter
         counter = 0;
         var templateBegin = "<span ng-controller='AnnotationController' ng-click='onClick($event)' class='keyword-inline'>";
         var templateBeginRegexp = "<span ng-controller='AnnotationController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
@@ -327,15 +319,14 @@
         var endPattern = "(?:<\/span>)*)\\b";
 
         var sortedSizeAnnotations = lengthSort(annotations, "text"),
+            extraNgramList = angular.copy($rootScope.extraNgramList);
 
-            extraNgramList = angular.copy($scope.extraNgramList);
-
+        // reinitialize an empty list
         extraNgramList = angular.forEach(extraNgramList, function(name, id) {
           extraNgramList[id] = [];
         });
 
-
-        _.each(sortedSizeAnnotations, function (annotation) {
+        angular.forEach(sortedSizeAnnotations, function (annotation) {
           // exclude ngrams that are into inactive lists
           if ($rootScope.activeLists[annotation.list_id] === undefined) return;
           // used to setup css class
@@ -361,12 +352,14 @@
                 return item.uuid;
               })) == -1) {
               // push the ngram and sort
-              extraNgramList[annotation.list_id] = lengthSort(extraNgramList[annotation.list_id].concat(annotation), "text");
+              extraNgramList[annotation.list_id] = extraNgramList[annotation.list_id].concat(annotation);
             }
           }
         });
         // update extraNgramList
-        $scope.extraNgramList = extraNgramList;
+        $rootScope.extraNgramList = angular.forEach(extraNgramList, function(name, id) {
+          extraNgramList[id] = lengthSort(extraNgramList[id], 'text');
+        });
         // return the object of element ID with the corresponding HTML
         return textMapping;
       }
@@ -379,10 +372,12 @@
         if (angular.equals(newValue, oldValue)) return;
 
         // initialize extraNgramList
-        $scope.extraNgramList = angular.copy($rootScope.activeLists);
-        $scope.extraNgramList = angular.forEach($scope.extraNgramList, function(name, id) {
-          $scope.extraNgramList[id] = [];
-        });
+        var extraNgramList = {};
+        $rootScope.extraNgramList = angular.forEach($rootScope.activeLists, function(name, id) {
+          this[id] = [];
+        }, extraNgramList);
+        $rootScope.extraNgramList = extraNgramList;
+
         /*
         * Transform text into HTML with higlighted ngrams
         */
@@ -428,31 +423,42 @@
             if (data) {
               $rootScope.annotations.push(data);
               $(inputEltId).val("");
-            } else {
-              $(inputEltId).addClass("error");
             }
           }, function(data) {
             // on error
-            $(inputEltId).addClass("error");
+            $(inputEltId).parent().addClass("has-error");
             console.error("error adding Ngram "+ value);
           }
         );
       };
 
-      $scope.totalListPages = function (listId) {
-        if ($scope.extraNgramList[listId] === undefined) return 0;
-        return Math.ceil($scope.extraNgramList[listId].length / $scope.pageSize);
-      };
-
-      $scope.nextListPage = function(listId) {
-        $scope.currentListPage[listId] = $scope.currentListPage[listId] + 1;
-      };
-
-      $scope.previousListPage = function(list) {
-        $scope.currentListPage[listId] = $scope.currentListPage[listId] - 1;
-      };
     }
   ]);
+
+  /*
+  * Controller for one List Tab displaying extra-text ngram
+  */
+  window.annotationsApp.controller('ExtraTextPaginationController',
+    ['$scope', '$rootScope', function ($scope, $rootScope) {
+
+    $rootScope.$watchCollection('extraNgramList', function (newValue, oldValue) {
+      $scope.currentListPage = 0;
+      $scope.pageSize = 15;
+
+      $scope.nextListPage = function() {
+        $scope.currentListPage = $scope.currentListPage + 1;
+      };
+
+      $scope.previousListPage = function() {
+        $scope.currentListPage = $scope.currentListPage - 1;
+      };
+
+      $scope.totalListPages = function (listId) {
+        if ($rootScope.extraNgramList[listId] === undefined) return 0;
+        return Math.ceil($rootScope.extraNgramList[listId].length / $scope.pageSize);
+      };
+    });
+  }]);
 
   /*
   * Filter used in Ngram flat lists pagination (extra-text panel)
@@ -471,7 +477,6 @@
       $rootScope.documentResource = DocumentHttpService.get(
         {'docId': $rootScope.docId},
         function(data, responseHeaders) {
-
           $scope.authors = data.authors;
           $scope.journal = data.journal;
           $scope.publication_date = data.publication_date;
@@ -486,14 +491,15 @@
             {
               'corpusId': $rootScope.corpusId,
               'docId': $rootScope.docId
+            },
+            function(data) {
+              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+              $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
+              // TODO active list selection controller
+              $rootScope.activeLists = angular.copy($rootScope.lists);
+              $rootScope.mainListId = _.invert($rootScope.activeLists).MiamList;
             }
-          ).$promise.then(function(data) {
-            $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-            $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
-            // TODO active list selection controller
-            $rootScope.activeLists = $rootScope.lists;
-            $rootScope.mainListId = _.invert($rootScope.activeLists).MiamList;
-          });
+          );
       });
 
     // TODO setup article pagination

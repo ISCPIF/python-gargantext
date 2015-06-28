@@ -1,10 +1,16 @@
 (function () {
   'use strict';
 
+  /*
+  * Django STATIC_URL given to angular to load async resources
+  */
   var S = window.STATIC_URL;
 
   window.annotationsApp = angular.module('annotationsApp', ['annotationsAppHttp']);
 
+  /*
+  * Angular Templates must not conflict with Django's
+  */
   window.annotationsApp.config(function($interpolateProvider) {
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
@@ -27,18 +33,23 @@
   window.annotationsApp.controller('ExtraAnnotationController',
     ['$scope', '$rootScope', '$element', 'NgramHttpService',
     function ($scope, $rootScope, $element, NgramHttpService) {
-      // TODO use the tooltip ?
+      /*
+      * Click on the 'delete' cross button
+      */
       $scope.onDeleteClick = function () {
         NgramHttpService.delete({
           'listId': $scope.keyword.list_id,
           'ngramId': $scope.keyword.uuid
-        }).$promise.then(function(data) {
+        }, function(data) {
           $.each($rootScope.annotations, function(index, element) {
             if (element.list_id == $scope.keyword.list_id && element.uuid == $scope.keyword.uuid) {
               $rootScope.annotations.splice(index, 1);
               return false;
             }
           });
+        }, function(data) {
+          console.log(data);
+          console.error("unable to delete the Ngram " + $scope.keyword.uuid);
         });
       };
     }]);
@@ -213,29 +224,39 @@
       */
       $scope.onMenuClick = function($event, action, listId) {
         if (angular.isObject($scope.selection_text)) {
-          // delete from the current list
+          // action on an existing Ngram
           NgramHttpService[action]({
               'listId': listId,
               'ngramId': $scope.selection_text.uuid
-            }).$promise.then(function(data) {
+            }, function(data) {
               $.each($rootScope.annotations, function(index, element) {
                 if (element.list_id == listId && element.uuid == $scope.selection_text.uuid) {
                   $rootScope.annotations.splice(index, 1);
                   return false;
                 }
               });
-          });
+            }, function(data) {
+              console.log(data);
+              console.error("unable to edit the Ngram " + $scope.selection_text);
+            }
+          );
 
         } else if ($scope.selection_text.trim() !== "") {
           // new annotation from selection
           NgramHttpService.post(
             {
-              'listId': listId
+              'listId': listId,
+              'ngramId': 'new'
             },
-            {'annotation' : {'text': $scope.selection_text.trim()}}
-          ).$promise.then(function(data) {
-            $rootScope.annotations.push(data);
-          });
+            {
+              'annotation' : {'text': $scope.selection_text.trim()}
+            }, function(data) {
+              $rootScope.annotations.push(data);
+            }, function(data) {
+              console.log(data);
+              console.error("unable to edit the Ngram " + $scope.selection_text);
+            }
+          );
         }
         // hide the highlighted text the the menu
         $(".text-panel").removeClass("selection");
@@ -385,7 +406,7 @@
       });
 
       /*
-      * Add a new NGram from the free user input in the extra-text list
+      * Add a new NGram from the user input in the extra-text list
       */
       $scope.onListSubmit = function ($event, listId) {
         var inputEltId = "#"+ listId +"-input";
@@ -413,6 +434,7 @@
           }, function(data) {
             // on error
             $(inputEltId).addClass("error");
+            console.error("error adding Ngram "+ value);
           }
         );
       };

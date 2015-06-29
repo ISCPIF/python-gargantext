@@ -21,7 +21,10 @@ def create_synonymes(user, corpus):
 
 size = 1000
 
-def create_whitelist(user, corpus_id, size=size, count_min=2):
+def create_whitelist(user, corpus_id, size=size, count_min=2, miam_id=None):
+    if miam_id is None:
+        PrintException()
+
     cursor = connection.cursor()
 
     whitelist_type_id = cache.NodeType['WhiteList'].id
@@ -53,10 +56,14 @@ def create_whitelist(user, corpus_id, size=size, count_min=2):
             node_node_ngram AS nngX ON nngX.node_id = n.id
         INNER JOIN
             node_ngram AS ngX ON ngX.id = nngX.ngram_id
+        INNER JOIN
+            node_node_ngram AS miam ON ngX.id = miam.ngram_id
         WHERE
             n.parent_id = %d
         AND
             n.type_id = %d
+        AND
+            miam.node_id = %d
         AND
         ngX.n >= 2
         AND
@@ -72,7 +79,7 @@ def create_whitelist(user, corpus_id, size=size, count_min=2):
         LIMIT
             %d
         ;
-    """  % (white_list.id, int(corpus_id), int(type_document_id), count_min, size)
+    """  % (white_list.id, int(corpus_id), int(type_document_id), int(miam_id), count_min, size)
     # print("PRINTING QYERY OF WHITELIST:")
     # print(query_whitelist)
     cursor.execute(query_whitelist)
@@ -155,6 +162,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
     from gargantext_web.api import JsonHttpResponse
 
     from analysis.louvain import best_partition
+    from ngram.lists import listIds
 
     #print(corpus_id, cooc_id)
 
@@ -168,7 +176,9 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
 
         if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
             print("Coocurrences do not exist yet, create it.")
-            whitelist = create_whitelist(request.user, corpus_id=corpus_id, size=size)
+            miam_id = listIds(typeList='MiamList', user_id=request.user.id, corpus_id=corpus_id)[0][0]
+
+            whitelist = create_whitelist(request.user, corpus_id=corpus_id, size=size, miam_id=miam_id)
             cooccurrence_node_id = create_cooc(user=request.user, corpus_id=corpus_id, whitelist=whitelist, size=size)
         else:
             cooccurrence_node_id = session.query(Node.id).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first()
@@ -211,8 +221,8 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         n = n.sort(inplace=False)
         m = m.sort(inplace=False)
 
-        print(n)
-        print(m)
+        #print(n)
+        #print(m)
 
         nodes_included = 300 #int(round(size/20,0))
         #nodes_excluded = int(round(size/10,0))
@@ -237,25 +247,25 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         xxx = xx.values
         threshold = min(xxx.max(axis=1))
         matrix_filtered = np.where(xxx >= threshold, xxx, 0)
-
         #matrix_filtered = matrix_filtered.resize((90,90))
     except:
         PrintException()
 
     try:
-        G = nx.from_numpy_matrix(matrix_filtered, create_using=nx.MultiDiGraph())
-        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
+        G = nx.from_numpy_matrix(np.matrix(matrix_filtered))
+        #G = nx.from_numpy_matrix(matrix_filtered, create_using=nx.MultiDiGraph())
 
-        #print(G)
+        G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
         # Removing too connected nodes (find automatic way to do it)
         #edges_to_remove = [ e for e in G.edges_iter() if
 
         degree = G.degree()
         nodes_to_remove = [n for n in degree if degree[n] <= 1]
         G.remove_nodes_from(nodes_to_remove)
-
-        partition = best_partition(G)
+        uG = G.to_undirected()
+        partition = best_partition(uG)
     except:
+        print("-" * 30)
         PrintException()
 
 
@@ -271,7 +281,8 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
                 G.node[node]['group']   = partition[node]
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
-                print("error01: ",error)
+                pass#PrintException()
+                #print("error01: ",error)
 
         data = json_graph.node_link_data(G)
 

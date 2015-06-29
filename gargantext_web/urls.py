@@ -48,16 +48,20 @@ urlpatterns = patterns('',
     # Corpus management
     # Document view (main)
     url(r'^project/(\d+)/corpus/(\d+)/$', views.corpus),
+    url(r'^project/(\d+)/corpus/(\d+)/documents/?$', views.corpus),
 
     # Journals view
     url(r'^project/(\d+)/corpus/(\d+)/journals/journals.json$', corpus_views.test_journals),
-    url(r'^project/(\d+)/corpus/(\d+)/journals$', corpus_views.get_journals),
+    url(r'^project/(\d+)/corpus/(\d+)/journals', corpus_views.get_journals),
 
-    # Terms view
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams/ngrams.json$', corpus_views.test_ngrams),
-    url(r'^project/(\d+)/corpus/(\d+)/ngrams$', corpus_views.get_ngrams),
+    # # Terms view
+    url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', corpus_views.test_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms/?$', corpus_views.get_ngrams),
+
+    # Update corpus
+    url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update_nodes),
+
     ############################################################################
-
     # annotations App
     url(r'^project/(\d+)/corpus/(\d+)/document/(\d+)/$', annotations_main_view),
     url(r'^annotations/', include(annotations_urls)),
@@ -104,7 +108,9 @@ urlpatterns = patterns('',
     url(r'^tests/project/(\d+)/ISTEXquery/go$', pubmedscrapper.testISTEX),
     url(r'^tests/paginator/corpus/(\d+)/$', views.newpaginatorJSON),
     url(r'^tests/move2trash/$' , views.move_to_trash_multiple ),
-    url(r'^corpus/(\d+)/document/(\d+)/testpage$', samtest.test_test)
+    url(r'^corpus/(\d+)/document/(\d+)/testpage$', samtest.test_test),
+    url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', samtest.test_ngrams),
+    url(r'^project/(\d+)/corpus/(\d+)/terms', samtest.get_ngrams)
 )
 
 

@@ -87,7 +87,7 @@
                                {% ifequal corpus.processing 1 %}
 																 	{{corpus.name}} : <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Processing, drink a cup of tea, and refresh the page :)
 															 {% else %}
-																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} </a> , {{ corpus.count }} Documents 
+																		<a href="/project/{{project.id}}/corpus/{{corpus.id}}">  {{corpus.name}} , {{ corpus.count }} Documents </a> 
 															 {% endifequal %}
 																		<button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='

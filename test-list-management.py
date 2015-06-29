@@ -6,8 +6,8 @@ from ngram.lists import *
 
 #from cooccurrences import *
 
-#from gargantext_web.views import empty_trash
-#empty_trash()
+from gargantext_web.views import empty_trash
+empty_trash()
 
 
 #user = session.query(User).all()[0]
@@ -77,6 +77,7 @@ print('Stem Node.id is', stem_id)
 #    print(n, listNgramIds(list_id=n[0][0])[:3])
 #
 
+
 stop_list_id = listIds(user_id=user.id,
                        corpus_id=corpus.id,
                        typeList='StopList')[0][0]
@@ -86,13 +87,13 @@ miam_list_id = listIds(user_id=user.id,
                        typeList='MiamList')[0][0]
 
 
-print('Stop List', stop_list_id)
-print('Miam List', miam_list_id)
+print('StopList', stop_list_id)
+print('MiamList', miam_list_id)
 
+print(session.query(Node.id).filter(Node.parent_id==corpus.id, Node.type_id==cache.NodeType['WhiteList'].id).first())
+#ngrams2miam(user_id=user.id, corpus_id=corpus.id)
 
-ngrams2miam(user_id=user.id, corpus_id=corpus.id)
-
-print(listNgramIds(list_id=miam_list_id, user_id=user.id, corpus_id=corpus.id))
+#print(listNgramIds(list_id=stop_list_id, user_id=user.id, corpus_id=corpus.id))
 
 
 

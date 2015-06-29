@@ -43,7 +43,9 @@ from scrappers.scrap_pubmed.admin import Logger
 
 from gargantext_web.db import *
 
-from sqlalchemy import or_, func
+from sqlalchemy.sql import func
+from sqlalchemy import desc, asc, or_, and_, Date, cast, select
+
 
 from gargantext_web import about
 
@@ -128,7 +130,7 @@ def get_ngrams(request , project_id , corpus_id ):
             'processing' : processing,
             'number' : number,
             'list_id': list_id[0][0],
-            'view'   : "Terms",
+            'view'   : "terms",
             }))
 
     return HttpResponse(html)
@@ -195,7 +197,7 @@ def get_journals(request , project_id , corpus_id ):
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
-            'view'   : "Journals",
+            'view'   : "journals",
             }))
 
     return HttpResponse(html)
@@ -205,16 +207,18 @@ def test_journals(request , project_id, corpus_id ):
 
     JournalsDict = {}
 
-    user_id = request.user.id
     document_type_id = cache.NodeType['Document'].id
-    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
-    for doc in documents:
-        if "journal" in doc.hyperdata:
-            journal = doc.hyperdata["journal"]
-            if journal not in JournalsDict:
-                JournalsDict [journal] = 0
-            JournalsDict[journal] += 1
-    return JsonHttpResponse(JournalsDict)
+
+    journal_count = (session.query(Node.hyperdata['journal'].label("journal"), func.count().label("count"))
+                    .filter(Node.parent_id == corpus_id, Node.type_id==cache.NodeType['Document'].id)
+                    .group_by("journal")
+                    .order_by(desc("count"))
+                    .all())
+    jc = dict()
+    for journal,count in journal_count:
+        jc[journal] = count
+
+    return JsonHttpResponse(jc)
 
 def test_ngrams(request , project_id, corpus_id ):
     results = ["hola" , "mundo"]
@@ -341,7 +345,11 @@ def test_ngrams(request , project_id, corpus_id ):
     ngrams_ids = Ngrams_Scores.keys()
 
     import math
-    occs_threshold = min ( 10 , math.sqrt(Sum / len(ngrams_ids)) )
+
+    if len(ngrams_ids) != 0:
+        occs_threshold = min ( 10 , math.sqrt(Sum / len(ngrams_ids)) )
+    else:
+        occs_threshold = 10
 
     Metrics = {
         "ngrams":[],

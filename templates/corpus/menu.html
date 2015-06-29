@@ -1,4 +1,5 @@
 {% extends "menu.html" %}
+{% load staticfiles %}
 
 {% block corpusBannerTop %}
 
@@ -10,7 +11,7 @@
 				<div class="col-md-4">
 
 						{% if project %}
-						<h1>{{ project.name }}</h1>
+						<h1><a href="/project/{{project.id}}">{{ project.name }}</a></h1>
 						<h2>{{ corpus.name }}</h2>
 						{% endif %}
 										<!--<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add file</a> -->
@@ -32,9 +33,9 @@
 
 				<div class="col-md-4">
 						<br>
-						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/update">Update</a>
+						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a>
 
-						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Save</a>
+						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
 						<a type="button" class="btn btn-default btn-lg" data-container="body" data-toggle="popover" data-placement="bottom" 
 																		data-content='
 																		<ul>
@@ -62,9 +63,12 @@
 
 		<div class="btn-group btn-group-justified">
 				<center>
-				<a type="button" class="btn btn-default {% if view == "Documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/">{{number}} Documents</a>
-							<a type="button" class="btn btn-default {% if view == "Journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
-							<a type="button" class="btn btn-default {% if view == "Terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/ngrams">Terms</a>
+				<a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/documents">{{number}} Documents</a>
+							<a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
+						
+							{% if processing == 0 %}
+							<a type="button" class="btn btn-default {% if view == "terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/terms">Terms</a>
+							{% endif %}
 				</center>
 		</div>
 
@@ -76,7 +80,7 @@
 
 <div class="container">
 		<div class="row">
-				<div class="col-md-4">
+				<div class="col-md-6">
 						<div class="jumbotron">
 						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
 						<ol>
@@ -88,23 +92,11 @@
 					</div>
 				</div>
 
-				<div class="col-md-4">
-						<div class="jumbotron">
-                            <!-- <h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/matrix">Matrix</a></h3> -->
-								<h3>Matrix (soon)</h3>
-						<ol>
-								<li>Sort</li>
-								<li>Group</li>
-								<li>Cluster</li>
-						</ol>
-						<h4><a href="/project/{{project.id}}/corpus/{{corpus.id}}/">Back to corpus</a></h3>
-						</div>
-				</div>
 
-				<div class="col-md-4">
+				<div class="col-md-6">
 						<div class="jumbotron">
 								{% if processing > 0 %}
-										<h3> Graph (later)</h3>
+										<h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Graph (later)</h3>
                 {% else %}
                                 <h3><a href="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer">Graph</a></h3>
                 {% endif %}

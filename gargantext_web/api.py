@@ -305,15 +305,15 @@ class NodesChildrenQueries(APIView):
             field = None
             if len(field_name_parts) == 1:
                 field = getattr(Node, field_name)
-            elif field_name_parts[0] == 'ngrams':
-                field = getattr(Ngram, field_name)
-                tables.add('ngrams')
             elif field_name_parts[1] == 'count':
                 if field_name_parts[0] == 'nodes':
                     field = func.count(Node.id)
                 elif field_name_parts[0] == 'ngrams':
                     field = func.count(Ngram.id)
                     tables.add('ngrams')
+            elif field_name_parts[0] == 'ngrams':
+                field = getattr(Ngram, field_name)
+                tables.add('ngrams')
             elif field_name_parts[0] == 'hyperdata':
                 hyperdata = _hyperdata_dict[field_name_parts[1]]
                 if hyperdata not in hyperdata_aliases:

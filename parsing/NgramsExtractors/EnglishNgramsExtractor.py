@@ -6,5 +6,5 @@ class EnglishNgramsExtractor(NgramsExtractor):
 
     def start(self):
         self.tagger = NltkTagger()
-        
+        # self.tagger = MeltTagger(language='en')
     

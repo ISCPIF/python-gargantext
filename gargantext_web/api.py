@@ -312,7 +312,7 @@ class NodesChildrenQueries(APIView):
                     field = func.count(Ngram.id)
                     tables.add('ngrams')
             elif field_name_parts[0] == 'ngrams':
-                field = getattr(Ngram, field_name)
+                field = getattr(Ngram, field_name_parts[1])
                 tables.add('ngrams')
             elif field_name_parts[0] == 'hyperdata':
                 hyperdata = _hyperdata_dict[field_name_parts[1]]

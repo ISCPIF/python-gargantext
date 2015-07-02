@@ -12,7 +12,8 @@ import os
 class identity_dict(dict):
     def __missing__(self, key):
         return key
-_tag_replacements = identity_dict({
+_tag_replacements = dict()
+_tag_replacements['fr'] = identity_dict({
     'DET':      'DT',
     'NC':       'NN',
     'NPP':      'NNP',
@@ -46,11 +47,18 @@ _tag_replacements = identity_dict({
     # 'PREF':     '',
     # 'ADJWH':    '',
 })
+_tag_replacements['en'] = identity_dict()
 
 
 class MeltTagger(Tagger):
 
-    def start(self, language='fr', melt_data_path='lib/melttagger'):
+    def __init__(self, *args, **kwargs):
+        self.language = kwargs.pop('language', 'fr')
+        self._tag_replacements = _tag_replacements[self.language]
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+    def start(self, melt_data_path='lib/melttagger'):
+        language = self.language
         basepath = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(basepath, melt_data_path)
         self._pos_tagger = POSTagger()
@@ -99,7 +107,7 @@ class MeltTagger(Tagger):
         # without lemmatization
         if not lemmatize:
             for form, tag in tagged_tokens:
-                yield (form, _tag_replacements[tag])
+                yield (form, self._tag_replacements[tag])
             return
         # with lemmatization
         command_input = ' '.join(
@@ -110,4 +118,4 @@ class MeltTagger(Tagger):
         for token in lemmatized.split():
             if len(token):
                 values = token.split('/')
-                yield (values[0], _tag_replacements[values[1]], values[2].replace('*', ''))
+                yield (values[0], self._tag_replacements[values[1]], values[2].replace('*', ''))

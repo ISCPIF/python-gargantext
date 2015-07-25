@@ -38,7 +38,7 @@
 
                 <ul class="list-group words-list clearfix">
                   <li ng-repeat="keyword in extraNgramList[listId] | startFrom:currentListPage * pageSize | limitTo:pageSize" class="list-group-item">
-                    <div ng-controller="NgramListController" keyword-template class="keyword-container"></div>
+                    <div ng-controller="NgramController" keyword-template class="keyword-container"></div>
                   </li>
                 </ul>
 
@@ -50,7 +50,7 @@
                 </nav>
 
                 <div class="form-group">
-                  <input type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
+                  <input autosave="search" maxlength="240" placeholder="Add any text" type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
                   <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
                 </div>
               </div>

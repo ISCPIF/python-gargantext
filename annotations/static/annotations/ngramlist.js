@@ -4,9 +4,9 @@
   var annotationsAppNgramList = angular.module('annotationsAppNgramList', ['annotationsAppHttp']);
 
   /*
-  * Controls Ngram displayed in the flat lists (called "extra-text")
+  * Controls one Ngram displayed in the flat lists (called "extra-text")
   */
-  annotationsAppNgramList.controller('NgramListController',
+  annotationsAppNgramList.controller('NgramController',
     ['$scope', '$rootScope', '$element', 'NgramHttpService',
     function ($scope, $rootScope, $element, NgramHttpService) {
       /*
@@ -56,7 +56,7 @@
   }]);
 
   /*
-  * Template of the ngram element displayed in the flat lists (called "extra-text")
+  * Template of the ngram element displayed in the flat lists
   */
   annotationsAppNgramList.directive('keywordTemplate', function () {
     return {

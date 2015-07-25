@@ -20,29 +20,31 @@
       $rootScope.$watchCollection('activeLists', function (newValue, oldValue) {
         if (newValue === undefined) return;
         $timeout(function() {
-          $('.selectpicker').selectpicker();
-          $('.selectpicker').selectpicker('val', ['MiamList']);
           $('.selectpicker').selectpicker('refresh');
         });
       });
 
       $rootScope.$watchCollection('lists', function (newValue, oldValue) {
         if (newValue === undefined) return;
+        // reformat lists to allListsSelect
         var allListsSelect = [];
         angular.forEach($rootScope.lists, function(value, key) {
           this.push({
             'id': key,
             'label': value
           });
+          // initialize activeLists with the MiamList by default
           if (value == 'MiamList') {
             $rootScope.activeLists = {};
             $rootScope.activeLists[key] = value;
           }
         }, allListsSelect);
+
         $rootScope.allListsSelect = allListsSelect;
 
         $timeout(function() {
           $('.selectpicker').selectpicker();
+          $('.selectpicker').selectpicker('val', ['MiamList']);
         });
         console.log($rootScope.allListsSelect);
       });

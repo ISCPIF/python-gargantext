@@ -47,8 +47,9 @@ class NgramList(APIView):
 
         # ngrams of list_id of corpus_id:
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
-        doc_ngram_list = [(i, 'miam', i, 1931) for i in range(500)]
-        doc_ngram_list += [(i, 'stop', i, 1932) for i in range(501, 600)]
+        # TODO remove these debug values
+        doc_ngram_list = [(i, 'miam', i, 1931) for i in range(500)] + [(700, 'syndromes', 700, 1931)]
+        doc_ngram_list += [(i, 'stop', i, 1932) for i in range(501, 600)] + [(701, 'VCAM-1', 701, 1932)]
         # doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
 
         data = { '%s' % corpus_id : {

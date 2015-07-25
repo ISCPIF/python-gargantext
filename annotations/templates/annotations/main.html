@@ -13,6 +13,8 @@
         <meta name="description" content="Gargantext">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bower_components/bootstrap-select/dist/css/bootstrap-select.min.css' %}">
+
         <link rel="stylesheet" href="{% static 'bower_components/angular/angular-csp.css' %}">
         <link rel="stylesheet" href="{% static 'annotations/app.css' %}">
         <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
@@ -21,7 +23,7 @@
     <!-- TODO integrate this later into the any other django template -->
     <div id="annotationsApp">
       <div class="container-fluid">
-        <div class="row-fluid main-panel" ng-controller="IntraTextController">
+        <div class="row-fluid main-panel" ng-controller="NGramHighlightController">
           <div class="col-md-4 col-xs-4 tabbable words-panel">
             <ul class="nav nav-pills nav-justified">
               <li ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}">
@@ -29,14 +31,14 @@
               </li>
             </ul>
             <div class="tab-content">
-              <div ng-controller="ExtraTextPaginationController" ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
+              <div ng-controller="NgramListPaginationController" ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
                 <div ng-if="extraNgramList[listId].length == 0" class="alert alert-info" role="alert">
                   Input any keyword you want to link to this article and the list named '{[{listName}]}'
                 </div>
 
                 <ul class="list-group words-list clearfix">
                   <li ng-repeat="keyword in extraNgramList[listId] | startFrom:currentListPage * pageSize | limitTo:pageSize" class="list-group-item">
-                    <div ng-controller="ExtraAnnotationController" keyword-template class="keyword-container"></div>
+                    <div ng-controller="NgramListController" keyword-template class="keyword-container"></div>
                   </li>
                 </ul>
 
@@ -48,10 +50,16 @@
                 </nav>
 
                 <div class="form-group">
-                  <input type="text" class="form-control" id="{[{ listId }]}-input" ng-keypress="onListSubmit($event, listId)">
+                  <input type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
                   <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
                 </div>
               </div>
+            </div>
+            <div>
+              <h5>Select lists</h5>
+              <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
+                  <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}" ng-disabled="{[{ item.label == 'MiamList' }]}">{[{item.label}]}</option>
+              </select>
             </div>
           </div>
           <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">
@@ -87,7 +95,7 @@
         </div> <!-- end of the main row -->
       </div>
       <!-- this menu is over the text on mouse selection -->
-      <div ng-controller="AnnotationMenuController" id="selection" class="selection-menu">
+      <div ng-controller="TextSelectionMenuController" id="selection" class="selection-menu">
         <ul class="noselection">
           <li ng-repeat="item in menuItems" class="{[{item.listName}]}" ng-click="onMenuClick($event, item.action, item.listId)">{[{item.verb}]} {[{item.listName}]}</li>
         </ul>

@@ -19,6 +19,7 @@ var S = window.STATIC_URL;
 $script([
   S + 'bower_components/angular/angular.min.js',
   S + 'bower_components/bootstrap/dist/js/bootstrap.min.js',
+  S + 'bower_components/bootstrap-select/dist/js/bootstrap-select.min.js',
   S + 'bower_components/angular-loader/angular-loader.min.js',
   S + 'bower_components/underscore/underscore-1.5.2.js',
   //'bower_components/angular-route/angular-route.js',
@@ -26,7 +27,10 @@ $script([
   $script([
     S + 'bower_components/angular-cookies/angular-cookies.min.js',
     S + 'bower_components/angular-resource/angular-resource.min.js'], function() {
-    $script([S + 'annotations/http.js', S + 'annotations/app.js'], function() {
+    $script([S + 'annotations/http.js', S + 'annotations/highlight.js',
+      S + 'annotations/document.js', S + 'annotations/ngramlist.js',
+      S + 'annotations/activelists.js', S + 'annotations/ngramlist.js',
+      S + 'annotations/utils.js', S + 'annotations/app.js'], function() {
       // when all is done, execute bootstrap angular application (replace ng-app directive)
       angular.bootstrap(document.getElementById("annotationsApp"), ['annotationsApp']);
     });

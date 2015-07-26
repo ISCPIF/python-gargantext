@@ -30,8 +30,8 @@
   * Controls the menu over the current mouse selection
   */
   annotationsAppHighlight.controller('TextSelectionMenuController',
-    ['$scope', '$rootScope', '$element', '$timeout', 'NgramHttpService',
-    function ($scope, $rootScope, $element, $timeout, NgramHttpService) {
+    ['$scope', '$rootScope', '$element', '$timeout', 'NgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, $element, $timeout, NgramHttpService, NgramListHttpService) {
       /*
       * Universal text selection
       */
@@ -178,15 +178,21 @@
               'listId': listId,
               'ngramId': $scope.selection_text.uuid
             }, function(data) {
-              $.each($rootScope.annotations, function(index, element) {
-                if (element.list_id == listId && element.uuid == $scope.selection_text.uuid) {
-                  $rootScope.annotations.splice(index, 1);
-                  return false;
+              // Refresh the annotationss
+              NgramListHttpService.get(
+                {
+                  'corpusId': $rootScope.corpusId,
+                  'docId': $rootScope.docId
+                },
+                function(data) {
+                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                },
+                function(data) {
+                  console.error("unable to get the list of ngrams");
                 }
-              });
+              );
             }, function(data) {
-              console.log(data);
-              console.error("unable to edit the Ngram " + $scope.selection_text);
+              console.error("unable to edit the Ngram " + $scope.selection_text.text);
             }
           );
 
@@ -195,14 +201,25 @@
           NgramHttpService.post(
             {
               'listId': listId,
-              'ngramId': 'new'
+              'ngramId': 'create'
             },
             {
-              'annotation' : {'text': $scope.selection_text.trim()}
+              'text': $scope.selection_text.trim()
             }, function(data) {
-              $rootScope.annotations.push(data);
+              // Refresh the annotationss
+              NgramListHttpService.get(
+                {
+                  'corpusId': $rootScope.corpusId,
+                  'docId': $rootScope.docId
+                },
+                function(data) {
+                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                },
+                function(data) {
+                  console.error("unable to get the list of ngrams");
+                }
+              );
             }, function(data) {
-              console.log(data);
               console.error("unable to edit the Ngram " + $scope.selection_text);
             }
           );
@@ -218,8 +235,8 @@
   * Text highlighting controller
   */
   annotationsAppHighlight.controller('NGramHighlightController',
-    ['$scope', '$rootScope', '$compile', 'NgramHttpService',
-    function ($scope, $rootScope, $compile, NgramHttpService) {
+    ['$scope', '$rootScope', '$compile', 'NgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, $compile, NgramHttpService, NgramListHttpService) {
       var counter = 0;
       /*
       * Replace the text by an html template for ngram keywords
@@ -352,9 +369,6 @@
       /*
       * Listen changes on the ngram data
       */
-      // $rootScope.$watchCollection('annotations', function (newValue, oldValue) {
-      //   refreshDisplay();
-      // });
       $rootScope.$watchCollection('activeLists', function (newValue, oldValue) {
         refreshDisplay();
       });
@@ -371,16 +385,28 @@
         NgramHttpService.post(
           {
             'listId': listId,
-            'ngramId': 'new'
+            'ngramId': 'create'
           },
           {
-            'annotation' : {'text': value}
+            'text': value
           },
           function(data) {
             // on success
             if (data) {
-              $rootScope.annotations.push(data);
               $(inputEltId).val("");
+              // Refresh the annotationss
+              NgramListHttpService.get(
+                {
+                  'corpusId': $rootScope.corpusId,
+                  'docId': $rootScope.docId
+                },
+                function(data) {
+                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                },
+                function(data) {
+                  console.error("unable to get the list of ngrams");
+                }
+              );
             }
           }, function(data) {
             // on error

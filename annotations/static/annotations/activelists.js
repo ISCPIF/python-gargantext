@@ -46,7 +46,6 @@
           $('.selectpicker').selectpicker();
           $('.selectpicker').selectpicker('val', ['MiamList']);
         });
-        console.log($rootScope.allListsSelect);
       });
 
     }]);

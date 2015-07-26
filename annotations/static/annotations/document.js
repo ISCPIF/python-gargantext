@@ -28,8 +28,12 @@
             function(data) {
               $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
               $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
+            },
+            function(data) {
+              console.error("unable to get the list of ngrams");
             }
           );
+
       });
       // TODO setup article pagination
       $scope.onPreviousClick = function () {
@@ -40,5 +44,13 @@
       };
   }]);
 
+  annotationsAppDocument.controller('DocFavoriteController',
+    ['$scope', '$rootScope', 'DocumentHttpService',
+    function ($scope, $rootScope, DocumentHttpService) {
+      $scope.onStarClick = function($event) {
+        console.log("TODO");
+      };
+      $scope.isFavorite = false;
+  }]);
 
 })(window);

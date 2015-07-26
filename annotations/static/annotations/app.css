@@ -2,7 +2,7 @@
 
 /*
 * Class names corresponding to server-side list names
-* To display another list name, please add a new class under this
+* To display another list name, add a new class under this
 */
 
 
@@ -147,4 +147,8 @@
   text-align: center;
   border-right: solid thin #CCC;
   margin-right: 5px;
+}
+
+.float-right {
+  float: right;
 }

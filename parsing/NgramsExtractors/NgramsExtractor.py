@@ -1,4 +1,3 @@
-from ..Taggers import TurboTagger
 import nltk
 
 
@@ -9,7 +8,7 @@ class NgramsExtractor:
     """Class instanciation.
     This method can be overriden.
     """
-    def __init__(self, rule="{<JJ.*>*<NN.*|>+<JJ.*>*}"):
+    def __init__(self, rule="{<JJ.*|CD>*<NN.*|>+<JJ.*>*}"):
         self.start()
         self._label = "NP"
         self._rule = self._label + ": " + rule

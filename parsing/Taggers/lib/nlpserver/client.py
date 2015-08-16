@@ -56,6 +56,8 @@ class NLPClient:
     def _request(self, action, text, language, keys=None):
         """Generic method to request info from the server
         """
+        if text is None:
+            return
         data = action + ' '
         data += language + '\n'
         data += re.sub(r'\n+', '\n', text)

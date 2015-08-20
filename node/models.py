@@ -135,176 +135,191 @@ class Hyperdata(models.Model):
     name        = models.CharField(max_length=32, unique=True)
     type        = models.CharField(max_length=16, db_index=True)
 
-class Node(CTENode):
-    """The node."""
-    objects     = NodeManager()
 
-    user        = models.ForeignKey(User)
-    type        = models.ForeignKey(NodeType)
-    name        = models.CharField(max_length=255)
+class Node(models.Model):
+    name = models.CharField(max_length=255)
+    # data type
+    nodetype = models.CharField(max_length=1)
+    # hierarchy
+    user = models.ForeignKey(User)
+    # nestedness
+    lft = models.IntegerField()
+    rgt = models.IntegerField()
+    depth = models.IntegerField()
+    # values
+    contents = models.TextField(null=True)
 
-    language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
 
-    date        = models.DateField(default=timezone.now, blank=True)
-    hyperdata    = JsonBField(null=False, default={})
+# class Node(CTENode):
+#     """The node."""
+#     objects     = NodeManager()
 
-    ngrams      = models.ManyToManyField(through='Node_Ngram', to='Ngram')
+#     user        = models.ForeignKey(User)
+#     type        = models.ForeignKey(NodeType)
+#     name        = models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.name
+#     language    = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL)
 
-    def get_resources(self):
-        return Resource.objects.select_related('node_resource').filter(node_resource__node = self)
+#     date        = models.DateField(default=timezone.now, blank=True)
+#     hyperdata    = JsonBField(null=False, default={})
 
-    def add_resource(self, **kwargs):
-        # only for tests
-        resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
-        #resource = Resource(**kwargs)
-        resource.save()
+#     ngrams      = models.ManyToManyField(through='Node_Ngram', to='Ngram')
 
-        # User
-        if 'user' not in kwargs and 'user_id' not in kwargs:
-            resource.user = self.user
-        # Compute the digest
-        h = hashlib.md5()
-        f = open(str(resource.file), 'rb')
-        h.update(f.read())
-        f.close()
-        resource.digest = h.hexdigest()
-        # check if a resource on this node already has this hash
-        tmp_resource = self.get_resources().filter(digest = resource.digest).first()
-        if tmp_resource:
-            return tmp_resource
-        else:
-            resource.save()
-        # link with the resource
-        node_resource = Node_Resource(
-            node     = self,
-            resource = resource
-        )
-        node_resource.save()
-        return resource
+#     def __str__(self):
+#         return self.name
 
-    def parse_resources(self, verbose=False):
-        # parse all resources into a list of hyperdata
-        hyperdata_list = []
-        print("not parsed resources:")
-        print(self.node_resource.filter(parsed=False))
-        print("= = = = = = = = =  = =\n")
-        for node_resource in self.node_resource.filter(parsed=False):
-            resource = node_resource.resource
-            parser = defaultdict(lambda:FileParser.FileParser, parsers
-#                    {
-#                'istext'            : ISText,
-#                'pubmed'            : PubmedFileParser,
-#                'isi'               : IsiFileParser,
-#                'ris'               : RisFileParser,
-#                'RIS (Jstor)'       : JstorFileParser,
-#                'europress'         : EuropressFileParser,
-#                'europress_french'  : EuropressFileParser,
-#                'europress_english' : EuropressFileParser,
-#            }
+#     def get_resources(self):
+#         return Resource.objects.select_related('node_resource').filter(node_resource__node = self)
 
-                    )[resource.type.name]()
-            hyperdata_list += parser.parse(str(resource.file))
-        type_id = NodeType.objects.get(name='Document').id
-        langages_cache = LanguagesCache()
-        user_id = self.user.id
-        # insert the new resources in the database!
-        for i, hyperdata_values in enumerate(hyperdata_list):
-            if verbose:
-                print(i, end='\r', flush=True)
-            name = hyperdata_values.get('title', '')[:200]
-            language = langages_cache[hyperdata_values['language_iso2']] if 'language_iso2' in hyperdata_values else None,
-            if isinstance(language, tuple):
-                language = language[0]
-            # print("hyperdata_values:")
-            # print("\t",hyperdata_values,"\n- - - - - - - - - - - - ")
-            Node(
-                user_id  = user_id,
-                type_id  = type_id,
-                name     = name,
-                parent   = self,
-                language_id = language.id if language else None,
-                hyperdata = hyperdata_values
-            ).save()
-        # make hyperdata filterable
-        self.children.all().make_hyperdata_filterable()
+#     def add_resource(self, **kwargs):
+#         # only for tests
+#         resource = Resource(guid=str(time()), digest=str(time()), **kwargs )
+#         #resource = Resource(**kwargs)
+#         resource.save()
 
-        # mark the resources as parsed for this node
-        self.node_resource.update(parsed=True)
+#         # User
+#         if 'user' not in kwargs and 'user_id' not in kwargs:
+#             resource.user = self.user
+#         # Compute the digest
+#         h = hashlib.md5()
+#         f = open(str(resource.file), 'rb')
+#         h.update(f.read())
+#         f.close()
+#         resource.digest = h.hexdigest()
+#         # check if a resource on this node already has this hash
+#         tmp_resource = self.get_resources().filter(digest = resource.digest).first()
+#         if tmp_resource:
+#             return tmp_resource
+#         else:
+#             resource.save()
+#         # link with the resource
+#         node_resource = Node_Resource(
+#             node     = self,
+#             resource = resource
+#         )
+#         node_resource.save()
+#         return resource
 
-    @current_app.task(filter=task_method)
-    def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
-        # if there is no cache...
-        if ngramsextractorscache is None:
-            ngramsextractorscache = NgramsExtractorsCache()
-        if ngramscaches is None:
-            ngramscaches = NgramsCaches()
-        # what do we want from the cache?
-        language = self.language if self.language else self.parent.language
-        #print(language.fullname)
-        extractor = ngramsextractorscache[language]
-        ngrams = ngramscaches[language]
-        # find & count all the occurrences
-        associations = defaultdict(float) # float or int?
-        if isinstance(keys, dict):
-            for key, weight in keys.items():
-                text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
-                for ngram in extractor.extract_ngrams(text2process):
-                    terms = ' '.join([token for token, tag in ngram])
-                    associations[ngram] += weight
-        else:
-            for key in keys:
-                text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
-                for ngram in extractor.extract_ngrams(text2process):
-                    terms = ' '.join([token for token, tag in ngram])
-                    associations[terms] += 1
-        Node_Ngram.objects.bulk_create([
-            Node_Ngram(
-                node   = self,
-                ngram  = ngrams[ngram_text],
-                weight = weight
-            )
-            for ngram_text, weight in associations.items()
-        ])
+#     def parse_resources(self, verbose=False):
+#         # parse all resources into a list of hyperdata
+#         hyperdata_list = []
+#         print("not parsed resources:")
+#         print(self.node_resource.filter(parsed=False))
+#         print("= = = = = = = = =  = =\n")
+#         for node_resource in self.node_resource.filter(parsed=False):
+#             resource = node_resource.resource
+#             parser = defaultdict(lambda:FileParser.FileParser, parsers
+# #                    {
+# #                'istext'            : ISText,
+# #                'pubmed'            : PubmedFileParser,
+# #                'isi'               : IsiFileParser,
+# #                'ris'               : RisFileParser,
+# #                'RIS (Jstor)'       : JstorFileParser,
+# #                'europress'         : EuropressFileParser,
+# #                'europress_french'  : EuropressFileParser,
+# #                'europress_english' : EuropressFileParser,
+# #            }
 
-    @current_app.task(filter=task_method)
-    def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
-        import time
-        total = 0
-        print("LOG::TIME: In workflow()    parse_resources()")
-        start = time.time()
-        self.hyperdata['Processing'] = 1
-        self.save()
-        self.parse_resources()
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / parse_resources()")
+#                     )[resource.type.name]()
+#             hyperdata_list += parser.parse(str(resource.file))
+#         type_id = NodeType.objects.get(name='Document').id
+#         langages_cache = LanguagesCache()
+#         user_id = self.user.id
+#         # insert the new resources in the database!
+#         for i, hyperdata_values in enumerate(hyperdata_list):
+#             if verbose:
+#                 print(i, end='\r', flush=True)
+#             name = hyperdata_values.get('title', '')[:200]
+#             language = langages_cache[hyperdata_values['language_iso2']] if 'language_iso2' in hyperdata_values else None,
+#             if isinstance(language, tuple):
+#                 language = language[0]
+#             # print("hyperdata_values:")
+#             # print("\t",hyperdata_values,"\n- - - - - - - - - - - - ")
+#             Node(
+#                 user_id  = user_id,
+#                 type_id  = type_id,
+#                 name     = name,
+#                 parent   = self,
+#                 language_id = language.id if language else None,
+#                 hyperdata = hyperdata_values
+#             ).save()
+#         # make hyperdata filterable
+#         self.children.all().make_hyperdata_filterable()
 
-        start = time.time()
-        print("LOG::TIME: In workflow()    extract_ngrams()")
-        print("\n- - - - - - - - - -")
-        type_document   = NodeType.objects.get(name='Document')
-        self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-        end = time.time()
-        print("- - - - - - - - - - \n")
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / extract_ngrams()")
+#         # mark the resources as parsed for this node
+#         self.node_resource.update(parsed=True)
 
-        start = time.time()
-        print("In workflow()    do_tfidf()")
-        from analysis.functions import do_tfidf
-        do_tfidf(self)
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / do_tfidf()")
-        print("In workflow() END")
-        self.hyperdata['Processing'] = 0
-        self.save()
+#     @current_app.task(filter=task_method)
+#     def extract_ngrams(self, keys, ngramsextractorscache=None, ngramscaches=None):
+#         # if there is no cache...
+#         if ngramsextractorscache is None:
+#             ngramsextractorscache = NgramsExtractorsCache()
+#         if ngramscaches is None:
+#             ngramscaches = NgramsCaches()
+#         # what do we want from the cache?
+#         language = self.language if self.language else self.parent.language
+#         #print(language.fullname)
+#         extractor = ngramsextractorscache[language]
+#         ngrams = ngramscaches[language]
+#         # find & count all the occurrences
+#         associations = defaultdict(float) # float or int?
+#         if isinstance(keys, dict):
+#             for key, weight in keys.items():
+#                 text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
+#                 for ngram in extractor.extract_ngrams(text2process):
+#                     terms = ' '.join([token for token, tag in ngram])
+#                     associations[ngram] += weight
+#         else:
+#             for key in keys:
+#                 text2process = str(self.hyperdata[key]).replace('[','').replace(']','')
+#                 for ngram in extractor.extract_ngrams(text2process):
+#                     terms = ' '.join([token for token, tag in ngram])
+#                     associations[terms] += 1
+#         Node_Ngram.objects.bulk_create([
+#             Node_Ngram(
+#                 node   = self,
+#                 ngram  = ngrams[ngram_text],
+#                 weight = weight
+#             )
+#             for ngram_text, weight in associations.items()
+#         ])
+
+#     @current_app.task(filter=task_method)
+#     def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+#         import time
+#         total = 0
+#         print("LOG::TIME: In workflow()    parse_resources()")
+#         start = time.time()
+#         self.hyperdata['Processing'] = 1
+#         self.save()
+#         self.parse_resources()
+#         end = time.time()
+#         total += (end - start)
+#         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
+#         print("LOG::TIME: In workflow()    / parse_resources()")
+
+#         start = time.time()
+#         print("LOG::TIME: In workflow()    extract_ngrams()")
+#         print("\n- - - - - - - - - -")
+#         type_document   = NodeType.objects.get(name='Document')
+#         self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+#         end = time.time()
+#         print("- - - - - - - - - - \n")
+#         total += (end - start)
+#         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
+#         print("LOG::TIME: In workflow()    / extract_ngrams()")
+
+#         start = time.time()
+#         print("In workflow()    do_tfidf()")
+#         from analysis.functions import do_tfidf
+#         do_tfidf(self)
+#         end = time.time()
+#         total += (end - start)
+#         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+#         print("LOG::TIME: In workflow()    / do_tfidf()")
+#         print("In workflow() END")
+#         self.hyperdata['Processing'] = 0
+#         self.save()
 
 class Node_Hyperdata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)

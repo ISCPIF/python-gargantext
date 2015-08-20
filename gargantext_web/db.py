@@ -15,6 +15,7 @@ from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import JSON
 
 # SQLAlchemy session management
+
 def get_engine():
     from sqlalchemy import create_engine
     url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
@@ -23,67 +24,6 @@ def get_engine():
     return create_engine(url, use_native_hstore=True)
 
 engine = get_engine()
-
-Base = automap_base()
-
-Base.prepare(engine, reflect=True)
-
-# model representation
-
-def model_repr(modelname):
-    def _repr(obj):
-        result = '<' + modelname
-        isfirst = True
-        for key, value in obj.__dict__.items():
-            if key[0] != '_':
-                value = repr(value)
-                if len(value) > 64:
-                    value = value[:30] + '....' + value[-30:]
-                if isfirst:
-                    isfirst = False
-                else:
-                    result += ','
-                result += ' ' + key + '=' + value
-        result += '>'
-        return result
-    return _repr
-
-# map the Django models found in node.models to SQLAlchemy models
-
-for model_name, model in models.__dict__.items():
-    if hasattr(model, '_meta'):
-        table_name = model._meta.db_table
-        if hasattr(Base.classes, table_name):
-            sqla_model = getattr(Base.classes, table_name)
-            setattr(sqla_model, '__repr__', model_repr(model_name))
-            globals()[model_name] = sqla_model
-            __all__.append(model_name)
-
-
-NodeNgram = Node_Ngram
-NodeResource = Node_Resource
-
-# manually declare the Node table...
-from datetime import datetime
-from sqlalchemy.types import *
-from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, aliased
-
-#class Node(Base):
-#     __tablename__ = 'node_node'
-#     __table_args__ = {'auto_load':True, 'extend_existing':True}
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey('auth_user.id', ondelete='CASCADE'), index=True, nullable=False)
-#     type_id = Column(Integer, ForeignKey('node_nodetype.id', ondelete='CASCADE'), index=True, nullable=False)
-#     name = Column(String(255))
-#     language_id = Column(Integer, ForeignKey('node_language.id', ondelete='CASCADE'), index=True, nullable=False)
-#     date = Column(DateTime(), default=datetime.utcnow, nullable=True)
-#     hyperdata = Column(JSONB, default={}, nullable=False)
-#
-#     def __repr__(self):
-#        return '<Id %r>' % self.id
-
 
 # debugging tool, to translate SQLAlchemy queries to string
 
@@ -215,7 +155,7 @@ class bulk_insert:
         # insert data
         if not isinstance(table, str):
             table = table.__table__.name
-        cursor.copy_from(self, table, columns=keys)
+        cursor.copy_from(self, table, columns=keys, null='\\N')
         # commit if necessary
         if mustcommit:
             db.commit()
@@ -223,9 +163,54 @@ class bulk_insert:
     def read(self, size=None):
         try:
             return self.template % tuple(
-                str(x).replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').replace("\\","") for x in next(self.iter)
+                '\\N' if x is None else str(x).replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').replace("\\","")
+                for x in next(self.iter)
             )
         except StopIteration:
             return ''
 
     readline = read
+
+# SQLAlchemy models
+
+from sqlalchemy.ext.automap import automap_base
+Base = automap_base()
+
+from .models.Node import Node
+
+Base.prepare(engine, reflect=True)
+
+# model representation
+
+def model_repr(modelname):
+    def _repr(obj):
+        result = '<' + modelname
+        isfirst = True
+        for key, value in obj.__dict__.items():
+            if key[0] != '_':
+                value = repr(value)
+                if len(value) > 64:
+                    value = repr(value[:32]) + '....' + repr(value[-32:])
+                if isfirst:
+                    isfirst = False
+                else:
+                    result += ','
+                result += ' ' + key + '=' + value
+        result += '>'
+        return result
+    return _repr
+
+# map the Django models found in node.models to SQLAlchemy models
+
+for model_name, model in models.__dict__.items():
+    if hasattr(model, '_meta'):
+        table_name = model._meta.db_table
+        if hasattr(Base.classes, table_name):
+            sqla_model = getattr(Base.classes, table_name)
+            if model_name != 'Node':
+                setattr(sqla_model, '__repr__', model_repr(model_name))
+            globals()[model_name] = sqla_model
+            __all__.append(model_name)
+
+NodeNgram = Node_Ngram
+NodeResource = Node_Resource

@@ -44,8 +44,8 @@ class NgramList(APIView):
             list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
             lists["%s" % list_id[0][0]] = list_type
 
-        # ngrams of list_id of corpus_id:
-        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
+        # ngrams for the corpus_id (ignoring doc_id for the moment):
+        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=None, user_id=request.user.id)
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [
                 {
@@ -109,15 +109,14 @@ class NgramCreate(APIView):
         create NGram in a given list
         """
         list_id = int(list_id)
-
         # format the ngram's text
         ngram_text = request.data.get('text', None)
-        if ngram_text is not None:
-            ngram_text = ngram_text.strip().lower()
-            ngram_text = ' '.join(ngram_text.split())
-        else:
+        if ngram_text is None:
             raise APIException("Could not create a new Ngram without one \
                 text key in the json body")
+
+        ngram_text = ngram_text.strip().lower()
+        ngram_text = ' '.join(ngram_text.split())
         # check if the ngram exists with the same terms
         ngram = session.query(Ngram).filter(Ngram.terms == ngram_text).first()
         if ngram is None:

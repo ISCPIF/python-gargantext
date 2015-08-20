@@ -79,7 +79,7 @@ class NgramEdit(APIView):
         node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
         session.add(node_ngram)
         session.commit()
-        
+
         # return the response
         return Response({
             'uuid': ngram_id,
@@ -127,7 +127,7 @@ class NgramCreate(APIView):
         session.commit()
         ngram_id = ngram.id
         # create the new node_ngram relation
-        # TODO check existing ?
+        # TODO check existing Node_Ngram ?
         node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
         session.add(node_ngram)
         session.commit()

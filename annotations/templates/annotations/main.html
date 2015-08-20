@@ -42,10 +42,10 @@
                   </li>
                 </ul>
 
-                <nav ng-class="{invisible: totalListPages - 1 == 0}" class="clearfix">
+                <nav ng-class="{invisible: totalListPages(listId) - 1 == 0}" class="clearfix">
                   <ul class="pagination pagination-s pull-right words-pagination">
                     <li ng-class="{'disabled': currentListPage == 0}"><a ng-click="previousListPage()" class="glyphicon glyphicon-backward"></a></li>
-                    <li ng-class="{'disabled': currentListPage >= totalListPages - 1}"><a ng-click="nextListPage()" class="glyphicon glyphicon-forward"></a></li>
+                    <li ng-class="{'disabled': currentListPage >= totalListPages(listId) - 1}"><a ng-click="nextListPage()" class="glyphicon glyphicon-forward"></a></li>
                   </ul>
                 </nav>
 

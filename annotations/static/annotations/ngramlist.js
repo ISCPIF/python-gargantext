@@ -55,7 +55,7 @@
         $scope.currentListPage = $scope.currentListPage - 1;
       };
 
-      $scope.totalListPages = function (listId) {
+      $scope.totalListPages = function(listId) {
         if ($rootScope.extraNgramList[listId] === undefined) return 0;
         return Math.ceil($rootScope.extraNgramList[listId].length / $scope.pageSize);
       };

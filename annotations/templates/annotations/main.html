@@ -86,13 +86,17 @@
                 <li class="list-group-item small"><span class="badge">date</span>{[{publication_date}]}</li>
               </ul>
             </div>
-            <h4 ng-if="abstract_text != null">Abstract</h4>
+            <div ng-if="abstract_text != null">
+                <span class="badge">abstract</span>
+            </div>
             <p id="abstract-text" class="text-container">
-                <div ng-if="abstract_text == null" class="alert alert-info" role="alert">Empty abstract text</div>
+                <div ng-if="abstract_text == null" class="alert alert-info small" role="alert">Empty abstract text</div>
             </p>
-            <h4 ng-if="full_text != null">Full Article</h4>
+            <div ng-if="full_text != null">
+                <span class="badge">full article</span>
+            </div>
             <p id="full-text" class="text-container">
-                <div ng-if="full_text == null" class="alert alert-info" role="alert">Empty full text</div>
+                <div ng-if="full_text == null" class="alert alert-info small" role="alert">Empty full text</div>
             </p>
           </div>
         </div> <!-- end of the main row -->

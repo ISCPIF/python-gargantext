@@ -79,12 +79,10 @@ class NgramEdit(APIView):
         node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
         session.add(node_ngram)
         session.commit()
-
+        
         # return the response
         return Response({
             'uuid': ngram_id,
-            'text': ngram_text,
-            'occurrences': node_ngram.weight,
             'list_id': list_id,
         })
 

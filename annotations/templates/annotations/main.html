@@ -49,7 +49,7 @@
                   </ul>
                 </nav>
 
-                <div class="form-group">
+                <div class="form-group" ng-controller="NgramInputController">
                   <input autosave="search" maxlength="240" placeholder="Add any text" type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
                   <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
                 </div>

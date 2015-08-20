@@ -103,6 +103,7 @@ def listNgramIds(list_id=None, typeList=None,
             .group_by(Ngram.id, ListNgram.node_id)
             )
 
+    # FIXME this is only used to filter on 1 document
     if doc_id is not None:
         Doc      = aliased(Node)
         DocNgram = aliased(NodeNgram)

@@ -7,8 +7,8 @@
   * Controls one Ngram displayed in the flat lists (called "extra-text")
   */
   annotationsAppNgramList.controller('NgramController',
-    ['$scope', '$rootScope', '$element', 'NgramHttpService',
-    function ($scope, $rootScope, $element, NgramHttpService) {
+    ['$scope', '$rootScope', 'NgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, NgramHttpService, NgramListHttpService) {
       /*
       * Click on the 'delete' cross button
       */
@@ -17,15 +17,22 @@
           'listId': $scope.keyword.list_id,
           'ngramId': $scope.keyword.uuid
         }, function(data) {
-          $.each($rootScope.annotations, function(index, element) {
-            if (element.list_id == $scope.keyword.list_id && element.uuid == $scope.keyword.uuid) {
-              $rootScope.annotations.splice(index, 1);
-              return false;
+          // Refresh the annotationss
+          NgramListHttpService.get(
+            {
+              'corpusId': $rootScope.corpusId,
+              'docId': $rootScope.docId
+            },
+            function(data) {
+              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+              $rootScope.refreshDisplay();
+            },
+            function(data) {
+              console.error("unable to refresh the list of ngrams");
             }
-          });
+          );
         }, function(data) {
-          console.log(data);
-          console.error("unable to delete the Ngram " + $scope.keyword.uuid);
+          console.error("unable to remove the Ngram " + $scope.keyword.text);
         });
       };
     }]);
@@ -65,4 +72,56 @@
       }
     };
   });
+  /*
+  * new NGram from the user input
+  */
+  annotationsAppNgramList.controller('NgramInputController',
+    ['$scope', '$rootScope', '$element', 'NgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, $element, NgramHttpService, NgramListHttpService) {
+    /*
+    * Add a new NGram from the user input in the extra-text list
+    */
+    $scope.onListSubmit = function ($event, listId) {
+      var inputEltId = "#"+ listId +"-input";
+      if ($event.keyCode !== undefined && $event.keyCode != 13) return;
+
+      var value = angular.element(inputEltId).val().trim();
+      if (value === "") return;
+
+      NgramHttpService.post(
+        {
+          'listId': listId,
+          'ngramId': 'create'
+        },
+        {
+          'text': value
+        },
+        function(data) {
+          // on success
+          if (data) {
+            angular.element(inputEltId).val("");
+            // Refresh the annotationss
+            NgramListHttpService.get(
+              {
+                'corpusId': $rootScope.corpusId,
+                'docId': $rootScope.docId
+              },
+              function(data) {
+                $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                $rootScope.refreshDisplay();
+              },
+              function(data) {
+                console.error("unable to get the list of ngrams");
+              }
+            );
+          }
+        }, function(data) {
+          // on error
+          angular.element(inputEltId).parent().addClass("has-error");
+          console.error("error adding Ngram "+ value);
+        }
+      );
+    };
+  }]);
+
 })(window);

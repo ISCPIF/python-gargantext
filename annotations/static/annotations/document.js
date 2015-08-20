@@ -3,7 +3,6 @@
 
   var annotationsAppDocument = angular.module('annotationsAppDocument', ['annotationsAppHttp']);
 
-
   annotationsAppDocument.controller('DocController',
     ['$scope', '$rootScope', '$timeout', 'NgramListHttpService', 'DocumentHttpService',
     function ($scope, $rootScope, $timeout, NgramListHttpService, DocumentHttpService) {

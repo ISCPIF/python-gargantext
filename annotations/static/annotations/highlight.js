@@ -186,6 +186,7 @@
                 },
                 function(data) {
                   $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                  $rootScope.refreshDisplay();
                 },
                 function(data) {
                   console.error("unable to get the list of ngrams");
@@ -214,6 +215,7 @@
                 },
                 function(data) {
                   $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                  $rootScope.refreshDisplay();
                 },
                 function(data) {
                   console.error("unable to get the list of ngrams");
@@ -235,9 +237,8 @@
   * Text highlighting controller
   */
   annotationsAppHighlight.controller('NGramHighlightController',
-    ['$scope', '$rootScope', '$compile', 'NgramHttpService', 'NgramListHttpService',
-    function ($scope, $rootScope, $compile, NgramHttpService, NgramListHttpService) {
-      var counter = 0;
+    ['$scope', '$rootScope', '$compile',
+    function ($scope, $rootScope, $compile) {
       /*
       * Replace the text by an html template for ngram keywords
       */
@@ -274,9 +275,6 @@
       function compileNgramsHtml(annotations, textMapping, $rootScope) {
         if ($rootScope.activeLists === undefined) return;
         if (_.keys($rootScope.activeLists).length === 0) return;
-
-        // TODO remove this debug counter
-        counter = 0;
         var templateBegin = "<span ng-controller='TextSelectionController' ng-click='onClick($event)' class='keyword-inline'>";
         var templateBeginRegexp = "<span ng-controller='TextSelectionController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
 
@@ -309,8 +307,6 @@
           angular.forEach(textMapping, function(text, eltId) {
             if (pattern.test(text) === true) {
               textMapping[eltId] = replaceTextByTemplate(text, annotation, template, pattern);
-              // TODO remove debug
-              counter++;
               isDisplayedIntraText = true;
             }
           });
@@ -333,7 +329,7 @@
         return textMapping;
       }
 
-      function refreshDisplay() {
+      $rootScope.refreshDisplay = function() {
         if ($rootScope.annotations === undefined) return;
         if ($rootScope.activeLists === undefined) return;
         if (_.keys($rootScope.activeLists).length === 0) return;
@@ -370,51 +366,9 @@
       * Listen changes on the ngram data
       */
       $rootScope.$watchCollection('activeLists', function (newValue, oldValue) {
-        refreshDisplay();
+        $rootScope.refreshDisplay();
       });
-      /*
-      * Add a new NGram from the user input in the extra-text list
-      */
-      $scope.onListSubmit = function ($event, listId) {
-        var inputEltId = "#"+ listId +"-input";
-        if ($event.keyCode !== undefined && $event.keyCode != 13) return;
 
-        var value = $(inputEltId).val().trim();
-        if (value === "") return;
-
-        NgramHttpService.post(
-          {
-            'listId': listId,
-            'ngramId': 'create'
-          },
-          {
-            'text': value
-          },
-          function(data) {
-            // on success
-            if (data) {
-              $(inputEltId).val("");
-              // Refresh the annotationss
-              NgramListHttpService.get(
-                {
-                  'corpusId': $rootScope.corpusId,
-                  'docId': $rootScope.docId
-                },
-                function(data) {
-                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-                },
-                function(data) {
-                  console.error("unable to get the list of ngrams");
-                }
-              );
-            }
-          }, function(data) {
-            // on error
-            $(inputEltId).parent().addClass("has-error");
-            console.error("error adding Ngram "+ value);
-          }
-        );
-      };
 
     }
   ]);

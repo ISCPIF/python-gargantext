@@ -58,7 +58,7 @@
       * When mouse selection is started, we highlight it
       */
       function toggleSelectionHighlight(text) {
-        if (text.trim() !== "") {
+        if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
           $(".text-panel").addClass("selection");
         } else {
           $(".text-panel").removeClass("selection");
@@ -76,7 +76,7 @@
             // variable used in onClick
             $scope.selection_text = angular.copy(annotation);
 
-            if (angular.isObject(annotation)) {
+            if (angular.isObject(annotation) && !$element.hasClass('menu-is-opened')) {
               // existing ngram
               // Delete from the current list
               $scope.menuItems = [
@@ -92,7 +92,7 @@
                 $scope.menuItems.push({
                     'action': 'post',
                     'listId': stoplist_id,
-                    'verb': 'Add to',
+                    'verb': 'Move to',
                     'listName': $rootScope.lists[stoplist_id]
                   });
               } else if ($rootScope.lists[annotation.list_id] == "StopList") {
@@ -100,13 +100,14 @@
                 $scope.menuItems.push({
                     'action': 'post',
                     'listId': miamlist_id,
-                    'verb': 'Add to',
+                    'verb': 'Move to',
                     'listName': $rootScope.lists[miamlist_id]
                   });
               }
               // show the menu
               $element.fadeIn(100);
-            } else if (annotation.trim() !== "") {
+              $element.addClass('menu-is-opened');
+            } else if (annotation.trim() !== "" && !$element.hasClass('menu-is-opened')) {
               // new ngram
               $scope.menuItems = [
                 {
@@ -118,10 +119,12 @@
               ];
               // show the menu
               $element.fadeIn(100);
+              $element.addClass('menu-is-opened');
             } else {
               $scope.menuItems = [];
               // close the menu
               $element.fadeOut(100);
+              $element.removeClass('menu-is-opened');
             }
           });
         });
@@ -159,7 +162,7 @@
       * Toggle the menu when clicking on an existing ngram keyword
       */
       $(".text-container").delegate(':not("#selection")', "click", function(e) {
-        if ($(e.target).hasClass("keyword-inline")) return;
+        // if ($(e.target).hasClass("keyword-inline")) return;
         positionMenu(e);
         toggleSelectionHighlight(selection.toString().trim());
         toggleMenu(null, selection.toString().trim());

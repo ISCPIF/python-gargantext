@@ -10,7 +10,7 @@ from gargantext_web.db import Session, Base, Node, NodeNgram, Ngram
 # test!
 if __name__ == '__main__':
 
-    step = 2
+    step = 1
     session = Session()
 
     # nodes creation
@@ -44,8 +44,8 @@ if __name__ == '__main__':
 
         corpus.append(document)
         root.append(corpus)
-        print(root)
-    
+        #print(root)
+
     # ngrams extraction
     elif step == 1:
         root = session.query(Node).filter(Node.depth == 0).first()

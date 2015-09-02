@@ -162,10 +162,13 @@ class bulk_insert:
 
     def read(self, size=None):
         try:
-            return self.template % tuple(
+
+            test = self.template % tuple(
                 '\\N' if x is None else str(x).replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').replace("\\","")
                 for x in next(self.iter)
             )
+            print(test)
+            return test
         except StopIteration:
             return ''
 

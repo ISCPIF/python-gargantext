@@ -29,9 +29,9 @@ class NgramsExtractor:
     Returns a list of the ngrams found in the given text.
     """
     def extract_ngrams(self, contents):
-        tagged_ngrams = list(self.tagger.tag_text(contents))
-        if len(tagged_ngrams):
-            grammar_parsed = self._grammar.parse(tagged_ngrams)
+        tagged_tokens = list(self.tagger.tag_text(contents))
+        if len(tagged_tokens):
+            grammar_parsed = self._grammar.parse(tagged_tokens)
             for subtree in grammar_parsed.subtrees():
                 if subtree.label() == self._label:
                     yield subtree.leaves()

@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from sqlalchemy import text, distinct, or_
+from sqlalchemy import text, distinct, or_,not_
 from sqlalchemy.sql import func
 from sqlalchemy.orm import aliased
 
@@ -67,15 +67,16 @@ class APIException(_APIException):
 
 
 _operators_dict = {
-    "=":            lambda field, value: (field == value),
-    "!=":           lambda field, value: (field != value),
-    "<":            lambda field, value: (field < value),
-    ">":            lambda field, value: (field > value),
-    "<=":           lambda field, value: (field <= value),
-    ">=":           lambda field, value: (field >= value),
-    "in":           lambda field, value: (or_(*tuple(field == x for x in value))),
-    "contains":     lambda field, value: (field.contains(value)),
-    "startswith":   lambda field, value: (field.startswith(value)),
+    "=":                lambda field, value: (field == value),
+    "!=":               lambda field, value: (field != value),
+    "<":                lambda field, value: (field < value),
+    ">":                lambda field, value: (field > value),
+    "<=":               lambda field, value: (field <= value),
+    ">=":               lambda field, value: (field >= value),
+    "in":               lambda field, value: (or_(*tuple(field == x for x in value))),
+    "contains":         lambda field, value: (field.contains(value)),
+    "doesnotcontain":  lambda field, value: (not_(field.contains(value))),
+    "startswith":       lambda field, value: (field.startswith(value)),
 }
 _hyperdata_list = [
     hyperdata
@@ -117,6 +118,8 @@ class NodesChildrenNgrams(APIView):
             ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
         if 'contain' in request.GET:
             ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
+        #if 'doesnotcontain' in request.GET:
+        #    ngrams_query = ngrams_query.filter(not_(Ngram.terms.contains(request.GET['doesnotcontain'])))
         # pagination
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 20))

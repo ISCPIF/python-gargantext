@@ -1,11 +1,13 @@
 // Pre-defined constants
 var operators = {
     'text': [
-        {'label': 'contains',       'key': 'contains'}
+        {'label': 'contains',       'key': 'contains'},
+        {'label': 'does not contain',   'key': 'doesnotcontain'},
     ],
     'string': [
         {'label': 'starts with',    'key': 'startswith'},
         {'label': 'contains',       'key': 'contains'},
+        {'label': 'does not contain',       'key': 'doesnotcontain'},
         {'label': 'ends with',      'key': 'endswith'},
         {'label': 'is',             'key': '='},
         {'label': 'is before',      'key': '<'},

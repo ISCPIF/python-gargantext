@@ -57,8 +57,8 @@ def validate(value, expected, path='input'):
                 raise ValidationException('%s should have a minimum %s of %d' % (path, tested_name, expected_range[0], ))
             if len(expected_range) > 1 and tested_value > expected_range[1]:
                 raise ValidationException('%s should have a maximum %s of %d' % (path, tested_name, expected_range[1], ))
-        elif isinstance(expected_range, (list, set, dict, )) and value not in expected_range:
-            expected_values = expected_range if isinstance(expected_range, list) else expected_range.keys()
+        elif isinstance(expected_range, (list, set, )) and value not in expected_range:
+            expected_values = expected_range if isinstance(expected_range, list) else expected_range
             expected_values = [str(value) for value in expected_values if isinstance(value, expected_type)]
             if len(expected_values) < 16:
                 expected_values_str = '", "'.join(expected_values)

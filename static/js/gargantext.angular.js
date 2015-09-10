@@ -390,7 +390,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {key: 'y', type: 'linear', type: 'numeric'},
+                y: {key: 'y', type: 'linear', type: 'numeric', type: 'specificities'},
             },
             tension: 1.0,
             lineMode: 'linear',
@@ -398,7 +398,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 var grouping = groupings.datetime[$scope.groupingKey];
                 return grouping.representation(x) + ' → ' + y;
             }},
-            drawLegend: false,
+            drawLegend: true,
             drawDots: true,
             columnsHGap: 5
         }

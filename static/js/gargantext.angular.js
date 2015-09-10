@@ -390,7 +390,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {key: 'y', type: 'linear', type: 'numeric', type: 'specificities'},
+                y: {key: 'y', type: 'linear'},
             },
             tension: 1.0,
             lineMode: 'linear',

@@ -1,11 +1,13 @@
 // Pre-defined constants
 var operators = {
     'text': [
-        {'label': 'contains',       'key': 'contains'}
+        {'label': 'contains',       'key': 'contains'},
+        {'label': 'does not contain',   'key': 'doesnotcontain'},
     ],
     'string': [
         {'label': 'starts with',    'key': 'startswith'},
         {'label': 'contains',       'key': 'contains'},
+        {'label': 'does not contain',       'key': 'doesnotcontain'},
         {'label': 'ends with',      'key': 'endswith'},
         {'label': 'is',             'key': '='},
         {'label': 'is before',      'key': '<'},
@@ -259,11 +261,21 @@ gargantext.controller("DatasetController", function($scope, $http) {
     $scope.corpora = [];
     $http.get('/api/nodes?type=Project', {cache: true}).success(function(response){
         $scope.projects = response.data;
+        // Initially set to what is indicated in the URL
+        if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
+            $scope.projectId = parseInt(location.pathname.split('/')[2]);
+            $scope.updateCorpora();
+        }
     });
     // update corpora according to the select parent project
     $scope.updateCorpora = function() {
         $http.get('/api/nodes?type=Corpus&parent=' + $scope.projectId, {cache: true}).success(function(response){
             $scope.corpora = response.data;
+            // Initially set to what is indicated in the URL
+            if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
+                $scope.corpusId = parseInt(location.pathname.split('/')[4]);
+                $scope.updateEntities();
+            }
         });
     };
     // update entities depending on the selected corpus
@@ -522,8 +534,8 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 filters: query.filters,
                 sort: ['hyperdata.publication_date.day'],
                 retrieve: {
-                    type: 'aggregates',
-                    list: ['hyperdata.publication_date.day', query.mesured]
+                    aggregate: true,
+                    fields: ['hyperdata.publication_date.day', query.mesured]
                 }
             };
             // request to the server

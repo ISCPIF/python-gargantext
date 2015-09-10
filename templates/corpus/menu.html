@@ -33,7 +33,7 @@
 
 				<div class="col-md-4">
 						<br>
-						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a>
+						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}{% if view %}/{{view}}{% endif %}/update">Update</a>
 
 						<a class="btn btn-default btn-lg" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
 						<a type="button" class="btn btn-default btn-lg" data-container="body" data-toggle="popover" data-placement="bottom" 

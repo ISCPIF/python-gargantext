@@ -252,7 +252,7 @@ def projects(request):
         })
 
 
-def update_nodes(request, project_id, corpus_id, view):
+def update_nodes(request, project_id, corpus_id, view=None):
     '''
     update function:
         - remove previous computations (temporary lists and coocurrences)
@@ -265,7 +265,8 @@ def update_nodes(request, project_id, corpus_id, view):
     try:
         offset = int(project_id)
         offset = int(corpus_id)
-        offset = str(view)
+        if view is not None:
+            offset = str(view)
     except ValueError:
         raise Http404()
 
@@ -307,7 +308,10 @@ def update_nodes(request, project_id, corpus_id, view):
 
 
     #return redirect(request.path.replace('update', ''))
-    return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
+    if view is None:
+        return redirect('/project/%s/corpus/%s/' % (project_id, corpus_id))
+    else:
+        return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
 #
 #    return render_to_response(
 #            request.path,
@@ -385,7 +389,7 @@ def newpaginatorJSON(request , corpus_id):
     for doc in documents:
         if "publication_date" in doc.hyperdata:
             try:
-                realdate = doc.hyperdata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = doc.hyperdata["publication_date"].replace('T',' ').split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
                 # doc.date = realdate
                 resdict = {}

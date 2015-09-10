@@ -229,7 +229,7 @@
                     <hr/>
                     <div class="corpus">
                         <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
-                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
+                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count', 'Simulation par Agents': 'haskell.test'}" ng-change="updateQuery()"></select>
                         in the project
                         <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
                         corpus

@@ -306,7 +306,7 @@ class NodesChildrenQueries(APIView):
         for field_name in fields_names:
             field_name_parts = field_name.split('.')
             field = None
-            if len(field_name_parts) == 1:
+            if len(field_name_parts) == 1 :
                 field = getattr(Node, field_name)
             elif field_name_parts[1] == 'count':
                 if field_name_parts[0] == 'nodes':
@@ -323,7 +323,7 @@ class NodesChildrenQueries(APIView):
                     hyperdata_aliases[hyperdata] = aliased(Node_Hyperdata)
                 hyperdata_alias = hyperdata_aliases[hyperdata]
                 field = getattr(hyperdata_alias, 'value_%s' % hyperdata.type)
-                if len(field_name_parts) == 3:
+                if len(field_name_parts) == 3 :
                     field = func.date_trunc(field_name_parts[2], field)
             fields[field_name] = field
         # build query: selected fields
@@ -380,7 +380,21 @@ class NodesChildrenQueries(APIView):
     def _haskell(self, input, node_id):
         output = copy.deepcopy(input)
         output['pagination']['total'] = 0
-        output['results'] = list()
+        output['results'] = [
+                    ["1998-04-24T00:00:00Z",50],
+                    ["1999-04-24T00:00:00Z",10],
+                    ["2000-09-11T00:00:00Z",100],
+                    ["2001-09-11T00:00:00Z",120],
+                    ["2002-09-11T00:00:00Z",10],
+                    ["2003-09-11T00:00:00Z",10],
+                    ["2004-09-11T00:00:00Z",100],
+                    ["2005-09-11T00:00:00Z",10],
+                    ["2006-09-11T00:00:00Z",10],
+                    ["2007-09-11T00:00:00Z",10],
+                    ["2008-09-11T00:00:00Z",100],
+                    ["2009-09-11T00:00:00Z",10],
+                    ["2010-09-11T00:00:00Z",10],
+        ]
         return output
 
     def post(self, request, node_id):
@@ -437,7 +451,7 @@ class NodesChildrenQueries(APIView):
 
         # authorized field names: Haskell
         haskell_fields = set({
-            'haskell.test',
+            'haskell.test', "hyperdata.publication_date.day",
         })
 
         # authorized field names: all of them

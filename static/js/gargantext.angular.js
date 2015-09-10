@@ -1,4 +1,8 @@
 // Pre-defined constants
+//
+// Documentations:
+// n3-charts/line-chart
+
 var operators = {
     'text': [
         {'label': 'contains',       'key': 'contains'},
@@ -464,6 +468,30 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 dataObject[x][datasetIndex] += y;
             });
         });
+
+
+        // calculate average for earch dataset
+        
+        
+        var sums = [];
+        for (var i=0; i<$scope.datasets.length;i++){
+            sums.push(0);
+        }
+        
+        var count = 0 ;
+        for (var x in dataObject) {
+            count ++ ;
+            var yList = dataObject[x];
+            for (var i=0; i<yList.length; i++) {
+                sums[i] += yList[i];
+            }
+        }
+        
+        for (var i=0; i<$scope.datasets.length;i++){
+            sums[i] /= count;
+        }
+ 
+        
         // Convert this object back to a sorted array
         var yMin, yMax;
         var linearData = [];
@@ -472,7 +500,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             var yList = dataObject[x];
             for (var i=0; i<yList.length; i++) {
                 y = yList[i];
-                row['y' + i] = y;
+                row['y' + i] = y - sums[i];
                 if (yMax == undefined || y > yMax) {
                     yMax = y;
                 }

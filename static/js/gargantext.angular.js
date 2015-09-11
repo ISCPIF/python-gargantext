@@ -386,7 +386,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     $scope.seriesOptions = {
         thicknessNumber: 3,
         thickness: '3px',
-        type: 'area',
+        type: 'column',
         striped: false
     };
     $scope.graph = {
@@ -471,13 +471,11 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
 
 
         // calculate average for earch dataset
-        
-        
         var sums = [];
         for (var i=0; i<$scope.datasets.length;i++){
             sums.push(0);
         }
-        
+
         var count = 0 ;
         for (var x in dataObject) {
             count ++ ;
@@ -486,12 +484,11 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 sums[i] += yList[i];
             }
         }
-        
+
         for (var i=0; i<$scope.datasets.length;i++){
             sums[i] /= count;
         }
- 
-        
+
         // Convert this object back to a sorted array
         var yMin, yMax;
         var linearData = [];
@@ -500,7 +497,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             var yList = dataObject[x];
             for (var i=0; i<yList.length; i++) {
                 y = yList[i];
-                row['y' + i] = y - sums[i];
+                row['y' + i] = y - sums[i];  // position vs average
                 if (yMax == undefined || y > yMax) {
                     yMax = y;
                 }

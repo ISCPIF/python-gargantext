@@ -1,4 +1,8 @@
 // Pre-defined constants
+//
+// Documentations:
+// n3-charts/line-chart
+
 var operators = {
     'text': [
         {'label': 'contains',       'key': 'contains'},
@@ -382,7 +386,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
     $scope.seriesOptions = {
         thicknessNumber: 3,
         thickness: '3px',
-        type: 'area',
+        type: 'column',
         striped: false
     };
     $scope.graph = {
@@ -390,7 +394,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
         options: {
             axes: {
                 x: {key: 'x', type: 'date'},
-                y: {key: 'y', type: 'linear', type: 'numeric'},
+                y: {key: 'y', type: 'linear'},
             },
             tension: 1.0,
             lineMode: 'linear',
@@ -398,7 +402,7 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 var grouping = groupings.datetime[$scope.groupingKey];
                 return grouping.representation(x) + ' → ' + y;
             }},
-            drawLegend: false,
+            drawLegend: true,
             drawDots: true,
             columnsHGap: 5
         }
@@ -464,6 +468,29 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 dataObject[x][datasetIndex] += y;
             });
         });
+
+
+        // calculate average for earch dataset
+        /*
+        var sums = [];
+        for (var i=0; i<$scope.datasets.length;i++){
+            sums.push(0);
+        }
+
+        var count = 0 ;
+        for (var x in dataObject) {
+            count ++ ;
+            var yList = dataObject[x];
+            for (var i=0; i<yList.length; i++) {
+                sums[i] += yList[i];
+            }
+        }
+
+        for (var i=0; i<$scope.datasets.length;i++){
+            sums[i] /= count;
+        }
+        */
+
         // Convert this object back to a sorted array
         var yMin, yMax;
         var linearData = [];
@@ -472,7 +499,8 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             var yList = dataObject[x];
             for (var i=0; i<yList.length; i++) {
                 y = yList[i];
-                row['y' + i] = y;
+                row['y' + i] = y ;  // position vs average
+                //row['y' + i] = y - sums[i];  // position vs average
                 if (yMax == undefined || y > yMax) {
                     yMax = y;
                 }
@@ -493,7 +521,8 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
                 id: 'series_'+ i,
                 y: 'y'+ i,
                 axis: 'y',
-                color: $scope.getColor(i, n)
+                color: $scope.getColor(i, n),
+                label: 'Project, corpus, docs|ngrams, terms'
             };
             angular.forEach($scope.seriesOptions, function(value, key) {
                 seriesElement[key] = value;

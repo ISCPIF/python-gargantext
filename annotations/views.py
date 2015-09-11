@@ -15,7 +15,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 
 from node.models import Node
 from gargantext_web.db import *
-from ngram.lists import listIds, listNgramIds, ngramList
+from ngram.lists import listIds, listNgramIds
 from gargantext_web.api import JsonHttpResponse
 
 
@@ -45,7 +45,7 @@ class NgramList(APIView):
             lists["%s" % list_id[0][0]] = list_type
 
         # ngrams for the corpus_id (ignoring doc_id for the moment):
-        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=None, user_id=request.user.id)
+        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [
                 {

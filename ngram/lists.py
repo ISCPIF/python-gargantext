@@ -60,6 +60,7 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
 
 # Some functions to manage ngrams according to the lists
 
+
 def listNgramIds(list_id=None, typeList=None,
                  corpus_id=None, doc_id=None, user_id=None):
     '''
@@ -137,34 +138,28 @@ def ngramList(do, list_id, ngram_ids=None) :
                                                 language='en')
             ngram_ids += [ngram.id]
 
-    # TODO there should not be a try/except here, let the code crash as soon as possible
-    try:
-        for ngram_id in ngram_ids:
-            # Fetch the ngram from database
-            ngram = session.query(Ngram.id, Ngram.terms, func.count()).filter(Ngram.id == ngram_id).first()
-            # Need to be optimized with list of ids
-            node_ngram = (session.query(NodeNgram)
-                    .filter(NodeNgram.ngram_id == ngram_id)
-                    .filter(NodeNgram.node_id  == list_id)
-                    .first()
-                    )
-            # create NodeNgram if does not exists
-            if node_ngram is None :
-                node_ngram = NodeNgram(node_id = list_id, ngram_id=ngram_id,
-                                       weight=1)
-            if do == 'add' :
-                session.add(node_ngram)
-                results += [ngram]
+    for ngram_id in ngram_ids:
+        # Fetch the ngram from database
+        ngram = session.query(Ngram.id, Ngram.terms, func.count()).filter(Ngram.id == ngram_id).first()
+        # Need to be optimized with list of ids
+        node_ngram = (session.query(NodeNgram)
+                .filter(NodeNgram.ngram_id == ngram_id)
+                .filter(NodeNgram.node_id  == list_id)
+                .first()
+                )
+        # create NodeNgram if does not exists
+        if node_ngram is None :
+            node_ngram = NodeNgram(node_id = list_id, ngram_id=ngram_id,
+                                    weight=1)
+        if do == 'add' :
+            session.add(node_ngram)
+            results += [ngram]
 
-            elif do == 'del' :
-                session.delete(node_ngram)
+        elif do == 'del' :
+            session.delete(node_ngram)
 
-        session.commit()
-        return(results)
-
-    except Exception as exc:
-        PrintException()
-        raise exc
+    session.commit()
+    return(results)
 
 
 # Some functions to manage automatically the lists
@@ -341,3 +336,6 @@ def doList(
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
     return(list_dict[type_list]['id'])
+
+
+

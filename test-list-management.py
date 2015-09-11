@@ -4,11 +4,6 @@ from admin.env import *
 from ngram.stemLem import *
 from ngram.lists import *
 
-#from cooccurrences import *
-
-from gargantext_web.views import empty_trash
-empty_trash()
-
 
 #user = session.query(User).all()[0]
 user = session.query(User).filter(User.username=='alexandre').first()
@@ -59,7 +54,7 @@ if corpus is None:
     compute_tfidf(corpus)
 
 doc_id = session.query(Node.id).filter(Node.parent_id == corpus.id,
-                                       Node.type_id   == cache.NodeType['Document'].id).all()[1]
+                                       Node.type_id   == cache.NodeType['Document'].id).all()[2]
 
 print('Miam list', listIds(typeList='MiamList', corpus_id=corpus.id, user_id=user.id)[0][0])
 
@@ -93,26 +88,13 @@ print('MiamList', miam_list_id)
 print(session.query(Node.id).filter(Node.parent_id==corpus.id, Node.type_id==cache.NodeType['WhiteList'].id).first())
 #ngrams2miam(user_id=user.id, corpus_id=corpus.id)
 
+
+
+doc_ngram_list = listNgramIds(corpus_id=corpus.id, doc_id=doc_id, user_id=user.id)
+print(doc_ngram_list)
+
+
 #print(listNgramIds(list_id=stop_list_id, user_id=user.id, corpus_id=corpus.id))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

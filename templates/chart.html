@@ -224,21 +224,20 @@
 
             
             <ul class="datasets">
-                <button class="add" ng-click="addDataset()">Add a dataset...</button>
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
                     <hr/>
                     <div class="corpus">
-                        <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
+                        <button ng-click="removeDataset($index)" title="Remove this dataset">X</button>
                         <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Documents count (normalized)': 'nodes.countnorm', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
                         in the project
                         <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
                         corpus
                         <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
-                    </div>                    
+                    </div>
                     <div class="filters" ng-if="entities">
                         <ul>
                             <li ng-repeat="filter in filters">
-                                <button ng-click="removeFilter($index)" title="remove this filter">x</button>
+                                <button ng-click="removeFilter($index)" title="Remove this filter">x</button>
                                 <span>...where the </span>
                                 <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
                                 <span ng-if="filter.entity.key != 'ngrams'">
@@ -258,8 +257,10 @@
                     </div>
                 </li>
             </ul>
-        
             <hr/>
+            <button class="add" ng-click="addDataset()">Compare with...</button>
+            <hr/>
+        
 
             <button style="width:100%" class="refresh" ng-click="query()">Refresh results</button>
             <div class="graph">
@@ -272,7 +273,7 @@
                 <br/>
 
                 Y-axis: use a
-                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['linear', 'log', 'specificities']"></select>
+                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['linear', 'log']"></select>
                 scale
                 <br/>
                 

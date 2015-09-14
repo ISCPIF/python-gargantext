@@ -426,7 +426,9 @@ class NodesChildrenQueries(APIView):
         # authorized field names
         sql_fields = set({
             'id', 'name',
-            'nodes.count', 'ngrams.count',
+            'nodes.count',
+            'nodes.countnorm',
+            'ngrams.count',
             'ngrams.terms', 'ngrams.n',
         })
         for hyperdata in _hyperdata_list:

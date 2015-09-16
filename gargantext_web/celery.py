@@ -9,6 +9,7 @@ def debug_task(request):
     print('Request: {0!r}'.format(request))
 
 from gargantext_web.db import session, Node
+from ngram.tfidf import compute_tfidf
 
 @shared_task
 def apply_sum(x, y):
@@ -16,7 +17,8 @@ def apply_sum(x, y):
     print(session.query(Node.name).first())
 
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams
+from ngram.tfidf import compute_tfidf
 from ngram.lists import ngrams2miam
 
 from admin.utils import PrintException

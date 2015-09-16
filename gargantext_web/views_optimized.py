@@ -21,8 +21,8 @@ from gargantext_web.api import JsonHttpResponse
 import json
 import re
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
-
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams
+from ngram.tfidf import compute_tfidf
 
 from gargantext_web.celery import apply_workflow
 

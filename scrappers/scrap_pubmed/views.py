@@ -32,7 +32,8 @@ from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from gargantext_web.api import JsonHttpResponse
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams
+from ngram.tfidf import compute_tfidf
 
 from gargantext_web.celery import apply_workflow
 from time import sleep
@@ -72,7 +73,7 @@ def getGlobalStatsISTEXT(request ):
 
 		filename = MEDIA_ROOT + '/corpora/%s/%s' % (request.user, str(datetime.datetime.now().isoformat()))
 
-		try: 
+		try:
 			thedata = tasks.test_downloadFile( [url,filename] )
 			alist = thedata.read().decode('utf-8')
 		except Exception as error:
@@ -164,7 +165,7 @@ def doTheQuery(request , project_id):
 					file = filename,
 				)
 				dwnldsOK+=1
-			
+
 		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 
 		try:
@@ -241,7 +242,7 @@ def testISTEX(request , project_id):
 			user_id = request.user.id,
 			parent_id = project_id,
 			type_id = cache.NodeType['Corpus'].id,
-			language_id = None, 
+			language_id = None,
 			hyperdata    = {'Processing' : 1,}
 		)
 		session.add(corpus)
@@ -269,8 +270,8 @@ def testISTEX(request , project_id):
 					type_id = resourcetype.id,
 					file = filename,
 				)
-				dwnldsOK+=1	
-		if dwnldsOK == 0: return JsonHttpResponse(["fail"])		
+				dwnldsOK+=1
+		if dwnldsOK == 0: return JsonHttpResponse(["fail"])
 		###########################
 		###########################
 		try:

@@ -1,7 +1,24 @@
 import os, sys
 import linecache
+from time import time
 
 from gargantext_web.settings import MEDIA_ROOT
+
+class DebugTime:
+    def __init__(self, prefix):
+        self.prefix = prefix
+        self.message = None
+        self.time = None
+
+    def __del__(self):
+        if self.message is not None and self.time is not None:
+            print('%s - %s: %.4f' % (self.prefix, self.message, time() - self.time))
+
+    def show(self, message):
+        self.__del__()
+        self.message = message
+        self.time = time()
+
 
 def ensure_dir(user):
     '''

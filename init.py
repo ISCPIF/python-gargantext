@@ -92,8 +92,8 @@ node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
         'MiamList', 'StopList', 'MainList',
-        'Stem', 'Lem', 'Group', 'Tfidf',
-        'Cooccurrence', 'WhiteList', 'BlackList'
+        'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)',
+        'Cooccurrence',
         ]
 
 for node_type in node_types:

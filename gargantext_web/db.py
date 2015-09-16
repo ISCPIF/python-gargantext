@@ -230,7 +230,10 @@ class bulk_insert:
 
     readline = read
 
-def get_or_create(nodetype=None,parent_id=None,user_id=None):
+def get_or_create_node(nodetype=None,parent_id=None,user_id=None):
+    '''
+    Should be a method of the object. __get_or_create__ ?
+    '''
     if nodetype is None:
         print("Need to precise a type node")
     else:

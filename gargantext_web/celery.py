@@ -9,7 +9,8 @@ def debug_task(request):
     print('Request: {0!r}'.format(request))
 
 from gargantext_web.db import session, Node
-from ngram.tfidf import compute_tfidf
+from ngram.tfidf import compute_tfidf,compute_tfidf_global
+
 
 @shared_task
 def apply_sum(x, y):
@@ -43,6 +44,7 @@ def apply_workflow(corpus_id):
 
     update_processing(corpus, 3)
     compute_tfidf(corpus)
+    compute_tfidf_global(corpus, lang='en')
 
     ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)

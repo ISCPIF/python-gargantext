@@ -10,6 +10,7 @@ def debug_task(request):
 
 from gargantext_web.db import session, Node
 from ngram.tfidf import compute_tfidf,compute_tfidf_global
+from ngram.cvalue import computeCvalue
 
 
 @shared_task
@@ -18,8 +19,7 @@ def apply_sum(x, y):
     print(session.query(Node.name).first())
 
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams
-from ngram.tfidf import compute_tfidf
+from parsing.corpustools import  parse_resources, extract_ngrams #add_resource,
 from ngram.lists import ngrams2miam
 
 from admin.utils import PrintException
@@ -45,6 +45,8 @@ def apply_workflow(corpus_id):
     update_processing(corpus, 3)
     compute_tfidf(corpus)
     compute_tfidf_global(corpus, lang='en')
+
+    computeCvalue(corpus)
 
     ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)

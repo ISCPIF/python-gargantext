@@ -1,8 +1,8 @@
 from django.db import transaction
 from .FileParser import FileParser
-from ..NgramsExtractors import *
-import csv
+# from ..NgramsExtractors import *
 import sys
+import csv
 csv.field_size_limit(sys.maxsize)
 import numpy as np
 import os
@@ -29,10 +29,7 @@ class CSVParser(FileParser):
 
         hyperdata_list = []
 
-        # print(hyperdata_list)
-        print(filename)
-
-        command_for_sample = 'cat '+filename+' | head -n '+str(sample_size)+' > '+sample_file
+        command_for_sample = "cat '"+filename+"' | head -n "+str(sample_size)+" > '"+sample_file+"'"
         os.system(command_for_sample) # you just created a  *_sample.csv
 
         # # = = = = [ Getting delimiters frequency ] = = = = #

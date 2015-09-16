@@ -229,3 +229,19 @@ class bulk_insert:
             return ''
 
     readline = read
+
+def get_or_create(nodetype=None,parent_id=None,user_id=None):
+    if nodetype is None:
+        print("Need to precise a type node")
+    else:
+        ntype=cache.NodeType[nodetype]
+
+    n = session.query(Node).filter(Node.type_id==ntype.id).first()
+
+    if n is None:
+        n = Node(type_id=ntype.id, name=ntype.name, parent_id=parent_id,user_id=user_id)
+        session.add(n)
+        session.commit()
+    return(n)
+
+

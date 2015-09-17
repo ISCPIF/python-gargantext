@@ -2,7 +2,7 @@
 
 from celery import shared_task
 from node import models
-
+import cProfile
 #@app.task(bind=True)
 @shared_task
 def debug_task(request):
@@ -37,6 +37,7 @@ def apply_workflow(corpus_id):
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
     update_processing(corpus, 1)
+    #cProfile.runctx('parse_resources(corpus)', global,locals)
     parse_resources(corpus)
 
     update_processing(corpus, 2)

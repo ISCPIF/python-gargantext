@@ -107,7 +107,7 @@ def groupNgrams(corpus):
     group_to_insert = list()
     node_group_id = get_or_create_node(nodetype='Group', parent_id=corpus.id,user_id=corpus_user_id)
     for n in cvalue:
-        group = filter(lambda x: equals(n,x),tfidf)
+        group = filter(lambda x: equals(n,x,f=stemIt),tfidf)
         for m in group:
             tfidf.pop(m)
         group_to_insert += (node_group_id, n, m for m in group)

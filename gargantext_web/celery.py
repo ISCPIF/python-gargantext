@@ -11,7 +11,7 @@ def debug_task(request):
 from gargantext_web.db import session, Node
 from ngram.tfidf import compute_tfidf,compute_tfidf_global
 from ngram.cvalue import computeCvalue
-
+from ngram.group import groupNgrams
 
 @shared_task
 def apply_sum(x, y):
@@ -48,9 +48,9 @@ def apply_workflow(corpus_id):
     compute_tfidf_global(corpus, lang='en')
 
     computeCvalue(corpus)
+    groupNgrams(corpus)
 
     ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)
-
 
 

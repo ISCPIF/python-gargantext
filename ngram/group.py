@@ -1,5 +1,5 @@
 # Without this, we couldn't use the Django environment
-#from admin.env import *
+from admin.env import *
 #from ngram.stemLem import *
 
 from admin.utils import PrintException
@@ -21,21 +21,22 @@ from math import log
 from functools import reduce
 
 
-def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, limit=None):
+def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, size=None):
     '''
     queryNodeNodeNgram :: Int -> Int -> Int -> (Int, String, Float)
     Get list of ngrams according to a measure related to the corpus: maybe tfidf
     cvalue.
     '''
     query = (session.query(Ngram.id, Ngram.terms, NodeNodeNgram.score)
-                        .join(Ngram, NodeNodeNgram.ngram_id == Ngram.id)
-                        .join(Node, Node.id == NodeNodeNgram.nodey_id)
-                        .filter(NodeNodeNgram.nodex_id == nodeMeasure_id)
-                        .filter(NodeNodeNgram.nodey_id == corpus_id)
-                        .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
-                        .order_by(desc(NodeNodeNgram.score))
-                        .limit(limit)
+                    .join(NodeNodeNgram, NodeNodeNgram.ngram_id == Ngram.id)
+                    .join(Node, Node.id == NodeNodeNgram.nodex_id)
+                    .filter(NodeNodeNgram.nodex_id == nodeMeasure_id)
+                    .filter(NodeNodeNgram.nodey_id == corpus_id)
+                    .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
+                    .order_by(desc(NodeNodeNgram.score))
+                    .limit(size)
           )
+    return(query)
 
 def getCvalueTfidfNgrams(corpus=None, cvaluelimit=100, tfidflimit=500):
     '''
@@ -52,8 +53,8 @@ def getCvalueTfidfNgrams(corpus=None, cvaluelimit=100, tfidflimit=500):
                                     , parent_id=corpus.id)
 
 
-    tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id, limit=tfidflimit)
-    cvalue_ngrams = queryNodeNodeNgram(nodeMeasure_id=cvalue_node.id, corpus_id=corpus.id, limit=cvaluelimit)
+    tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id, size=tfidflimit)
+    cvalue_ngrams = queryNodeNodeNgram(nodeMeasure_id=cvalue_node.id, corpus_id=corpus.id, size=cvaluelimit)
 
     def list2set(_list=None,_set=None):
         for n in _list:
@@ -99,26 +100,30 @@ def equals(ngram1,ngram2, f=None):
     # grouped)
         return(False)
     else:
-        return f(ngram1) == f(ngram2)
+        try:
+            return f(ngram1) == f(ngram2)
+        except:
+            return(False)
+            PrintException()
 
 def groupNgrams(corpus):
     cvalue,tfidf = getCvalueTfidfNgrams(corpus)
     stemIt = getStemmer(corpus)
     group_to_insert = list()
-    node_group_id = get_or_create_node(nodetype='Group', parent_id=corpus.id,user_id=corpus_user_id)
+    node_group_id = get_or_create_node(nodetype='Group', parent_id=corpus.id,user_id=corpus.user_id)
     for n in cvalue:
         group = filter(lambda x: equals(n,x,f=stemIt),tfidf)
         for m in group:
             tfidf.pop(m)
-        group_to_insert += (node_group_id, n, m for m in group)
+            group_to_insert.append((node_group_id, n, m))
 
 
-    bulk_insert(NodeNgramNgram, ['node_id', 'ngramx_id', 'ngramy_id', 1], [n for n in group_to_insert])
-
-
+    bulk_insert(NodeNgramNgram, ('node_id', 'ngramx_id', 'ngramy_id', 'score'), [data for data in group_to_insert])
 
 
 
+#corpus = session.query(Node).filter(Node.id==241571).first()
+#groupNgrams(corpus)
 
 
 

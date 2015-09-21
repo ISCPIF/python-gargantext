@@ -235,16 +235,21 @@ def get_or_create_node(nodetype=None,parent_id=None,user_id=None):
     Should be a method of the object. __get_or_create__ ?
     '''
     if nodetype is None:
-        print("Need to precise a type node")
+        print("Need to give a type node")
     else:
         ntype=cache.NodeType[nodetype]
 
-    n = session.query(Node).filter(Node.type_id==ntype.id).first()
+    n = (session.query(Node).filter(Node.type_id    == ntype.id
+                                   , Node.parent_id == parent_id
+                                   , Node.user_id   == user_id
+                                    ).first()
+         )
 
     if n is None:
         n = Node(type_id=ntype.id, name=ntype.name, parent_id=parent_id,user_id=user_id)
         session.add(n)
         session.commit()
+    print(parent_id, n.parent_id, n.id, n.name)
     return(n)
 
 

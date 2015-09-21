@@ -3,7 +3,7 @@ from gargantext_web.db import *
 from parsing.corpustools import *
 
 from gargantext_web.db import NodeNgram
-from sqlalchemy import and_
+from sqlalchemy import desc, asc, or_, and_, Date, cast, select
 from gargantext_web.db import get_cursor, bulk_insert
 
 def get_ngramogram(corpus, limit=None):
@@ -305,14 +305,14 @@ def stem_corpus(corpus_id=None):
     '''
 
     corpus = session.query(Node).filter(Node.id == corpus_id).first()
-    print('Number of new ngrams to stem:',
-          get_ngrams(corpus, n=2, count_all=True))
+    #print('Number of new ngrams to stem:',
+    #      get_ngrams(corpus, n=2, count_all=True))
 
     if corpus is not None:
         try:
             result = get_stems(corpus, n=2)
             stems = set([(stem[2], stem[3]) for stem in result])
-            print('Number of new stems', len(stems))
+            #print('Number of new stems', len(stems))
             stem_ids = insert_ngrams(stems)
 
 

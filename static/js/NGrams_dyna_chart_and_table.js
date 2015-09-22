@@ -453,6 +453,7 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
+    
 
     var div_stats = "<p>";
     for(var i in data.scores) {

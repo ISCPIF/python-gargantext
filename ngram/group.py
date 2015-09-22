@@ -151,6 +151,6 @@ def groupNgrams(corpus):
     # cvalue - stop list => miam list here
 
 
-corpus = session.query(Node).filter(Node.id==244074).first()
-groupNgrams(corpus)
+#corpus = session.query(Node).filter(Node.id==244074).first()
+#groupNgrams(corpus)
 

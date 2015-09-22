@@ -60,7 +60,7 @@ def test_page(request , project_id , corpus_id):
 
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -68,7 +68,7 @@ def test_page(request , project_id , corpus_id):
         raise Http404()
 
     t = get_template('tests/test_select-boostrap.html')
-    
+
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
@@ -96,7 +96,7 @@ def test_page(request , project_id , corpus_id):
 def get_ngrams(request , project_id , corpus_id ):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -104,7 +104,7 @@ def get_ngrams(request , project_id , corpus_id ):
         raise Http404()
 
     t = get_template('corpus/terms.html')
-    
+
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
@@ -138,7 +138,6 @@ def get_ngrams(request , project_id , corpus_id ):
     return HttpResponse(html)
 
 
-
 def test_test(request , corpus_id , doc_id):
     """Get All for a doc id"""
     corpus_id = int(corpus_id)
@@ -169,7 +168,7 @@ def get_journals(request , project_id , corpus_id ):
 
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
-    
+
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -177,7 +176,7 @@ def get_journals(request , project_id , corpus_id ):
         raise Http404()
 
     t = get_template('corpus/journals.html')
-    
+
     user = cache.User[request.user.username].id
     date = datetime.datetime.now()
     project = cache.Node[int(project_id)]
@@ -246,7 +245,7 @@ def test_ngrams_test(request , project_id, corpus_id ):
     # # 3944   common form
     # ngram_of_interest = 14279
 
-    # documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all() 
+    # documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
     # to_print = []
 
     # for doc in documents:
@@ -285,13 +284,17 @@ def test_ngrams_test(request , project_id, corpus_id ):
     Ngrams_Scores = {}
 
     ## < Getting the Effective nro de OCCS ##
-    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
+    documents  = (session.query(Node).filter(
+                        Node.user_id == user_id
+                        , Node.parent_id==corpus_id
+                        , Node.type_id == document_type_id ).all()
+                )
     for doc in documents:
         NgramOccs = session.query(Node_Ngram).filter( Node_Ngram.node_id==doc.id).all()
         for ngram in NgramOccs:
             if ngram.ngram_id not in StopList:
                 if ngram.ngram_id not in Ngrams_Scores:
-                    Ngrams_Scores[ngram.ngram_id] = {} 
+                    Ngrams_Scores[ngram.ngram_id] = {}
                     Ngrams_Scores[ngram.ngram_id]["scores"] = {
                         "occ_sum": 0.0,
                         "occ_uniq": 0.0,
@@ -339,7 +342,7 @@ def test_ngrams_test(request , project_id, corpus_id ):
     #     nodey_id = document id
     #     ngram_id = duh
 
-    # id   | nodex_id | nodey_id | ngram_id |       score        
+    # id   | nodex_id | nodey_id | ngram_id |       score
 
 
     ngrams_ids = Ngrams_Scores.keys()
@@ -368,11 +371,11 @@ def test_ngrams_test(request , project_id, corpus_id ):
 
 
     Metrics["scores"] = {
-    	"initial":"occ_uniq",
-    	"nb_docs":len(documents),
-    	"orig_nb_ngrams":len(ngrams_ids),
-    	"nb_ngrams":len(Metrics["ngrams"]),
-    	"occs_threshold":occs_threshold
+        "initial":"occ_uniq",
+        "nb_docs":len(documents),
+        "orig_nb_ngrams":len(ngrams_ids),
+        "nb_ngrams":len(Metrics["ngrams"]),
+        "occs_threshold":occs_threshold
     }
 
     return JsonHttpResponse(Metrics)
@@ -422,7 +425,7 @@ def test_ngrams(request , project_id, corpus_id ):
     for ngram in OCCs:
         if ngram.ngram_id not in StopList:
             if ngram.ngram_id not in Ngrams_Scores:
-                Ngrams_Scores[ngram.ngram_id] = {} 
+                Ngrams_Scores[ngram.ngram_id] = {}
                 Ngrams_Scores[ngram.ngram_id]["scores"] = {
                         "occ_uniq": ngram.weight,
                         "tfidf_sum": 0.0

@@ -249,7 +249,7 @@ def get_or_create_node(nodetype=None,parent_id=None,user_id=None):
         n = Node(type_id=ntype.id, name=ntype.name, parent_id=parent_id,user_id=user_id)
         session.add(n)
         session.commit()
-    print(parent_id, n.parent_id, n.id, n.name)
+    #print(parent_id, n.parent_id, n.id, n.name)
     return(n)
 
 

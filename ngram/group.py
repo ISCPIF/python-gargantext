@@ -1,5 +1,5 @@
 # Without this, we couldn't use the Django environment
-from admin.env import *
+#from admin.env import *
 #from ngram.stemLem import *
 
 from admin.utils import PrintException
@@ -34,8 +34,11 @@ def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, size=None):
                     .filter(NodeNodeNgram.nodey_id == corpus_id)
                     .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
                     .order_by(desc(NodeNodeNgram.score))
-                    .limit(size)
           )
+    if size is None:
+        query = query.count()
+    else:
+        query = query.limit(size)
     return(query)
 
 def getCvalueTfidfNgrams(corpus=None, cvaluelimit=100, tfidflimit=500):
@@ -52,19 +55,20 @@ def getCvalueTfidfNgrams(corpus=None, cvaluelimit=100, tfidflimit=500):
                                     , user_id=corpus.user_id
                                     , parent_id=corpus.id)
 
-
     tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id, size=tfidflimit)
     cvalue_ngrams = queryNodeNodeNgram(nodeMeasure_id=cvalue_node.id, corpus_id=corpus.id, size=cvaluelimit)
 
-    def list2set(_list=None,_set=None):
+    #print([n for n in tfidf_ngrams])
+
+    def list2set(_list,_set):
         for n in _list:
             _set.add((n[0],n[1]))
 
     tfidf_set = set()
     cvalue_set = set()
 
-    list2set(_list=tfidf_ngrams,_set=tfidf_set)
-    list2set(_list=cvalue_ngrams,_set=cvalue_set)
+    list2set(tfidf_ngrams,tfidf_set)
+    list2set(cvalue_ngrams,cvalue_set)
 
     tfidf_setDiff = tfidf_set.difference(cvalue_set)
 
@@ -90,6 +94,8 @@ def getStemmer(corpus):
     def stemIt(ngram):
         return(set(map(lambda x: stemmer.stem(x), ngram[1].split(' '))))
 
+    return(stemIt)
+
 def equals(ngram1,ngram2, f=None):
     '''
     equals :: (Int,String) -> (Int,String) -> Bool
@@ -107,41 +113,44 @@ def equals(ngram1,ngram2, f=None):
             PrintException()
 
 def groupNgrams(corpus):
+# rename it
     cvalue,tfidf = getCvalueTfidfNgrams(corpus)
     stemIt = getStemmer(corpus)
+
     group_to_insert = list()
-    node_group_id = get_or_create_node(nodetype='Group', parent_id=corpus.id,user_id=corpus.user_id)
+    node_group = get_or_create_node(nodetype='Group',parent_id=corpus.id,user_id=corpus.user_id)
+
+    miam_to_insert = set()
+    miam_node = get_or_create_node(nodetype='MiamList',parent_id=corpus.id,user_id=corpus.user_id)
+
+    list_to_check=tfidf.union(cvalue)
+    #print(cvalue)
+    #print(equals((0,'bee'),(1,'bees'),f=stemIt))
     for n in cvalue:
-        group = filter(lambda x: equals(n,x,f=stemIt),tfidf)
-        for m in group:
-            tfidf.pop(m)
-            group_to_insert.append((node_group_id, n, m))
-
-
+        group = filter(lambda x: equals(n,x,f=stemIt),list_to_check)
+        miam_to_insert.add((miam_node.id, n[0],1))
+        #print([n for n in group])
+        for g in group:
+            #list_to_check.remove(g)
+            group_to_insert.append((node_group.id, n[0], g[0], 1))
+            print(n[1], "=", g[1])
+    # Deleting previous groups
+    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_group.id).delete()
     bulk_insert(NodeNgramNgram, ('node_id', 'ngramx_id', 'ngramy_id', 'score'), [data for data in group_to_insert])
+#
+#    # stop_id = get_or_create_node(parent_id=corpus.id,user_id=corpus.user_id,nodetype='StopList')
+    session.query(NodeNgram).filter(NodeNgram.node_id==miam_node.id).delete()
+    #session.commit()
+    for n in group_to_insert:
+        print(n)
+        miam_to_insert.add((miam_node.id, n[1], 1))
+    # Deleting previous ngrams miam list
+    bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
 
 
-
-#corpus = session.query(Node).filter(Node.id==241571).first()
-#groupNgrams(corpus)
+    # cvalue - stop list => miam list here
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+corpus = session.query(Node).filter(Node.id==244074).first()
+groupNgrams(corpus)
 

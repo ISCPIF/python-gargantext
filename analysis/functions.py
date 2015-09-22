@@ -261,7 +261,7 @@ def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=
         #edges_to_remove = [ e for e in G.edges_iter() if
 
         degree = G.degree()
-        nodes_to_remove = [n for n in degree if degree[n] <= 1]
+        nodes_to_remove = [n for n in degree if degree[n] ==0]
         G.remove_nodes_from(nodes_to_remove)
         uG = G.to_undirected()
         partition = best_partition(uG)

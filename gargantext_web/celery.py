@@ -44,11 +44,11 @@ def apply_workflow(corpus_id):
     extract_ngrams(corpus, ['title', 'abstract'])
 
     update_processing(corpus, 3)
-    compute_tfidf(corpus)
-    compute_tfidf_global(corpus, lang='en')
+    # compute_tfidf(corpus)
+    # compute_tfidf_global(corpus, lang='en')
 
-    computeCvalue(corpus)
-    groupNgrams(corpus)
+    # computeCvalue(corpus)
+    # groupNgrams(corpus)
 
     ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)

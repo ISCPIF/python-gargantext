@@ -80,7 +80,7 @@ def create_whitelist(user, corpus_id, size=size, count_min=2, miam_id=None):
             %d
         ;
     """  % (white_list.id, int(corpus_id), int(type_document_id), int(miam_id), count_min, size)
-    
+
     # print("PRINTING QYERY OF WHITELIST:")
     # print(query_whitelist)
     cursor.execute(query_whitelist)

@@ -1,15 +1,15 @@
+#from admin.env import *
 from math import log
 from gargantext_web.db import *
 from gargantext_web.db import get_or_create_node
 
 from admin.utils import DebugTime
 
-# tfidf calculation
 def compute_tfidf(corpus):
-    dbg = DebugTime('Corpus #%d - tfidf' % corpus.id)
     # compute terms frequency sum
+    dbg = DebugTime('Corpus #%d - TFIDF' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-    tfidf_node = get_or_create_node(nodetype='Tfidf', user_id=corpus.user_id, parent_id=corpus.id)
+    tfidf_node = get_or_create_node(nodetype='Tfidf', corpus=corpus)
 
     db, cursor = get_cursor()
     cursor.execute('''
@@ -121,12 +121,11 @@ def compute_tfidf(corpus):
 
 #http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
 
-
-def compute_tfidf_global(corpus, lang='fr'):
+def compute_tfidf_global(corpus):
     dbg = DebugTime('Corpus #%d - tfidf global' % corpus.id)
     dbg.show('calculate terms frequencies sums')
 
-    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', user_id=corpus.user_id, parent_id=corpus.id)
+    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
 
 
     # compute terms frequency sum
@@ -163,6 +162,12 @@ def compute_tfidf_global(corpus, lang='fr'):
         )
     ''')
 
+    # TODO uniform language use in corpus
+    if corpus.language_id == cache.Language['fr'].id:
+        lang='fr'
+    else:
+        lang='en'
+
     if lang == 'en':
         cursor.execute('''
             INSERT INTO
@@ -176,12 +181,23 @@ def compute_tfidf_global(corpus, lang='fr'):
             tmp__tf ON tmp__tf.ngram_id = node_ngram.ngram_id
             INNER JOIN
             %s as doc ON doc.id = node_ngram.node_id
+            INNER JOIN
+            %s as corpus ON corpus.id = doc.parent_id
             WHERE
-            doc.language_id = %d AND doc.type_id = %d
+            doc.language_id = %d AND doc.type_id = %d AND corpus.type_id=%d
+            AND RANDOM() < 0.01
             GROUP BY
             node_ngram.ngram_id
+            limit 10000
             ;
-        ''' % (Node_Ngram.__table__.name, Node.__table__.name,  cache.Language[lang].id, cache.NodeType['Document'].id))
+        ''' % (Node_Ngram.__table__.name
+               , Node.__table__.name
+               , Node.__table__.name
+               , cache.Language[lang].id
+               , cache.NodeType['Document'].id
+               , corpus.type_id
+              )
+            )
 
     elif lang == 'fr':
         cursor.execute('''
@@ -199,11 +215,20 @@ def compute_tfidf_global(corpus, lang='fr'):
             INNER JOIN
             %s as corpus ON corpus.id = doc.parent_id
             WHERE
-            corpus.language_id = %d AND doc.type_id = %d
+            corpus.language_id = %d AND doc.type_id = %d AND corpus.type_id=%d
+            AND RANDOM() < 0.01
             GROUP BY
             node_ngram.ngram_id
+            limit 10000
             ;
-        ''' % (Node_Ngram.__table__.name, Node.__table__.name, Node.__table__.name,  cache.Language[lang].id, cache.NodeType['Document'].id))
+        ''' % (Node_Ngram.__table__.name
+               , Node.__table__.name
+               , Node.__table__.name
+               , cache.Language[lang].id
+               , cache.NodeType['Document'].id
+               , corpus.type_id
+              )
+            )
 
 
     cursor.execute('''SELECT COUNT(*) FROM %s AS doc
@@ -231,3 +256,6 @@ def compute_tfidf_global(corpus, lang='fr'):
         ''' % (NodeNodeNgram.__table__.name, tfidf_node.id, corpus.id, ))
 
         db.commit()
+
+#corpus=session.query(Node).filter(Node.id==244250).first()
+#compute_tfidf_global(corpus)

@@ -2,7 +2,7 @@
 #from admin.env import *
 #from ngram.stemLem import *
 
-from admin.utils import PrintException
+from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
@@ -19,14 +19,30 @@ from sqlalchemy.orm import aliased
 from math import log
 from functools import reduce
 
-def getNgrams(corpus=None, limit=100):
+from itertools import islice
+
+'''
+only for tests if needed (see scientific paper:
+Frantzi, K., Ananiadou, S., & Mima, H. (2000). Automatic recognition
+of multi-word terms:. the C-value/NC-value method. International
+Journal on Digital Libraries, 3(2), 115-130.
+
+ngrams =   {'adenoic cystic basal cell carcinoma' : 5
+            , 'cystic basal cell carcinoma' : 11
+            , 'ulcerated basal cell carcinoma' : 7
+            , 'recurrent basal cell carcinoma' : 5
+            , 'circumscribed basal cell carcinoma' : 3
+            , 'basal cell carcinoma' : 984
+            }
+'''
+
+def getNgrams(corpus=None, limit=160):
     '''
     getNgrams :: Corpus -> [(Int, String, String, Float)]
     '''
     terms = dict()
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)'
-                                    , user_id=corpus.user_id
-                                    , parent_id=corpus.id)
+                                    , corpus=corpus)
     #print(corpus.name)
     ngrams = (session.query(Ngram.id, Ngram.terms, func.sum(NodeNgram.weight), NodeNodeNgram.score)
                         .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
@@ -39,16 +55,6 @@ def getNgrams(corpus=None, limit=100):
                         .limit(limit)
           )
 
-    '''
-    only for tests if needed (see scientific paper)
-    ngrams =   {'adenoic cystic basal cell carcinoma' : 5
-               , 'cystic basal cell carcinoma' : 11
-               , 'ulcerated basal cell carcinoma' : 7
-               , 'recurrent basal cell carcinoma' : 5
-               , 'circumscribed basal cell carcinoma' : 3
-               , 'basal cell carcinoma' : 984
-               }
-    '''
     for n in ngrams:
         try:
             nn = list(n)
@@ -57,8 +63,7 @@ def getNgrams(corpus=None, limit=100):
             PrintException()
     return(terms)
 
-
-def computeCvalue(corpus=None):
+def compute_cvalue(corpus=None, limit=160):
     '''
     computeCvalue :: Corpus
     frequency :: String -> Int -> Int
@@ -71,7 +76,9 @@ def computeCvalue(corpus=None):
     sumAll :: [Int] -> Int
     cvalue :: String -> Float
     '''
-    terms = getNgrams(corpus=corpus)
+    dbg = DebugTime('Corpus #%d - cvalue' % corpus.id)
+    dbg.show('cvalue')
+    terms = getNgrams(corpus=corpus, limit=limit)
 
     def frequency(word, source=terms):
         return(source.get(word,0)[1])
@@ -98,7 +105,6 @@ def computeCvalue(corpus=None):
     def sumAll(listofint):
         return(reduce(lambda x,y: x+y, listofint))
 
-
     def cvalue(string, listofstring=list(terms.keys())):
         l = [i for i in included(string,listofstring)]
         stringlog = log(len(string.split(' ')),2)
@@ -108,7 +114,7 @@ def computeCvalue(corpus=None):
             frequencyothers = sumAll(string2freq(l))/len(l)
             return(stringlog * (frequency(string) - frequencyothers))
 
-    cvalue_node = get_or_create_node(nodetype='Cvalue', parent_id=corpus.id, user_id=corpus.user_id)
+    cvalue_node = get_or_create_node(nodetype='Cvalue', corpus=corpus)
 
     def cvalueAll(listofstring=list(terms.keys())):
         for string in listofstring:
@@ -116,8 +122,12 @@ def computeCvalue(corpus=None):
 
     result = cvalueAll()
     #print([n for n in result])
+    session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==cvalue_node.id).delete()
+    session.commit()
+
+    #bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in islice(result,0,100)])
     bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in result])
 
 # test
+#corpus=session.query(Node).filter(Node.id==244250).first()
 #computeCvalue(corpus)
-

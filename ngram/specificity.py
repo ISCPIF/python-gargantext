@@ -2,16 +2,62 @@
 from admin.utils import PrintException,DebugTime
 from django.db import connection, transaction
 
-from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from sqlalchemy import desc, asc, or_, and_, Date, cast, select
+from sqlalchemy import literal_column
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import func
+
+from gargantext_web.db import Node, NodeNgram, NodeNgramNgram
+from gargantext_web.db import session, cache, get_or_create_node
 
 from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 
+from analysis.lists import WeightedMatrix, UnweightedList
 
-def cooc(corpus=None, list_id=None, limit=100):
+
+def cooc(corpus=None, list_id=None, limit=1000):
+
+    node_cooc = get_or_create_node(nodetype='Cooccurrence', corpus=corpus
+                       , name_str="Cooccurrences corpus " + str(corpus.id) + "for list Cvalue" + str(list_id))
+
+    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
+    session.commit()
+
+    NodeNgramX = aliased(NodeNgram)
+    NodeNgramY = aliased(NodeNgram)
+
+
+    doc_id = cache.NodeType['Document'].id
+
+    #literal_column(str(miam_id)).label("node_id"),
+    query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, func.count())
+             .join(Node, Node.id == NodeNgramX.node_id)
+             .join(NodeNgramY, NodeNgramY.node_id == Node.id)
+
+             .filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
+             .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
+
+             .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
+             .order_by(func.count())
+
+             .limit(limit)
+             )
+
+    cvalue_id = get_or_create_node(nodetype='Cvalue', corpus=corpus).id
+    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
+
+    cvalue_list = UnweightedList(session.query(NodeNodeNgram.ngram_id).filter(NodeNodeNgram.nodex_id==cvalue_id).all())
+    stop_list = UnweightedList(session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id==stop_id).all())
+    matrix = WeightedMatrix(query)
+
+    cooc = matrix & cvalue_list - stop_list
+    cooc.save(node_cooc.id)
+    return(node_cooc.id)
+
+def coocOld(corpus=None, list_id=None, limit=100):
     '''
     cooc :: Corpus -> Int -> NodeNgramNgram
     '''
@@ -117,5 +163,6 @@ def compute_specificity(corpus,limit=100):
 
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
+#cooc2(corpus)
 #compute_specificity(corpus)
 

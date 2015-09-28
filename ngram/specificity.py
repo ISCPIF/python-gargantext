@@ -7,8 +7,8 @@ from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
 
-from gargantext_web.db import Node, NodeNgram, NodeNgramNgram
-from gargantext_web.db import session, cache, get_or_create_node
+from gargantext_web.db import Node, NodeNgram, NodeNgramNgram, NodeNodeNgram
+from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 
 from collections import defaultdict
 

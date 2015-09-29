@@ -1,94 +1,115 @@
-from env import *
-
-from admin.utils import PrintException
-
-from gargantext_web.db import NodeNgram
-from gargantext_web.db import *
-from parsing.corpustools import *
-
-import sqlalchemy
-from sqlalchemy.sql import func
 from sqlalchemy import desc, asc, or_, and_, Date, cast, select
 from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
+from sqlalchemy.sql import func
 
-# from gargantext_web.db import Node, get_cursor
+from gargantext_web.db import Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, NodeHyperdata, Hyperdata
+from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
+from analysis.lists import WeightedMatrix, UnweightedList, Translations
 
-def cooccurrences(user_id=None, corpus_id=None,
-                mainlist_id=None, stoplist_id=None,
-                lem=False, stem=True, cvalue=False,
-                date_begin=None, date_end=None,
-                size=10, n_min=2, n_max=3):
+def cooc(corpus=None
+         , miam_id=None, stop_id=None, group_id=None
+         , start=None, end=None
+         , limit=1000):
     '''
-    Function to create a cooccurrence Node
-    ---------------------------------------------------
-    cooccurrences :: [Text] -> [Word] -> [[Word]]
+    Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
+    For the moment list of paramters are not supported because, lists need to
+    be merged before.
+    corpus :: Corpus
+    miam_id :: Int
+    stop_id :: Int
+    group_id :: Int
 
-    user_id      :: Integer, User.id who creates the cooccurrence matrix
-    corpus_id    :: Integer, Node.id with NodeType "Corpus"
+    For the moment, start and ens are simple, only year is implemented yet
+    start :: TimeStamp -- example: '2010-05-30 02:00:00+02'
+    end   :: TimeStamp
+    limit :: Int
 
-    miamlist_id  :: Integer, Node.id with NodeType "MiamList" and with parent_id=corpus_id
-    stoplist_id  :: Integer, Node.id with NodeType "StopList" and with parent_id=corpus_id
-    mainlist_id  :: Integer, Node.id with NodeType "MainList" and with parent_id=corpus_id
-
-    lem          :: False | True, if lemmatization  should be taken into account
-    stem         :: False | True, if stemmatization should be taken into account
-    cvalue       :: False | True, if cvalue         should be taken into account
-    group        :: False | True, if manual groups  should be taken into account
-
-    date_begin   :: Datetime, format YYYY-MM-DD, begin of corpus splitted by date
-    date_end     :: Datetime, format YYYY-MM-DD, end   of corpus splitted by date
-
-    size         :: Integer, size of the cooccurrence list
-    n_min        :: Integer, minimal ngram's size of n
-    n_max        :: Integer, maximal ngram's size of n
     '''
+    node_cooc = get_or_create_node(nodetype='Cooccurrence', corpus=corpus
+                                   , name_str="Cooccurrences corpus " + str(corpus.id) + "list_id: " + str(miam_id)
+                                   )
 
-    # We create a new node of Type cooccurrence
-    if corpus_id is not None and user_id is not None:
-        node_cooc = session.query(Node).filter(
-                                Node.parent_id==corpus.id,
-                                Node.type_id == cache.NodeType['Cooccurrence'].id
-                                ).first()
-        if node_cooc is None:
-            node_cooc = Node(user_id = user_id,
-                             parent_id=corpus_id,
-                             type_id=cache.NodeType['Cooccurrence'].id,
-                             name="Cooccurrences corpus " + str(corpus_id))
+# TODO : save parameters in Node
+#    args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
+#    print(parameters)
+#    for parameter in parameters.keys():
+#        print(parameters[parameter])
+#        node_cooc.hyperdata[parameter] = parameters[parameter]
+#
+#    session.add(node_cooc)
+#    session.commit()
+#    print(node_cooc.hyperdata)
 
-            session.add(node_cooc)
-            session.commit()
-    else:
-        print("Usage (Warning): Need corpus_id and user_id")
+    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
+    session.commit()
 
-    # Getting the main lists here, by default create or take the first one.
+    NodeNgramX = aliased(NodeNgram)
+    NodeNgramY = aliased(NodeNgram)
 
-    # Getting nodes for lems, stems and cvalue, if needed.
-    if stem is True:
-        node_stem = session.query(Node).filter(
-            Node.type_id==cache.NodeType['Stem'].id).first()
+    doc_id = cache.NodeType['Document'].id
 
-    miamNgram   = aliased(NodeNgram)
-    stopNgram   = aliased(NodeNgram)
-    groupNgram   = aliased(NodeNgramNgram)
-
-    stemNgram   = aliased(NodeNgramNgram)
-    lemNgram    = aliased(NodeNgramNgram)
-    cvalueNgram = aliased(NodeNgramNgram)
+    cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, func.count())
+             .join(Node, Node.id == NodeNgramX.node_id)
+             .join(NodeNgramY, NodeNgramY.node_id == Node.id)
+                )
 
 
-    # Literal query here
-    query = (session.query(Node.id, Ngram.id.label('x'), Ngram.id.label('y'), func.count().label('score'))
-        .join(NodeNgram, NodeNgram.node_id == Node.id)
-        #.outerjoin(stopNgram, stopNgram.ngram_id == Ngram.id)
-        .filter(Node.parent_id == corpus_id)
-        .filter(Node.type_id == cache.NodeType['Document'].id)
-        #.filter(Ngram.n > n_max)
-        #.group_by(x)
-        #.group_by(y)
-        #.limit(size)
-        .all()
-        )
+    if start is not None:
+        Start=aliased(NodeHyperdata)
+        StartFormat = aliased(Hyperdata)
+        cooc_query = (cooc_query.join(Start, Start.node_id == Node.id)
+                                .join(StartFormat, StartFormat.id == Start.hyperdata_id)
+                                .filter(StartFormat.name == 'datetime')
+                                .filter(Start.value_datetime >= start)
+                      )
 
-    return(query)
 
+    if end is not None:
+        End=aliased(NodeHyperdata)
+        EndFormat = aliased(Hyperdata)
+        cooc_query = (cooc_query.join(End, End.node_id == Node.id)
+                                .join(EndFormat, EndFormat.id == End.hyperdata_id)
+                                .filter(EndFormat.name == 'datetime')
+                                .filter(End.value_datetime <= end)
+                      )
+
+
+    cooc_query = (cooc_query.filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
+             .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
+
+             .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
+             .order_by(func.count())
+
+             .limit(limit)
+             )
+
+    matrix = WeightedMatrix(cooc_query)
+
+    if miam_id is not None :
+        #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
+        miam_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
+                                   .filter(NodeNodeNgram.nodex_id == miam_id).all()
+                                   )
+
+    if stop_id is not None :
+        #stop = get_or_create_node(nodetype='StopList', corpus=corpus)
+        stop_list = UnweightedList(session.query(NodeNgram.ngram_id)
+                                   .filter(NodeNgram.node_id == stop_id).all()
+                                   )
+
+    if group_id is not None :
+        #group = get_or_create_node(nodetype='GroupList', corpus=corpus)
+        group_list = UnweightedList(session.query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id)
+                                   .filter(NodeNgramNgram.node_id == stop_id).all()
+                                   )
+
+    if miam_id is not None and stop_id is None and group_id is None:
+        cooc = (matrix & miam_list)
+    elif miam_id is not None and stop_id is not None and group_id is None :
+        cooc = (matrix & miam_list) - stop_list
+    elif miam_id is not None and stop_id is not None and group_id is not None :
+        cooc = (matrix & miam_list & group_list) - stop_list
+
+    cooc.save(node_cooc.id)
+    return(node_cooc.id)

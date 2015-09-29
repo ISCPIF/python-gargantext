@@ -13,8 +13,8 @@ def ngram_workflow(corpus):
     '''
     compute_tfidf(corpus)
     compute_tfidf_global(corpus)
-    compute_cvalue(corpus,limit=1000) # size
-    compute_specificity(corpus,limit=800)
+    compute_cvalue(corpus,limit=3000) # size
+    compute_specificity(corpus,limit=200)
 #    compute_stop(corpus)
     compute_groups(corpus,limit_inf=400, limit_sup=600)
 #    compute_miam(corpus,limit=100) # size

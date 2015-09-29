@@ -62,6 +62,7 @@ for model_name, model in models.__dict__.items():
 
 NodeNgram = Node_Ngram
 NodeResource = Node_Resource
+NodeHyperdata = Node_Hyperdata
 
 # manually declare the Node table...
 from datetime import datetime

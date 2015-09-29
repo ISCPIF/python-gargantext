@@ -9,6 +9,7 @@ from analysis.lists import WeightedMatrix, UnweightedList, Translations
 
 def cooc(corpus=None
          , miam_id=None, stop_id=None, group_id=None
+         , cvalue_id=None
          , start=None, end=None
          , limit=1000):
     '''
@@ -16,6 +17,7 @@ def cooc(corpus=None
     For the moment list of paramters are not supported because, lists need to
     be merged before.
     corpus :: Corpus
+    cvalue_id :: Int
     miam_id :: Int
     stop_id :: Int
     group_id :: Int
@@ -86,10 +88,17 @@ def cooc(corpus=None
 
     matrix = WeightedMatrix(cooc_query)
 
-    if miam_id is not None :
+
+    if cvalue_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
         miam_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
-                                   .filter(NodeNodeNgram.nodex_id == miam_id).all()
+                                   .filter(NodeNodeNgram.nodex_id == cvalue_id).all()
+                                   )
+
+    if miam_id is not None :
+        #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
+        miam_list = UnweightedList(session.query(NodeNgram.ngram_id)
+                                   .filter(NodeNgram.node_id == miam_id).all()
                                    )
 
     if stop_id is not None :
@@ -104,7 +113,7 @@ def cooc(corpus=None
                                    .filter(NodeNgramNgram.node_id == stop_id).all()
                                    )
 
-    if miam_id is not None and stop_id is None and group_id is None:
+    if stop_id is None and group_id is None:
         cooc = (matrix & miam_list)
     elif miam_id is not None and stop_id is not None and group_id is None :
         cooc = (matrix & miam_list) - stop_list

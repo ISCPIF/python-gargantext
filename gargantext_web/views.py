@@ -709,14 +709,14 @@ def node_link(request, corpus_id):
 #        data = json.load(json_data)
 #        json_data.close()
 #    else:
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):
     '''
     Create the HttpResponse object with the adjacency dataset.
     '''
-    data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
+    data = get_cooc(request=request, corpus=corpus, type="adjacency")
     return JsonHttpResponse(data)
 
 def graph_it(request):

@@ -9,6 +9,22 @@ from math import log
 
 import scipy
 
+from gargantext_web.db import get_or_create_node
+
+from analysis.cooccurrences import cooc
+
+import pandas as pd
+from copy import copy
+import numpy as np
+import scipy
+import networkx as nx
+from networkx.readwrite import json_graph
+from gargantext_web.api import JsonHttpResponse
+
+from analysis.louvain import best_partition
+from ngram.lists import listIds
+
+
 def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
@@ -153,104 +169,86 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=size, year_start
     cursor.execute(query_cooc)
     return cooc.id
 
-def get_cooc(request=None, corpus_id=None, cooc_id=None, type='node_link', size=size):
-    import pandas as pd
-    from copy import copy
-    import numpy as np
-    import scipy
-    import networkx as nx
-    from networkx.readwrite import json_graph
-    from gargantext_web.api import JsonHttpResponse
+def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=size):
 
-    from analysis.louvain import best_partition
-    from ngram.lists import listIds
+    matrix = defaultdict(lambda : defaultdict(float))
+    ids    = dict()
+    labels = dict()
+    weight = dict()
 
-    #print(corpus_id, cooc_id)
+    #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
+    print("Coocurrences do not exist yet, create it.")
+    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
+    #group_id = get_or_create_node(nodetype='GroupList', corpus=corpus)
 
-    try:
-        matrix = defaultdict(lambda : defaultdict(float))
-        ids    = dict()
-        labels = dict()
-        weight = dict()
+    cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
 
-        type_cooc_id = cache.NodeType['Cooccurrence'].id
+    print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
+    for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
+        print(cooccurrence)
+        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
+        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
+        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
 
-        if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
-            print("Coocurrences do not exist yet, create it.")
-            miam_id = listIds(typeList='MiamList', user_id=request.user.id, corpus_id=corpus_id)[0][0]
+        matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
+        matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
 
-            whitelist = create_whitelist(request.user, corpus_id=corpus_id, size=size, miam_id=miam_id)
-            cooccurrence_node_id = create_cooc(user=request.user, corpus_id=corpus_id, whitelist=whitelist, size=size)
-        else:
-            cooccurrence_node_id = session.query(Node.id).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first()
+        ids[labels[cooccurrence.ngramx_id]] = cooccurrence.ngramx_id
+        ids[labels[cooccurrence.ngramy_id]] = cooccurrence.ngramy_id
 
-
-
-        for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooccurrence_node_id).all():
-            # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-            labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
-            labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
-
-            matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
-            matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
-
-            ids[labels[cooccurrence.ngramx_id]] = cooccurrence.ngramx_id
-            ids[labels[cooccurrence.ngramy_id]] = cooccurrence.ngramy_id
-
-            weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
-            weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
+        weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
+        weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
 
 
-        x = pd.DataFrame(matrix).fillna(0)
-        y = pd.DataFrame(matrix).fillna(0)
+    x = pd.DataFrame(matrix).fillna(0)
+    y = pd.DataFrame(matrix).fillna(0)
 
-        #xo = diag_null(x)
-        #y = diag_null(y)
+    #xo = diag_null(x)
+    #y = diag_null(y)
 
-        x = x / x.sum(axis=1)
-        y = y / y.sum(axis=0)
-        #print(x)
+    x = x / x.sum(axis=1)
+    y = y / y.sum(axis=0)
+    #print(x)
 
-        xs = x.sum(axis=1) - x
-        ys = x.sum(axis=0) - x
+    xs = x.sum(axis=1) - x
+    ys = x.sum(axis=0) - x
 
-        # top inclus ou exclus
-        n = ( xs + ys) / (2 * (x.shape[0] - 1))
-        # top generic or specific
-        m = ( xs - ys) / (2 * (x.shape[0] - 1))
+    # top inclus ou exclus
+    n = ( xs + ys) / (2 * (x.shape[0] - 1))
+    # top generic or specific
+    m = ( xs - ys) / (2 * (x.shape[0] - 1))
 
-        n = n.sort(inplace=False)
-        m = m.sort(inplace=False)
+    n = n.sort(inplace=False)
+    m = m.sort(inplace=False)
 
-        #print(n)
-        #print(m)
+    #print(n)
+    #print(m)
 
-        nodes_included = 300 #int(round(size/20,0))
-        #nodes_excluded = int(round(size/10,0))
+    nodes_included = 300 #int(round(size/20,0))
+    #nodes_excluded = int(round(size/10,0))
 
-        nodes_specific = 300 #int(round(size/10,0))
-        #nodes_generic = int(round(size/10,0))
+    nodes_specific = 300 #int(round(size/10,0))
+    #nodes_generic = int(round(size/10,0))
 
-        # TODO user the included score for the node size
-        n_index = pd.Index.intersection(x.index, n.index[:nodes_included])
-        # Generic:
-        #m_index = pd.Index.intersection(x.index, m.index[:nodes_generic])
-        # Specific:
-        m_index = pd.Index.intersection(x.index, m.index[-nodes_specific:])
+    # TODO user the included score for the node size
+    n_index = pd.Index.intersection(x.index, n.index[:nodes_included])
+    # Generic:
+    #m_index = pd.Index.intersection(x.index, m.index[:nodes_generic])
+    # Specific:
+    m_index = pd.Index.intersection(x.index, m.index[-nodes_specific:])
 
-        x_index = pd.Index.union(n_index, m_index)
-        xx = x[list(x_index)].T[list(x_index)]
+    x_index = pd.Index.union(n_index, m_index)
+    xx = x[list(x_index)].T[list(x_index)]
 
-        # import pprint
-        # pprint.pprint(ids)
+    # import pprint
+    # pprint.pprint(ids)
 
-        # Removing unconnected nodes
-        xxx = xx.values
-        threshold = min(xxx.max(axis=1))
-        matrix_filtered = np.where(xxx >= threshold, xxx, 0)
-        #matrix_filtered = matrix_filtered.resize((90,90))
-    except:
-        PrintException()
+    # Removing unconnected nodes
+    xxx = xx.values
+    threshold = min(xxx.max(axis=1))
+    matrix_filtered = np.where(xxx >= threshold, xxx, 0)
+    #matrix_filtered = matrix_filtered.resize((90,90))
 
     try:
         G = nx.from_numpy_matrix(np.matrix(matrix_filtered))

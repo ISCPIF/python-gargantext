@@ -11,7 +11,7 @@ class BaseClass:
             return self.__radd__(other)
         else:
             return NotImplemented
-    
+
     def __sub__(self, other):
         if hasattr(self, '__rsub__'):
             return self.__rsub__(other)
@@ -193,7 +193,7 @@ class WeightedMatrix(BaseClass):
                 if value != 0.0:
                     result.items[key1][key2] = value
         return result
-    
+
     def __rand__(self, other):
         result = NotImplemented
         if isinstance(other, (UnweightedList, WeightedList)):
@@ -380,7 +380,7 @@ class WeightedList(BaseClass):
             result.items = {key: value for key, value in self.items.items() if key not in other.items}
         elif isinstance(other, WeightedList):
             result = WeightedList(self)
-            for key, value in other.items.items():                
+            for key, value in other.items.items():
                 if key in result.items and result.items[key] == value:
                     result.items.pop(key)
                 else:
@@ -405,7 +405,7 @@ class WeightedList(BaseClass):
                 key: value * other.items[key]
                 for key, value
                 in self.items.items()
-                if key in other.items                
+                if key in other.items
             }
         if isinstance(other, UnweightedList):
             result = WeightedList()

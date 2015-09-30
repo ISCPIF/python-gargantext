@@ -51,7 +51,7 @@ def getNgrams(corpus=None, limit_inf=600, limit_sup=3000):
     '''
     #tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
     cvalue_node = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-    spec_node = get_or_create_node(nodetype='Specificites', corpus=corpus)
+    spec_node = get_or_create_node(nodetype='Specificity', corpus=corpus)
 
 
     #tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id)

@@ -35,7 +35,7 @@ def specificity(cooc_id=None, corpus=None):
     m = ( xs - ys) / (2 * (x.shape[0] - 1))
     m = m.sort(inplace=False)
 
-    node = get_or_create_node(nodetype='Specificites',corpus=corpus)
+    node = get_or_create_node(nodetype='Specificity',corpus=corpus)
 
     data = zip(  [node.id for i in range(1,m.shape[0])]
                , [corpus.id for i in range(1,m.shape[0])]

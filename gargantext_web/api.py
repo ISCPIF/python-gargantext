@@ -4,14 +4,14 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
 from sqlalchemy import text, distinct, or_,not_
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, desc
 from sqlalchemy.orm import aliased
 
 import datetime
 import copy
 
 from gargantext_web.views import move_to_trash
-from gargantext_web.db import *
+from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram
 from gargantext_web.validation import validate, ValidationException
 from node import models
 
@@ -140,6 +140,129 @@ class NodesChildrenNgrams(APIView):
                 for ngram in ngrams_query[offset : offset+limit]
             ],
         })
+
+from gargantext_web.db import get_or_create_node
+
+class Ngrams(APIView):
+
+    def get(self, request, node_id):
+        # query ngrams
+        ParentNode = aliased(Node)
+        corpus = session.query(Node).filter(Node.id==node_id).first()
+        group_by = []
+        results   = ['id', 'terms']
+
+        ngrams_query = (session
+            .query(Ngram.id, Ngram.terms)
+            .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
+            .join(Node, Node.id == Node_Ngram.node_id)
+        )
+
+        # get the scores
+        if 'tfidf' in request.GET['score']:
+            Tfidf = aliased(NodeNodeNgram)
+            tfidf_id = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus).id
+            ngrams_query = (ngrams_query.add_column(Tfidf.score.label('tfidf'))
+                                        .join(Tfidf, Tfidf.ngram_id == Ngram.id)
+                                        .filter(Tfidf.nodex_id == tfidf_id)
+                            )
+            group_by.append(Tfidf.score)
+            results.append('tfidf')
+
+        if 'cvalue' in request.GET['score']:
+            Cvalue = aliased(NodeNodeNgram)
+            cvalue_id = get_or_create_node(nodetype='Cvalue', corpus=corpus).id
+            ngrams_query = (ngrams_query.add_column(Cvalue.score.label('cvalue'))
+                                        .join(Cvalue, Cvalue.ngram_id == Ngram.id)
+                                        .filter(Cvalue.nodex_id == cvalue_id)
+                            )
+            group_by.append(Cvalue.score)
+            results.append('cvalue')
+
+
+        if 'specificity' in request.GET['score']:
+            Spec = aliased(NodeNodeNgram)
+            spec_id = get_or_create_node(nodetype='Specificity', corpus=corpus).id
+            ngrams_query = (ngrams_query.add_column(Spec.score.label('specificity'))
+                                        .join(Spec, Spec.ngram_id == Ngram.id)
+                                        .filter(Spec.nodex_id == spec_id)
+                            )
+            group_by.append(Spec.score)
+            results.append('specificity')
+
+
+        if request.GET.get('order', False) == 'cvalue':
+            ngrams_query = ngrams_query.order_by(desc(Cvalue.score))
+        elif request.GET.get('order', False) == 'tfidf':
+            ngrams_query = ngrams_query.order_by(desc(Tfidf.score))
+        elif request.GET.get('order', False) == 'specificity':
+            ngrams_query = ngrams_query.order_by(desc(Spec.score))
+
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 20))
+
+        ngrams_query = (ngrams_query.filter(Node.parent_id == node_id)
+                        .group_by(Ngram.id, Ngram.terms, *group_by)
+                        )
+
+        if request.GET.get('ngram_id', False) != False:
+            ngram_id = int(request.GET['ngram_id'])
+            Group = aliased(NodeNgramNgram)
+            group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
+            ngrams_query = (ngrams_query.join(Group, Group.ngramx_id == ngram_id )
+                                        .filter(Group.node_id == group_id)
+                                        .filter(Group.ngramx_id == ngram_id)
+                            )
+
+        # filters by list type (soon list_id to factorize it in javascript)
+        list_query = request.GET.get('list', 'miam')
+        if list_query == 'miam':
+            Miam = aliased(NodeNgram)
+            miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+            ngrams_query = (ngrams_query.join(Miam, Miam.ngram_id == Ngram.id )
+                                        .filter(Miam.node_id == miam_id)
+                            )
+        elif list_query == 'stop':
+            Stop = aliased(NodeNgram)
+            stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
+            ngrams_query = (ngrams_query.join(Stop, Stop.ngram_id == Ngram.id )
+                                        .filter(Stop.node_id == stop_id)
+                            )
+        elif list_query == 'map':
+        # ngram could be in ngramx_id or ngramy_id
+            CoocX = aliased(NodeNgramNgram)
+            CoocY = aliased(NodeNgramNgram)
+            cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
+            ngrams_query = (ngrams_query.join(CoocX, CoocX.ngramx_id == Ngram.id )
+                                        .join(CoocY, CoocY.ngramy_id == Ngram.id)
+                                        .filter(CoocX.node_id == cooc_id)
+                                        .filter(CoocY.node_id == cooc_id)
+                            )
+
+        total = ngrams_query.count()
+
+        # return formatted result
+        return JsonHttpResponse({
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+                          },
+            'data': [
+                        {
+                            'id' : ngram.id
+                            , 'terms' : ngram.terms
+                            , 'tfidf' : ngram.tfidf
+                            , 'cvalue': ngram.cvalue
+
+                        } for ngram in ngrams_query[offset : offset+limit]
+                # TODO : dict comprehension in list comprehension :
+#                        { x : eval('ngram.' + x) for x in results
+#                        } for ngram in ngrams_query[offset : offset+limit]
+
+                    ],
+                               })
+
 
 
 class NodesChildrenDuplicates(APIView):

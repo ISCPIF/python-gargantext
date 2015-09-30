@@ -21,7 +21,7 @@ def compute_miam(corpus,limit=500):
 
     node_group = get_or_create_node(nodetype='Group', corpus=corpus)
     node_stop  = get_or_create_node(nodetype='StopList', corpus=corpus)
-    node_spec  = get_or_create_node(nodetype='Specificites', corpus=corpus)
+    node_spec  = get_or_create_node(nodetype='Specificity', corpus=corpus)
 
     Stop=aliased(NodeNgram)
     Group=aliased(NodeNgramNgram)

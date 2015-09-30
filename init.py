@@ -92,7 +92,7 @@ node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
         'MiamList', 'StopList', 'MainList',
-        'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificites'
+        'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificity'
         , 'Cooccurrence',
         ]
 

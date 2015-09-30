@@ -48,4 +48,3 @@ def apply_workflow(corpus_id):
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)
 
-

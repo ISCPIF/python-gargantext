@@ -8,6 +8,8 @@ from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view
 
 import gargantext_web.api
+import api.ngrams
+
 import scrappers.scrap_pubmed.views as pubmedscrapper
 
 import tests.ngramstable.views as samtest
@@ -90,6 +92,7 @@ urlpatterns = patterns('',
     url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
     url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
     url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
+    url(r'^api/node/(\d+)/ngrams$', api.ngrams.Ngrams.as_view()),  # => repeated children ?
     url(r'^api/nodes/(\d+)/children/hyperdata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
     url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
     url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),

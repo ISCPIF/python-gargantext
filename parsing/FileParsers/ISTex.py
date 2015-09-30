@@ -7,7 +7,7 @@ from io import BytesIO
 import json
 
 class ISTex(FileParser):
-    
+
     def _parse(self, thefile):
         json_data=open(thefile,"r")
         data = json.load(json_data)
@@ -22,14 +22,14 @@ class ISTex(FileParser):
             "language_iso3"     : 'language',
             "doi"               : 'doi',
             "host"              : 'host',
-            "publication_date"  : 'pubdate',
+            "publication_date"  : 'publicationDate',
             # "authors"           : 'author',
             "authorsRAW"        : 'author',
             "keywords"          : "keywords"
         }
 
         suma = 0
-        
+
         for json_doc in json_docs:
 
             hyperdata = {}
@@ -42,9 +42,9 @@ class ISTex(FileParser):
 
             # print("|",hyperdata["language_iso3"])
 
-            if "doi" in hyperdata: 
+            if "doi" in hyperdata:
                 hyperdata["doi"] = hyperdata["doi"][0]
-            
+
             keywords = []
             if "keywords" in hyperdata:
                 for keyw in hyperdata["keywords"]:
@@ -72,7 +72,7 @@ class ISTex(FileParser):
             authors=False
             if "authorsRAW" in hyperdata:
                 names = []
-                for author in hyperdata["authorsRAW"]: 
+                for author in hyperdata["authorsRAW"]:
                     names.append(author["name"])
                 hyperdata["authors"] = ", ".join(names)
 
@@ -88,7 +88,7 @@ class ISTex(FileParser):
 
             if "publication_date" in hyperdata:
                 RealDate = hyperdata["publication_date"]
-                if "publication_date" in hyperdata: 
+                if "publication_date" in hyperdata:
                     hyperdata.pop("publication_date")
 
                 if isinstance(RealDate, list):
@@ -99,18 +99,18 @@ class ISTex(FileParser):
                 if len(RealDate)>4:
                     if len(RealDate)>8:
                         try: Decision = datetime.strptime(RealDate, '%Y-%b-%d').date()
-                        except: 
+                        except:
                             try: Decision = datetime.strptime(RealDate, '%Y-%m-%d').date()
                             except: Decision=False
-                    else: 
+                    else:
                         try: Decision = datetime.strptime(RealDate, '%Y-%b').date()
-                        except: 
+                        except:
                             try: Decision = datetime.strptime(RealDate, '%Y-%m').date()
                             except: Decision=False
-                else: 
+                else:
                     try: Decision = datetime.strptime(RealDate, '%Y').date()
                     except: Decision=False
-                
+
                 if Decision!=False:
                     hyperdata["publication_year"] = str(Decision.year)
                     hyperdata["publication_month"] = str(Decision.month)
@@ -119,11 +119,11 @@ class ISTex(FileParser):
                     # print("\t||",hyperdata["title"])
                     # print("\t\t",Decision)
                     # print("=============================")
-                # else: 
+                # else:
                 #     suma+=1
                 #     if "pubdate" in json_doc:
                 #         print ("\tfail pubdate:",json_doc["pubdate"])
-                        
+
 
         # print ("nb_hits:",len(json_docs))
         # print("\t - nb_fails:",suma)

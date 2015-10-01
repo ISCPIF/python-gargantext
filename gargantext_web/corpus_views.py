@@ -49,7 +49,7 @@ from sqlalchemy import desc, asc, or_, and_, Date, cast, select
 
 from gargantext_web import about
 
-from gargantext_web.api import JsonHttpResponse
+from rest.api import JsonHttpResponse
 
 
 from ngram.lists import listIds, listNgramIds, ngramList , doList

@@ -15,7 +15,6 @@ from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNode
 from gargantext_web.validation import validate, ValidationException
 from node import models
 
-
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 

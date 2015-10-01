@@ -320,7 +320,6 @@ def update_nodes(request, project_id, corpus_id, view=None):
 #        )
 #
 
-
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -361,7 +360,6 @@ def corpus(request, project_id, corpus_id):
             }))
 
     return HttpResponse(html)
-
 
 def newpaginatorJSON(request , corpus_id):
 
@@ -429,7 +427,6 @@ def empty_trash():
 
             node.delete()
 
-
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -442,8 +439,6 @@ def move_to_trash(node_id):
         return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + node_id + ":" + error)
-
-
 
 def move_to_trash_multiple(request):
     user = request.user
@@ -467,8 +462,6 @@ def move_to_trash_multiple(request):
 
     return JsonHttpResponse(results)
 
-
-
 def delete_node(request, node_id):
 
     # do we have a valid user?
@@ -490,7 +483,6 @@ def delete_node(request, node_id):
 
     if settings.DEBUG == True:
         empty_trash()
-
 
 
 def delete_corpus(request, project_id, node_id):
@@ -692,7 +684,7 @@ def send_csv(request, corpus_id):
     return response
 
 # To get the data
-from gargantext_web.api import JsonHttpResponse
+from rest.api import JsonHttpResponse
 from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''

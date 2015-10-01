@@ -7,8 +7,8 @@ from gargantext_web import views, views_optimized
 from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view
 
-import gargantext_web.api
-import api.ngrams
+import rest.ngrams
+import rest.api
 
 import scrappers.scrap_pubmed.views as pubmedscrapper
 
@@ -88,16 +88,30 @@ urlpatterns = patterns('',
     ############################################################################
 
     # Data management
-    #url(r'^api$', gargantext_web.api.Root), # = ?
-    url(r'^api/nodes$', gargantext_web.api.NodesList.as_view()),
-    url(r'^api/nodes/(\d+)$', gargantext_web.api.Nodes.as_view()),
-    url(r'^api/nodes/(\d+)/children/ngrams$', gargantext_web.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
-    url(r'^api/node/(\d+)/ngrams$', api.ngrams.Ngrams.as_view()),  # => repeated children ?
-    url(r'^api/nodes/(\d+)/children/hyperdata$', gargantext_web.api.NodesChildrenMetatadata.as_view()),
-    url(r'^api/nodes/(\d+)/children/queries$', gargantext_web.api.NodesChildrenQueries.as_view()),
-    url(r'^api/nodes/(\d+)/children/duplicates$', gargantext_web.api.NodesChildrenDuplicates.as_view()),
-    # url(r'^api/nodes/(\d+)/children/duplicates/delete$', gargantext_web.api.NodesChildrenDuplicates.delete ),
-    url(r'^api/nodes/(\d+)/ngrams$', gargantext_web.api.CorpusController.ngrams),
+    #url(r'^api$', rest.api.Root), # = ?
+    url(r'^api/nodes$', rest.api.NodesList.as_view()),
+    url(r'^v1.0/nodes$', rest.api.NodesList.as_view()),
+
+    url(r'^api/nodes/(\d+)$', rest.api.Nodes.as_view()),
+    url(r'^v1.0/nodes/(\d+)$', rest.api.Nodes.as_view()),
+
+    url(r'^api/nodes/(\d+)/children/ngrams$', rest.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
+    url(r'^v1.0/nodes/(\d+)/children/ngrams$', rest.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
+
+    url(r'^api/node/(\d+)/ngrams$', rest.ngrams.Ngrams.as_view()),
+    url(r'^v1.0/node/(\d+)/ngrams$', rest.ngrams.Ngrams.as_view()),
+
+    url(r'^api/nodes/(\d+)/children/hyperdata$', rest.api.NodesChildrenMetatadata.as_view()),
+    url(r'^v1.0/nodes/(\d+)/children/hyperdata$', rest.api.NodesChildrenMetatadata.as_view()),
+
+    url(r'^api/nodes/(\d+)/children/queries$', rest.api.NodesChildrenQueries.as_view()),
+    url(r'^v1.0/nodes/(\d+)/children/queries$', rest.api.NodesChildrenQueries.as_view()),
+
+    url(r'^api/nodes/(\d+)/children/duplicates$', rest.api.NodesChildrenDuplicates.as_view()),
+    url(r'^v1.0/nodes/(\d+)/children/duplicates$', rest.api.NodesChildrenDuplicates.as_view()),
+    # url(r'^api/nodes/(\d+)/children/duplicates/delete$', rest.api.NodesChildrenDuplicates.delete ),
+    url(r'^api/nodes/(\d+)/ngrams$', rest.api.CorpusController.ngrams),
+    url(r'^v1.0/nodes/(\d+)/ngrams$', rest.api.CorpusController.ngrams),
 
     # Provisory tests
     url(r'^ngrams$', views.ngrams),  # to be removed

@@ -16,7 +16,7 @@ from threading import Thread
 from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
-from gargantext_web.api import JsonHttpResponse
+from rest.api import JsonHttpResponse
 
 import json
 import re

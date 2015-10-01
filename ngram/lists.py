@@ -11,7 +11,6 @@ from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 
 
-
 def listIds(typeList=None, user_id=None, corpus_id=None):
     '''
     nodeList : get or create NodeList.
@@ -59,7 +58,6 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
         raise Exception("Usage (Warning): Need corpus_id and user_id")
 
 # Some functions to manage ngrams according to the lists
-
 
 def listNgramIds(list_id=None, typeList=None,
                  corpus_id=None, doc_id=None, user_id=None):
@@ -115,7 +113,6 @@ def listNgramIds(list_id=None, typeList=None,
 
     return(query.all())
 
-
 def ngramList(do, list_id, ngram_ids=None) :
     '''
     ngramList :: ([Int], Int, String) -> Bool
@@ -160,9 +157,7 @@ def ngramList(do, list_id, ngram_ids=None) :
     session.commit()
     return(results)
 
-
 # Some functions to manage automatically the lists
-
 def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=None):
     '''
     Compute automatically the stopList and returns its Node.id
@@ -174,7 +169,6 @@ def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=No
                             corpus_id=corpus_id,
                             typeList='StopList')[0]
     # according to type of corpus, choose the right default stopList
-
 
 def ngrams2miam(user_id=None, corpus_id=None):
     '''
@@ -204,7 +198,6 @@ def ngrams2miam(user_id=None, corpus_id=None):
 from gargantext_web.db import get_or_create_node
 from analysis.lists import Translations, UnweightedList
 
-
 def ngrams2miamBis(corpus):
     '''
     Create a Miam List only
@@ -212,8 +205,6 @@ def ngrams2miamBis(corpus):
 
     miam_id = get_or_create_node(corpus=corpus, nodetype='MiamList')
     stop_id = get_or_create_node(corpus=corpus,nodetype='StopList')
-
-
 
     query = (session.query(
                 literal_column(str(miam_id)).label("node_id"),
@@ -231,10 +222,6 @@ def ngrams2miamBis(corpus):
                 .all()
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
-
-
-
-
 
 def doList(
         type_list='MiamList',

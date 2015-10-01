@@ -4,17 +4,14 @@ from django.contrib import admin
 from django.contrib.auth.views import login
 
 from gargantext_web import views, views_optimized
+import gargantext_web.corpus_views as corpus_views
+
 from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view
 
-import rest.ngrams
-import rest.api
-
 import scrappers.scrap_pubmed.views as pubmedscrapper
-
 import tests.ngramstable.views as samtest
 
-import gargantext_web.corpus_views as corpus_views
 
 admin.autodiscover()
 
@@ -34,6 +31,27 @@ urlpatterns = patterns('',
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
 
+    # REST
+    url(r'^api/', include('rest_v1_0.urls')),
+    url(r'^v1.0/', include('rest_v1_0.urls')),
+
+    # TODO below to put in the rest
+    url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
+    url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
+    url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
+    # Visualizations
+    url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
+    url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
+    url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
+
+    url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
+    url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
+    url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
+    
+    url(r'^ngrams$', views.ngrams),  # to be removed
+    url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
+    # TODO above put in the rest
+    
     ############################################################################
     # User Home view
     url(r'^$', views.home_view),
@@ -44,7 +62,6 @@ urlpatterns = patterns('',
     # Project Management
     url(r'^projects/$', views.projects),
     url(r'^project/(\d+)/$', views_optimized.project),
-    url(r'^delete/(\d+)$', views.delete_node), # => api.node('id' = id, children = 'True', copies = False)
 
     ############################################################################
     # Corpus management
@@ -56,66 +73,19 @@ urlpatterns = patterns('',
     url(r'^project/(\d+)/corpus/(\d+)/journals/journals.json$', samtest.get_journals_json),
     url(r'^project/(\d+)/corpus/(\d+)/journals$', samtest.get_journals),
 
-    # # # Terms view
-    # url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', corpus_views.test_ngrams),
-    # url(r'^project/(\d+)/corpus/(\d+)/terms/?$', corpus_views.get_ngrams),
-
-    # Update corpus
+    # TODO rest to update corpus and information for progress bar
     url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update_nodes),
 
     ############################################################################
     # annotations App
     url(r'^project/(\d+)/corpus/(\d+)/document/(\d+)/$', annotations_main_view),
     url(r'^annotations/', include(annotations_urls)),
-
     #
-    url(r'^project/(\d+)/corpus/(\d+)/corpus.csv$', views.corpus_csv),
-    url(r'^project/(\d+)/corpus/(tests_mvc_listdocuments+)/corpus.tests_mvc_listdocuments$', views.corpus_csv),
     ############################################################################
 
-    # Visualizations
-    url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
-    url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
-    url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
     ############################################################################
-
-    # Data management
-    url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
-    url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
-    url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
-
-    url(r'^api/tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
     ############################################################################
-
-    # Data management
-    #url(r'^api$', rest.api.Root), # = ?
-    url(r'^api/nodes$', rest.api.NodesList.as_view()),
-    url(r'^v1.0/nodes$', rest.api.NodesList.as_view()),
-
-    url(r'^api/nodes/(\d+)$', rest.api.Nodes.as_view()),
-    url(r'^v1.0/nodes/(\d+)$', rest.api.Nodes.as_view()),
-
-    url(r'^api/nodes/(\d+)/children/ngrams$', rest.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
-    url(r'^v1.0/nodes/(\d+)/children/ngrams$', rest.api.NodesChildrenNgrams.as_view()),  # => repeated children ?
-
-    url(r'^api/node/(\d+)/ngrams$', rest.ngrams.Ngrams.as_view()),
-    url(r'^v1.0/node/(\d+)/ngrams$', rest.ngrams.Ngrams.as_view()),
-
-    url(r'^api/nodes/(\d+)/children/hyperdata$', rest.api.NodesChildrenMetatadata.as_view()),
-    url(r'^v1.0/nodes/(\d+)/children/hyperdata$', rest.api.NodesChildrenMetatadata.as_view()),
-
-    url(r'^api/nodes/(\d+)/children/queries$', rest.api.NodesChildrenQueries.as_view()),
-    url(r'^v1.0/nodes/(\d+)/children/queries$', rest.api.NodesChildrenQueries.as_view()),
-
-    url(r'^api/nodes/(\d+)/children/duplicates$', rest.api.NodesChildrenDuplicates.as_view()),
-    url(r'^v1.0/nodes/(\d+)/children/duplicates$', rest.api.NodesChildrenDuplicates.as_view()),
-    # url(r'^api/nodes/(\d+)/children/duplicates/delete$', rest.api.NodesChildrenDuplicates.delete ),
-    url(r'^api/nodes/(\d+)/ngrams$', rest.api.CorpusController.ngrams),
-    url(r'^v1.0/nodes/(\d+)/ngrams$', rest.api.CorpusController.ngrams),
-
-    # Provisory tests
-    url(r'^ngrams$', views.ngrams),  # to be removed
-    url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
+    # TODO put in test folder Provisory tests
     url(r'^tests/mvc$', views.tests_mvc),
     url(r'^tests/mvc-listdocuments$', views.tests_mvc_listdocuments),
 

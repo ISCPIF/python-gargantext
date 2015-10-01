@@ -16,7 +16,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from node.models import Node
 from gargantext_web.db import *
 from ngram.lists import listIds, listNgramIds
-from rest.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 
 
 @login_required

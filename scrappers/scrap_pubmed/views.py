@@ -30,7 +30,7 @@ import threading
 from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
-from rest.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams
 from ngram.tfidf import compute_tfidf

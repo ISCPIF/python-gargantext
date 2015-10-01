@@ -11,7 +11,8 @@ import datetime
 import copy
 
 from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram
+from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
+        , NodeType
 from gargantext_web.validation import validate, ValidationException
 from node import models
 
@@ -143,7 +144,6 @@ class NodesChildrenNgrams(APIView):
 from gargantext_web.db import get_or_create_node
 
 class Ngrams(APIView):
-
     def get(self, request, node_id):
         # query ngrams
         ParentNode = aliased(Node)
@@ -262,10 +262,7 @@ class Ngrams(APIView):
                     ],
                                })
 
-
-
 class NodesChildrenDuplicates(APIView):
-
     def _fetch_duplicates(self, request, node_id, extra_columns=None, min_count=1):
         # input validation
         if extra_columns is None:
@@ -352,9 +349,7 @@ class NodesChildrenDuplicates(APIView):
             'deleted': count
         })
 
-
 class NodesChildrenMetatadata(APIView):
-
     def get(self, request, node_id):
 
         # query hyperdata keys
@@ -412,9 +407,7 @@ class NodesChildrenMetatadata(APIView):
             'data': collection,
         })
 
-
 class NodesChildrenQueries(APIView):
-
     def _sql(self, input, node_id):
         fields = dict()
         tables = set('nodes')
@@ -594,7 +587,6 @@ class NodesChildrenQueries(APIView):
             raise ValidationException('queried fields are mixing incompatible types of fields')
         return JsonHttpResponse(method(input, node_id), 201)
 
-
 class NodesList(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
@@ -615,9 +607,7 @@ class NodesList(APIView):
             for node in query.all()
         ]})
 
-
 class Nodes(APIView):
-
     def get(self, request, node_id):
         node = session.query(Node).filter(Node.id == node_id).first()
         if node is None:
@@ -651,9 +641,7 @@ class Nodes(APIView):
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
 
-
 class CorpusController:
-
     @classmethod
     def get(cls, corpus_id):
         try:

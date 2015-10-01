@@ -684,7 +684,7 @@ def send_csv(request, corpus_id):
     return response
 
 # To get the data
-from rest.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''

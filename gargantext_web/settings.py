@@ -97,6 +97,7 @@ INSTALLED_APPS = (
     'scrappers.scrap_pubmed',
     'djcelery',
     'aldjemy',
+    'rest_v1_0',
     'rest_framework',
 )
 

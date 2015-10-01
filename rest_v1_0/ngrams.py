@@ -2,6 +2,7 @@ from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
 
 from sqlalchemy import text, distinct, or_,not_
 from sqlalchemy.sql import func, desc
@@ -69,6 +70,7 @@ class APIException(_APIException):
 
 from rest_framework.decorators import api_view
 
+@login_required
 class Ngrams(APIView):
     '''
     REST application to manage ngrams

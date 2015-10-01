@@ -50,7 +50,7 @@ from sqlalchemy import or_, func
 
 from gargantext_web import about
 
-from rest.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 
 
 from ngram.lists import listIds, listNgramIds, ngramList , doList

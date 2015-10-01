@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'aldjemy',
     'rest_v1_0',
     'rest_framework',
+    'tests',
 )
 
 MIDDLEWARE_CLASSES = (

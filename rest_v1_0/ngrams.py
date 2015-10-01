@@ -69,8 +69,8 @@ class APIException(_APIException):
 
 
 from rest_framework.decorators import api_view
-
-@login_required
+#@login_required
+# TODO how to secure REST ?
 class Ngrams(APIView):
     '''
     REST application to manage ngrams

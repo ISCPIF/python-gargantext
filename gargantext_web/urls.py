@@ -9,6 +9,7 @@ import gargantext_web.corpus_views as corpus_views
 from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view
 
+import tests.ngramstable.views as samtest
 
 
 admin.autodiscover()

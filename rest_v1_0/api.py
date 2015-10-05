@@ -12,7 +12,7 @@ import copy
 
 from gargantext_web.views import move_to_trash
 from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
-        , NodeType
+        , NodeType, Node_Hyperdata
 from gargantext_web.validation import validate, ValidationException
 from node import models
 

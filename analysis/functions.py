@@ -19,7 +19,7 @@ import numpy as np
 import scipy
 import networkx as nx
 from networkx.readwrite import json_graph
-from gargantext_web.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 
 from analysis.louvain import best_partition
 from ngram.lists import listIds
@@ -180,13 +180,15 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     print("Coocurrences do not exist yet, create it.")
     miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
-    #group_id = get_or_create_node(nodetype='GroupList', corpus=corpus)
-
-    cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
+    group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
+    
+    #cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
+    cooc_id = cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
+    #cooc_id = cooc(corpus=corpus, miam_id=miam_id, limit=size)
 
     print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
     for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
-        print(cooccurrence)
+        #print(cooccurrence)
         # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
         labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
         labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]

@@ -8,6 +8,7 @@ from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 
 def cooc(corpus=None
+         , field_X=None, field_Y=None
          , miam_id=None, stop_id=None, group_id=None
          , cvalue_id=None
          , start=None, end=None
@@ -87,38 +88,35 @@ def cooc(corpus=None
              )
 
     matrix = WeightedMatrix(cooc_query)
-
+    print(matrix)
 
     if cvalue_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-        miam_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
+        cvalue_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
                                    .filter(NodeNodeNgram.nodex_id == cvalue_id).all()
                                    )
 
     if miam_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-        miam_list = UnweightedList(session.query(NodeNgram.ngram_id)
-                                   .filter(NodeNgram.node_id == miam_id).all()
-                                   )
+        miam_list = UnweightedList(miam_id)
 
     if stop_id is not None :
         #stop = get_or_create_node(nodetype='StopList', corpus=corpus)
-        stop_list = UnweightedList(session.query(NodeNgram.ngram_id)
-                                   .filter(NodeNgram.node_id == stop_id).all()
-                                   )
+        stop_list = UnweightedList(stop_id)
 
     if group_id is not None :
-        #group = get_or_create_node(nodetype='GroupList', corpus=corpus)
-        group_list = UnweightedList(session.query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id)
-                                   .filter(NodeNgramNgram.node_id == stop_id).all()
-                                   )
+        group_list = Translations(group_id)
 
-    if stop_id is None and group_id is None:
-        cooc = (matrix & miam_list)
+    if miam_id is not None and stop_id is None and group_id is None :
+        cooc = matrix & miam_list
     elif miam_id is not None and stop_id is not None and group_id is None :
-        cooc = (matrix & miam_list) - stop_list
+        cooc = matrix & (miam_list - stop_list)
     elif miam_id is not None and stop_id is not None and group_id is not None :
-        cooc = (matrix & miam_list & group_list) - stop_list
-
+        cooc = matrix & (miam_list * group_list - stop_list)
+    elif miam_id is not None and stop_id is None and group_id is not None :
+        cooc = matrix & (miam_list * group_list)
+    else :
+        cooc = matrix
+    
     cooc.save(node_cooc.id)
     return(node_cooc.id)

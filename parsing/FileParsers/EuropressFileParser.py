@@ -53,7 +53,7 @@ class EuropressFileParser(FileParser):
                         format_europresse = 1
                         html_articles = html.xpath('//div[@id="docContain"]')
 
-                        if len(html_articles) < 1:
+                        if len(html_articles) < 1 :
                             format_europresse = 50.2
                             html_parser = html5parser.etree.HTMLParser(encoding=codif)
                             html = html5parser.etree.fromstring(contents, html_parser)

@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, url
 
+from gargantext_web import views_optimized
+
 from rest_v1_0 import api, ngrams
 
 urlpatterns = patterns('',
@@ -32,6 +34,6 @@ urlpatterns = patterns('',
     url(r'nodes/(\d+)/ngrams$', api.CorpusController.ngrams),
     url(r'nodes/(\d+)/ngrams$', api.CorpusController.ngrams),
     
-    #url(r'tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
+    url(r'tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
 )
 

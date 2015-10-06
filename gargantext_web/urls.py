@@ -76,6 +76,7 @@ urlpatterns = patterns('',
     
     url(r'^ngrams$', views.ngrams),  # to be removed
     url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
+    url(r'^tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
     
     url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update_nodes),
     # TODO rest to update corpus and information for progress bar

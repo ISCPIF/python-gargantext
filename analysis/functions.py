@@ -181,17 +181,18 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
-    
+    cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
+    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
     #cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
     cooc_id = cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
     #cooc_id = cooc(corpus=corpus, miam_id=miam_id, limit=size)
 
-    print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
+    #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
     for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
         #print(cooccurrence)
         # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-        labels[cooccurrence.ngramx_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
-        labels[cooccurrence.ngramy_id] = session.query(Ngram.terms).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
+        labels[cooccurrence.ngramx_id] = session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
+        labels[cooccurrence.ngramy_id] = session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
 
         matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
         matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score

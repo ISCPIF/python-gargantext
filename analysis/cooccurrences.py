@@ -55,6 +55,7 @@ def cooc(corpus=None
     cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, func.count())
              .join(Node, Node.id == NodeNgramX.node_id)
              .join(NodeNgramY, NodeNgramY.node_id == Node.id)
+             .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
                 )
 
 
@@ -81,14 +82,14 @@ def cooc(corpus=None
     cooc_query = (cooc_query.filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
 
-             .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
+             .group_by(Node.id, NodeNgramX.ngram_id, NodeNgramY.ngram_id)
              .order_by(func.count())
 
              .limit(limit)
              )
 
     matrix = WeightedMatrix(cooc_query)
-    print(matrix)
+    #print(matrix)
 
     if cvalue_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)

@@ -9,7 +9,7 @@ var getAdditionalInfo=true;//for topPapers div
 
 
 var mainfile=false;
-getUrlParam.file = window.location.origin+"/static/node_link.json";//window.location.origin+"/"+$("#graphid").html();
+getUrlParam.file = window.location.origin+"/"+$("#graphid").html();
 var corpusesList = {}
 
 var dataFolderTree = {};

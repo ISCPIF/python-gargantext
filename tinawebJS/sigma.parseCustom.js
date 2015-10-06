@@ -680,8 +680,8 @@ function parseSimpleJSON( data , seed ) {
 
         pk = (isUndef(nodesNodes[i].pk))?"":nodesNodes[i].pk;
         color = (isUndef(nodesNodes[i].color))?"#800000":nodesNodes[i].color;
-        label = (isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label;
-        size = (isUndef(nodesNodes[i].size))?1:nodesNodes[i].size;
+        label = ((isUndef(nodesNodes[i].label)) ? ("node_"+i): nodesNodes[i].label)+"";
+        size = Number((isUndef(nodesNodes[i].size))?1:nodesNodes[i].size);
         group = (isUndef(nodesNodes[i].group))?1:nodesNodes[i].group;
         // iscluster = (isUndef(nodesNodes[i].hidden))?false:nodesNodes[i].hidden;
         // if (iscluster==1) {
@@ -692,7 +692,7 @@ function parseSimpleJSON( data , seed ) {
         var node = ({
             id: pk ,
             label:label, 
-            size:Math.log(size), 
+            size: Math.log(size+1), 
             x:rand.getRandom(), 
             y:rand.getRandom(), 
             type:catSoc,
@@ -703,13 +703,13 @@ function parseSimpleJSON( data , seed ) {
             lock:false,
             iscluster: false
         });  // The graph node
-        // pr(node)
+        pr(node.color)
         Nodes[pk] = node;
 
         if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
         if(parseInt(node.size) > parseInt(maxNodeSize)) maxNodeSize= node.size; 
     }
-
+    pr("IMAFJAIJOAJSODJASKJD 01")
     for(var i in Nodes){
 
         normalizedSize=desirableNodeSizeMIN+(Nodes[i].size-1)*((desirableNodeSizeMAX-desirableNodeSizeMIN)/(parseInt(maxNodeSize)-parseInt(minNodeSize)));
@@ -748,7 +748,6 @@ function parseSimpleJSON( data , seed ) {
         idS=Nodes[edge.sourceID].type;
         idT=Nodes[edge.targetID].type;
 
-
         if(idS==catSoc && idT==catSoc) {
 
             edge.label = "nodes1";
@@ -768,9 +767,10 @@ function parseSimpleJSON( data , seed ) {
             nodes1[source].neighbours.push(target);
             nodes1[target].neighbours.push(source);
 
-
-            Edges[indice] = edge;
-            partialGraph.addEdge(indice,source,target,edge);
+            if(Nodes[source].color && Nodes[target].color) {
+                Edges[indice] = edge;
+                partialGraph.addEdge(indice,source,target,edge);
+            }
         }
     }
 

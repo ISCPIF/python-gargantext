@@ -210,7 +210,50 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
     });
 }
 
-//DataFolderMode
+function TestFunction() {
+    //http://localhost:8000/api/corpusintersection/1a50317a50145
+
+    var jquerytemplatenb = $("#jquerytemplatenb").html()
+
+    var corpuses = $('input[name=optradio]:checked')[0];
+    if(isUndef(corpuses))
+        return false;
+
+    var pageurl = window.location.href.split("/")
+    var cid;
+    for(var i in pageurl) {
+        if(pageurl[i]=="corpus") {
+            cid=parseInt(i);
+            break;
+        }
+    } 
+    var corpus_id = pageurl[cid+1];
+
+    pr("")
+    pr("!!!!!!! DEBUGGING !!!!!!!")
+    // pr(jquerytemplatenb)
+    // pr(corpuses.id)
+    // pr(corpus_id)
+    var theids = [jquerytemplatenb , corpus_id , corpuses.id]
+    var query_url = window.location.origin+'/api/corpusintersection/'+corpus_id+'/'+theids.join("a")
+    pr(query_url)
+    pr("!!!!!!! !!!!!!! !!!!!!! !!!!!!!")
+    pr("")
+
+    // $.ajax({
+    //     type: 'GET',
+    //     url: window.location.origin+'/api/corpusintersection/'+corpus_id+'/'+theids.join("a"),
+    //     //contentType: "application/json",
+    //     //dataType: 'json',
+    //     success : function(data){
+    //         console.log(data)
+    //     },
+    //     error: function(){ 
+    //         pr('Page Not found: TestFunction()');
+    //     }
+    // });
+}
+// Uses: genericGetTopPapers()
 function getTopPapers(type){
     if(getAdditionalInfo){
 
@@ -238,6 +281,13 @@ function getTopPapers(type){
         
         pr("the IDs of the selectioons")
         pr(theids)
+
+        pr("")
+        pr("!!!!!!! DEBUGGING !!!!!!!")
+        pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"))
+        pr("!!!!!!! !!!!!!! !!!!!!! !!!!!!!")
+        pr("")
+
         $.ajax({
             type: 'GET',
             url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
@@ -311,7 +361,9 @@ function getTopPapers(type){
     }
 }
 
+// NOT-USED
 function printCorpuses() {
+    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     var corpuses = $('input[name=optradio]:checked');
     var count = 3
     for(var c in corpuses) {
@@ -354,6 +406,51 @@ function printCorpuses() {
     console.log(string)
     console.log(" - - -- -- - ")
     console.log(corpusesList)
+
+
+
+    var theids = []
+    var pageurl = window.location.href.split("/")
+    var cid;
+    for(var i in pageurl) {
+        if(pageurl[i]=="corpus") {
+            cid=parseInt(i);
+            break;
+        }
+    } 
+    var corpus_id = pageurl[cid+1];
+
+    theids.push( corpus_id )
+
+
+    for(var corpora in corpusesList) {
+        console.log("other corpus_id:")
+        console.log( corpora )
+        theids.push( corpora )
+        break
+    }
+
+    console.log("the two corpuses:")
+    console.log( theids )
+
+    $.ajax({
+        type: 'GET',
+        url: window.location.origin+'/api/corpusintersection/'+theids.join("a"),
+        //contentType: "application/json",
+        //dataType: 'json',
+        success : function(data){
+            var nodes = getVisibleNodes()
+            for(var n in nodes) {
+                if(data[nodes[n].id]) {
+                    nodes[n].color = "#ff0000";
+                }
+            }
+            partialGraph.draw()
+        },
+        error: function(){ 
+            pr('Page Not found: printCorpuses()');
+        }
+    });
 
 }
 

@@ -182,6 +182,8 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
     cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
+    
+    # data deleted each time
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
     #cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
     cooc_id = cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
@@ -277,13 +279,13 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
             try:
                 #node,type(labels[node])
                 G.node[node]['pk'] = ids[node]
-                G.node[node]['label']   = node
+                G.node[node]['label']   = session.query(Ngram.terms).filter(Ngram.id==node).first()
                 # G.node[node]['pk']      = ids[str(node)]
                 G.node[node]['size']    = weight[ids[node]]
                 G.node[node]['group']   = partition[node]
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
-                pass#PrintException()
+                pass #PrintException()
                 #print("error01: ",error)
 
         data = json_graph.node_link_data(G)

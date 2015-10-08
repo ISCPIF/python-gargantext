@@ -1,9 +1,11 @@
 import re
 import locale
 from lxml import etree
+from lxml.html import html5parser
 from datetime import datetime, date
 from django.utils import timezone
 import dateutil.parser
+import dateparser
 
 from .FileParser import FileParser
 from ..NgramsExtractors import *
@@ -51,6 +53,16 @@ class EuropressFileParser(FileParser):
                     if len(html_articles) < 1:
                         format_europresse = 1
                         html_articles = html.xpath('//div[@id="docContain"]')
+
+                        if len(html_articles) < 1 :
+                            format_europresse = 50.2
+                            html_parser = html5parser.etree.HTMLParser(encoding=codif)
+                            html = html5parser.etree.fromstring(contents, html_parser)
+                            html_articles = html.xpath('//article')
+
+                            if len(html_articles) < 1:
+                                print("no article found")
+
             except :
                 PrintException()
 
@@ -77,6 +89,11 @@ class EuropressFileParser(FileParser):
                         or self::td[@class='txtCertificat'] \
                         )]/text()"
                 doi_xpath  = "//span[@id='ucPubliC_lblNodoc']/text()"
+            elif format_europresse == 50.2 :
+                name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
+                header_xpath    = "./header/div/span[@class = 'DocHeader']"
+                title_xpath     = "string(./header/div/span[@class = 'TitreArticleVisu'])"
+                text_xpath      = "./header/div/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()"
 
 
         except Exception as error :
@@ -90,7 +107,9 @@ class EuropressFileParser(FileParser):
 
                 if len(html_article):
                     for name in html_article.xpath(name_xpath):
+                        #print("test name.text")
                         if name.text is not None:
+                            #print(name.text)
                             format_journal = re.compile('(.*), (.*)', re.UNICODE)
                             test_journal = format_journal.match(name.text)
                             if test_journal is not None:
@@ -104,7 +123,6 @@ class EuropressFileParser(FileParser):
                     for header in html_article.xpath(header_xpath):
 #                        print(count)
 #                        countbis += 1
-
 #                        try:
 #                            print('109', hyperdata['publication_date'])
 #                        except:
@@ -113,16 +131,29 @@ class EuropressFileParser(FileParser):
 
                         try:
                             text = header.text
-                            #print("header", text)
+                            print("header", text)
                         except Exception as error:
                             print(error)
 
 
                         if isinstance(text, bytes):
                             text = text.decode(encoding)
+
+                        if format_europresse == 50.2:
+                            # TODO here check the split if needed: 'Brest Ville, mercredi 26 novembre 2014'
+                            try:# # 2015-oct-08 exception added
+                                text = text.split(', ')[1] 
+                            except:
+                                pass
+
                         format_date_fr = re.compile('\d*\s*\w+\s+\d{4}', re.UNICODE)
+                        format_date_fr_v2 = re.compile('\s*\w+\s+\d+\s+\w+\s+\d{4}', re.UNICODE)
                         if text is not None:
                             test_date_fr = format_date_fr.match(text)
+
+                            #TODO check the v2 format here
+                            test_date_fr_v2 = format_date_fr_v2.match(text)
+
                             format_date_en = re.compile('\w+\s+\d+,\s+\d{4}', re.UNICODE)
                             test_date_en = format_date_en.match(text)
                             format_sect = re.compile('(\D+),', re.UNICODE)
@@ -131,33 +162,40 @@ class EuropressFileParser(FileParser):
                             test_page = format_page.match(text)
                         else:
                             test_date_fr = None
+                            test_date_fr_v2 = None
                             test_date_en = None
                             test_sect = None
                             test_page = None
 
 
-
-                        if test_date_fr is not None:
+                        if test_date_fr is not None or test_date_fr_v2 is not None:
                             self.localeEncoding = "fr_FR"
-                            locale.setlocale(locale.LC_ALL, localeEncoding)
+                            locale.setlocale(locale.LC_ALL, "fr_FR.utf-8")
                             if encoding != "utf-8":
                                 text = text.replace('י', 'é')
                                 text = text.replace('ű', 'û')
                                 text = text.replace(' aot ', ' août ')
 
-                            try :
-                                hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
-                            except :
-                                try:
-                                    hyperdata['publication_date'] = datetime.strptime(text, '%B %Y')
+                            try:
+                                hyperdata['publication_date'] = dateparser.parse(text, languages=['fr'])
+                            except:
+                                try :
+                                    hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                                 except :
                                     try:
-                                        locale.setlocale(locale.LC_ALL, "fr_FR")
-                                        hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
-                                        # hyperdata['publication_date'] = dateutil.parser.parse(text)
-                                    except Exception as error:
-                                        print(error, text)
-                                        pass
+                                        hyperdata['publication_date'] = datetime.strptime(text, '%B %Y')
+                                    except :
+                                        try:
+                                            locale.setlocale(locale.LC_ALL, "fr_FR")
+                                            hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
+                                            # hyperdata['publication_date'] = dateutil.parser.parse(text)
+                                        except :
+                                            # TODO format to parse: ' mercredi 26 novembre 2014'
+                                            try :
+                                                hyperdata['publication_date'] = datetime.strptime(text, ' %A %d %B %Y')
+                                            except Exception as error:
+                                                print(error, text)
+                                                pass
 
 
                         if test_date_en is not None:
@@ -227,7 +265,6 @@ class EuropressFileParser(FileParser):
                     #elif lang == 'en':
                     #    hyperdata['language_iso2'] = 'en'
 
-
                     hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
                     hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
                     hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
@@ -248,7 +285,11 @@ class EuropressFileParser(FileParser):
                     else:
                         hyperdata['doi'] = "not found"
 
-                    hyperdata['length_words'] = len(hyperdata['abstract'].split(' '))
+                    # try:
+                    #     hyperdata['length_words'] = len(hyperdata['abstract'].split(' '))
+                    # except:
+                    #     PrintException()
+
                     hyperdata['length_letters'] = len(hyperdata['abstract'])
 
                     hyperdata['bdd']  = u'europresse'

@@ -13,11 +13,11 @@ def ngram_workflow(corpus):
     '''
     compute_tfidf(corpus)
     compute_tfidf_global(corpus)
-    compute_cvalue(corpus,limit=5000) # size
-    compute_specificity(corpus,limit=3000)
+    compute_cvalue(corpus,limit=10000) # size
+    compute_specificity(corpus,limit=10000)
 #    compute_stop(corpus)
-    compute_groups(corpus,limit_inf=1000, limit_sup=2000)
-#    compute_miam(corpus,limit=100) # size
+    compute_groups(corpus,limit_inf=1000, limit_sup=5000)
+    compute_miam(corpus,limit=3000) # size
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #ngram_workflow(corpus)

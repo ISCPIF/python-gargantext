@@ -137,9 +137,10 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
         miam_to_insert.add((miam_node.id, n[0],1))
         #print([n for n in group])
         for g in group:
+            if (miam_node.id, g[0],1) not in miam_to_insert:
 #list_to_check.remove(g)
-            group_to_insert.append((node_group.id, n[0], g[0], 1))
-            print(n[1], "=", g[1])
+                group_to_insert.append((node_group.id, n[0], g[0], 1))
+                print(n[1], "=", g[1])
 
 # Deleting previous groups
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()

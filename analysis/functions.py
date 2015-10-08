@@ -229,10 +229,10 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     #print(n)
     #print(m)
 
-    nodes_included = 300 #int(round(size/20,0))
+    nodes_included = 333 #int(round(size/20,0))
     #nodes_excluded = int(round(size/10,0))
 
-    nodes_specific = 300 #int(round(size/10,0))
+    nodes_specific = 333 #int(round(size/10,0))
     #nodes_generic = int(round(size/10,0))
 
     # TODO user the included score for the node size

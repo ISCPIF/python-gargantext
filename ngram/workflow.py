@@ -26,7 +26,7 @@ def ngram_workflow(corpus, n=5000):
 #    compute_stop(corpus)
     compute_groups(corpus,limit_inf=part, limit_sup=n)
     
-    compute_miam(corpus,limit=part) # size
+#    compute_miam(corpus,limit=part) # size
     
     compute_tfidf(corpus)
 

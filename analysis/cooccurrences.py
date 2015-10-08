@@ -8,6 +8,8 @@ from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 
+# keep list
+
 def cooc(corpus=None
          , field_X=None, field_Y=None
          , miam_id=None, stop_id=None, group_id=None
@@ -104,13 +106,13 @@ def cooc(corpus=None
 
 
 # Cooc is symetric, take only the main cooccurrences and cut at the limit
-    cooc_query = (cooc_query.filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
+    cooc_query = (cooc_query
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
 
              .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
              .order_by(desc(func.count()))
 
-             .limit(limit)
+             #.limit(limit)
              )
 
     matrix = WeightedMatrix(cooc_query)

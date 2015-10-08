@@ -56,7 +56,8 @@ def cooc(corpus=None
 
     doc_id = cache.NodeType['Document'].id
 
-    cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, func.count())
+    cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, 
+                    func.sqrt(func.sum(NodeNgram.weight) * func.sum(NodeNgraY.wei)))
              .join(Node, Node.id == NodeNgramX.node_id)
              .join(NodeNgramY, NodeNgramY.node_id == Node.id)
              .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)

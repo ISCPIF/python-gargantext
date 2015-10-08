@@ -252,7 +252,7 @@ def projects(request):
         })
 
 
-def update_nodes(request, project_id, corpus_id, view):
+def update_nodes(request, project_id, corpus_id, view=None):
     '''
     update function:
         - remove previous computations (temporary lists and coocurrences)
@@ -265,7 +265,8 @@ def update_nodes(request, project_id, corpus_id, view):
     try:
         offset = int(project_id)
         offset = int(corpus_id)
-        offset = str(view)
+        if view is not None:
+            offset = str(view)
     except ValueError:
         raise Http404()
 
@@ -307,7 +308,10 @@ def update_nodes(request, project_id, corpus_id, view):
 
 
     #return redirect(request.path.replace('update', ''))
-    return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
+    if view is None:
+        return redirect('/project/%s/corpus/%s/' % (project_id, corpus_id))
+    else:
+        return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
 #
 #    return render_to_response(
 #            request.path,
@@ -315,7 +319,6 @@ def update_nodes(request, project_id, corpus_id, view):
 #            context_instance=RequestContext(request)
 #        )
 #
-
 
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
@@ -358,7 +361,6 @@ def corpus(request, project_id, corpus_id):
 
     return HttpResponse(html)
 
-
 def newpaginatorJSON(request , corpus_id):
 
     results = ["hola" , "mundo"]
@@ -385,13 +387,18 @@ def newpaginatorJSON(request , corpus_id):
     for doc in documents:
         if "publication_date" in doc.hyperdata:
             try:
-                realdate = doc.hyperdata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = doc.hyperdata["publication_date"].replace('T',' ').split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
                 # doc.date = realdate
                 resdict = {}
                 resdict["id"] = doc.id
                 resdict["date"] = realdate
-                resdict["name"] =  doc.name
+                resdict["name"] =  ""
+                if doc.name and doc.name!="":
+                    resdict["name"] = doc.name
+                else:
+                    resdict["name"] = doc.hyperdata["doi"]
+
                 filtered_docs.append( resdict )
             except Exception as e:
                 print ("pag2 error01 detail:",e)
@@ -420,7 +427,6 @@ def empty_trash():
 
             node.delete()
 
-
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -433,8 +439,6 @@ def move_to_trash(node_id):
         return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + node_id + ":" + error)
-
-
 
 def move_to_trash_multiple(request):
     user = request.user
@@ -458,8 +462,6 @@ def move_to_trash_multiple(request):
 
     return JsonHttpResponse(results)
 
-
-
 def delete_node(request, node_id):
 
     # do we have a valid user?
@@ -481,7 +483,6 @@ def delete_node(request, node_id):
 
     if settings.DEBUG == True:
         empty_trash()
-
 
 
 def delete_corpus(request, project_id, node_id):
@@ -683,7 +684,7 @@ def send_csv(request, corpus_id):
     return response
 
 # To get the data
-from gargantext_web.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''
@@ -700,14 +701,14 @@ def node_link(request, corpus_id):
 #        data = json.load(json_data)
 #        json_data.close()
 #    else:
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
 
 def adjacency(request, corpus_id):
     '''
     Create the HttpResponse object with the adjacency dataset.
     '''
-    data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
+    data = get_cooc(request=request, corpus=corpus, type="adjacency")
     return JsonHttpResponse(data)
 
 def graph_it(request):

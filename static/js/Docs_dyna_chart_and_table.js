@@ -84,6 +84,7 @@ function Final_UpdateTable( action ) {
     var dataini = TheBuffer[0].toISOString().split("T")[0]
     var datafin = TheBuffer[1].toISOString().split("T")[0]
     pr("show me the pubs of the selected period")
+    console.log( TheBuffer )
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
     TimeRange = []
@@ -295,8 +296,7 @@ function Main_test( Data , SearchFilter ) {
   latest = t1;
 
 
-  TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2])];
-
+  TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2]+1)];
 
   var arrayd3 = []
   for(var e in Data) {

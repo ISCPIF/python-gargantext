@@ -224,21 +224,20 @@
 
             
             <ul class="datasets">
-                <button class="add" ng-click="addDataset()">Add a dataset...</button>
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
                     <hr/>
                     <div class="corpus">
-                        <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
-                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
+                        <button ng-click="removeDataset($index)" title="Remove this dataset">X</button>
+                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Documents count (normalized)': 'nodes.countnorm', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
                         in the project
                         <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
                         corpus
                         <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
-                    </div>                    
+                    </div>
                     <div class="filters" ng-if="entities">
                         <ul>
                             <li ng-repeat="filter in filters">
-                                <button ng-click="removeFilter($index)" title="remove this filter">x</button>
+                                <button ng-click="removeFilter($index)" title="Remove this filter">x</button>
                                 <span>...where the </span>
                                 <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
                                 <span ng-if="filter.entity.key != 'ngrams'">
@@ -247,7 +246,7 @@
                                     <input ng-if="filter.operator" type="text" ng-model="filter.value" ng-change="updateQuery()">
                                 </span>
                                 <span ng-if="filter.entity.key == 'ngrams'">
-                                    are in this list:
+                                    are in this list of words or expressions:
                                     <tags-input ng-model="filter.value" display-property="terms" placeholder="Add an ngram" on-tag-added="updateQuery()" on-tag-removed="updateQuery()" add-from-autocomplete-only="true">
                                         <auto-complete source="getNgrams($query)"></auto-complete>
                                     </tags-input ng-model="tags">
@@ -258,8 +257,10 @@
                     </div>
                 </li>
             </ul>
-        
             <hr/>
+            <button class="add" ng-click="addDataset()">Compare with...</button>
+            <hr/>
+        
 
             <button style="width:100%" class="refresh" ng-click="query()">Refresh results</button>
             <div class="graph">
@@ -279,13 +280,17 @@
                 <hr/>
 
                 Represent data with
-                <select ng-model="seriesOptions.type" ng-options="type for type in ['line', 'area', 'column']" ng-change="query()"></select>
-                <span ng-show="seriesOptions.type == 'area'">
-                    (<select ng-model="seriesOptions.striped" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stripes)
-                </span>
+                <select ng-model="seriesOptions.type" ng-options="type for type in ['column', 'area', 'line']" ng-change="query()"></select>
+                
+                                
                 <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
                     (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stacking)
                 </span>
+
+                <span ng-show="seriesOptions.type == 'area'">
+                    (<select ng-model="seriesOptions.striped" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stripes)
+                </span>
+
                 <br/>
 
                 <span ng-hide="seriesOptions.type == 'column'">

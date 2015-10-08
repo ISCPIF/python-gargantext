@@ -31,21 +31,21 @@ var action1 = {
   "name": "Delete",
   "color":"red"
 }
-var action2 = {
-  "id":"to_keep",
-  "name": "Keep",
-  "color":"green"
-}
+// var action2 = {
+//   "id":"to_keep",
+//   "name": "Keep",
+//   "color":"green"
+// }
 
-var action3 = {
-  "id":"to_group",
-  "name": "Group",
-  "color":"blue"
-}
+// var action3 = {
+//   "id":"to_group",
+//   "name": "Group",
+//   "color":"blue"
+// }
 
 PossibleActions.push(action1)
-PossibleActions.push(action2)
-PossibleActions.push(action3)
+// PossibleActions.push(action2)
+// PossibleActions.push(action3)
 
 var FlagsBuffer = {}
 for(var i in PossibleActions) {
@@ -408,6 +408,7 @@ $("#Save_All").click(function(){
         },
         success: function(data){
               console.log(data)
+              location.reload()
         },
         error: function(result) {
             console.log("Data not found in #Save_All");
@@ -452,6 +453,7 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
+    
 
     var div_stats = "<p>";
     for(var i in data.scores) {
@@ -652,6 +654,53 @@ function Main_test( data , initial) {
 
 
     return "OK"
+}
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+    var result = Main_test(AjaxRecords , MODE)
+    console.log( result )
+    return ;
+  }
+
+
+
+  // if( MODE == "filter_stoplist") {
+
+
+  // }
+
+  // if( MODE == "filter_miamlist") {
+
+
+  // }
+
+
+  // var getDupl_API = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
+  // $.ajax({
+  //   url: getDupl_API,
+  //   success: function(data) {
+  //     bisarray = data.data
+  //     for(var i in bisarray) {
+  //         titlebis = bisarray[i].values
+  //         BIS_dict[titlebis[0]] = true;
+  //     }
+  //     var Duplicates = []
+  //     for(var r in AjaxRecords) {
+  //       if ( BIS_dict[AjaxRecords[r].title] )
+  //         Duplicates.push( AjaxRecords[r] )
+  //     }
+  //     var result = Main_test(Duplicates , MODE)
+  //     console.log( result )
+
+  //     MyTable.data('dynatable').sorts.clear();
+  //     MyTable.data('dynatable').sorts.add('title', 1) // 1=ASCENDING,
+  //     MyTable.data('dynatable').process();
+  //   }
+  // });
 }
 
 console.log(window.location.href+"/ngrams.json")

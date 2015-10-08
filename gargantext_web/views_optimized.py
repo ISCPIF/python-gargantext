@@ -15,19 +15,19 @@ from threading import Thread
 
 from node.admin import CustomForm
 from gargantext_web.db import *
+from gargantext_web.db import get_or_create_node
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
-from gargantext_web.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse
 
 import json
 import re
 
-from parsing.corpustools import add_resource, parse_resources, extract_ngrams, compute_tfidf
-
+from parsing.corpustools import add_resource, parse_resources, extract_ngrams
+from ngram.tfidf import compute_tfidf
 
 from gargantext_web.celery import apply_workflow
 
 from admin.utils import ensure_dir
-
 
 def project(request, project_id):
 
@@ -200,11 +200,15 @@ def tfidf(request, corpus_id, ngram_ids):
     # filter input
     ngram_ids = ngram_ids.split('a')
     ngram_ids = [int(i) for i in ngram_ids]
+
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    tfidf_id = get_or_create_node(corpus=corpus, nodetype='Tfidf').id
+    print(tfidf_id)
     # request data
     nodes_query = (session
         .query(Node, func.sum(NodeNodeNgram.score))
         .join(NodeNodeNgram, NodeNodeNgram.nodey_id == Node.id)
-        .filter(NodeNodeNgram.nodex_id == corpus_id)
+        .filter(NodeNodeNgram.nodex_id == tfidf_id)
         .filter(NodeNodeNgram.ngram_id.in_(ngram_ids))
         .group_by(Node)
         .order_by(func.sum(NodeNodeNgram.score).desc())

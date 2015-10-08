@@ -15,9 +15,8 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 
 from node.models import Node
 from gargantext_web.db import *
-from ngram.lists import listIds, listNgramIds, ngramList
-from gargantext_web.api import JsonHttpResponse
-import json
+from ngram.lists import listIds, listNgramIds
+from rest_v1_0.api import JsonHttpResponse
 
 
 @login_required
@@ -40,16 +39,13 @@ class NgramList(APIView):
         """Get All for a doc id"""
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
-        lists = dict()
+        lists = {}
         for list_type in ['MiamList', 'StopList']:
-            list_id = list()
             list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
             lists["%s" % list_id[0][0]] = list_type
 
-        # ngrams of list_id of corpus_id:
+        # ngrams for the corpus_id (ignoring doc_id for the moment):
         doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
-        #doc_ngram_list = [(1, 'miam', 2, 1931), (2, 'stop', 2, 1932), (3, 'Potassium channels', 4, 1931)]
-
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [
                 {
@@ -66,41 +62,27 @@ class NgramList(APIView):
 
 class NgramEdit(APIView):
     """
-    Actions on one Ngram in one list
+    Actions on one existing Ngram in one list
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def post(self, request, list_id, ngram_id):
         """
-        Add a ngram in a list
+        Edit an existing NGram in a given list
         """
-        # TODO - if Ngram is in miam-list, and adding it to stop-list,
-        #   then remove it from the previous list
         list_id = int(list_id)
-        # format the ngram's text
-        ngram_text = request.data.get('annotation', {}).get('text', None)
-        ngram_text = ngram_text.strip().lower()
-        ngram_text = ' '.join(ngram_text.split())
-        # retrieve the ngram's id
-        ngram = session.query(Ngram).filter(Ngram.terms == ngram_text).first()
-        if ngram is None:
-            ngram = Ngram(n=len(ngram_text.split()), terms=ngram_text)
-            session.add(ngram)
-            session.commit()
-        ngram_id = ngram.id
-        # add the ngram to the list if not already done
-        node_ngram = session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).first()
-        if node_ngram is None:
-            node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
-            session.add(node_ngram)
-            session.commit()
-        ngram_occurrences = node_ngram.weight
+        ngram_id = int(ngram_id)
+        # TODO remove the node_ngram from another conflicting list
+        # FIXME session.query(Node_Ngram).filter(Node_Ngram.ngram_id==ngram_id).delete()
+        # add the ngram to the list
+        node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+        session.add(node_ngram)
+        session.commit()
+
         # return the response
         return Response({
             'uuid': ngram_id,
-            'text': ngram_text,
-            'occurrences': ngram_occurrences,
             'list_id': list_id,
         })
 
@@ -109,7 +91,54 @@ class NgramEdit(APIView):
         Delete a ngram from a list
         """
         session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).delete()
+        session.commit()
         return Response(None, 204)
+
+
+class NgramCreate(APIView):
+    """
+    Create a new Ngram in one list
+    """
+    renderer_classes = (JSONRenderer,)
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def post(self, request, list_id):
+        """
+        create NGram in a given list
+        """
+        list_id = int(list_id)
+        # format the ngram's text
+        ngram_text = request.data.get('text', None)
+        if ngram_text is None:
+            raise APIException("Could not create a new Ngram without one \
+                text key in the json body")
+
+        ngram_text = ngram_text.strip().lower()
+        ngram_text = ' '.join(ngram_text.split())
+        # check if the ngram exists with the same terms
+        ngram = session.query(Ngram).filter(Ngram.terms == ngram_text).first()
+        if ngram is None:
+            ngram = Ngram(n=len(ngram_text.split()), terms=ngram_text)
+        else:
+            # make sure the n value is correct
+            ngram.n = len(ngram_text.split())
+
+        session.add(ngram)
+        session.commit()
+        ngram_id = ngram.id
+        # create the new node_ngram relation
+        # TODO check existing Node_Ngram ?
+        node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+        session.add(node_ngram)
+        session.commit()
+
+        # return the response
+        return Response({
+            'uuid': ngram_id,
+            'text': ngram_text,
+            'list_id': list_id,
+        })
+
 
 def deleteMultiple(request, list_id):
     results = ["hola","mundo"]

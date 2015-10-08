@@ -65,3 +65,5 @@ sympy==0.7.5
 tornado==4.0.1
 uWSGI==2.0.7
 ujson==1.33
+html5lib==0.9999999
+html5tidy==1.0

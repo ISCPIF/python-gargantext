@@ -3,7 +3,8 @@ from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
 
-from gargantext_web.db import Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, NodeHyperdata, Hyperdata
+from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
+        NodeNodeNgram, NodeHyperdata, Hyperdata
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 
@@ -11,6 +12,7 @@ def cooc(corpus=None
          , field_X=None, field_Y=None
          , miam_id=None, stop_id=None, group_id=None
          , cvalue_id=None
+         , n_min=2, n_max=None
          , start=None, end=None
          , limit=1000):
     '''
@@ -57,8 +59,30 @@ def cooc(corpus=None
              .join(NodeNgramY, NodeNgramY.node_id == Node.id)
              .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
                 )
+    
+# Size of the ngrams between n_min and n_max
+    if n_min is not None or n_max is not None:
+        NgramX = aliased(Ngram)
+        NgramY = aliased(Ngram)
 
+        cooc_query = (cooc_query
+             .join(NgramX, NgramX.id == NodeNgramX.ngram_id)
+             .join(NgramY, NgramY.id == NodeNgramY.ngram_id)
+            )
 
+    if n_min is not None:
+        cooc_query = (cooc_query
+             .filter(NgramX.n >= n_min)
+             .filter(NgramY.n >= n_min)
+            )
+
+    if n_max is not None:
+        cooc_query = (cooc_query
+             .filter(NgramX.n >= n_min)
+             .filter(NgramY.n >= n_min)
+            )
+
+# Cooc between the dates start and end
     if start is not None:
         Start=aliased(NodeHyperdata)
         StartFormat = aliased(Hyperdata)
@@ -79,11 +103,12 @@ def cooc(corpus=None
                       )
 
 
+# Cooc is symetric, take only the main cooccurrences and cut at the limit
     cooc_query = (cooc_query.filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
 
-             .group_by(Node.id, NodeNgramX.ngram_id, NodeNgramY.ngram_id)
-             .order_by(func.count())
+             .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
+             .order_by(desc(func.count()))
 
              .limit(limit)
              )
@@ -91,6 +116,7 @@ def cooc(corpus=None
     matrix = WeightedMatrix(cooc_query)
     #print(matrix)
 
+# Select according some scores
     if cvalue_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
         cvalue_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)

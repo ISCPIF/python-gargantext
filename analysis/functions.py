@@ -34,7 +34,6 @@ def create_blacklist(user, corpus):
 def create_synonymes(user, corpus):
     pass
 
-
 size = 1000
 
 def create_whitelist(user, corpus_id, size=size, count_min=2, miam_id=None):
@@ -170,7 +169,9 @@ def create_cooc(user=None, corpus_id=None, whitelist=None, size=size, year_start
     return cooc.id
 
 def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=size):
-
+    '''
+    get_ccoc : to compute the graph.
+    '''
     matrix = defaultdict(lambda : defaultdict(float))
     ids    = dict()
     labels = dict()
@@ -185,16 +186,15 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     
     # data deleted each time
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
-    #cooc_id = cooc(corpus=corpus, miam_id=miam_id, stop_id=stop_id, limit=size)
     cooc_id = cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
-    #cooc_id = cooc(corpus=corpus, miam_id=miam_id, limit=size)
 
     #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
     for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
         #print(cooccurrence)
         # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-        labels[cooccurrence.ngramx_id] = session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
-        labels[cooccurrence.ngramy_id] = session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
+        # TODO clean this part, unuseful
+        labels[cooccurrence.ngramx_id] = cooccurrence.ngramx_id #session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
+        labels[cooccurrence.ngramy_id] = cooccurrence.ngramy_id #session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
 
         matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
         matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
@@ -204,7 +204,6 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
 
         weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
         weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
-
 
     x = pd.DataFrame(matrix).fillna(0)
     y = pd.DataFrame(matrix).fillna(0)
@@ -280,7 +279,6 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
                 #node,type(labels[node])
                 G.node[node]['pk'] = ids[node]
                 G.node[node]['label']   = session.query(Ngram.terms).filter(Ngram.id==node).first()
-                # G.node[node]['pk']      = ids[str(node)]
                 G.node[node]['size']    = weight[ids[node]]
                 G.node[node]['group']   = partition[node]
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)

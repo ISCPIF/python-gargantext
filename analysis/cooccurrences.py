@@ -53,11 +53,11 @@ def cooc(corpus=None
 
     NodeNgramX = aliased(NodeNgram)
     NodeNgramY = aliased(NodeNgram)
+    cooc_score = func.sqrt(func.sum(NodeNgramX.weight) * func.sum(NodeNgramY.weight)).label('cooc_score')
 
     doc_id = cache.NodeType['Document'].id
 
-    cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, 
-                    func.sqrt(func.sum(NodeNgramX.weight) * func.sum(NodeNgramY.weight)))
+    cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
              .join(Node, Node.id == NodeNgramX.node_id)
              .join(NodeNgramY, NodeNgramY.node_id == Node.id)
              .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
@@ -109,11 +109,12 @@ def cooc(corpus=None
 # Cooc is symetric, take only the main cooccurrences and cut at the limit
     cooc_query = (cooc_query
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
-
+             .having(cooc_score > 1)
+             
              .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
-             .order_by(desc(func.count()))
+             .order_by(desc('cooc_score'))
 
-             #.limit(limit)
+             #.limit(50)
              )
 
     matrix = WeightedMatrix(cooc_query)

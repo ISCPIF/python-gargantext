@@ -430,7 +430,7 @@ def move_to_trash(node_id):
         
         if DEBUG is False :
             # TODO for the future maybe add id of node
-            empty_trash.apply_async("corpus_id")
+            empty_trash.apply_async([1,])
         else:
             empty_trash("corpus_id")
 

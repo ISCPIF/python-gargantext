@@ -7,6 +7,7 @@ from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
         NodeNodeNgram, NodeHyperdata, Hyperdata
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
+import inspect
 
 # keep list
 
@@ -37,17 +38,17 @@ def cooc(corpus=None
                                    , name_str="Cooccurrences corpus " + str(corpus.id) + "list_id: " + str(miam_id)
                                    )
 
-# TODO : save parameters in Node
-#    args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
-#    print(parameters)
-#    for parameter in parameters.keys():
-#        print(parameters[parameter])
-#        node_cooc.hyperdata[parameter] = parameters[parameter]
-#
-#    session.add(node_cooc)
-#    session.commit()
-#    print(node_cooc.hyperdata)
+    args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
 
+    hyperdata = dict()
+    for parameter in parameters.keys():
+        if parameter != 'corpus' and parameter != 'node_cooc':
+            hyperdata[parameter] = parameters[parameter]
+            
+    node_cooc.hyperdata = hyperdata
+    session.add(node_cooc)
+    session.commit()
+    
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
     session.commit()
 

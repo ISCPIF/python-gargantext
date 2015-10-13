@@ -29,6 +29,7 @@ import json
 # SOME FUNCTIONS
 
 from gargantext_web import settings
+from gargantext_web.settings import DEBUG
 
 from django.http import *
 from django.shortcuts import render_to_response,redirect
@@ -43,8 +44,9 @@ from gargantext_web.db import *
 from sqlalchemy import or_, func
 
 from gargantext_web import about
+from gargantext_web.celery import empty_trash
 
-from gargantext_web.db import NodeNgram, NodeNgramNgram
+from gargantext_web.db import cache, NodeNgram, NodeNgramNgram
 
 def login_user(request):
     logout(request)
@@ -416,17 +418,6 @@ def newpaginatorJSON(request , corpus_id):
     return JsonHttpResponse(finaldict)
 
 
-def empty_trash():
-    nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()
-    with transaction.atomic():
-        for node in nodes:
-            try:
-                node.children.delete()
-            except Exception as error:
-                print(error)
-
-            node.delete()
-
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -436,9 +427,16 @@ def move_to_trash(node_id):
 
         session.add(node)
         session.commit()
+        
+        if DEBUG is False :
+            # TODO for the future maybe add id of node
+            empty_trash.apply_async("corpus_id")
+        else:
+            empty_trash("corpus_id")
+
         return(previous_type_id)
     except Exception as error:
-        print("can not move to trash Node" + node_id + ":" + error)
+        print("can not move to trash Node" + str(node_id) + ":" + str(error))
 
 def move_to_trash_multiple(request):
     user = request.user
@@ -521,6 +519,24 @@ def chart(request, project_id, corpus_id):
     }))
     return HttpResponse(html)
 
+def sankey(request, corpus_id):
+    t = get_template('sankey.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    corpus =  session.query(Node).filter(Node.id==corpus_id).first()
+
+    html = t.render(Context({\
+            'debug': settings.DEBUG,
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            }))
+
+    return HttpResponse(html)
+
+
+
 def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
@@ -539,7 +555,7 @@ def matrix(request, project_id, corpus_id):
 
     return HttpResponse(html)
 
-def graph(request, project_id, corpus_id):
+def graph(request, project_id, corpus_id, generic=100, specific=100):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -568,6 +584,8 @@ def graph(request, project_id, corpus_id):
 
     # import pprint
     # pprint.pprint(results)
+
+#    if specific != None and generic != None :
 
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
     html = t.render(Context({\
@@ -684,7 +702,7 @@ def send_csv(request, corpus_id):
     return response
 
 # To get the data
-from rest_v1_0.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse,CsvHttpResponse
 from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''
@@ -692,17 +710,21 @@ def node_link(request, corpus_id):
     '''
 
     data = []
-
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
-#    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
-#    print("file exists?:",os.path.isfile(filename))
-#    if os.path.isfile(filename):
-#        json_data = open(filename,"r")
-#        data = json.load(json_data)
-#        json_data.close()
-#    else:
     data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
+
+
+def sankey_csv(request, corpus_id):
+    data = []
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    data = [
+            ["source", "target", "value"]
+            , ["Elvis_1", "Elvis_2", 1]
+            , ["Elvis_2", "Elvis_3", 2]
+            , ["Barry", "Elvis_3", 2]
+            ]
+    return(CsvHttpResponse(data))
 
 def adjacency(request, corpus_id):
     '''

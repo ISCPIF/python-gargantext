@@ -27,7 +27,7 @@ def cooc(corpus=None
     stop_id :: Int
     group_id :: Int
 
-    For the moment, start and ens are simple, only year is implemented yet
+    For the moment, start and end are simple, only year is implemented yet
     start :: TimeStamp -- example: '2010-05-30 02:00:00+02'
     end   :: TimeStamp
     limit :: Int
@@ -109,7 +109,8 @@ def cooc(corpus=None
 # Cooc is symetric, take only the main cooccurrences and cut at the limit
     cooc_query = (cooc_query
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
-             .having(cooc_score > 1)
+             .having(cooc_score > 2)
+             #.having(cooc_score > 1)
              
              .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
              .order_by(desc('cooc_score'))

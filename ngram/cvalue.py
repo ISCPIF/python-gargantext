@@ -36,7 +36,7 @@ ngrams =   {'adenoic cystic basal cell carcinoma' : 5
             }
 '''
 
-def getNgrams(corpus=None, limit=160):
+def getNgrams(corpus=None, limit=1000):
     '''
     getNgrams :: Corpus -> [(Int, String, String, Float)]
     '''
@@ -63,7 +63,7 @@ def getNgrams(corpus=None, limit=160):
             PrintException()
     return(terms)
 
-def compute_cvalue(corpus=None, limit=160):
+def compute_cvalue(corpus=None, limit=1000):
     '''
     computeCvalue :: Corpus
     frequency :: String -> Int -> Int

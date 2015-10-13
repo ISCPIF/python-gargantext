@@ -434,7 +434,7 @@ def move_to_trash(node_id):
         else:
             empty_trash("corpus_id")
 
-        return(previous_type_id)
+        #return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + str(node_id) + ":" + str(error))
 
@@ -471,16 +471,14 @@ def delete_node(request, node_id):
     if node.user_id != user.id:
         return HttpResponseForbidden()
 
-    previous_type_id = move_to_trash(node_id)
+    previous_type_id = node.type_id
+    node_parent_id   = node.parent_id
+    move_to_trash(node_id)
 
     if previous_type_id == cache.NodeType['Corpus'].id:
-        return HttpResponseRedirect('/project/' + str(node.parent_id))
+        return HttpResponseRedirect('/project/' + str(node_parent_id))
     else:
         return HttpResponseRedirect('/projects/')
-
-
-    if settings.DEBUG == True:
-        empty_trash()
 
 
 def delete_corpus(request, project_id, node_id):

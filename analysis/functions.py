@@ -21,7 +21,8 @@ import networkx as nx
 from networkx.readwrite import json_graph
 from rest_v1_0.api import JsonHttpResponse
 
-from analysis.louvain import best_partition
+from analysis.louvain import best_partition, generate_dendogram, partition_at_level
+
 from ngram.lists import listIds
 
 
@@ -229,10 +230,10 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     #print(n)
     #print(m)
 
-    nodes_included = 200 #int(round(size/20,0))
+    nodes_included = 300 #int(round(size/20,0))
     #nodes_excluded = int(round(size/10,0))
 
-    nodes_specific = 200 #int(round(size/10,0))
+    nodes_specific = 300 #int(round(size/10,0))
     #nodes_generic = int(round(size/10,0))
 
     # TODO user the included score for the node size
@@ -263,11 +264,11 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
         #edges_to_remove = [ e for e in G.edges_iter() if
 
         degree = G.degree()
-        nodes_to_remove = [n for n in degree if degree[n] ==0]
+        nodes_to_remove = [n for n in degree if degree[n] <= 1]
         G.remove_nodes_from(nodes_to_remove)
         uG = G.to_undirected()
         partition = best_partition(uG)
-
+        print(partition)
         print("Density of the graph:", nx.density(G))
     except:
         print("-" * 30)
@@ -315,7 +316,8 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
             except Exception as error:
                 print("error02: ",error)
         data = json_graph.node_link_data(G)
-
+    elif type == 'bestpartition':
+        return(partition)
 
     #    data = json_graph.node_link_data(G, attrs={\
     #            'source':'source',\
@@ -325,5 +327,5 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     #            #'color':'color',\
     #            'id':'id',})
     #print(data)
-    return data
+    return(data)
 

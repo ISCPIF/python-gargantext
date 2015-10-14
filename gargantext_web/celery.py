@@ -50,7 +50,6 @@ def apply_workflow(corpus_id):
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_processing(corpus, 0)
 
-#@transaction.commit_manually
 @shared_task
 def empty_trash(corpus_id):
     nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()

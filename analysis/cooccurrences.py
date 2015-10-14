@@ -7,6 +7,7 @@ from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
         NodeNodeNgram, NodeHyperdata, Hyperdata
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
+import inspect
 
 # keep list
 
@@ -27,7 +28,7 @@ def cooc(corpus=None
     stop_id :: Int
     group_id :: Int
 
-    For the moment, start and ens are simple, only year is implemented yet
+    For the moment, start and end are simple, only year is implemented yet
     start :: TimeStamp -- example: '2010-05-30 02:00:00+02'
     end   :: TimeStamp
     limit :: Int
@@ -37,17 +38,17 @@ def cooc(corpus=None
                                    , name_str="Cooccurrences corpus " + str(corpus.id) + "list_id: " + str(miam_id)
                                    )
 
-# TODO : save parameters in Node
-#    args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
-#    print(parameters)
-#    for parameter in parameters.keys():
-#        print(parameters[parameter])
-#        node_cooc.hyperdata[parameter] = parameters[parameter]
-#
-#    session.add(node_cooc)
-#    session.commit()
-#    print(node_cooc.hyperdata)
+    args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
 
+    hyperdata = dict()
+    for parameter in parameters.keys():
+        if parameter != 'corpus' and parameter != 'node_cooc':
+            hyperdata[parameter] = parameters[parameter]
+            
+    node_cooc.hyperdata = hyperdata
+    session.add(node_cooc)
+    session.commit()
+    
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
     session.commit()
 
@@ -109,7 +110,8 @@ def cooc(corpus=None
 # Cooc is symetric, take only the main cooccurrences and cut at the limit
     cooc_query = (cooc_query
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
-             .having(cooc_score > 1)
+             .having(cooc_score > 2)
+             #.having(cooc_score > 1)
              
              .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
              .order_by(desc('cooc_score'))

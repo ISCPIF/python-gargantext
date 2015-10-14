@@ -24,9 +24,10 @@ import array
 def partition_at_level(dendogram, level) :
     """Return the partition of the nodes at the given level
 
-    A dendogram is a tree and each level is a partition of the graph nodes.
-    Level 0 is the first partition, which contains the smallest communities, and the best is len(dendogram) - 1.
-    The higher the level is, the bigger are the communities
+    A dendogram is a tree and each level is a partition of the graph
+    nodes. Level 0 is the first partition, which contains the smallest
+    communities, and the best is len(dendogram) - 1. The higher the
+    level is, the bigger are the communities
 
     Parameters
     ----------
@@ -47,20 +48,22 @@ def partition_at_level(dendogram, level) :
 
     See Also
     --------
-    best_partition which directly combines partition_at_level and generate_dendogram to obtain the partition of highest modularity
+
+    best_partition which directly combines partition_at_level and
+    generate_dendogram to obtain the partition of highest modularity
 
     Examples
     --------
     >>> G=nx.erdos_renyi_graph(100, 0.01)
     >>> dendo = generate_dendogram(G)
     >>> for level in range(len(dendo) - 1) :
-    >>>     print "partition at level", level, "is", partition_at_level(dendo, level)
+    >>>     print("partition at level", level, "is", partition_at_level(dendo, level))
     """
     partition = dendogram[0].copy()
     for index in range(1, level + 1) :
         for node, community in tuple(partition.items()) :
             partition[node] = dendogram[index][community]
-    return partition
+    return(partition)
 
 
 def modularity(partition, graph) :
@@ -191,7 +194,10 @@ def best_partition(graph, partition = None) :
 def generate_dendogram(graph, part_init = None) :
     """Find communities in the graph and return the associated dendogram
 
-    A dendogram is a tree and each level is a partition of the graph nodes.  Level 0 is the first partition, which contains the smallest communities, and the best is len(dendogram) - 1. The higher the level is, the bigger are the communities
+        A dendogram is a tree and each level is a partition of the graph
+    nodes. Level 0 is the first partition, which contains the smallest
+    communities, and the best is len(dendogram) - 1. The higher the level
+    is, the bigger are the communities
 
 
     Parameters
@@ -199,13 +205,17 @@ def generate_dendogram(graph, part_init = None) :
     graph : networkx.Graph
         the networkx graph which will be decomposed
     part_init : dict, optionnal
-        the algorithm will start using this partition of the nodes. It's a dictionary where keys are their nodes and values the communities
+
+    the algorithm will start using this partition of the nodes. It's a
+    dictionary where keys are their nodes and values the communities
 
     Returns
     -------
     dendogram : list of dictionaries
-        a list of partitions, ie dictionnaries where keys of the i+1 are the values of the i. and where keys of the first are the nodes of graph
-    
+
+    a list of partitions, ie dictionnaries where keys of the i+1 are the
+    values of the i. and where keys of the first are the nodes of graph
+
     Raises
     ------
     TypeError
@@ -270,7 +280,8 @@ def generate_dendogram(graph, part_init = None) :
 def induced_graph(partition, graph) :
     """Produce the graph where nodes are the communities
 
-    there is a link of weight w between communities if the sum of the weights of the links between their elements is w
+        there is a link of weight w between communities if the sum of the
+    weights of the links between their elements is w
 
     Parameters
     ----------
@@ -383,11 +394,11 @@ def __one_level(graph, status) :
                 incr =  dnc  - status.degrees.get(com, 0.) * degc_totw
                 if incr > best_increase :
                     best_increase = incr
-                    best_com = com                    
+                    best_com = com
             __insert(node, best_com,
                     neigh_communities.get(best_com, 0.), status)
             if best_com != com_node :
-                modif = True                
+                modif = True
         new_mod = __modularity(status)
         if new_mod - cur_mod < __MIN :
             break

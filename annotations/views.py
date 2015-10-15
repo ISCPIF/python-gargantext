@@ -82,7 +82,7 @@ class NgramEdit(APIView):
         return Response({
             'uuid': ngram_id,
             'list_id': list_id,
-        for ngram_id in ngram_ids})
+            } for ngram_id in ngram_ids)
 
     def delete(self, request, list_id, ngram_ids):
         """

@@ -72,7 +72,7 @@ class NgramEdit(APIView):
         # TODO remove the node_ngram from another conflicting list
         # FIXME session.query(Node_Ngram).filter(Node_Ngram.ngram_id==ngram_id).delete()
         # add the ngram to the list
-        for ngram_id in ngram_ids:
+        for ngram_id in ngram_ids.split('+'):
             ngram_id = int(ngram_id)
             node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
             session.add(node_ngram)
@@ -89,7 +89,8 @@ class NgramEdit(APIView):
         """
         Delete a ngram from a list
         """
-        for ngram_id in ngram_ids:
+        for ngram_id in ngram_ids.split('+'):
+            ngram_id = int(ngram_id)
             (session.query(Node_Ngram)
                     .filter(Node_Ngram.node_id==list_id)
                     .filter(Node_Ngram.ngram_id==ngram_id).delete()

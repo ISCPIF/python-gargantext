@@ -15,7 +15,6 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from node.models import Node
 from gargantext_web.db import *
 from ngram.lists import listIds, listNgramIds
-from rest_v1_0.api import JsonHttpResponse
 
 
 @login_required
@@ -142,30 +141,6 @@ class NgramCreate(APIView):
             'list_id': list_id,
         })
 
-def deleteMultiple(request, list_id):
-    results = ["hola","mundo"]
-
-    user = request.user
-    if not user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-
-    if request.POST:
-        todel_ids = json.loads(request.POST['to_delete'])
-        for ngram_id in todel_ids:
-            
-            # add the ngram to the list if not already done
-            node_ngram = (session.query(Node_Ngram)
-                                 .filter(Node_Ngram.node_id==list_id)
-                                 .filter(Node_Ngram.ngram_id==ngram_id)
-                                 .first()
-                         )
-            
-            if node_ngram is None:
-                node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
-                session.add(node_ngram)
-                session.commit()
-
-    return JsonHttpResponse(results)
 
 class Document(APIView):
     """

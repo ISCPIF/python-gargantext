@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from node.models import Node
-from gargantext_web.db import *
+from gargantext_web.db import session, cache, Node, NodeNgram
 from ngram.lists import listIds, listNgramIds
 
 
@@ -68,12 +68,17 @@ class NgramEdit(APIView):
         Edit an existing NGram in a given list
         """
         list_id = int(list_id)
+        list_node = session.query(Node).filter(Node.id==list_id).first()
+        # TODO add 1 for MapList social score ?
+        if list_node.type_id == cache.NodeType['MiamList']:
+            weight=1.0
+        elif list_node.type_id == cache.NodeType['StopList']:
+            weight=-1.0
+        
         # TODO remove the node_ngram from another conflicting list
-        # FIXME session.query(Node_Ngram).filter(Node_Ngram.ngram_id==ngram_id).delete()
-        # add the ngram to the list
         for ngram_id in ngram_ids.split('+'):
             ngram_id = int(ngram_id)
-            node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+            node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=weight)
             session.add(node_ngram)
         
         session.commit()
@@ -90,9 +95,9 @@ class NgramEdit(APIView):
         """
         for ngram_id in ngram_ids.split('+'):
             ngram_id = int(ngram_id)
-            (session.query(Node_Ngram)
-                    .filter(Node_Ngram.node_id==list_id)
-                    .filter(Node_Ngram.ngram_id==ngram_id).delete()
+            (session.query(NodeNgram)
+                    .filter(NodeNgram.node_id==list_id)
+                    .filter(NodeNgram.ngram_id==ngram_id).delete()
                     )
         session.commit()
         return Response(None, 204)
@@ -130,7 +135,7 @@ class NgramCreate(APIView):
         ngram_id = ngram.id
         # create the new node_ngram relation
         # TODO check existing Node_Ngram ?
-        node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+        node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
         session.add(node_ngram)
         session.commit()
 

@@ -11,7 +11,7 @@ import scipy
 
 from gargantext_web.db import get_or_create_node
 
-from analysis.cooccurrences import cooc
+from analysis.cooccurrences import do_cooc
 
 import pandas as pd
 from copy import copy
@@ -28,7 +28,6 @@ from ngram.lists import listIds
 
 def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
-
 
 size = 1000
 
@@ -51,24 +50,21 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     
     # data deleted each time
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
-    cooc_id = cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
+    cooc_id = do_cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
 
     #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
-    for cooccurrence in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
-        #print(cooccurrence)
-        # print(cooccurrence.ngramx.terms," <=> ",cooccurrence.ngramy.terms,"\t",cooccurrence.score)
-        # TODO clean this part, unuseful
-        labels[cooccurrence.ngramx_id] = cooccurrence.ngramx_id #session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramx_id).first()[0]
-        labels[cooccurrence.ngramy_id] = cooccurrence.ngramy_id #session.query(Ngram.id).filter(Ngram.id == cooccurrence.ngramy_id).first()[0]
+    for cooc in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
+        labels[cooc.ngramx_id] = cooc.ngramx_id
+        labels[cooc.ngramy_id] = cooc.ngramy_id
 
-        matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
-        matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
+        matrix[cooc.ngramx_id][cooc.ngramy_id] = cooc.score
+        matrix[cooc.ngramy_id][cooc.ngramx_id] = cooc.score
 
-        ids[labels[cooccurrence.ngramx_id]] = cooccurrence.ngramx_id
-        ids[labels[cooccurrence.ngramy_id]] = cooccurrence.ngramy_id
+        ids[labels[cooc.ngramx_id]] = cooc.ngramx_id
+        ids[labels[cooc.ngramy_id]] = cooc.ngramy_id
 
-        weight[cooccurrence.ngramx_id] = weight.get(cooccurrence.ngramx_id, 0) + cooccurrence.score
-        weight[cooccurrence.ngramy_id] = weight.get(cooccurrence.ngramy_id, 0) + cooccurrence.score
+        weight[cooc.ngramx_id] = weight.get(cooc.ngramx_id, 0) + cooc.score
+        weight[cooc.ngramy_id] = weight.get(cooc.ngramy_id, 0) + cooc.score
 
     x = pd.DataFrame(matrix).fillna(0)
     y = pd.DataFrame(matrix).fillna(0)

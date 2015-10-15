@@ -9,7 +9,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-from analysis.cooccurrences import cooc
+from analysis.cooccurrences import do_cooc
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from gargantext_web.db import NodeNgramNgram, NodeNodeNgram
 
@@ -65,7 +65,7 @@ def compute_specificity(corpus,limit=100):
     dbg = DebugTime('Corpus #%d - specificity' % corpus.id)
 
     list_cvalue = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-    cooc_id = cooc(corpus=corpus, cvalue_id=list_cvalue.id,limit=limit)
+    cooc_id = do_cooc(corpus=corpus, cvalue_id=list_cvalue.id,limit=limit)
 
     specificity(cooc_id=cooc_id,corpus=corpus,limit=limit)
     dbg.show('specificity')

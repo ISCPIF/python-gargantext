@@ -11,7 +11,7 @@ import inspect
 
 # keep list
 
-def cooc(corpus=None
+def do_cooc(corpus=None
          , field_X=None, field_Y=None
          , miam_id=None, stop_id=None, group_id=None
          , cvalue_id=None
@@ -110,7 +110,7 @@ def cooc(corpus=None
 # Cooc is symetric, take only the main cooccurrences and cut at the limit
     cooc_query = (cooc_query
              .filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
-             .having(cooc_score > 2)
+             .having(cooc_score > 4)
              #.having(cooc_score > 1)
              
              .group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
@@ -130,11 +130,9 @@ def cooc(corpus=None
                                    )
 
     if miam_id is not None :
-        #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
         miam_list = UnweightedList(miam_id)
 
     if stop_id is not None :
-        #stop = get_or_create_node(nodetype='StopList', corpus=corpus)
         stop_list = UnweightedList(stop_id)
 
     if group_id is not None :
@@ -145,7 +143,9 @@ def cooc(corpus=None
     elif miam_id is not None and stop_id is not None and group_id is None :
         cooc = matrix & (miam_list - stop_list)
     elif miam_id is not None and stop_id is not None and group_id is not None :
-        cooc = matrix & (miam_list * group_list - stop_list)
+        print("miam_id is not None and stop_id is not None and group_id is not None") 
+        #cooc = matrix & (miam_list * group_list - stop_list)
+        cooc = matrix & (miam_list - stop_list)
     elif miam_id is not None and stop_id is None and group_id is not None :
         cooc = matrix & (miam_list * group_list)
     else :

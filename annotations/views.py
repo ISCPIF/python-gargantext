@@ -12,7 +12,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-
 from node.models import Node
 from gargantext_web.db import *
 from ngram.lists import listIds, listNgramIds
@@ -29,7 +28,6 @@ def main(request, project_id, corpus_id, document_id):
         'api_url': urljoin(request.get_host(), '/annotations/'),
         'nodes_api_url': urljoin(request.get_host(), '/api/'),
     }, context_instance=RequestContext(request))
-
 
 class NgramList(APIView):
     """Read and Write Annotations"""
@@ -59,7 +57,6 @@ class NgramList(APIView):
         }}
         return Response(data)
 
-
 class NgramEdit(APIView):
     """
     Actions on one existing Ngram in one list
@@ -67,33 +64,38 @@ class NgramEdit(APIView):
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
-    def post(self, request, list_id, ngram_id):
+    def post(self, request, list_id, ngram_ids):
         """
         Edit an existing NGram in a given list
         """
         list_id = int(list_id)
-        ngram_id = int(ngram_id)
         # TODO remove the node_ngram from another conflicting list
         # FIXME session.query(Node_Ngram).filter(Node_Ngram.ngram_id==ngram_id).delete()
         # add the ngram to the list
-        node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
-        session.add(node_ngram)
+        for ngram_id in ngram_ids:
+            ngram_id = int(ngram_id)
+            node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
+            session.add(node_ngram)
+        
         session.commit()
 
         # return the response
         return Response({
             'uuid': ngram_id,
             'list_id': list_id,
-        })
+        for ngram_id in ngram_ids})
 
-    def delete(self, request, list_id, ngram_id):
+    def delete(self, request, list_id, ngram_ids):
         """
         Delete a ngram from a list
         """
-        session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).delete()
+        for ngram_id in ngram_ids:
+            (session.query(Node_Ngram)
+                    .filter(Node_Ngram.node_id==list_id)
+                    .filter(Node_Ngram.ngram_id==ngram_id).delete()
+                    )
         session.commit()
         return Response(None, 204)
-
 
 class NgramCreate(APIView):
     """
@@ -139,7 +141,6 @@ class NgramCreate(APIView):
             'list_id': list_id,
         })
 
-
 def deleteMultiple(request, list_id):
     results = ["hola","mundo"]
 
@@ -150,16 +151,20 @@ def deleteMultiple(request, list_id):
     if request.POST:
         todel_ids = json.loads(request.POST['to_delete'])
         for ngram_id in todel_ids:
+            
             # add the ngram to the list if not already done
-            node_ngram = session.query(Node_Ngram).filter(Node_Ngram.node_id==list_id).filter(Node_Ngram.ngram_id==ngram_id).first()
+            node_ngram = (session.query(Node_Ngram)
+                                 .filter(Node_Ngram.node_id==list_id)
+                                 .filter(Node_Ngram.ngram_id==ngram_id)
+                                 .first()
+                         )
+            
             if node_ngram is None:
                 node_ngram = Node_Ngram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
                 session.add(node_ngram)
                 session.commit()
 
     return JsonHttpResponse(results)
-
-
 
 class Document(APIView):
     """

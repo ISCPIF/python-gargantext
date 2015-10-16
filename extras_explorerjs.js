@@ -373,7 +373,6 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
             success : function(data){ 
                 pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 var arraydata = $.parseJSON(data)
-                console.log(arraydata)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
                 for(var i in arraydata) {
                     var pub = arraydata[i]
@@ -411,7 +410,8 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                 $("#"+thediv).html(output);
                 $("#"+thediv).show();
 
-                $('#tab-container-top').easytabs({updateHash:false});
+                // $('#tab-container-top').easytabs({updateHash:false});
+
                 
             },
             error: function(){ 
@@ -462,7 +462,6 @@ function getTopPapers(type){
                 for(var i in data) {
                     var pub = data[i]
                     if(pub["title"]) {
-                        console.log(pub)
                         var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
 
                         var url_elems = window.location.href.split("/")
@@ -505,7 +504,8 @@ function getTopPapers(type){
                 }
                 output += "</ul>"
                 $("#topPapers").html(output);
-                $("#topPapers").show();
+                $("#tab-container-top").show();
+                // $('#tab-container-top').easytabs({updateHash:false});
             },
             error: function(){ 
                 pr('Page Not found: getTopPapers()');
@@ -524,6 +524,7 @@ function getTopPapers(type){
 
 // Just for Garg
 function printCorpuses() {
+    console.clear()
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     var corpuses = $('input[name=optradio]:checked');
     var count = 3

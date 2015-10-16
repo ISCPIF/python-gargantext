@@ -36,7 +36,7 @@ $.fn.visibleHeight = function() {
 function sigmaLimits( sigmacanvas ) {    
     pw=$( sigmacanvas ).width();
     ph=$( sigmacanvas ).height();
-    $("body").css("padding-top",0)
+    // $("body").css("padding-top",0)
     // var footer = ( $("footer").length>0) ? ($('#leftcolumn').position().top -$("footer").height()) : $('#leftcolumn').position().top*2;
     var ancho_total = $( window ).width() - $('#leftcolumn').width() ;
     var alto_total = $('#leftcolumn').visibleHeight() ;
@@ -518,8 +518,6 @@ TinaWebJS = function ( sigmacanvas ) {
 
         $("#closeloader").click();
 
-        var body=document.getElementsByTagName('body')[0];
-        body.style.paddingTop="41px";
 
         $('.etabs').click(function(){
             $.doTimeout(500,function () {

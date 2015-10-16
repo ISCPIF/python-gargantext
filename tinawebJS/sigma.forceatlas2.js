@@ -2,6 +2,7 @@
 // (requires sigma.js to be loaded)
 
 var minx=1000.0, maxx=0.0, miny=1000.0, maxy=0.0;
+var first_time=true;
 
 sigma.forceatlas2 = sigma.forceatlas2 || {};
 sigma.forceatlas2.ForceAtlas2 = function(graph , V , E) {
@@ -38,7 +39,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph , V , E) {
     jitterTolerance: 1,
     barnesHutOptimize: false,
     barnesHutTheta: 1.2,
-    speed: 1,
+    speed: 20,
     outboundAttCompensation: 1,
     totalSwinging: 0,
     swingVSnode1: 0,
@@ -1111,20 +1112,9 @@ sigma.publicPrototype.startForceAtlas2 = function() {
   //if(!this.forceatlas2) {
   if(fa2enabled) {
 
-    pr("\t\t\t\t\tFA2 started")
-    pr("nodes.length:")
-    pr(this._core.graph.nodes.length)
-    pr("edges.length:")
-    pr(this._core.graph.edges.length)
-
     var V = 10;
     var E = 100;
 
-    // for(var c in clusters) {
-    //   cid = ""+clusters[c]
-    //   if(isUndef(getn("c"+cid)))
-    //     partialGraph.dropNode("c"+cid)
-    // }
     this.forceatlas2 = new sigma.forceatlas2.ForceAtlas2(this._core.graph , V, E);
     this.forceatlas2.setAutoSettings();
     this.forceatlas2.init();
@@ -1149,9 +1139,10 @@ sigma.publicPrototype.startForceAtlas2 = function() {
       return true;
     });
 
+    var present = partialGraph.states.slice(-1)[0]
     // fixing anomaly in forceatlas2
     $.doTimeout(250,function (){
-      if( !swMacro && partialGraph.forceatlas2.active && partialGraph.forceatlas2.count==0) {
+      if( !present.level && partialGraph.forceatlas2.active && partialGraph.forceatlas2.count==0) {
         pr("SUPER JUTSU!!")
         partialGraph.startForceAtlas2();
         return;
@@ -1162,73 +1153,48 @@ sigma.publicPrototype.startForceAtlas2 = function() {
 };
 
 sigma.publicPrototype.stopForceAtlas2 = function() {
-
-  pr("\t\t\t\t\tFA2 Stopped")
-  this.removeGenerator('forceatlas2');
+  var present = partialGraph.states.slice(-1)[0]
   if(this.forceatlas2) {
-    this.forceatlas2.active=false;
-    this.forceatlas2.count=0;
-    if(swMacro) {
-      for(var n in partialGraph._core.graph.nodesIndex) {
-        var x = partialGraph._core.graph.nodesIndex[n].x;
-        var y = partialGraph._core.graph.nodesIndex[n].y;
-        Nodes[n].x = x;
-        Nodes[n].y = y;
+    if(this.forceatlas2.count) {
+      pr("\t\t\t\t\tFA2 Stopped: "+this.forceatlas2.count)
+      if(present.level && this.forceatlas2.count>2) {
+        // not-save-positions if an edge-filter is ON
+        first_state = present.type;
+        for(var i in first_state) {
+          if(first_state[i]) {
+            for(var j in Filters[i]) {
+              original = lastFilter[j]["orig"]
+              thelast = lastFilter[j]["last"]
+              if(thelast!="-") {
+                if(original==thelast) {
+                  for(var i in partialGraph._core.graph.nodesIndex){
+                    Nodes[i].x = partialGraph._core.graph.nodesIndex[i].x;
+                    Nodes[i].y = partialGraph._core.graph.nodesIndex[i].y;
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
+    this.forceatlas2.active=false;
+    this.forceatlas2.count=0;
   }
-
-
+  this.removeGenerator('forceatlas2');
   updateMap();
   partialGraph.refresh();
   if(minimap) $("#overviewzone").show();
 
+  if(first_time) {
+    $.doTimeout(100,function (){
+      pr("\t\t\t\t\tFirst time FA2 Stopped")
+      for(var i in partialGraph._core.graph.nodesIndex){
+        Nodes[i].x = partialGraph._core.graph.nodesIndex[i].x;
+        Nodes[i].y = partialGraph._core.graph.nodesIndex[i].y;
+      }
+    });
+    first_time=false;
+  }
 
-  // $.doTimeout(1000,function (){
-  //   for(var c in clusters) {
-  //     cid = ""+clusters[c]
-  //     neighs = nodes1[cid].neighbours
-  //     pr(cid)
-  //     pr(neighs)
-  //     var min_x=9999.0, max_x=-9999.0, min_y=9999.0, max_y=-9999.0;
-  //     for(var n in neighs) {
-  //       nid = neighs[n]+"";
-  //       pr(nid)
-  //       var x = partialGraph._core.graph.nodesIndex[nid].x
-  //       var y = partialGraph._core.graph.nodesIndex[nid].y
-
-  //       if(parseFloat(x) < parseFloat(min_x)) min_x= x;
-  //       if(parseFloat(x) > parseFloat(max_x)) max_x= x; 
-  //       if(parseFloat(y) < parseFloat(min_y)) min_y= y;
-  //       if(parseFloat(y) > parseFloat(max_y)) max_y= y; 
-  //     }
-  //     pr("min_x: "+min_x + " | max_x: " + max_x + " | min_y: " + min_y + " | max_y: " + max_y)
-  //     pr("")
-
-  //     var Ox = (min_x+max_x)/2;
-  //     var Oy = (min_y+max_y)/2;
-
-  //     var Px = min_x;
-  //     var Py = min_y;
-
-
-  //     var R = Math.sqrt( Math.pow((Ox-Px), 2) + Math.pow((Oy-Py), 2) );
-  //     R = R * 1.2;
-
-
-  //     pr(hex2rga(colorList[c]))
-  //     var node = ({
-  //         id: "c"+cid ,
-  //         label:"", 
-  //         size:R, 
-  //         x:getn(cid).x, 
-  //         y:getn(cid).y,
-  //         color: colorList[c]
-  //     });  // The graph node
-  //     partialGraph.addNode("c"+cid,node); 
-
-
-  //   }
-  // });
-  partialGraph.draw()
 };

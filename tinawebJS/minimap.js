@@ -1,12 +1,12 @@
 
-function draw1Circle(ctx , x , y , r , color) {    
+function draw1Circle(ctx , x , y , color) {    
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1;
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.5;
 
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2, true);
+    ctx.arc(x, y, 10, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -46,7 +46,9 @@ function trackMouse() {
                             }
                         }
                 }
-                partialGraph.draw(2,1,2);
+                if(partialGraph.forceatlas2 && partialGraph.forceatlas2.count<=1) {
+                    partialGraph.draw(2,2,2);
+                }
             } else {
                 for(var i in partialGraph._core.graph.nodesIndex){
                     n=partialGraph._core.graph.nodesIndex[i];
@@ -58,7 +60,9 @@ function trackMouse() {
                         } else partialGraph._core.graph.nodesIndex[i].forceLabel=false;
                     }
                 }
-                partialGraph.draw(2,1,2);
+                if(partialGraph.forceatlas2 && partialGraph.forceatlas2.count<=1) {
+                    partialGraph.draw(2,2,2);
+                }
             }          
             ctx.arc(x, y, cursor_size, 0, Math.PI * 2, true);
             //ctx.arc(partialGraph._core.width/2, partialGraph._core.height/2, 4, 0, 2 * Math.PI, true);/*todel*/

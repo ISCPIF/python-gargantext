@@ -4,6 +4,10 @@ function pr(msg) {
     console.log(msg);
 }
 
+function print(msg) {
+    console.log(msg);
+}
+
 //to general utils
 function getClientTime(){
     var totalSec = new Date().getTime() / 1000;
@@ -192,3 +196,20 @@ function componentToHex(c) {
 function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
+
+
+ /**
+  * function to load a given css file 
+  */ 
+ loadCSS = function(href) {
+     var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+     $("head").append(cssLink); 
+ };
+
+/**
+ * function to load a given js file 
+ */ 
+ loadJS = function(src) {
+     var jsLink = $("<script type='text/javascript' src='"+src+"'>");
+     $("head").append(jsLink); 
+ }; 

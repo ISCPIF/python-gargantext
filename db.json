@@ -1,0 +1,44 @@
+{
+	"data/ClimateChange": {
+		"dbname":"wosclimatechange-61490-1-wosclimatechange-db.db",
+		"title":"ISITITLE",
+		"date":"ISIpubdate",
+		"abstract":"ISIABSTRACT",
+		"gexfs": {
+			"hnetwork-2014_2015hn-wosclimatechange2014_2015top509-ISItermsListV3bis-ISItermsListV3bis-distributionalcooc-99999-oT0.36-20-louTrue.gexf": {
+				"social": { "table":"ISIAUTHOR" , "textCol":"data","forkeyCol":"id"},
+				"semantic": { "table":"ISItermsListV3bis" , "textCol":"data","forkeyCol":"id"}
+			},
+			"ClimateChangeV1.gexf": {
+				"social": { "table":"ISIAUTHOR" , "textCol":"data","forkeyCol":"id"},
+				"semantic": { "table":"ISItermsListV3bis" , "textCol":"data","forkeyCol":"id"}
+			}
+		}
+	},"data/terrorism": {
+		"dbname":"data.db",
+		"title":"ISITITLE",
+		"date":"ISIpubdate",
+		"abstract":"ISIABSTRACT",
+		"gexfs": {
+			"terrorism_bi.gexf": {
+				"social": { "table":"ISIAUTHOR" , "textCol":"data","forkeyCol":"id"},
+				"semantic": { "table":"ISItermsListV1" , "textCol":"data","forkeyCol":"id"}
+			},
+			"terrorism_mono.gexf":{
+				"semantic": { "table":"ISItermsListV1" , "textCol":"data","forkeyCol":"id"}
+			}
+		}
+	},
+	"data/medq2/": {
+		"dbname":"02_medline-query2.db",
+		"title":"ArticleTitle",
+		"date":"ISIpubdate",
+		"abstract":"Abstract",
+		"gexfs": {
+			"20141208_MED_Author_name-ISItermsjulien_index.gexf": {
+				"social": { "table":"Author_name" , "textCol":"data","forkeyCol":"id"},
+				"semantic": { "table":"ISItermsBigWL" , "textCol":"data","forkeyCol":"id"}
+			}
+		}
+	}
+}

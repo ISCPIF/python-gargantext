@@ -61,6 +61,7 @@
                         <li>
                           <a>
 															<div id="graphid" style="visibility: hidden;">{{graphfile}}</div>
+                              <div id="jquerytemplatenb" style="visibility: hidden;">{{user.id}}</div>
                           </a>
                         </li>
 
@@ -76,24 +77,15 @@
                   </ul>
                   
 
-                  <ul id="category-A" class="nav navbar-nav navbar-right">
-                        <li>
-                            <ul >
-                                <li><div id="sliderANodeWeight"></div></li>
-                                <li><div id="sliderAEdgeWeight"></div></li>
-                                <li><div id="sliderANodeSize"></div></li>
-                            </ul>
-                        </li>
+                  <ul id="category0" class="nav navbar-nav navbar-right">
+                    <li>
+                      <ul style="list-style-type: none; margin:0em 1em;">
+                        <li><div id="slidercat0nodesweight"></div></li>
+                        <li><div id="slidercat0edgesweight"></div></li>
+                        <li><div id="slidercat0nodessize"></div></li>
+                      </ul>
+                    </li>
                   </ul>
-                  <!--
-                  a
-                  a
-                  a
-                  a
-                  a
-                  a
-                  -->
-
                   <ul id="filterslegend" class="nav navbar-nav navbar-right">
                         <li>
                             <ul style="list-style-type: none;">
@@ -102,19 +94,19 @@
                                 <li>Size</li>
                             </ul>
                         </li>
-                        
+                  </ul>
+                  <ul id="category1" class="nav navbar-nav navbar-right">
+                    <li>
+                      <ul style="list-style-type: none; margin:0em 1em;">
+                        <li><div id="slidercat1nodesweight"></div></li>
+                        <li><div id="slidercat1edgesweight"></div></li>
+                        <li><div id="slidercat1nodessize"></div></li>
+                      </ul>
+                    </li>
                   </ul>
 
-                  <ul id="category-B" class="nav navbar-nav navbar-right">
-                        <li>
-                            <ul>
-                                <li><div id="sliderBNodeWeight"></div></li>
-                                <li><div id="sliderBEdgeWeight"></div></li>
-                                <li><div id="sliderBNodeSize"></div></li>
-                            </ul>
-                        </li>
-                        
-                  </ul>
+
+
 
                   <ul class="nav navbar-nav navbar-right">
                      <li><a>
@@ -126,20 +118,8 @@
                               <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
                      </a></li>
                   </ul>
-
-
                   
-                  <ul id="colorGraph" class="nav navbar-nav navbar-right">
-                     <li class="dropdown">
-	                 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-	                          <img title="Set Colors" src="{% static "js/libs/img2/colors.png" %}" width="20px"><b class="caret"></b></img>
-	                 	</a>                     
-                      <ul class="dropdown-menu">
-                        <li><a href="#" onclick='clustersBy("group")'>By Group</a></li>
-                        <li><a href="#" onclick='clustersBy("default")'>By Default</a></li>
-                      </ul>
-                     </li>
-                  </ul>
+                  <div class="colorgraph_div"></div>
                   <!---->
 
 
@@ -177,7 +157,7 @@
 
           <div style="visibility: hidden;" id="sigma-othergraph"></div>
 
-          <div id="semLoader"></div>
+          <img id="semLoader" style="position:absolute; top:50%; left:40%; width:80px;" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>
 
           <ul id="ctlzoom">
 
@@ -257,9 +237,9 @@
            </div>
 
         </div>
-        
-        <!-- <div id="topPapers"></div> -->
-        
+        <div id="topPapers"></div>
+
+        <!--        
         <div id="tab-container-top" class='tab-container'>
 
            <ul class='etabs'>
@@ -276,7 +256,7 @@
               </div>
            </div>
         </div>
-        
+        -->
 
 
 
@@ -350,6 +330,8 @@
 
 
 <div id="corpuses" class="modal fade">
+
+
   <div class="modal-dialog">
     <div class="modal-content">
 
@@ -409,6 +391,8 @@
 
     </div>
   </div>
+
+
 </div> 
 
 
@@ -420,20 +404,6 @@
 </div>
 
 
-<div id="geomapmodal" class="modal fade">
-
-    <!-- <div class="modal-content"> -->
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Geomap</h4>
-      </div>
-      <div class="modal-body">
-        <div class="geomapCont"></div>
-      </div>
-    <!-- </div> -->
-      <!-- <div class="geomapCont"></div> -->
-      <div id="closegeomap" data-dismiss="modal"></div>
-</div>
 
     </div>
 </div>
@@ -455,7 +425,7 @@
     
 
     <script src="{% static "js/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
-
+    <script src="{% static "js/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>
     <script src="{% static "js/tinawebJS/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
@@ -466,17 +436,16 @@
     <script src="{% static "js/tinawebJS/minimap.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/enviroment.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "js/tinawebJS/DataScanner.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/Tinaweb.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
 
     <script type="text/javascript">
-        // $('#tab-container').easytabs({updateHash:false});
-        // Popup window code
-      $('#tab-container').easytabs({updateHash:false});
       function newPopup(url) {
         popupWindow = window.open(
           url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
       }
+      $('#tab-container').easytabs({updateHash:false});
+      // $('#tab-container-top').easytabs({updateHash:false});
     </script>
 
 

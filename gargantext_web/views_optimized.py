@@ -231,4 +231,4 @@ def tfidf(request, corpus_id, ngram_ids):
 
     # print("= = = = = = = = \n")
     data = json.dumps(nodes_list)
-    return JsonHttpResponse(data)
+    return JsonHttpResponse(nodes_list)

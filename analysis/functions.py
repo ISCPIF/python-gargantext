@@ -282,7 +282,8 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
                 G.node[node]['pk'] = ids[node]
                 G.node[node]['label']   = session.query(Ngram.terms).filter(Ngram.id==node).first()
                 G.node[node]['size']    = weight[ids[node]]
-                G.node[node]['group']   = partition[node]
+                G.node[node]['type']    = "NGrams"
+                G.node[node]['attributes'] = { "clust_default": partition[node]} # new format
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
                 pass #PrintException()

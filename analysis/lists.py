@@ -1,7 +1,7 @@
 from collections import defaultdict
 from math import sqrt
 
-from gargantext_web.db import session, NodeNgram, NodeNgramNgram, NodeHyperdataNgram, bulk_insert
+from gargantext_web.db import session, NodeNgram, NodeNgramNgram, bulk_insert
 
 
 class BaseClass:
@@ -134,21 +134,10 @@ class WeightedMatrix(BaseClass):
         if other is None:
             self.items = defaultdict(lambda: defaultdict(float))
         elif isinstance(other, int):
-            self.hyperdata = session.query(Node.hyperdata).filter(Node.id==other)
-            self.hyperdata['field1'] = self.hyperdata.get('field1', 'ngrams')
-            self.hyperdata['field2'] = self.hyperdata.get('field2', 'ngrams')
-
-            if self.hyperdata['field1'] == self.hyperdata['field2'] == 'ngrams':
-                query = (session
-                    .query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id, NodeNgramNgram.score)
-                    .filter(NodeNgramNgram.node_id == other)
-                )
-            else:
-                query = (session
-                    .query(NodeHyperdataNgram.hyperdata_id, NodeHyperdataNgram.ngram_id, NodeHyperdataNgram.score)
-                    .filter(NodeHyperdataNgram.node_id == other)
-                )
-
+            query = (session
+                .query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id, NodeNgramNgram.score)
+                .filter(NodeNgramNgram.node_id == other)
+            )
             self.items = defaultdict(lambda: defaultdict(float))
             for key1, key2, value in self.items.items():
                 self.items[key1][key2] = value
@@ -170,24 +159,14 @@ class WeightedMatrix(BaseClass):
 
     def save(self, node_id):
         # delete previous data
-        if self.hyperdata['field1'] == self.hyperdata['field2'] == 'ngrams':
-            session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_id).delete()
-            session.commit()
-            # insert new data
-            bulk_insert(
-                NodeNgramNgram,
-                ('node_id', 'ngramx_id', 'ngramy_id', 'score'),
-                ((node_id, key1, key2, value) for key1, key2, value in self)
-            )
-        else:
-            session.query(NodeHyperdataNgram).filter(NodeHyperdataNgram.node_id == node_id).delete()
-            session.commit()
-            bulk_insert(
-                NodeHyperdataNgram,
-                ('node_id', 'hyperdata_id', 'ngram_id', 'score'),
-                ((node_id, key1, key2, value) for key1, key2, value in self)
-            )
-
+        session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_id).delete()
+        session.commit()
+        # insert new data
+        bulk_insert(
+            NodeNgramNgram,
+            ('node_id', 'ngramx_id', 'ngramy_id', 'score'),
+            ((node_id, key1, key2, value) for key1, key2, value in self)
+        )
 
     def __radd__(self, other):
         result = NotImplemented

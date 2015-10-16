@@ -4,13 +4,35 @@
 
 // ============ < DEVELOPER OPTIONS > ============
 var geomap=false;
+var colorByAtt = false;
+var twittertimeline = false;
 var minimap=false;
 var getAdditionalInfo=true;//for topPapers div
 
 
-var mainfile=false;
-getUrlParam.file = window.location.origin+"/"+$("#graphid").html();
+var mainfile = ["db.json"];
+// // var mainfile = "api.json";
+// var mainfile = [
+//     "data/2-Terms-Authors-300nodes.gexf",
+//     "data/0-terms-terms-MainNodes.gexf",
+//     "data/maziyar2.json",
+//     "data/3-Terms-Countries-300nodes.gexf",
+// //     "data/noclimatechange_mnodes.gexf",
+//     "data/20150518t1052_phylograph.json",
+// //     "data/phylograph_6.json",
+// //     "data/maziyar.json",
+// //     "data/20141128_GPs_03_bi.gexf",
+// //     "data/example.json",
+// //     "data/Elisa__Omodei.gexf",
+//     ];
+// getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // garg exclusive
+// var corpusesList = {} // garg exclusive -> corpus comparison
+
+// getUrlParam.file = "data/testgraph.json";
+if($("#graphid").length>0) // just Garg
+    getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
 var corpusesList = {}
+var Clusters = [];
 
 var dataFolderTree = {};
 var gexfDict={};
@@ -18,13 +40,39 @@ var egonode = {}
 var iwantograph = "";
 
 var bridge={};
-external="";
+var external="";
 //external="http://tina.iscpif.fr/explorerjs/";//Just if you want to use the server-apps from tina.server
 bridge["forFilteredQuery"] = external+"php/bridgeClientServer_filter.php";
 bridge["forNormalQuery"] = external+"php/bridgeClientServer.php";
 
-var clusters = [];
 
+var gexfDict={};
+// gexfDict["data/terrorism/terrorism_mono.gexf"] = "[2001-2014] TERRORISM (1-partite graph)";
+// gexfDict["data/terrorism/terrorism_bi.gexf"] = "[2001-2014] TERRORISM (2-partite graph)";
+
+var field = {}
+// field["data/20141128_GPs_03_bi.gexf"] = "ISItermsfirstindexing";
+// field["data/20141215_GPs_04.gexf"] = "ISItermsfirstindexing";
+// field["data/medq2/20141128_MED_02_bi.gexf"] = "ISItermsBigWL";
+// field["data/medq2/20141128_MED_03_bi.gexf"] = "ISItermsBigWL";
+// field["data/medq2/20141208_MED_Author_name-ISItermsjulien_index.gexf"] = "ISItermsjulien_index";
+// field["data/medq1/20141208_MED_01_bi.gexf"] = "ISItermsfirstindex";
+
+// field["data/terrorism/terrorism_mono.gexf"] = "ISItermsListV1";
+// field["data/terrorism/terrorism_bi.gexf"] = "ISItermsListV1";
+
+var ParseCustom = function () {};
+var SigmaUtils = function () {};
+var TinaWebJS = function () {};
+
+var Relations = {}
+    
+
+var SystemStates = {}
+    SystemStates.level = true;
+    SystemStates.type = [ true ] //[ true , false ]; //social activated!
+    SystemStates.selections = [];
+    SystemStates.opposites = [];
 
 ircNick="";
 ircCHN="";
@@ -89,7 +137,7 @@ var sigmaJsGraphProperties = {
 };
 var sigmaJsMouseProperties = {
     minRatio:0.1,
-    maxRatio: 15
+    maxRatio: 50
 };
 // ============ < / SIGMA.JS PROPERTIES > ============
          
@@ -122,19 +170,13 @@ var swMacro=true;
 var socsemFlag=false;
 var constantNGramFilter;
 
-// var nodeFilterA_past = ""
-// var nodeFilterA_now = ""
-
-// var nodeFilterB_past = ""
-// var nodeFilterB_now = ""
-
 var lastFilter = []
-    lastFilter["#sliderBNodeWeight"] = "-"
-    lastFilter["#sliderAEdgeWeight"] = "-"
-    lastFilter["#sliderBEdgeWeight"] = "-"
+    lastFilter["#slidercat0nodesweight"] = {"orig":"-" , "last":"-"}
+    lastFilter["#slidercat1nodesweight"] =  {"orig":"-" , "last":"-"}
+    lastFilter["#slidercat0edgesweight"] =  {"orig":"-" , "last":"-"}
+    lastFilter["#slidercat1edgesweight"] =  {"orig":"-" , "last":"-"}
 
-// var edgeFilterB_past = ""
-// var edgeFilterB_now = ""
+var Filters = {}
 
 
 
@@ -164,10 +206,10 @@ var oposMAX;
 
 var matches = [];
 
-var nodes1 = [];
-var nodes2 = [];
-var bipartiteD2N = [];
-var bipartiteN2D = [];
+var nodes1 = {};
+var nodes2 = {};
+var bipartiteD2N = {};
+var bipartiteN2D = {};
 
 var flag=0;
 var firstime=0;

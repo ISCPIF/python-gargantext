@@ -1,4 +1,67 @@
 
+
+
+SigmaUtils = function () {
+    this.nbCats = 0;
+
+    // input = GEXFstring
+    this.FillGraph = function( initialState , catDict  , nodes, edges , graph ) {
+
+        print("Filling the graaaaph:")
+        print(catDict)
+        for(var i in nodes) {
+            var n = nodes[i];
+            
+            if(initialState[catDict[n.type]]) {
+                var node = ({
+                    id : n.id,
+                    label : n.label,
+                    size : n.size,
+                    color : n.color,
+                    type : n.type,
+                    x : n.x,
+                    y : n.y
+                })
+                if(n.shape) node.shape = n.shape;
+                // console.log(node)
+                
+                if(Number(n.id)==287) console.log("coordinates of node 287: ( "+n.x+" , "+n.y+" ) ")
+                graph.addNode( n.id , node);
+                updateSearchLabels( n.id , n.label , n.type);
+            }
+        }
+
+        var typeNow = initialState.map(Number).join("|")
+
+        for(var i in Relations[typeNow]) {
+            s = i;
+            for(var j in Relations[typeNow][i]) {
+                t = Relations[typeNow][i][j]
+                e = Edges[s+";"+t]
+                if(e) {
+                    if(e.source != e.target) {
+                        var edge = ({
+                            id : e.id,
+                            hidden : false,
+                            sourceID : e.source,
+                            targetID : e.target,
+                            type : e.type,
+                            weight : e.weight
+                        })
+                        graph.addEdge( e.id , e.source , e.target , edge);
+                    }
+                }
+            }
+        }
+        return graph;
+    }// output = sigma graph
+
+}
+
+
+
+
+
 //for socialgraph
 function showMeSomeLabels(N){
         /*======= Show some labels at the beginning =======*/
@@ -119,8 +182,7 @@ function getNodeLabels(elems){
     var labelss=[]
     for(var i in elems){
         var id=(!isUndef(elems[i].key))?elems[i].key:i
-        if(!Nodes[id].iscluster)
-            labelss.push(Nodes[id].label)
+        labelss.push(Nodes[id].label)
     }
     return labelss
 }
@@ -141,7 +203,7 @@ function getSelections(){
 
 //This receives an array not a dict!
 //  i added an excpt... why
-function getNeighs(sels,arr){ 
+function getNeighs(sels,arr) { 
     neighDict={};
     for(var i in sels) {
         id = sels[i]
@@ -216,118 +278,147 @@ function getAcronyms() {
     return ( Object.keys(acrs) );
 }
 
-function getClass(daclass) {
-    var nodes = getVisibleNodes();
-    var acrs = {}
-    pr("in get"+daclass)
-    for(var i in nodes) {
-        theid = nodes[i].id;
-        // pr(i)
-        // pr(nodes[i].id+" : "+nodes[i].attr["CC"]+" , "+nodes[i].attr["ACR"])
-        if (Nodes[theid][daclass]!="-")
-            acrs[Nodes[theid][daclass]]=1
-        // pr("")
-    }
-    return ( Object.keys(acrs) );
-}
 
 function clustersBy(daclass) {
-    if (daclass=="country") {
 
-        CCs = getCountries()
-        CCxID = {}
-        for(var i in CCs) { 
-            code = CCs[i]
-            CCxID[code]=parseInt(i);
-        }
-        pr(CCxID)
-        
-        var nodes = getVisibleNodes();
-        for(var i in nodes) {
-            nodes[i].color = Nodes[ nodes[i].id ].color;            
-        }
-
-        colorList.sort(function(){ return Math.random()-0.5; }); 
-        // pr(colorList);
-        for(var i in nodes) {
-            cc = Nodes[nodes[i].id]["CC"]
-            if( !isUndef( cc ) && cc!="-" ) {
-                nodes[i].color = colorList[ CCxID[cc] ];
+    cancelSelection(false);
+    var v_nodes = getVisibleNodes();
+    var min_pow = 0;
+    for(var i in v_nodes) {
+        var the_node = Nodes[ v_nodes[i].id ]
+        var attval = ( isUndef(the_node.attributes) || isUndef(the_node.attributes[daclass]) )? v_nodes[i][daclass]: the_node.attributes[daclass];
+        if( !isNaN(parseFloat(attval)) ) { //is float
+            while(true) {
+                var themult = Math.pow(10,min_pow);
+                if(parseFloat(attval)==0.0) break;
+                if ( (parseFloat(attval)*themult)<1.0 ) {
+                    min_pow++;
+                } else break;
             }
         }
-        partialGraph.refresh()
-        partialGraph.draw();
-        return;
     }
 
-    if (daclass=="acronym") {
+    var NodeID_Val = {}
+    var real_min = 1000000;
+    var real_max = -1;
+    var themult = Math.pow(10,min_pow);
+    for(var i in v_nodes) {
+        var the_node = Nodes[ v_nodes[i].id ]
+        var attval = ( isUndef(the_node.attributes) || isUndef(the_node.attributes[daclass]) )? v_nodes[i][daclass]: the_node.attributes[daclass];
+        var attnumber = Number(attval);
+        var round_number = Math.round(  attnumber*themult ) ;
 
-        CCs = getAcronyms()
-        CCxID = {}
-        for(var i in CCs) { 
-            code = CCs[i]
-            CCxID[code]=parseInt(i);
-        }
-        pr(CCxID)
-        
-        var nodes = getVisibleNodes();
-        for(var i in nodes) {
-            nodes[i].color = Nodes[ nodes[i].id ].color;            
-        }
+        NodeID_Val[v_nodes[i].id] = { "round":round_number , "real":attnumber };
 
-        colorList.sort(function(){ return Math.random()-0.5; }); 
-        // pr(colorList);
-        for(var i in nodes) {
-            cc = Nodes[nodes[i].id]["ACR"]
-            if( !isUndef( cc ) && cc!="-" ) {
-                nodes[i].color = colorList[ CCxID[cc] ];
-            }
-        }
-        partialGraph.refresh()
-        partialGraph.draw();
-        return;
+        if (round_number<real_min) real_min = round_number;
+        if (round_number>real_max) real_max = round_number;
     }
 
 
-    if (daclass=="default") {
-        var nodes = getVisibleNodes();
-        for(var i in nodes) {
-            nodes[i].color = Nodes[ nodes[i].id ].color;            
-        }
-        partialGraph.refresh()
-        partialGraph.draw();
-        return;
-    } else {
 
-        CCs = getClass(daclass)
-        CCxID = {}
-        for(var i in CCs) { 
-            code = CCs[i]
-            CCxID[code]=parseInt(i);
-        }
-        pr(CCxID)
-        
-        var nodes = getVisibleNodes();
-        for(var i in nodes) {
-            nodes[i].color = Nodes[ nodes[i].id ].color;
-        }
+    console.log(" - - - - - - - - -- - - ")
+    console.log(real_min)
+    console.log(real_max)
+    console.log("10^"+min_pow)
+    console.log("the mult: "+themult)
+    console.log(" - - - - - - - - -- - - ")
 
-        colorList.sort(function(){ return Math.random()-0.5; }); 
-        // pr(colorList);
-        for(var i in nodes) {
-            cc = Nodes[nodes[i].id][daclass]
-            if( !isUndef( cc ) && cc!="-" ) {
-                nodes[i].color = colorList[ CCxID[cc] ];
-                Nodes[ nodes[i].id ].color = colorList[ CCxID[cc] ];
-            }
-        }
-        partialGraph.refresh()
-        partialGraph.draw();
-        return;
+
+    //    [ Scaling node colours(0-255) and sizes(3-5) ]
+    var Min_color = 0;
+    var Max_color = 255;
+    var Min_size = 2;
+    var Max_size= 6;
+    for(var i in NodeID_Val) {
+
+        var newval_color = Math.round( ( Min_color+(NodeID_Val[i]["round"]-real_min)*((Max_color-Min_color)/(real_max-real_min)) ) );
+        var hex_color = rgbToHex(255, (255-newval_color) , 0)
+        partialGraph._core.graph.nodesIndex[i].color = hex_color
+
+        var newval_size = Math.round( ( Min_size+(NodeID_Val[i]["round"]-real_min)*((Max_size-Min_size)/(real_max-real_min)) ) );
+        partialGraph._core.graph.nodesIndex[i].size = newval_size;
+        // pr("real:"+ NodeID_Val[i]["real"] + " | newvalue: "+newval_size)
+
+        partialGraph._core.graph.nodesIndex[i].label = "("+NodeID_Val[i]["real"].toFixed(min_pow)+") "+Nodes[i].label
     }
+    //    [ / Scaling node colours(0-255) and sizes(3-5) ]
+
+
+    partialGraph.refresh();
+    partialGraph.draw();
+
+
+    //    [ Edge-colour by source-target nodes-colours combination ]
+    var v_edges = getVisibleEdges();
+    for(var e in v_edges) {
+        var e_id = v_edges[e].id;
+        var a = v_edges[e].source.color;
+        var b = v_edges[e].target.color;
+        a = hex2rga(a);
+        b = hex2rga(b);
+        var r = (a[0] + b[0]) >> 1;
+        var g = (a[1] + b[1]) >> 1;
+        var b = (a[2] + b[2]) >> 1;
+        partialGraph._core.graph.edgesIndex[e_id].color = "rgba("+[r,g,b].join(",")+",0.5)";
+    }
+    //    [ / Edge-colour by source-target nodes-colours combination ]
+
+    if(daclass!="degree")
+        set_ClustersLegend ( daclass )
+
+    partialGraph.refresh();
+    partialGraph.draw();
 
 }
 
+
+function colorsBy(daclass) {
+    
+    pr("")
+    pr(" = = = = = = = = = = = = = = = = = ")
+    pr(" = = = = = = = = = = = = = = = = = ")
+    pr("colorsBy (    "+daclass+"    )")
+    pr(" = = = = = = = = = = = = = = = = = ")
+    pr(" = = = = = = = = = = = = = = = = = ")
+    pr("")
+
+    if(daclass=="clust_louvain") {
+        if(!partialGraph.states.slice(-1)[0].LouvainFait) {
+            RunLouvain()
+            partialGraph.states.slice(-1)[0].LouvainFait = true
+        }
+    }
+
+    var v_nodes = getVisibleNodes();
+    colorList.sort(function(){ return Math.random()-0.5; });
+
+    for(var i in v_nodes) {
+        var the_node = Nodes[ v_nodes[i].id ]
+        var attval = ( isUndef(the_node.attributes) || isUndef(the_node.attributes[daclass]) )? v_nodes[i][daclass]: the_node.attributes[daclass];
+        partialGraph._core.graph.nodesIndex[v_nodes[i].id].color = colorList[ attval ]
+    }
+    partialGraph.draw();
+
+    //    [ Edge-colour by source-target nodes-colours combination ]
+    var v_edges = getVisibleEdges();
+    for(var e in v_edges) {
+        var e_id = v_edges[e].id;
+        var a = v_edges[e].source.color;
+        var b = v_edges[e].target.color;
+        if (a && b) {
+            a = hex2rga(a);
+            b = hex2rga(b);
+            var r = (a[0] + b[0]) >> 1;
+            var g = (a[1] + b[1]) >> 1;
+            var b = (a[2] + b[2]) >> 1;
+            partialGraph._core.graph.edgesIndex[e_id].color = "rgba("+[r,g,b].join(",")+",0.5)";
+        }
+    }
+    //    [ / Edge-colour by source-target nodes-colours combination ]
+    set_ClustersLegend ( daclass )
+    partialGraph.refresh();
+    partialGraph.draw();
+}
 
 //just for fun
 function makeEdgeWeightUndef() {

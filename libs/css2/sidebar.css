@@ -23,12 +23,12 @@ box-shadow: 0px 0px 3px 0px #888888;
 
 #leftcolumn {
   overflow-y: scroll;
-  margin-right: -400px;
+  margin-right: -300px;
   margin-left: 0px;
   padding-bottom: 10px;
   padding-left: 5px;
-  right: 400px;
-  width: 400px;
+  right: 300px;
+  width: 300px;
   position: fixed;
   height: 100%;
   border: 1px #888888 solid;

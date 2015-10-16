@@ -27,7 +27,10 @@ function getGexfLegend(gexfPath){
 }
 
 function jsActionOnGexfSelector(gexfLegend){
-    window.location=window.location.origin+window.location.pathname+"?file="+encodeURIComponent(getGexfPath(gexfLegend));
+    if(getGexfPath[gexfLegend])
+        window.location=window.location.origin+window.location.pathname+"?file="+encodeURIComponent(getGexfPath(gexfLegend));
+    else
+        window.location=window.location.origin+window.location.pathname+"?file="+encodeURIComponent( gexfLegend );
 }
 
 function listGexfs(){
@@ -44,7 +47,7 @@ function listGexfs(){
                 javs='onchange="'+'jsActionOnGexfSelector(this.value);'+'"';
                 html+=javs;
                 html+=">";
-                html+='<option selected>[Select your Graph]</option>';
+                html+='<option selected>[More Graphs]</option>';
                 for(var i in data){
                     //pr("path: "+data[i]);
                     //pr("legend: "+getGexfLegend(data[i]));

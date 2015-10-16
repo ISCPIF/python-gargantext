@@ -363,6 +363,17 @@ class NodeNgramNgram(models.Model):
     def __str__(self):
         return "%s: %s / %s" % (self.node.name, self.ngramx.terms, self.ngramy.terms)
 
+class NodeHyperdataNgram(models.Model):
+    node        = models.ForeignKey(Node, on_delete=models.CASCADE)
+
+    hyperdata_id      = models.ForeignKey(Hyperdata, related_name="nodehyperdatamngramx", on_delete=models.CASCADE)
+    ngram_id          = models.ForeignKey(Ngram, related_name="nodehyperdatangramy", on_delete=models.CASCADE)
+
+    score       = models.FloatField(default=0)
+
+    def __str__(self):
+        return "%s: %s / %s" % (self.node.name, self.hyperdata_id.value_string, self.ngram_id.terms)
+
 
 class NodeNodeNgram(models.Model):
     nodex        = models.ForeignKey(Node, related_name="nodex", on_delete=models.CASCADE)

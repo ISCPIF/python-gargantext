@@ -231,9 +231,11 @@ class bulk_insert:
 
     readline = read
 
-def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None):
+def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None):
     '''
     Should be a method of the object. __get_or_create__ ?
+    name_str :: String
+    hyperdata :: Dict
     '''
     if nodetype is None:
         print("Need to give a type node")
@@ -250,7 +252,9 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None):
          )
     if name_str is not None:
         node = node.filter(Node.name==name_str)
-
+    if parameters is not None:
+        for k,v in hyperdata.items():
+            node = node.filter(Node.hyperdata[k] == v)
     node = node.first()
 
     if node is None:

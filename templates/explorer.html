@@ -308,9 +308,9 @@
 
         </div>
 
-        <div id="topPapers"></div>
-        <!--        
-        <div id="tab-container-top" class='tab-container'>
+        <!-- <div id="topPapers"></div> -->
+               
+        <div id="tab-container-top" class='tab-container' style="display: none;">
 
            <ul class='etabs'>
              <li id="tabmed" class='tab active'><a href="#tabs3">Medline Pubs</a></li>
@@ -326,7 +326,7 @@
               </div>
            </div>
         </div>
-        -->
+        
 
 
 
@@ -409,55 +409,22 @@
 
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h4 class="modal-title">Corpus Comparison</h4>
+            <h3 class="modal-title">Corpus Comparison Tool</h3>
           </div>
 
 
 
           <div class="modal-body form-horizontal">
-            Chose another corpus to compare with:
-            <div class="form-group">
-              <label class="col-lg-2 control-label"> </label>
-              <div class="col-lg-10">
+            <h4>Choose one corpus:</h4>
+            <div style="color:red;" id="selected_corpus"></div>
+            <div id="user_portfolio">
 
-
-                  <form id="corpuses_form" role="form">
-
-                    <ul>
-
-                      {% if corpusinfo  %}
-                        {% for k1, v1 in corpusinfo.items %}
-                            {% if v1.corpuses|length > 0  %}
-                                <br><li><a href="/project/{{k1}}/">{{v1.proj_name}}</a><br>
-                                  <ul style="list-style-type: none;">
-                                  {% for c in v1.corpuses %}
-                                    <li>
-                                      <div class="radio">
-                                        <label><input type="radio" id="{{c.id}}" name="optradio">
-                                          <a href="/project/{{k1}}/corpus/{{c.id}}/">{{c.name}}</a>
-                                        </label>
-                                      </div>
-                                    </li>
-                                  {% endfor %}
-                                  </ul>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                      {% endif %}
-
-                    </ul>
-
-                  </form>
-
-
-              </div>
             </div>
-          </div>
 
 
           <div class="modal-footer">
             <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick='printCorpuses();'>Add Tab</button>
+            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'>Add Tab</button>
           </div>
 
         </div>

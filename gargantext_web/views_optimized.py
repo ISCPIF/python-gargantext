@@ -250,7 +250,6 @@ def getCorpusIntersection(request , corpuses_ids):
          # If corpus[1] has a coocurrence.id then lets continue
 
         FinalDict = {}
-
         import networkx as nx
         G = nx.Graph() # I use an undirected graph, because direction doesnt matter here, coocs should be a triangular matrix, so...
         ngrams_data1 = session.query(NodeNgramNgram).filter( NodeNgramNgram.node_id==cooc_ids[0], NodeNgramNgram.ngramx_id.in_( node_ids )).all()
@@ -265,7 +264,7 @@ def getCorpusIntersection(request , corpuses_ids):
         for e in G.edges_iter():
             n1 = e[0]
             n2 = e[1]
-            print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
+            # print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
             if n1 not in FinalDict:
                 FinalDict[n1]=0
             if n2 not in FinalDict:

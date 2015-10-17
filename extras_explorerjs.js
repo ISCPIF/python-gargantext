@@ -503,9 +503,9 @@ function getTopPapers(type){
                     }
                 }
                 output += "</ul>"
-                $("#topPapers").html(output);
                 $("#tab-container-top").show();
                 // $('#tab-container-top').easytabs({updateHash:false});
+                $("#topPapers").html(output);
             },
             error: function(){ 
                 pr('Page Not found: getTopPapers()');

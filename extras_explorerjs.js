@@ -455,7 +455,6 @@ function getTopPapers(type){
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 
-                console.log(data)
                 // pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 // var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
@@ -513,65 +512,39 @@ function getTopPapers(type){
         });
 
 
-        for(var i in corpusesList) {
-            var c_id = i;
-            var text = corpusesList[i]["name"]
-            console.log(theid+" : "+text)
-            genericGetTopPapers(theids , c_id , ("top_"+text) )
-        }
+        // for(var i in corpusesList) {
+        //     var c_id = i;
+        //     var text = corpusesList[i]["name"]
+        //     console.log(theid+" : "+text)
+        //     genericGetTopPapers(theids , c_id , ("top_"+text) )
+        // }
     }
 }
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 // Just for Garg
 function printCorpuses() {
     console.clear()
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
-    var corpuses = $('input[name=optradio]:checked');
-    var count = 3
-    for(var c in corpuses) {
-        if(isNaN(parseInt(c)))
-            break;
-        count++;
-        var thename = $.trim( corpuses.parent().text() ).split(' ').join('_');
-        corpusesList[corpuses[c].id] = { "name": thename , "count":count }
-        // console.log(corpuses[c].id+" : "+$.trim( corpuses.parent().text() )   );
-    }
-    $("#closecorpuses").click();
+    pr(corpusesList)
 
-
-    $("#tab-container-top").html("");
-    var string = ""
-    string += "<ul class='etabs'>"+"\n";
-    string += "\t"+"<li id='tabmed' class='tab active'><a href='#tabs3'>Main Pubs</a></li>"+"\n";
-    for(var i in corpusesList) {
-        var text = corpusesList[i]["name"]
-        var c = corpusesList[i]["count"]
-        string += "\t"+"<li id='tab_"+text+"' class='tab'><a href='#tabs"+c+"'>"+text+" Pubs</a></li>"+"\n";
-    }
+    var selected = $('input[name=optradio]:checked')[0].id.split("_")
+    var sel_p = selected[0], sel_c=selected[1]
     
-    string += "</ul>"+"\n";
-    string += "<div class='panel-container'>"+"\n";
-    string += "\t"+'<div id="tabs3">'+"\n";
-    string += "\t\t"+'<div id="topPapers"></div>'+"\n";
-    string += "\t"+'</div>'+"\n";
-
-
-    for(var i in corpusesList) {
-        var text = corpusesList[i]["name"]
-        var c = corpusesList[i]["count"]
-        string += "\t"+'<div id="tabs'+c+'">'+"\n";
-        string += "\t\t"+'<div id="top_'+text+'"></div>'+"\n";
-        string += "\t"+'</div>'+"\n";
-    }
-    string += "</div>"+"\n";
-    $("#tab-container-top").html(string);
-    console.log(string)
-    console.log(" - - -- -- - ")
-    console.log(corpusesList)
-
-
-
-    var theids = []
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
@@ -580,54 +553,121 @@ function printCorpuses() {
             break;
         }
     } 
-    var corpus_id = pageurl[cid+1];
+    var current_corpus = pageurl[cid+1];
 
-    theids.push( corpus_id )
+    pr("corpus id, selected: "+corpusesList[sel_p]["corpuses"][sel_c]["id"])
+    pr("current corpus: "+current_corpus)
+    var the_ids = []
+    the_ids.push( current_corpus )
+    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
 
+    $("#closecorpuses").click();
 
-    for(var corpora in corpusesList) {
-        console.log("other corpus_id:")
-        console.log( corpora )
-        theids.push( corpora )
-        break
+    var thenodes = []
+    for(var i in partialGraph._core.graph.nodes) {
+        thenodes.push(partialGraph._core.graph.nodes[i].id)
     }
-
-    console.log("the two corpuses:")
-    console.log( theids )
 
     $.ajax({
         type: 'GET',
-        url: window.location.origin+'/api/corpusintersection/'+theids.join("a"),
-        //contentType: "application/json",
-        //dataType: 'json',
-        success : function(data){
-            var nodes = getVisibleNodes()
-            for(var n in nodes) {
-                if(data[nodes[n].id]) {
-                    nodes[n].color = "#ff0000";
-                }
-            }
-            partialGraph.draw()
+        url: window.location.origin+'/api/corpusintersection/'+the_ids.join("a"),
+        data: "nodeids="+JSON.stringify(thenodes),
+        type: 'POST',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },
-        error: function(){ 
-            pr('Page Not found: printCorpuses()');
+        success : function(data){
+            console.clear()
+            console.log( "!!!!!!!! in printCorpuses() AJAX!!!!!!!! " )
+        
+            console.log(data)
+            // var nodes = getVisibleNodes()
+            // for(var n in nodes) {
+            //     if(data[nodes[n].id]) {
+            //         nodes[n].color = "#ff0000";
+            //     }
+            // }
+            // partialGraph.draw()
+        },
+        error: function(xhr, status, error) {
+          var err = eval("(" + xhr.responseText + ")");
+          console.log(err.Message);
         }
     });
+
+    // $("#tab-container-top").html("");
+    // var string = ""
+    // string += "<ul class='etabs'>"+"\n";
+    // string += "\t"+"<li id='tabmed' class='tab active'><a href='#tabs3'>Main Pubs</a></li>"+"\n";
+    // for(var i in corpusesList) {
+    //     var text = corpusesList[i]["name"]
+    //     var c = corpusesList[i]["id"]
+    //     string += "\t"+"<li id='tab_"+text+"' class='tab'><a href='#tabs"+c+"'>"+text+" Pubs</a></li>"+"\n";
+    // }
+    
+    // string += "</ul>"+"\n";
+    // string += "<div class='panel-container'>"+"\n";
+    // string += "\t"+'<div id="tabs3">'+"\n";
+    // string += "\t\t"+'<div id="topPapers"></div>'+"\n";
+    // string += "\t"+'</div>'+"\n";
+
+
+    // for(var i in corpusesList) {
+    //     var text = corpusesList[i]["name"]
+    //     var c = corpusesList[i]["id"]
+    //     string += "\t"+'<div id="tabs'+c+'">'+"\n";
+    //     string += "\t\t"+'<div id="top_'+text+'"></div>'+"\n";
+    //     string += "\t"+'</div>'+"\n";
+    // }
+    // string += "</div>"+"\n";
+    // $("#tab-container-top").html(string);
+    // console.log(string)
+    // console.log(" - - -- -- - ")
+    // console.log(corpusesList)
+
+
+
+    // var theids = []
+    // var pageurl = window.location.href.split("/")
+    // var cid;
+    // for(var i in pageurl) {
+    //     if(pageurl[i]=="corpus") {
+    //         cid=parseInt(i);
+    //         break;
+    //     }
+    // } 
+    // var corpus_id = pageurl[cid+1];
+
+    // theids.push( corpus_id )
+
+
+    // for(var corpora in corpusesList) {
+    //     console.log("other corpus_id:")
+    //     console.log( corpora )
+    //     theids.push( corpora )
+    //     break
+    // }
+
+    // console.log("the two corpuses:")
+    // console.log( theids )
+
+
 }
 
 // Just for Garg
 function TestFunction() {
     //http://localhost:8000/api/corpusintersection/1a50317a50145
-    if( $("#jquerytemplatenb").length==0 ) 
-        return false;
-    
-    var jquerytemplatenb = $("#jquerytemplatenb").html()
-
-    var corpuses = $('input[name=optradio]:checked')[0];
-    if(isUndef(corpuses))
-        return false;
 
     var pageurl = window.location.href.split("/")
+    var pid;
+    for(var i in pageurl) {
+        if(pageurl[i]=="project") {
+            pid=parseInt(i);
+            break;
+        }
+    } 
+    var project_id = pageurl[pid+1];
+
     var cid;
     for(var i in pageurl) {
         if(pageurl[i]=="corpus") {
@@ -637,31 +677,69 @@ function TestFunction() {
     } 
     var corpus_id = pageurl[cid+1];
 
-    pr("")
-    pr("!!!!!!! DEBUGGING !!!!!!!")
-    // pr(jquerytemplatenb)
-    // pr(corpuses.id)
-    // pr(corpus_id)
-    var theids = [jquerytemplatenb , corpus_id , corpuses.id]
-    var query_url = window.location.origin+'/api/corpusintersection/'+corpus_id+'/'+theids.join("a")
-    pr(query_url)
-    pr("!!!!!!! !!!!!!! !!!!!!! !!!!!!!")
-    pr("")
+    var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
+    $.ajax({
+        type: 'GET',
+        url: query_url,
+        success : function(data) {
+            
+            var html_ = ""
+            html_ += '<div class="panel-group" id="accordion">'+"\n"
+            html_ += ' <form id="corpuses_form" role="form">'+"\n"
+            corpusesList = data;
+            for (var k1 in data) {
+                var v1 = data[k1]
+                html_ += '  <div class="panel panel-default">'+"\n"
+                html_ += '   <div class="panel-heading">'+"\n"
+                html_ += '    <h4 class="panel-title">'+"\n"
+                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
+                html_ += '    </h4>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
+                html_ += '    <div class="panel-body">'+"\n"
+                html_ += '     <ul>'+"\n"
+                for(var c in v1["corpuses"]) {
+                    var Ci = v1["corpuses"][c]
+                    if( Ci["id"]!= corpus_id) {
+                        html_ += '      <li>'+"\n"
+                        html_ += '       <div class="radio">'+"\n"
+                        html_ += '        <label><input type="radio" id="'+k1+"_"+c+'" name="optradio">'+"\n"
+                        html_ += '         <a target="_blank" href="/project/'+k1+'/corpus/'+Ci["id"]+'/">'+Ci["name"] +' ('+Ci["c"]+' docs.)</a>'+"\n"
+                        html_ += '        </label>'+"\n"
+                        html_ += '       </div>'+"\n"
+                        html_ += '     </li>'+"\n"
+                    }
+                }
+                html_ += '     </ul>'+"\n"
+                html_ += '    </div>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '  </div>'+"\n"
+            }
 
-    // $.ajax({
-    //     type: 'GET',
-    //     url: window.location.origin+'/api/corpusintersection/'+corpus_id+'/'+theids.join("a"),
-    //     //contentType: "application/json",
-    //     //dataType: 'json',
-    //     success : function(data){
-    //         console.log(data)
-    //     },
-    //     error: function(){ 
-    //         pr('Page Not found: TestFunction()');
-    //     }
-    // });
+            html_ += ' </form>'+"\n"
+            html_ += '</div>'+"\n"
+
+            $("#user_portfolio").html( html_ )
+            $('#corpuses_form input:radio').change(function() {
+               $("#add_corpus_tab").prop("disabled",false)
+               var selected = $('input[name=optradio]:checked')[0].id.split("_")
+               var sel_p = selected[0], sel_c=selected[1]
+               $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
+
+            });
+
+
+        },
+        error: function(){ 
+            pr('Page Not found: TestFunction()');
+        }
+    });
 }
 
+
+$.doTimeout(3000,function (){
+    TestFunction()
+});
 
 
 

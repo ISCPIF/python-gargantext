@@ -580,14 +580,16 @@ function printCorpuses() {
             console.clear()
             console.log( "!!!!!!!! in printCorpuses() AJAX!!!!!!!! " )
         
-            console.log(data)
-            // var nodes = getVisibleNodes()
-            // for(var n in nodes) {
-            //     if(data[nodes[n].id]) {
-            //         nodes[n].color = "#ff0000";
-            //     }
-            // }
-            // partialGraph.draw()
+            for(var i in Nodes) {
+                if(data[i])
+                    Nodes[i].attributes["inter"] = data[i]
+                else
+                    Nodes[i].attributes["inter"] = 0
+            }
+            cancelSelection(false)
+            ChangeGraphAppearanceByAtt(true)
+            clustersBy("inter")
+            
         },
         error: function(xhr, status, error) {
           var err = eval("(" + xhr.responseText + ")");
@@ -650,12 +652,10 @@ function printCorpuses() {
 
     // console.log("the two corpuses:")
     // console.log( theids )
-
-
 }
 
 // Just for Garg
-function TestFunction() {
+function GetUserPortfolio() {
     //http://localhost:8000/api/corpusintersection/1a50317a50145
 
     var pageurl = window.location.href.split("/")
@@ -738,7 +738,7 @@ function TestFunction() {
 
 
 $.doTimeout(3000,function (){
-    TestFunction()
+    GetUserPortfolio()
 });
 
 

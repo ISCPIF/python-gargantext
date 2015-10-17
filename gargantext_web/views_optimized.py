@@ -249,7 +249,7 @@ def getCorpusIntersection(request , corpuses_ids):
             return JsonHttpResponse(FinalDict)
          # If corpus[1] has a coocurrence.id then lets continue
 
-        FinalDict = {}
+        Cooc_Avg = {}
         import networkx as nx
         G = nx.Graph() # I use an undirected graph, because direction doesnt matter here, coocs should be a triangular matrix, so...
         ngrams_data1 = session.query(NodeNgramNgram).filter( NodeNgramNgram.node_id==cooc_ids[0], NodeNgramNgram.ngramx_id.in_( node_ids )).all()
@@ -265,14 +265,16 @@ def getCorpusIntersection(request , corpuses_ids):
             n1 = e[0]
             n2 = e[1]
             # print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
-            if n1 not in FinalDict:
-                FinalDict[n1]=0
-            if n2 not in FinalDict:
-                FinalDict[n2]=0
-            FinalDict[n1]+=G[n1][n2]["weight"] 
-            FinalDict[n2]+=G[n1][n2]["weight"] 
-        for node in FinalDict:
-            FinalDict[node] = FinalDict[node]/G.degree(node)
+            if n1 not in Cooc_Avg:
+                Cooc_Avg[n1]=0
+            if n2 not in Cooc_Avg:
+                Cooc_Avg[n2]=0
+            Cooc_Avg[n1]+=G[n1][n2]["weight"] 
+            Cooc_Avg[n2]+=G[n1][n2]["weight"] 
+        FinalDict = {}
+        for node in node_ids:
+            if node in Cooc_Avg:
+                FinalDict[node] = Cooc_Avg[node]/G.degree(node)
         # Getting AVG-COOC of each ngram that exists in the cooc-matrix of the compared-corpus. 
 
     return JsonHttpResponse(FinalDict)
@@ -303,7 +305,7 @@ def getUserPortfolio(request , project_id):
                     "c":doc_count
                 }
                 results[i.id]["corpuses"].append(info)
-                print("\t\t",j.id , j.name , doc_count)
+                # print("\t\t",j.id , j.name , doc_count)
 
         if len(results[i.id]["corpuses"])==0:
             del results[i.id]

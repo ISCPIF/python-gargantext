@@ -29,8 +29,20 @@ var mainfile = ["db.json"];
 // var corpusesList = {} // garg exclusive -> corpus comparison
 
 // getUrlParam.file = "data/testgraph.json";
-if($("#graphid").length>0) // just Garg
-    getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
+
+
+if( isUndef(getUrlParam.field1) && isUndef(getUrlParam.field2) ) {
+    if($("#graphid").length>0) {
+        getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
+    }
+} else {
+    var current_url = window.location.origin+window.location.pathname+window.location.search
+    getUrlParam.file = current_url.replace(/project(.*?)corpus/g, "api/corpus").replace("explorer?","graph?")
+}
+// if($("#graphid").length>0) // just Garg
+//     getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
+
+
 var corpusesList = {}
 var Clusters = [];
 

@@ -8,6 +8,7 @@ from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
 from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 import inspect
+import datetime
 
 def do_cooc(corpus=None
          , field1='ngrams', field2='ngrams'
@@ -116,22 +117,31 @@ def do_cooc(corpus=None
 
     # Cooc between the dates start and end
     if start is not None:
+        #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
+        # TODO : more complexe date format here.
+        date_start = datetime.datetime.strptime (str(start), "%Y")
+        date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
+        
         Start=aliased(NodeHyperdata)
         StartFormat = aliased(Hyperdata)
         cooc_query = (cooc_query.join(Start, Start.node_id == Node.id)
                                 .join(StartFormat, StartFormat.id == Start.hyperdata_id)
-                                .filter(StartFormat.name == 'datetime')
-                                .filter(Start.value_datetime >= start)
+                                .filter(StartFormat.name == 'publication_date')
+                                .filter(Start.value_datetime >= date_start_utc)
                       )
 
 
     if end is not None:
+        # TODO : more complexe date format here.
+        date_end = datetime.datetime.strptime (str(end), "%Y")
+        date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
+        
         End=aliased(NodeHyperdata)
         EndFormat = aliased(Hyperdata)
         cooc_query = (cooc_query.join(End, End.node_id == Node.id)
                                 .join(EndFormat, EndFormat.id == End.hyperdata_id)
-                                .filter(EndFormat.name == 'datetime')
-                                .filter(End.value_datetime <= end)
+                                .filter(EndFormat.name == 'publication_date')
+                                .filter(End.value_datetime <= date_end_utc)
                       )
 
 

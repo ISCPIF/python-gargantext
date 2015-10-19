@@ -11,9 +11,14 @@ class Graph(APIView):
         Graph.get :: Get graph data as REST api.
         Get all the parameters first
         graph?field1=ngrams&field2=ngrams&
+        graph?field1=ngrams&field2=ngrams&start=''&end=''
         '''
         field1 = request.GET.get('field1', 'ngrams')
         field2 = request.GET.get('field2', 'ngrams')
+        
+        start  = request.GET.get('start', None)
+        end    = request.GET.get('end'  , None)
+        
         format_   =  request.GET.get('format', 'json')
         type_    = request.GET.get('type', 'node_link')
         
@@ -25,7 +30,10 @@ class Graph(APIView):
         
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :
-                data = get_cooc(corpus=corpus,field1=field1, field2=field2)
+                if start is not None and end is not None :
+                    data = get_cooc(corpus=corpus,field1=field1, field2=field2, start=start, end=end)
+                else:
+                    data = get_cooc(corpus=corpus,field1=field1, field2=field2)
                 if format_ == 'json':
                     return JsonHttpResponse(data)
         else:

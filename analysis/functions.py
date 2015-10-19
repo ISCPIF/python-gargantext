@@ -115,8 +115,9 @@ def do_distance(cooc_id):
     #edges_to_remove = [ e for e in G.edges_iter() if
 
     degree = G.degree()
-    nodes_to_remove = [n for n in degree if degree[n] <= 1]
-    G.remove_nodes_from(nodes_to_remove)
+    G.remove_nodes_from(nx.isolates(G))
+    #nodes_to_remove = [n for n in degree if degree[n] <= 1]
+    #G.remove_nodes_from(nodes_to_remove)
     partition = best_partition(G.to_undirected())
     print("Density of the graph:", nx.density(G))
     return(G,partition,ids,weight)
@@ -150,7 +151,8 @@ def get_cooc(request=None, corpus=None
                 G.node[node]['pk'] = ids[node]
                 G.node[node]['label']   = session.query(Ngram.terms).filter(Ngram.id==node).first()
                 G.node[node]['size']    = weight[ids[node]]
-                G.node[node]['group']   = partition[node]
+                G.node[node]['type']    = "NGrams"
+                G.node[node]['attributes'] = { "clust_default": partition[node]} # new format
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
                 pass #PrintException()

@@ -154,7 +154,7 @@ def get_cooc(request=None, corpus=None
                 
                 G.node[node_id]['size']    = weight[node_id]
                 G.node[node_id]['type']    = ids[node_id][0]
-                #G.node[node]['attributes'] = { "clust_default": partition[node_id]} # new format
+                G.node[node_id]['attributes'] = { "clust_default": partition[node_id]} # new format
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
                 pass #PrintException()

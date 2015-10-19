@@ -516,7 +516,8 @@ function scanJSON( data ) {
 // Level-00
 // for {1,2}partite graphs
 function dictfyJSON( data , categories ) {
-
+    console.clear()
+    console.log("IN DICTIFY JSON")
     var catDict = {}
     var catCount = {}
     for(var i in categories)  catDict[categories[i]] = i;
@@ -572,7 +573,7 @@ function dictfyJSON( data , categories ) {
         edge.weight = weight;
         edge.type = type;
         
-        if (nodes[source] && nodes[target]) {
+        if ( (nodes[source] && nodes[target]) )  {
             idS=nodes[source].type;
             idT=nodes[target].type;
 

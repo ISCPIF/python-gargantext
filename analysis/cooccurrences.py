@@ -66,13 +66,6 @@ def do_cooc(corpus=None
 
     doc_id = cache.NodeType['Document'].id
    
-    hyperdata_id = session.query(Hyperdata).filter(Hyperdata.name=='source').first().id
-    test_query = (session.query(NodeHyperdataNgram)
-                 .join(Node, Node.id == NodeHyperdataNgram.node_id)
-                 .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
-                 .filter(NodeHyperdataNgram.hyperdata_id==hyperdata_id)
-                 )
-    
     #print([n for n in test_query])
     if isMonopartite :
         NodeNgramX = aliased(NodeNgram)
@@ -91,9 +84,8 @@ def do_cooc(corpus=None
         cooc_query = (session.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeHyperdataNgram.node_id)
                  .join(NodeNgramY, NodeNgramY.node_id == Node.id)
-                 .join(NodeHyperdata, NodeHyperdata.node_id==Node.id)
-                 .join(Hyperdata, Hyperdata.id == NodeHyperdata.hyperdata_id)
-                 .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
+                 .join(Hyperdata, Hyperdata.id == NodeHyperdataNgram.hyperdata_id)
+                 .filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
                  .filter(Hyperdata.name == field1)
                     )
 

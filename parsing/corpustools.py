@@ -147,7 +147,8 @@ def parse_resources(corpus, user=None, user_id=None):
     hyperdata_set = set()
     hyperdata_ngrams = set()
     node_hyperdata_ngrams = set()
-    for field in ['source', 'authors', 'journal']:
+    #for field in ['source', 'authors', 'journal']:
+    for field in ['journal', 'authors']:
         hyperdata_set.add(session.query(Hyperdata.id).filter(Hyperdata.name==field).first()[0])
     
     #print("hyperdata_set", hyperdata_set)
@@ -155,16 +156,18 @@ def parse_resources(corpus, user=None, user_id=None):
     for key, values in node_hyperdata_lists.items():
         #print('here', key, values)
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
-        if key == 'string':
+        if key == 'string' :
             for value in values:
+                print('value', value)
                 if value[1] in hyperdata_set:
+                    print('value_1', value[1])
                     for val in value[2].split(', '):
                         hyperdata_ngrams.add((val, len(val.split(' '))))
                         node_hyperdata_ngrams.add((value[0], value[1], val))
     
     #print(hyperdata_ngrams)
     terms_id = insert_ngrams(list(hyperdata_ngrams))
-        
+    
     bulk_insert(NodeHyperdataNgram
                , ['node_id', 'hyperdata_id', 'ngram_id', 'score']
                , [(node_id, hyperdata_id, terms_id[terms], 1) 

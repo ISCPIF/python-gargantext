@@ -150,12 +150,13 @@ def get_cooc(request=None, corpus=None
             try:
                 #node,type(labels[node])
                 G.node[node_id]['pk'] = ids[node_id][1]
-                
+                the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
+                the_label = ", ".join(the_label)
                 # TODO the query below is not optimized (do it do_distance).
-                G.node[node_id]['label']   = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
+                G.node[node_id]['label']   = the_label
                 
                 G.node[node_id]['size']    = weight[node_id]
-                G.node[node_id]['type']    = ids[node_id][0]
+                G.node[node_id]['type']    = ids[node_id][0].replace("ngrams","terms")
                 G.node[node_id]['attributes'] = { "clust_default": partition[node_id]} # new format
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:

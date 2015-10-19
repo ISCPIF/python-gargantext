@@ -24,36 +24,28 @@ from rest_v1_0.api import JsonHttpResponse
 from analysis.louvain import best_partition, generate_dendogram, partition_at_level
 
 from ngram.lists import listIds
-
+from sqlalchemy.orm import aliased
 
 def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
-size = 1000
 
-
-def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=size):
+def do_distance(cooc_id):
     '''
-    get_ccoc : to compute the graph.
+    do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
+    #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
+    
     matrix = defaultdict(lambda : defaultdict(float))
     ids    = dict()
     labels = dict()
     weight = dict()
 
-    #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
-    print("Coocurrences do not exist yet, create it.")
-    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
-    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
-    group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
-    cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
-    
-    # data deleted each time
-    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
-    cooc_id = do_cooc(corpus=corpus, miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
+    Cooc = aliased(NodeNgramNgram)
 
-    #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
-    for cooc in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all():
+    query = session.query(Cooc).filter(Cooc.node_id==cooc_id).all()
+    #print(query)
+    for cooc in query:
         labels[cooc.ngramx_id] = cooc.ngramx_id
         labels[cooc.ngramy_id] = cooc.ngramy_id
 
@@ -125,11 +117,30 @@ def get_cooc(request=None, corpus=None, cooc_id=None, type='node_link', size=siz
     degree = G.degree()
     nodes_to_remove = [n for n in degree if degree[n] <= 1]
     G.remove_nodes_from(nodes_to_remove)
-    uG = G.to_undirected()
-    partition = best_partition(uG)
-    print(partition)
+    partition = best_partition(G.to_undirected())
     print("Density of the graph:", nx.density(G))
+    return(G,partition,ids,weight)
 
+
+def get_cooc(request=None, corpus=None
+        , field1='ngrams', field2='ngrams'
+        , cooc_id=None, type='node_link', size=1000):
+    '''
+    get_ccoc : to compute the graph.
+    '''
+    #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
+    print("Coocurrences do not exist yet, create it.")
+    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
+    group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
+    
+    # data deleted each time
+    #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
+    #session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
+    cooc_id = do_cooc(corpus=corpus, field1=field1, field2=field2
+            , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
+    
+    G, partition, ids, weight = do_distance(cooc_id)
 
     if type == "node_link":
 

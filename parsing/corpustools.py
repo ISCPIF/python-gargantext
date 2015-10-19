@@ -9,7 +9,7 @@ from admin.utils import DebugTime
 from gargantext_web.db import *
 
 from .parsers_config import parsers as _parsers
-
+from ngram.tools import insert_ngrams
 
 # keep all the parsers in a cache
 class Parsers(defaultdict):
@@ -144,9 +144,32 @@ def parse_resources(corpus, user=None, user_id=None):
 
     #print('I am here', node_hyperdata_lists.items())
 
+    hyperdata_set = set()
+    hyperdata_ngrams = set()
+    node_hyperdata_ngrams = set()
+    for field in ['source', 'authors', 'journal']:
+        hyperdata_set.add(session.query(Hyperdata.id).filter(Hyperdata.name==field).first()[0])
+    
+    #print("hyperdata_set", hyperdata_set)
+
     for key, values in node_hyperdata_lists.items():
         #print('here', key, values)
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
+        if key == 'string':
+            for value in values:
+                if value[1] in hyperdata_set:
+                    for val in value[2].split(', '):
+                        hyperdata_ngrams.add((val, len(val.split(' '))))
+                        node_hyperdata_ngrams.add((value[0], value[1], val))
+    
+    #print(hyperdata_ngrams)
+    terms_id = insert_ngrams(list(hyperdata_ngrams))
+        
+    bulk_insert(NodeHyperdataNgram
+               , ['node_id', 'hyperdata_id', 'ngram_id', 'score']
+               , [(node_id, hyperdata_id, terms_id[terms], 1) 
+                   for node_id, hyperdata_id, terms in list(node_hyperdata_ngrams)])
+
     # mark the corpus as parsed
     corpus.parsed = True
 
@@ -154,7 +177,6 @@ def parse_resources(corpus, user=None, user_id=None):
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
 class NgramsExtractors(defaultdict):
-
     def __init__(self):
         # English
         self['en'] = EnglishNgramsExtractor()
@@ -230,66 +252,15 @@ def extract_ngrams(corpus, keys):
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
                     node_ngram_list[node_id][terms] += 1
-                    ngrams_data.add((n, terms[:255]))
+                    ngrams_data.add((terms[:255],n))
                     ngrams_language_data.add((terms, language_id))
                     ngrams_tag_data.add((terms, tag_id))
 
     # insert ngrams to temporary table
     dbg.show('find ids for the %d ngrams' % len(ngrams_data))
     db, cursor = get_cursor()
-    cursor.execute('''
-        CREATE TEMPORARY TABLE tmp__ngrams (
-            id INT,
-            n INT NOT NULL,
-            terms VARCHAR(255) NOT NULL
-        )
-    ''')
-    bulk_insert('tmp__ngrams', ['n', 'terms'], ngrams_data, cursor=cursor)
-    # retrieve ngram ids from already inserted stuff
-    cursor.execute('''
-        UPDATE
-            tmp__ngrams
-        SET
-            id = ngram.id
-        FROM
-            %s AS ngram
-        WHERE
-            ngram.terms = tmp__ngrams.terms
-    ''' % (Ngram.__table__.name, ))
-    # insert, then get the ids back
+    ngram_ids = insert_ngrams(ngrams_data)
 
-    cursor.execute('''
-        INSERT INTO
-            %s (n, terms)
-        SELECT
-            n, terms
-        FROM
-            tmp__ngrams
-        WHERE
-            id IS NULL
-    ''' % (Ngram.__table__.name, ))
-
-
-    cursor.execute('''
-        UPDATE
-            tmp__ngrams
-        SET
-            id = ngram.id
-        FROM
-            %s AS ngram
-        WHERE
-            ngram.terms = tmp__ngrams.terms
-        AND
-            tmp__ngrams.id IS NULL
-    ''' % (Ngram.__table__.name, ))
-
-    # get all ids
-    ngram_ids = dict()
-    cursor.execute('SELECT id, terms FROM tmp__ngrams')
-    for row in cursor.fetchall():
-        ngram_ids[row[1]] = row[0]
-
-    #
     dbg.show('insert associations')
     node_ngram_data = list()
     for node_id, ngrams in node_ngram_list.items():
@@ -303,8 +274,4 @@ def extract_ngrams(corpus, keys):
     dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database
     db.commit()
-
-
-
-
 

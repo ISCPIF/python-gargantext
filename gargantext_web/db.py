@@ -252,7 +252,7 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
          )
     if name_str is not None:
         node = node.filter(Node.name==name_str)
-    if parameters is not None:
+    if hyperdata is not None:
         for k,v in hyperdata.items():
             node = node.filter(Node.hyperdata[k] == v)
     node = node.first()

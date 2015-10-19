@@ -30,30 +30,27 @@ def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
 
-def do_distance(cooc_id):
+def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
     #print([n for n in session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).all()])
     
     matrix = defaultdict(lambda : defaultdict(float))
-    ids    = dict()
+    ids    = defaultdict(lambda : defaultdict(int))
     labels = dict()
     weight = dict()
 
     Cooc = aliased(NodeNgramNgram)
 
     query = session.query(Cooc).filter(Cooc.node_id==cooc_id).all()
-    #print(query)
+    
     for cooc in query:
-        labels[cooc.ngramx_id] = cooc.ngramx_id
-        labels[cooc.ngramy_id] = cooc.ngramy_id
-
         matrix[cooc.ngramx_id][cooc.ngramy_id] = cooc.score
         matrix[cooc.ngramy_id][cooc.ngramx_id] = cooc.score
 
-        ids[labels[cooc.ngramx_id]] = cooc.ngramx_id
-        ids[labels[cooc.ngramy_id]] = cooc.ngramy_id
+        ids[cooc.ngramx_id] = (field1, cooc.ngramx_id)
+        ids[cooc.ngramy_id] = (field2, cooc.ngramy_id)
 
         weight[cooc.ngramx_id] = weight.get(cooc.ngramx_id, 0) + cooc.score
         weight[cooc.ngramy_id] = weight.get(cooc.ngramy_id, 0) + cooc.score
@@ -66,7 +63,6 @@ def do_distance(cooc_id):
 
     x = x / x.sum(axis=1)
     y = y / y.sum(axis=0)
-    #print(x)
 
     xs = x.sum(axis=1) - x
     ys = x.sum(axis=0) - x
@@ -79,16 +75,13 @@ def do_distance(cooc_id):
     n = n.sort(inplace=False)
     m = m.sort(inplace=False)
 
-    #print(n)
-    #print(m)
-
     nodes_included = 300 #int(round(size/20,0))
     #nodes_excluded = int(round(size/10,0))
 
     nodes_specific = 300 #int(round(size/10,0))
     #nodes_generic = int(round(size/10,0))
 
-    # TODO user the included score for the node size
+    # TODO use the included score for the node size
     n_index = pd.Index.intersection(x.index, n.index[:nodes_included])
     # Generic:
     #m_index = pd.Index.intersection(x.index, m.index[:nodes_generic])
@@ -97,9 +90,6 @@ def do_distance(cooc_id):
 
     x_index = pd.Index.union(n_index, m_index)
     xx = x[list(x_index)].T[list(x_index)]
-
-    # import pprint
-    # pprint.pprint(ids)
 
     # Removing unconnected nodes
     xxx = xx.values
@@ -110,22 +100,26 @@ def do_distance(cooc_id):
     G = nx.from_numpy_matrix(np.matrix(matrix_filtered))
     #G = nx.from_numpy_matrix(matrix_filtered, create_using=nx.MultiDiGraph())
 
-    G = nx.relabel_nodes(G, dict(enumerate([ labels[label] for label in list(xx.columns)])))
+    G = nx.relabel_nodes(G, dict(enumerate([ ids[id_][1] for id_ in list(xx.columns)])))
     # Removing too connected nodes (find automatic way to do it)
     #edges_to_remove = [ e for e in G.edges_iter() if
 
-    degree = G.degree()
     G.remove_nodes_from(nx.isolates(G))
-    #nodes_to_remove = [n for n in degree if degree[n] <= 1]
-    #G.remove_nodes_from(nodes_to_remove)
+    # = degree = G.degree()
+    #   nodes_to_remove = [n for n in degree if degree[n] <= 1]
+    #   G.remove_nodes_from(nodes_to_remove)
+    
     partition = best_partition(G.to_undirected())
     print("Density of the graph:", nx.density(G))
+
     return(G,partition,ids,weight)
 
 
 def get_cooc(request=None, corpus=None
         , field1='ngrams', field2='ngrams'
-        , cooc_id=None, type='node_link', size=1000):
+        , cooc_id=None, type='node_link', size=1000
+        , start=None, end=None
+        ):
     '''
     get_ccoc : to compute the graph.
     '''
@@ -135,24 +129,29 @@ def get_cooc(request=None, corpus=None
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
     
+    
+    if field1 == field2 == 'ngrams' :
+        isMonopartite = True
+    else:
+        isMonopartite = False
+
     # data deleted each time
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
-    #session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc_id).delete()
     cooc_id = do_cooc(corpus=corpus, field1=field1, field2=field2
-            , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size)
+            , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size
+            , isMonopartite=isMonopartite)
     
-    G, partition, ids, weight = do_distance(cooc_id)
+    G, partition, ids, weight = do_distance(cooc_id, field1=field1, field2=field2, isMonopartite=isMonopartite)
 
     if type == "node_link":
-
-        for node in G.nodes():
+        for node_id in G.nodes():
             try:
                 #node,type(labels[node])
-                G.node[node]['pk'] = ids[node]
-                G.node[node]['label']   = session.query(Ngram.terms).filter(Ngram.id==node).first()
-                G.node[node]['size']    = weight[ids[node]]
-                G.node[node]['type']    = "NGrams"
-                G.node[node]['attributes'] = { "clust_default": partition[node]} # new format
+                G.node[node_id]['pk'] = ids[node_id][1]
+                G.node[node_id]['label']   = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
+                G.node[node_id]['size']    = weight[node_id]
+                G.node[node_id]['type']    = ids[node_id][0]
+                #G.node[node]['attributes'] = { "clust_default": partition[node_id]} # new format
                 # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
             except Exception as error:
                 pass #PrintException()
@@ -165,7 +164,7 @@ def get_cooc(request=None, corpus=None
         for e in G.edges_iter():
             s = e[0]
             t = e[1]
-            info = { "id":i , "source":ids[s] , "target":ids[t]}
+            info = { "id":i , "source":ids[s][1] , "target":ids[t][1]}
             # print(info)
             links.append(info)
             i+=1

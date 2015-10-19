@@ -15,7 +15,8 @@ def do_cooc(corpus=None
          , cvalue_id=None
          , n_min=2, n_max=None
          , start=None, end=None
-         , limit=1000):
+         , limit=1000
+         , isMonopartite=True):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -64,14 +65,7 @@ def do_cooc(corpus=None
     session.commit()
 
     doc_id = cache.NodeType['Document'].id
-    
-
-    
-    if field1 == field2 == 'ngrams' :
-        isMonopartite = True
-    else:
-        isMonopartite = False
-    
+   
     hyperdata_id = session.query(Hyperdata).filter(Hyperdata.name=='source').first().id
     test_query = (session.query(NodeHyperdataNgram)
                  .join(Node, Node.id == NodeHyperdataNgram.node_id)

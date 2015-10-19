@@ -68,6 +68,7 @@ urlpatterns = patterns('',
     # Visualizations
     url(r'^project/(\d+)/corpus/(\d+)/chart$', views.chart),
     url(r'^project/(\d+)/corpus/(\d+)/explorer$', views.graph),
+    url(r'^project/(\d+)/corpus/(\d+)/explorer/(\d+)/(\d+)$', views.graph),
     url(r'^project/(\d+)/corpus/(\d+)/matrix$', views.matrix),
 
     url(r'^chart/corpus/(\d+)/data.csv$', views.send_csv),  # => api.node.children('type' : 'data', 'format' : 'csv')
@@ -77,10 +78,14 @@ urlpatterns = patterns('',
     url(r'^ngrams$', views.ngrams),  # to be removed
     url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
     url(r'^tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
+    url(r'^api/corpusintersection/(\w+)$', views_optimized.getCorpusIntersection),
+    url(r'^api/userportfolio/project/(\d+)/corpuses$', views_optimized.getUserPortfolio),
     
     url(r'^project/(\d+)/corpus/(\d+)/(\w+)/update$', views.update_nodes),
     # TODO rest to update corpus and information for progress bar
 
+    url(r'^corpus/(\d+)/sankey$', views.sankey),
+    url(r'^corpus/(\d+)/sankey.csv$', views.sankey_csv),
 
     ############################################################################
     url(r'^tests/', include('tests.urls')),

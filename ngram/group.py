@@ -137,24 +137,20 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
         miam_to_insert.add((miam_node.id, n[0],1))
         #print([n for n in group])
         for g in group:
-            if (miam_node.id, g[0],1) not in miam_to_insert:
-#list_to_check.remove(g)
+            if (miam_node.id, g[0], 1) not in miam_to_insert:
                 group_to_insert.append((node_group.id, n[0], g[0], 1))
                 print(n[1], "=", g[1])
-
-# Deleting previous groups
+    # TODO see here if coherent add in miam or group...
+    # Deleting previous groups
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
     bulk_insert(NodeNgramNgram
                 , ('node_id', 'ngramx_id', 'ngramy_id', 'score')
                 , [data for data in group_to_insert])
 
-#    # stop_id = get_or_create_node(parent_id=corpus.id,user_id=corpus.user_id,nodetype='StopList')
-    #session.commit()
     for n in group_to_insert:
-        print(n)
+        #print(n)
         miam_to_insert.add((miam_node.id, n[1], 1))
+    
     # Deleting previous ngrams miam list
     session.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
     bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
-#
-

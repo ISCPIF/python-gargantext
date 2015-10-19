@@ -27,7 +27,7 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
 
         # Nodes are either in root_list or user_list
         root_list = ['Stem', 'Lem']
-        user_list   = ['MiamList', 'StopList', 'MainList', 'GroupList']
+        user_list   = ['MiamList', 'StopList', 'MapList', 'Group']
 
         if typeList in user_list:
             nodes = session.query(Node).filter(

@@ -5,6 +5,7 @@ from lxml.html import html5parser
 from datetime import datetime, date
 from django.utils import timezone
 import dateutil.parser
+import dateparser
 
 from .FileParser import FileParser
 from ..NgramsExtractors import *
@@ -140,7 +141,10 @@ class EuropressFileParser(FileParser):
 
                         if format_europresse == 50.2:
                             # TODO here check the split if needed: 'Brest Ville, mercredi 26 novembre 2014'
-                            text = text.split(', ')[1]
+                            try:# # 2015-oct-08 exception added
+                                text = text.split(', ')[1] 
+                            except:
+                                pass
 
                         format_date_fr = re.compile('\d*\s*\w+\s+\d{4}', re.UNICODE)
                         format_date_fr_v2 = re.compile('\s*\w+\s+\d+\s+\w+\s+\d{4}', re.UNICODE)
@@ -166,29 +170,32 @@ class EuropressFileParser(FileParser):
 
                         if test_date_fr is not None or test_date_fr_v2 is not None:
                             self.localeEncoding = "fr_FR"
-                            locale.setlocale(locale.LC_ALL, localeEncoding)
+                            locale.setlocale(locale.LC_ALL, "fr_FR.utf-8")
                             if encoding != "utf-8":
                                 text = text.replace('י', 'é')
                                 text = text.replace('ű', 'û')
                                 text = text.replace(' aot ', ' août ')
 
-                            try :
-                                hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
-                            except :
-                                try:
-                                    hyperdata['publication_date'] = datetime.strptime(text, '%B %Y')
+                            try:
+                                hyperdata['publication_date'] = dateparser.parse(text, languages=['fr'])
+                            except:
+                                try :
+                                    hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
                                 except :
                                     try:
-                                        locale.setlocale(locale.LC_ALL, "fr_FR")
-                                        hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
-                                        # hyperdata['publication_date'] = dateutil.parser.parse(text)
+                                        hyperdata['publication_date'] = datetime.strptime(text, '%B %Y')
                                     except :
-                                        # TODO format to parse: ' mercredi 26 novembre 2014'
-                                        try :
-                                            hyperdata['publication_date'] = datetime.strptime(text, ' %A %d %B %Y')
-                                        except Exception as error:
-                                            print(error, text)
-                                            pass
+                                        try:
+                                            locale.setlocale(locale.LC_ALL, "fr_FR")
+                                            hyperdata['publication_date'] = datetime.strptime(text, '%d %B %Y')
+                                            # hyperdata['publication_date'] = dateutil.parser.parse(text)
+                                        except :
+                                            # TODO format to parse: ' mercredi 26 novembre 2014'
+                                            try :
+                                                hyperdata['publication_date'] = datetime.strptime(text, ' %A %d %B %Y')
+                                            except Exception as error:
+                                                print(error, text)
+                                                pass
 
 
                         if test_date_en is not None:
@@ -278,10 +285,10 @@ class EuropressFileParser(FileParser):
                     else:
                         hyperdata['doi'] = "not found"
 
-                    try:
-                        hyperdata['length_words'] = len(hyperdata['abstract'].split(' '))
-                    except:
-                        PrintException()
+                    # try:
+                    #     hyperdata['length_words'] = len(hyperdata['abstract'].split(' '))
+                    # except:
+                    #     PrintException()
 
                     hyperdata['length_letters'] = len(hyperdata['abstract'])
 

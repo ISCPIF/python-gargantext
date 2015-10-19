@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 
 from gargantext_web import views_optimized
 
-from rest_v1_0 import api, ngrams
+from rest_v1_0 import api, ngrams, graph
 
 urlpatterns = patterns('',
     # REST URLS
@@ -33,6 +33,9 @@ urlpatterns = patterns('',
     # url(r'^api/nodes/(\d+)/children/duplicates/delete$', api.NodesChildrenDuplicates.delete ),
     url(r'nodes/(\d+)/ngrams$', api.CorpusController.ngrams),
     url(r'nodes/(\d+)/ngrams$', api.CorpusController.ngrams),
+    
+    url(r'nodes/(\d+)/graph$', graph.Graph.as_view()),
+    url(r'corpus/(\d+)/graph$', graph.Graph.as_view()),
     
     url(r'tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
 )

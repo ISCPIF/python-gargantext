@@ -566,33 +566,14 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
     project_type_id = cache.NodeType['Project'].id
     corpus_type_id = cache.NodeType['Corpus'].id
 
-    results = {}
-    projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id).all()
-    for i in projs:
-        # print(i.id , i.name)
-        if i.id not in results: results[i.id] = {}
-        results[i.id]["proj_name"] = i.name
-        results[i.id]["corpuses"] = []
-        corpuses = session.query(Node).filter(Node.parent_id==i.id , Node.type_id==corpus_type_id).all()
-        for j in corpuses:
-            if int(j.id)!=int(corpus_id):
-                info = { "id":j.id , "name":j.name }
-                results[i.id]["corpuses"].append(info)
-                # print("\t",j.id , j.name)
-
-    # import pprint
-    # pprint.pprint(results)
-
-#    if specific != None and generic != None :
-
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
+
     html = t.render(Context({\
             'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
-            'corpusinfo'   : results,\
             'graphfile' : graphurl,\
             }))
 

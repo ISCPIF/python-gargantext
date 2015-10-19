@@ -195,7 +195,7 @@ def tfidf(request, corpus_id, ngram_ids):
     """Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
     """
-    limit=6
+    limit=5
     nodes_list = []
     # filter input
     ngram_ids = ngram_ids.split('a')
@@ -219,7 +219,7 @@ def tfidf(request, corpus_id, ngram_ids):
     # print("\tcorpus_id:",corpus_id)
     # convert query result to a list of dicts
     for node, score in nodes_query:
-        print("\t corpus:",corpus_id,"\t",node.name)
+        # print("\t corpus:",corpus_id,"\t",node.name)
         node_dict = {
             'id': node.id,
             'score': score,
@@ -229,6 +229,85 @@ def tfidf(request, corpus_id, ngram_ids):
                 node_dict[key] = node.hyperdata[key]
         nodes_list.append(node_dict)
 
-    # print("= = = = = = = = \n")
-    data = json.dumps(nodes_list)
-    return JsonHttpResponse(data)
+    return JsonHttpResponse(nodes_list)
+
+
+def getCorpusIntersection(request , corpuses_ids):
+
+    FinalDict = False
+    if request.method == 'POST' and "nodeids" in request.POST and len(request.POST["nodeids"])>0:
+        import ast
+        node_ids = [int(i) for i in (ast.literal_eval( request.POST["nodeids"] )) ]
+        # Here are the visible nodes of the initial semantic map.
+
+        corpuses_ids = corpuses_ids.split('a')
+        corpuses_ids = [int(i) for i in corpuses_ids] # corpus[1] will be the corpus to compare
+        cooc_type_id = cache.NodeType['Cooccurrence'].id
+        
+        cooc_ids  = session.query(Node.id).filter(Node.user_id == request.user.id , Node.parent_id==corpuses_ids[1] , Node.type_id == cooc_type_id ).first()
+        if len(cooc_ids)==0:
+            return JsonHttpResponse(FinalDict)
+         # If corpus[1] has a coocurrence.id then lets continue
+
+        Cooc_Avg = {}
+        import networkx as nx
+        G = nx.Graph() # I use an undirected graph, because direction doesnt matter here, coocs should be a triangular matrix, so...
+        ngrams_data1 = session.query(NodeNgramNgram).filter( NodeNgramNgram.node_id==cooc_ids[0], NodeNgramNgram.ngramx_id.in_( node_ids )).all()
+        for ngram in ngrams_data1: # are there visible nodes in the X-axis of corpus to compare ?
+            G.add_edge(  ngram.ngramx_id ,  ngram.ngramy_id , weight=ngram.score)
+
+        ngrams_data2 = session.query(NodeNgramNgram).filter( NodeNgramNgram.node_id==cooc_ids[0], NodeNgramNgram.ngramy_id.in_( node_ids )).all()
+        for ngram in ngrams_data2: # are there visible nodes in the Y-axis of corpus to compare ?
+            if not G.has_edge(ngram.ngramx_id,ngram.ngramy_id):
+                G.add_edge(  ngram.ngramx_id ,  ngram.ngramy_id , weight=ngram.score)
+
+        for e in G.edges_iter():
+            n1 = e[0]
+            n2 = e[1]
+            # print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
+            if n1 not in Cooc_Avg:
+                Cooc_Avg[n1]=0
+            if n2 not in Cooc_Avg:
+                Cooc_Avg[n2]=0
+            Cooc_Avg[n1]+=G[n1][n2]["weight"] 
+            Cooc_Avg[n2]+=G[n1][n2]["weight"] 
+        FinalDict = {}
+        for node in node_ids:
+            if node in Cooc_Avg:
+                FinalDict[node] = Cooc_Avg[node]/G.degree(node)
+        # Getting AVG-COOC of each ngram that exists in the cooc-matrix of the compared-corpus. 
+
+    return JsonHttpResponse(FinalDict)
+
+
+def getUserPortfolio(request , project_id):
+    user = request.user
+    user_id         = cache.User[request.user.username].id
+    project_type_id = cache.NodeType['Project'].id
+    corpus_type_id = cache.NodeType['Corpus'].id
+
+    results = {}
+    projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id ).all()
+    for i in projs:
+        # print (i.id,i.name)
+        if i.id not in results: 
+            results[i.id] = {}
+        results[i.id]["proj_name"] = i.name
+        results[i.id]["corpuses"] = []
+        corpuses = session.query(Node).filter(Node.parent_id==i.id , Node.type_id==corpus_type_id).all()
+        for j in corpuses:
+            doc_count = session.query(func.count(Node.id)).filter(Node.parent_id==j.id).all()[0][0]
+            if doc_count >= 10:
+                # print(session.query(Node).filter(Node.id==j.id).first())
+                info = { 
+                    "id":j.id , 
+                    "name":j.name ,
+                    "c":doc_count
+                }
+                results[i.id]["corpuses"].append(info)
+                # print("\t\t",j.id , j.name , doc_count)
+
+        if len(results[i.id]["corpuses"])==0:
+            del results[i.id]
+
+    return JsonHttpResponse( results )

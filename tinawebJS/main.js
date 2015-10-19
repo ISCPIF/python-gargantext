@@ -70,7 +70,6 @@ $("#network").html(files_selector)
 
 var file = (Array.isArray(mainfile))?mainfile[0]:mainfile;
 
-var RES = AjaxSync({ URL: file });
 
 $.ajax({
         url: file,

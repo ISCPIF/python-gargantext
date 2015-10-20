@@ -217,6 +217,9 @@ def get_journals_json(request , project_id, corpus_id ):
             JournalsDict[journal] += 1
     return JsonHttpResponse(JournalsDict)
 
+from gargantext_web.db import session, cache, Node, NodeNgram
+from sqlalchemy import or_, func
+from sqlalchemy.orm import aliased
 def get_ngrams_json(request , project_id, corpus_id ):
     results = ["holaaaa" , "mundo"]
 
@@ -243,14 +246,28 @@ def get_ngrams_json(request , project_id, corpus_id ):
     myamlist_type_id = cache.NodeType['MiamList'].id
     myamlist = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
-    sql_average = """SELECT avg(weight) as Average FROM node_node_ngram WHERE node_node_ngram.node_id=%d""" % (myamlist.id)
-    cursor = connection.cursor()
-    cursor.execute(sql_average)
-    avg_result = cursor.fetchone()[0]
-    threshold = min (10 , math.sqrt(avg_result) )
+    # sql_average = """SELECT avg(weight) as Average FROM node_node_ngram WHERE node_node_ngram.node_id=%d""" % (myamlist.id)
+    # cursor = connection.cursor()
+    # cursor.execute(sql_average)
+    # avg_result = cursor.fetchone()[0]
+    # threshold = min (10 , math.sqrt(avg_result) )
 
-    OCCs  = session.query(Node_Ngram).filter( Node_Ngram.node_id==myamlist.id , Node_Ngram.weight >= threshold ).all()
+    # OCCs  = session.query(Node_Ngram).filter( Node_Ngram.node_id==myamlist.id , Node_Ngram.weight >= threshold ).all()
     # [ / Get Uniq_Occs ]
+    Miam = aliased(NodeNgram)
+    sql_average = (session.query(NodeNgram.ngram_id, func.sum(NodeNgram.weight))
+                          .join(Node, Node.id == NodeNgram.node_id)
+                          .join(Miam, Miam.ngram_id == NodeNgram.ngram_id)
+                          .filter(Node.parent_id == corpus_id, Node.type_id==cache.NodeType['Document'].id)
+                          .filter(Miam.node_id==myamlist.id)
+                          .group_by(NodeNgram.ngram_id)
+                          .all()
+                  )
+
+    # print([n for n in sql_average])
+    OCCs = {}
+    for ngram in sql_average:
+        OCCs [ ngram[0] ] = ngram[1]
 
 
 
@@ -258,11 +275,11 @@ def get_ngrams_json(request , project_id, corpus_id ):
     Ngrams_Scores = {}
 
     for ngram in OCCs:
-        if ngram.ngram_id not in StopList:
-            if ngram.ngram_id not in Ngrams_Scores:
-                Ngrams_Scores[ngram.ngram_id] = {}
-                Ngrams_Scores[ngram.ngram_id]["scores"] = {
-                        "occ_uniq": ngram.weight,
+        if ngram not in StopList:
+            if ngram not in Ngrams_Scores:
+                Ngrams_Scores[ngram] = {}
+                Ngrams_Scores[ngram]["scores"] = {
+                        "occ_uniq": round(OCCs[ngram]),
                         "tfidf_sum": 0.0
                     }
     # [ / Initializing Ngrams_Scores with occ_uniq ]
@@ -304,7 +321,7 @@ def get_ngrams_json(request , project_id, corpus_id ):
         "nb_docs":1,
         "orig_nb_ngrams":1,
         "nb_ngrams":len(Metrics["ngrams"]),
-        "occs_threshold":threshold
+        # "occs_threshold":threshold
     }
     # [ / Preparing JSON-Array full of Scores! ]
 

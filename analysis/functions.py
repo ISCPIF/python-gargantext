@@ -139,9 +139,7 @@ def get_cooc(request=None, corpus=None
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
     cooc_id = do_cooc(corpus=corpus, field1=field1, field2=field2
             , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size
-            , isMonopartite=isMonopartite
-            , start=start
-            , end = end)
+            , isMonopartite=isMonopartite)
     
     G, partition, ids, weight = do_distance(cooc_id, field1=field1, field2=field2, isMonopartite=isMonopartite)
 

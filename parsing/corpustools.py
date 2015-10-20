@@ -158,9 +158,7 @@ def parse_resources(corpus, user=None, user_id=None):
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
         if key == 'string' :
             for value in values:
-                print('value', value)
                 if value[1] in hyperdata_set:
-                    print('value_1', value[1])
                     for val in value[2].split(', '):
                         hyperdata_ngrams.add((val, len(val.split(' '))))
                         node_hyperdata_ngrams.add((value[0], value[1], val))

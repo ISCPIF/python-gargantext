@@ -263,11 +263,6 @@ def get_ngrams_json(request , project_id, corpus_id ):
     # print([n for n in sql_average])
     OCCs = {}
     for ngram in sql_average:
-        if ngram[0]==151483: 
-            print("FUUUUUUUUUUUUUUUUUUUUCKKKKKKK")
-            print(myamlist.id)
-            for miam in myamlists:
-                print("\t",miam.id)
         OCCs [ ngram[0] ] = ngram[1]
 
 

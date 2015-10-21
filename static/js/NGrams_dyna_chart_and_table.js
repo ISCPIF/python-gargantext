@@ -397,12 +397,11 @@ $("#Save_All").click(function(){
     var list_id = $("#list_id").val()
     // '/annotations/lists/'+list_id+'/ngrams/108642'
 
-    console.log(window.location.origin+'/annotations/lists/'+list_id+"/multiple")
+    console.log(window.location.origin+'/lists/'+list_id+"/ngrams/"+real_ids.join("+"))
     console.log(real_ids)
       $.ajax({
-        method: "POST",
-        url: window.location.origin+'/annotations/lists/'+list_id+"/multiple",
-        data: "to_delete="+JSON.stringify(real_ids),
+        method: "DELETE",
+        url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+real_ids.join("+"),
         beforeSend: function(xhr) {
           xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },

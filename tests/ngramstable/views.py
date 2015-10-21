@@ -111,12 +111,8 @@ def get_ngrams(request , project_id , corpus_id ):
     corpus  = cache.Node[int(corpus_id)]
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
-
-    lists = dict()
-    for list_type in ['MiamList', 'StopList']:
-        list_id = list()
-        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
-        lists["%s" % list_id[0][0]] = list_type
+    myamlist_type_id = cache.NodeType['MiamList'].id
+    miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
     try:
         processing = corpus.hyperdata['Processing']
@@ -132,7 +128,7 @@ def get_ngrams(request , project_id , corpus_id ):
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
-            'list_id': list_id[0][0],
+            'list_id': miamlist.id,
             }))
 
     return HttpResponse(html)
@@ -245,7 +241,7 @@ def get_ngrams_json(request , project_id, corpus_id ):
     # [ Get Uniq_Occs ]
     myamlist_type_id = cache.NodeType['MiamList'].id
     myamlist = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
-
+    myamlists = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).all()
     # sql_average = """SELECT avg(weight) as Average FROM node_node_ngram WHERE node_node_ngram.node_id=%d""" % (myamlist.id)
     # cursor = connection.cursor()
     # cursor.execute(sql_average)
@@ -267,6 +263,11 @@ def get_ngrams_json(request , project_id, corpus_id ):
     # print([n for n in sql_average])
     OCCs = {}
     for ngram in sql_average:
+        if ngram[0]==151483: 
+            print("FUUUUUUUUUUUUUUUUUUUUCKKKKKKK")
+            print(myamlist.id)
+            for miam in myamlists:
+                print("\t",miam.id)
         OCCs [ ngram[0] ] = ngram[1]
 
 

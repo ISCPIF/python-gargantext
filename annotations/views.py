@@ -93,7 +93,9 @@ class NgramEdit(APIView):
         """
         Delete a ngram from a list
         """
+        print(ngram_ids)
         for ngram_id in ngram_ids.split('+'):
+            print('ngram_id', ngram_id)
             ngram_id = int(ngram_id)
             (session.query(NodeNgram)
                     .filter(NodeNgram.node_id==list_id)

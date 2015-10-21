@@ -123,31 +123,37 @@ def get_cooc(request=None, corpus=None
     '''
     get_ccoc : to compute the graph.
     '''
+    data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
     print("Coocurrences do not exist yet, create it.")
     miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
     
-    
-    if field1 == field2 == 'ngrams' :
-        isMonopartite = True
-    else:
-        isMonopartite = False
-
+    SamuelFlag = False
+    # if field1 == field2 == 'ngrams' :
+    #     isMonopartite = True
+    #     SamuelFlag = True
+    # else:
+    #     isMonopartite = False
+    isMonopartite = True # Always. So, calcule the graph-B and from these nodes, build the graph-A
     # data deleted each time
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
-    cooc_id = do_cooc(corpus=corpus, field1=field1, field2=field2
+    cooc_id = do_cooc(corpus=corpus, field1="ngrams", field2="ngrams"
             , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size
-            , isMonopartite=isMonopartite)
+            , isMonopartite=isMonopartite
+            , start=start
+            , end = end)
     
-    G, partition, ids, weight = do_distance(cooc_id, field1=field1, field2=field2, isMonopartite=isMonopartite)
+    G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams", isMonopartite=isMonopartite)
 
     if type == "node_link":
+        nodesB_dict = {}
         for node_id in G.nodes():
             try:
                 #node,type(labels[node])
                 G.node[node_id]['pk'] = ids[node_id][1]
+                nodesB_dict [ ids[node_id][1] ] = True
                 the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
                 the_label = ", ".join(the_label)
                 # TODO the query below is not optimized (do it do_distance).
@@ -161,20 +167,43 @@ def get_cooc(request=None, corpus=None
                 pass #PrintException()
                 #print("error01: ",error)
 
-        data = json_graph.node_link_data(G)
+        B = json_graph.node_link_data(G)
 
         links = []
         i=1
         for e in G.edges_iter():
             s = e[0]
             t = e[1]
-            info = { "id":i , "source":ids[s][1] , "target":ids[t][1]}
+            info = { 
+                "s":ids[s][1] , 
+                "t":ids[t][1] ,
+                "w": G[ids[s][1]][ids[t][1]]["weight"]
+            }
             # print(info)
             links.append(info)
             i+=1
-        # print(data)
-        data["links"] = []
-        data["links"] = links
+            # print(B)
+        B["links"] = []
+        B["links"] = links
+
+        if field1 == field2 == 'ngrams' :
+            data["nodes"] = B["nodes"]
+            data["links"] = B["links"]
+        else:
+            A = get_graphA( "journal" , nodesB_dict , B["links"] , corpus )
+            print("")
+            print("")
+            print("#nodesA:",len(A["nodes"]))
+            print("#linksA:",len(A["links"]))
+            print("#nodesB:",len(B["nodes"]))
+            print("#linksB:",len(B["links"]))
+            print("")
+            data["nodes"] = A["nodes"] + B["nodes"]
+            data["links"] = A["links"] + B["links"]
+            print("  #nodes :",len(data["nodes"]))
+            print("  #links :",len(data["links"]))
+            print("")
+            print("")
 
     elif type == "adjacency":
         for node in G.nodes():
@@ -191,13 +220,166 @@ def get_cooc(request=None, corpus=None
     elif type == 'bestpartition':
         return(partition)
 
-    #    data = json_graph.node_link_data(G, attrs={\
-    #            'source':'source',\
-    #            'target':'target',\
-    #            'weight':'weight',\
-    #            #'label':'label',\
-    #            #'color':'color',\
-    #            'id':'id',})
-    #print(data)
     return(data)
 
+
+
+def get_graphA( nodeA_type , NodesB , links , corpus ):
+    from analysis.InterUnion import Utils
+    print("")
+    print(" = = = == = = = ")
+    print("In get_graphA")
+    print("corpus:",corpus.id)
+    print("nodesB:",len(NodesB.keys()))
+    print("linksB:",len(links))
+
+    nodeA_type = cache.Hyperdata[nodeA_type].id
+    threshold_cotainf = 0.05
+    max_nodeid = -1
+    for nodeid in NodesB:
+    	if nodeid > max_nodeid:
+    		max_nodeid = nodeid
+
+    # = = = = [ 01. Getting ALL documents of the Corpus c ] = = = =  #
+    Docs = {}
+    document_type_id = cache.NodeType['Document'].id
+    sql_query = 'select id from node_node where parent_id='+str(corpus.id)+' and type_id='+str(document_type_id)
+    cursor = connection.cursor()
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    for i in results:
+        Docs[i[0]] = True
+    print("docs:",len(Docs.keys()))
+    # = = = = [ / 01. Getting ALL documents of the Corpus c ] = = = =  #
+
+
+    # = = = = [ 02. Getting ALL Documents related with Ngrams of the carte semantic  ] = = = =  #
+    sql_query = 'select nodey_id,ngram_id from node_nodenodengram where ngram_id IN (' + ','.join(map(str, NodesB.keys())) + ")"
+    cursor = connection.cursor()
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    # = = = = [ / 02. Getting ALL Documents related with Ngrams of the carte semantic  ] = = = =  #
+
+
+    # = = = = [ 03. Now we limit the retrieved Documents(step 02) to those belonging to the Corpus c ] = = = = ]
+    Docs_and_ = {
+        "nodesA":{},
+        "nodesB":{}
+    }
+    NodesB_and_Docs = {}
+    for i in results:
+        doc_id = i[0]
+        ngram_id = i[1]
+        if ngram_id in NodesB and doc_id in Docs:
+            if doc_id not in Docs_and_["nodesB"]:
+                Docs_and_["nodesB"][doc_id] = []
+            Docs_and_["nodesB"][doc_id].append( ngram_id )
+            if ngram_id not in NodesB_and_Docs:
+                NodesB_and_Docs[ngram_id] = []
+            NodesB_and_Docs[ngram_id].append( doc_id )
+    # = = = = [ / 03. Now we limit the retrieved Documents(step 02) to those belonging to the Corpus c ] = = = = ]
+
+    # # = = = = [ Getting Authors ] = = = = ]
+    # Authors = {}
+    # sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id=10'# 10 -> authors
+    # cursor = connection.cursor()
+    # cursor.execute(sql_query)
+    # results = cursor.fetchall()
+    # for i in results:
+    #     doc_id = i[0]
+    #     authors = i[1].split(",")
+    #     for a in authors:
+    #         if a not in Authors:
+    #             Authors[a] = 0
+    #         Authors[a] += 1
+    # print("")
+    # print("#authors:")
+    # import pprint
+    # pprint.pprint(Authors)
+    # print("")
+    # # = = = = [ / Getting Authors ] = = = = ]
+
+
+    # = = = = [ 04. Getting A-elems and making the dictionaries] = = = = ]
+    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type)
+    cursor = connection.cursor()
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+
+    A_Freq = {}
+    A_int2str = {}
+    A_str2int = {}
+    counter = max_nodeid+1
+    for i in results:
+        doc_id = i[0]
+        a = i[1]
+        if a not in A_str2int:
+            A_str2int[ a ] = counter
+            A_int2str[counter] = a
+            counter += 1
+    for i in results:
+        doc_id = i[0]
+        a = A_str2int[i[1]]
+        Docs_and_["nodesA"][doc_id] = a
+        if a not in A_Freq:
+            A_Freq[ a ] = 0
+        A_Freq[ a ] += 1
+    # = = = = [ / 04. Getting A-elems and making the dictionaries ] = = = = ]
+
+
+    # = = = = [ Filling graph-A ] = = = = ]
+    Graph_A = Utils()
+    for i in NodesB_and_Docs:
+        ngram = i
+        docs = NodesB_and_Docs[i]
+        k_A_clique = {}
+        for doc in docs:
+            k_A = Docs_and_["nodesA"][doc]
+            k_A_clique[k_A] = True
+        if len(k_A_clique.keys())>1:
+            Graph_A.addCompleteSubGraph( k_A_clique.keys() )
+    # = = = = [ / Filling graph-A ] = = = = ]
+
+
+    # = = = = [ graph-A to JSON ] = = = = ]
+    A = Graph_A.G
+    for node_id in A.nodes():
+        A.node[node_id]['label']   = A_int2str[node_id]
+        A.node[node_id]['size']    = A_Freq[node_id]
+        A.node[node_id]['type']    = "Journal"
+        A.node[node_id]['attributes'] = { "clust_default": 1 }
+
+    links = []
+    min_weight = 999999
+    max_weight = -1
+    for e in A.edges_iter():
+        s = e[0]
+        t = e[1]
+        if min_weight>A[s][t]["weight"]:
+            min_weight = A[s][t]["weight"]
+        if max_weight<A[s][t]["weight"]:
+        	max_weight = A[s][t]["weight"]
+
+    edges2remove = []
+    for e in A.edges_iter():
+        s = e[0]
+        t = e[1]
+        if A[s][t]["weight"]>(max_weight*threshold_cotainf):
+            info = { 
+                "s":s , 
+                "t":t ,
+                "w": A[s][t]["weight"]/max_weight
+            }
+            links.append(info)
+        else:
+            atuple = (s,t)
+            edges2remove.append(atuple)
+
+    A.remove_edges_from( edges2remove )
+    A.remove_nodes_from(nx.isolates(A))
+
+    data = json_graph.node_link_data(A)
+    data["links"] = links
+    # = = = = [ / graph-A to JSON ] = = = = ]
+
+    return data

@@ -699,9 +699,17 @@ def sankey_csv(request, corpus_id):
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = [
             ["source", "target", "value"]
-            , ["Elvis_1", "Elvis_2", 1]
-            , ["Elvis_2", "Elvis_3", 2]
-            , ["Barry", "Elvis_3", 2]
+            , ["Comment_1", "Theme_1", 1]
+            
+            , ["Comment_2", "Theme_2", 2]
+            , ["Comment_3", "Theme_2", 2]
+            , ["Comment_7", "Theme_1", 2]
+            , ["Comment_8", "Theme_3", 2]
+            
+            , ["Theme_1", "Reco_par_1", 2]
+            , ["Theme_2", "Reco_par_2", 2]
+            , ["Theme_2", "Reco_par_5", 2]
+            , ["Theme_3", "Reco_par_5", 1]
             ]
     return(CsvHttpResponse(data))
 

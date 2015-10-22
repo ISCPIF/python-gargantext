@@ -177,6 +177,8 @@ def parse_resources(corpus, user=None, user_id=None):
 
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
+from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
+
 class NgramsExtractors(defaultdict):
     def __init__(self):
         # English
@@ -201,7 +203,7 @@ class NgramsExtractors(defaultdict):
 
 ngramsextractors = NgramsExtractors()
 
-def extract_ngrams(corpus, keys):
+def extract_ngrams(corpus, keys, nlp=True):
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the hyperdata associated with the given keys
@@ -220,7 +222,7 @@ def extract_ngrams(corpus, keys):
 
     ngrams_data = set()
     ngrams_language_data = set()
-    ngrams_tag_data = set()
+    #ngrams_tag_data = set()
 
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in hyperdata_query:
@@ -237,17 +239,25 @@ def extract_ngrams(corpus, keys):
         ngramsextractor = ngramsextractors[language_iso2]
         for text in nodeinfo[2:]:
             if text is not None and len(text):
-                ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
+                if nlp == True:
+                    ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
+                else:
+                    ngrams = wordpunct_tokenize(text.lower())
+
                 for ngram in ngrams:
-                    n = len(ngram)
-                    terms    = ' '.join([token for token, tag in ngram]).lower()
+                    if nlp == True:
+                        n = len(ngram)
+                        terms    = ' '.join([token for token, tag in ngram]).lower()
+                    else:
+                        terms = ngram
+                        n = 1
                     # TODO BUG here
-                    if n == 1:
+                    #if n == 1:
                         #tag_id   = cache.Tag[ngram[0][1]].id
-                        tag_id   =  1
+                    #    tag_id   =  1
                         #print('tag_id', tag_id)
-                    elif n > 1:
-                        tag_id   =  1
+                    #elif n > 1:
+                    #    tag_id   =  1
                         #tag_id   = cache.Tag[ngram[0][1]].id
                         #tag_id   = cache.Tag['NN'].id
                         #tag_id   =  14
@@ -255,7 +265,7 @@ def extract_ngrams(corpus, keys):
                     node_ngram_list[node_id][terms] += 1
                     ngrams_data.add((terms[:255],n))
                     ngrams_language_data.add((terms, language_id))
-                    ngrams_tag_data.add((terms, tag_id))
+                    #ngrams_tag_data.add((terms, tag_id))
 
     # insert ngrams to temporary table
     dbg.show('find ids for the %d ngrams' % len(ngrams_data))
@@ -263,12 +273,12 @@ def extract_ngrams(corpus, keys):
     ngram_ids = insert_ngrams(ngrams_data)
 
     dbg.show('insert associations')
-    node_ngram_data = list()
+    node_ngram_data = set()
     for node_id, ngrams in node_ngram_list.items():
         for terms, weight in ngrams.items():
             try:
                 ngram_id = ngram_ids[terms]
-                node_ngram_data.append((node_id, ngram_id, weight, ))
+                node_ngram_data.add((node_id, ngram_id, weight, ))
             except Exception as e:
                 print("err01:",e)
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)

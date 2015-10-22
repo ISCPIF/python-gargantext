@@ -60,15 +60,17 @@ def getNgrams(corpus=None, limit_inf=600, limit_sup=3000):
 
     #print([n for n in tfidf_ngrams])
 
-    def list2set(_list,_set):
+    def list2set(_list):
+        _set = set()
         for n in _list:
             _set.add((n[0],n[1]))
+        return(_set)
 
     cvalue_set = set()
     spec_set = set()
 
-    list2set(cvalue_ngrams,cvalue_set)
-    list2set(spec_ngrams,spec_set)
+    cvalue_set = list2set(cvalue_ngrams)
+    spec_set   = list2set(spec_ngrams)
 
     cvalue_setDiff = cvalue_set.difference(spec_set)
 

@@ -17,7 +17,8 @@ def do_cooc(corpus=None
          , n_min=2, n_max=None
          , start=None, end=None
          , limit=1000
-         , isMonopartite=True):
+         , isMonopartite=True
+         , apax = 2):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -149,8 +150,7 @@ def do_cooc(corpus=None
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
         cooc_query = cooc_query.filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
     
-    cooc_query = cooc_query.having(cooc_score > 1)
-                           #.having(cooc_score > 1)
+    cooc_query = cooc_query.having(cooc_score > apax)
              
     if isMonopartite:
         cooc_query = cooc_query.group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)

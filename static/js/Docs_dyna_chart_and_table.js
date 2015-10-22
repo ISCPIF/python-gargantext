@@ -24,9 +24,15 @@ var latest,oldest;
 
 var TheBuffer = false
 function Push2Buffer( NewVal ) {
+    console.log( " = = = = = = = = " )
+    console.log( "Push2Buffer()" )
+    console.log( "\t"+NewVal )
     if ( TheBuffer == false) {
         if( ! NewVal ) {
-            var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
+            // var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
+            var limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
+            limits[0] = new Date(limits[0].setDate(limits[0].getDate()-1) );
+            limits[1] = new Date(limits[1].setDate(limits[1].getDate()+1) );
             NewVal = limits;
         }
         console.log( " - - - - - - " )
@@ -42,7 +48,9 @@ function Push2Buffer( NewVal ) {
         var past = TheBuffer[0]+"_"+TheBuffer[1]
 
         if( ! NewVal ) {
-            var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
+            var limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
+            limits[0] = new Date(limits[0].setDate(limits[0].getDate()-1) );
+            limits[1] = new Date(limits[1].setDate(limits[1].getDate()+1) );
             NewVal = limits;
         }
         var now = NewVal[0]+"_"+NewVal[1]
@@ -295,8 +303,14 @@ function Main_test( Data , SearchFilter ) {
   oldest = t0;
   latest = t1;
 
-
-  TheBuffer = [new Date(t0[0],(t0[1]-1),t0[2]), new Date(t1[0],(t1[1]-1),t1[2]+1)];
+  console.clear()
+  console.log(oldest)
+  console.log(latest)
+  TheBuffer = [new Date(t0[0],t0[1]-1,t0[2]), new Date(t1[0],t1[1]-1,t1[2] ) ];
+  TheBuffer[0] = new Date(TheBuffer[0].setDate(TheBuffer[0].getDate()-1) );
+  TheBuffer[1] = new Date(TheBuffer[1].setDate(TheBuffer[1].getDate()+1) );
+  console.log(TheBuffer[0])
+  console.log(TheBuffer[1])
 
   var arrayd3 = []
   for(var e in Data) {
@@ -397,7 +411,7 @@ function Main_test( Data , SearchFilter ) {
           .group(volumeByMonthGroup)
           .centerBar(true)
           .gap(0)
-          .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+          .x(d3.time.scale().domain([TheBuffer[0], TheBuffer[1] ]))
           .round(d3.time.month.round)
           .xUnits(d3.time.months)
           .renderlet(function (chart) {

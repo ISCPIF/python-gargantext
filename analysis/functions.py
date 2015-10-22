@@ -136,7 +136,7 @@ def get_cooc(request=None, corpus=None
     #     SamuelFlag = True
     # else:
     #     isMonopartite = False
-    isMonopartite = True # Always. So, calcule the graph-B and from these nodes, build the graph-A
+    isMonopartite = True # Always. So, calcule the graph B and from these B-nodes, build the graph-A
     # data deleted each time
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
     cooc_id = do_cooc(corpus=corpus, field1="ngrams", field2="ngrams"
@@ -386,7 +386,8 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
         docs = NodesB_and_Docs[i]
         for doc in docs:
             a = Docs_and_["nodesA"][doc]
-            AB.add_edge( a , b )
+            if A.has_node(a):
+                AB.add_edge( a , b )
     AB_links = []
     for e in AB.edges_iter():
         info = { "s": e[0], "t": e[1], "w": 1 }

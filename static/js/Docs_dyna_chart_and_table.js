@@ -303,14 +303,9 @@ function Main_test( Data , SearchFilter ) {
   oldest = t0;
   latest = t1;
 
-  console.clear()
-  console.log(oldest)
-  console.log(latest)
   TheBuffer = [new Date(t0[0],t0[1]-1,t0[2]), new Date(t1[0],t1[1]-1,t1[2] ) ];
   TheBuffer[0] = new Date(TheBuffer[0].setDate(TheBuffer[0].getDate()-1) );
   TheBuffer[1] = new Date(TheBuffer[1].setDate(TheBuffer[1].getDate()+1) );
-  console.log(TheBuffer[0])
-  console.log(TheBuffer[1])
 
   var arrayd3 = []
   for(var e in Data) {

@@ -118,7 +118,11 @@
 
 <script type="text/javascript">
 	function gotoexplorer(elem) {
+
 		var url_ = $(elem).data("url")
+		if (TheBuffer==false)
+			return window.open(url_,'_blank');
+
         var current_timerange = TheBuffer
 		var time_limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
 		time_limits[0] = new Date(time_limits[0].setDate(time_limits[0].getDate()-1) );
@@ -133,7 +137,8 @@
 			url_ += "&start=" + start_ + "&end="+end_;
 			// url_ += "&start=" + start__.getFullYear() + "&end="+end__.getFullYear();
 		}
-		window.open(url_,'_blank');
+		return window.open(url_,'_blank');
+		
 	}
 </script>
 

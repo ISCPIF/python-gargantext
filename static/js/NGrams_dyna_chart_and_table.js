@@ -24,28 +24,24 @@ var latest,oldest;
 
 var TheBuffer = false
 
-var PossibleActions = []
+var PossibleActions = [
+	{
+	  "id":"to_delete",
+	  "name": "Delete",
+	  "color":"red"
+	}, 
+	// {
+	//   "id":"to_keep",
+	//   "name": "Keep",
+	//   "color":"green"
+	// }, 
+	// {
+	//   "id":"to_group",
+	//   "name": "Group",
+	//   "color":"blue"
+	// }
+]
 
-var action1 = {
-  "id":"to_delete",
-  "name": "Delete",
-  "color":"red"
-}
-// var action2 = {
-//   "id":"to_keep",
-//   "name": "Keep",
-//   "color":"green"
-// }
-
-// var action3 = {
-//   "id":"to_group",
-//   "name": "Group",
-//   "color":"blue"
-// }
-
-PossibleActions.push(action1)
-// PossibleActions.push(action2)
-// PossibleActions.push(action3)
 
 var FlagsBuffer = {}
 for(var i in PossibleActions) {

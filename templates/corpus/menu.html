@@ -105,8 +105,8 @@
                 {% else %}
                         <h3> Networks </h3>
                         <ol>
-                                <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?" onclick='gotoexplorer(this)'><a href="#">Terms</a></li>
-                                <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=journal&amp;field2=ngrams" onclick='gotoexplorer(this)'><a href="#">Journals and Terms</a></li>
+                                <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Terms</a></li>
+                                <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=journal&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Journals and Terms</a></li>
                                 <li>Authors and Terms</li>
                         </ol>
                 {% endif %}
@@ -128,10 +128,10 @@
 		} else {
 			var start__ = new Date(current_timerange[0].setDate(current_timerange[0].getDate()+1) );
 			var end__ = new Date(current_timerange[1].setDate(current_timerange[1].getDate()-1) );
-			// var start_ = start__.getFullYear()+"-"+(start__.getMonth()+1)+"-"+(start__.getDay()+1)
-			// var end_ = end__.getFullYear()+"-"+(end__.getMonth()+1)+"-"+(end__.getDay()+1)
-			// url_ += "&start=" + start_ + "&end="+end_;
-			url_ += "&start=" + start__.getFullYear() + "&end="+end__.getFullYear();
+			var start_ = start__.getFullYear()+"-"+(start__.getMonth()+1)+"-"+(start__.getDay()+1)
+			var end_ = end__.getFullYear()+"-"+(end__.getMonth()+1)+"-"+(end__.getDay()+1)
+			url_ += "&start=" + start_ + "&end="+end_;
+			// url_ += "&start=" + start__.getFullYear() + "&end="+end__.getFullYear();
 		}
 		window.open(url_,'_blank');
 	}

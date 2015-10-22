@@ -110,7 +110,6 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, apax=2):
     #   G.remove_nodes_from(nodes_to_remove)
     
     partition = best_partition(G.to_undirected())
-    print("Density of the graph:", nx.density(G))
 
     return(G,partition,ids,weight)
 

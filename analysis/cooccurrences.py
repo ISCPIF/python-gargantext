@@ -18,7 +18,7 @@ def do_cooc(corpus=None
          , start=None, end=None
          , limit=1000
          , isMonopartite=True
-         , apax = 2):
+         , apax = 1):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to

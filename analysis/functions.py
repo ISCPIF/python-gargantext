@@ -30,7 +30,7 @@ def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
 
-def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, apax=2):
+def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
@@ -119,7 +119,7 @@ def get_cooc(request=None, corpus=None
         , field1='ngrams', field2='ngrams'
         , cooc_id=None, type='node_link', size=1000
         , start=None, end=None
-        , apax=2
+        , apax=1
         ):
     '''
     get_ccoc : to compute the graph.

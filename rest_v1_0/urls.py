@@ -22,8 +22,8 @@ urlpatterns = patterns('',
     url(r'node/(\d+)/ngrams$', ngrams.Ngrams.as_view()),
     url(r'node/(\d+)/ngrams$', ngrams.Ngrams.as_view()),
 
-    url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
-    url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
+    #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
+    #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
 
     url(r'nodes/(\d+)/children/queries$', api.NodesChildrenQueries.as_view()),
     url(r'nodes/(\d+)/children/queries$', api.NodesChildrenQueries.as_view()),
@@ -36,6 +36,9 @@ urlpatterns = patterns('',
     
     url(r'nodes/(\d+)/graph$', graph.Graph.as_view()),
     url(r'corpus/(\d+)/graph$', graph.Graph.as_view()),
+    
+    url(r'hyperdata$', api.ApiHyperdata.as_view()),
+    url(r'ngrams$', api.ApiNgrams.as_view()),
     
     url(r'tfidf/(\d+)/(\w+)$', views_optimized.tfidf),
 )

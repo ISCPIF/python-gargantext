@@ -40,7 +40,7 @@ case "$1" in
         ;;
  
     status)
-        status_of_proc "$DAEMON_NAME" "$DAEMON" && exit 0 || exit $?
+        ps -e | grep "`cat $DAEMON_PID` "
         ;;
     *)
         echo "Usage: $DAEMON_NAME {start|stop|restart|status}"

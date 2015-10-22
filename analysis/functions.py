@@ -233,7 +233,7 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
     print("nodesB:",len(NodesB.keys()))
     print("linksB:",len(links))
 
-    nodeA_type = cache.Hyperdata[nodeA_type].id
+    nodeA_type_id = cache.Hyperdata[nodeA_type].id
     threshold_cotainf = 0.05
     max_nodeid = -1
     for nodeid in NodesB:
@@ -301,7 +301,7 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
 
 
     # = = = = [ 04. Getting A-elems and making the dictionaries] = = = = ]
-    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type)
+    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type_id)
     cursor = connection.cursor()
     cursor.execute(sql_query)
     results = cursor.fetchall()
@@ -346,25 +346,31 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
     for node_id in A.nodes():
         A.node[node_id]['label']   = A_int2str[node_id]
         A.node[node_id]['size']    = A_Freq[node_id]
-        A.node[node_id]['type']    = "Journal"
+        A.node[node_id]['type']    = nodeA_type
         A.node[node_id]['attributes'] = { "clust_default": 1 }
 
     links = []
     min_weight = 999999
     max_weight = -1
+    Weights_Dist = {}
     for e in A.edges_iter():
         s = e[0]
         t = e[1]
+        if A[s][t]["weight"] not in Weights_Dist:
+            Weights_Dist[ A[s][t]["weight"] ] = 0
+        Weights_Dist[ A[s][t]["weight"] ] += 1
         if min_weight>A[s][t]["weight"]:
             min_weight = A[s][t]["weight"]
         if max_weight<A[s][t]["weight"]:
-        	max_weight = A[s][t]["weight"]
-
+            max_weight = A[s][t]["weight"]
+    import pprint
+    pprint.pprint( Weights_Dist )
+    print(" and ",nodeA_type, "number:",len(A))
     edges2remove = []
     for e in A.edges_iter():
         s = e[0]
         t = e[1]
-        if A[s][t]["weight"]>(max_weight*threshold_cotainf):
+        if Weights_Dist [ A[s][t]["weight"] ] < ( len(A)*3 ):
             info = { 
                 "s":s , 
                 "t":t ,

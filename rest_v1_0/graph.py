@@ -21,7 +21,7 @@ class Graph(APIView):
         
         format_   =  request.GET.get('format', 'json')
         type_    = request.GET.get('type', 'node_link')
-        apax    = request.GET.get('apax', 2)
+        apax    = request.GET.get('apax', 1)
         
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()

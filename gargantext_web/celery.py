@@ -42,7 +42,7 @@ def apply_workflow(corpus_id):
     parse_resources(corpus)
 
     update_processing(corpus, 2)
-    extract_ngrams(corpus, ['title', 'abstract'])
+    extract_ngrams(corpus, ['title', 'abstract'], nlp=True)
 
     update_processing(corpus, 3)
     ngram_workflow(corpus)

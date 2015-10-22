@@ -28,8 +28,6 @@ def insert_ngrams(ngrams,get='terms-id'):
             %s AS ngram
         WHERE
             tmp__ngram.terms = ngram.terms
-        AND
-            tmp__ngram.n = ngram.n
             ''' % (Ngram.__table__.name,))
     
     cursor.execute('''
@@ -66,7 +64,6 @@ def insert_ngrams(ngrams,get='terms-id'):
 
     db.commit()
     return(ngram_ids)
-
 
 def insert_nodengramngram(nodengramngram):
     db, cursor = get_cursor()

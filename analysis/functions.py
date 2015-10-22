@@ -191,18 +191,14 @@ def get_cooc(request=None, corpus=None
             data["links"] = B["links"]
         else:
             A = get_graphA( "journal" , nodesB_dict , B["links"] , corpus )
-            print("")
-            print("")
             print("#nodesA:",len(A["nodes"]))
-            print("#linksA:",len(A["links"]))
+            print("#linksAA + #linksAB:",len(A["links"]))
             print("#nodesB:",len(B["nodes"]))
-            print("#linksB:",len(B["links"]))
-            print("")
+            print("#linksBB:",len(B["links"]))
             data["nodes"] = A["nodes"] + B["nodes"]
             data["links"] = A["links"] + B["links"]
-            print("  #nodes :",len(data["nodes"]))
-            print("  #links :",len(data["links"]))
-            print("")
+            print("  total nodes :",len(data["nodes"]))
+            print("  total links :",len(data["links"]))
             print("")
 
     elif type == "adjacency":
@@ -226,12 +222,8 @@ def get_cooc(request=None, corpus=None
 
 def get_graphA( nodeA_type , NodesB , links , corpus ):
     from analysis.InterUnion import Utils
-    print("")
     print(" = = = == = = = ")
-    print("In get_graphA")
-    print("corpus:",corpus.id)
-    print("nodesB:",len(NodesB.keys()))
-    print("linksB:",len(links))
+    print("In get_graphA(), corpus id:",corpus.id)
 
     nodeA_type_id = cache.Hyperdata[nodeA_type].id
     threshold_cotainf = 0.05
@@ -349,43 +341,60 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
         A.node[node_id]['type']    = nodeA_type
         A.node[node_id]['attributes'] = { "clust_default": 1 }
 
-    links = []
+    A_links = []
     min_weight = 999999
     max_weight = -1
     Weights_Dist = {}
     for e in A.edges_iter():
         s = e[0]
         t = e[1]
-        if A[s][t]["weight"] not in Weights_Dist:
-            Weights_Dist[ A[s][t]["weight"] ] = 0
-        Weights_Dist[ A[s][t]["weight"] ] += 1
-        if min_weight>A[s][t]["weight"]:
-            min_weight = A[s][t]["weight"]
-        if max_weight<A[s][t]["weight"]:
-            max_weight = A[s][t]["weight"]
-    import pprint
-    pprint.pprint( Weights_Dist )
-    print(" and ",nodeA_type, "number:",len(A))
+        w = A[s][t]["weight"]
+        if w not in Weights_Dist:
+            Weights_Dist[ w ] = { "freq": 0 , "deleted":0 }
+        Weights_Dist[ w ]["freq"] += 1
+        if min_weight > w:
+            min_weight = w
+        if max_weight < w:
+            max_weight = w
+
     edges2remove = []
     for e in A.edges_iter():
         s = e[0]
         t = e[1]
-        if Weights_Dist [ A[s][t]["weight"] ] < ( len(A)*3 ):
+        w = A[s][t]["weight"]
+        if Weights_Dist [ w ]["freq"] < ( len(A)*3 ): # weight-threshold
             info = { 
                 "s":s , 
                 "t":t ,
-                "w": A[s][t]["weight"]/max_weight
+                "w": w / max_weight # normalization
             }
-            links.append(info)
+            A_links.append(info)
         else:
+            # if Weights_Dist [ w ]["deleted"] < round(Weights_Dist [ w ]["freq"]*0.95):
             atuple = (s,t)
             edges2remove.append(atuple)
+            Weights_Dist [ w ]["deleted"] += 1
 
     A.remove_edges_from( edges2remove )
     A.remove_nodes_from(nx.isolates(A))
 
-    data = json_graph.node_link_data(A)
-    data["links"] = links
+    data = json_graph.node_link_data(A) # saving nodesA
+
+    AB = nx.Graph()
+    for i in NodesB_and_Docs:
+        b = i
+        docs = NodesB_and_Docs[i]
+        for doc in docs:
+            a = Docs_and_["nodesA"][doc]
+            AB.add_edge( a , b )
+    AB_links = []
+    for e in AB.edges_iter():
+        info = { "s": e[0], "t": e[1], "w": 1 }
+        AB_links.append(info)
+
+    data["links"] = A_links + AB_links # saving AA-links and AB-links
+            
+
     # = = = = [ / graph-A to JSON ] = = = = ]
 
     return data

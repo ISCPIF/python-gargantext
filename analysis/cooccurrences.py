@@ -120,7 +120,7 @@ def do_cooc(corpus=None
     if start is not None:
         #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
         # TODO : more complexe date format here.
-        date_start = datetime.datetime.strptime (str(start), "%Y")
+        date_start = datetime.datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
         
         Start=aliased(NodeHyperdata)
@@ -134,7 +134,7 @@ def do_cooc(corpus=None
 
     if end is not None:
         # TODO : more complexe date format here.
-        date_end = datetime.datetime.strptime (str(end), "%Y")
+        date_end = datetime.datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
         
         End=aliased(NodeHyperdata)

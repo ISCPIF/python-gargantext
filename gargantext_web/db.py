@@ -240,7 +240,13 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
     if nodetype is None:
         print("Need to give a type node")
     else:
-        ntype=cache.NodeType[nodetype]
+        try:
+            ntype = cache.NodeType[nodetype]
+        except KeyError:
+            ntype = cache.NodeType[nodetype] = NodeType()
+            ntype.name = nodetype
+            session.add(ntype)
+            session.commit()
 
     if corpus_id is not None and corpus is None:
         corpus = session.query(Node).filter(Node.id==corpus_id).first()

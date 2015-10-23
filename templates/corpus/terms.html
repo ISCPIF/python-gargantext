@@ -36,9 +36,9 @@ th a {
 
 tr:hover {
   cursor: pointer;
-  color: #000;
   font-weight: bold;
 }
+
 /*
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
   background-color: #F5A9A9;
@@ -48,14 +48,25 @@ tr:hover {
   color:red; 
   opacity: 0.8;
 }
-
-.to_group {
-  color:blue;
-}
-
-
 .to_keep {
   color:green;
+}
+
+.grouped {
+  color:white;  
+  pointer-events: none;
+  cursor: default;
+}
+
+.group_box {
+  font-size: 90%;
+  border: 1px solid blue;
+}
+.group_box .header {
+  font-size: 120%;
+}
+.group_box .content {
+  border: 1px solid yellow;
 }
 
 .dynatable-record-count {
@@ -106,7 +117,6 @@ input[type=radio]:checked + label {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.15),0 1px 2px rgba(0,0,0,0.05);
         background-color:#e0e0e0;
 }
-
 </style>
 
 {% endblock %}
@@ -152,6 +162,10 @@ input[type=radio]:checked + label {
       </h4>
     </div>
     <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
+      <div class="group_box" id="group_box">
+        <span class="group_box header" id="group_box_header"></span>
+        <span class="group_box content" id="group_box_content"></span>
+      </div>
       <div class="panel-body">
                   <div id="div-table"></div>
                 <!-- <p align="right">

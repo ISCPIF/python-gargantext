@@ -30,17 +30,66 @@ var PossibleActions = [
 	  "name": "Delete",
 	  "color":"red"
 	}, 
-	// {
-	//   "id":"to_keep",
-	//   "name": "Keep",
-	//   "color":"green"
-	// }, 
+	{
+	  "id":"to_keep",
+	  "name": "Keep",
+	  "color":"green"
+	}, 
 	// {
 	//   "id":"to_group",
 	//   "name": "Group",
 	//   "color":"blue"
 	// }
 ]
+
+var GState = 0
+var System = {
+	// 1: {
+	// 	"states" : [ "normal" , "grouped" , "blocked" ] ,	
+	// 	"dict" : { 
+	// 		"normal": {
+	// 		  "id":"normal",
+	// 		  "name": "Normal",
+	// 		  "color":"black"
+	// 		}, 
+	// 		"grouped": {
+	// 		  "id":"grouped",
+	// 		  "name": "MainForm",
+	// 		  "color":"white"
+	// 		}, 
+	// 	}	
+	// },
+	0: {
+		"states" : [ "normal" , "to_delete" , "to_keep" ,"grouped"] ,
+		"dict" : { 
+			"normal": {
+			  "id":"normal",
+			  "name": "Normal",
+			  "color":"black"
+			}, 
+			"to_delete": {
+			  "id":"to_delete",
+			  "name": "Delete",
+			  "color":"red"
+			}, 
+			"to_keep": {
+			  "id":"to_keep",
+			  "name": "Keep",
+			  "color":"green"
+			} , 
+			"grouped": {
+			  "id":"grouped",
+			  "name": "MainForm",
+			  "color":"white"
+			}, 
+		}
+	}
+	
+}
+
+for(var i in System[GState]["states"] )
+	System[GState]["dict"][ System[GState]["dict"][i] ] = Number(i)
+console.log( System )
 
 
 var FlagsBuffer = {}
@@ -151,37 +200,6 @@ function Final_UpdateTable( action ) {
     MyTable.data('dynatable').process();
 }
 
-//          STEP 01:
-//      Get all the duplicates using the Django-Garg API
-var current_docs = {}
-var BIS_dict = {}
-
-var url_elems = window.location.href.split("/")
-var url_mainIDs = {}
-for(var i=0; i<url_elems.length; i++) {
-  // if the this element is a number:
-  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
-    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
-  }
-}
-var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
-// $.ajax({
-//   url: theurl,
-//   success: function(data) {
-//     bisarray = data.data
-//     for(var i in bisarray) {
-//         untitlebis = bisarray[i].values
-//         BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
-//     }
-//     pr(BIS_dict)
-//     if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
-//   }
-// });
-
-
-
-
-
 function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
   // return AjaxRecords[rec_id]
@@ -191,27 +209,111 @@ function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
-function transformContent2(rec_id) {
-  // pr("\t\ttransformContent2: "+rec_id)
-  var elem = AjaxRecords[rec_id];
-  var result = {}
-  // console.log("\t\t\telement flag : "+elem["flag"])
-  if (elem["flag"]) {
+function group_mode ( elem ) {
+	GState=1
+	var elem_id = $( elem ).data("stuff")
 
-    result["id"] = elem["id"]
-    result["score"] = '<div class="'+elem["flag"]+'"><i>'+elem["score"]+'</div>'
-    result["name"] = '<div class="'+elem["flag"]+'"><i>'+elem["name"]+'</div>'
-    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
-  } else {
-    result["id"] = elem["id"]
-    result["score"] = elem["score"]
-    result["name"] = elem["name"]
-    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
-  }
+	$('<span/>', {
+		"data-id":AjaxRecords[elem_id].id,
+	    text: AjaxRecords[elem_id].name + ":",
+	    // css: {
+	    // 	"float":"right",
+	    // }
+	}).appendTo("#group_box_header")
 
-  return result;
+	AjaxRecords[elem_id].state=3;// 3: "grouped" state
+
+	MyTable.data('dynatable').dom.update();
 }
 
+function SaveSinonims( gheader , gcontent) {
+	console.log("GHEADER:")
+	$(gheader).children('span').each(function () {
+	    console.log($(this).data("id"));
+	});
+	console.log("GCONTENT:")
+	$(gcontent).children('span').each(function () {
+	    console.log($(this).data("id"));
+	});
+}
+
+$('#group_box_content').bind("DOMSubtreeModified",function(){
+	console.log( $(this).has( "span" ).length )
+	var groupdiv = "#group_box"
+	if($(this).has( "span" ).length>0) {
+		$("#save_sinonims").remove();
+		$('<button/>', {
+			"id":"save_sinonims",
+		    text: "Save sinonims",
+		    class: "btn btn-info",
+		    css: {
+		    	"float":"right",
+		    }
+		})
+		.insertAfter(groupdiv)
+		.click( function() {
+			SaveSinonims(groupdiv+"_header" , groupdiv+"_content")
+		})
+	}
+})
+
+function add2group ( elem ) {
+	var elem_id = $( elem ).data("stuff")
+
+	$('<span/>', {
+		"data-id":AjaxRecords[elem_id].id,
+		"data-stuff": elem_id,
+	    title: 'Click to remove',
+	    text: AjaxRecords[elem_id].name,
+	    css: {
+	    	"cursor":"pointer",
+	    	"border": "1px solid blue",
+	    	"margin": "3px",
+	    	"padding": "3px",
+	    }
+	})
+	.click(function() {
+    	AjaxRecords[$(this).data("stuff")].state=0;
+    	$(this).remove()
+    	MyTable.data('dynatable').dom.update();
+	})
+	.appendTo('#group_box_content')
+
+
+	AjaxRecords[elem_id].state=3;// 3: "grouped" state
+
+	MyTable.data('dynatable').dom.update();
+}
+
+function clickngram_action ( elem ) {
+	var elem_id = $( elem ).data("stuff")
+	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
+
+	MyTable.data('dynatable').dom.update();
+}
+
+function transformContent(rec_id) {
+	var elem = AjaxRecords[rec_id];
+	var result = {}
+	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
+	var plus_event = ""
+	if(GState==0 && elem.state!=1) // if deleted, no + button
+		plus_event = " <a class=\"plusclass\" onclick=\"group_mode(this.parentNode.parentNode)\">(+)</a>"
+	if(GState==1 ) {
+		if(elem.state!=1 && elem.state!=3) { // if deleted and already grouped, no Up button
+			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(↑)</a>"
+		}
+	}
+	result["id"] = elem["id"]
+	result["score"] = '<span class="'+atts.id+'">'+elem["score"]+'</span>'
+	result["name"] = "<span class=\""+atts.id+
+					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+elem["name"]+"</span>"+
+					 plus_event
+	return result;
+}
+
+
+// Affecting the tr element somehow
 function overRide(elem) {
   var id = elem.id
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
@@ -219,15 +321,10 @@ function overRide(elem) {
 
   console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
   console.log("\t so the new flag is: "+this_newflag)
-  
-
   // if(this_newflag)
   //   FlagsBuffer[this_newflag][id] = true;
   // else 
   //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-
-
-
   AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
 
   var sum__selected_elems = 0;
@@ -245,14 +342,6 @@ function overRide(elem) {
 
   MyTable.data('dynatable').dom.update();
 
-}
-
-function transformContent(rec_id , header , content) {
-  if(header=="flag") {
-    // pr("\t\ttransformContent1: "+rec_id)
-    if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
-    if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
-  } else return content;
 }
 
 // Here you have to put the weird case of Change from Group-Mode
@@ -311,14 +400,9 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   // pr("\tulWriter: "+record.id)
   var tr = '';
   var cp_rec = {}
-  if(!MyTable) {
-    for(var i in record) {
-      cp_rec[i] = transformContent(RecDict[record.id], i , record[i])
-    }
-  } else {
-    // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
-    cp_rec = transformContent2(RecDict[record.id])
-  }
+  // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
+  cp_rec = transformContent(RecDict[record.id])
+  
   // grab the record's attribute for each column
   // console.log("\tin ulWriter:")
   // console.log(record)
@@ -438,7 +522,7 @@ function Main_test( data , initial) {
     var div_table = '<p align="right">'+"\n"
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
-      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n"
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
       div_table += "\t"+'</thead>'+"\n"
@@ -471,7 +555,10 @@ function Main_test( data , initial) {
         "id" : le_ngram.id,
         "name": le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
-        "flag":false
+        "flag":false,
+        "group_plus": true,
+        "group_blocked": false,
+        "state": 0
       }
       AjaxRecords.push(node_info)
 
@@ -604,16 +691,16 @@ function Main_test( data , initial) {
                   // _cellWriter: customCellWriter
                 }
               })
-              .bind("dynatable:afterUpdate",  function(e, rows) {
-                $(e.target).children("tbody").children().each(function(i) {
-                   $(this).click(function(){
-                     var row_nodeid = $(this).data('stuff')
-                     var elem = { "id":row_nodeid , "checked":false }
-                     overRide(elem); //Select one row -> select one ngram
+              // .bind("dynatable:afterUpdate",  function(e, rows) {
+              //   $(e.target).children("tbody").children().each(function(i) {
+              //      $(this).click(function(){
+              //        var row_nodeid = $(this).data('stuff')
+              //        var elem = { "id":row_nodeid , "checked":false }
+              //        overRide(elem); //Select one row -> select one ngram
 
-                    });
-                });
-              });
+              //       });
+              //   });
+              // });
 
     // MyTable.data('dynatable').settings.dataset.records = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
@@ -673,29 +760,6 @@ function SearchFilters( elem ) {
 
   // }
 
-
-  // var getDupl_API = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
-  // $.ajax({
-  //   url: getDupl_API,
-  //   success: function(data) {
-  //     bisarray = data.data
-  //     for(var i in bisarray) {
-  //         titlebis = bisarray[i].values
-  //         BIS_dict[titlebis[0]] = true;
-  //     }
-  //     var Duplicates = []
-  //     for(var r in AjaxRecords) {
-  //       if ( BIS_dict[AjaxRecords[r].title] )
-  //         Duplicates.push( AjaxRecords[r] )
-  //     }
-  //     var result = Main_test(Duplicates , MODE)
-  //     console.log( result )
-
-  //     MyTable.data('dynatable').sorts.clear();
-  //     MyTable.data('dynatable').sorts.add('title', 1) // 1=ASCENDING,
-  //     MyTable.data('dynatable').process();
-  //   }
-  // });
 }
 
 console.log(window.location.href+"/ngrams.json")

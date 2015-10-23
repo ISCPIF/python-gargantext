@@ -11,12 +11,11 @@ from sqlalchemy.orm import aliased
 import datetime
 import copy
 
-from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram
-from gargantext_web.db import get_or_create_node
-
 from gargantext_web.validation import validate, ValidationException
-from node import models
+
+from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram\
+        , NodeNodeNgram, Ngram, Hyperdata, Node_Ngram, get_or_create_node
+
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -71,6 +70,12 @@ class APIException(_APIException):
 from rest_framework.decorators import api_view
 #@login_required
 # TODO how to secure REST ?
+
+
+class List(APIView):
+    pass
+
+
 class Ngrams(APIView):
     '''
     REST application to manage ngrams
@@ -211,4 +216,92 @@ class Ngrams(APIView):
 
                     ],
                                })
+
+
+class Group(APIView):
+    '''
+    REST API to manage groups of Ngrams
+    Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
+    '''
+    def get_group_id(node_id):
+            node_id = int(node_id)
+            corpus = session.query(Node).filter(Node.id==node_id).first()
+            group = get_or_create_node(corpus=corpus, nodetype='Group')
+            return(group.id)
+
+    def get(self, request, corpus_id):
+        # query ngrams
+        group_id = get_group_id(corpus_id)
+        
+        #api/node/$corpus_id/ngrams?ngram_id=12
+        ngram_id = request.GET.get('ngram_id', False)
+        ngram_id = int(node_id)
+        
+        #api/node/$corpus_id/ngrams?all=True
+        all_option = request.GET.get('all', False)
+        all_option = int(all_option)
+        
+
+        if  ngram_id > 0 or all_option == 1:
+            ngrams_ngrams = (session
+                    .query(NodeNgramNgram)
+                    .filter(NodeNgramNgram.node_id==group_id)
+                )
+            
+            if ngram_id > 0:
+                ngrams_ngrams = ngrams_ngrams.filter(NodeNgramNgram.ngramx_id==ngram_id)
+            
+        else:
+            raise APIException('Missing parameter: "ngram_id" as Integer', 400)
+
+        group = dict(list())
+        
+        for nn in ngrams_ngrams.all():
+            group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
+        
+        return JsonHttpResponse(group)
+
+        
+    def post(self, request, node_id):
+        
+        # input validation
+        input = validate(request.DATA, {'data' : ['source': int, 'target': list]})
+        
+        group_id = get_group_id(node_id)
+       
+        for data in input['data']:
+            if data['source'] > 0 and len(data['target']) > 0:
+                for target_id in data['target']:
+                    if target_id > 0:
+                        session.add(NodeNgramNgram(node_id=group_id,ngramx_id=output['source'], ngramy_id=target_id))
+                session.commit()
+                return JsonHttpResponse(True, node_id), 201)
+            else:
+                raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+
+
+    def delete(self, request, corpus_id):
+        
+        # input validation
+        input = validate(request.DATA, {'data' : ['source': int, 'target': list]})
+        
+        group_id = get_group_id(corpus_id)
+
+        for data in input['data']:
+
+            if data['source'] > 0 and len(data['target']) > 0:
+                for target_id in data['target']:
+                    (session.query(NodeNgramNgram)
+                            .filter(NodeNgramNgram.node_id==group_id)
+                            .filter(NodeNgramNgram.ngramx_id==data['source'])
+                            .delete()
+                    )
+                return JsonHttpResponse(True, node_id), 201)
+            else:
+                raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+
+
+class Keep(APIView):
+    pass
+
 

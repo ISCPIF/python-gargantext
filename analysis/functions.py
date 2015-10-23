@@ -188,7 +188,7 @@ def get_cooc(request=None, corpus=None
             data["nodes"] = B["nodes"]
             data["links"] = B["links"]
         else:
-            A = get_graphA( "source" , nodesB_dict , B["links"] , corpus )
+            A = get_graphA( "journal" , nodesB_dict , B["links"] , corpus )
             print("#nodesA:",len(A["nodes"]))
             print("#linksAA + #linksAB:",len(A["links"]))
             print("#nodesB:",len(B["nodes"]))

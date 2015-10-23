@@ -1,6 +1,7 @@
 
 from gargantext_web.db import Ngram, NodeNgramNgram
-from parsing.corpustools import get_cursor, bulk_insert
+
+from gargantext_web.db import get_cursor, bulk_insert
 
 
 def insert_ngrams(ngrams,get='terms-id'):

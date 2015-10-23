@@ -188,7 +188,7 @@ def get_cooc(request=None, corpus=None
             data["nodes"] = B["nodes"]
             data["links"] = B["links"]
         else:
-            A = get_graphA( "journal" , nodesB_dict , B["links"] , corpus )
+            A = get_graphA( "source" , nodesB_dict , B["links"] , corpus )
             print("#nodesA:",len(A["nodes"]))
             print("#linksAA + #linksAB:",len(A["links"]))
             print("#nodesB:",len(B["nodes"]))
@@ -291,7 +291,8 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
 
 
     # = = = = [ 04. Getting A-elems and making the dictionaries] = = = = ]
-    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type_id)
+    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + \
+            ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type_id)
     cursor = connection.cursor()
     cursor.execute(sql_query)
     results = cursor.fetchall()

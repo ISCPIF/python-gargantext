@@ -273,7 +273,8 @@ class Group(APIView):
             if data['source'] > 0 and len(data['target']) > 0:
                 for target_id in data['target']:
                     if target_id > 0:
-                        session.add(NodeNgramNgram(node_id=group_id,ngramx_id=output['source'], ngramy_id=target_id))
+                        session.add(NodeNgramNgram(node_id=group_id, \
+                                ngramx_id=output['source'], ngramy_id=target_id, score=1))
                 session.commit()
                 return JsonHttpResponse(True, node_id), 201)
             else:

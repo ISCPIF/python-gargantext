@@ -265,7 +265,7 @@ class Group(APIView):
     def post(self, request, node_id):
         
         # input validation
-        input = validate(request.DATA, {'data' : ['source': int, 'target': list]})
+        input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
         
         group_id = get_group_id(node_id)
        
@@ -276,7 +276,7 @@ class Group(APIView):
                         session.add(NodeNgramNgram(node_id=group_id, \
                                 ngramx_id=output['source'], ngramy_id=target_id, score=1))
                 session.commit()
-                return JsonHttpResponse(True, node_id), 201)
+                return JsonHttpResponse(True, 201)
             else:
                 raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
 
@@ -284,7 +284,7 @@ class Group(APIView):
     def delete(self, request, corpus_id):
         
         # input validation
-        input = validate(request.DATA, {'data' : ['source': int, 'target': list]})
+        input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
         
         group_id = get_group_id(corpus_id)
 
@@ -297,7 +297,7 @@ class Group(APIView):
                             .filter(NodeNgramNgram.ngramx_id==data['source'])
                             .delete()
                     )
-                return JsonHttpResponse(True, node_id), 201)
+                return JsonHttpResponse(True, 201)
             else:
                 raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
 

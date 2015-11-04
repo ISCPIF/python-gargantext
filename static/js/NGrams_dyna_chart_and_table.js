@@ -501,8 +501,6 @@ $("#Save_All").click(function(){
 
 });
 
-
-
 function Main_test( data , initial) {
 
 
@@ -740,14 +738,46 @@ function Main_test( data , initial) {
     return "OK"
 }
 
+function getIDFromURL( item ) {
+	var pageurl = window.location.href.split("/")
+	var cid;
+	for(var i in pageurl) {
+	    if(pageurl[i]==item) {
+	        cid=parseInt(i);
+	        break;
+	    }
+	} 
+	return pageurl[cid+1];
+}
 
-console.log(window.location.href+"/ngrams.json")
-$.ajax({
-  url: window.location.href+"/ngrams.json",
-  success: function(data){
+// [ = = = = = = = = = = INIT = = = = = = = = = = ]
+var corpus_id = getIDFromURL( "corpus" )
+var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	url2=window.location.href+"/ngrams.json";
+var ngrams_groups, ngrams_data;
+$.when(
+    $.ajax({
+        type: "GET",
+        url: url1,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_groups = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url2,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_data = data },
+        error: function(exception) { 
+            console.log("second ajax, exception!: "+exception.status)
+        }
+    })
+).then(function() {
     // Building the Score-Selector
-    var FirstScore = data.scores.initial
-    var possible_scores = Object.keys( data.ngrams[0].scores );
+    var FirstScore = ngrams_data.scores.initial
+    var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
@@ -756,7 +786,7 @@ $.ajax({
       }
     }
     // Initializing the Charts and Table
-    var result = Main_test( data , FirstScore )
+    var result = Main_test( ngrams_data , FirstScore )
     console.log( result )
 
     // Listener for onchange Score-Selector
@@ -764,9 +794,8 @@ $.ajax({
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( data , this.value )
+      var result = Main_test( ngrams_data , this.value )
       console.log( result )
     });
 
-  }
 });

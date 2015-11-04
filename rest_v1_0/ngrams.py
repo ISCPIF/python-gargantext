@@ -223,7 +223,7 @@ class Group(APIView):
     REST API to manage groups of Ngrams
     Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
     '''
-    def get_group_id(node_id):
+    def get_group_id(self , node_id):
             node_id = int(node_id)
             corpus = session.query(Node).filter(Node.id==node_id).first()
             group = get_or_create_node(corpus=corpus, nodetype='Group')
@@ -231,35 +231,58 @@ class Group(APIView):
 
     def get(self, request, corpus_id):
         # query ngrams
-        group_id = get_group_id(corpus_id)
-        
+        group_id = self.get_group_id(corpus_id)
         #api/node/$corpus_id/ngrams?ngram_id=12
-        ngram_id = request.GET.get('ngram_id', False)
-        ngram_id = int(node_id)
+        # ngram_id = 1 #request.GET.get('ngram_id', False)
+        # ngram_id = int(node_id)
         
-        #api/node/$corpus_id/ngrams?all=True
-        all_option = request.GET.get('all', False)
-        all_option = int(all_option)
+        # #api/node/$corpus_id/ngrams?all=True
+        # all_option = request.GET.get('all', False)
+        # all_option = 1 #int(all_option)
         
 
-        if  ngram_id > 0 or all_option == 1:
-            ngrams_ngrams = (session
-                    .query(NodeNgramNgram)
-                    .filter(NodeNgramNgram.node_id==group_id)
-                )
-            
-            if ngram_id > 0:
-                ngrams_ngrams = ngrams_ngrams.filter(NodeNgramNgram.ngramx_id==ngram_id)
-            
-        else:
-            raise APIException('Missing parameter: "ngram_id" as Integer', 400)
+        # IMPORTANT: Algorithm for getting the groups:
+        #   1. pairs_list <- Get all pairs from get_group_id
+        #   2. G  <- Do a non-directed graph of pairs_list
+        #   3. DG <- Do a directed graph of pairs_list
+        #   4. cliques_list <- find_cliques of G
+        #   5. groups <- Iterate in G and set the mainNode per each clique: take the highest max_outdegree-node of each clique, using DG
+        
+        import networkx as nx
+        G = nx.Graph()
+        DG = nx.DiGraph()
+        ngrams_ngrams = (session
+                .query(NodeNgramNgram)
+                .filter(NodeNgramNgram.node_id==group_id)
+            )
+        # ngramy_id=476996, score=1.0, node_id=75081, id=1282846, ngramx_id=493431
+        for ng in ngrams_ngrams:
+            # n_x = ( session.query(Ngram).filter(Ngram.id==ng.ngramx_id) ).first()
+            # n_y = ( session.query(Ngram).filter(Ngram.id==ng.ngramy_id) ).first()
+            G.add_edge( ng.ngramx_id , ng.ngramy_id )
+            DG.add_edge( ng.ngramx_id , ng.ngramy_id )  
 
-        group = dict(list())
+        # group = dict(list())
+        sinonims_cliques = nx.find_cliques( G )
+        # for nn in ngrams_ngrams.all():
+        #     group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
         
-        for nn in ngrams_ngrams.all():
-            group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
+        groups = {}
+        for c in sinonims_cliques:
+            max_deg = -1
+            mainNode = -1
+            mainNode_sinonims = []
+            for node in c:
+                node_outdeg = DG.out_degree(node)
+                if node_outdeg>max_deg:
+                    max_deg = node_outdeg
+                    mainNode = node
+            for node in c:
+                if mainNode!=node:
+                    mainNode_sinonims.append( node )
+            groups[ int(mainNode) ] = mainNode_sinonims
         
-        return JsonHttpResponse(group)
+        return JsonHttpResponse(groups)
 
         
     def post(self, request, node_id):

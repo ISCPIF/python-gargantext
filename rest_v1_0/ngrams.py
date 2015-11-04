@@ -242,11 +242,11 @@ class Group(APIView):
         
 
         # IMPORTANT: Algorithm for getting the groups:
-        #   1. pairs_list <- Get all pairs from get_group_id
+        #   1. pairs_list <- Get all pairs from get_group_id()
         #   2. G  <- Do a non-directed graph of pairs_list
         #   3. DG <- Do a directed graph of pairs_list
         #   4. cliques_list <- find_cliques of G
-        #   5. groups <- Iterate in G and set the mainNode per each clique: take the highest max_outdegree-node of each clique, using DG
+        #   5. groups <- Iterate in sinonims_cliques and set the mainNode per each clique: take the highest max_outdegree-node of each clique, using DG
         
         import networkx as nx
         G = nx.Graph()
@@ -267,20 +267,21 @@ class Group(APIView):
         # for nn in ngrams_ngrams.all():
         #     group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
         
-        groups = {}
-        for c in sinonims_cliques:
+        groups = { "nodes": {} , "links": {} }
+        for clique in sinonims_cliques:
             max_deg = -1
             mainNode = -1
             mainNode_sinonims = []
-            for node in c:
+            for node in clique:
+                groups["nodes"][node] = "nom_"+str(node)
                 node_outdeg = DG.out_degree(node)
                 if node_outdeg>max_deg:
                     max_deg = node_outdeg
                     mainNode = node
-            for node in c:
+            for node in clique:
                 if mainNode!=node:
                     mainNode_sinonims.append( node )
-            groups[ int(mainNode) ] = mainNode_sinonims
+            groups["links"][ mainNode ] = mainNode_sinonims
         
         return JsonHttpResponse(groups)
 

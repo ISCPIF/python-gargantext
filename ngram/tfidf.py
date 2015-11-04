@@ -131,7 +131,6 @@ def compute_tfidf_global(corpus):
     db, cursor = get_cursor()
 
     cursor.execute('''
-
         CREATE TEMPORARY TABLE tmp__tf (
         ngram_id INT NOT NULL,
         frequency DOUBLE PRECISION NOT NULL

@@ -9,11 +9,13 @@ from gargantext_web.db import get_or_create_node
 
 from parsing.corpustools import *
 
+import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import desc, asc, or_, and_, Date, cast, select
 from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 
+from collections import defaultdict
 
 #from testlists import *
 from math import log
@@ -94,7 +96,7 @@ def getStemmer(corpus):
         print("No language found")
 
     def stemIt(ngram):
-        return(set(map(lambda x: stemmer.stem(x), ngram[1].split(' '))))
+        return(list(map(lambda x: stemmer.stem(x), ngram.split(' '))).sort())
 
     return(stemIt)
 
@@ -104,8 +106,8 @@ def equals(ngram1,ngram2, f=None):
     detect if two ngrams are equivalent according to a function :: String -> [String]
     '''
     if ngram1[0] == ngram2[0]:
-    # if ngrams have same id then they are the same (and they can not be
-    # grouped)
+    # if ngrams have same id then they are the same 
+    # and they can not be grouped
         return(False)
     else:
         try:
@@ -121,27 +123,46 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
 
-    spec,cvalue = getNgrams(corpus, limit_inf=limit_inf, limit_sup=limit_sup)
+    #spec,cvalue = getNgrams(corpus, limit_inf=limit_inf, limit_sup=limit_sup)
+    #list_to_check=cvalue.union(spec)
 
     if how == 'Stem':
         stemIt = getStemmer(corpus)
 
-    group_to_insert = list()
+    group_to_insert = set()
     node_group = get_or_create_node(nodetype='Group', corpus=corpus)
 
     miam_to_insert = set()
     miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus)
 
-    list_to_check=cvalue.union(spec)
+    somme = sa.func.count(NodeNgram.weight)
+    ngrams = (session.query(Ngram.id, Ngram.terms, somme )
+            .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
+            .join(Node, Node.id == NodeNgram.node_id)
+            .filter(Node.parent_id==corpus.id, Node.type_id==cache.NodeType['Document'].id)
+            .group_by(Ngram.id)
+            .order_by(desc(somme))
+            .all()
+            #.limit(limit_sup)
+            )
 
-    for n in spec:
-        group = filter(lambda x: equals(n,x,f=stemIt),list_to_check)
-        miam_to_insert.add((miam_node.id, n[0],1))
-        #print([n for n in group])
-        for g in group:
-            if (miam_node.id, g[0], 1) not in miam_to_insert:
-                group_to_insert.append((node_group.id, n[0], g[0], 1))
-                print(n[1], "=", g[1])
+    group = defaultdict(lambda : defaultdict())
+
+    for n in ngrams:
+        stem = stemIt(n[1])
+        maincount = group[stem].get('count', 0)
+
+        if n[2] > maincount:
+            group[stem]['main form'] = n[0]
+            group[stem]['count'] = n[2]
+        else:
+            group[stem]['ids'] = group[stem].get('ids', []) + [n[0]]
+
+    for stem in group.keys():
+        miam_to_insert.add((miam_node.id, group[stem]['main form'], 1))
+        for ngram_id in group[stem]['ids']:
+            group_to_insert.add((node_group.id, group[stem]['main form'], ngram_id, 1))
+
     # TODO see here if coherent add in miam or group...
     # Deleting previous groups
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()

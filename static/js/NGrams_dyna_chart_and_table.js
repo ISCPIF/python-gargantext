@@ -209,6 +209,7 @@ function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
+// new
 function group_mode ( elem ) {
 	GState=1
 	var elem_id = $( elem ).data("stuff")
@@ -226,6 +227,7 @@ function group_mode ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
+// new
 function SaveSinonims( gheader , gcontent) {
 	console.log("GHEADER:")
 	$(gheader).children('span').each(function () {
@@ -237,6 +239,7 @@ function SaveSinonims( gheader , gcontent) {
 	});
 }
 
+// new
 $('#group_box_content').bind("DOMSubtreeModified",function(){
 	console.log( $(this).has( "span" ).length )
 	var groupdiv = "#group_box"
@@ -257,6 +260,7 @@ $('#group_box_content').bind("DOMSubtreeModified",function(){
 	}
 })
 
+// new
 function add2group ( elem ) {
 	var elem_id = $( elem ).data("stuff")
 
@@ -285,6 +289,7 @@ function add2group ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
+// new
 function clickngram_action ( elem ) {
 	var elem_id = $( elem ).data("stuff")
 	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
@@ -292,6 +297,7 @@ function clickngram_action ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
+// modified
 function transformContent(rec_id) {
 	var elem = AjaxRecords[rec_id];
 	var result = {}
@@ -301,7 +307,7 @@ function transformContent(rec_id) {
 		plus_event = " <a class=\"plusclass\" onclick=\"group_mode(this.parentNode.parentNode)\">(+)</a>"
 	if(GState==1 ) {
 		if(elem.state!=1 && elem.state!=3) { // if deleted and already grouped, no Up button
-			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(↑)</a>"
+			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
 		}
 	}
 	result["id"] = elem["id"]
@@ -389,11 +395,6 @@ function Mark_NGram( ngram_id , old_flag , new_flag ) {
   return new_flag;
 }
 
-function GroupNGrams() {
-    for (var i in FlagsBuffer["to_group"]){
-      console.log( AjaxRecords[i] )
-    }  
-}
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
@@ -414,6 +415,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 function SelectAll( the_checkbox ) {
+  console.log(the_checkbox)
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
@@ -498,8 +500,6 @@ $("#Save_All").click(function(){
   }
 
 });
-
-
 
 function Main_test( data , initial) {
 
@@ -738,38 +738,46 @@ function Main_test( data , initial) {
     return "OK"
 }
 
-
-function SearchFilters( elem ) {
-  var MODE = elem.value;
-
-  if( MODE == "filter_all") {
-    var result = Main_test(AjaxRecords , MODE)
-    console.log( result )
-    return ;
-  }
-
-
-
-  // if( MODE == "filter_stoplist") {
-
-
-  // }
-
-  // if( MODE == "filter_miamlist") {
-
-
-  // }
-
+function getIDFromURL( item ) {
+	var pageurl = window.location.href.split("/")
+	var cid;
+	for(var i in pageurl) {
+	    if(pageurl[i]==item) {
+	        cid=parseInt(i);
+	        break;
+	    }
+	} 
+	return pageurl[cid+1];
 }
 
-console.log(window.location.href+"/ngrams.json")
-$.ajax({
-  url: window.location.href+"/ngrams.json",
-  success: function(data){
-
+// [ = = = = = = = = = = INIT = = = = = = = = = = ]
+var corpus_id = getIDFromURL( "corpus" )
+var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	url2=window.location.href+"/ngrams.json";
+var ngrams_groups, ngrams_data;
+$.when(
+    $.ajax({
+        type: "GET",
+        url: url1,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_groups = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url2,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_data = data },
+        error: function(exception) { 
+            console.log("second ajax, exception!: "+exception.status)
+        }
+    })
+).then(function() {
     // Building the Score-Selector
-    var FirstScore = data.scores.initial
-    var possible_scores = Object.keys( data.ngrams[0].scores );
+    var FirstScore = ngrams_data.scores.initial
+    var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
@@ -778,20 +786,16 @@ $.ajax({
       }
     }
     // Initializing the Charts and Table
-    var result = Main_test( data , FirstScore )
+    var result = Main_test( ngrams_data , FirstScore )
     console.log( result )
-
 
     // Listener for onchange Score-Selector
     scores_div += "<select>"+"\n";
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( data , this.value )
+      var result = Main_test( ngrams_data , this.value )
       console.log( result )
     });
 
-
-
-  }
 });

@@ -30,7 +30,7 @@ def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
 
-def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, apax=2):
+def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
@@ -118,7 +118,7 @@ def get_cooc(request=None, corpus=None
         , field1='ngrams', field2='ngrams'
         , cooc_id=None, type='node_link', size=1000
         , start=None, end=None
-        , apax=2
+        , apax=1
         ):
     '''
     get_ccoc : to compute the graph.
@@ -291,7 +291,8 @@ def get_graphA( nodeA_type , NodesB , links , corpus ):
 
 
     # = = = = [ 04. Getting A-elems and making the dictionaries] = = = = ]
-    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type_id)
+    sql_query = 'select node_id,value_string from node_node_hyperdata where node_id IN (' + \
+            ','.join(map(str, Docs_and_["nodesB"].keys())) + ")"+' and hyperdata_id='+str(nodeA_type_id)
     cursor = connection.cursor()
     cursor.execute(sql_query)
     results = cursor.fetchall()

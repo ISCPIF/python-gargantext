@@ -19,8 +19,11 @@ urlpatterns = patterns('',
     url(r'nodes/(\d+)/children/ngrams$', api.NodesChildrenNgrams.as_view()),  # => repeated children ?
     url(r'nodes/(\d+)/children/ngrams$', api.NodesChildrenNgrams.as_view()),  # => repeated children ?
 
-    url(r'node/(\d+)/ngrams$', ngrams.Ngrams.as_view()),
-    url(r'node/(\d+)/ngrams$', ngrams.Ngrams.as_view()),
+    # NGRAMS table & annotations
+    url(r'node/(\d+)/ngrams$'      , ngrams.Ngrams.as_view()),
+    url(r'node/(\d+)/ngrams/group$', ngrams.Group.as_view()),
+    url(r'node/(\d+)/ngrams/keep$' , ngrams.Keep.as_view()),
+    url(r'node/(\d+)/ngrams/list$' , ngrams.List.as_view()),
 
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),

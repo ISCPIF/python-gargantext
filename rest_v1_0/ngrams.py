@@ -11,12 +11,11 @@ from sqlalchemy.orm import aliased
 import datetime
 import copy
 
-from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram
-from gargantext_web.db import get_or_create_node
-
 from gargantext_web.validation import validate, ValidationException
-from node import models
+
+from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram\
+        , NodeNodeNgram, Ngram, Hyperdata, Node_Ngram, get_or_create_node
+
 
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
@@ -71,6 +70,12 @@ class APIException(_APIException):
 from rest_framework.decorators import api_view
 #@login_required
 # TODO how to secure REST ?
+
+
+class List(APIView):
+    pass
+
+
 class Ngrams(APIView):
     '''
     REST application to manage ngrams
@@ -211,4 +216,117 @@ class Ngrams(APIView):
 
                     ],
                                })
+
+
+class Group(APIView):
+    '''
+    REST API to manage groups of Ngrams
+    Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
+    '''
+    def get_group_id(self , node_id):
+            node_id = int(node_id)
+            corpus = session.query(Node).filter(Node.id==node_id).first()
+            group = get_or_create_node(corpus=corpus, nodetype='Group')
+            return(group.id)
+
+    def get(self, request, corpus_id):
+        # query ngrams
+        group_id = self.get_group_id(corpus_id)
+        #api/node/$corpus_id/ngrams?ngram_id=12
+        # ngram_id = 1 #request.GET.get('ngram_id', False)
+        # ngram_id = int(node_id)
+        
+        # #api/node/$corpus_id/ngrams?all=True
+        # all_option = request.GET.get('all', False)
+        # all_option = 1 #int(all_option)
+        
+
+        # IMPORTANT: Algorithm for getting the groups:
+        #   1. pairs_list <- Get all pairs from get_group_id()
+        #   2. G  <- Do a non-directed graph of pairs_list
+        #   3. DG <- Do a directed graph of pairs_list
+        #   4. cliques_list <- find_cliques of G
+        #   5. groups <- Iterate in sinonims_cliques and set the mainNode per each clique: take the highest max_outdegree-node of each clique, using DG
+        
+        import networkx as nx
+        G = nx.Graph()
+        DG = nx.DiGraph()
+        ngrams_ngrams = (session
+                .query(NodeNgramNgram)
+                .filter(NodeNgramNgram.node_id==group_id)
+            )
+        # ngramy_id=476996, score=1.0, node_id=75081, id=1282846, ngramx_id=493431
+        for ng in ngrams_ngrams:
+            # n_x = ( session.query(Ngram).filter(Ngram.id==ng.ngramx_id) ).first()
+            # n_y = ( session.query(Ngram).filter(Ngram.id==ng.ngramy_id) ).first()
+            G.add_edge( ng.ngramx_id , ng.ngramy_id )
+            DG.add_edge( ng.ngramx_id , ng.ngramy_id )  
+
+        # group = dict(list())
+        sinonims_cliques = nx.find_cliques( G )
+        # for nn in ngrams_ngrams.all():
+        #     group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
+        
+        groups = { "nodes": {} , "links": {} }
+        for clique in sinonims_cliques:
+            max_deg = -1
+            mainNode = -1
+            mainNode_sinonims = []
+            for node in clique:
+                groups["nodes"][node] = "nom_"+str(node)
+                node_outdeg = DG.out_degree(node)
+                if node_outdeg>max_deg:
+                    max_deg = node_outdeg
+                    mainNode = node
+            for node in clique:
+                if mainNode!=node:
+                    mainNode_sinonims.append( node )
+            groups["links"][ mainNode ] = mainNode_sinonims
+        
+        return JsonHttpResponse(groups)
+
+        
+    def post(self, request, node_id):
+        
+        # input validation
+        input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
+        
+        group_id = get_group_id(node_id)
+       
+        for data in input['data']:
+            if data['source'] > 0 and len(data['target']) > 0:
+                for target_id in data['target']:
+                    if target_id > 0:
+                        session.add(NodeNgramNgram(node_id=group_id, \
+                                ngramx_id=output['source'], ngramy_id=target_id, score=1))
+                session.commit()
+                return JsonHttpResponse(True, 201)
+            else:
+                raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+
+
+    def delete(self, request, corpus_id):
+        
+        # input validation
+        input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
+        
+        group_id = get_group_id(corpus_id)
+
+        for data in input['data']:
+
+            if data['source'] > 0 and len(data['target']) > 0:
+                for target_id in data['target']:
+                    (session.query(NodeNgramNgram)
+                            .filter(NodeNgramNgram.node_id==group_id)
+                            .filter(NodeNgramNgram.ngramx_id==data['source'])
+                            .delete()
+                    )
+                return JsonHttpResponse(True, 201)
+            else:
+                raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+
+
+class Keep(APIView):
+    pass
+
 

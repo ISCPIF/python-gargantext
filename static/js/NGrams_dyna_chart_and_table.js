@@ -211,6 +211,21 @@ function getRecords() {
 
 // new
 function group_mode ( elem ) {
+
+	if( $("#group_box").length==0 ) {
+		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
+		var prctg = $(div_name).width() / $(div_name).parent().width() * 100;
+		var group_html =  '      <div class="group_box" id="group_box">'+'\n';
+			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
+			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
+			group_html += '      </div>'+'\n';
+			$("#my-ajax-table > thead").append( group_html )
+	}
+	//    <div class="group_box" id="group_box">
+	//      <span class="group_box header" id="group_box_header"></span>
+	//      <span class="group_box content" id="group_box_content"></span>
+	//    </div>
+	// $("#my-ajax-table > thead").append('<div id="group_div"><p>hola mundou</p></div>')
 	GState=1
 	var elem_id = $( elem ).data("stuff")
 
@@ -290,6 +305,7 @@ function add2group ( elem ) {
 }
 
 // new
+// click red, click keep, click normal...
 function clickngram_action ( elem ) {
 	var elem_id = $( elem ).data("stuff")
 	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
@@ -775,6 +791,25 @@ $.when(
         }
     })
 ).then(function() {
+
+	// Deleting sinonims from the ngrams-table, clean start baby!
+    if( Object.keys(ngrams_groups.links).length>0 ) {
+    	var i = ngrams_data.ngrams.length
+		while (i--) {
+			var ng_id = ngrams_data.ngrams[i].id
+		    if(  ngrams_groups.links[ng_id]  ) {
+		    	ngrams_data.ngrams[i].name="*"+ngrams_data.ngrams[i].name // to comment apres
+		    	for(var j in ngrams_groups.links[ng_id]) {
+		    		var id_2del = ngrams_groups.links[ng_id][j]
+		    		if( ngrams_data.ngrams[id_2del] ) {
+		    			ngrams_data.ngrams.splice(id_2del, 1);
+		    		}
+		    	}
+		    }
+		}
+    }
+
+
     // Building the Score-Selector
     var FirstScore = ngrams_data.scores.initial
     var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
@@ -797,5 +832,6 @@ $.when(
       var result = Main_test( ngrams_data , this.value )
       console.log( result )
     });
+
 
 });

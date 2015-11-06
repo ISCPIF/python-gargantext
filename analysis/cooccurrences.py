@@ -72,7 +72,8 @@ def do_cooc(corpus=None
     if isMonopartite :
         NodeNgramX = aliased(NodeNgram)
         NodeNgramY = aliased(NodeNgram)
-        cooc_score = func.sqrt(func.sum(NodeNgramX.weight) * func.sum(NodeNgramY.weight)).label('cooc_score')
+        cooc_score = func.sum(NodeNgramX.weight + NodeNgramY.weight).label('cooc_score')
+        #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
 
         cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeNgramX.node_id)

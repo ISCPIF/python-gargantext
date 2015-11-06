@@ -95,7 +95,7 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
                     )
 
     ngrams = [n for n in ngrams if n not in stops]
-    print(ngrams)
+    #print(ngrams)
     #group = defaultdict(lambda : defaultdict())
     ids_dict = dict()
     mainform_dict = dict()

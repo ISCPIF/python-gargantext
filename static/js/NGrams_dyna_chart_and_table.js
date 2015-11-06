@@ -322,6 +322,25 @@ function clickngram_action ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
+function YOLO() {
+
+  var sum__selected_elems = 0;
+
+  for(var i in FlagsBuffer["grouped"])
+  	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
+  for(var i in FlagsBuffer)
+    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+
+  console.log("")
+  console.log("Current Buffer size: "+sum__selected_elems)
+  console.log(FlagsBuffer)
+
+  if ( sum__selected_elems>0 )
+    $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
+  else 
+    $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+}
+
 // modified
 function transformContent(rec_id) {
 	var elem = AjaxRecords[rec_id];
@@ -343,7 +362,7 @@ function transformContent(rec_id) {
 	return result;
 }
 
-
+// to delete
 // Affecting the tr element somehow
 function overRide(elem) {
   var id = elem.id

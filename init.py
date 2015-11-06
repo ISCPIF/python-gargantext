@@ -91,7 +91,7 @@ print('Initialize node types...')
 node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
-        'MiamList', 'StopList', 'MainList',
+        'MiamList', 'StopList', 'MainList', 'MapList', # TODO MiamList -> MainList
         'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificity'
         , 'Cooccurrence',
         ]

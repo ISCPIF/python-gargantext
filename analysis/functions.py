@@ -29,7 +29,6 @@ from sqlalchemy.orm import aliased
 def diag_null(x):
     return x - x * scipy.eye(x.shape[0])
 
-
 def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
@@ -75,10 +74,10 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     n = n.sort(inplace=False)
     m = m.sort(inplace=False)
 
-    nodes_included = 300 #int(round(size/20,0))
+    nodes_included = 500 #int(round(size/20,0))
     #nodes_excluded = int(round(size/10,0))
 
-    nodes_specific = 300 #int(round(size/10,0))
+    nodes_specific = 500 #int(round(size/10,0))
     #nodes_generic = int(round(size/10,0))
 
     # TODO use the included score for the node size
@@ -87,6 +86,7 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     #m_index = pd.Index.intersection(x.index, m.index[:nodes_generic])
     # Specific:
     m_index = pd.Index.intersection(x.index, m.index[-nodes_specific:])
+    #m_index = pd.Index.intersection(x.index, n.index[:nodes_included])
 
     x_index = pd.Index.union(n_index, m_index)
     xx = x[list(x_index)].T[list(x_index)]
@@ -113,7 +113,6 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
 
     return(G,partition,ids,weight)
 
-
 def get_cooc(request=None, corpus=None
         , field1='ngrams', field2='ngrams'
         , cooc_id=None, type='node_link', size=1000
@@ -126,7 +125,7 @@ def get_cooc(request=None, corpus=None
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
     print("Coocurrences do not exist yet, create it.")
-    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+    miam_id = get_or_create_node(nodetype='MapList', corpus=corpus).id
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
     
@@ -141,9 +140,9 @@ def get_cooc(request=None, corpus=None
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
     cooc_id = do_cooc(corpus=corpus, field1="ngrams", field2="ngrams"
             , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size
-            , isMonopartite=isMonopartite , start=start , end=end , apax=apax)
+            , isMonopartite=True, start=start , end=end , apax=apax)
     
-    G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams", isMonopartite=isMonopartite)
+    G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams", isMonopartite=True)
 
     if type == "node_link":
         nodesB_dict = {}
@@ -173,8 +172,8 @@ def get_cooc(request=None, corpus=None
             s = e[0]
             t = e[1]
             info = { 
-                "s":ids[s][1] , 
-                "t":ids[t][1] ,
+                "s": ids[s][1] , 
+                "t": ids[t][1] ,
                 "w": G[ids[s][1]][ids[t][1]]["weight"]
             }
             # print(info)
@@ -216,15 +215,13 @@ def get_cooc(request=None, corpus=None
 
     return(data)
 
-
-
 def get_graphA( nodeA_type , NodesB , links , corpus ):
     from analysis.InterUnion import Utils
     print(" = = = == = = = ")
     print("In get_graphA(), corpus id:",corpus.id)
 
     nodeA_type_id = cache.Hyperdata[nodeA_type].id
-    threshold_cotainf = 0.05
+    threshold_cotainf = 0.02
     max_nodeid = -1
     for nodeid in NodesB:
     	if nodeid > max_nodeid:

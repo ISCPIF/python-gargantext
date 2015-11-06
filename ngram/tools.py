@@ -109,3 +109,30 @@ def insert_nodengramngram(nodengramngram):
             ''' % (NodeNgramNgram.__table__.name,))
         
     db.commit()
+
+
+
+#def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, limit=None):
+#    '''
+#    queryNodeNodeNgram :: Int -> Int -> Int -> (Int, String, Float)
+#    Get list of ngrams according to a measure related to the corpus: maybe tfidf
+#    cvalue.
+#    '''
+#    query = (session.query(Ngram.id, Ngram.terms, NodeNodeNgram.score)
+#                    .join(NodeNodeNgram, NodeNodeNgram.ngram_id == Ngram.id)
+#                    .join(Node, Node.id == NodeNodeNgram.nodex_id)
+#                    .filter(NodeNodeNgram.nodex_id == nodeMeasure_id)
+#                    .filter(NodeNodeNgram.nodey_id == corpus_id)
+#                    .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
+#                    .order_by(desc(NodeNodeNgram.score))
+#            )
+#
+#    if limit is None:
+#        query = query.count()
+#    elif limit == 0 :
+#        query = query.all()
+#    else:
+#        query = query.limit(limit)
+#
+#    return(query)
+#

@@ -7,6 +7,7 @@ from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
 from gargantext_web.db import get_or_create_node
 
+from analysis.lists import Translations, UnweightedList
 from parsing.corpustools import *
 
 import sqlalchemy as sa
@@ -21,62 +22,7 @@ from collections import defaultdict
 from math import log
 from functools import reduce
 
-def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, limit=None):
-    '''
-    queryNodeNodeNgram :: Int -> Int -> Int -> (Int, String, Float)
-    Get list of ngrams according to a measure related to the corpus: maybe tfidf
-    cvalue.
-    '''
-    query = (session.query(Ngram.id, Ngram.terms, NodeNodeNgram.score)
-                    .join(NodeNodeNgram, NodeNodeNgram.ngram_id == Ngram.id)
-                    .join(Node, Node.id == NodeNodeNgram.nodex_id)
-                    .filter(NodeNodeNgram.nodex_id == nodeMeasure_id)
-                    .filter(NodeNodeNgram.nodey_id == corpus_id)
-                    .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
-                    .order_by(desc(NodeNodeNgram.score))
-            )
 
-    if limit is None:
-        query = query.count()
-    elif limit == 0 :
-        query = query.all()
-    else:
-        query = query.limit(limit)
-
-    return(query)
-
-def getNgrams(corpus=None, limit_inf=600, limit_sup=3000):
-    '''
-    getNgrams :: Corpus -> [(Int, String)] -> [(Int, String)]
-    For a corpus, gives list of highest Cvalue ngrams and highest TFIDF (global)
-    ngrams that have to be grouped with
-    '''
-    #tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
-    cvalue_node = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-    spec_node = get_or_create_node(nodetype='Specificity', corpus=corpus)
-
-
-    #tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id)
-    cvalue_ngrams = queryNodeNodeNgram(nodeMeasure_id=cvalue_node.id, corpus_id=corpus.id, limit=limit_sup)
-    spec_ngrams   = queryNodeNodeNgram(nodeMeasure_id=spec_node.id, corpus_id=corpus.id, limit=limit_inf)
-
-    #print([n for n in tfidf_ngrams])
-
-    def list2set(_list):
-        _set = set()
-        for n in _list:
-            _set.add((n[0],n[1]))
-        return(_set)
-
-    cvalue_set = set()
-    spec_set = set()
-
-    cvalue_set = list2set(cvalue_ngrams)
-    spec_set   = list2set(spec_ngrams)
-
-    cvalue_setDiff = cvalue_set.difference(spec_set)
-
-    return(spec_set,cvalue_setDiff)
 
 def getStemmer(corpus):
     '''
@@ -121,17 +67,35 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
     miam_to_insert = set()
     miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus)
 
+    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus)
+    #stop_list = UnweightedList(stop_node.id)
+
+    Stop = aliased(NodeNgram)
     frequency = sa.func.count(NodeNgram.weight)
     ngrams = (session.query(Ngram.id, Ngram.terms, frequency )
             .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
             .join(Node, Node.id == NodeNgram.node_id)
+            #.outerjoin(Stop, Stop.ngram_id == Ngram.id)
+            #.filter(Stop.node_id == stop_node.id, Stop.ngram_id == None)
             .filter(Node.parent_id==corpus.id, Node.type_id==cache.NodeType['Document'].id)
             .group_by(Ngram.id)
             .order_by(desc(frequency))
             #.all()
             .limit(limit_sup)
             )
+    
+    stops = (session.query(Ngram.id, Ngram.terms, frequency)
+                    .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
+                    .join(Node, Node.id == NodeNgram.node_id)
+                    .join(Stop, Stop.ngram_id == Ngram.id)
+                    .filter(Stop.node_id == stop_node.id)
+                    .filter(Node.parent_id==corpus.id, Node.type_id==cache.NodeType['Document'].id)
+                    .group_by(Ngram.id)
+                    .all()
+                    )
 
+    ngrams = [n for n in ngrams if n not in stops]
+    print(ngrams)
     #group = defaultdict(lambda : defaultdict())
     ids_dict = dict()
     mainform_dict = dict()

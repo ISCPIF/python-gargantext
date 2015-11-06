@@ -45,23 +45,11 @@ var PossibleActions = [
 var GState = 0
 var System = {
 	// 1: {
-	// 	"states" : [ "normal" , "grouped" , "blocked" ] ,	
-	// 	"dict" : { 
-	// 		"normal": {
-	// 		  "id":"normal",
-	// 		  "name": "Normal",
-	// 		  "color":"black"
-	// 		}, 
-	// 		"grouped": {
-	// 		  "id":"grouped",
-	// 		  "name": "MainForm",
-	// 		  "color":"white"
-	// 		}, 
-	// 	}	
 	// },
 	0: {
-		"states" : [ "normal" , "to_delete" , "to_keep" ,"grouped"] ,
-		"dict" : { 
+		"states" : [ "normal" , "to_keep" , "to_delete" , "grouped"] ,
+		"statesD" : {} ,
+		"dict" : {
 			"normal": {
 			  "id":"normal",
 			  "name": "Normal",
@@ -76,25 +64,25 @@ var System = {
 			  "id":"to_keep",
 			  "name": "Keep",
 			  "color":"green"
-			} , 
+			}, 
 			"grouped": {
 			  "id":"grouped",
 			  "name": "MainForm",
 			  "color":"white"
-			}, 
+			}
 		}
 	}
 	
 }
 
-for(var i in System[GState]["states"] )
-	System[GState]["dict"][ System[GState]["dict"][i] ] = Number(i)
-console.log( System )
+for(var i in System[GState]["states"] ) {
+	System[GState]["statesD"][ System[GState]["states"][i] ] = Number(i)
+}
 
 
 var FlagsBuffer = {}
-for(var i in PossibleActions) {
-  FlagsBuffer[PossibleActions[i].id] = {}
+for(var i in System[GState]["states"]) {
+  FlagsBuffer[System[GState]["states"][i]] = {}
 }
 
 
@@ -209,52 +197,6 @@ function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
-// new
-function group_mode ( elem ) {
-
-	if( $("#group_box").length==0 ) {
-		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
-		var prctg = $(div_name).width() / $(div_name).parent().width() * 100;
-		var group_html =  '      <div class="group_box" id="group_box">'+'\n';
-			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
-			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
-			group_html += '      </div>'+'\n';
-			$("#my-ajax-table > thead").append( group_html )
-	}
-	//    <div class="group_box" id="group_box">
-	//      <span class="group_box header" id="group_box_header"></span>
-	//      <span class="group_box content" id="group_box_content"></span>
-	//    </div>
-	// $("#my-ajax-table > thead").append('<div id="group_div"><p>hola mundou</p></div>')
-	GState=1
-	var elem_id = $( elem ).data("stuff")
-
-	$('<span/>', {
-		"data-id":AjaxRecords[elem_id].id,
-	    text: AjaxRecords[elem_id].name + ":",
-	    // css: {
-	    // 	"float":"right",
-	    // }
-	}).appendTo("#group_box_header")
-
-	AjaxRecords[elem_id].state=3;// 3: "grouped" state
-
-	MyTable.data('dynatable').dom.update();
-}
-
-// new
-function SaveSinonims( gheader , gcontent) {
-	console.log("GHEADER:")
-	$(gheader).children('span').each(function () {
-	    console.log($(this).data("id"));
-	});
-	console.log("GCONTENT:")
-	$(gcontent).children('span').each(function () {
-	    console.log($(this).data("id"));
-	});
-}
-
-// new
 $('#group_box_content').bind("DOMSubtreeModified",function(){
 	console.log( $(this).has( "span" ).length )
 	var groupdiv = "#group_box"
@@ -275,9 +217,61 @@ $('#group_box_content').bind("DOMSubtreeModified",function(){
 	}
 })
 
+function save_groups() {
+	var groupdiv = "#group_box"
+	var gcontent = groupdiv+"_content"
+	var count = 0
+	var mainform = -1
+	$(gcontent).children('span').each(function () {
+	    var nid = $(this).data("id");
+	    if (count==0) {
+	    	AjaxRecords[RecDict[nid]].name += "*" 
+	    	AjaxRecords[RecDict[nid]].state = 1
+	    	FlagsBuffer["grouped"][ nid ] = []
+	    	mainform = nid
+	    } else {
+	    	AjaxRecords[RecDict[nid]].state = -1
+	    	FlagsBuffer["grouped"][ mainform ].push( nid )
+	    }
+	    count++
+	});
+	$("#group_box").remove()
+	GState=0
+	MyTable.data('dynatable').dom.update();
+	console.clear()
+	console.log( FlagsBuffer )
+}
+
+function cancel_groups() {
+	var groupdiv = "#group_box"
+	var gcontent = groupdiv+"_content"
+	$(gcontent).children('span').each(function () {
+	    var nid = $(this).data("id");
+	    AjaxRecords[RecDict[nid]].state = 0
+	});
+	$("#group_box").remove()
+	GState=0
+	MyTable.data('dynatable').dom.update();
+}
+
 // new
 function add2group ( elem ) {
+
+	if( $("#group_box").length==0 ) {
+		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
+		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
+		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
+			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
+			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
+			group_html += '      </span>'+'\n';
+			$(group_html).insertAfter( "#my-ajax-table > thead" )
+			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
+	}
+	GState=1
+
 	var elem_id = $( elem ).data("stuff")
+	console.log("elem_id")
+	console.log(AjaxRecords[elem_id].id)
 
 	$('<span/>', {
 		"data-id":AjaxRecords[elem_id].id,
@@ -294,12 +288,27 @@ function add2group ( elem ) {
 	.click(function() {
     	AjaxRecords[$(this).data("stuff")].state=0;
     	$(this).remove()
+    	// if nothing in group div, then remove it
+    	if( $("#group_box_content").children().length==0 ) {
+    		$("#group_box").remove()
+    		GState=0
+    	}
     	MyTable.data('dynatable').dom.update();
 	})
 	.appendTo('#group_box_content')
 
-
 	AjaxRecords[elem_id].state=3;// 3: "grouped" state
+
+	if( FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
+		for(var i in FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
+			var nodeid = FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ][i]
+			console.log("recursive: "+nodeid)
+			console.log(" and sending this:")
+			var subform = $('<div/>', { "data-stuff": RecDict[ nodeid ] })
+			// console.log( $( newdiv ).data("stuff") )
+			add2group ( subform )
+		}
+	}
 
 	MyTable.data('dynatable').dom.update();
 }
@@ -319,10 +328,10 @@ function transformContent(rec_id) {
 	var result = {}
 	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
 	var plus_event = ""
-	if(GState==0 && elem.state!=1) // if deleted, no + button
-		plus_event = " <a class=\"plusclass\" onclick=\"group_mode(this.parentNode.parentNode)\">(+)</a>"
+	if(GState==0 && elem.state!=System[0]["statesD"]["to_delete"] ) // if deleted, no + button
+		plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(+)</a>"
 	if(GState==1 ) {
-		if(elem.state!=1 && elem.state!=3) { // if deleted and already grouped, no Up button
+		if(elem.state!=System[0]["statesD"]["to_delete"] && elem.state!=System[0]["statesD"]["grouped"]) { // if deleted and already grouped, no Up button
 			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
 		}
 	}
@@ -414,15 +423,15 @@ function Mark_NGram( ngram_id , old_flag , new_flag ) {
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
-  // pr("\tulWriter: "+record.id)
   var tr = '';
   var cp_rec = {}
-  // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
+
+  if( AjaxRecords[RecDict[record.id]].state < 0 )
+  	return false;
+
   cp_rec = transformContent(RecDict[record.id])
   
   // grab the record's attribute for each column
-  // console.log("\tin ulWriter:")
-  // console.log(record)
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }

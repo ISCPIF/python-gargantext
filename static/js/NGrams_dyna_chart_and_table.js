@@ -303,24 +303,24 @@ function clickngram_action ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
-function YOLO() {
+// function YOLO() {
 
-  var sum__selected_elems = 0;
+//   var sum__selected_elems = 0;
 
-  for(var i in FlagsBuffer["grouped"])
-  	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
-  for(var i in FlagsBuffer)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+//   for(var i in FlagsBuffer["grouped"])
+//   	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
+//   for(var i in FlagsBuffer)
+//     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
 
-  console.log("")
-  console.log("Current Buffer size: "+sum__selected_elems)
-  console.log(FlagsBuffer)
+//   console.log("")
+//   console.log("Current Buffer size: "+sum__selected_elems)
+//   console.log(FlagsBuffer)
 
-  if ( sum__selected_elems>0 )
-    $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
-  else 
-    $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-}
+//   if ( sum__selected_elems>0 )
+//     $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
+//   else 
+//     $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+// }
 
 // modified
 function transformContent(rec_id) {
@@ -483,15 +483,31 @@ $("#Save_All").click(function(){
 	console.log("click in save all 01")
 	var sum__selected_elems = 0;
 
+	FlagsBuffer["to_delete"] = {}
+	FlagsBuffer["to_keep"] = {}
+
 	for(var id in AjaxRecords) {
 		if( AjaxRecords[id]["state"]>0 ) {
-			FlagsBuffer [ System[0].states[ AjaxRecords[id].state ] ][ AjaxRecords[id].id ]
+			FlagsBuffer [ System[0].states[ AjaxRecords[id].state ] ]  [ AjaxRecords[id].id ] = true
 		}
 	}
 
 	console.log(" = = = = = = = = = == ")
 	console.log("FlagsBuffer:")
 	console.log(FlagsBuffer)
+
+	for(var i in FlagsBuffer["grouped"]) {
+		if(FlagsBuffer["to_delete"][i]) {
+			for(var j in FlagsBuffer["grouped"][i] ) {
+				FlagsBuffer["to_delete"][FlagsBuffer["grouped"][i][j]] = true
+			}
+		}
+	}
+
+	var nodes_2del = Object.keys(FlagsBuffer["to_delete"]).map(Number)
+	var nodes_2keep = Object.keys(FlagsBuffer["to_keep"]).map(Number)
+	var nodes_2group = FlagsBuffer["grouped"]
+
 	// if(Object.keys(FlagsBuffer["grouped"]).length>0)
 	// 	console.log( FlagsBuffer["grouped"] )
 

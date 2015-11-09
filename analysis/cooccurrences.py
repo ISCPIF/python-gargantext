@@ -18,7 +18,7 @@ def do_cooc(corpus=None
          , start=None, end=None
          , limit=1000
          , isMonopartite=True
-         , apax = 1):
+         , hapax = 3):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -67,13 +67,14 @@ def do_cooc(corpus=None
     session.commit()
 
     doc_id = cache.NodeType['Document'].id
+    
+    NodeNgramX = aliased(NodeNgram)
+    cooc_score = func.count(NodeNgramX.node_id).label('cooc_score')
+    #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
    
     #print([n for n in test_query])
     if isMonopartite :
-        NodeNgramX = aliased(NodeNgram)
         NodeNgramY = aliased(NodeNgram)
-        cooc_score = func.sum(NodeNgramX.weight + NodeNgramY.weight).label('cooc_score')
-        #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
 
         cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeNgramX.node_id)
@@ -82,7 +83,6 @@ def do_cooc(corpus=None
                     )
     else :
         NodeNgramY = aliased(NodeNgram)
-        cooc_score = func.sqrt(func.sum(NodeHyperdataNgram.score) * func.sum(NodeNgramY.weight)).label('cooc_score')
         
         cooc_query = (session.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeHyperdataNgram.node_id)
@@ -151,7 +151,7 @@ def do_cooc(corpus=None
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
         cooc_query = cooc_query.filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
     
-    cooc_query = cooc_query.having(cooc_score > apax)
+    cooc_query = cooc_query.having(cooc_score > hapax)
              
     if isMonopartite:
         cooc_query = cooc_query.group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)

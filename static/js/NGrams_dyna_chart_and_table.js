@@ -26,12 +26,12 @@ var TheBuffer = false
 
 var PossibleActions = [
 	{
-	  "id":"to_delete",
+	  "id":"delete",
 	  "name": "Delete",
 	  "color":"red"
 	}, 
 	{
-	  "id":"to_keep",
+	  "id":"keep",
 	  "name": "Keep",
 	  "color":"green"
 	}, 
@@ -47,7 +47,7 @@ var System = {
 	// 1: {
 	// },
 	0: {
-		"states" : [ "normal" , "to_keep" , "to_delete" , "grouped"] ,
+		"states" : [ "normal" , "keep" , "delete" , "group"] ,
 		"statesD" : {} ,
 		"dict" : {
 			"normal": {
@@ -55,18 +55,18 @@ var System = {
 			  "name": "Normal",
 			  "color":"black"
 			}, 
-			"to_delete": {
-			  "id":"to_delete",
+			"delete": {
+			  "id":"delete",
 			  "name": "Delete",
 			  "color":"red"
 			}, 
-			"to_keep": {
-			  "id":"to_keep",
+			"keep": {
+			  "id":"keep",
 			  "name": "Keep",
 			  "color":"green"
 			}, 
-			"grouped": {
-			  "id":"grouped",
+			"group": {
+			  "id":"group",
 			  "name": "MainForm",
 			  "color":"white"
 			}
@@ -208,7 +208,7 @@ function save_groups() {
 			if (count==0) {
 				if(writeflag) {
 					// AjaxRecords[RecDict[nid]].name += "*" 
-					FlagsBuffer["grouped"][ nid ] = []
+					FlagsBuffer["group"][ nid ] = []
 					mainform = nid
 		    		AjaxRecords[RecDict[nid]].state = 1
 		    	} else {
@@ -216,7 +216,7 @@ function save_groups() {
 		    	}
 		    } else {
 				if(writeflag) {
-					FlagsBuffer["grouped"][ mainform ].push( nid )
+					FlagsBuffer["group"][ mainform ].push( nid )
 		    		AjaxRecords[RecDict[nid]].state = -1
 				}
 		    }
@@ -263,7 +263,7 @@ function add2groupdiv( elem_id ) {
     	MyTable.data('dynatable').dom.update();
 	})
 	.appendTo('#group_box_content')
-	AjaxRecords[elem_id].state=3;// 3: "grouped" state
+	AjaxRecords[elem_id].state=3;// 3: "group" state
 }
 // new
 function add2group ( elem ) {
@@ -282,14 +282,14 @@ function add2group ( elem ) {
 
 	var elem_id = $( elem ).data("stuff")
 	add2groupdiv( elem_id )
-	if( FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
-		for(var i in FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
-			var nodeid = FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ][i]
+	if( FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
+		for(var i in FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
+			var nodeid = FlagsBuffer["group"][ AjaxRecords[elem_id].id ][i]
 			add2groupdiv ( RecDict[ nodeid ] )
 		}
 	}
 
-	delete FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ]
+	delete FlagsBuffer["group"][ AjaxRecords[elem_id].id ]
 
 	MyTable.data('dynatable').dom.update();
 }
@@ -307,8 +307,8 @@ function clickngram_action ( elem ) {
 
 //   var sum__selected_elems = 0;
 
-//   for(var i in FlagsBuffer["grouped"])
-//   	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
+//   for(var i in FlagsBuffer["group"])
+//   	sum__selected_elems += Object.keys( FlagsBuffer["group"][i] ).length
 //   for(var i in FlagsBuffer)
 //     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
 
@@ -328,10 +328,10 @@ function transformContent(rec_id) {
 	var result = {}
 	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
 	var plus_event = ""
-	if(GState==0 && elem.state!=System[0]["statesD"]["to_delete"] ) // if deleted, no + button
+	if(GState==0 && elem.state!=System[0]["statesD"]["delete"] ) // if deleted, no + button
 		plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(+)</a>"
 	if(GState==1 ) {
-		if(elem.state!=System[0]["statesD"]["to_delete"] && elem.state!=System[0]["statesD"]["grouped"]) { // if deleted and already grouped, no Up button
+		if(elem.state!=System[0]["statesD"]["delete"] && elem.state!=System[0]["statesD"]["group"]) { // if deleted and already group, no Up button
 			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
 		}
 	}
@@ -483,8 +483,8 @@ $("#Save_All").click(function(){
 	console.log("click in save all 01")
 	var sum__selected_elems = 0;
 
-	FlagsBuffer["to_delete"] = {}
-	FlagsBuffer["to_keep"] = {}
+	FlagsBuffer["delete"] = {}
+	FlagsBuffer["keep"] = {}
 
 	for(var id in AjaxRecords) {
 		if( AjaxRecords[id]["state"]>0 ) {
@@ -497,29 +497,39 @@ $("#Save_All").click(function(){
 	console.log(FlagsBuffer)
 
 	// // [ = = = = For deleting subforms = = = = ]
-	// for(var i in FlagsBuffer["grouped"]) {
-	// 	if(FlagsBuffer["to_delete"][i]) {
-	// 		for(var j in FlagsBuffer["grouped"][i] ) {
-	// 			FlagsBuffer["to_delete"][FlagsBuffer["grouped"][i][j]] = true
+	// for(var i in FlagsBuffer["group"]) {
+	// 	if(FlagsBuffer["delete"][i]) {
+	// 		for(var j in FlagsBuffer["group"][i] ) {
+	// 			FlagsBuffer["delete"][FlagsBuffer["group"][i][j]] = true
 	// 		}
 	// 	}
 	// }
 	// // [ = = = = / For deleting subforms = = = = ]
 
-	var nodes_2del = Object.keys(FlagsBuffer["to_delete"]).map(Number)
-	var nodes_2keep = Object.keys(FlagsBuffer["to_keep"]).map(Number)
-	var nodes_2group = FlagsBuffer["grouped"]
+	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
+	var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
+	var nodes_2group = FlagsBuffer["group"]
 	var list_id = $("#list_id").val()
 
-	//DELETING
-	if(Object.keys(FlagsBuffer["to_delete"]).length>0) {
+	var corpus_id = getIDFromURL( "corpus" ) // not used
+
+	CRUD( list_id , "" , nodes_2del , "DELETE" )
+	CRUD( list_id , "/keep" , nodes_2keep , "PUT" )
+
+});
+
+function CRUD( parent_id , action , nodes , http_method ) {
+	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
+	if(nodes.length>0) {
 		$.ajax({
-		  method: "DELETE",
-		  url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+nodes_2del.join("+"),
+		  method: http_method,
+		  url: the_url,
 		  beforeSend: function(xhr) {
 		    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 		  },
 		  success: function(data){
+		  		console.log(http_method + " ok!!")
+		        console.log(nodes)
 		        console.log(data)
 		  },
 		  error: function(result) {
@@ -527,9 +537,9 @@ $("#Save_All").click(function(){
 		      console.log(result)
 		  }
 		});
-	}
 
-});
+	}
+}
 
 function Main_test( data , initial) {
 

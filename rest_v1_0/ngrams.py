@@ -59,6 +59,7 @@ _ngrams_order_columns = {
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import APIException as _APIException
 
 class APIException(_APIException):
@@ -332,6 +333,26 @@ class Group(APIView):
 
 
 class Keep(APIView):
-    pass
+    """
+    Actions on one existing Ngram in one list
+    """
+    renderer_classes = (JSONRenderer,)
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    
+    def put(self, request, list_id, ngram_ids):
+        """
+        Add ngrams to map list
+        """
+        print( "list_id:",list_id )
+        print( "ngram_ids:",ngram_ids )
+        # for ngram_id in ngram_ids.split('+'):
+        #     print('ngram_id', ngram_id)
+        #     ngram_id = int(ngram_id)
+        #     (session.query(NodeNgram)
+        #             .filter(NodeNgram.node_id==list_id)
+        #             .filter(NodeNgram.ngram_id==ngram_id).delete()
+        #             )
+        # session.commit()
+        return JsonHttpResponse(True, 201)
 
 

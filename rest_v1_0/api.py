@@ -103,15 +103,13 @@ class NodesChildrenNgrams(APIView):
         # query ngrams
         ParentNode = aliased(Node)
         ngrams_query = (session
-            .query(Ngram.terms, func.count().label('count'))
-            # .query(Ngram.id, Ngram.terms, func.count().label('count'))
+            .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)
             .filter(Node.parent_id == node_id)
             .group_by(Ngram.terms)
             # .group_by(Ngram)
-            .order_by(func.count().desc(), Ngram.terms)
-            # .order_by(func.count().desc(), Ngram.id)
+            .order_by(func.sum(Node_Ngram.weight).desc(), Ngram.terms)
         )
         # filters
         if 'startwith' in request.GET:
@@ -261,6 +259,8 @@ class Ngrams(APIView):
 
                     ],
                                })
+    
+        
 
 class NodesChildrenDuplicates(APIView):
     def _fetch_duplicates(self, request, node_id, extra_columns=None, min_count=1):
@@ -349,62 +349,122 @@ class NodesChildrenDuplicates(APIView):
             'deleted': count
         })
 
-class NodesChildrenMetatadata(APIView):
-    def get(self, request, node_id):
+# retrieve metadata from a given list of parent node
+def get_metadata(corpus_id_list):
 
-        # query hyperdata keys
+    # query hyperdata keys
+    ParentNode = aliased(Node)
+    hyperdata_query = (session
+        .query(Hyperdata)
+        .join(Node_Hyperdata, Node_Hyperdata.hyperdata_id == Hyperdata.id)
+        .join(Node, Node.id == Node_Hyperdata.node_id)
+        .filter(Node.parent_id.in_(corpus_id_list))
+        .group_by(Hyperdata)
+    )
+
+    # build a collection with the hyperdata keys
+    collection = []
+    for hyperdata in hyperdata_query:
+        valuesCount = 0
+        values = None
+
+        # count values and determine their span
+        values_count = None
+        values_from = None
+        values_to = None
+        if hyperdata.type != 'text':
+            value_column = getattr(Node_Hyperdata, 'value_' + hyperdata.type)
+            node_hyperdata_query = (session
+                .query(value_column)
+                .join(Node, Node.id == Node_Hyperdata.node_id)
+                .filter(Node.parent_id.in_(corpus_id_list))
+                .filter(Node_Hyperdata.hyperdata_id == hyperdata.id)
+                .group_by(value_column)
+                .order_by(value_column)
+            )
+            values_count = node_hyperdata_query.count()
+            # values_count, values_from, values_to = node_hyperdata_query.first()
+
+        # if there is less than 32 values, retrieve them
+        values = None
+        if isinstance(values_count, int) and values_count <= 48:
+            if hyperdata.type == 'datetime':
+                values = [row[0].isoformat() for row in node_hyperdata_query.all()]
+            else:
+                values = [row[0] for row in node_hyperdata_query.all()]
+
+        # adding this hyperdata to the collection
+        collection.append({
+            'key': hyperdata.name,
+            'type': hyperdata.type,
+            'values': values,
+            'valuesFrom': values_from,
+            'valuesTo': values_to,
+            'valuesCount': values_count,
+        })
+
+    # give the result back
+    return collection
+
+class ApiHyperdata(APIView):
+
+    def get(self, request):
+        corpus_id_list = list(map(int, request.GET['corpus_id'].split(',')))
+        return JsonHttpResponse({
+            'data': get_metadata(corpus_id_list),
+        })
+
+
+# retrieve ngrams from a given list of parent node
+def get_ngrams(corpus_id_list):
+    pass
+
+class ApiNgrams(APIView):
+    
+    def get(self, request):
+
+        # parameters retrieval and validation
+        startwith = request.GET.get('startwith', '').replace("'", "\\'")
+
+        # query ngrams
         ParentNode = aliased(Node)
-        hyperdata_query = (session
-            .query(Hyperdata)
-            .join(Node_Hyperdata, Node_Hyperdata.hyperdata_id == Hyperdata.id)
-            .join(Node, Node.id == Node_Hyperdata.node_id)
-            .filter(Node.parent_id == node_id)
-            .group_by(Hyperdata)
+        ngrams_query = (session
+            .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
+            .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
+            .join(Node, Node.id == Node_Ngram.node_id)
+            .group_by(Ngram.terms)
+            # .group_by(Ngram)
+            .order_by(func.sum(Node_Ngram.weight).desc(), Ngram.terms)
         )
 
-        # build a collection with the hyperdata keys
-        collection = []
-        for hyperdata in hyperdata_query:
-            valuesCount = 0
-            values = None
+        # filters
+        if 'startwith' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
+        if 'contain' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
+        if 'corpus_id' in request.GET:
+            corpus_id_list = list(map(int, request.GET.get('corpus_id', '').split(',')))
+            if corpus_id_list and corpus_id_list[0]:
+                ngrams_query = ngrams_query.filter(Node.parent_id.in_(corpus_id_list))
 
-            # count values and determine their span
-            values_count = None
-            values_from = None
-            values_to = None
-            if hyperdata.type != 'text':
-                value_column = getattr(Node_Hyperdata, 'value_' + hyperdata.type)
-                node_hyperdata_query = (session
-                    .query(value_column)
-                    .join(Node, Node.id == Node_Hyperdata.node_id)
-                    .filter(Node.parent_id == node_id)
-                    .filter(Node_Hyperdata.hyperdata_id == hyperdata.id)
-                    .group_by(value_column)
-                    .order_by(value_column)
-                )
-                values_count = node_hyperdata_query.count()
-                # values_count, values_from, values_to = node_hyperdata_query.first()
-
-            # if there is less than 32 values, retrieve them
-            values = None
-            if isinstance(values_count, int) and values_count <= 48:
-                if hyperdata.type == 'datetime':
-                    values = [row[0].isoformat() for row in node_hyperdata_query.all()]
-                else:
-                    values = [row[0] for row in node_hyperdata_query.all()]
-
-            # adding this hyperdata to the collection
-            collection.append({
-                'key': hyperdata.name,
-                'type': hyperdata.type,
-                'values': values,
-                'valuesFrom': values_from,
-                'valuesTo': values_to,
-                'valuesCount': values_count,
-            })
-
+        # pagination
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 20))
+        total = ngrams_query.count()
+        # return formatted result
         return JsonHttpResponse({
-            'data': collection,
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+            },
+            'data': [
+                {
+                    'terms': ngram.terms,
+                    'count': ngram.count,
+                }
+                for ngram in ngrams_query[offset : offset+limit]
+            ],
         })
 
 class NodesChildrenQueries(APIView):

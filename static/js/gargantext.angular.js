@@ -1,8 +1,9 @@
-// Pre-defined constants
-//
 // Documentations:
 // n3-charts/line-chart
 
+
+
+// define operators (for hyperdata filtering, according to the considered type)
 var operators = {
     'text': [
         {'label': 'contains',       'key': 'contains'},
@@ -33,6 +34,13 @@ var operators = {
         {'label': 'is after',       'key': '>'}
     ],
 };
+$.each(operators, function(type, type_operators) {
+    type_operators.unshift({});
+});
+
+// define available periods of time
+var periods = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'decade', 'century'];
+
 
 var strDate = function(date) {
     return date.getFullYear() + '-' +
@@ -159,154 +167,64 @@ angular.module('Gargantext').run(function($rootScope, $http, $cookies){
         }
         return output;
     };
+    // Pre-defined stuff
+    $rootScope.operators = operators;
+    $rootScope.periods = periods;
     // For CSRF token compatibility with Django
     $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
 });
 
 
-// Controller for queries
-gargantext.controller("QueryController", function($scope, $http) {
-    // query-specific information
-    $scope.filters = [];
-    $scope.pagination = {offset:0, limit: 20};
-    // results information
-    $scope.loading = false;
-    $scope.results = [];
-    $scope.resultsCount = undefined;
-    // corpus retrieval
-    $scope.corpora = [];
-    $.get('/api/nodes?type=Corpus').success(function(response){
-        $scope.corpora = response.data;
-        $scope.$apply();
-    });
-    // filtering informations retrieval
-    $scope.operators = operators;
-    // add a filter
-    $scope.addFilter = function() {
-        $scope.filters.push({});
-    };
-    // remove a filter
-    $scope.removeFilter = function(filterIndex) {
-        $scope.filters.splice(filterIndex, 1);
-    };
-    // perform a query
-    $scope.postQuery = function() {
-        if ($scope.corpusId) {
-            // change view to loading mode
-            $scope.loading = true;
-            // query parameters: columns
-            var retrieve = {type: 'fields', list: ['id', 'name', 'hyperdata.publication_date']};
-            // query parameters: pagination
-            var pagination = $scope.pagination;
-            // query parameters: sort
-            var sort = ['name'];
-            // query parameters: filters
-            var filters = [];
-            var keys = ['entity', 'column', 'operator', 'value'];
-            for (var i=0, m=$scope.filters.length; i<m; i++) {
-                var filter = $scope.filters[i];
-                for (var j=0, n=keys.length; j<n; j++) {
-                    if (!filter[keys[j]]) {
-                        continue;
-                    }
-                }
-                filters.push({
-                    field: filter.entity + '.' + filter.column,
-                    operator: filter.operator,
-                    value: filter.value
-                });
-            }
-            // query URL & body building
-            var url = '/api/nodes/' + $scope.corpusId + '/children/queries';
-            var query = {
-                retrieve: retrieve,
-                filters: filters,
-                sort: sort,
-                pagination: pagination
-            };
-            // send query to the server
-            $http.post(url, query).success(function(response){
-                $scope.resultsCount = response.pagination.total;
-                $scope.results = response.results;
-                $scope.columns = response.retrieve;
-                $scope.loading = false;
-            }).error(function(response){
-                console.error(response);
-            });
-        }
-    }
-    // change current page
-    $scope.decrement = function() {
-        if ($scope.pagination.offset > 0) {
-            $scope.pagination.offset--;
-        }
-        $scope.postQuery();
-    };
-    $scope.increment = function() {
-        if ($scope.pagination.offset < $scope.resultsCount) {
-            $scope.pagination.offset += $scope.pagination.limit;
-        }
-        $scope.postQuery();
-    };
-});
-
 // Controller for datasets
-gargantext.controller("DatasetController", function($scope, $http) {
-    // query-specific information
-    $scope.mesured = 'nodes.count';
-    $scope.filters = [];
-    $scope.pagination = {offset:0, limit: 20};
-    // results information
-    $scope.loading = false;
-    $scope.results = [];
-    $scope.resultsCount = undefined;
-    // corpus retrieval
-    $scope.projects = [];
+gargantext.controller('DatasetController', function($scope, $http) {
+    
+    // are we loading data from the server right now?
+    $scope.is_loading = false;
+
+    // initital parameters for the y-axis of the query
+    $scope.query_y = {
+        'value': 'ngrams_count',
+        'is_relative': false,
+        'divided_by': 'total_ngrams_count',
+    };
+    
+    // filters: corpora retrieval
     $scope.corpora = [];
-    $http.get('/api/nodes?type=Project', {cache: true}).success(function(response){
-        $scope.projects = response.data;
-        // Initially set to what is indicated in the URL
-        if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
-            $scope.projectId = parseInt(location.pathname.split('/')[2]);
-            $scope.updateCorpora();
-        }
-    });
-    // update corpora according to the select parent project
+    if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
+        $scope.project_id = parseInt(location.pathname.split('/')[2]);
+    } else {
+        console.error('The id of the project has to be set.');
+    }
     $scope.updateCorpora = function() {
-        $http.get('/api/nodes?type=Corpus&parent=' + $scope.projectId, {cache: true}).success(function(response){
+        $http.get('/api/nodes?type=Corpus&parent=' + $scope.project_id, {cache: true}).success(function(response){
             $scope.corpora = response.data;
             // Initially set to what is indicated in the URL
             if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
-                $scope.corpusId = parseInt(location.pathname.split('/')[4]);
-                $scope.updateEntities();
+                var corpus_id = parseInt(location.pathname.split('/')[4]);
+                $.each($scope.corpora, function(c, corpus) {
+                    corpus.is_selected = (corpus.id == corpus_id);
+                });
+                $scope.updateHyperdataList();
+                $scope.updateDataset();
             }
         });
     };
-    // update entities depending on the selected corpus
-    $scope.updateEntities = function() {
-        var url = '/api/nodes/' + $scope.corpusId + '/children/hyperdata';
-        $scope.entities = undefined;
-        $scope.filters = [];
-        $http.get(url, {cache: true}).success(function(response){
-            $scope.entities = [
-                {
-                    key: 'hyperdata',
-                    columns: response.data
-                },
-                {
-                    key: 'ngrams',
-                    columns: [
-                        {key:'terms', type:'string'},
-                        {key:'terms count', type:'integer'}
-                    ],
-                }
-            ];
+    var getSelectedCorporaIdList = function() {        
+        var corpus_id_list = [];
+        $.each($scope.corpora, function(c, corpus) {
+            if (corpus.is_selected) {
+                corpus_id_list.push(corpus.id);
+            }
         });
-        $scope.updateQuery();
-    };
-    // query ngrams
+        return corpus_id_list;
+    }
+    $scope.updateCorpora();
+
+    // filters: ngrams
     $scope.getNgrams = function(query) {
-        var url = '/api/nodes/' + $scope.corpusId + '/children/ngrams?limit=10&contain=' + encodeURI(query);
+        var url = '/api/ngrams?limit=10';
+        url += '&contain=' + encodeURI(query);
+        url += '&corpus_id=' + getSelectedCorporaIdList().join(',');
         var appendTransform = function(defaults, transform) {
             defaults = angular.isArray(defaults) ? defaults : [defaults];
             return defaults.concat(transform);
@@ -318,68 +236,95 @@ gargantext.controller("DatasetController", function($scope, $http) {
             })
         });
     };
-    // filtering informations retrieval
-    $scope.operators = operators;
-    // add a filter
-    $scope.addFilter = function() {
-        $scope.filters.push({});
+
+    // filters: corpora
+    $scope.corporaSelectNone = function() {
+        $.each($scope.corpora, function(c, corpus){
+            corpus.is_selected = false;
+        });
+        $scope.updateDataset();
     };
-    // remove a filter
-    $scope.removeFilter = function(filterIndex) {
-        $scope.filters.splice(filterIndex, 1);
-        $scope.updateQuery();
+    $scope.corporaSelectAll = function() {
+        $.each($scope.corpora, function(c, corpus){
+            corpus.is_selected = true;
+        });
+        $scope.updateDataset();
     };
-    // transmit query parameters to parent elements
-    $scope.updateQuery = function() {
-        if ($scope.corpusId) {
-            // query parameters: sort
-            var url = '/api/nodes/' + $scope.corpusId + '/children/queries';
-            // filters
-            var filters = [];
-            var keys = ['entity', 'column', 'operator', 'value'];
-            for (var i=0, m=$scope.filters.length; i<m; i++) {
-                var filter = $scope.filters[i];
-                for (var j=0, n=keys.length; j<n; j++) {
-                    if (!filter[keys[j]]) {
-                        continue;
-                    }
-                }
-                if (filter.entity.key == 'ngrams') {
-                    var termsList = [];
-                    angular.forEach(filter.value, function(ngram) {
-                        termsList.push(ngram.terms);
-                    });
-                    if (termsList.length) {
-                        filters.push({
-                            field: 'ngrams.terms',
-                            operator: 'in',
-                            value: termsList
-                        });
-                    }
-                } else {
-                    filters.push({
-                        field: filter.entity.key + '.' + filter.column.key,
-                        operator: filter.operator,
-                        value: filter.value
-                    });
-                }
-            }
-            // event firing to parent(s)
-            $scope.$emit('updateDataset', {
-                datasetIndex: $scope.$index,
-                url: url,
-                filters: filters,
-                mesured: $scope.mesured
+
+    // filters: metadata, according to the considered corpora
+    $scope.hyperdataList = [];
+    $scope.updateHyperdataList = function() {
+        var corpus_id_list = getSelectedCorporaIdList();
+        if (corpus_id_list && corpus_id_list.length) {
+            var url = '/api/hyperdata?corpus_id=';
+            url += corpus_id_list.join(',');
+            $scope.is_loading = true;
+            $http.get(url, {cache: true}).success(function(response){
+                $scope.is_loading = false;
+                $scope.hyperdataList = response.data;
             });
+        } else {
+            $scope.hyperdataList = [];
         }
-    }
+    };
+
+    // update the dataset, according to the various filters applied to it
+    $scope.updateDataset = function() {
+        // parameters
+        var parameters = {
+            'x': {
+                'with_empty': true,
+                'resolution': $scope.query_x.resolution,
+                'value': 'publication_date',
+            },
+            'y': {
+                'value': $scope.query_y.value,
+            },
+            'filter': {
+            },
+            'format': 'json',
+        };
+        // x: normalization
+        if ($scope.query_y.is_relative) {
+            parameters.y.divided_by = $scope.query_y.divided_by;
+        }
+        // filter: ngrams
+        if ($scope.query_y.ngrams && $scope.query_y.ngrams.length) {
+            parameters.filter.ngrams = [];
+            $.each($scope.query_y.ngrams, function(n, ngram) {
+                parameters.filter.ngrams.push(ngram.terms)
+            })
+            console.log($scope.query_y.ngrams);
+        }
+        // retrieve data
+        var url = '/api2/nodes/' + $scope.project_id + '/histories';
+        $scope.is_loading = true;
+        $http.post(url, parameters, {cache: true}).success(function(response){
+            $scope.is_loading = false;
+            // event firing to parent
+            $scope.$emit('updateDatasets', {
+                response: response,
+                dataset_index: $scope.$index,
+            });
+        });
+    };
+    $scope.$on('updateDataset', function(e, data) {
+        $scope.updateDataset();
+    });
+
 });
 
 // Controller for graphs
-gargantext.controller("GraphController", function($scope, $http, $element) {
+gargantext.controller('GraphController', function($scope, $http, $element) {
+    
+
+    // initial values
+    $scope.query_x = {
+        'resolution': 'year'
+    };
+
     // initialization
     $scope.datasets = [{}];
-    $scope.groupingKey = 'year';
     $scope.options = {
         stacking: false
     };
@@ -398,125 +343,70 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             },
             tension: 1.0,
             lineMode: 'linear',
-            tooltip: {mode: 'scrubber', formatter: function(x, y, series) {
-                var grouping = groupings.datetime[$scope.groupingKey];
-                return grouping.representation(x) + ' → ' + y;
-            }},
+            // tooltip: {mode: 'scrubber', formatter: function(x, y, series) {
+            //     var grouping = groupings.datetime[$scope.groupingKey];
+            //     return grouping.representation(x) + ' → ' + y;
+            // }},
             drawLegend: true,
             drawDots: true,
             columnsHGap: 5
         }
     };
+
     // add a dataset
     $scope.addDataset = function() {
         $scope.datasets.push({});
     };
     // remove a dataset
     $scope.removeDataset = function(datasetIndex) {
-        $scope.datasets.shift(datasetIndex);
-        $scope.query();
+        if ($scope.datasets.length > 1) {
+            $scope.datasets.shift(datasetIndex);
+            $scope.updateDatasets();
+        } else {
+            alert('You can not remove the last dataset.')
+        }
     };
-    // show results on the graph
-    $scope.showResults = function() {
-        // Format specifications
-        var grouping = groupings.datetime[$scope.groupingKey];
-        var convert = function(x) {return new Date(x);};
-        // Find extrema for X
-        var xMin, xMax;
-        angular.forEach($scope.datasets, function(dataset){
-            if (!dataset.results) {
-                return false;
-            }
-            var results = dataset.results;
-            if (results.length) {
-                var xMinTmp = results[0][0];
-                var xMaxTmp = results[results.length - 1][0];
-                if (xMin === undefined || xMinTmp < xMin) {
-                    xMin = xMinTmp;
+
+    // update the datasets (catches the event thrown by children dataset controllers)
+    $scope.updateDatasets = function(must_refresh) {
+        // refresh all data
+        if (must_refresh) {
+            $scope.$broadcast('updateDataset');
+        }
+        // create temporary representation for the result
+        var values = {}
+        var n = dataset_results.length;
+        for (var i=0; i<n; i++) {
+            var result = dataset_results[i];
+            var key = 'y' + i;
+            for (var j=0, m=result.length; j<m; j++) {
+                var date = result[j][0];
+                var value = result[j][1];
+                if (!values[date]) {
+                    values[date] = {};
                 }
-                if (xMax === undefined || xMaxTmp < xMax) {
-                    xMax = xMaxTmp;
-                }
+                values[date][key] = value;
             }
+        }
+        // put that in an array
+        var data = [];
+        $.each(values, function(date, keys_values) {
+            var row = {x: new Date(date)};
+            for (var i=0; i<n; i++) {
+                var key = 'y' + i;
+                row[key] = keys_values[key] || 0;
+            }
+            data.push(row);
         });
-        // Create the dataObject for interpolation
-        var dataObject = {};
-        if (xMin != undefined && xMax != undefined) {
-            xMin = grouping.truncate(xMin);
-            xMax = grouping.truncate(xMax);
-            for (var x=xMin; x<=xMax; x=grouping.next(x)) {
-                var row = [];
-                angular.forEach($scope.datasets, function(){
-                    row.push(0);
-                });
-                dataObject[x] = row;
-            }
-        }
-        // Fill the dataObject with results
-        angular.forEach($scope.datasets, function(dataset, datasetIndex){
-            var results = dataset.results;
-            angular.forEach(results, function(result, r){
-                var x = grouping.truncate(result[0]);
-                var y = parseFloat(result[1]);
-                if (dataObject[x] === undefined) {
-                    var row = [];
-                    angular.forEach($scope.datasets, function(){
-                        row.push(0);
-                    });
-                    dataObject[x] = row;
-                }
-                dataObject[x][datasetIndex] += y;
-            });
+        // sort the array
+        data.sort(function(a, b) {
+            return (new Date(a.x)).getTime() - (new Date(b.x)).getTime();
         });
-
-
-        // calculate average for earch dataset
-        /*
-        var sums = [];
-        for (var i=0; i<$scope.datasets.length;i++){
-            sums.push(0);
-        }
-
-        var count = 0 ;
-        for (var x in dataObject) {
-            count ++ ;
-            var yList = dataObject[x];
-            for (var i=0; i<yList.length; i++) {
-                sums[i] += yList[i];
-            }
-        }
-
-        for (var i=0; i<$scope.datasets.length;i++){
-            sums[i] /= count;
-        }
-        */
-
-        // Convert this object back to a sorted array
-        var yMin, yMax;
-        var linearData = [];
-        for (var x in dataObject) {
-            var row = {x: convert(x)};
-            var yList = dataObject[x];
-            for (var i=0; i<yList.length; i++) {
-                y = yList[i];
-                row['y' + i] = y ;  // position vs average
-                //row['y' + i] = y - sums[i];  // position vs average
-                if (yMax == undefined || y > yMax) {
-                    yMax = y;
-                }
-                if (yMin == undefined || y < yMin) {
-                    yMin = y;
-                }
-            }
-            linearData.push(row);
-        }
-        // // Update the axis
-        // $scope.graph.options.axes.y.min = yMin;
-        // $scope.graph.options.axes.y.max = yMax;
-        // $scope.graph.options.axes.y.ticks = Math.pow(10, Math.floor(Math.abs(Math.log10(yMax - yMin))));
-        // Finally, update the graph
+        // show time!
+        $scope.graph.data = data;
+        // update series names
         var series = [];
-        for (var i=0, n=$scope.datasets.length; i<n; i++) {
+        for (var i=0; i<n; i++) {
             var seriesElement = {
                 id: 'series_'+ i,
                 y: 'y'+ i,
@@ -530,103 +420,20 @@ gargantext.controller("GraphController", function($scope, $http, $element) {
             series.push(seriesElement);
         }
         $scope.graph.options.series = series;
-        $scope.graph.data = linearData;
-        // shall we stack?
-        if ($scope.options.stacking) {
-            var stack = {
-                axis: 'y',
-                series: []
-            };
-            angular.forEach(series, function(seriesElement) {
-                stack.series.push(seriesElement.id);
-            });
-            $scope.graph.options.stacks = [stack];
-        } else {
-            delete $scope.graph.options.stacks;
-        }
     };
-    // perform a query on the server
-    $scope.query = function() {
-        // number of requests made to the server
-        var requestsCount = 0;
-        // reinitialize graph data
-        $scope.graph.data = [];
-        // queue all the server requests
-        angular.forEach($scope.datasets, function(dataset, datasetIndex) {
-            // if the results are already present, don't send a query
-            if (dataset.results !== undefined) {
-                return;
-            }
-            // format data to be sent as a query
-            var query = dataset.query;
-            var data = {
-                filters: query.filters,
-                sort: ['hyperdata.publication_date.day'],
-                retrieve: {
-                    aggregate: true,
-                    fields: ['hyperdata.publication_date.day', query.mesured]
-                }
-            };
-            // request to the server
-            $http.post(query.url, data, {cache: true}).success(function(response) {
-                dataset.results = response.results;
-                for (var i=0, n=$scope.datasets.length; i<n; i++) {
-                    if ($scope.datasets[i].results == undefined) {
-                        return;
-                    }
-                }
-                $scope.showResults();
-            }).error(function(response) {
-                console.error('An error occurred while retrieving the query response');
-            });
-            requestsCount++;
-        });
-        // if no request have been made at all, refresh the chart
-        if (requestsCount == 0) {
-            $scope.showResults();
+    var dataset_results = [];
+    $scope.$on('updateDatasets', function(e, data) {
+        // data extraction
+        var dataset_index = data.dataset_index;
+        var result = data.response.result;
+        // update full results array
+        while (dataset_results.length < $scope.datasets.length) {
+            dataset_results.push([]);
         }
-    };
-    // update the datasets (catches the vent thrown by children dataset controllers)
-    $scope.$on('updateDataset', function(e, data) {
-        var dataset = $scope.datasets[data.datasetIndex]
-        dataset.query = {
-            url: data.url,
-            filters: data.filters,
-            mesured: data.mesured
-        };
-        dataset.results = undefined;
-        $scope.query();
+        while (dataset_results.length > $scope.datasets.length) {
+            dataset_results.splice(-1, 1);
+        }
+        dataset_results[dataset_index] = result;
+        $scope.updateDatasets();
     });
 });
-
-
-// Only for debugging!
-/*
-setTimeout(function(){
-    // first dataset
-    $('div.corpus select').change();
-    $('button.add').first().click();
-    setTimeout(function(){
-        $('div.corpus select').change();
-    //     $('div.filters button').last().click();
-    //     var d = $('li.dataset').last();
-    //     d.find('select').last().val('hyperdata').change();
-    //     d.find('select').last().val('publication_date').change();
-    //     d.find('select').last().val('>').change();
-    //     d.find('input').last().val('2010').change();
-        
-    //     // second dataset
-    //     // $('button.add').first().click();
-    //     // var d = $('li.dataset').last();
-    //     // d.find('select').change();
-    //     // // second dataset's filter
-    //     // d.find('div.filters button').last().click();
-    //     // d.find('select').last().val('hyperdata').change();
-    //     // d.find('select').last().val('abstract').change();
-    //     // d.find('select').last().val('contains').change();
-    //     // d.find('input').last().val('dea').change();
-    //     // refresh
-    //     // $('button.refresh').first().click();
-    }, 500);
-}, 250);
-*/

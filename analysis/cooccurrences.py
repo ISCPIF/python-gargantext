@@ -17,7 +17,8 @@ def do_cooc(corpus=None
          , n_min=2, n_max=None
          , start=None, end=None
          , limit=1000
-         , isMonopartite=True):
+         , isMonopartite=True
+         , hapax = 3):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -66,12 +67,14 @@ def do_cooc(corpus=None
     session.commit()
 
     doc_id = cache.NodeType['Document'].id
+    
+    NodeNgramX = aliased(NodeNgram)
+    cooc_score = func.count(NodeNgramX.node_id).label('cooc_score')
+    #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
    
     #print([n for n in test_query])
     if isMonopartite :
-        NodeNgramX = aliased(NodeNgram)
         NodeNgramY = aliased(NodeNgram)
-        cooc_score = func.sqrt(func.sum(NodeNgramX.weight) * func.sum(NodeNgramY.weight)).label('cooc_score')
 
         cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeNgramX.node_id)
@@ -80,7 +83,6 @@ def do_cooc(corpus=None
                     )
     else :
         NodeNgramY = aliased(NodeNgram)
-        cooc_score = func.sqrt(func.sum(NodeHyperdataNgram.score) * func.sum(NodeNgramY.weight)).label('cooc_score')
         
         cooc_query = (session.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeHyperdataNgram.node_id)
@@ -119,7 +121,7 @@ def do_cooc(corpus=None
     if start is not None:
         #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
         # TODO : more complexe date format here.
-        date_start = datetime.datetime.strptime (str(start), "%Y")
+        date_start = datetime.datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
         
         Start=aliased(NodeHyperdata)
@@ -133,7 +135,7 @@ def do_cooc(corpus=None
 
     if end is not None:
         # TODO : more complexe date format here.
-        date_end = datetime.datetime.strptime (str(end), "%Y")
+        date_end = datetime.datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
         
         End=aliased(NodeHyperdata)
@@ -149,8 +151,7 @@ def do_cooc(corpus=None
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
         cooc_query = cooc_query.filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
     
-    cooc_query = cooc_query.having(cooc_score > 1)
-                           #.having(cooc_score > 1)
+    cooc_query = cooc_query.having(cooc_score > hapax)
              
     if isMonopartite:
         cooc_query = cooc_query.group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)

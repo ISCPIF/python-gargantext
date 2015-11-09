@@ -91,7 +91,7 @@ print('Initialize node types...')
 node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
-        'MiamList', 'StopList', 'MainList',
+        'MiamList', 'StopList', 'MainList', 'MapList', # TODO MiamList -> MainList
         'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificity'
         , 'Cooccurrence',
         ]
@@ -151,4 +151,19 @@ session.commit()
 ###f.close()
 ##
 ##
+
+
+from ngram.stop import importStopList
+root = session.query(Node).filter(Node.type_id==cache.NodeType['Root'].id).first()
+importStopList(root, '/srv/gargantext/init/stop_lists/fr.txt', 'fr')
+importStopList(root, '/srv/gargantext/init/stop_lists/en.txt', 'en')
+
+
+root = session.query(Node).filter(Node.type_id==cache.NodeType['Root'].id).first()
+#importStopList(root, '/srv/gargantext/init/stop_lists/fr.txt', 'fr')
+importStopList(root, '/srv/gargantext/init/stop_lists/en.txt', 'en')
+
+
+
+
 #exit()

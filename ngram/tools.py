@@ -1,6 +1,7 @@
 
 from gargantext_web.db import Ngram, NodeNgramNgram
-from parsing.corpustools import get_cursor, bulk_insert
+
+from gargantext_web.db import get_cursor, bulk_insert
 
 
 def insert_ngrams(ngrams,get='terms-id'):
@@ -28,8 +29,6 @@ def insert_ngrams(ngrams,get='terms-id'):
             %s AS ngram
         WHERE
             tmp__ngram.terms = ngram.terms
-        AND
-            tmp__ngram.n = ngram.n
             ''' % (Ngram.__table__.name,))
     
     cursor.execute('''
@@ -66,7 +65,6 @@ def insert_ngrams(ngrams,get='terms-id'):
 
     db.commit()
     return(ngram_ids)
-
 
 def insert_nodengramngram(nodengramngram):
     db, cursor = get_cursor()
@@ -111,3 +109,30 @@ def insert_nodengramngram(nodengramngram):
             ''' % (NodeNgramNgram.__table__.name,))
         
     db.commit()
+
+
+
+#def queryNodeNodeNgram(nodeMeasure_id=None, corpus_id=None, limit=None):
+#    '''
+#    queryNodeNodeNgram :: Int -> Int -> Int -> (Int, String, Float)
+#    Get list of ngrams according to a measure related to the corpus: maybe tfidf
+#    cvalue.
+#    '''
+#    query = (session.query(Ngram.id, Ngram.terms, NodeNodeNgram.score)
+#                    .join(NodeNodeNgram, NodeNodeNgram.ngram_id == Ngram.id)
+#                    .join(Node, Node.id == NodeNodeNgram.nodex_id)
+#                    .filter(NodeNodeNgram.nodex_id == nodeMeasure_id)
+#                    .filter(NodeNodeNgram.nodey_id == corpus_id)
+#                    .group_by(Ngram.id, Ngram.terms, NodeNodeNgram.score)
+#                    .order_by(desc(NodeNodeNgram.score))
+#            )
+#
+#    if limit is None:
+#        query = query.count()
+#    elif limit == 0 :
+#        query = query.all()
+#    else:
+#        query = query.limit(limit)
+#
+#    return(query)
+#

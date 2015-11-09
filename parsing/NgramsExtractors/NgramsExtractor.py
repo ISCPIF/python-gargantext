@@ -10,6 +10,8 @@ class NgramsExtractor:
     This method can be overriden.
     """
     def __init__(self, rule="{<JJ.*>*<NN.*|>+<JJ.*>*}"):
+    # TODO add this regex
+    #'^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)+?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?)+?)*?$'
         self.start()
         self._label = "NP"
         self._rule = self._label + ": " + rule

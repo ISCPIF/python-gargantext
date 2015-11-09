@@ -9,6 +9,7 @@ import gargantext_web.corpus_views as corpus_views
 from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view
 
+import gargantext_web.api2
 import tests.ngramstable.views as samtest
 
 
@@ -75,6 +76,7 @@ urlpatterns = patterns('',
     url(r'^corpus/(\d+)/node_link.json$', views.node_link), # => api.analysis('type': 'node_link', 'format' : 'json')
     url(r'^corpus/(\d+)/adjacency.json$', views.adjacency), # => api.analysis('type': 'adjacency', 'format' : 'json')
     
+    url(r'^api2/nodes/(\d+)/histories$', gargantext_web.api2.NodeNgramsQueries.as_view()),
     url(r'^ngrams$', views.ngrams),  # to be removed
     url(r'^nodeinfo/(\d+)$', views.nodeinfo), # to be removed ?
     url(r'^tfidf/(\d+)/(\w+)$', views_optimized.tfidf),

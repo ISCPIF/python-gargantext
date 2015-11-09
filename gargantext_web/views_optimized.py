@@ -79,11 +79,14 @@ def project(request, project_id):
     for corpus_id, corpus_name, document_count, processing in corpus_query:
         #print(corpus_id, processing)
         # Not optimized GOTO ISSUE L51
-        resource_type_id = (session.query(Resource.type_id)
-                                   .join(Node_Resource, Node_Resource.resource_id == Resource.id)
-                                   .join(Node, Node.id == Node_Resource.node_id )
-                                   .filter(Node.id==corpus_id)
-                                   .first())[0]
+        try:
+            resource_type_id = (session.query(Resource.type_id)
+                                       .join(Node_Resource, Node_Resource.resource_id == Resource.id)
+                                       .join(Node, Node.id == Node_Resource.node_id )
+                                       .filter(Node.id==corpus_id)
+                                       .first())[0]
+        except:
+            pass
 
         if not corpus_id in corpusID_dict:
             if resource_type_id is None:

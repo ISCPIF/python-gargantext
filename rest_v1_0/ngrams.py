@@ -210,13 +210,18 @@ class Ngrams(APIView):
 
                         } for ngram in ngrams_query[offset : offset+limit]
                 # TODO : dict comprehension in list comprehension :
-#                         results = ['id', 'terms']
-#                        { x : eval('ngram.' + x) for x in results
-#                        } for ngram in ngrams_query[offset : offset+limit]
+                #                         results = ['id', 'terms']
+                #                        { x : eval('ngram.' + x) for x in results
+                #                        } for ngram in ngrams_query[offset : offset+limit]
 
                     ],
                                })
 
+    def post(self , request , node_id ):
+        return JsonHttpResponse(["POST","ok"])
+
+    def delete(self , request , node_id ):
+        return JsonHttpResponse(["DELETE","ok"])
 
 class Group(APIView):
     '''
@@ -288,21 +293,22 @@ class Group(APIView):
         
     def post(self, request, node_id):
         
-        # input validation
-        input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
+        # # input validation
+        # input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
         
-        group_id = get_group_id(node_id)
+        # group_id = get_group_id(node_id)
        
-        for data in input['data']:
-            if data['source'] > 0 and len(data['target']) > 0:
-                for target_id in data['target']:
-                    if target_id > 0:
-                        session.add(NodeNgramNgram(node_id=group_id, \
-                                ngramx_id=output['source'], ngramy_id=target_id, score=1))
-                session.commit()
-                return JsonHttpResponse(True, 201)
-            else:
-                raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+        # for data in input['data']:
+        #     if data['source'] > 0 and len(data['target']) > 0:
+        #         for target_id in data['target']:
+        #             if target_id > 0:
+        #                 session.add(NodeNgramNgram(node_id=group_id, \
+        #                         ngramx_id=output['source'], ngramy_id=target_id, score=1))
+        #         session.commit()
+        #         return JsonHttpResponse(True, 201)
+        #     else:
+        #         raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+        return JsonHttpResponse( ["hola" , "mundo"] )
 
 
     def delete(self, request, corpus_id):

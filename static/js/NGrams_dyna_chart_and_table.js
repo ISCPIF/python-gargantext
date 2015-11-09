@@ -496,13 +496,15 @@ $("#Save_All").click(function(){
 	console.log("FlagsBuffer:")
 	console.log(FlagsBuffer)
 
-	for(var i in FlagsBuffer["grouped"]) {
-		if(FlagsBuffer["to_delete"][i]) {
-			for(var j in FlagsBuffer["grouped"][i] ) {
-				FlagsBuffer["to_delete"][FlagsBuffer["grouped"][i][j]] = true
-			}
-		}
-	}
+	// // [ = = = = For deleting subforms = = = = ]
+	// for(var i in FlagsBuffer["grouped"]) {
+	// 	if(FlagsBuffer["to_delete"][i]) {
+	// 		for(var j in FlagsBuffer["grouped"][i] ) {
+	// 			FlagsBuffer["to_delete"][FlagsBuffer["grouped"][i][j]] = true
+	// 		}
+	// 	}
+	// }
+	// // [ = = = = / For deleting subforms = = = = ]
 
 	var nodes_2del = Object.keys(FlagsBuffer["to_delete"]).map(Number)
 	var nodes_2keep = Object.keys(FlagsBuffer["to_keep"]).map(Number)

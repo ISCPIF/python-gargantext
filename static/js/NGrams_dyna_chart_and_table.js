@@ -197,49 +197,34 @@ function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
-$('#group_box_content').bind("DOMSubtreeModified",function(){
-	console.log( $(this).has( "span" ).length )
-	var groupdiv = "#group_box"
-	if($(this).has( "span" ).length>0) {
-		$("#save_sinonims").remove();
-		$('<button/>', {
-			"id":"save_sinonims",
-		    text: "Save sinonims",
-		    class: "btn btn-info",
-		    css: {
-		    	"float":"right",
-		    }
-		})
-		.insertAfter(groupdiv)
-		.click( function() {
-			SaveSinonims(groupdiv+"_header" , groupdiv+"_content")
-		})
-	}
-})
-
 function save_groups() {
 	var groupdiv = "#group_box"
 	var gcontent = groupdiv+"_content"
 	var count = 0
 	var mainform = -1
-	$(gcontent).children('span').each(function () {
-	    var nid = $(this).data("id");
-	    if (count==0) {
-	    	AjaxRecords[RecDict[nid]].name += "*" 
-	    	AjaxRecords[RecDict[nid]].state = 1
-	    	FlagsBuffer["grouped"][ nid ] = []
-	    	mainform = nid
-	    } else {
-	    	AjaxRecords[RecDict[nid]].state = -1
-	    	FlagsBuffer["grouped"][ mainform ].push( nid )
-	    }
-	    count++
-	});
+	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
+		$(gcontent).children('span').each(function () {
+			var nid = $(this).data("id");
+			if (count==0) {
+				if(writeflag) {
+					// AjaxRecords[RecDict[nid]].name += "*" 
+					FlagsBuffer["grouped"][ nid ] = []
+					mainform = nid
+		    		AjaxRecords[RecDict[nid]].state = 1
+		    	} else {
+		    		AjaxRecords[RecDict[nid]].state = 0;
+		    	}
+		    } else {
+				if(writeflag) {
+					FlagsBuffer["grouped"][ mainform ].push( nid )
+		    		AjaxRecords[RecDict[nid]].state = -1
+				}
+		    }
+		    count++
+		});
 	$("#group_box").remove()
 	GState=0
 	MyTable.data('dynatable').dom.update();
-	console.clear()
-	console.log( FlagsBuffer )
 }
 
 function cancel_groups() {
@@ -254,25 +239,7 @@ function cancel_groups() {
 	MyTable.data('dynatable').dom.update();
 }
 
-// new
-function add2group ( elem ) {
-
-	if( $("#group_box").length==0 ) {
-		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
-		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
-		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
-			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
-			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
-			group_html += '      </span>'+'\n';
-			$(group_html).insertAfter( "#my-ajax-table > thead" )
-			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
-	}
-	GState=1
-
-	var elem_id = $( elem ).data("stuff")
-	console.log("elem_id")
-	console.log(AjaxRecords[elem_id].id)
-
+function add2groupdiv( elem_id ) {
 	$('<span/>', {
 		"data-id":AjaxRecords[elem_id].id,
 		"data-stuff": elem_id,
@@ -296,19 +263,33 @@ function add2group ( elem ) {
     	MyTable.data('dynatable').dom.update();
 	})
 	.appendTo('#group_box_content')
-
 	AjaxRecords[elem_id].state=3;// 3: "grouped" state
+}
+// new
+function add2group ( elem ) {
 
+	if( $("#group_box").length==0 ) {
+		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
+		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
+		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
+			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
+			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
+			group_html += '      </span>'+'\n';
+			$(group_html).insertAfter( "#my-ajax-table > thead" )
+			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
+	}
+	GState=1
+
+	var elem_id = $( elem ).data("stuff")
+	add2groupdiv( elem_id )
 	if( FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
 		for(var i in FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ] ) {
 			var nodeid = FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ][i]
-			console.log("recursive: "+nodeid)
-			console.log(" and sending this:")
-			var subform = $('<div/>', { "data-stuff": RecDict[ nodeid ] })
-			// console.log( $( newdiv ).data("stuff") )
-			add2group ( subform )
+			add2groupdiv ( RecDict[ nodeid ] )
 		}
 	}
+
+	delete FlagsBuffer["grouped"][ AjaxRecords[elem_id].id ]
 
 	MyTable.data('dynatable').dom.update();
 }
@@ -322,24 +303,24 @@ function clickngram_action ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
-function YOLO() {
+// function YOLO() {
 
-  var sum__selected_elems = 0;
+//   var sum__selected_elems = 0;
 
-  for(var i in FlagsBuffer["grouped"])
-  	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
-  for(var i in FlagsBuffer)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+//   for(var i in FlagsBuffer["grouped"])
+//   	sum__selected_elems += Object.keys( FlagsBuffer["grouped"][i] ).length
+//   for(var i in FlagsBuffer)
+//     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
 
-  console.log("")
-  console.log("Current Buffer size: "+sum__selected_elems)
-  console.log(FlagsBuffer)
+//   console.log("")
+//   console.log("Current Buffer size: "+sum__selected_elems)
+//   console.log(FlagsBuffer)
 
-  if ( sum__selected_elems>0 )
-    $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
-  else 
-    $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-}
+//   if ( sum__selected_elems>0 )
+//     $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
+//   else 
+//     $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+// }
 
 // modified
 function transformContent(rec_id) {
@@ -482,66 +463,97 @@ function SelectAll( the_checkbox ) {
 
 $("#Clean_All").click(function(){
 
-  for(var id in AjaxRecords)
-    AjaxRecords[id]["flag"] = false;
+	for(var id in AjaxRecords)
+		AjaxRecords[id]["state"] = 0;
 
-  MyTable.data('dynatable').dom.update();
+	$("#group_box").remove()
+	GState=0
 
-  for(var i in FlagsBuffer)
-    for(var j in FlagsBuffer[i])
-      delete FlagsBuffer[i][j];
+	MyTable.data('dynatable').dom.update();
 
-  $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+	for(var i in FlagsBuffer)
+		for(var j in FlagsBuffer[i])
+			delete FlagsBuffer[i][j];
+  // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 
 });
 
 $("#Save_All").click(function(){
-  console.log("click in save all 01")
-  var sum__selected_elems = 0;
-  var poubelle = []
-  for(var i in FlagsBuffer) {
-    if (Object.keys(FlagsBuffer[i]).length==0) 
-      poubelle.push(i)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-  }
-  console.log("click in save all 02")
-  for(var i in poubelle)
-    delete FlagsBuffer[poubelle[i]];
-  console.log("click in save all 03, sum:"+sum__selected_elems)
-  if ( sum__selected_elems>0 ) {
-    console.log("")
-    console.log("Do the ajax conexion with API and send this array to be processed:")
-    for(var i in FlagsBuffer) {
-      var real_ids = []
-      for (var j in FlagsBuffer[i])
-        real_ids.push( AjaxRecords[j].id );
+	console.clear()
+	console.log("click in save all 01")
+	var sum__selected_elems = 0;
 
-      FlagsBuffer[i] = real_ids
-    
-    }
-    console.log(FlagsBuffer)
-    var list_id = $("#list_id").val()
-    // '/annotations/lists/'+list_id+'/ngrams/108642'
+	FlagsBuffer["to_delete"] = {}
+	FlagsBuffer["to_keep"] = {}
 
-    console.log(window.location.origin+'/lists/'+list_id+"/ngrams/"+real_ids.join("+"))
-    console.log(real_ids)
-      $.ajax({
-        method: "DELETE",
-        url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+real_ids.join("+"),
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-        },
-        success: function(data){
-              console.log(data)
-              location.reload()
-        },
-        error: function(result) {
-            console.log("Data not found in #Save_All");
-            console.log(result)
-        }
-      });
-    // console.log("")
-  }
+	for(var id in AjaxRecords) {
+		if( AjaxRecords[id]["state"]>0 ) {
+			FlagsBuffer [ System[0].states[ AjaxRecords[id].state ] ]  [ AjaxRecords[id].id ] = true
+		}
+	}
+
+	console.log(" = = = = = = = = = == ")
+	console.log("FlagsBuffer:")
+	console.log(FlagsBuffer)
+
+	for(var i in FlagsBuffer["grouped"]) {
+		if(FlagsBuffer["to_delete"][i]) {
+			for(var j in FlagsBuffer["grouped"][i] ) {
+				FlagsBuffer["to_delete"][FlagsBuffer["grouped"][i][j]] = true
+			}
+		}
+	}
+
+	var nodes_2del = Object.keys(FlagsBuffer["to_delete"]).map(Number)
+	var nodes_2keep = Object.keys(FlagsBuffer["to_keep"]).map(Number)
+	var nodes_2group = FlagsBuffer["grouped"]
+
+	// if(Object.keys(FlagsBuffer["grouped"]).length>0)
+	// 	console.log( FlagsBuffer["grouped"] )
+
+
+	// var poubelle = []
+	// for(var i in FlagsBuffer) {
+	//   if (Object.keys(FlagsBuffer[i]).length==0) 
+	//     poubelle.push(i)
+	//   sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+	// }
+	// console.log("click in save all 02")
+	// for(var i in poubelle)
+	//   delete FlagsBuffer[poubelle[i]];
+	// console.log("click in save all 03, sum:"+sum__selected_elems)
+	// if ( sum__selected_elems>0 ) {
+	//   console.log("")
+	//   console.log("Do the ajax conexion with API and send this array to be processed:")
+	//   for(var i in FlagsBuffer) {
+	//     var real_ids = []
+	//     for (var j in FlagsBuffer[i])
+	//       real_ids.push( AjaxRecords[j].id );
+	//     FlagsBuffer[i] = real_ids
+	//   }
+	//   console.log(FlagsBuffer)
+	//   var list_id = $("#list_id").val()
+	//   // '/annotations/lists/'+list_id+'/ngrams/108642'
+
+	//   console.log(window.location.origin+'/lists/'+list_id+"/ngrams/"+real_ids.join("+"))
+	//   console.log(real_ids)
+	//     $.ajax({
+	//       method: "DELETE",
+	//       url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+real_ids.join("+"),
+	//       beforeSend: function(xhr) {
+	//         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+	//       },
+	//       success: function(data){
+	//             console.log(data)
+	//             location.reload()
+	//       },
+	//       error: function(result) {
+	//           console.log("Data not found in #Save_All");
+	//           console.log(result)
+	//       }
+	//     });
+	//   // console.log("")
+	// }
 
 });
 
@@ -820,13 +832,13 @@ $.when(
     })
 ).then(function() {
 
-	// Deleting sinonims from the ngrams-table, clean start baby!
+	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(ngrams_groups.links).length>0 ) {
     	var i = ngrams_data.ngrams.length
 		while (i--) {
 			var ng_id = ngrams_data.ngrams[i].id
 		    if(  ngrams_groups.links[ng_id]  ) {
-		    	ngrams_data.ngrams[i].name="*"+ngrams_data.ngrams[i].name // to comment apres
+		    	ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name // to comment apres
 		    	for(var j in ngrams_groups.links[ng_id]) {
 		    		var id_2del = ngrams_groups.links[ng_id][j]
 		    		if( ngrams_data.ngrams[id_2del] ) {

@@ -508,13 +508,36 @@ $("#Save_All").click(function(){
 
 	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
 	var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
-	var nodes_2group = FlagsBuffer["group"]
-	var list_id = $("#list_id").val()
+	var nodes_2group = $.extend({}, FlagsBuffer["group"]);
 
+	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
 
-	CRUD( list_id , "" , nodes_2del , "DELETE" )
-	CRUD( list_id , "/keep" , nodes_2keep , "PUT" )
+	// CRUD( list_id , "" , nodes_2del , "DELETE" )
+	// CRUD( list_id , "/keep" , nodes_2keep , "PUT" )
+	// CRUD( corpus_id , "/group" , nodes_2group , "PUT" )	
+	console.log(nodes_2group)
+	var the_url = window.location.origin+"/api/node/"+corpus_id+"/ngrams"+"/group"
+	$.ajax({
+	  method: "PUT",
+	  data: nodes_2group,
+	  url: the_url,
+	  beforeSend: function(xhr) {
+	    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+	  },
+	  success: function(data){
+	  		console.log("PUT" + " ok!!")
+	        console.log(nodes_2group)
+	        console.log(data)
+	  },
+	  error: function(result) {
+	      console.log("Data not found in #Save_All");
+	      console.log(result)
+	  }
+	});
+
+
+
 
 });
 
@@ -593,7 +616,7 @@ function Main_test( data , initial) {
 
       var node_info = {
         "id" : le_ngram.id,
-        "name": le_ngram.name,
+        "name": le_ngram.id+"_"+le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
         "flag":false,
         "group_plus": true,
@@ -818,19 +841,21 @@ $.when(
 
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(ngrams_groups.links).length>0 ) {
-    	var i = ngrams_data.ngrams.length
-		while (i--) {
-			var ng_id = ngrams_data.ngrams[i].id
-		    if(  ngrams_groups.links[ng_id]  ) {
-		    	ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name // to comment apres
-		    	for(var j in ngrams_groups.links[ng_id]) {
-		    		var id_2del = ngrams_groups.links[ng_id][j]
-		    		if( ngrams_data.ngrams[id_2del] ) {
-		    			ngrams_data.ngrams.splice(id_2del, 1);
-		    		}
-		    	}
-		    }
-		}
+    	var subforms = {}
+    	for(var i in ngrams_groups.links) {
+    		for(var j in ngrams_groups.links[i]) {
+    			subforms[ ngrams_groups.links[i][j] ] = true
+    		}
+    	}
+    	var ngrams_data_ = []
+    	for(var i in ngrams_data.ngrams) {
+    		if(subforms[ngrams_data.ngrams[i].id]) {
+    			ngrams_groups["nodes"][ngrams_data.ngrams[i].id] = ngrams_data.ngrams[i]
+    		} else {
+    			ngrams_data_.push( ngrams_data.ngrams[i] )
+    		}
+    	}
+    	ngrams_data.ngrams = ngrams_data_;
     }
 
 

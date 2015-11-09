@@ -221,6 +221,7 @@ class Ngrams(APIView):
         return JsonHttpResponse(["POST","ok"])
 
     def delete(self , request , node_id ):
+        print(node_id)
         return JsonHttpResponse(["DELETE","ok"])
 
 class Group(APIView):
@@ -289,8 +290,7 @@ class Group(APIView):
             groups["links"][ mainNode ] = mainNode_sinonims
         
         return JsonHttpResponse(groups)
-
-        
+   
     def post(self, request, node_id):
         
         # # input validation
@@ -309,7 +309,6 @@ class Group(APIView):
         #     else:
         #         raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
         return JsonHttpResponse( ["hola" , "mundo"] )
-
 
     def delete(self, request, corpus_id):
         

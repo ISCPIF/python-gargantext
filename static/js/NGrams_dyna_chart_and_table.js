@@ -509,53 +509,25 @@ $("#Save_All").click(function(){
 	var nodes_2del = Object.keys(FlagsBuffer["to_delete"]).map(Number)
 	var nodes_2keep = Object.keys(FlagsBuffer["to_keep"]).map(Number)
 	var nodes_2group = FlagsBuffer["grouped"]
+	var list_id = $("#list_id").val()
 
-	// if(Object.keys(FlagsBuffer["grouped"]).length>0)
-	// 	console.log( FlagsBuffer["grouped"] )
-
-
-	// var poubelle = []
-	// for(var i in FlagsBuffer) {
-	//   if (Object.keys(FlagsBuffer[i]).length==0) 
-	//     poubelle.push(i)
-	//   sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-	// }
-	// console.log("click in save all 02")
-	// for(var i in poubelle)
-	//   delete FlagsBuffer[poubelle[i]];
-	// console.log("click in save all 03, sum:"+sum__selected_elems)
-	// if ( sum__selected_elems>0 ) {
-	//   console.log("")
-	//   console.log("Do the ajax conexion with API and send this array to be processed:")
-	//   for(var i in FlagsBuffer) {
-	//     var real_ids = []
-	//     for (var j in FlagsBuffer[i])
-	//       real_ids.push( AjaxRecords[j].id );
-	//     FlagsBuffer[i] = real_ids
-	//   }
-	//   console.log(FlagsBuffer)
-	//   var list_id = $("#list_id").val()
-	//   // '/annotations/lists/'+list_id+'/ngrams/108642'
-
-	//   console.log(window.location.origin+'/lists/'+list_id+"/ngrams/"+real_ids.join("+"))
-	//   console.log(real_ids)
-	//     $.ajax({
-	//       method: "DELETE",
-	//       url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+real_ids.join("+"),
-	//       beforeSend: function(xhr) {
-	//         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-	//       },
-	//       success: function(data){
-	//             console.log(data)
-	//             location.reload()
-	//       },
-	//       error: function(result) {
-	//           console.log("Data not found in #Save_All");
-	//           console.log(result)
-	//       }
-	//     });
-	//   // console.log("")
-	// }
+	//DELETING
+	if(Object.keys(FlagsBuffer["to_delete"]).length>0) {
+		$.ajax({
+		  method: "DELETE",
+		  url: window.location.origin+'/annotations/lists/'+list_id+"/ngrams/"+nodes_2del.join("+"),
+		  beforeSend: function(xhr) {
+		    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		  },
+		  success: function(data){
+		        console.log(data)
+		  },
+		  error: function(result) {
+		      console.log("Data not found in #Save_All");
+		      console.log(result)
+		  }
+		});
+	}
 
 });
 

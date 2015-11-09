@@ -10,6 +10,7 @@ from sqlalchemy.orm import aliased
 
 import datetime
 import copy
+import json
 
 from gargantext_web.validation import validate, ValidationException
 
@@ -280,7 +281,7 @@ class Group(APIView):
             mainNode = -1
             mainNode_sinonims = []
             for node in clique:
-                groups["nodes"][node] = "nom_"+str(node)
+                groups["nodes"][node] = False
                 node_outdeg = DG.out_degree(node)
                 if node_outdeg>max_deg:
                     max_deg = node_outdeg
@@ -331,6 +332,27 @@ class Group(APIView):
             else:
                 raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
 
+    def put(self , request , corpus_id ):
+        print(request)
+        print("= = = = = = =  = = = = = = = ")
+        print("PUUUUUT:")
+        print("corpus_id:",corpus_id)
+        group_id = self.get_group_id(corpus_id)
+        ngrams_ngrams = (session
+                .query(NodeNgramNgram)
+                .filter(NodeNgramNgram.node_id==group_id)
+            )
+        for ng in ngrams_ngrams:
+            print(ng)
+        print("= = = = = = =  = = = = = = = ")
+        print("FIN")
+        # GroupsJSON = self.get( request , corpus_id )
+        # # Groups = json.loads(GroupsJSON[0].decode("utf-8"))
+        # Groups = {}
+        # for g in GroupsJSON:
+        #     Groups = g.decode("utf-8")
+        # print(Groups)
+        return JsonHttpResponse(True, 201)
 
 class Keep(APIView):
     """

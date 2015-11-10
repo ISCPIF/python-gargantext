@@ -125,8 +125,8 @@ class FileParser:
         """
         # initialize the list of hyperdata
         hyperdata_list = []
-        # is the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
+            print(file, "# is the file is a ZIP archive, recurse on each of its files...")
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
                 try:
@@ -137,6 +137,7 @@ class FileParser:
                     print(error)
         # ...otherwise, let's parse it directly!
         else:
+            print(file, "it is not a zip file")
             try:
                 for hyperdata in self._parse(file):
                     hyperdata_list.append(self.format_hyperdata(hyperdata))

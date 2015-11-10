@@ -1,3 +1,7 @@
+import sys
+sys.path.append('/srv/gargantext')
+
+from admin.env import *
 import re
 import locale
 from lxml import etree
@@ -7,27 +11,23 @@ from django.utils import timezone
 import dateutil.parser
 import dateparser
 
-from .FileParser import FileParser
-from ..NgramsExtractors import *
+from parsing.FileParsers.FileParser import FileParser
+from parsing.NgramsExtractors import *
 
 from admin.utils import PrintException
 
 class EuropressFileParser(FileParser):
-
     def _parse(self, file):
-
         localeEncoding = "fr_FR"
         codif      = "UTF-8"
         count = 0
 
         if isinstance(file, str):
             file = open(file, 'rb')
-        # print(file)
+        print(file)
         contents = file.read()
-        #print(len(contents))
-        #return []
         encoding = self.detect_encoding(contents)
-        #print(encoding)
+        
         if encoding != "utf-8":
             try:
                 contents = contents.decode("latin1", errors='replace').encode(codif)
@@ -92,7 +92,7 @@ class EuropressFileParser(FileParser):
             elif format_europresse == 50.2 :
                 name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
                 header_xpath    = "./header/div/span[@class = 'DocHeader']"
-                title_xpath     = "string(./header/div/span[@class = 'TitreArticleVisu'])"
+                title_xpath     = "./header/div/span[@class = 'TitreArticleVisu'])"
                 text_xpath      = "./header/div/descendant-or-self::*[not(self::span[@class='DocHeader'])]/text()"
 
 
@@ -104,7 +104,6 @@ class EuropressFileParser(FileParser):
             for html_article in html_articles:
 
                 hyperdata = {}
-
                 if len(html_article):
                     for name in html_article.xpath(name_xpath):
                         #print("test name.text")
@@ -131,7 +130,7 @@ class EuropressFileParser(FileParser):
 
                         try:
                             text = header.text
-                            print("header", text)
+                            #print("header", text)
                         except Exception as error:
                             print(error)
 
@@ -305,3 +304,9 @@ class EuropressFileParser(FileParser):
         except Exception as error:
             print(error)
             pass
+
+if __name__ == "__main__":
+    e = EuropressFileParser()
+    e.parse(str(sys.argv[1]))
+
+

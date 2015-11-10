@@ -322,6 +322,7 @@ function clickngram_action ( elem ) {
 //     $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 // }
 
+
 // modified
 function transformContent(rec_id) {
 	var elem = AjaxRecords[rec_id];
@@ -841,17 +842,21 @@ $.when(
 
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(ngrams_groups.links).length>0 ) {
-    	var subforms = {}
+    	
+    	var _forms = {  "main":{} , "sub":{}  }
     	for(var i in ngrams_groups.links) {
+    		_forms["main"][i] = true
     		for(var j in ngrams_groups.links[i]) {
-    			subforms[ ngrams_groups.links[i][j] ] = true
+    			_forms["sub"][ ngrams_groups.links[i][j] ] = true
     		}
     	}
     	var ngrams_data_ = []
     	for(var i in ngrams_data.ngrams) {
-    		if(subforms[ngrams_data.ngrams[i].id]) {
+    		if(_forms["sub"][ngrams_data.ngrams[i].id]) {
     			ngrams_groups["nodes"][ngrams_data.ngrams[i].id] = ngrams_data.ngrams[i]
     		} else {
+    			if( _forms["main"][ ngrams_data.ngrams[i].id ] )
+    				ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name
     			ngrams_data_.push( ngrams_data.ngrams[i] )
     		}
     	}

@@ -333,25 +333,86 @@ class Group(APIView):
                 raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
 
     def put(self , request , corpus_id ):
-        print(request)
-        print("= = = = = = =  = = = = = = = ")
-        print("PUUUUUT:")
-        print("corpus_id:",corpus_id)
-        group_id = self.get_group_id(corpus_id)
-        ngrams_ngrams = (session
+
+        group_rawreq = dict(request.data)
+        
+        GDict = []
+        group_new = {}
+        for g in group_rawreq:
+            gdict = []
+            mainform = int(g.replace("[]",""))
+            gdict.append(mainform)
+            group_new[mainform] = list(map(int, group_rawreq[g]))
+            for subform in group_new[mainform]:
+                gdict.append(subform)
+            GDict.append( gdict )
+        existing_group_id = self.get_group_id(corpus_id)
+        grouped_ngrams = (session
                 .query(NodeNgramNgram)
-                .filter(NodeNgramNgram.node_id==group_id)
+                .filter(NodeNgramNgram.node_id==existing_group_id)
             )
-        for ng in ngrams_ngrams:
-            print(ng)
-        print("= = = = = = =  = = = = = = = ")
-        print("FIN")
-        # GroupsJSON = self.get( request , corpus_id )
-        # # Groups = json.loads(GroupsJSON[0].decode("utf-8"))
-        # Groups = {}
-        # for g in GroupsJSON:
-        #     Groups = g.decode("utf-8")
-        # print(Groups)
+
+        # [ - - - new group = old clique + new clique - - - ] #
+        Clique_Changes = {}
+        Rels_2_delete = {}
+        for ng in grouped_ngrams:
+            for i in range(len(GDict)):
+                clique_i = GDict[i]
+                neighbours = {}
+                for node in clique_i:
+                    if node==ng.ngramx_id:
+                        neighbours[ng.ngramy_id] = True
+                    if node==ng.ngramy_id:
+                        neighbours[ng.ngramx_id] = True
+                if len(list(neighbours.keys()))>0:
+                    voisinage = {}
+                    for node_ in clique_i:
+                        voisinage[node_] = True
+                    for node_ in neighbours:
+                        voisinage[node_] = True
+                    clique_i = list(voisinage.keys())
+                    Rels_2_delete[ng.id] = True
+
+                if i not in Clique_Changes:
+                    Clique_Changes[i] = {}
+                for node in clique_i:
+                    Clique_Changes[i][node] = True
+
+        for i in Clique_Changes:
+            Clique_Changes[i] = list(Clique_Changes[i].keys())
+        # [ - - - / new group = old clique + new clique - - - ] #
+
+
+        # import networkx as nx
+        # G = nx.Graph()
+        # DG = nx.DiGraph()
+        # for ng in grouped_ngrams:
+        #     n_x = ( session.query(Ngram).filter(Ngram.id==ng.ngramx_id) ).first()
+        #     n_y = ( session.query(Ngram).filter(Ngram.id==ng.ngramy_id) ).first()
+        #     G.add_edge( n_x.terms , n_y.terms )
+        #     DG.add_edge( n_x.terms , n_y.terms )  
+        #     # G.add_edge( ng.ngramx_id , ng.ngramy_id )
+        #     # DG.add_edge( ng.ngramx_id , ng.ngramy_id )  
+        # sinonims_cliques = nx.find_cliques( G )        
+        # groups = { "nodes": {} , "links": {} }
+        # for clique in sinonims_cliques:
+        #     max_deg = -1
+        #     mainNode = -1
+        #     mainNode_sinonims = []
+        #     for node in clique:
+        #         groups["nodes"][node] = False
+        #         node_outdeg = DG.out_degree(node)
+        #         if node_outdeg>max_deg:
+        #             max_deg = node_outdeg
+        #             mainNode = node
+        #     for node in clique:
+        #         if mainNode!=node:
+        #             mainNode_sinonims.append( node )
+        #     groups["links"][ mainNode ] = mainNode_sinonims
+        # import pprint
+        # pprint.pprint( groups["links"] )
+
+        # print("= = = = = = =  = = = = = = = ")
         return JsonHttpResponse(True, 201)
 
 class Keep(APIView):

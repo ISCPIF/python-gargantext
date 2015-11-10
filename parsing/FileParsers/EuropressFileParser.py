@@ -29,9 +29,9 @@ class EuropressFileParser(FileParser):
         format_date = re.compile('.*\d{4}.*', re.UNICODE)
 
         if isinstance(file, str):
-            file_open = open(file, 'rb')
+            file = open(file, 'rb')
         
-        contents = file_open.read()
+        contents = file.read()
         encoding = self.detect_encoding(contents)
         
         if encoding != "utf-8":
@@ -91,19 +91,27 @@ class EuropressFileParser(FileParser):
                     header = header.split(', ')
                     if format_date.match(header[0]):
                         date       = header[0]
-                    else:
+                    elif format_date.match(header[1]):
                         hyperdata['rubrique']   = header[0]
                         date       = header[1]
-
-                    try:
-                        hyperdata['page']       = header[2].split(' ')[1]
-                    except:
-                        pass
-                try:
-                    hyperdata['publication_date'] = dateparser.parse(date, languages=['fr', 'en'])
-                except:
-                    hyperdata['publication_date'] = timezone.now()
+                        try:
+                            hyperdata['page']       = header[2].split(' ')[1]
+                        except:
+                            pass
+                    else:
+                        date       = header[2]
                 
+                try:
+                    hyperdata['publication_date'] = dateparser.parse(date.strip(), languages=['fr', 'en'])
+                    
+                except:
+                    hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
+                hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
+                hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
+
+                #print(hyperdata['publication_date'])
                 try:
                     title   = paragraph_list(html_article.xpath(title_xpath))
                     hyperdata['title'] = title[0]
@@ -118,8 +126,6 @@ class EuropressFileParser(FileParser):
 
                 yield hyperdata
 
-            file_open.close()
-
         except :
             PrintException()
             pass
@@ -132,5 +138,4 @@ if __name__ == "__main__":
             print(h['journal'], ":", h['publication_date'])
         except:
             pass
-
 

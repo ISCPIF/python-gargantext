@@ -514,40 +514,22 @@ $("#Save_All").click(function(){
 	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
 
-	// CRUD( list_id , "" , nodes_2del , "DELETE" )
-	// CRUD( list_id , "/keep" , nodes_2keep , "PUT" )
-	// CRUD( corpus_id , "/group" , nodes_2group , "PUT" )	
-	console.log(nodes_2group)
-	var the_url = window.location.origin+"/api/node/"+corpus_id+"/ngrams"+"/group"
-	$.ajax({
-	  method: "PUT",
-	  data: nodes_2group,
-	  url: the_url,
-	  beforeSend: function(xhr) {
-	    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-	  },
-	  success: function(data){
-	  		console.log("PUT" + " ok!!")
-	        console.log(nodes_2group)
-	        console.log(data)
-	  },
-	  error: function(result) {
-	      console.log("Data not found in #Save_All");
-	      console.log(result)
-	  }
-	});
+	CRUD( list_id , "" , nodes_2del , [] , "DELETE" )
+	CRUD( list_id , "/keep" , nodes_2keep , [] , "PUT" )
+	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
 
-
-
+	window.location.reload()
 
 });
 
-function CRUD( parent_id , action , nodes , http_method ) {
+function CRUD( parent_id , action , nodes , args , http_method ) {
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
-	if(nodes.length>0) {
+	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+	if(nodes.length>0 || Object.keys(args).length>0) {
 		$.ajax({
 		  method: http_method,
 		  url: the_url,
+		  data: args,
 		  beforeSend: function(xhr) {
 		    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 		  },
@@ -617,7 +599,7 @@ function Main_test( data , initial) {
 
       var node_info = {
         "id" : le_ngram.id,
-        "name": le_ngram.id+"_"+le_ngram.name,
+        "name": le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
         "flag":false,
         "group_plus": true,
@@ -842,7 +824,7 @@ $.when(
 
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(ngrams_groups.links).length>0 ) {
-    	
+
     	var _forms = {  "main":{} , "sub":{}  }
     	for(var i in ngrams_groups.links) {
     		_forms["main"][i] = true

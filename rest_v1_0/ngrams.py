@@ -506,9 +506,10 @@ class Keep(APIView):
         for map_node in ngram_2del:
             try:
                 session.delete(map_node)
+                session.commit()
             except:
                 pass
-        session.commit()
+        
 
         return JsonHttpResponse(True, 201)
 

@@ -497,6 +497,9 @@ $("#Save_All").click(function(){
 					FlagsBuffer["delete"][AjaxRecords[id].id] = true
 				}
 			}
+			if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==1)  {
+				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+			}
 		} else {		
 			if(AjaxRecords[id]["state"]==1) {
 				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
@@ -512,10 +515,13 @@ $("#Save_All").click(function(){
 			for(var j in ngrams_groups.links[i] ) {
 				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
 			}
+			for(var j in FlagsBuffer["delete"][i] ) {
+				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
+			}
 		}
 		if(FlagsBuffer["inmap"][i]) {
-			for(var j in ngrams_groups.links[i] ) {
-				FlagsBuffer["outmap"][ngrams_groups.links[i][j]] = true
+			for(var j in FlagsBuffer["group"][i] ) {
+				FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
 			}
 		}
 	}
@@ -556,13 +562,13 @@ $("#Save_All").click(function(){
 	// });
 
 	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
-	CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
+	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
 	$.doTimeout( 1000, function(){
-		CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
+		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" )
 		$.doTimeout( 1000, function(){
-			CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" )
+			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
 			$.doTimeout( 1000, function(){
-				CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
+				CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
 				$.doTimeout( 1000, function(){
 					window.location.reload()
 				});

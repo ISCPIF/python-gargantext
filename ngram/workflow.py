@@ -22,7 +22,7 @@ def ngram_workflow(corpus, n=5000):
     
     part = round(n * 0.9)
 
-    compute_cvalue(corpus,limit=part) # size
+    compute_cvalue(corpus,limit=1000) # size
     
     part = round(part * 0.8)
     print('spec part:', part)
@@ -36,7 +36,7 @@ def ngram_workflow(corpus, n=5000):
     print(limit_inf,limit_sup)
     compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
     
-    compute_mapList(corpus,limit=part) # size
+    compute_mapList(corpus,limit=1000) # size
     
     compute_tfidf(corpus)
     

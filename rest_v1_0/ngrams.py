@@ -346,75 +346,120 @@ class Group(APIView):
             for subform in group_new[mainform]:
                 gdict.append(subform)
             GDict.append( gdict )
-        import pprint
-        pprint.pprint( GDict )
-        # existing_group_id = self.get_group_id(corpus_id)
-        # grouped_ngrams = (session
-        #         .query(NodeNgramNgram)
-        #         .filter(NodeNgramNgram.node_id==existing_group_id)
-        #     )
+        existing_group_id = self.get_group_id(corpus_id)
+        grouped_ngrams = (session
+                .query(NodeNgramNgram)
+                .filter(NodeNgramNgram.node_id==existing_group_id)
+            )
+ 
 
-        # # [ - - - new group = old clique + new clique - - - ] #
-        # NewGroups = {}
-        # Rels_2_delete = {}
+        # [ - - - new group = old clique + new clique - - - ] #
+        NewGroups = {}
+        Rels_2_delete = {}
+        for ng in grouped_ngrams:
+            print(ng)
+            for i in range(len(GDict)):
+                clique_i = GDict[i]
+                neighbours = {}
+                for node in clique_i:
+                    if node==ng.ngramx_id:
+                        neighbours[ng.ngramy_id] = True
+                    if node==ng.ngramy_id:
+                        neighbours[ng.ngramx_id] = True
+                if len(list(neighbours.keys()))>0:
+                    voisinage = {}
+                    for node_ in clique_i:
+                        voisinage[node_] = True
+                    for node_ in neighbours:
+                        voisinage[node_] = True
+                    clique_i = list(voisinage.keys())
+                    Rels_2_delete[ng.id] = True
+
+                if i not in NewGroups:
+                    NewGroups[i] = {}
+                for node in clique_i:
+                    NewGroups[i][node] = True
+
+        for i in NewGroups:
+            NewGroups[i] = list(NewGroups[i].keys())
+        # [ - - - / new group = old clique + new clique - - - ] #
+
+        # [ - - - considering main form of the query - - - ] #
+        for i in range(len(GDict)):
+            ordered = []
+            for j in range(len(NewGroups[i])):
+                if NewGroups[i][j]!=GDict[i][0]:
+                    ordered.append( NewGroups[i][j] )
+            NewGroups[i] = [ GDict[i][0] ] + ordered
+        # [ - - - / considering main form of the query - - - ] #
+
+
+
+        # [ - - - deleting old clique - - - ] #
+        for rel_id in Rels_2_delete:
+            session.query(NodeNgramNgram).filter(NodeNgramNgram.id==rel_id ).delete()
+        session.commit()
+        # [ - - - / deleting old clique - - - ] #
+
+
+        # [ - - - doing links of new clique and adding to DB - - - ] #
+        from itertools import combinations
+        for i in NewGroups:
+            edges = combinations(NewGroups[i], 2)
+            for n in edges:
+                n1=n[0]
+                n2=n[1]
+                nodengramngram = NodeNgramNgram(node_id=existing_group_id, ngramx_id=n1 , ngramy_id=n2, score=1.0)
+                session.add(nodengramngram)
+        session.commit()
+        # [ - - - / doing links of new clique and adding to DB - - - ] #
+
+
+        # import networkx as nx
+        # G = nx.Graph()
+        # DG = nx.DiGraph()
+
         # for ng in grouped_ngrams:
-        #     print(ng)
-        #     for i in range(len(GDict)):
-        #         clique_i = GDict[i]
-        #         neighbours = {}
-        #         for node in clique_i:
-        #             if node==ng.ngramx_id:
-        #                 neighbours[ng.ngramy_id] = True
-        #             if node==ng.ngramy_id:
-        #                 neighbours[ng.ngramx_id] = True
-        #         if len(list(neighbours.keys()))>0:
-        #             voisinage = {}
-        #             for node_ in clique_i:
-        #                 voisinage[node_] = True
-        #             for node_ in neighbours:
-        #                 voisinage[node_] = True
-        #             clique_i = list(voisinage.keys())
-        #             Rels_2_delete[ng.id] = True
+        #     n_x = ( session.query(Ngram).filter(Ngram.id==ng.ngramx_id) ).first()
+        #     n_y = ( session.query(Ngram).filter(Ngram.id==ng.ngramy_id) ).first()
+        #     G.add_edge( str(ng.ngramx_id)+" "+n_x.terms , str(ng.ngramy_id)+" "+n_y.terms  )
+        #     DG.add_edge( str(ng.ngramx_id)+" "+n_x.terms , str(ng.ngramy_id)+" "+n_y.terms  ) 
 
-        #         if i not in NewGroups:
-        #             NewGroups[i] = {}
-        #         for node in clique_i:
-        #             NewGroups[i][node] = True
+        # # group = dict(list())
+        # sinonims_cliques = nx.find_cliques( G )
+        # # for nn in ngrams_ngrams.all():
+        # #     group[nn.ngramx_id] = group.get(nn.ngramx_id, []) + [nn.ngramy_id]
+        
+        # groups = { "nodes": {} , "links": {} }
+        # for clique in sinonims_cliques:
+        #     max_deg = -1
+        #     mainNode = -1
+        #     mainNode_sinonims = []
+        #     for node in clique:
+        #         groups["nodes"][node] = False
+        #         node_outdeg = DG.out_degree(node)
+        #         if node_outdeg>max_deg:
+        #             max_deg = node_outdeg
+        #             mainNode = node
+        #     for node in clique:
+        #         if mainNode!=node:
+        #             mainNode_sinonims.append( node )
+        #     groups["links"][ mainNode ] = mainNode_sinonims
+        
+        # import pprint
+        # print("GDict:")
+        # pprint.pprint( GDict )
+        # print("")
+        # print("NewGroups:")
+        # pprint.pprint( NewGroups )
+        # print("")
+        # print("Ids to delete:")
+        # pprint.pprint( Rels_2_delete )
+        # print("")
+        # print('groups["links"]:')
+        # pprint.pprint( groups["links"] )
+        # print("")
 
-        # for i in NewGroups:
-        #     NewGroups[i] = list(NewGroups[i].keys())
-        # # [ - - - / new group = old clique + new clique - - - ] #
-
-
-        # # [ - - - considering main form of the query - - - ] #
-        # for i in range(len(GDict)):
-        #     ordered = []
-        #     for j in range(len(NewGroups[i])):
-        #         if NewGroups[i][j]!=GDict[i][0]:
-        #             ordered.append( NewGroups[i][j] )
-        #     NewGroups[i] = [ GDict[i][0] ] + ordered
-        # # [ - - - / considering main form of the query - - - ] #
-
-
-
-        # # [ - - - deleting old clique - - - ] #
-        # for rel_id in Rels_2_delete:
-        #     session.query(NodeNgramNgram).filter(NodeNgramNgram.id==rel_id ).delete()
-        # session.commit()
-        # # [ - - - / deleting old clique - - - ] #
-
-
-        # # [ - - - doing links of new clique and adding to DB - - - ] #
-        # from itertools import combinations
-        # for i in NewGroups:
-        #     edges = combinations(NewGroups[i], 2)
-        #     for n in edges:
-        #         n1=n[0]
-        #         n2=n[1]
-        #         nodengramngram = NodeNgramNgram(node_id=existing_group_id, ngramx_id=n1 , ngramy_id=n2, score=1.0)
-        #         session.add(nodengramngram)
-        # session.commit()
-        # # [ - - - / doing links of new clique and adding to DB - - - ] #
 
         return JsonHttpResponse(True, 201)
 

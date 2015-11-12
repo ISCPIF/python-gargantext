@@ -15,6 +15,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from node.models import Node
 from gargantext_web.db import session, cache, Node, NodeNgram
 from ngram.lists import listIds, listNgramIds
+from gargantext_web.db import get_or_create_node
 
 
 @login_required
@@ -93,7 +94,7 @@ class NgramEdit(APIView):
         """
         Delete a ngram from a list
         """
-        print(ngram_ids)
+        print("to del",ngram_ids)
         for ngram_id in ngram_ids.split('+'):
             print('ngram_id', ngram_id)
             ngram_id = int(ngram_id)
@@ -101,7 +102,21 @@ class NgramEdit(APIView):
                     .filter(NodeNgram.node_id==list_id)
                     .filter(NodeNgram.ngram_id==ngram_id).delete()
                     )
+
         session.commit()
+
+        # [ = = = = del from map-list = = = = ]
+        list_id = session.query(Node).filter(Node.id==list_id).first()
+        corpus = session.query(Node).filter(Node.id==list_id.parent_id , Node.type_id==cache.NodeType['Corpus'].id).first()
+        node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
+        results = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
+        ngram_2del = [int(i) for i in ngram_ids.split('+')]
+        ngram_2del = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
+        for map_node in ngram_2del:
+            session.delete(map_node)
+        session.commit()
+        # [ = = = = / del from map-list = = = = ]
+
         return Response(None, 204)
 
 class NgramCreate(APIView):

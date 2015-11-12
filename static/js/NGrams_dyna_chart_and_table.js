@@ -514,15 +514,26 @@ $("#Save_All").click(function(){
 	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
 
-	CRUD( list_id , "" , nodes_2del , [] , "DELETE" )
-	CRUD( list_id , "/keep" , nodes_2keep , [] , "PUT" )
-	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
+	// $.when(
+	// ).then(function() {
+	// 	// window.location.reload()
+	// });
 
-	window.location.reload()
+	CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
+	$.doTimeout( 1000, function(){
+		CRUD( list_id , "/keep" , nodes_2keep , [] , "PUT" )
+		$.doTimeout( 1000, function(){
+			CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
+			$.doTimeout( 1000, function(){
+				window.location.reload()
+			});
+		});
+	});
 
 });
 
 function CRUD( parent_id , action , nodes , args , http_method ) {
+	console.log( http_method + " : " + action )
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
 	if(nodes.length>0 || Object.keys(args).length>0) {
@@ -537,10 +548,12 @@ function CRUD( parent_id , action , nodes , args , http_method ) {
 		  		console.log(http_method + " ok!!")
 		        console.log(nodes)
 		        console.log(data)
+		        return true;
 		  },
 		  error: function(result) {
 		      console.log("Data not found in #Save_All");
 		      console.log(result)
+		      return false;
 		  }
 		});
 

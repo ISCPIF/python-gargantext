@@ -104,11 +104,27 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     # Removing too connected nodes (find automatic way to do it)
     #edges_to_remove = [ e for e in G.edges_iter() if
 
-    G.remove_nodes_from(nx.isolates(G))
-    # = degree = G.degree()
     #   nodes_to_remove = [n for n in degree if degree[n] <= 1]
     #   G.remove_nodes_from(nodes_to_remove)
     
+
+    def getWeight(item):
+        return item[1]
+    
+    node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
+
+    nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]
+
+    for n in nodes_too_connected:
+        n_edges = list()
+        for v in nx.neighbors(G,n):
+            n_edges.append(((n, v), G[n][v]['weight']))
+
+        n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)
+        #G.remove_edges_from([ e[0] for e in n_edges_sorted[round(len(n_edges_sorted)/2):]])
+        G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/5)):]])
+
+    G.remove_nodes_from(nx.isolates(G))
     partition = best_partition(G.to_undirected())
 
     return(G,partition,ids,weight)

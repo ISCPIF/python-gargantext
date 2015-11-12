@@ -238,7 +238,7 @@ def compute_tfidf_global(corpus):
         lnD = log(D)
         cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
         # show off
-        dbg.show('insert tfidf for %d documents' % (D, ))
+        dbg.show('insert tfidf')
         cursor.execute('''
             INSERT INTO
                 %s (nodex_id, nodey_id, ngram_id, score)

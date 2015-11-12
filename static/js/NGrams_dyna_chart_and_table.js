@@ -486,30 +486,72 @@ $("#Save_All").click(function(){
 
 	FlagsBuffer["delete"] = {}
 	FlagsBuffer["keep"] = {}
+	FlagsBuffer["outmap"] = {}
+	FlagsBuffer["inmap"] = {}
 
 	for(var id in AjaxRecords) {
-		if( AjaxRecords[id]["state"]>0 ) {
-			FlagsBuffer [ System[0].states[ AjaxRecords[id].state ] ]  [ AjaxRecords[id].id ] = true
+		if( ngrams_map[ AjaxRecords[id]["id"] ] ) {
+			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
+				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
+				if(AjaxRecords[id]["state"]==2) {
+					FlagsBuffer["delete"][AjaxRecords[id].id] = true
+				}
+			}
+			if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==1)  {
+				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+			}
+		} else {		
+			if(AjaxRecords[id]["state"]==1) {
+				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+			}
+			if(AjaxRecords[id]["state"]==2) {
+				FlagsBuffer["delete"][AjaxRecords[id].id] = true
+			}
 		}
 	}
+	// [ = = = = For deleting subforms = = = = ]
+	for(var i in ngrams_groups.links) {
+		if(FlagsBuffer["delete"][i]) {
+			for(var j in ngrams_groups.links[i] ) {
+				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
+			}
+			for(var j in FlagsBuffer["delete"][i] ) {
+				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
+			}
+		}
+		if(FlagsBuffer["inmap"][i]) {
+			for(var j in FlagsBuffer["group"][i] ) {
+				FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
+			}
+		}
+	}
+	// [ = = = = / For deleting subforms = = = = ]
 
-	console.log(" = = = = = = = = = == ")
-	console.log("FlagsBuffer:")
-	console.log(FlagsBuffer)
+	// console.log(" = = = = = = = = = == ")
+	// console.log("FlagsBuffer:")
+	// console.log(FlagsBuffer)
 
-	// // [ = = = = For deleting subforms = = = = ]
-	// for(var i in FlagsBuffer["group"]) {
-	// 	if(FlagsBuffer["delete"][i]) {
-	// 		for(var j in FlagsBuffer["group"][i] ) {
-	// 			FlagsBuffer["delete"][FlagsBuffer["group"][i][j]] = true
-	// 		}
-	// 	}
-	// }
-	// // [ = = = = / For deleting subforms = = = = ]
 
 	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
 	var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
-	var nodes_2group = $.extend({}, FlagsBuffer["group"]);
+	var nodes_2group = $.extend({}, FlagsBuffer["group"])
+	var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
+	var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
+
+	// console.log("")
+	// console.log("")
+	// console.log(" nodes_2del: ")
+	// console.log(nodes_2del)
+	// console.log(" nodes_2keep: ")
+	// console.log(nodes_2keep)
+	// console.log(" nodes_2group: ")
+	// console.log(nodes_2group)
+	// console.log(" nodes_2inmap: ")
+	// console.log(nodes_2inmap)
+	// console.log(" nodes_2outmap: ")
+	// console.log(nodes_2outmap)
+	// console.log("")
+	// console.log("")
 
 	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
@@ -519,13 +561,17 @@ $("#Save_All").click(function(){
 	// 	// window.location.reload()
 	// });
 
-	CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
+	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
+	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
 	$.doTimeout( 1000, function(){
-		CRUD( list_id , "/keep" , nodes_2keep , [] , "PUT" )
+		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" )
 		$.doTimeout( 1000, function(){
-			CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
+			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
 			$.doTimeout( 1000, function(){
-				window.location.reload()
+				CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
+				$.doTimeout( 1000, function(){
+					window.location.reload()
+				});
 			});
 		});
 	});
@@ -533,7 +579,6 @@ $("#Save_All").click(function(){
 });
 
 function CRUD( parent_id , action , nodes , args , http_method ) {
-	console.log( http_method + " : " + action )
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
 	if(nodes.length>0 || Object.keys(args).length>0) {
@@ -617,7 +662,7 @@ function Main_test( data , initial) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": 0
+        "state": (le_ngram.map)?1:0
       }
       AjaxRecords.push(node_info)
 
@@ -812,8 +857,9 @@ function getIDFromURL( item ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 var corpus_id = getIDFromURL( "corpus" )
 var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.href+"/ngrams.json";
-var ngrams_groups, ngrams_data;
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
+	url3=window.location.href+"/ngrams.json";
+var ngrams_groups, ngrams_map, ngrams_data;
 $.when(
     $.ajax({
         type: "GET",
@@ -827,6 +873,15 @@ $.when(
     $.ajax({
         type: "GET",
         url: url2,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_map = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url3,
         dataType: "json",
         success : function(data, textStatus, jqXHR) { ngrams_data = data },
         error: function(exception) { 
@@ -856,6 +911,14 @@ $.when(
     		}
     	}
     	ngrams_data.ngrams = ngrams_data_;
+    }
+
+    if( Object.keys(ngrams_map).length>0 ) {
+    	for(var i in ngrams_data.ngrams) {
+    		if(ngrams_map[ngrams_data.ngrams[i].id]) {
+    			ngrams_data.ngrams[i]["map"] = true
+    		}
+    	}
     }
 
 

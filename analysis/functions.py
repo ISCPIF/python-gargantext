@@ -112,7 +112,7 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
         return item[1]
     
     node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
-
+    print(node_degree)
     nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]
 
     for n in nodes_too_connected:
@@ -122,7 +122,7 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
 
         n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)
         #G.remove_edges_from([ e[0] for e in n_edges_sorted[round(len(n_edges_sorted)/2):]])
-        G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/5)):]])
+        G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/3)):]])
 
     G.remove_nodes_from(nx.isolates(G))
     partition = best_partition(G.to_undirected())
@@ -140,7 +140,7 @@ def get_cooc(request=None, corpus=None
     '''
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
-    print("Coocurrences do not exist yet, create it.")
+    print("Cooccurrences do not exist yet, creating it.")
     miam_id = get_or_create_node(nodetype='MapList', corpus=corpus).id
     stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id

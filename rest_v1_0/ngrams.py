@@ -469,21 +469,48 @@ class Keep(APIView):
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def get (self, request, corpus_id):
+        # list_id = session.query(Node).filter(Node.id==list_id).first()
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
+        nodes_in_map = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
+        results = {}
+        for node in nodes_in_map:
+            results[node.ngram_id] = True
+        return JsonHttpResponse(results)
     
-    def put(self, request, list_id, ngram_ids):
+    def put (self, request, corpus_id):
         """
         Add ngrams to map list
         """
-        print( "list_id:",list_id )
-        print( "ngram_ids:",ngram_ids )
-        # for ngram_id in ngram_ids.split('+'):
-        #     print('ngram_id', ngram_id)
-        #     ngram_id = int(ngram_id)
-        #     (session.query(NodeNgram)
-        #             .filter(NodeNgram.node_id==list_id)
-        #             .filter(NodeNgram.ngram_id==ngram_id).delete()
-        #             )
-        # session.commit()
+        group_rawreq = dict(request.data)
+        ngram_2add = [int(i) for i in list(group_rawreq.keys())]
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
+        for ngram_id in ngram_2add:
+            map_node = Node_Ngram( weight=1.0, ngram_id=ngram_id , node_id=node_mapList.id)
+            session.add(map_node)
+            session.commit()
+        return JsonHttpResponse(True, 201)
+
+    def delete (self, request, corpus_id):
+        """
+        Delete ngrams from the map list
+        """
+        group_rawreq = dict(request.data)
+        ngram_2del = [int(i) for i in list(group_rawreq.keys())]
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
+        ngram_2del = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
+        for map_node in ngram_2del:
+            try:
+                session.delete(map_node)
+                session.commit()
+            except:
+                pass
+        
+
         return JsonHttpResponse(True, 201)
 
 

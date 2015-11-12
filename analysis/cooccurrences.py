@@ -91,6 +91,7 @@ def do_cooc(corpus=None
                  .filter(Node.parent_id == corpus.id, Node.type_id == doc_id)
                  .filter(Hyperdata.name == field1)
                     )
+    print(cooc_query)
 
     # Size of the ngrams between n_min and n_max
     if n_min is not None or n_max is not None:
@@ -174,7 +175,7 @@ def do_cooc(corpus=None
     if isMonopartite:
         if miam_id is not None :
             miam_list = UnweightedList(miam_id)
-
+        
         if stop_id is not None :
             stop_list = UnweightedList(stop_id)
 

@@ -19,7 +19,8 @@ urlpatterns = patterns('',
     # NGRAMS table & annotations
     url(r'node/(\d+)/ngrams$'      , ngrams.Ngrams.as_view()),
     url(r'node/(\d+)/ngrams/group$', ngrams.Group.as_view()),
-    url(r'node/(?P<list_id>[0-9]+)/ngrams/keep/(?P<ngram_ids>[0-9,\+]+)+$' , ngrams.Keep.as_view()),
+    url(r'node/(\d+)/ngrams/keep$', ngrams.Keep.as_view()),
+    # url(r'node/(?P<list_id>[0-9]+)/ngrams/keep/(?P<ngram_ids>[0-9,\+]+)+$' , ngrams.Keep.as_view()),
     url(r'node/(?P<list_id>[0-9]+)/ngrams/(?P<ngram_ids>[0-9,\+]+)+$', views.NgramEdit.as_view()),
     url(r'node/(\d+)/ngrams/list$' , ngrams.List.as_view()),
 

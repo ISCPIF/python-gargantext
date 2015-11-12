@@ -112,7 +112,7 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
         return item[1]
     
     node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
-    print(node_degree)
+    #print(node_degree)
     nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]
 
     for n in nodes_too_connected:

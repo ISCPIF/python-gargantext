@@ -657,7 +657,7 @@ function Main_test( data , initial) {
 
       var node_info = {
         "id" : le_ngram.id,
-        "name": le_ngram.id+"_"+le_ngram.name,
+        "name": le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
         "flag":false,
         "group_plus": true,

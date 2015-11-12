@@ -536,6 +536,7 @@ function CRUD( parent_id , action , nodes , args , http_method ) {
 	console.log( http_method + " : " + action )
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+	console.log( the_url )
 	if(nodes.length>0 || Object.keys(args).length>0) {
 		$.ajax({
 		  method: http_method,
@@ -617,7 +618,7 @@ function Main_test( data , initial) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": 0
+        "state": (le_ngram.map)?1:0
       }
       AjaxRecords.push(node_info)
 
@@ -812,8 +813,9 @@ function getIDFromURL( item ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 var corpus_id = getIDFromURL( "corpus" )
 var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.href+"/ngrams.json";
-var ngrams_groups, ngrams_data;
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
+	url3=window.location.href+"/ngrams.json";
+var ngrams_groups, ngrams_map, ngrams_data;
 $.when(
     $.ajax({
         type: "GET",
@@ -827,6 +829,15 @@ $.when(
     $.ajax({
         type: "GET",
         url: url2,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_map = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url3,
         dataType: "json",
         success : function(data, textStatus, jqXHR) { ngrams_data = data },
         error: function(exception) { 
@@ -856,6 +867,14 @@ $.when(
     		}
     	}
     	ngrams_data.ngrams = ngrams_data_;
+    }
+
+    if( Object.keys(ngrams_map).length>0 ) {
+    	for(var i in ngrams_data.ngrams) {
+    		if(ngrams_map[ngrams_data.ngrams[i].id]) {
+    			ngrams_data.ngrams[i]["map"] = true
+    		}
+    	}
     }
 
 

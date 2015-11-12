@@ -493,29 +493,37 @@ $("#Save_All").click(function(){
 		if( ngrams_map[ AjaxRecords[id]["id"] ] ) {
 			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
 				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
+				if(AjaxRecords[id]["state"]==2) {
+					FlagsBuffer["delete"][AjaxRecords[id].id] = true
+				}
 			}
 		} else {		
 			if(AjaxRecords[id]["state"]==1) {
 				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
 			}
-		}
-		if( AjaxRecords[id]["state"]>0 ) {
-			FlagsBuffer [ System[0].states[ AjaxRecords[id].state ] ]  [ AjaxRecords[id].id ] = true
+			if(AjaxRecords[id]["state"]==2) {
+				FlagsBuffer["delete"][AjaxRecords[id].id] = true
+			}
 		}
 	}
 	// [ = = = = For deleting subforms = = = = ]
-	for(var i in FlagsBuffer["group"]) {
+	for(var i in ngrams_groups.links) {
 		if(FlagsBuffer["delete"][i]) {
-			for(var j in FlagsBuffer["group"][i] ) {
-				FlagsBuffer["delete"][FlagsBuffer["group"][i][j]] = true
+			for(var j in ngrams_groups.links[i] ) {
+				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
+			}
+		}
+		if(FlagsBuffer["inmap"][i]) {
+			for(var j in ngrams_groups.links[i] ) {
+				FlagsBuffer["outmap"][ngrams_groups.links[i][j]] = true
 			}
 		}
 	}
 	// [ = = = = / For deleting subforms = = = = ]
 
-	console.log(" = = = = = = = = = == ")
-	console.log("FlagsBuffer:")
-	console.log(FlagsBuffer)
+	// console.log(" = = = = = = = = = == ")
+	// console.log("FlagsBuffer:")
+	// console.log(FlagsBuffer)
 
 
 	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
@@ -523,6 +531,21 @@ $("#Save_All").click(function(){
 	var nodes_2group = $.extend({}, FlagsBuffer["group"])
 	var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
 	var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
+
+	// console.log("")
+	// console.log("")
+	// console.log(" nodes_2del: ")
+	// console.log(nodes_2del)
+	// console.log(" nodes_2keep: ")
+	// console.log(nodes_2keep)
+	// console.log(" nodes_2group: ")
+	// console.log(nodes_2group)
+	// console.log(" nodes_2inmap: ")
+	// console.log(nodes_2inmap)
+	// console.log(" nodes_2outmap: ")
+	// console.log(nodes_2outmap)
+	// console.log("")
+	// console.log("")
 
 	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
@@ -532,6 +555,7 @@ $("#Save_All").click(function(){
 	// 	// window.location.reload()
 	// });
 
+	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 	CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
 	$.doTimeout( 1000, function(){
 		CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
@@ -549,11 +573,8 @@ $("#Save_All").click(function(){
 });
 
 function CRUD( parent_id , action , nodes , args , http_method ) {
-	console.log( http_method + " : " + action )
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
-	console.log( the_url )
-	console.log( args )
 	if(nodes.length>0 || Object.keys(args).length>0) {
 		$.ajax({
 		  method: http_method,
@@ -630,7 +651,7 @@ function Main_test( data , initial) {
 
       var node_info = {
         "id" : le_ngram.id,
-        "name": le_ngram.name,
+        "name": le_ngram.id+"_"+le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
         "flag":false,
         "group_plus": true,

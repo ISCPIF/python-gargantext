@@ -532,19 +532,19 @@ $("#Save_All").click(function(){
 	// 	// window.location.reload()
 	// });
 
-	// CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
-	// $.doTimeout( 1000, function(){
-	// 	CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
-	// 	$.doTimeout( 1000, function(){
+	CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
+	$.doTimeout( 1000, function(){
+		CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
+		$.doTimeout( 1000, function(){
 			CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" )
-	// 		$.doTimeout( 1000, function(){
-	// 			CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
-	// 			// $.doTimeout( 1000, function(){
-	// 			// 	window.location.reload()
-	// 			// });
-	// 		});
-	// 	});
-	// });
+			$.doTimeout( 1000, function(){
+				CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
+				$.doTimeout( 1000, function(){
+					window.location.reload()
+				});
+			});
+		});
+	});
 
 });
 

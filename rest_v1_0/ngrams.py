@@ -471,30 +471,13 @@ class Keep(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get (self, request, corpus_id):
-        print("")
-        print("")
-        print("")
-        print("in HTTP/GET  Keep():")
-        print("")
         # list_id = session.query(Node).filter(Node.id==list_id).first()
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
-        print("corpus:",corpus)
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
-        print("node_mapList:",node_mapList)
         nodes_in_map = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
         results = {}
         for node in nodes_in_map:
-            print(node)
             results[node.ngram_id] = True
-        # ngram_2del = [int(i) for i in ngram_ids.split('+')]
-        # ngram_2del = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
-        # for map_node in ngram_2del:
-        #     session.delete(map_node)
-        # session.commit()
-        print("")
-        print("")
-        print("")
-
         return JsonHttpResponse(results)
     
     def put (self, request, corpus_id):
@@ -523,9 +506,10 @@ class Keep(APIView):
         for map_node in ngram_2del:
             try:
                 session.delete(map_node)
+                session.commit()
             except:
                 pass
-        session.commit()
+        
 
         return JsonHttpResponse(True, 201)
 

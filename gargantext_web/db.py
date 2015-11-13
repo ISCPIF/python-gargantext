@@ -276,5 +276,3 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
         session.commit()
     #print(parent_id, n.parent_id, n.id, n.name)
     return(node)
-
-

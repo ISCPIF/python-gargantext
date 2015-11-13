@@ -25,7 +25,7 @@ def ngram_workflow(corpus, n=5000):
     compute_cvalue(corpus,limit=1000) # size
     
     part = round(part * 0.8)
-    print('spec part:', part)
+    #print('spec part:', part)
 
     compute_specificity(corpus,limit=part)
     
@@ -33,7 +33,7 @@ def ngram_workflow(corpus, n=5000):
 
     limit_inf = round(part * 1)
     limit_sup = round(part * 5)
-    print(limit_inf,limit_sup)
+    #print(limit_inf,limit_sup)
     compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
     
     compute_mapList(corpus,limit=1000) # size

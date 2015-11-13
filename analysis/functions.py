@@ -122,7 +122,8 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
 
         n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)
         #G.remove_edges_from([ e[0] for e in n_edges_sorted[round(len(n_edges_sorted)/2):]])
-        G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/3)):]])
+        #G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/3)):]])
+        G.remove_edges_from([ e[0] for e in n_edges_sorted[10:]])
 
     G.remove_nodes_from(nx.isolates(G))
     partition = best_partition(G.to_undirected())

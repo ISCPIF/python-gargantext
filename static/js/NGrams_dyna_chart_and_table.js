@@ -556,20 +556,16 @@ $("#Save_All").click(function(){
 	var list_id = $("#list_id").val()
 	var corpus_id = getIDFromURL( "corpus" ) // not used
 
-	// $.when(
-	// ).then(function() {
-	// 	// window.location.reload()
-	// });
 
 	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
-	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" )
-	$.doTimeout( 1000, function(){
-		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" )
-		$.doTimeout( 1000, function(){
-			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" )
-			$.doTimeout( 1000, function(){
-				CRUD( list_id , "" , nodes_2del , [] , "DELETE" ),
-				$.doTimeout( 1000, function(){
+	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" , function(result) {
+		console.log(" UN ELEFANTE "+result)
+		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" , function(result) {
+			console.log(" DOS ELEFANTES "+result)
+			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" , function(result) {
+				console.log(" TRES ELEFANTES "+result)
+				CRUD( list_id , "" , nodes_2del , [] , "DELETE", function(result) {
+					console.log(" CUATRO ELEFANTES "+result)
 					window.location.reload()
 				});
 			});
@@ -578,7 +574,7 @@ $("#Save_All").click(function(){
 
 });
 
-function CRUD( parent_id , action , nodes , args , http_method ) {
+function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
 	if(nodes.length>0 || Object.keys(args).length>0) {
@@ -593,16 +589,16 @@ function CRUD( parent_id , action , nodes , args , http_method ) {
 		  		console.log(http_method + " ok!!")
 		        console.log(nodes)
 		        console.log(data)
-		        return true;
+		        callback(true);
 		  },
 		  error: function(result) {
 		      console.log("Data not found in #Save_All");
 		      console.log(result)
-		      return false;
+		      callback(false);
 		  }
 		});
 
-	}
+	} else callback(false);
 }
 
 function Main_test( data , initial) {

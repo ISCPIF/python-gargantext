@@ -63,4 +63,3 @@ def empty_trash(corpus_id):
             node.delete()
     print("Nodes deleted")
 
-

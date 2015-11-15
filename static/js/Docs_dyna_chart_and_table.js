@@ -293,11 +293,6 @@ function Main_test( Data , SearchFilter ) {
     // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["name"])
   }
 
-
-  // $("#move2trash").prop('disabled', true);
-
-
-
   var t0 = AjaxRecords[0].date.split("-").map(Number)
   var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
   oldest = t0;

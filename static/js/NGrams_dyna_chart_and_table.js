@@ -632,8 +632,6 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
-    
-
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
@@ -641,7 +639,6 @@ function Main_test( data , initial) {
     }
     div_stats += "</p>"
     $("#stats").html(div_stats)
-
 
     for(var i in data.ngrams) {
     
@@ -697,10 +694,6 @@ function Main_test( data , initial) {
     var y_frecs = x_occs.group().reduceSum(function (d) {
         return d.y_frec;
     });
-
-    console.log("scores: [ "+min_occ+" , "+max_occ+" ] ")
-    console.log("frecs: [ "+min_frec+" , "+max_frec+" ] ")
-
 
     LineChart
       .width(800)
@@ -770,8 +763,8 @@ function Main_test( data , initial) {
                 });
             })
             .xAxis()
-      volumeChart.yAxis().ticks(5)
-      volumeChart.render()
+    volumeChart.yAxis().ticks(5)
+    volumeChart.render()
 
     LineChart.filterAll();
     volumeChart.filterAll();
@@ -835,7 +828,31 @@ function Main_test( data , initial) {
     $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
 
 
+	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+	$("#filter_all").attr( "selected" , "selected" )
+	var the_content = $("#filter_search").html();
+	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
+}
+
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+    var result = Main_test(AjaxRecords , MODE)
+    console.log( result )
+  }
+
+  if( MODE == "filter_map-list") {
+
+  }
+
+  if( MODE == "filter_stop-list") {
+
+  }
+
 }
 
 function getIDFromURL( item ) {

@@ -25,7 +25,7 @@
     <!-- All the templates used by the Javascript framework -->
     {% verbatim %}
     {% endverbatim %}
-    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>    
+    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 
     {% verbatim %}
     <style type="text/css">
@@ -104,12 +104,18 @@
                         <li>
                             <ul>
                                 <li ng-repeat="hyperdata in hyperdataList">
-                                    ...where the value of
-                                    <span ng-if="!hyperdata.operator">"{{ hyperdata.key }}"</span>
-                                    <strong ng-if="hyperdata.operator">{{ hyperdata.key }}</strong>
-                                    
-                                    <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
-                                    <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    ...where
+                                    <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.key }}"</span>
+                                    <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.key }}</strong>
+
+                                    <span ng-if="hyperdata.values">
+                                        is
+                                        <select ng-model="hyperdata.value" ng-options="value for value in hyperdata.values" ng-change="updateDataset()"></select>
+                                    </span>
+                                    <span ng-if="!hyperdata.values">
+                                        <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
+                                        <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    </span>
                                 </li>
                             </ul>
                         </li>
@@ -128,8 +134,8 @@
 
             <!-- data representation -->
             Represent data with
-            <select ng-model="seriesOptions.type" ng-options="type for type in ['column', 'area', 'line']" ng-change="updateDatasets()"></select>            
-                            
+            <select ng-model="seriesOptions.type" ng-options="type for type in ['column', 'area', 'line']" ng-change="updateDatasets()"></select>
+
             <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
                 (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="updateDatasets()"></select> stacking)
             </span>
@@ -155,4 +161,3 @@
 
 
 {% endblock %}
-

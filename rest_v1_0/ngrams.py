@@ -75,7 +75,15 @@ from rest_framework.decorators import api_view
 
 
 class List(APIView):
-    pass
+    def get(self, request, corpus_id , list_name ):
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        list_name = list_name.title()+"List"
+        node_mapList = get_or_create_node(nodetype=list_name, corpus=corpus )
+        nodes_in_map = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
+        results = {}
+        for node in nodes_in_map:
+            results[node.ngram_id] = True
+        return JsonHttpResponse(results)
 
 
 class Ngrams(APIView):
@@ -116,7 +124,6 @@ class Ngrams(APIView):
                             )
             group_by.append(Cvalue.score)
             results.append('cvalue')
-
 
         if 'specificity' in request.GET['score']:
             Spec = aliased(NodeNodeNgram)
@@ -196,6 +203,23 @@ class Ngrams(APIView):
 
         total = ngrams_query.count()
 
+        output = []
+        for ngram in ngrams_query[offset : offset+limit]:
+            info = {}
+            try: info["id"] = ngram.id
+            except: pass
+            try: info["terms"] = ngram.terms
+            except: pass
+            try: info["tfidf"] = ngram.tfidf
+            except: pass
+            try: info["cvalue"] = ngram.cvalue
+            except: pass
+            try: info["specificity"] = ngram.specificity
+            except: pass
+
+            output.append( info )
+
+
         # return formatted result
         return JsonHttpResponse({
             'pagination': {
@@ -203,20 +227,7 @@ class Ngrams(APIView):
                 'limit': limit,
                 'total': total,
                           },
-            'data': [
-                        {
-                            'id' : ngram.id
-                            , 'terms' : ngram.terms
-                            , 'tfidf' : ngram.tfidf
-                            , 'cvalue': ngram.cvalue
-
-                        } for ngram in ngrams_query[offset : offset+limit]
-                # TODO : dict comprehension in list comprehension :
-                #                         results = ['id', 'terms']
-                #                        { x : eval('ngram.' + x) for x in results
-                #                        } for ngram in ngrams_query[offset : offset+limit]
-
-                    ],
+            'data': output,
                                })
 
     def post(self , request , node_id ):
@@ -232,10 +243,10 @@ class Group(APIView):
     Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
     '''
     def get_group_id(self , node_id):
-            node_id = int(node_id)
-            corpus = session.query(Node).filter(Node.id==node_id).first()
-            group = get_or_create_node(corpus=corpus, nodetype='Group')
-            return(group.id)
+        node_id = int(node_id)
+        corpus = session.query(Node).filter(Node.id==node_id).first()
+        group = get_or_create_node(corpus=corpus, nodetype='Group')
+        return(group.id)
 
     def get(self, request, corpus_id):
         # query ngrams

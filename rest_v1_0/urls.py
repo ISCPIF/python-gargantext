@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     url(r'node/(\d+)/ngrams/keep$', ngrams.Keep.as_view()),
     # url(r'node/(?P<list_id>[0-9]+)/ngrams/keep/(?P<ngram_ids>[0-9,\+]+)+$' , ngrams.Keep.as_view()),
     url(r'node/(?P<list_id>[0-9]+)/ngrams/(?P<ngram_ids>[0-9,\+]+)+$', views.NgramEdit.as_view()),
-    url(r'node/(\d+)/ngrams/list$' , ngrams.List.as_view()),
+    url(r'node/(?P<corpus_id>[0-9]+)/ngrams/list/(?P<list_name>\w+)$' , ngrams.List.as_view()),
 
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),

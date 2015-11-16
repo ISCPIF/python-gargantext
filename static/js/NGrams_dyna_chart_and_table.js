@@ -891,9 +891,44 @@ function SearchFilters( elem ) {
   }
 
   if( MODE == "filter_stop-list") {
-  	console.clear()
-  	console.log("ngrams_stop:")
-  	console.log( {} )
+
+  	if(Object.keys(ngrams_stop).length<1) {
+		var corpus_id = getIDFromURL( "corpus" )
+		var someurl = window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop";
+	    $.ajax({
+	        type: "GET",
+	        url: someurl,
+	        dataType: "json",
+	        success : function(data, textStatus, jqXHR) { 
+			  	console.clear()
+			  	console.log("ngrams_stop:")
+			  	console.log( data )
+			  	ngrams_stop = data
+			  	var sub_ngrams_data = {
+			  		"ngrams":[],
+			  		"scores": $.extend({}, ngrams_data.scores)
+			  	}
+			    for(var r in ngrams_data.ngrams) {
+			    	if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
+			    		sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+			    	}
+			    }
+	        },
+	        error: function(exception) { 
+	            console.log("second ajax, exception!: "+exception.status)
+	        }
+	    })
+	} else {
+		var sub_ngrams_data = {
+			"ngrams":[],
+			"scores": $.extend({}, ngrams_data.scores)
+		}
+		for(var r in ngrams_data.ngrams) {
+			if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
+				sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+			}
+		}
+	}
   }
 
 }
@@ -910,12 +945,31 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
+var StopList = {}
+function test_getlist( list_name ) {
+	// node/(?P<corpus_id>[0-9]+)/ngrams/list/(?P<list_name>\w+)
+	var corpus_id = getIDFromURL( "corpus" )
+	var someurl = window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/"+list_name;
+    $.ajax({
+        type: "GET",
+        url: someurl,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { 
+        	console.log( data )
+        	StopList = data
+        },
+        error: function(exception) { 
+            console.log("second ajax, exception!: "+exception.status)
+        }
+    })
+}
+
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 var corpus_id = getIDFromURL( "corpus" )
 var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
 	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
 	url3=window.location.href+"/ngrams.json";
-var ngrams_groups, ngrams_map, ngrams_data;
+var ngrams_groups = {}, ngrams_map = {}, ngrams_stop = {} , ngrams_data = {};
 $.when(
     $.ajax({
         type: "GET",

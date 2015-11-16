@@ -217,6 +217,21 @@ input[type=radio]:checked + label {
 </div> 
 
 
+<div id="filter_search" style="visibility:hidden">
+<select id="example-single-optgroups" onchange="SearchFilters(this);">
+    <!-- <optgroup label=""> -->
+        <option id="filter_all" value="filter_all">All</option>
+        <!-- <option id="filter_title" value="filter_title">Title</option> -->
+        <!-- <option id="filter_date" value="filter_date">Date</option> -->
+    <!-- </optgroup> -->
+    <!-- <optgroup label="Duplicates"> -->
+        <!-- <option value="filter_doi">By DOI</option> -->
+        <option id="filter_map-list" value="filter_map-list">Map-List</option>
+        <option id="filter_stop-list" value="filter_stop-list">Stop-List</option>
+    <!-- </optgroup> -->
+</select>
+
+</div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>

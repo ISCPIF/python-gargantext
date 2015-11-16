@@ -75,8 +75,29 @@ class NodeNgramsQueries(APIView):
         'century':  lambda d: (d + datetime.timedelta(days=36600)).replace(day=1, month=1),
     }
 
+    _operators = {
+        '=': lambda field, value: (field == value),
+        '!=': lambda field, value: (field != value),
+        '<': lambda field, value: (field < value),
+        '>': lambda field, value: (field > value),
+        '<=': lambda field, value: (field <= value),
+        '>=': lambda field, value: (field >= value),
+        'in': lambda field, value: (or_(*tuple(field == x for x in value))),
+        'contains': lambda field, value: (field.contains(value)),
+        'doesnotcontain': lambda field, value: (not_(field.contains(value))),
+        'startswith': lambda field, value: (field.startswith(value)),
+    }
+
+    _converters = {
+        'float': float,
+        'int': int,
+        'datetime': lambda x: x + '2000-01-01 00:00:00Z'[len(x):],
+        'text': str,
+        'str': str,
+    }
+
     def post(self, request, project_id):
-        
+
         # example only
         input = request.data or {
             'x': {
@@ -115,6 +136,12 @@ class NodeNgramsQueries(APIView):
             }},
             # filtering
             'filter': {'type': dict, 'default': {}, 'items': {
+                # filter by metadata
+                'hyperdata': {'type': list, 'default': [], 'items': {'type': dict, 'items': {
+                    'key': {'type': str, 'range': self._operators.keys()},
+                    'operator': {'type': str},
+                    'value': {'type': str},
+                }}},
                 # filter by date
                 'date': {'type': dict, 'items': {
                     'min': {'type': datetime.datetime},
@@ -170,6 +197,27 @@ class NodeNgramsQueries(APIView):
                 .join(Ngram, Ngram.id == Node_Ngram.ngram_id)
                 .filter(Ngram.terms.in_(input['filter']['ngrams']))
             )
+        # build query: filter by metadata
+        if 'hyperdata' in input['filter']:
+            for h, hyperdata in enumerate(input['filter']['hyperdata']):
+                # get hyperdata in database
+                hyperdata_model = (session
+                    .query(Hyperdata.id, Hyperdata.type)
+                    .filter(Hyperdata.name == hyperdata['key'])
+                ).first()
+                if hyperdata_model is None:
+                    continue
+                hyperdata_id, hyperdata_type = hyperdata_model
+                # create alias and query it
+                NH = aliased(Node_Hyperdata)
+                NH_column = getattr(NH, 'value_' + hyperdata_type)
+                operator = self._operators[hyperdata['operator']]
+                value = self._converters[hyperdata_type](hyperdata['value'])
+                query_result = (query_result
+                    .join(NH, NH.node_id == Node.id)
+                    .filter(NH.hyperdata_id == hyperdata_id)
+                    .filter(operator(NH_column, value))
+                )
         # build result: prepare data
         date_value_list = query_result.all()
         if date_value_list:
@@ -206,4 +254,3 @@ class NodeNgramsQueries(APIView):
             }, 201)
         elif input['format'] == 'csv':
             return CsvHttpResponse(sorted(result.items()), ('date', 'value'), 201)
-

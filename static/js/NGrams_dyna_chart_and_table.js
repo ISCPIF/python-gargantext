@@ -601,16 +601,24 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	} else callback(false);
 }
 
-function Main_test( data , initial) {
+function Main_test( data , initial , search_filter) {
 
+	console.log("")
+	console.log(" = = = = MAIN_TEST: = = = = ")
+	console.log("data:")
+	console.log(data)
+	console.log("initial:")
+	console.log(initial)
+	console.log("search_filter:")	
+	console.log(search_filter)
+	console.log(" = = = = / MAIN_TEST: = = = = ")
+	console.log("")
 
     var DistributionDict = {}
     for(var i in DistributionDict)
         delete DistributionDict[i];
     delete DistributionDict;
     DistributionDict = {}
-
-    AjaxRecords = []
 
     var FirstScore = initial;
 
@@ -632,8 +640,6 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
-    
-
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
@@ -642,7 +648,7 @@ function Main_test( data , initial) {
     div_stats += "</p>"
     $("#stats").html(div_stats)
 
-
+    AjaxRecords = []
     for(var i in data.ngrams) {
     
       var le_ngram = data.ngrams[i]
@@ -650,7 +656,6 @@ function Main_test( data , initial) {
       var orig_id = le_ngram.id
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
-
       var node_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
@@ -665,6 +670,8 @@ function Main_test( data , initial) {
       if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
       DistributionDict[node_info.score]++;
     }
+
+    console.log(FirstScore)
 
     // console.log("The Distribution!:")
     // console.log(Distribution)
@@ -697,10 +704,6 @@ function Main_test( data , initial) {
     var y_frecs = x_occs.group().reduceSum(function (d) {
         return d.y_frec;
     });
-
-    console.log("scores: [ "+min_occ+" , "+max_occ+" ] ")
-    console.log("frecs: [ "+min_frec+" , "+max_frec+" ] ")
-
 
     LineChart
       .width(800)
@@ -770,8 +773,8 @@ function Main_test( data , initial) {
                 });
             })
             .xAxis()
-      volumeChart.yAxis().ticks(5)
-      volumeChart.render()
+    volumeChart.yAxis().ticks(5)
+    volumeChart.render()
 
     LineChart.filterAll();
     volumeChart.filterAll();
@@ -835,7 +838,56 @@ function Main_test( data , initial) {
     $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
 
 
+	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+	$("#"+search_filter).attr( "selected" , "selected" )
+	var the_content = $("#filter_search").html();
+	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
+}
+
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+  	console.clear()
+    var result = Main_test( ngrams_data , ngrams_data.scores.initial , MODE)
+    console.log( result )
+
+	MyTable.data('dynatable').sorts.clear();
+	MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+	MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_map-list") {
+  	console.clear()
+  	console.log("ngrams_map:")
+  	console.log(ngrams_map)
+
+  	var sub_ngrams_data = {
+  		"ngrams":[],
+  		"scores": $.extend({}, ngrams_data.scores)
+  	}
+    for(var r in ngrams_data.ngrams) {
+    	if ( ngrams_map[ngrams_data.ngrams[r].id] ) {
+    		sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+    	}
+    }
+
+    var result = Main_test(sub_ngrams_data , ngrams_data.scores.initial , MODE)
+    console.log( result )
+    // MyTable.data('dynatable').sorts.clear();
+    // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    // MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_stop-list") {
+  	console.clear()
+  	console.log("ngrams_stop:")
+  	console.log( {} )
+  }
+
 }
 
 function getIDFromURL( item ) {
@@ -929,7 +981,8 @@ $.when(
       }
     }
     // Initializing the Charts and Table
-    var result = Main_test( ngrams_data , FirstScore )
+    console.log( ngrams_data )
+    var result = Main_test( ngrams_data , FirstScore , "filter_all")
     console.log( result )
 
     // Listener for onchange Score-Selector
@@ -937,8 +990,9 @@ $.when(
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( ngrams_data , this.value )
+      var result = Main_test( ngrams_data , this.value , "filter_all")
       console.log( result )
+
     });
 
 

@@ -14,7 +14,7 @@ def do_cooc(corpus=None
          , field1='ngrams', field2='ngrams'
          , miam_id=None, stop_id=None, group_id=None
          , cvalue_id=None
-         , n_min=2, n_max=None
+         , n_min=1, n_max=None
          , start=None, end=None
          , limit=1000
          , isMonopartite=True
@@ -61,7 +61,6 @@ def do_cooc(corpus=None
     session.add(node_cooc)
     session.commit()
     # END
-
 
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
     session.commit()

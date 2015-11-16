@@ -104,8 +104,11 @@ class Ngrams(APIView):
             .join(Node, Node.id == Node_Ngram.node_id)
         )
 
+        the_score = "tfidf"
+        if request.GET.get('score', False) != False:
+            the_score = request.GET['score']
         # get the scores
-        if 'tfidf' in request.GET['score']:
+        if 'tfidf' in the_score:
             Tfidf = aliased(NodeNodeNgram)
             tfidf_id = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Tfidf.score.label('tfidf'))
@@ -115,7 +118,7 @@ class Ngrams(APIView):
             group_by.append(Tfidf.score)
             results.append('tfidf')
 
-        if 'cvalue' in request.GET['score']:
+        if 'cvalue' in the_score:
             Cvalue = aliased(NodeNodeNgram)
             cvalue_id = get_or_create_node(nodetype='Cvalue', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Cvalue.score.label('cvalue'))
@@ -125,7 +128,7 @@ class Ngrams(APIView):
             group_by.append(Cvalue.score)
             results.append('cvalue')
 
-        if 'specificity' in request.GET['score']:
+        if 'specificity' in the_score:
             Spec = aliased(NodeNodeNgram)
             spec_id = get_or_create_node(nodetype='Specificity', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Spec.score.label('specificity'))

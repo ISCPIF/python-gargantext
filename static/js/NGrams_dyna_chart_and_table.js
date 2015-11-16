@@ -900,19 +900,19 @@ function SearchFilters( elem ) {
 	        url: someurl,
 	        dataType: "json",
 	        success : function(data, textStatus, jqXHR) { 
-			  	console.clear()
-			  	console.log("ngrams_stop:")
-			  	console.log( data )
-			  	ngrams_stop = data
-			  	var sub_ngrams_data = {
-			  		"ngrams":[],
-			  		"scores": $.extend({}, ngrams_data.scores)
-			  	}
-			    for(var r in ngrams_data.ngrams) {
-			    	if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
-			    		sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
-			    	}
-			    }
+				console.clear()
+				console.log("ngrams_stop:")
+				console.log( data )
+				ngrams_stop = data
+				var sub_ngrams_data = {
+					"ngrams":[],
+					"scores": $.extend({}, ngrams_data.scores)
+				}
+				for(var r in ngrams_data.ngrams) {
+					if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
+						sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+					}
+				}
 	        },
 	        error: function(exception) { 
 	            console.log("second ajax, exception!: "+exception.status)

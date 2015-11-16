@@ -22,9 +22,9 @@ def ngram_workflow(corpus, n=5000):
     
     part = round(n * 0.9)
 
-    compute_cvalue(corpus,limit=1000) # size
+#    compute_cvalue(corpus,limit=1000) # size
     
-    part = round(part * 0.8)
+#    part = round(part * 0.8)
     #print('spec part:', part)
 
     compute_specificity(corpus,limit=part)

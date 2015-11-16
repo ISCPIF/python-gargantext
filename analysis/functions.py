@@ -118,6 +118,7 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
     for n in nodes_too_connected:
         n_edges = list()
         for v in nx.neighbors(G,n):
+            #print((n, v), G[n][v]['weight'], ":", (v,n), G[v][n]['weight'])
             n_edges.append(((n, v), G[n][v]['weight']))
 
         n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)

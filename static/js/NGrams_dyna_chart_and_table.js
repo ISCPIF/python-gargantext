@@ -680,7 +680,7 @@ function Main_test( data , initial , search_filter) {
     for(var i in DistributionDict) {
       var info = {
         "x_occ":Number(i),
-        "y_frec":DistributionDict[i]
+        "y_frec": Math.round(((Math.log( DistributionDict[i] ) + 1)))
       }
       DistributionList.push(info)
       if(info.x_occ > max_occ) max_occ = info.x_occ
@@ -689,6 +689,14 @@ function Main_test( data , initial , search_filter) {
       if(info.y_frec < min_frec) min_frec = info.y_frec
     }
 
+ //    console.clear()
+	// for(var i in DistributionList) {
+	// 	// DistributionList[i].x_occ = Math.log( DistributionList[i].x_occ )
+	// 	// DistributionList[i].y_frec = Math.log( DistributionList[i].y_frec )+1
+	// 	console.log( DistributionList[i] )
+	// }
+
+	// return;
     oldest = Number(min_occ);
     latest = Number(max_occ);
 

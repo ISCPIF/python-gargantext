@@ -77,7 +77,8 @@ def logo(request):
     if group == "cnrs":
         color = "#093558"
     else:
-        color = "#ff8080"
+        # color of the css adapted to the logo
+        color = "#AE5C5C"
     svg_data = template.render(Context({\
             'color': color,\
             }))

@@ -29,6 +29,7 @@ import json
 # SOME FUNCTIONS
 
 from gargantext_web import settings
+from gargantext_web.settings import DEBUG
 
 from django.http import *
 from django.shortcuts import render_to_response,redirect
@@ -43,8 +44,9 @@ from gargantext_web.db import *
 from sqlalchemy import or_, func
 
 from gargantext_web import about
+from gargantext_web.celery import empty_trash
 
-from gargantext_web.db import NodeNgram, NodeNgramNgram
+from gargantext_web.db import cache, NodeNgram, NodeNgramNgram
 
 def login_user(request):
     logout(request)
@@ -162,13 +164,14 @@ def get_about(request):
     date        = datetime.datetime.now()
 
     members     = about.get_team()
-    sponsors    = about.get_sponsors()
+    sponsors,grants    = about.get_partners()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
             'sponsors':sponsors,\
+            'grants': grants,\
             }))
 
     return HttpResponse(html)
@@ -252,7 +255,7 @@ def projects(request):
         })
 
 
-def update_nodes(request, project_id, corpus_id, view):
+def update_nodes(request, project_id, corpus_id, view=None):
     '''
     update function:
         - remove previous computations (temporary lists and coocurrences)
@@ -265,7 +268,8 @@ def update_nodes(request, project_id, corpus_id, view):
     try:
         offset = int(project_id)
         offset = int(corpus_id)
-        offset = str(view)
+        if view is not None:
+            offset = str(view)
     except ValueError:
         raise Http404()
 
@@ -307,7 +311,10 @@ def update_nodes(request, project_id, corpus_id, view):
 
 
     #return redirect(request.path.replace('update', ''))
-    return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
+    if view is None:
+        return redirect('/project/%s/corpus/%s/' % (project_id, corpus_id))
+    else:
+        return redirect('/project/%s/corpus/%s/%s' % (project_id, corpus_id, view))
 #
 #    return render_to_response(
 #            request.path,
@@ -315,7 +322,6 @@ def update_nodes(request, project_id, corpus_id, view):
 #            context_instance=RequestContext(request)
 #        )
 #
-
 
 def corpus(request, project_id, corpus_id):
     if not request.user.is_authenticated():
@@ -358,7 +364,6 @@ def corpus(request, project_id, corpus_id):
 
     return HttpResponse(html)
 
-
 def newpaginatorJSON(request , corpus_id):
 
     results = ["hola" , "mundo"]
@@ -385,13 +390,18 @@ def newpaginatorJSON(request , corpus_id):
     for doc in documents:
         if "publication_date" in doc.hyperdata:
             try:
-                realdate = doc.hyperdata["publication_date"].split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
+                realdate = doc.hyperdata["publication_date"].replace('T',' ').split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)
                 realdate = datetime.datetime.strptime(str(realdate), '%Y-%m-%d').date() # finalform = (yearmonthday = 20150106 = 06 jan 2015)
                 # doc.date = realdate
                 resdict = {}
                 resdict["id"] = doc.id
                 resdict["date"] = realdate
-                resdict["name"] =  doc.name
+                resdict["name"] =  ""
+                if doc.name and doc.name!="":
+                    resdict["name"] = doc.name
+                else:
+                    resdict["name"] = doc.hyperdata["doi"]
+
                 filtered_docs.append( resdict )
             except Exception as e:
                 print ("pag2 error01 detail:",e)
@@ -409,18 +419,6 @@ def newpaginatorJSON(request , corpus_id):
     return JsonHttpResponse(finaldict)
 
 
-def empty_trash():
-    nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()
-    with transaction.atomic():
-        for node in nodes:
-            try:
-                node.children.delete()
-            except Exception as error:
-                print(error)
-
-            node.delete()
-
-
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -430,11 +428,16 @@ def move_to_trash(node_id):
 
         session.add(node)
         session.commit()
-        return(previous_type_id)
+        
+        if DEBUG is False :
+            # TODO for the future maybe add id of node
+            empty_trash.apply_async([1,])
+        else:
+            empty_trash("corpus_id")
+
+        #return(previous_type_id)
     except Exception as error:
-        print("can not move to trash Node" + node_id + ":" + error)
-
-
+        print("can not move to trash Node" + str(node_id) + ":" + str(error))
 
 def move_to_trash_multiple(request):
     user = request.user
@@ -458,8 +461,6 @@ def move_to_trash_multiple(request):
 
     return JsonHttpResponse(results)
 
-
-
 def delete_node(request, node_id):
 
     # do we have a valid user?
@@ -471,17 +472,14 @@ def delete_node(request, node_id):
     if node.user_id != user.id:
         return HttpResponseForbidden()
 
-    previous_type_id = move_to_trash(node_id)
+    previous_type_id = node.type_id
+    node_parent_id   = node.parent_id
+    move_to_trash(node_id)
 
     if previous_type_id == cache.NodeType['Corpus'].id:
-        return HttpResponseRedirect('/project/' + str(node.parent_id))
+        return HttpResponseRedirect('/project/' + str(node_parent_id))
     else:
         return HttpResponseRedirect('/projects/')
-
-
-    if settings.DEBUG == True:
-        empty_trash()
-
 
 
 def delete_corpus(request, project_id, node_id):
@@ -520,6 +518,24 @@ def chart(request, project_id, corpus_id):
     }))
     return HttpResponse(html)
 
+def sankey(request, corpus_id):
+    t = get_template('sankey.html')
+    user = request.user
+    date = datetime.datetime.now()
+
+    corpus =  session.query(Node).filter(Node.id==corpus_id).first()
+
+    html = t.render(Context({\
+            'debug': settings.DEBUG,
+            'user'      : user,\
+            'date'      : date,\
+            'corpus'    : corpus,\
+            }))
+
+    return HttpResponse(html)
+
+
+
 def matrix(request, project_id, corpus_id):
     t = get_template('matrix.html')
     user = request.user
@@ -538,7 +554,7 @@ def matrix(request, project_id, corpus_id):
 
     return HttpResponse(html)
 
-def graph(request, project_id, corpus_id):
+def graph(request, project_id, corpus_id, generic=100, specific=100):
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -551,31 +567,14 @@ def graph(request, project_id, corpus_id):
     project_type_id = cache.NodeType['Project'].id
     corpus_type_id = cache.NodeType['Corpus'].id
 
-    results = {}
-    projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id).all()
-    for i in projs:
-        # print(i.id , i.name)
-        if i.id not in results: results[i.id] = {}
-        results[i.id]["proj_name"] = i.name
-        results[i.id]["corpuses"] = []
-        corpuses = session.query(Node).filter(Node.parent_id==i.id , Node.type_id==corpus_type_id).all()
-        for j in corpuses:
-            if int(j.id)!=int(corpus_id):
-                info = { "id":j.id , "name":j.name }
-                results[i.id]["corpuses"].append(info)
-                # print("\t",j.id , j.name)
-
-    # import pprint
-    # pprint.pprint(results)
-
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
+
     html = t.render(Context({\
             'debug': settings.DEBUG,
             'user'      : user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\
-            'corpusinfo'   : results,\
             'graphfile' : graphurl,\
             }))
 
@@ -683,7 +682,7 @@ def send_csv(request, corpus_id):
     return response
 
 # To get the data
-from gargantext_web.api import JsonHttpResponse
+from rest_v1_0.api import JsonHttpResponse,CsvHttpResponse
 from analysis.functions import get_cooc
 def node_link(request, corpus_id):
     '''
@@ -691,23 +690,35 @@ def node_link(request, corpus_id):
     '''
 
     data = []
-
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
-#    filename = settings.MEDIA_ROOT + '/corpora/%s/%s_%s.json' % (request.user , corpus.parent_id, corpus_id)
-#    print("file exists?:",os.path.isfile(filename))
-#    if os.path.isfile(filename):
-#        json_data = open(filename,"r")
-#        data = json.load(json_data)
-#        json_data.close()
-#    else:
-    data = get_cooc(request=request, corpus_id=corpus_id, type="node_link")
+    data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
+
+
+def sankey_csv(request, corpus_id):
+    data = []
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    data = [
+            ["source", "target", "value"]
+            , ["Comment_1", "Theme_1", 1]
+            
+            , ["Comment_2", "Theme_2", 2]
+            , ["Comment_3", "Theme_2", 2]
+            , ["Comment_7", "Theme_1", 2]
+            , ["Comment_8", "Theme_3", 2]
+            
+            , ["Theme_1", "Reco_par_1", 2]
+            , ["Theme_2", "Reco_par_2", 2]
+            , ["Theme_2", "Reco_par_5", 2]
+            , ["Theme_3", "Reco_par_5", 1]
+            ]
+    return(CsvHttpResponse(data))
 
 def adjacency(request, corpus_id):
     '''
     Create the HttpResponse object with the adjacency dataset.
     '''
-    data = get_cooc(request=request, corpus_id=corpus_id, type="adjacency")
+    data = get_cooc(request=request, corpus=corpus, type="adjacency")
     return JsonHttpResponse(data)
 
 def graph_it(request):

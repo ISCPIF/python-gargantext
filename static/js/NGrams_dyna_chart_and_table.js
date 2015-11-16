@@ -24,32 +24,65 @@ var latest,oldest;
 
 var TheBuffer = false
 
-var PossibleActions = []
+var PossibleActions = [
+	{
+	  "id":"delete",
+	  "name": "Delete",
+	  "color":"red"
+	}, 
+	{
+	  "id":"keep",
+	  "name": "Keep",
+	  "color":"green"
+	}, 
+	// {
+	//   "id":"to_group",
+	//   "name": "Group",
+	//   "color":"blue"
+	// }
+]
 
-var action1 = {
-  "id":"to_delete",
-  "name": "Delete",
-  "color":"red"
-}
-var action2 = {
-  "id":"to_keep",
-  "name": "Keep",
-  "color":"green"
+var GState = 0
+var System = {
+	// 1: {
+	// },
+	0: {
+		"states" : [ "normal" , "keep" , "delete" , "group"] ,
+		"statesD" : {} ,
+		"dict" : {
+			"normal": {
+			  "id":"normal",
+			  "name": "Normal",
+			  "color":"black"
+			}, 
+			"delete": {
+			  "id":"delete",
+			  "name": "Delete",
+			  "color":"red"
+			}, 
+			"keep": {
+			  "id":"keep",
+			  "name": "Keep",
+			  "color":"green"
+			}, 
+			"group": {
+			  "id":"group",
+			  "name": "MainForm",
+			  "color":"white"
+			}
+		}
+	}
+	
 }
 
-var action3 = {
-  "id":"to_group",
-  "name": "Group",
-  "color":"blue"
+for(var i in System[GState]["states"] ) {
+	System[GState]["statesD"][ System[GState]["states"][i] ] = Number(i)
 }
 
-PossibleActions.push(action1)
-PossibleActions.push(action2)
-PossibleActions.push(action3)
 
 var FlagsBuffer = {}
-for(var i in PossibleActions) {
-  FlagsBuffer[PossibleActions[i].id] = {}
+for(var i in System[GState]["states"]) {
+  FlagsBuffer[System[GState]["states"][i]] = {}
 }
 
 
@@ -155,37 +188,6 @@ function Final_UpdateTable( action ) {
     MyTable.data('dynatable').process();
 }
 
-//          STEP 01:
-//      Get all the duplicates using the Django-Garg API
-var current_docs = {}
-var BIS_dict = {}
-
-var url_elems = window.location.href.split("/")
-var url_mainIDs = {}
-for(var i=0; i<url_elems.length; i++) {
-  // if the this element is a number:
-  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
-    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
-  }
-}
-var theurl = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
-// $.ajax({
-//   url: theurl,
-//   success: function(data) {
-//     bisarray = data.data
-//     for(var i in bisarray) {
-//         untitlebis = bisarray[i].values
-//         BIS_dict[untitlebis[0]] = [bisarray[i].count , 0];// [ total amount , removed ]
-//     }
-//     pr(BIS_dict)
-//     if(Object.keys(BIS_dict).length>0) $("#delAll").css("visibility", "visible"); $("#delAll").show();
-//   }
-// });
-
-
-
-
-
 function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
   // return AjaxRecords[rec_id]
@@ -195,27 +197,155 @@ function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
-function transformContent2(rec_id) {
-  // pr("\t\ttransformContent2: "+rec_id)
-  var elem = AjaxRecords[rec_id];
-  var result = {}
-  // console.log("\t\t\telement flag : "+elem["flag"])
-  if (elem["flag"]) {
-
-    result["id"] = elem["id"]
-    result["score"] = '<div class="'+elem["flag"]+'"><i>'+elem["score"]+'</div>'
-    result["name"] = '<div class="'+elem["flag"]+'"><i>'+elem["name"]+'</div>'
-    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
-  } else {
-    result["id"] = elem["id"]
-    result["score"] = elem["score"]
-    result["name"] = elem["name"]
-    result["flag"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
-  }
-
-  return result;
+function save_groups() {
+	var groupdiv = "#group_box"
+	var gcontent = groupdiv+"_content"
+	var count = 0
+	var mainform = -1
+	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
+		$(gcontent).children('span').each(function () {
+			var nid = $(this).data("id");
+			if (count==0) {
+				if(writeflag) {
+					// AjaxRecords[RecDict[nid]].name += "*" 
+					FlagsBuffer["group"][ nid ] = []
+					mainform = nid
+		    		AjaxRecords[RecDict[nid]].state = 1
+		    	} else {
+		    		AjaxRecords[RecDict[nid]].state = 0;
+		    	}
+		    } else {
+				if(writeflag) {
+					FlagsBuffer["group"][ mainform ].push( nid )
+		    		AjaxRecords[RecDict[nid]].state = -1
+				}
+		    }
+		    count++
+		});
+	$("#group_box").remove()
+	GState=0
+	MyTable.data('dynatable').dom.update();
 }
 
+function cancel_groups() {
+	var groupdiv = "#group_box"
+	var gcontent = groupdiv+"_content"
+	$(gcontent).children('span').each(function () {
+	    var nid = $(this).data("id");
+	    AjaxRecords[RecDict[nid]].state = 0
+	});
+	$("#group_box").remove()
+	GState=0
+	MyTable.data('dynatable').dom.update();
+}
+
+function add2groupdiv( elem_id ) {
+	$('<span/>', {
+		"data-id":AjaxRecords[elem_id].id,
+		"data-stuff": elem_id,
+	    title: 'Click to remove',
+	    text: AjaxRecords[elem_id].name,
+	    css: {
+	    	"cursor":"pointer",
+	    	"border": "1px solid blue",
+	    	"margin": "3px",
+	    	"padding": "3px",
+	    }
+	})
+	.click(function() {
+    	AjaxRecords[$(this).data("stuff")].state=0;
+    	$(this).remove()
+    	// if nothing in group div, then remove it
+    	if( $("#group_box_content").children().length==0 ) {
+    		$("#group_box").remove()
+    		GState=0
+    	}
+    	MyTable.data('dynatable').dom.update();
+	})
+	.appendTo('#group_box_content')
+	AjaxRecords[elem_id].state=3;// 3: "group" state
+}
+// new
+function add2group ( elem ) {
+
+	if( $("#group_box").length==0 ) {
+		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
+		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
+		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
+			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
+			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
+			group_html += '      </span>'+'\n';
+			$(group_html).insertAfter( "#my-ajax-table > thead" )
+			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
+	}
+	GState=1
+
+	var elem_id = $( elem ).data("stuff")
+	add2groupdiv( elem_id )
+	if( FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
+		for(var i in FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
+			var nodeid = FlagsBuffer["group"][ AjaxRecords[elem_id].id ][i]
+			add2groupdiv ( RecDict[ nodeid ] )
+		}
+	}
+
+	delete FlagsBuffer["group"][ AjaxRecords[elem_id].id ]
+
+	MyTable.data('dynatable').dom.update();
+}
+
+// new
+// click red, click keep, click normal...
+function clickngram_action ( elem ) {
+	var elem_id = $( elem ).data("stuff")
+	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
+
+	MyTable.data('dynatable').dom.update();
+}
+
+// function YOLO() {
+
+//   var sum__selected_elems = 0;
+
+//   for(var i in FlagsBuffer["group"])
+//   	sum__selected_elems += Object.keys( FlagsBuffer["group"][i] ).length
+//   for(var i in FlagsBuffer)
+//     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
+
+//   console.log("")
+//   console.log("Current Buffer size: "+sum__selected_elems)
+//   console.log(FlagsBuffer)
+
+//   if ( sum__selected_elems>0 )
+//     $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
+//   else 
+//     $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+// }
+
+
+// modified
+function transformContent(rec_id) {
+	var elem = AjaxRecords[rec_id];
+	var result = {}
+	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
+	var plus_event = ""
+	if(GState==0 && elem.state!=System[0]["statesD"]["delete"] ) // if deleted, no + button
+		plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(+)</a>"
+	if(GState==1 ) {
+		if(elem.state!=System[0]["statesD"]["delete"] && elem.state!=System[0]["statesD"]["group"]) { // if deleted and already group, no Up button
+			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
+		}
+	}
+	result["id"] = elem["id"]
+	result["score"] = '<span class="'+atts.id+'">'+elem["score"]+'</span>'
+	result["name"] = "<span class=\""+atts.id+
+					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+elem["name"]+"</span>"+
+					 plus_event
+	return result;
+}
+
+// to delete
+// Affecting the tr element somehow
 function overRide(elem) {
   var id = elem.id
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
@@ -223,15 +353,10 @@ function overRide(elem) {
 
   console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
   console.log("\t so the new flag is: "+this_newflag)
-  
-
   // if(this_newflag)
   //   FlagsBuffer[this_newflag][id] = true;
   // else 
   //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-
-
-
   AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
 
   var sum__selected_elems = 0;
@@ -249,14 +374,6 @@ function overRide(elem) {
 
   MyTable.data('dynatable').dom.update();
 
-}
-
-function transformContent(rec_id , header , content) {
-  if(header=="flag") {
-    // pr("\t\ttransformContent1: "+rec_id)
-    if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
-    if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
-  } else return content;
 }
 
 // Here you have to put the weird case of Change from Group-Mode
@@ -304,28 +421,18 @@ function Mark_NGram( ngram_id , old_flag , new_flag ) {
   return new_flag;
 }
 
-function GroupNGrams() {
-    for (var i in FlagsBuffer["to_group"]){
-      console.log( AjaxRecords[i] )
-    }  
-}
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
-  // pr("\tulWriter: "+record.id)
   var tr = '';
   var cp_rec = {}
-  if(!MyTable) {
-    for(var i in record) {
-      cp_rec[i] = transformContent(RecDict[record.id], i , record[i])
-    }
-  } else {
-    // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
-    cp_rec = transformContent2(RecDict[record.id])
-  }
+
+  if( AjaxRecords[RecDict[record.id]].state < 0 )
+  	return false;
+
+  cp_rec = transformContent(RecDict[record.id])
+  
   // grab the record's attribute for each column
-  // console.log("\tin ulWriter:")
-  // console.log(record)
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }
@@ -334,6 +441,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 function SelectAll( the_checkbox ) {
+  console.log(the_checkbox)
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
@@ -356,81 +464,161 @@ function SelectAll( the_checkbox ) {
 
 $("#Clean_All").click(function(){
 
-  for(var id in AjaxRecords)
-    AjaxRecords[id]["flag"] = false;
+	for(var id in AjaxRecords)
+		AjaxRecords[id]["state"] = 0;
 
-  MyTable.data('dynatable').dom.update();
+	$("#group_box").remove()
+	GState=0
 
-  for(var i in FlagsBuffer)
-    for(var j in FlagsBuffer[i])
-      delete FlagsBuffer[i][j];
+	MyTable.data('dynatable').dom.update();
 
-  $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+	for(var i in FlagsBuffer)
+		for(var j in FlagsBuffer[i])
+			delete FlagsBuffer[i][j];
+  // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 
 });
 
 $("#Save_All").click(function(){
-  console.log("click in save all 01")
-  var sum__selected_elems = 0;
-  var poubelle = []
-  for(var i in FlagsBuffer) {
-    if (Object.keys(FlagsBuffer[i]).length==0) 
-      poubelle.push(i)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-  }
-  console.log("click in save all 02")
-  for(var i in poubelle)
-    delete FlagsBuffer[poubelle[i]];
-  console.log("click in save all 03, sum:"+sum__selected_elems)
-  if ( sum__selected_elems>0 ) {
-    console.log("")
-    console.log("Do the ajax conexion with API and send this array to be processed:")
-    for(var i in FlagsBuffer) {
-      var real_ids = []
-      for (var j in FlagsBuffer[i])
-        real_ids.push( AjaxRecords[j].id );
+	console.clear()
+	console.log("click in save all 01")
+	var sum__selected_elems = 0;
 
-      FlagsBuffer[i] = real_ids
-    
-    }
-    console.log(FlagsBuffer)
-    var list_id = $("#list_id").val()
-    // '/annotations/lists/'+list_id+'/ngrams/108642'
+	FlagsBuffer["delete"] = {}
+	FlagsBuffer["keep"] = {}
+	FlagsBuffer["outmap"] = {}
+	FlagsBuffer["inmap"] = {}
 
-    console.log(window.location.origin+'/annotations/lists/'+list_id+"/multiple")
-    console.log(real_ids)
-      $.ajax({
-        method: "POST",
-        url: window.location.origin+'/annotations/lists/'+list_id+"/multiple",
-        data: "to_delete="+JSON.stringify(real_ids),
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-        },
-        success: function(data){
-              console.log(data)
-        },
-        error: function(result) {
-            console.log("Data not found in #Save_All");
-            console.log(result)
-        }
-      });
-    // console.log("")
-  }
+	for(var id in AjaxRecords) {
+		if( ngrams_map[ AjaxRecords[id]["id"] ] ) {
+			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
+				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
+				if(AjaxRecords[id]["state"]==2) {
+					FlagsBuffer["delete"][AjaxRecords[id].id] = true
+				}
+			}
+			if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==1)  {
+				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+			}
+		} else {		
+			if(AjaxRecords[id]["state"]==1) {
+				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+			}
+			if(AjaxRecords[id]["state"]==2) {
+				FlagsBuffer["delete"][AjaxRecords[id].id] = true
+			}
+		}
+	}
+	// [ = = = = For deleting subforms = = = = ]
+	for(var i in ngrams_groups.links) {
+		if(FlagsBuffer["delete"][i]) {
+			for(var j in ngrams_groups.links[i] ) {
+				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
+			}
+			for(var j in FlagsBuffer["delete"][i] ) {
+				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
+			}
+		}
+		if(FlagsBuffer["inmap"][i]) {
+			for(var j in FlagsBuffer["group"][i] ) {
+				FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
+			}
+		}
+	}
+	// [ = = = = / For deleting subforms = = = = ]
+
+	// console.log(" = = = = = = = = = == ")
+	// console.log("FlagsBuffer:")
+	// console.log(FlagsBuffer)
+
+
+	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
+	var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
+	var nodes_2group = $.extend({}, FlagsBuffer["group"])
+	var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
+	var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
+
+	// console.log("")
+	// console.log("")
+	// console.log(" nodes_2del: ")
+	// console.log(nodes_2del)
+	// console.log(" nodes_2keep: ")
+	// console.log(nodes_2keep)
+	// console.log(" nodes_2group: ")
+	// console.log(nodes_2group)
+	// console.log(" nodes_2inmap: ")
+	// console.log(nodes_2inmap)
+	// console.log(" nodes_2outmap: ")
+	// console.log(nodes_2outmap)
+	// console.log("")
+	// console.log("")
+
+	var list_id = $("#list_id").val()
+	var corpus_id = getIDFromURL( "corpus" ) // not used
+
+
+	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
+	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" , function(result) {
+		console.log(" UN ELEFANTE "+result)
+		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" , function(result) {
+			console.log(" DOS ELEFANTES "+result)
+			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" , function(result) {
+				console.log(" TRES ELEFANTES "+result)
+				CRUD( list_id , "" , nodes_2del , [] , "DELETE", function(result) {
+					console.log(" CUATRO ELEFANTES "+result)
+					window.location.reload()
+				});
+			});
+		});
+	});
 
 });
 
+function CRUD( parent_id , action , nodes , args , http_method , callback) {
+	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
+	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+	if(nodes.length>0 || Object.keys(args).length>0) {
+		$.ajax({
+		  method: http_method,
+		  url: the_url,
+		  data: args,
+		  beforeSend: function(xhr) {
+		    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		  },
+		  success: function(data){
+		  		console.log(http_method + " ok!!")
+		        console.log(nodes)
+		        console.log(data)
+		        callback(true);
+		  },
+		  error: function(result) {
+		      console.log("Data not found in #Save_All");
+		      console.log(result)
+		      callback(false);
+		  }
+		});
 
+	} else callback(false);
+}
 
-function Main_test( data , initial) {
+function Main_test( data , initial , search_filter) {
 
+	console.log("")
+	console.log(" = = = = MAIN_TEST: = = = = ")
+	console.log("data:")
+	console.log(data)
+	console.log("initial:")
+	console.log(initial)
+	console.log("search_filter:")	
+	console.log(search_filter)
+	console.log(" = = = = / MAIN_TEST: = = = = ")
+	console.log("")
 
     var DistributionDict = {}
     for(var i in DistributionDict)
         delete DistributionDict[i];
     delete DistributionDict;
     DistributionDict = {}
-
-    AjaxRecords = []
 
     var FirstScore = initial;
 
@@ -442,7 +630,7 @@ function Main_test( data , initial) {
     var div_table = '<p align="right">'+"\n"
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
-      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n"
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
       div_table += "\t"+'</thead>'+"\n"
@@ -452,7 +640,6 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
-
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
@@ -461,7 +648,7 @@ function Main_test( data , initial) {
     div_stats += "</p>"
     $("#stats").html(div_stats)
 
-
+    AjaxRecords = []
     for(var i in data.ngrams) {
     
       var le_ngram = data.ngrams[i]
@@ -469,18 +656,22 @@ function Main_test( data , initial) {
       var orig_id = le_ngram.id
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
-
       var node_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
         "score": le_ngram.scores[FirstScore],//le_ngram.scores.tfidf_sum / le_ngram.scores.occ_uniq,
-        "flag":false
+        "flag":false,
+        "group_plus": true,
+        "group_blocked": false,
+        "state": (le_ngram.map)?1:0
       }
       AjaxRecords.push(node_info)
 
       if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
       DistributionDict[node_info.score]++;
     }
+
+    console.log(FirstScore)
 
     // console.log("The Distribution!:")
     // console.log(Distribution)
@@ -489,7 +680,7 @@ function Main_test( data , initial) {
     for(var i in DistributionDict) {
       var info = {
         "x_occ":Number(i),
-        "y_frec":DistributionDict[i]
+        "y_frec": Math.round(((Math.log( DistributionDict[i] ) + 1)))
       }
       DistributionList.push(info)
       if(info.x_occ > max_occ) max_occ = info.x_occ
@@ -498,6 +689,14 @@ function Main_test( data , initial) {
       if(info.y_frec < min_frec) min_frec = info.y_frec
     }
 
+ //    console.clear()
+	// for(var i in DistributionList) {
+	// 	// DistributionList[i].x_occ = Math.log( DistributionList[i].x_occ )
+	// 	// DistributionList[i].y_frec = Math.log( DistributionList[i].y_frec )+1
+	// 	console.log( DistributionList[i] )
+	// }
+
+	// return;
     oldest = Number(min_occ);
     latest = Number(max_occ);
 
@@ -513,10 +712,6 @@ function Main_test( data , initial) {
     var y_frecs = x_occs.group().reduceSum(function (d) {
         return d.y_frec;
     });
-
-    console.log("scores: [ "+min_occ+" , "+max_occ+" ] ")
-    console.log("frecs: [ "+min_frec+" , "+max_frec+" ] ")
-
 
     LineChart
       .width(800)
@@ -586,8 +781,8 @@ function Main_test( data , initial) {
                 });
             })
             .xAxis()
-      volumeChart.yAxis().ticks(5)
-      volumeChart.render()
+    volumeChart.yAxis().ticks(5)
+    volumeChart.render()
 
     LineChart.filterAll();
     volumeChart.filterAll();
@@ -607,16 +802,16 @@ function Main_test( data , initial) {
                   // _cellWriter: customCellWriter
                 }
               })
-              .bind("dynatable:afterUpdate",  function(e, rows) {
-                $(e.target).children("tbody").children().each(function(i) {
-                   $(this).click(function(){
-                     var row_nodeid = $(this).data('stuff')
-                     var elem = { "id":row_nodeid , "checked":false }
-                     overRide(elem); //Select one row -> select one ngram
+              // .bind("dynatable:afterUpdate",  function(e, rows) {
+              //   $(e.target).children("tbody").children().each(function(i) {
+              //      $(this).click(function(){
+              //        var row_nodeid = $(this).data('stuff')
+              //        var elem = { "id":row_nodeid , "checked":false }
+              //        overRide(elem); //Select one row -> select one ngram
 
-                    });
-                });
-              });
+              //       });
+              //   });
+              // });
 
     // MyTable.data('dynatable').settings.dataset.records = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
@@ -651,17 +846,141 @@ function Main_test( data , initial) {
     $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
 
 
+	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+	$("#"+search_filter).attr( "selected" , "selected" )
+	var the_content = $("#filter_search").html();
+	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
 }
 
-console.log(window.location.href+"/ngrams.json")
-$.ajax({
-  url: window.location.href+"/ngrams.json",
-  success: function(data){
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+  	console.clear()
+    var result = Main_test( ngrams_data , ngrams_data.scores.initial , MODE)
+    console.log( result )
+
+	MyTable.data('dynatable').sorts.clear();
+	MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+	MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_map-list") {
+  	console.clear()
+  	console.log("ngrams_map:")
+  	console.log(ngrams_map)
+
+  	var sub_ngrams_data = {
+  		"ngrams":[],
+  		"scores": $.extend({}, ngrams_data.scores)
+  	}
+    for(var r in ngrams_data.ngrams) {
+    	if ( ngrams_map[ngrams_data.ngrams[r].id] ) {
+    		sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+    	}
+    }
+
+    var result = Main_test(sub_ngrams_data , ngrams_data.scores.initial , MODE)
+    console.log( result )
+    // MyTable.data('dynatable').sorts.clear();
+    // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    // MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_stop-list") {
+  	console.clear()
+  	console.log("ngrams_stop:")
+  	console.log( {} )
+  }
+
+}
+
+function getIDFromURL( item ) {
+	var pageurl = window.location.href.split("/")
+	var cid;
+	for(var i in pageurl) {
+	    if(pageurl[i]==item) {
+	        cid=parseInt(i);
+	        break;
+	    }
+	} 
+	return pageurl[cid+1];
+}
+
+// [ = = = = = = = = = = INIT = = = = = = = = = = ]
+var corpus_id = getIDFromURL( "corpus" )
+var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
+	url3=window.location.href+"/ngrams.json";
+var ngrams_groups, ngrams_map, ngrams_data;
+$.when(
+    $.ajax({
+        type: "GET",
+        url: url1,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_groups = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url2,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_map = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
+    $.ajax({
+        type: "GET",
+        url: url3,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { ngrams_data = data },
+        error: function(exception) { 
+            console.log("second ajax, exception!: "+exception.status)
+        }
+    })
+).then(function() {
+
+	// Deleting subforms from the ngrams-table, clean start baby!
+    if( Object.keys(ngrams_groups.links).length>0 ) {
+
+    	var _forms = {  "main":{} , "sub":{}  }
+    	for(var i in ngrams_groups.links) {
+    		_forms["main"][i] = true
+    		for(var j in ngrams_groups.links[i]) {
+    			_forms["sub"][ ngrams_groups.links[i][j] ] = true
+    		}
+    	}
+    	var ngrams_data_ = []
+    	for(var i in ngrams_data.ngrams) {
+    		if(_forms["sub"][ngrams_data.ngrams[i].id]) {
+    			ngrams_groups["nodes"][ngrams_data.ngrams[i].id] = ngrams_data.ngrams[i]
+    		} else {
+    			if( _forms["main"][ ngrams_data.ngrams[i].id ] )
+    				ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name
+    			ngrams_data_.push( ngrams_data.ngrams[i] )
+    		}
+    	}
+    	ngrams_data.ngrams = ngrams_data_;
+    }
+
+    if( Object.keys(ngrams_map).length>0 ) {
+    	for(var i in ngrams_data.ngrams) {
+    		if(ngrams_map[ngrams_data.ngrams[i].id]) {
+    			ngrams_data.ngrams[i]["map"] = true
+    		}
+    	}
+    }
+
 
     // Building the Score-Selector
-    var FirstScore = data.scores.initial
-    var possible_scores = Object.keys( data.ngrams[0].scores );
+    var FirstScore = ngrams_data.scores.initial
+    var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
@@ -670,20 +989,19 @@ $.ajax({
       }
     }
     // Initializing the Charts and Table
-    var result = Main_test( data , FirstScore )
+    console.log( ngrams_data )
+    var result = Main_test( ngrams_data , FirstScore , "filter_all")
     console.log( result )
-
 
     // Listener for onchange Score-Selector
     scores_div += "<select>"+"\n";
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( data , this.value )
+      var result = Main_test( ngrams_data , this.value , "filter_all")
       console.log( result )
+
     });
 
 
-
-  }
 });

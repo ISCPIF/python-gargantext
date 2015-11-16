@@ -57,11 +57,11 @@
 			{
         post: {
           method: 'POST',
-          params: {'listId': '@listId', 'ngramId': ''}
+          params: {'listId': '@listId', 'ngramId': '@ngramId'}
         },
         delete: {
           method: 'DELETE',
-          params: {'listId': '@listId', 'ngramId': '@id'}
+          params: {'listId': '@listId', 'ngramId': '@ngramId'}
         }
       }
     );

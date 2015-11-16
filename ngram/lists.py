@@ -11,7 +11,6 @@ from sqlalchemy import literal_column
 from sqlalchemy.orm import aliased
 
 
-
 def listIds(typeList=None, user_id=None, corpus_id=None):
     '''
     nodeList : get or create NodeList.
@@ -28,7 +27,7 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
 
         # Nodes are either in root_list or user_list
         root_list = ['Stem', 'Lem']
-        user_list   = ['MiamList', 'StopList', 'MainList', 'GroupList']
+        user_list   = ['MiamList', 'StopList', 'MapList', 'Group']
 
         if typeList in user_list:
             nodes = session.query(Node).filter(
@@ -114,7 +113,6 @@ def listNgramIds(list_id=None, typeList=None,
 
     return(query.all())
 
-
 def ngramList(do, list_id, ngram_ids=None) :
     '''
     ngramList :: ([Int], Int, String) -> Bool
@@ -136,38 +134,30 @@ def ngramList(do, list_id, ngram_ids=None) :
                                                 language='en')
             ngram_ids += [ngram.id]
 
-    # TODO there should not be a try/except here, let the code crash as soon as possible
-    try:
-        for ngram_id in ngram_ids:
-            # Fetch the ngram from database
-            ngram = session.query(Ngram.id, Ngram.terms, func.count()).filter(Ngram.id == ngram_id).first()
-            # Need to be optimized with list of ids
-            node_ngram = (session.query(NodeNgram)
-                    .filter(NodeNgram.ngram_id == ngram_id)
-                    .filter(NodeNgram.node_id  == list_id)
-                    .first()
-                    )
-            # create NodeNgram if does not exists
-            if node_ngram is None :
-                node_ngram = NodeNgram(node_id = list_id, ngram_id=ngram_id,
-                                       weight=1)
-            if do == 'add' :
-                session.add(node_ngram)
-                results += [ngram]
+    for ngram_id in ngram_ids:
+        # Fetch the ngram from database
+        ngram = session.query(Ngram.id, Ngram.terms, func.count()).filter(Ngram.id == ngram_id).first()
+        # Need to be optimized with list of ids
+        node_ngram = (session.query(NodeNgram)
+                .filter(NodeNgram.ngram_id == ngram_id)
+                .filter(NodeNgram.node_id  == list_id)
+                .first()
+                )
+        # create NodeNgram if does not exists
+        if node_ngram is None :
+            node_ngram = NodeNgram(node_id = list_id, ngram_id=ngram_id,
+                                    weight=1)
+        if do == 'add' :
+            session.add(node_ngram)
+            results += [ngram]
 
-            elif do == 'del' :
-                session.delete(node_ngram)
+        elif do == 'del' :
+            session.delete(node_ngram)
 
-        session.commit()
-        return(results)
-
-    except Exception as exc:
-        PrintException()
-        raise exc
-
+    session.commit()
+    return(results)
 
 # Some functions to manage automatically the lists
-
 def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=None):
     '''
     Compute automatically the stopList and returns its Node.id
@@ -179,7 +169,6 @@ def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=No
                             corpus_id=corpus_id,
                             typeList='StopList')[0]
     # according to type of corpus, choose the right default stopList
-
 
 def ngrams2miam(user_id=None, corpus_id=None):
     '''
@@ -206,8 +195,33 @@ def ngrams2miam(user_id=None, corpus_id=None):
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
+from gargantext_web.db import get_or_create_node
+from analysis.lists import Translations, UnweightedList
 
+def ngrams2miamBis(corpus):
+    '''
+    Create a Miam List only
+    '''
 
+    miam_id = get_or_create_node(corpus=corpus, nodetype='MiamList')
+    stop_id = get_or_create_node(corpus=corpus,nodetype='StopList')
+
+    query = (session.query(
+                literal_column(str(miam_id)).label("node_id"),
+                Ngram.id,
+                func.count(),
+                )
+                .select_from(Ngram)
+                .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
+                .join(Node, NodeNgram.node_id == Node.id)
+                .filter(Node.parent_id == corpus_id)
+                .filter(Node.type_id == cache.NodeType['Document'].id)
+
+                .group_by(Ngram.id)
+                #.limit(10)
+                .all()
+                )
+    bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
 def doList(
         type_list='MiamList',
@@ -340,3 +354,6 @@ def doList(
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
     return(list_dict[type_list]['id'])
+
+
+

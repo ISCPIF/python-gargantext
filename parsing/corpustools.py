@@ -2,29 +2,14 @@ from collections import defaultdict
 from datetime import datetime
 from random import random
 from hashlib import md5
-from time import time
 from math import log
+
+from admin.utils import DebugTime
 
 from gargantext_web.db import *
 
 from .parsers_config import parsers as _parsers
-
-class DebugTime:
-
-    def __init__(self, prefix):
-        self.prefix = prefix
-        self.message = None
-        self.time = None
-
-    def __del__(self):
-        if self.message is not None and self.time is not None:
-            print('%s - %s: %.4f' % (self.prefix, self.message, time() - self.time))
-
-    def show(self, message):
-        self.__del__()
-        self.message = message
-        self.time = time()
-
+from ngram.tools import insert_ngrams
 
 # keep all the parsers in a cache
 class Parsers(defaultdict):
@@ -159,17 +144,42 @@ def parse_resources(corpus, user=None, user_id=None):
 
     #print('I am here', node_hyperdata_lists.items())
 
+    hyperdata_set = set()
+    hyperdata_ngrams = set()
+    node_hyperdata_ngrams = set()
+    #for field in ['source', 'authors', 'journal']:
+    for field in ['journal', 'authors']:
+        hyperdata_set.add(session.query(Hyperdata.id).filter(Hyperdata.name==field).first()[0])
+    
+    #print("hyperdata_set", hyperdata_set)
+
     for key, values in node_hyperdata_lists.items():
         #print('here', key, values)
         bulk_insert(Node_Hyperdata, ['node_id', 'hyperdata_id', 'value_'+key], values)
+        if key == 'string' :
+            for value in values:
+                if value[1] in hyperdata_set:
+                    for val in value[2].split(', '):
+                        hyperdata_ngrams.add((val, len(val.split(' '))))
+                        node_hyperdata_ngrams.add((value[0], value[1], val))
+    
+    #print(hyperdata_ngrams)
+    terms_id = insert_ngrams(list(hyperdata_ngrams))
+    
+    bulk_insert(NodeHyperdataNgram
+               , ['node_id', 'hyperdata_id', 'ngram_id', 'score']
+               , [(node_id, hyperdata_id, terms_id[terms], 1) 
+                   for node_id, hyperdata_id, terms in list(node_hyperdata_ngrams)])
+
     # mark the corpus as parsed
     corpus.parsed = True
 
 
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
-class NgramsExtractors(defaultdict):
+from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
 
+class NgramsExtractors(defaultdict):
     def __init__(self):
         # English
         self['en'] = EnglishNgramsExtractor()
@@ -193,7 +203,7 @@ class NgramsExtractors(defaultdict):
 
 ngramsextractors = NgramsExtractors()
 
-def extract_ngrams(corpus, keys):
+def extract_ngrams(corpus, keys, nlp=True):
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the hyperdata associated with the given keys
@@ -212,7 +222,7 @@ def extract_ngrams(corpus, keys):
 
     ngrams_data = set()
     ngrams_language_data = set()
-    ngrams_tag_data = set()
+    #ngrams_tag_data = set()
 
     node_ngram_list = defaultdict(lambda: defaultdict(int))
     for nodeinfo in hyperdata_query:
@@ -229,89 +239,46 @@ def extract_ngrams(corpus, keys):
         ngramsextractor = ngramsextractors[language_iso2]
         for text in nodeinfo[2:]:
             if text is not None and len(text):
-                ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
+                if nlp == True:
+                    ngrams = ngramsextractor.extract_ngrams(text.replace("[","").replace("]",""))
+                else:
+                    ngrams = wordpunct_tokenize(text.lower())
+
                 for ngram in ngrams:
-                    n = len(ngram)
-                    terms    = ' '.join([token for token, tag in ngram]).lower()
+                    if nlp == True:
+                        n = len(ngram)
+                        terms    = ' '.join([token for token, tag in ngram]).lower()
+                    else:
+                        terms = ngram
+                        n = 1
                     # TODO BUG here
-                    if n == 1:
+                    #if n == 1:
                         #tag_id   = cache.Tag[ngram[0][1]].id
-                        tag_id   =  1
+                    #    tag_id   =  1
                         #print('tag_id', tag_id)
-                    elif n > 1:
-                        tag_id   =  1
+                    #elif n > 1:
+                    #    tag_id   =  1
                         #tag_id   = cache.Tag[ngram[0][1]].id
                         #tag_id   = cache.Tag['NN'].id
                         #tag_id   =  14
                         #print('tag_id_2', tag_id)
                     node_ngram_list[node_id][terms] += 1
-                    ngrams_data.add((n, terms[:255]))
+                    ngrams_data.add((terms[:255],n))
                     ngrams_language_data.add((terms, language_id))
-                    ngrams_tag_data.add((terms, tag_id))
+                    #ngrams_tag_data.add((terms, tag_id))
 
     # insert ngrams to temporary table
     dbg.show('find ids for the %d ngrams' % len(ngrams_data))
     db, cursor = get_cursor()
-    cursor.execute('''
-        CREATE TEMPORARY TABLE tmp__ngrams (
-            id INT,
-            n INT NOT NULL,
-            terms VARCHAR(255) NOT NULL
-        )
-    ''')
-    bulk_insert('tmp__ngrams', ['n', 'terms'], ngrams_data, cursor=cursor)
-    # retrieve ngram ids from already inserted stuff
-    cursor.execute('''
-        UPDATE
-            tmp__ngrams
-        SET
-            id = ngram.id
-        FROM
-            %s AS ngram
-        WHERE
-            ngram.terms = tmp__ngrams.terms
-    ''' % (Ngram.__table__.name, ))
-    # insert, then get the ids back
+    ngram_ids = insert_ngrams(ngrams_data)
 
-    cursor.execute('''
-        INSERT INTO
-            %s (n, terms)
-        SELECT
-            n, terms
-        FROM
-            tmp__ngrams
-        WHERE
-            id IS NULL
-    ''' % (Ngram.__table__.name, ))
-
-
-    cursor.execute('''
-        UPDATE
-            tmp__ngrams
-        SET
-            id = ngram.id
-        FROM
-            %s AS ngram
-        WHERE
-            ngram.terms = tmp__ngrams.terms
-        AND
-            tmp__ngrams.id IS NULL
-    ''' % (Ngram.__table__.name, ))
-
-    # get all ids
-    ngram_ids = dict()
-    cursor.execute('SELECT id, terms FROM tmp__ngrams')
-    for row in cursor.fetchall():
-        ngram_ids[row[1]] = row[0]
-
-    #
     dbg.show('insert associations')
-    node_ngram_data = list()
+    node_ngram_data = set()
     for node_id, ngrams in node_ngram_list.items():
         for terms, weight in ngrams.items():
             try:
                 ngram_id = ngram_ids[terms]
-                node_ngram_data.append((node_id, ngram_id, weight, ))
+                node_ngram_data.add((node_id, ngram_id, weight, ))
             except Exception as e:
                 print("err01:",e)
     bulk_insert(Node_Ngram, ['node_id', 'ngram_id', 'weight'], node_ngram_data, cursor=cursor)
@@ -319,116 +286,3 @@ def extract_ngrams(corpus, keys):
     # commit to database
     db.commit()
 
-
-# tfidf calculation
-def compute_tfidf(corpus):
-    dbg = DebugTime('Corpus #%d - tfidf' % corpus.id)
-    # compute terms frequency sum
-    dbg.show('calculate terms frequencies sums')
-    db, cursor = get_cursor()
-    cursor.execute('''
-        CREATE TEMPORARY TABLE tmp__st (
-            node_id INT NOT NULL,
-            frequency DOUBLE PRECISION NOT NULL
-        )
-    ''')
-    cursor.execute('''
-        INSERT INTO
-            tmp__st (node_id, frequency)
-        SELECT
-            node_ngram.node_id,
-            SUM(node_ngram.weight) AS frequency
-        FROM
-            %s AS node
-        INNER JOIN
-            %s AS node_ngram ON node_ngram.node_id = node.id
-        WHERE
-            node.parent_id = %d
-        GROUP BY
-            node_ngram.node_id
-    ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
-    # compute normalized terms frequencies
-    dbg.show('normalize terms frequencies')
-    cursor.execute('''
-        CREATE TEMPORARY TABLE tmp__tf (
-            node_id INT NOT NULL,
-            ngram_id INT NOT NULL,
-            frequency DOUBLE PRECISION NOT NULL
-        )
-    ''')
-    cursor.execute('''
-        INSERT INTO
-            tmp__tf (node_id, ngram_id, frequency)
-        SELECT
-            node_ngram.node_id,
-            node_ngram.ngram_id,
-            (node_ngram.weight / node.frequency) AS frequency
-        FROM
-            %s AS node_ngram
-        INNER JOIN
-            tmp__st AS node ON node.node_id = node_ngram.node_id
-    ''' % (Node_Ngram.__table__.name, ))
-    # show off
-    dbg.show('compute idf')
-    cursor.execute('''
-        CREATE TEMPORARY TABLE tmp__idf (
-            ngram_id INT NOT NULL,
-            idf DOUBLE PRECISION NOT NULL
-        )
-    ''')
-    cursor.execute('''
-        INSERT INTO
-            tmp__idf(ngram_id, idf)
-        SELECT
-            node_ngram.ngram_id,
-            -ln(COUNT(*))
-        FROM
-            %s AS node
-        INNER JOIN
-            %s AS node_ngram ON node_ngram.node_id = node.id
-        WHERE
-            node.parent_id = %d
-        GROUP BY
-            node_ngram.ngram_id
-    ''' % (Node.__table__.name, Node_Ngram.__table__.name, corpus.id, ))
-    cursor.execute('SELECT COUNT(*) FROM tmp__st')
-    D = cursor.fetchone()[0]
-    if D>0:
-        lnD = log(D)
-        cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
-        # show off
-        dbg.show('insert tfidf for %d documents' % D)
-        cursor.execute('''
-            INSERT INTO
-                %s (nodex_id, nodey_id, ngram_id, score)
-            SELECT
-                %d AS nodex_id,
-                tf.node_id AS nodey_id,
-                tf.ngram_id AS ngram_id,
-                (tf.frequency * idf.idf) AS score
-            FROM
-                tmp__idf AS idf
-            INNER JOIN
-                tmp__tf AS tf ON tf.ngram_id = idf.ngram_id
-        ''' % (NodeNodeNgram.__table__.name, corpus.id, ))
-        # # show off
-        # cursor.execute('''
-        #     SELECT
-        #         node.name,
-        #         ngram.terms,
-        #         node_node_ngram.score AS tfidf
-        #     FROM
-        #         %s AS node_node_ngram
-        #     INNER JOIN
-        #         %s AS node ON node.id = node_node_ngram.nodey_id
-        #     INNER JOIN
-        #         %s AS ngram ON ngram.id = node_node_ngram.ngram_id
-        #     WHERE
-        #         node_node_ngram.nodex_id = %d
-        #     ORDER BY
-        #         score DESC
-        # ''' % (NodeNodeNgram.__table__.name, Node.__table__.name, Ngram.__table__.name, corpus.id, ))
-        # for row in cursor.fetchall():
-        #     print(row)
-        # the end!
-        db.commit()

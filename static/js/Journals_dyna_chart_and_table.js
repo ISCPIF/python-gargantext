@@ -406,7 +406,7 @@ function Main_test( data , initial) {
       .title(function (d) {
                   var value = d.value.avg ? d.value.avg : d.value;
                   if (isNaN(value)) value = 0;
-                  return value+" ngrams with "+FirstScore+"="+Number(d.key);
+                  return value+" journals with "+Number(d.key)+" publications";
               })
       .xAxis();
     LineChart.yAxis().ticks(5)

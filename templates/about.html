@@ -35,22 +35,29 @@
 						<div class="panel-body">
 								<div class="container">
 										<ul>
-												<li>Version 1.0</li>
+                        <li>Versions from 0.1 to 0.9</li>
 														<ul>
-																<li>[Start] Beta Version </li>
+                                <li>[NAME] Black Salade</li>
 																<li>[Law] Licence of Gargantext is GPL v3+ </li>
+																<li>[NLP] NLTK, TreeTagger</li>
+																<li>[FEATURE] Graph Explorer</li>
 														</ul>
-												<li>Version 1.0.5</li>
+                        <li>Versions from 1.0 to 1.9</li>
 														<ul>
-																<li>Bug resolution: [Import] xml zipped from Mac</li>
-																<li>Bug resolution: [Import] french accents in filenames</li>
-																<li>New features: [Advanced chart] ngrams completion</li>
-																<li>New features: [Duplicates management] button to delete all duplicates</li>
+                                <li>[NAME] Rose Bonbon</li>
+																<li>[Law] Licence of Gargantext is (and will be for next versions) AGPL</li>
+																<li>[NLP] Turbo Parser, TreeTagger</li>
+                                <li>[FEATURE] Advanced Chart</li>
+                                <li>[FEATURE] Remove duplicates</li>
 														</ul>
-												<li>Version 1.0.6</li>
+                        <li>Version 2.0</li>
 														<ul>
-																<li>Bug resolution: [Advanced chart] one can make comparisons with different corpora at different scales</li>
-																<li>Bug resolution: [Graph] Graph link can not be executed until workflow is finished.</li>
+                                <li>[NAME] Red Lemon</li>
+																<li>[NLP] Turbo Parser, MELT</li>
+                                <li>[FEATURE] Ngrams Table management</li>
+                                <li>[FEATURE] Annotation local view</li>
+                                <li>[FEATURE] Lexical Graph with temporal filter</li>
+                                <li>[FEATURE] Graph bi-Partite</li>
 														</ul>
 										</ul>
 								</div>
@@ -146,28 +153,39 @@
 		</div>
 </div>
 
-{% if sponsors %}
 <div class="panel panel-default">
 				<div class="panel-heading">
 						<h2 class="panel-title">
 										<center>
-										<h2>Sponsors</h2>
+										<h2>Institutional and financial support</h2>
+										<h3>Host institutions</h3>
 										<a href="http://www.cnrs.fr" target="_blank" >
 										<img src="{% static "img/sponsors/cnrs.png"%}" alt="CNRS"  style="height:100px">
 										</a>
 										<a href="http://www.iscpif.fr" target="_blank" >
 										<img src="{% static "img/sponsors/iscpif.svg"%}" style="height:100px">
 										</a>
+										<a href="http://cams.fr" target="_blank" >
+										<img src="{% static "img/sponsors/cams.jpg"%}" style="height:100px">
+										</a>
+										
+                    <h3>Partners</h3>
 										{% for sponsor in sponsors %}
 										<a href="{{ sponsor.website }}" target="_blank" >
 										<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="height:100px">
+										</a>
+										{% endfor %}
+										
+                    <h3>Grants</h3>
+                    {% for grant in grants %}
+										<a href="{{ grant.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ grant.picture }}" style="height:100px">
 										</a>
 										{% endfor %}
 										</center>
 </div>
 </div>
 </div>
-{% endif %}
 
 
 

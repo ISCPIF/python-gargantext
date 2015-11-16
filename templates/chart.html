@@ -14,7 +14,7 @@
     <div class="container theme-showcase" role="main">
         <div class="jumbotron">
             <h1>Advanced chart</h1>
-            <p>Custom, test, interpret</p>
+            <p>Customize, test, interpret</p>
         </div>
     </div>
 
@@ -24,314 +24,134 @@
 
     <!-- All the templates used by the Javascript framework -->
     {% verbatim %}
-    <!-- 
-    <script type="text/template" id="filter-template">
-        <span>...where</span>
-        <select name="entity">
-            <option value="hyperdata">hyperdata</option>
-            <option value="ngrams">ngrams</option>
-        </select>
-
-        <span class="entity hyperdata">
-            <select name="key"><% _.each(hyperdataList, function(hyperdata){ %>
-                <option><%= hyperdata.name %></option>
-            <% }); %></select>
-        </span>
-        <span class="entity ngrams">
-            <select name="key">
-                <option value="terms">terms</option>
-                <option value="n">terms count</option>
-            </select>
-        </span>
-
-        <select name="operator"></select>
-        <input name="value" />
-
-        <button class="remove">X</button>
-    </script>
- 
-    <script type="text/template" id="filterlist-template">
-        <ul class="filters"></ul>
-        <button class="add">Add a filter...</button>
-    </script>
- 
-    <script type="text/template" id="nodesquery-template">
-        <div ng-include="'filterlist-template'"></div>
-    </script>
-     -->
-
-<!-- 
-    <script type="text/ejs" id="FilterView">
-        <li>
-            <span>...where the</span>
-            <select name="entity">
-                <option>hyperdata</option>
-                <option>ngrams</option>
-            </select>
-            <span class="entity hyperdata">
-                <select name="key"></select>
-            </span>
-            <span class="entity ngrams">
-                <select name="key">
-                    <option value="terms">terms</option>
-                    <option value="n">terms count</option>
-                </select>
-            </span>
-        </li>
-    </script>
-
-    <script type="text/ejs" id="FilterListView">
-        <div class="filters">
-            <ul class="filters"></ul>
-            <button class="create">Add a filter</button>
-        </div>
-    </script>
- -->
-
     {% endverbatim %}
-
-    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>    
+    <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 
     {% verbatim %}
-<!--
-    <div ng-app="Gargantext" ng-controller="FilterListController">        
-        <ul>
-            <li ng-repeat="(filterIndex, filter) in filters">
-                <span>...where the </span>
-                <select ng-model="filter.entity">
-                    <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-                </select>
-                <span ng-if="filter.entity">
-                    <select ng-model="filter.column">
-                        <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
-                    </select>
-                    <span ng-if="filter.column">
-                        <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
-                            <select ng-model="filter.operator">
-                                <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
-                            </select>
-                            <input type="text" ng-model="filter.value">
-                        </span>
-                    </span>
-                </span>
-                <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
-            </li>
-        </ul>
-        <button ng-click="addFilter()">Add a filter...</button>
-    </div>
--->
-    
     <style type="text/css">
-        div.corpus button:first-child+select {color:#FFF;}
-        div.list-results table {border-collapse: collapse;}
-        div.list-results th, div.list-results td {border: solid 1px #888; padding: 0.5em;}
-        div.list-results th {background: #444; color: #FFF}
-        div.list-results tr:nth-child(even) td {background: #FFF; color: #111}
-        div.list-results tr:nth-child(odd) td {background: #EEE; color: #000}
+        div.controller div.autocomplete {margin: 0; padding: 0; }
+            div.controller div.autocomplete * {background: transparent; }
+            div.controller div.autocomplete ul.suggestion-list {background: rgba(255,255,255,.75); }
+                div.controller .tags li.tag-item {background: transparent; border: solid 1px rgba(0,0,0,.1); box-shadow: inset .05em .1em .4em rgba(0,0,0,.4); border-radius: 0; font-weight: bold; }
+                div.controller div.autocomplete li.suggestion-item:hover, div.controller div.autocomplete li.suggestion-item.selected {background: rgba(0,0,0,.5)}
+                    div.controller div.autocomplete li.suggestion-item em {background: transparent; }
+            div.controller div.tags>input {padding: 0; border: 0; outline: 0; box-shadow: none; background: transparent;}
+            div.controller div.tags>input::-webkit-input-placeholder,div.controller div.tags input::-webkit-input-placeholder {color: rgba(0,0,0,.25); }
+
+        div.controller, div.controller * {color: rgba(0,0,0,.75); }
+        div.controller button {background: none; border: solid 1px rgba(0,0,0,.25); box-shadow: .05em .1em .4em rgba(0,0,0,.5); opacity: .5; }
+        div.controller button:hover {opacity: .65; }
+        div.controller button:active {opacity: .8; }
+        div.controller>button {width: 100%; }
+        div.controller input[type=checkbox] {position: relative; top: .125em; }
+        div.controller input[type=text], div.controller select, div.controller div.tags {font-weight: bold; box-shadow: inset .05em .1em .4em rgba(0,0,0,.2); outline: solid 1px rgba(0,0,0,.125); border: 0; background: rgba(255,255,255,.5); }
+        div.controller input[type=text] {padding-left: 0.5em;}
+        ul.datasets {padding: 0; margin: 0; list-style: none; }
+            li.dataset {padding: 0.3em; border: solid 1px rgba(0,0,0,.125); margin-bottom: 0.5em; box-shadow: inset .1em .2em .8em rgba(0,0,0,.1) }
+                li.dataset * { }
+                li.dataset button {float: right; position: relative; top: -.15em; margin-left: .25em; }
+                li.dataset select {cursor: pointer; border: 0; padding: 0; }
+            ul.filters {list-style: none; margin: 0; padding: 0; margin-top: .25em;}
+                ul.filters>li {padding-top: .5em; margin-top: .5em; border-top: solid 1px rgba(0,0,0,.125);}
+                    ul.filters>li>ul {list-style: none; padding-left: 0; }
+                    ul.filters>li>ul label {font-weight: normal; cursor: pointer; }
+                    ul.filters>li input[type=checkbox] {opacity: .8;}
     </style>
-
-    <!--
-
-        TODO: use inclusions
-
-        SEE: http://stackoverflow.com/questions/17801988/dynamically-loading-controllers-and-ng-include
-
-    -->
 
     <div class="container">
 
-        <!--
-        <div ng-app="Gargantext" ng-controller="QueryController">
-            <div class="corpus">
-                Chosen corpus:
-                <select ng-model="corpusId" ng-change="updateEntities()">
-                    <option ng-repeat="corpus in corpora" value="{{corpus.id}}">{{corpus.name}}</option>
-                </select>
-            </div>
-            <div class="filters" ng-if="corpusId">
-                <hr/>
-                <ul>
-                    <li ng-repeat="(filterIndex, filter) in filters">
-                        <span>...where the </span>
-                        <select ng-model="filter.entity">
-                            <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-                        </select>
-                        <span ng-if="filter.entity">
-                            <select ng-model="filter.column">
-                                <option ng-repeat="column in entities[filter.entity] | orderBy:'key'" value="{{column.key}}">{{column.key}}</option>
-                            </select>
-                            <span ng-if="filter.column">
-                                <span ng-repeat="column in entities[filter.entity] | filter : {'key':filter.column} : strict">
-                                    <select ng-model="filter.operator">
-                                        <option ng-repeat="operator in operators[column.type]" value="{{operator.key}}">{{operator.label}}</option>
-                                    </select>
-                                    <input type="text" ng-model="filter.value">
-                                </span>
-                            </span>
-                        </span>
-                        <button ng-click="removeFilter(filterIndex)" title="remove this filter">X</button>
-                    </li>
-                </ul>
-                <button ng-click="addFilter()">Add a filter...</button>
-            </div>
-            <div class="results" ng-if="corpusId">
-                <hr/>
-                <button ng-if="corpusId" ng-click="postQuery()">Refresh results</button>
-                <div class="list">
-                    <div class="list-pagination">
-                        <select ng-model="pagination.limit">
-                            <option ng-repeat="limit in [5, 10, 20, 50, 100]" value="{{limit}}">{{limit}}</option>
-                        </select>
-                        results per page
-                        <span ng-if="resultsCount != undefined">
-                            showing page
-                            <select ng-model="pagination.offset">
-                                <option ng-repeat="x in range(0, resultsCount+1, pagination.limit)" value="{{ x }}">{{ Math.round(1+x/pagination.limit) }}</option>
-                            </select>
-                            out of
-                            {{ Math.ceil(resultsCount / pagination.limit) }}
-                            <strong>({{resultsCount}}</strong> results found)
-                        </span>
-                    </div>
-                    <div class="list-wait" ng-if="loading">
-                        <em>Loading, please wait...</em>
-                    </div>
-                    <div class="list-results" ng-if="!loading &amp;&amp; resultsCount != undefined">
-                        <div ng-if="!results.length">
-                            <em>No results were found.</em>
-                        </div>
-                        <table ng-if="results.length">
-                            <thead>
-                                <tr>
-                                    <th ng-repeat="(key, value) in results[0]">{{key}}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="result in results">
-                                    <td ng-repeat="(key, value) in result">{{value}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    -->
+        <div ng-app="Gargantext" ng-controller="GraphController" class="controller">
 
-
-
-        <div ng-app="Gargantext" ng-controller="GraphController">
-
-            
             <ul class="datasets">
-                <button class="add" ng-click="addDataset()">Add a dataset...</button>
-                <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets">
-                    <hr/>
-                    <div class="corpus">
-                        <button ng-click="removeDataset($index)" title="remove this dataset">X</button>
-                        <select ng-model="mesured" style="background-color:{{ getColor($index, datasets.length) }}" ng-options="value as key for (key, value) in {'Documents count': 'nodes.count', 'Ngrams count': 'ngrams.count'}" ng-change="updateQuery()"></select>
-                        in the project
-                        <select ng-model="projectId" ng-change="updateCorpora()" ng-options="project.id as project.name for project in projects"></select>,
-                        corpus
-                        <select ng-model="corpusId" ng-change="updateEntities()" ng-options="corpus.id as corpus.name for corpus in corpora"></select>
-                    </div>                    
-                    <div class="filters" ng-if="entities">
-                        <ul>
-                            <li ng-repeat="filter in filters">
-                                <button ng-click="removeFilter($index)" title="remove this filter">x</button>
-                                <span>...where the </span>
-                                <select ng-model="filter.entity" ng-options="entity as entity.key for entity in entities"></select>
-                                <span ng-if="filter.entity.key != 'ngrams'">
-                                    <select ng-if="filter.entity" ng-model="filter.column" ng-options="column as column.key for column in filter.entity.columns | orderBy:'key'"></select>
-                                    <select ng-if="filter.column" ng-model="filter.operator" ng-options="operator.key as operator.label for operator in operators[filter.column.type]"></select>
-                                    <input ng-if="filter.operator" type="text" ng-model="filter.value" ng-change="updateQuery()">
-                                </span>
-                                <span ng-if="filter.entity.key == 'ngrams'">
-                                    are in this list:
-                                    <tags-input ng-model="filter.value" display-property="terms" placeholder="Add an ngram" on-tag-added="updateQuery()" on-tag-removed="updateQuery()" add-from-autocomplete-only="true">
-                                        <auto-complete source="getNgrams($query)"></auto-complete>
-                                    </tags-input ng-model="tags">
-                                </span>
-                            </li>
-                        </ul>
-                        <button ng-click="addFilter()">Add a filter...</button>
+                <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets" style="background-color:{{ getColor($index, datasets.length) }}">
+                    <!-- main part -->
+                    <div class="main">
+                        <!-- buttons -->
+                        <button ng-click="show_filters = !show_filters">{{ show_filters ? 'Hide' : 'Show' }} filters</button>
+                        <button ng-click="removeDataset($index)">Remove dataset</button>
+                        <!-- description of Y values -->
+                        Evolution of the
+                        <select ng-model="query_y.value" ng-options="value as key for (key, value) in {'ngrams count': 'ngrams_count', 'documents count': 'documents_count'}" ng-change="updateDataset()"></select>
+                        <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false, 'relative to the': true}" ng-change="updateDataset()"></select>
+                        <span ng-if="query_y.is_relative">
+                            <select ng-model="query_y.divided_by" ng-options="value as key for (key, value) in {'total ngrams count': 'total_ngrams_count', 'total documents count': 'total_documents_count'}" ng-change="updateDataset()"></select>
+                        </span>
                     </div>
+                    <!-- filters -->
+                    <ul class="filters" ng-show="show_filters">
+                        <!-- filter corpora -->
+                        <li>
+                            <button ng-click="corporaSelectAll()">select all</button>
+                            <button ng-click="corporaSelectNone()">select none</button>
+                            ...restrict to the following corpora:
+                            <ul>
+                                <li ng-repeat="corpus in corpora">
+                                    <label>
+                                        <input type="checkbox" ng-model="corpus.is_selected" ng-change="updateHyperdataList();updateDataset()"/>
+                                        <span style="font-weight: {{ corpus.is_selected ? 'bold' : 'normal' }}">{{ corpus.name }}</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- filter ngrams -->
+                        <li class="ngrams">
+                            ...only consider documents containing the following ngrams:
+                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an ngram" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true">
+                                <auto-complete source="getNgrams($query)"></auto-complete>
+                            </tags-input ng-model="tags">
+                        </li>
+                        <!-- filter hyperdata -->
+                        <li>
+                            <ul>
+                                <li ng-repeat="hyperdata in hyperdataList">
+                                    ...where
+                                    <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.key }}"</span>
+                                    <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.key }}</strong>
+
+                                    <span ng-if="hyperdata.values">
+                                        is
+                                        <select ng-model="hyperdata.value" ng-options="value for value in hyperdata.values" ng-change="updateDataset()"></select>
+                                    </span>
+                                    <span ng-if="!hyperdata.values">
+                                        <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
+                                        <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    </span>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 </li>
             </ul>
-        
-            <hr/>
 
-            <button style="width:100%" class="refresh" ng-click="query()">Refresh results</button>
+            <!-- add a new dataset -->
+            <button ng-click="addDataset()">Add a dataset</button>
+
+            <!-- X-axis (time) resolution -->
+            <p>
+                (group results by
+                <select ng-model="query_x.resolution" ng-options="period as period for period in periods" ng-change="updateDatasets(true)"></select>)
+            </p>
+
+            <!-- data representation -->
+            Represent data with
+            <select ng-model="seriesOptions.type" ng-options="type for type in ['column', 'area', 'line']" ng-change="updateDatasets()"></select>
+
+            <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
+                (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="updateDatasets()"></select> stacking)
+            </span>
+
             <div class="graph">
                 <linechart data="graph.data" options="graph.options"></linechart>
             </div>
-            <div class="graph-parameters">
-                X-axis: groups the results by
-                <select ng-model="groupingKey" ng-options="key for key in ['day', 'month', 'year', 'decade', 'century']" ng-change="query()">
-                </select>
-                <br/>
-
-                Y-axis: use a
-                <select ng-model="graph.options.axes.y.type" ng-options="type for type in ['linear', 'log']"></select>
-                scale
-                <br/>
-                
-                <hr/>
-
-                Represent data with
-                <select ng-model="seriesOptions.type" ng-options="type for type in ['line', 'area', 'column']" ng-change="query()"></select>
-                <span ng-show="seriesOptions.type == 'area'">
-                    (<select ng-model="seriesOptions.striped" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stripes)
-                </span>
-                <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
-                    (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="query()"></select> stacking)
-                </span>
-                <br/>
-
-                <span ng-hide="seriesOptions.type == 'column'">
-                    Line thickness:
-                    <input ng-model="seriesOptions.thicknessNumber" type="range" min="1" max="8" ng-change="seriesOptions.thickness = seriesOptions.thicknessNumber + 'px'; query()" />
-                    <br/>
-                    Interpolation:
-                    <select ng-model="graph.options.lineMode">
-                        <option ng-repeat="mode in ['linear', 'bundle']" value="{{ mode }}">{{ mode }}</option>
-                    </select>
-                    <span ng-if="graph.options.lineMode != 'linear'">
-                        with a tension of
-                        <input type="text" disabled="disabled" ng-model="graph.options.tension" />
-                        <input type="range" min="0" max="2" step=".1" ng-model="graph.options.tension" />
-                    </span>
-                </span>
-            </div>
         </div>
 
     </div>
 
-<!-- 
-    <div ng-app="Gargantext" ng-controller="FilterController">
-        <span>...where the </span>
-        <select ng-model="entityName">
-            <option ng-repeat="(entityName, entityColumns) in entities" value="{{entityName}}">{{entityName}}</option>
-        </select>
-        <span ng-if="entityName">
-            <select ng-model="entityColumn.key">
-                <option ng-repeat="entityColumn in entities[entityName] | orderBy:'key'" value="{{entityColumn.key}}">{{entityColumn.key}}</option>
-            </select>
-            <span ng-if="entityColumn.key">
-                <span ng-repeat="entityColumn in entities[entityName] | filter : entityColumn : strict">
-                    <select ng-model="operator.key">
-                        <option ng-repeat="operator in operators[entityColumn.type]" value="{{operator.key}}">{{operator.label}}</option>
-                    </select>
-                    <input type="text">
-                </span>
-            </span>
-        </span>
-    </div>
-     -->
+
     {% endverbatim %}
     <script type="text/javascript" src="{% static "js/angular.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/angular-cookies.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/d3/d3.v2.min.js" %}"></script>
+    <!-- <script type="text/javascript" src="{% static "js/d3/d3.v2.min.js" %}"></script> -->
     <script type="text/javascript" src="{% static "js/d3/n3.line-chart.min.js" %}"></script>
 
     <script type="text/javascript" src="{% static "js/ng-tags-input.min.js" %}"></script>
@@ -339,25 +159,5 @@
 
     <script type="text/javascript" src="{% static "js/gargantext.angular.js" %}"></script>
 
-<!-- 
-    <script type="text/javascript" src="{% static "js/underscore-min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/backbone.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/gargantext.backbone.js" %}"></script>
-    <script type="text/javascript">
-        var filterList = new FilterListView({nodeId: 39576});
-        filterList.render().$el.appendTo('#test-container');
-    </script>
- -->   
-<!-- 
-    <script type="text/javascript" src="{% static "js/can.custom.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/gargantext.can.js" %}"></script>
-    <script type="text/javascript">
-        var f = new FilterListController('#test-container', {parent: 39576});
-    </script>
-         -->
 
 {% endblock %}
-
-
-
-

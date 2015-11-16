@@ -62,6 +62,7 @@ for model_name, model in models.__dict__.items():
 
 NodeNgram = Node_Ngram
 NodeResource = Node_Resource
+NodeHyperdata = Node_Hyperdata
 
 # manually declare the Node table...
 from datetime import datetime
@@ -229,3 +230,49 @@ class bulk_insert:
             return ''
 
     readline = read
+
+def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None):
+    '''
+    Should be a method of the object. __get_or_create__ ?
+    name_str :: String
+    hyperdata :: Dict
+    '''
+    if nodetype is None:
+        print("Need to give a type node")
+    else:
+        try:
+            ntype = cache.NodeType[nodetype]
+        except KeyError:
+            ntype = cache.NodeType[nodetype] = NodeType()
+            ntype.name = nodetype
+            session.add(ntype)
+            session.commit()
+
+    if corpus_id is not None and corpus is None:
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+
+    node = (session.query(Node).filter(Node.type_id    == ntype.id
+                                   , Node.parent_id == corpus.id
+                                   , Node.user_id   == corpus.user_id
+                                    )
+         )
+    if name_str is not None:
+        node = node.filter(Node.name==name_str)
+    if hyperdata is not None:
+        for k,v in hyperdata.items():
+            node = node.filter(Node.hyperdata[k] == v)
+    node = node.first()
+
+    if node is None:
+        node = Node(type_id=ntype.id
+                 , parent_id=corpus.id
+                 , user_id=corpus.user_id
+                    )
+        if name_str is not None:
+            node.name=name_str
+        else:
+            node.name=ntype.name
+        session.add(node)
+        session.commit()
+    #print(parent_id, n.parent_id, n.id, n.name)
+    return(node)

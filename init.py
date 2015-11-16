@@ -8,7 +8,7 @@ from admin.utils import PrintException
 ##from node import models
 #
 ## SQLA models
-from gargantext_web.db import *
+from gargantext_web.db import session
 
 ################################################################################
 ## If you need to reset all data
@@ -33,17 +33,15 @@ hyperdata = {
 }
 
 for name_, type_ in hyperdata.items():
-    data      = (session.query(Hyperdata).filter(
+    data_      = (session.query(Hyperdata).filter(
                          Hyperdata.name == str(name_),
                          Hyperdata.type == str(type_)
                          ).first()
                  )
-
-    if data is None:
+    if data_ is None:
         print('Hyper Data' + name_ + 'does not existe, creating it')
         hyperdata = Hyperdata(name=name_, type=type_)
         session.add(hyperdata)
-
 session.commit()
 
 
@@ -93,9 +91,9 @@ print('Initialize node types...')
 node_types = [
         'Root', 'Trash',
         'Project', 'Corpus', 'Document',
-        'MiamList', 'StopList', 'MainList',
-        'Stem', 'Lem', 'Group', 'Tfidf',
-        'Cooccurrence', 'WhiteList', 'BlackList'
+        'MiamList', 'StopList', 'MainList', 'MapList', # TODO MiamList -> MainList
+        'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificity'
+        , 'Cooccurrence',
         ]
 
 for node_type in node_types:
@@ -153,4 +151,19 @@ session.commit()
 ###f.close()
 ##
 ##
+
+
+from ngram.stop import importStopList
+root = session.query(Node).filter(Node.type_id==cache.NodeType['Root'].id).first()
+importStopList(root, '/srv/gargantext/init/stop_lists/fr.txt', 'fr')
+importStopList(root, '/srv/gargantext/init/stop_lists/en.txt', 'en')
+
+
+root = session.query(Node).filter(Node.type_id==cache.NodeType['Root'].id).first()
+#importStopList(root, '/srv/gargantext/init/stop_lists/fr.txt', 'fr')
+importStopList(root, '/srv/gargantext/init/stop_lists/en.txt', 'en')
+
+
+
+
 #exit()

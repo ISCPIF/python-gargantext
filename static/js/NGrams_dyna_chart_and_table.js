@@ -852,7 +852,7 @@ function SearchFilters( elem ) {
 
   if( MODE == "filter_all") {
   	console.clear()
-    var result = Main_test( ngrams_data.ngrams , ngrams_data.scores.initial , MODE)
+    var result = Main_test( ngrams_data , ngrams_data.scores.initial , MODE)
     console.log( result )
 
 	MyTable.data('dynatable').sorts.clear();

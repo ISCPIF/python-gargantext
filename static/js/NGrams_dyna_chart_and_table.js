@@ -490,7 +490,7 @@ $("#Save_All").click(function(){
 	FlagsBuffer["inmap"] = {}
 
 	for(var id in AjaxRecords) {
-		if( ngrams_map[ AjaxRecords[id]["id"] ] ) {
+		if( NGrams["map"][ AjaxRecords[id]["id"] ] ) {
 			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
 				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
 				if(AjaxRecords[id]["state"]==2) {
@@ -510,10 +510,10 @@ $("#Save_All").click(function(){
 		}
 	}
 	// [ = = = = For deleting subforms = = = = ]
-	for(var i in ngrams_groups.links) {
+	for(var i in NGrams["group"].links) {
 		if(FlagsBuffer["delete"][i]) {
-			for(var j in ngrams_groups.links[i] ) {
-				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
+			for(var j in NGrams["group"].links[i] ) {
+				FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
 			}
 			for(var j in FlagsBuffer["delete"][i] ) {
 				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
@@ -860,7 +860,7 @@ function SearchFilters( elem ) {
 
   if( MODE == "filter_all") {
   	console.clear()
-    var result = Main_test( ngrams_data , ngrams_data.scores.initial , MODE)
+    var result = Main_test( NGrams["main"] , NGrams["main"].scores.initial , MODE)
     console.log( result )
 
 	MyTable.data('dynatable').sorts.clear();
@@ -871,19 +871,19 @@ function SearchFilters( elem ) {
   if( MODE == "filter_map-list") {
   	console.clear()
   	console.log("ngrams_map:")
-  	console.log(ngrams_map)
+  	console.log(NGrams["map"])
 
   	var sub_ngrams_data = {
   		"ngrams":[],
-  		"scores": $.extend({}, ngrams_data.scores)
+  		"scores": $.extend({}, NGrams["main"].scores)
   	}
-    for(var r in ngrams_data.ngrams) {
-    	if ( ngrams_map[ngrams_data.ngrams[r].id] ) {
-    		sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+    for(var r in NGrams["main"].ngrams) {
+    	if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
+    		sub_ngrams_data["ngrams"].push( NGrams["main"].ngrams[r] )
     	}
     }
 
-    var result = Main_test(sub_ngrams_data , ngrams_data.scores.initial , MODE)
+    var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
     console.log( result )
     // MyTable.data('dynatable').sorts.clear();
     // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
@@ -892,43 +892,17 @@ function SearchFilters( elem ) {
 
   if( MODE == "filter_stop-list") {
 
-  	if(Object.keys(ngrams_stop).length<1) {
-		var corpus_id = getIDFromURL( "corpus" )
-		var someurl = window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop";
-	    $.ajax({
-	        type: "GET",
-	        url: someurl,
-	        dataType: "json",
-	        success : function(data, textStatus, jqXHR) { 
-				console.clear()
-				console.log("ngrams_stop:")
-				console.log( data )
-				ngrams_stop = data
-				var sub_ngrams_data = {
-					"ngrams":[],
-					"scores": $.extend({}, ngrams_data.scores)
-				}
-				for(var r in ngrams_data.ngrams) {
-					if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
-						sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
-					}
-				}
-	        },
-	        error: function(exception) { 
-	            console.log("second ajax, exception!: "+exception.status)
-	        }
-	    })
-	} else {
+  	if(Object.keys(NGrams["stop"]).length<1) {
 		var sub_ngrams_data = {
 			"ngrams":[],
-			"scores": $.extend({}, ngrams_data.scores)
+			"scores": $.extend({}, NGrams["main"].scores)
 		}
-		for(var r in ngrams_data.ngrams) {
-			if ( ngrams_stop[ngrams_data.ngrams[r].id] ) {
-				sub_ngrams_data["ngrams"].push( ngrams_data.ngrams[r] )
+		for(var r in NGrams["main"].ngrams) {
+			if ( NGrams["stop"][ NGrams["main"].ngrams[r].id ] ) {
+				sub_ngrams_data["ngrams"].push( NGrams["main"].ngrams[r] )
 			}
 		}
-	}
+  	}
   }
 
 }
@@ -945,37 +919,35 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
-var StopList = {}
-function test_getlist( list_name ) {
-	// node/(?P<corpus_id>[0-9]+)/ngrams/list/(?P<list_name>\w+)
-	var corpus_id = getIDFromURL( "corpus" )
-	var someurl = window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/"+list_name;
-    $.ajax({
-        type: "GET",
-        url: someurl,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { 
-        	console.log( data )
-        	StopList = data
-        },
-        error: function(exception) { 
-            console.log("second ajax, exception!: "+exception.status)
-        }
-    })
-}
-
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 var corpus_id = getIDFromURL( "corpus" )
-var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop",
+	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
 	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
 	url3=window.location.href+"/ngrams.json";
-var ngrams_groups = {}, ngrams_map = {}, ngrams_stop = {} , ngrams_data = {};
+var NGrams = {
+	"group" : {},
+	"stop" : {}, 
+	"miam" : {},
+	"map" : {},
+	"scores" : {}
+}
+
 $.when(
+    $.ajax({
+        type: "GET",
+        url: url0,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { NGrams["stop"] = data },
+        error: function(exception) { 
+            console.log("first ajax, exception!: "+exception.status)
+        }
+    }),
     $.ajax({
         type: "GET",
         url: url1,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_groups = data },
+        success : function(data, textStatus, jqXHR) { NGrams["group"] = data },
         error: function(exception) { 
             console.log("first ajax, exception!: "+exception.status)
         }
@@ -984,7 +956,7 @@ $.when(
         type: "GET",
         url: url2,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_map = data },
+        success : function(data, textStatus, jqXHR) { NGrams["map"] = data },
         error: function(exception) { 
             console.log("first ajax, exception!: "+exception.status)
         }
@@ -993,7 +965,7 @@ $.when(
         type: "GET",
         url: url3,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_data = data },
+        success : function(data, textStatus, jqXHR) { NGrams["main"] = data },
         error: function(exception) { 
             console.log("second ajax, exception!: "+exception.status)
         }
@@ -1001,40 +973,40 @@ $.when(
 ).then(function() {
 
 	// Deleting subforms from the ngrams-table, clean start baby!
-    if( Object.keys(ngrams_groups.links).length>0 ) {
+    if( Object.keys(NGrams["group"].links).length>0 ) {
 
     	var _forms = {  "main":{} , "sub":{}  }
-    	for(var i in ngrams_groups.links) {
+    	for(var i in NGrams["group"].links) {
     		_forms["main"][i] = true
-    		for(var j in ngrams_groups.links[i]) {
-    			_forms["sub"][ ngrams_groups.links[i][j] ] = true
+    		for(var j in NGrams["group"].links[i]) {
+    			_forms["sub"][ NGrams["group"].links[i][j] ] = true
     		}
     	}
     	var ngrams_data_ = []
-    	for(var i in ngrams_data.ngrams) {
-    		if(_forms["sub"][ngrams_data.ngrams[i].id]) {
-    			ngrams_groups["nodes"][ngrams_data.ngrams[i].id] = ngrams_data.ngrams[i]
+    	for(var i in NGrams["main"].ngrams) {
+    		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
+    			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
     		} else {
-    			if( _forms["main"][ ngrams_data.ngrams[i].id ] )
-    				ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name
-    			ngrams_data_.push( ngrams_data.ngrams[i] )
+    			if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
+    				NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
+    			ngrams_data_.push( NGrams["main"].ngrams[i] )
     		}
     	}
-    	ngrams_data.ngrams = ngrams_data_;
+    	NGrams["main"].ngrams = ngrams_data_;
     }
 
-    if( Object.keys(ngrams_map).length>0 ) {
-    	for(var i in ngrams_data.ngrams) {
-    		if(ngrams_map[ngrams_data.ngrams[i].id]) {
-    			ngrams_data.ngrams[i]["map"] = true
+    if( Object.keys(NGrams["map"]).length>0 ) {
+    	for(var i in NGrams["main"].ngrams) {
+    		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
+    			NGrams["main"].ngrams[i]["map"] = true
     		}
     	}
     }
 
 
-    // Building the Score-Selector
-    var FirstScore = ngrams_data.scores.initial
-    var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
+    // Building the Score-Selector //NGrams["scores"]
+    var FirstScore = NGrams["main"].scores.initial
+    var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
@@ -1043,8 +1015,8 @@ $.when(
       }
     }
     // Initializing the Charts and Table
-    console.log( ngrams_data )
-    var result = Main_test( ngrams_data , FirstScore , "filter_all")
+    console.log( NGrams["main"] )
+    var result = Main_test( NGrams["main"] , FirstScore , "filter_all")
     console.log( result )
 
     // Listener for onchange Score-Selector
@@ -1052,7 +1024,7 @@ $.when(
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( ngrams_data , this.value , "filter_all")
+      var result = Main_test( NGrams["main"] , this.value , "filter_all")
       console.log( result )
 
     });

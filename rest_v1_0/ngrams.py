@@ -99,7 +99,7 @@ class Ngrams(APIView):
     '''
     REST application to manage ngrams
     Example : 
-    http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occurrences
+    http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
         # query ngrams
@@ -134,9 +134,9 @@ class Ngrams(APIView):
         #                 )
         #     for i in ngrams_query:
         #         print(i)
-        if 'occurrences' in the_score:
-            occurrences = func.sum(Node_Ngram.weight).label('occurrences')
-            ngrams_query = (ngrams_query.add_column(occurrences))
+        if 'occs' in the_score:
+            occs = func.sum(Node_Ngram.weight).label('occs')
+            ngrams_query = (ngrams_query.add_column(occs))
             results.append('occurences')
 
         if 'tfidf' in the_score:
@@ -170,8 +170,8 @@ class Ngrams(APIView):
             results.append('specificity')
 
         order_query = request.GET.get('order', False)
-        if order_query == 'occurrences':
-            ngrams_query = ngrams_query.order_by(desc(occurrences))
+        if order_query == 'occs':
+            ngrams_query = ngrams_query.order_by(desc(occs))
         elif order_query == 'cvalue':
             ngrams_query = ngrams_query.order_by(desc(Cvalue.score))
         elif order_query == 'tfidf':
@@ -241,18 +241,18 @@ class Ngrams(APIView):
 
         output = []
         for ngram in ngrams_query[offset : offset+limit]:
-            info = {}
+            info = { "scores":{} }
             try: info["id"] = ngram.id
             except: pass
-            try: info["terms"] = ngram.terms
+            try: info["name"] = ngram.terms
             except: pass
-            try: info["occurrences"] = ngram.occurrences
+            try: info["scores"]["occ_uniq"] = ngram.occs
             except: pass
-            try: info["tfidf"] = ngram.tfidf
+            try: info["scores"]["tfidf"] = ngram.tfidf
             except: pass
-            try: info["cvalue"] = ngram.cvalue
+            try: info["scores"]["cvalue"] = ngram.cvalue
             except: pass
-            try: info["specificity"] = ngram.specificity
+            try: info["scores"]["specificity"] = ngram.specificity
             except: pass
 
             output.append( info )
@@ -344,7 +344,7 @@ class Group(APIView):
         #     print(i)
         ngrams = [int(i) for i in list(groups["nodes"].keys())]
 
-        groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
+        # groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
         
         return JsonHttpResponse(groups)
    

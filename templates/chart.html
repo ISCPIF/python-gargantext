@@ -71,10 +71,10 @@
                         <button ng-click="removeDataset($index)">Remove dataset</button>
                         <!-- description of Y values -->
                         Evolution of the
-                        <select ng-model="query_y.value" ng-options="value as key for (key, value) in {'ngrams count': 'ngrams_count', 'documents count': 'documents_count'}" ng-change="updateDataset()"></select>
+                        <select ng-model="query_y.value" ng-options="value as key for (key, value) in {'documents count': 'documents_count', 'expressions count': 'ngrams_count'}" ng-change="updateDataset()"></select>
                         <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false, 'relative to the': true}" ng-change="updateDataset()"></select>
                         <span ng-if="query_y.is_relative">
-                            <select ng-model="query_y.divided_by" ng-options="value as key for (key, value) in {'total ngrams count': 'total_ngrams_count', 'total documents count': 'total_documents_count'}" ng-change="updateDataset()"></select>
+                            <select ng-model="query_y.divided_by" ng-options="value as key for (key, value) in {'total expressions count': 'total_ngrams_count', 'total documents count': 'total_documents_count'}" ng-change="updateDataset()"></select>
                         </span>
                     </div>
                     <!-- filters -->
@@ -95,8 +95,8 @@
                         </li>
                         <!-- filter ngrams -->
                         <li class="ngrams">
-                            ...only consider documents containing the following ngrams:
-                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an ngram" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true">
+                            ...only consider documents containing the following expressions:
+                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an expression" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true">
                                 <auto-complete source="getNgrams($query)"></auto-complete>
                             </tags-input ng-model="tags">
                         </li>
@@ -104,18 +104,12 @@
                         <li>
                             <ul>
                                 <li ng-repeat="hyperdata in hyperdataList">
-                                    ...where
-                                    <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.key }}"</span>
-                                    <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.key }}</strong>
+                                    ...where the value of
+                                    <span ng-if="!hyperdata.operator">"{{ hyperdata.key }}"</span>
+                                    <strong ng-if="hyperdata.operator">{{ hyperdata.key }}</strong>
 
-                                    <span ng-if="hyperdata.values">
-                                        is
-                                        <select ng-model="hyperdata.value" ng-options="value for value in hyperdata.values" ng-change="updateDataset()"></select>
-                                    </span>
-                                    <span ng-if="!hyperdata.values">
-                                        <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
-                                        <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
-                                    </span>
+                                    <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
+                                    <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
                                 </li>
                             </ul>
                         </li>

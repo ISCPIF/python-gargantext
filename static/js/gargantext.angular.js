@@ -177,17 +177,17 @@ angular.module('Gargantext').run(function($rootScope, $http, $cookies){
 
 // Controller for datasets
 gargantext.controller('DatasetController', function($scope, $http) {
-    
+
     // are we loading data from the server right now?
     $scope.is_loading = false;
 
     // initital parameters for the y-axis of the query
     $scope.query_y = {
-        'value': 'ngrams_count',
+        'value': 'documents_count',
         'is_relative': false,
         'divided_by': 'total_ngrams_count',
     };
-    
+
     // filters: corpora retrieval
     $scope.corpora = [];
     if (/^\/project\/\d+\/corpus\/\d+/.test(location.pathname)) {
@@ -209,7 +209,7 @@ gargantext.controller('DatasetController', function($scope, $http) {
             }
         });
     };
-    var getSelectedCorporaIdList = function() {        
+    var getSelectedCorporaIdList = function() {
         var corpus_id_list = [];
         $.each($scope.corpora, function(c, corpus) {
             if (corpus.is_selected) {
@@ -316,7 +316,7 @@ gargantext.controller('DatasetController', function($scope, $http) {
 
 // Controller for graphs
 gargantext.controller('GraphController', function($scope, $http, $element) {
-    
+
 
     // initial values
     $scope.query_x = {

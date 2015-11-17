@@ -43,6 +43,9 @@ tr:hover {
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
   background-color: #F5A9A9;
 }*/
+.normal {
+  color: black;
+}
 
 .delete {
   color:red; 
@@ -124,6 +127,13 @@ input[type=radio]:checked + label {
 
 {% block content %}
 
+<div id="content_loader">
+  <br>
+  <center>
+    <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+  </center>
+  <br>
+</div>
                 <div class="container">
                         <div class="container">
 

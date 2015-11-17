@@ -991,8 +991,8 @@ $.when(
     		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
     			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
     		} else {
-    			if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
-    				NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
+    			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
+    			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
     			ngrams_data_.push( NGrams["main"].ngrams[i] )
     		}
     	}

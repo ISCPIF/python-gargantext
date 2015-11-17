@@ -880,11 +880,12 @@ function getIDFromURL( item ) {
 }
 
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
+// http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop",
+var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=999999",
 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
-	url3=window.location.href+"/ngrams.json";
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=map&limit=999999",
+	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=999999";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
@@ -899,7 +900,11 @@ $.when(
         type: "GET",
         url: url0,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["stop"] = data },
+        success : function(data, textStatus, jqXHR) { 
+        	for(var i in data.data) {
+        		NGrams["stop"][data.data[i].id] = data.data[i]
+        	}
+        },
         error: function(exception) { 
             console.log("first ajax, exception!: "+exception.status)
         }
@@ -908,7 +913,9 @@ $.when(
         type: "GET",
         url: url1,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["group"] = data },
+        success : function(data, textStatus, jqXHR) { 
+        	NGrams["group"] = data 
+        },
         error: function(exception) { 
             console.log("first ajax, exception!: "+exception.status)
         }
@@ -917,7 +924,11 @@ $.when(
         type: "GET",
         url: url2,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["map"] = data },
+        success : function(data, textStatus, jqXHR) { 
+        	for(var i in data.data) {
+        		NGrams["map"][data.data[i].id] = data.data[i]
+        	}
+        },
         error: function(exception) { 
             console.log("first ajax, exception!: "+exception.status)
         }
@@ -926,7 +937,18 @@ $.when(
         type: "GET",
         url: url3,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["main"] = data },
+        success : function(data, textStatus, jqXHR) {
+
+        	NGrams["main"] = {
+        		"ngrams": data.data,
+        		"scores": {
+			        "initial":"occ_uniq",
+			        "nb_docs":data.data.length,
+			        "orig_nb_ngrams":1,
+			        "nb_ngrams":data.data.length,
+			    }
+        	}
+        },
         error: function(exception) { 
             console.log("second ajax, exception!: "+exception.status)
         }
@@ -962,7 +984,6 @@ $.when(
     		}
     	}
     }
-
 
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial

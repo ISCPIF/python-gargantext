@@ -440,23 +440,17 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
-function SelectAll( the_checkbox ) {
-  console.log(the_checkbox)
+function SelectAll( box ) {
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
-      // AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;
+      if(box.checked) {
+      	AjaxRecords[id]["state_buff"] = AjaxRecords[id]["state"]
+      	AjaxRecords[id]["state"] = System[0]["statesD"][current_flag]
+      } else {
+      	AjaxRecords[id]["state"] = AjaxRecords[id]["state_buff"]
+      }
       
-
-      var this_newflag = (the_checkbox.checked)?current_flag:false;
-
-      // console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
-      // console.log("\t so the new flag is: "+this_newflag)
-
-      AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
-
-
-
   });
   MyTable.data('dynatable').dom.update();
 }
@@ -839,7 +833,7 @@ function Main_test( data , initial , search_filter) {
     for(var action in PossibleActions) {
       var a = PossibleActions[action];
       var ischecked = (Number(action)==0)?"checked":"";
-      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios" onclick="DeactivateSelectAll();" value="'+a.id+'" '+ischecked+'>';
+      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios"  value="'+a.id+'" '+ischecked+'>';
       Div_PossibleActions += '<label style="color:'+a.color+';" for="radio'+action+'">'+a.name+'</label>';
     }
     var Div_SelectAll = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'

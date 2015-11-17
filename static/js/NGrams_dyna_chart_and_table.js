@@ -203,26 +203,32 @@ function save_groups() {
 	var count = 0
 	var mainform = -1
 	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
-		$(gcontent).children('span').each(function () {
-			var nid = $(this).data("id");
-			if (count==0) {
-				if(writeflag) {
-					// AjaxRecords[RecDict[nid]].name += "*" 
-					FlagsBuffer["group"][ nid ] = []
-					mainform = nid
-		    		AjaxRecords[RecDict[nid]].state = 1
-		    	} else {
-		    		AjaxRecords[RecDict[nid]].state = 0;
-		    	}
-		    } else {
-				if(writeflag) {
-					FlagsBuffer["group"][ mainform ].push( nid )
-		    		AjaxRecords[RecDict[nid]].state = -1
-				}
-		    }
-		    count++
-		});
+	$(gcontent).children('span').each(function () {
+		var nid = $(this).data("id");
+		if (count==0) {
+			if(writeflag) {
+				// AjaxRecords[RecDict[nid]].name += "*" 
+				FlagsBuffer["group"][ nid ] = []
+				mainform = nid
+	    		AjaxRecords[RecDict[nid]].state = 1
+	    		var label = AjaxRecords[RecDict[nid]].name
+	    		AjaxRecords[RecDict[nid]].name = (label[0]=="*") ? label : ("*"+label)
+
+	    	} else {
+	    		AjaxRecords[RecDict[nid]].state = 0;
+	    		// var label = AjaxRecords[RecDict[nid]].name
+	    		// AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label.name;
+	    	}
+	    } else {
+			if(writeflag) {
+				FlagsBuffer["group"][ mainform ].push( nid )
+	    		AjaxRecords[RecDict[nid]].state = -1
+			}
+	    }
+	    count++
+	});
 	$("#group_box").remove()
+	$("#group_flag").remove()
 	GState=0
 	MyTable.data('dynatable').dom.update();
 }
@@ -233,8 +239,11 @@ function cancel_groups() {
 	$(gcontent).children('span').each(function () {
 	    var nid = $(this).data("id");
 	    AjaxRecords[RecDict[nid]].state = 0
+		var label = AjaxRecords[RecDict[nid]].name
+		AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label;
 	});
 	$("#group_box").remove()
+	$("#group_flag").remove()
 	GState=0
 	MyTable.data('dynatable').dom.update();
 }
@@ -272,11 +281,11 @@ function add2group ( elem ) {
 		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
 		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
 		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
-			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
 			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
 			group_html += '      </span>'+'\n';
+			group_html += '      <span id="group_flag"></span>'+'\n';
 			$(group_html).insertAfter( "#my-ajax-table > thead" )
-			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
+			$("#group_flag").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
 	}
 	GState=1
 
@@ -357,7 +366,6 @@ function overRide(elem) {
   //   FlagsBuffer[this_newflag][id] = true;
   // else 
   //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-  AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
 
   var sum__selected_elems = 0;
   for(var i in FlagsBuffer)
@@ -375,52 +383,6 @@ function overRide(elem) {
   MyTable.data('dynatable').dom.update();
 
 }
-
-// Here you have to put the weird case of Change from Group-Mode
-function DeactivateSelectAll() {
-  if( $("#multiple_selection").length>0 )
-    $("#multiple_selection")[0].checked = false;
-
-  if( Object.keys(FlagsBuffer["to_group"]).length ){
-
-
-    $("#savemodal").modal("show").css({
-        'margin-top': function () { //vertical centering
-            console.log($(".modal-content").height())
-            return ($(this).height() / 2);
-        }
-    });
-
-    console.log("OH OH")
-    console.log("There are some nodes in group array!:")
-    // $("#to_group").html( Object.keys(FlagsBuffer["to_group"]).join(" , ") );
-    var labels = []
-    for (var i in FlagsBuffer["to_group"]){
-      var fake_id = i
-      console.log( AjaxRecords[fake_id] )
-      labels.push(AjaxRecords[fake_id].name)
-    //   $("#to_group").htm
-    }
-
-    $("#to_group").html( '<font color="blue">' + labels.join(" , ") + '</div>' );
-  }
-}
-
-
-function Mark_NGram( ngram_id , old_flag , new_flag ) {
-  if(new_flag){
-    for(var f in FlagsBuffer) {
-      if( new_flag==f )
-        FlagsBuffer[f][ngram_id] = true;
-      else 
-        delete FlagsBuffer[f][ngram_id];
-    }
-  } else {
-    delete FlagsBuffer[ old_flag ][ngram_id];
-  }
-  return new_flag;
-}
-
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {

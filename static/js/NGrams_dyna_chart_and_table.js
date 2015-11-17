@@ -203,28 +203,30 @@ function save_groups() {
 	var count = 0
 	var mainform = -1
 	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
-		$(gcontent).children('span').each(function () {
-			var nid = $(this).data("id");
-			if (count==0) {
-				if(writeflag) {
-					// AjaxRecords[RecDict[nid]].name += "*" 
-					FlagsBuffer["group"][ nid ] = []
-					mainform = nid
-		    		AjaxRecords[RecDict[nid]].state = 1
-		    		var asterisk = (AjaxRecords[RecDict[nid]].name[0]=="*")?"":"*"
-		    		AjaxRecords[RecDict[nid]].name = asterisk+AjaxRecords[RecDict[nid]].name
+	$(gcontent).children('span').each(function () {
+		var nid = $(this).data("id");
+		if (count==0) {
+			if(writeflag) {
+				// AjaxRecords[RecDict[nid]].name += "*" 
+				FlagsBuffer["group"][ nid ] = []
+				mainform = nid
+	    		AjaxRecords[RecDict[nid]].state = 1
+	    		var label = AjaxRecords[RecDict[nid]].name
+	    		AjaxRecords[RecDict[nid]].name = (label[0]=="*") ? label : ("*"+label)
 
-		    	} else {
-		    		AjaxRecords[RecDict[nid]].state = 0;
-		    	}
-		    } else {
-				if(writeflag) {
-					FlagsBuffer["group"][ mainform ].push( nid )
-		    		AjaxRecords[RecDict[nid]].state = -1
-				}
-		    }
-		    count++
-		});
+	    	} else {
+	    		AjaxRecords[RecDict[nid]].state = 0;
+	    		// var label = AjaxRecords[RecDict[nid]].name
+	    		// AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label.name;
+	    	}
+	    } else {
+			if(writeflag) {
+				FlagsBuffer["group"][ mainform ].push( nid )
+	    		AjaxRecords[RecDict[nid]].state = -1
+			}
+	    }
+	    count++
+	});
 	$("#group_box").remove()
 	$("#group_flag").remove()
 	GState=0
@@ -237,6 +239,8 @@ function cancel_groups() {
 	$(gcontent).children('span').each(function () {
 	    var nid = $(this).data("id");
 	    AjaxRecords[RecDict[nid]].state = 0
+		var label = AjaxRecords[RecDict[nid]].name
+		AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label;
 	});
 	$("#group_box").remove()
 	$("#group_flag").remove()

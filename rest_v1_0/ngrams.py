@@ -78,7 +78,6 @@ from rest_framework.decorators import api_view
 
 
 class List(APIView):
-
     def get(self, request, corpus_id , list_name ):
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         list_name = list_name.title()+"List"
@@ -93,7 +92,6 @@ class List(APIView):
         ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
 
         return JsonHttpResponse(ngram_ids)
-
 
 class Ngrams(APIView):
     '''

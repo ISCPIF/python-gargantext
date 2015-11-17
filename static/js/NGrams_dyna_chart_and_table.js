@@ -663,7 +663,7 @@ function Main_test( data , initial , search_filter) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": (le_ngram.map)?1:0
+        "state": (le_ngram.state)?le_ngram.state:0
       }
       AjaxRecords.push(node_info)
 
@@ -879,7 +879,9 @@ function SearchFilters( elem ) {
   	}
     for(var r in NGrams["main"].ngrams) {
     	if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
-    		sub_ngrams_data["ngrams"].push( NGrams["main"].ngrams[r] )
+    		var a_ngram = NGrams["main"].ngrams[r]
+			a_ngram["state"] = System[0]["statesD"]["keep"]
+    		sub_ngrams_data["ngrams"].push( a_ngram )
     	}
     }
 
@@ -898,7 +900,9 @@ function SearchFilters( elem ) {
 			"scores": $.extend({}, NGrams["main"].scores)
 		}
 		for(var r in NGrams["stop"]) {
-			sub_ngrams_data["ngrams"].push( NGrams["stop"][r] )
+			var a_ngram = NGrams["stop"][r]
+			a_ngram["state"] = System[0]["statesD"]["delete"]
+			sub_ngrams_data["ngrams"].push( a_ngram )
 		}
 		var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
 		console.log( result )
@@ -928,11 +932,12 @@ var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop",
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
-	"miam" : {},
+	"main" : {},
 	"map" : {},
 	"scores" : {}
 }
 
+$("#corpusdisplayer").hide()
 $.when(
     $.ajax({
         type: "GET",
@@ -971,7 +976,6 @@ $.when(
         }
     })
 ).then(function() {
-
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -998,7 +1002,7 @@ $.when(
     if( Object.keys(NGrams["map"]).length>0 ) {
     	for(var i in NGrams["main"].ngrams) {
     		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
-    			NGrams["main"].ngrams[i]["map"] = true
+    			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
     		}
     	}
     }
@@ -1029,5 +1033,8 @@ $.when(
 
     });
 
+    $("#corpusdisplayer").show()
+    $("#content_loader").remove()
+    $("#corpusdisplayer").click()
 
 });

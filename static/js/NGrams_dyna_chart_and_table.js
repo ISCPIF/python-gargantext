@@ -891,17 +891,17 @@ function SearchFilters( elem ) {
   }
 
   if( MODE == "filter_stop-list") {
-
-  	if(Object.keys(NGrams["stop"]).length<1) {
+  	console.log( NGrams["stop"] )
+  	if(Object.keys(NGrams["stop"]).length>0) {
 		var sub_ngrams_data = {
 			"ngrams":[],
 			"scores": $.extend({}, NGrams["main"].scores)
 		}
-		for(var r in NGrams["main"].ngrams) {
-			if ( NGrams["stop"][ NGrams["main"].ngrams[r].id ] ) {
-				sub_ngrams_data["ngrams"].push( NGrams["main"].ngrams[r] )
-			}
+		for(var r in NGrams["stop"]) {
+			sub_ngrams_data["ngrams"].push( NGrams["stop"][r] )
 		}
+		var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
+		console.log( result )
   	}
   }
 

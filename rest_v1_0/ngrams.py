@@ -83,7 +83,8 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
     for ngram in nodes_ngrams:
         ngram_ids[ngram.id] = {
             "id": ngram.id,
-            "name": ngram.terms
+            "name": ngram.terms,
+            "scores": {}
         }
 
     # [ Get Uniq_Occs ]
@@ -103,12 +104,12 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
     OCCs = {}
     for ngram in ngrams_occs:
         try:
-            ngram_ids [ ngram[0] ][ "occ_uniq" ] = ngram[1]
+            ngram_ids [ ngram[0] ]["scores"][ "occ_uniq" ] = ngram[1]
         except:
             pass
     for i in ngram_ids:
-        if "occ_uniq" not in ngram_ids[i]:
-            ngram_ids[i][ "occ_uniq" ] = 1
+        if "occ_uniq" not in ngram_ids[i]["scores"]:
+            ngram_ids[i]["scores"][ "occ_uniq" ] = 1
 
     group_by = []
     results   = ['id', 'terms']
@@ -137,13 +138,13 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
                     )
     for ngram in ngrams_query:
         try:
-            ngram_ids [ ngram[0] ][ "tfidf" ] = ngram[2]
+            ngram_ids [ ngram[0] ]["scores"][ "tfidf" ] = ngram[2]
         except:
             pass
             
     for i in ngram_ids:
-        if "tfidf" not in ngram_ids[i]:
-            ngram_ids[i][ "tfidf" ] = 0.01
+        if "tfidf" not in ngram_ids[i]["scores"]:
+            ngram_ids[i]["scores"][ "tfidf" ] = 0.01
 
     return ngram_ids
 

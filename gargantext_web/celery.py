@@ -23,32 +23,27 @@ def apply_sum(x, y):
 from parsing.corpustools import  parse_resources, extract_ngrams #add_resource,
 from ngram.lists import ngrams2miam
 
-from admin.utils import PrintException
-
-def update_processing(corpus, step=0):
-    try:
-        corpus.hyperdata.update({'Processing' : step})
-        session.query(Node).filter(Node.id==corpus.id).update({'hyperdata' : corpus.hyperdata})
-        session.commit()
-    except :
-        PrintException()
+from admin.utils import WorkflowTracking
 
 @shared_task
 def apply_workflow(corpus_id):
+
+    update_state = WorkflowTracking()
+
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
-    update_processing(corpus, 1)
+    update_state.processing_(corpus, "Parsing")
     #cProfile.runctx('parse_resources(corpus)', global,locals)
     parse_resources(corpus)
 
-    update_processing(corpus, 2)
+    update_state.processing_(corpus, "Terms extraction")
     extract_ngrams(corpus, ['title', 'abstract'], nlp=True)
 
-    update_processing(corpus, 3)
+    # update_state.processing_(corpus, "")
     ngram_workflow(corpus)
 
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
-    update_processing(corpus, 0)
+    update_state.processing_(corpus, "OK")
 
 @shared_task
 def empty_trash(corpus_id):

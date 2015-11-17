@@ -360,7 +360,8 @@ gargantext.controller('GraphController', function($scope, $http, $element) {
     // remove a dataset
     $scope.removeDataset = function(datasetIndex) {
         if ($scope.datasets.length > 1) {
-            $scope.datasets.shift(datasetIndex);
+            $scope.datasets.splice(datasetIndex, 1);
+            dataset_results.splice(datasetIndex, 1);
             $scope.updateDatasets();
         } else {
             alert('You can not remove the last dataset.')

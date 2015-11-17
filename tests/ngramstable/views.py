@@ -328,3 +328,10 @@ def get_ngrams_json(request , project_id, corpus_id ):
     # print ("LALALALALALALALLLALALALALA")
 
     return JsonHttpResponse(Metrics)
+
+def get_corpuses( request , node_ids ):
+    ngrams = [int(i) for i in node_ids.split("+") ]
+    results = session.query(Node.id,Node.hyperdata).filter(Node.id.in_(ngrams) ).all()
+    for r in results:
+        print(r)
+    return JsonHttpResponse( [ "tudo" , "bem" ] )

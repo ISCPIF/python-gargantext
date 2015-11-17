@@ -77,7 +77,8 @@ def logo(request):
     if group == "cnrs":
         color = "#093558"
     else:
-        color = "#ff8080"
+        # color of the css adapted to the logo
+        color = "#AE5C5C"
     svg_data = template.render(Context({\
             'color': color,\
             }))
@@ -164,13 +165,14 @@ def get_about(request):
     date        = datetime.datetime.now()
 
     members     = about.get_team()
-    sponsors    = about.get_sponsors()
+    sponsors,grants    = about.get_partners()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
             'sponsors':sponsors,\
+            'grants': grants,\
             }))
 
     return HttpResponse(html)

@@ -59,17 +59,25 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
 
     #xo = diag_null(x)
     #y = diag_null(y)
+    distance = 'conditional'
 
-    x = x / x.sum(axis=1)
-    y = y / y.sum(axis=0)
+    if distance == 'conditional':
+        x = x / x.sum(axis=1)
+        y = y / y.sum(axis=0)
 
-    xs = x.sum(axis=1) - x
-    ys = x.sum(axis=0) - x
+        xs = x.sum(axis=1) - x
+        ys = x.sum(axis=0) - x
 
-    # top inclus ou exclus
-    n = ( xs + ys) / (2 * (x.shape[0] - 1))
-    # top generic or specific
-    m = ( xs - ys) / (2 * (x.shape[0] - 1))
+
+        # top inclus ou exclus
+        n = ( xs + ys) / (2 * (x.shape[0] - 1))
+        # top generic or specific
+        m = ( xs - ys) / (2 * (x.shape[0] - 1))
+
+    elif distance == 'cosine':
+        xs = x / np.sqrt((x**2).sum(axis=1) * (x**2).sum(axis=0))
+        n = np.max(xs.sum(axis=1))
+        m = np.min(xs.sum(axis=1))
 
     n = n.sort(inplace=False)
     m = m.sort(inplace=False)
@@ -110,20 +118,21 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True):
 
     def getWeight(item):
         return item[1]
-    
-    node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
-    #print(node_degree)
-    nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]
-
-    for n in nodes_too_connected:
-        n_edges = list()
-        for v in nx.neighbors(G,n):
-            n_edges.append(((n, v), G[n][v]['weight']))
-
-        n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)
-        #G.remove_edges_from([ e[0] for e in n_edges_sorted[round(len(n_edges_sorted)/2):]])
-        #G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/3)):]])
-        G.remove_edges_from([ e[0] for e in n_edges_sorted[10:]])
+#    
+#    node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
+#    #print(node_degree)
+#    nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]
+#
+#    for n in nodes_too_connected:
+#        n_edges = list()
+#        for v in nx.neighbors(G,n):
+#            #print((n, v), G[n][v]['weight'], ":", (v,n), G[v][n]['weight'])
+#            n_edges.append(((n, v), G[n][v]['weight']))
+#
+#        n_edges_sorted = sorted(n_edges, key=getWeight, reverse=True)
+#        #G.remove_edges_from([ e[0] for e in n_edges_sorted[round(len(n_edges_sorted)/2):]])
+#        #G.remove_edges_from([ e[0] for e in n_edges_sorted[(round(len(nx.neighbors(G,n))/3)):]])
+#        G.remove_edges_from([ e[0] for e in n_edges_sorted[10:]])
 
     G.remove_nodes_from(nx.isolates(G))
     partition = best_partition(G.to_undirected())

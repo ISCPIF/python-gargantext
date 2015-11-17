@@ -87,7 +87,7 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
             "scores": {}
         }
 
-    # [ Get Uniq_Occs ]
+    # [ = = = = = = Get Uniq_Occs = = = = = = ]
     myamlist = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType[list_name].id ).first()
     Miam = aliased(NodeNgram)
     ngrams_occs = (session.query(NodeNgram.ngram_id, func.sum(NodeNgram.weight))
@@ -98,10 +98,7 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
                           .group_by(NodeNgram.ngram_id)
                           .all()
                   )
-    # [ / Get Uniq_Occs ]
 
-    # print([n for n in ngrams_occs])
-    OCCs = {}
     for ngram in ngrams_occs:
         try:
             ngram_ids [ ngram[0] ]["scores"][ "occ_uniq" ] = ngram[1]
@@ -110,6 +107,7 @@ def get_occtfidf( ngrams , user_id , corpus_id , list_name):
     for i in ngram_ids:
         if "occ_uniq" not in ngram_ids[i]["scores"]:
             ngram_ids[i]["scores"][ "occ_uniq" ] = 1
+    # [ = = = = = = / Get Uniq_Occs = = = = = = ]
 
     group_by = []
     results   = ['id', 'terms']

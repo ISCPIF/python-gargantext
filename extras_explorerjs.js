@@ -72,7 +72,7 @@ function newPopup(url) {
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Colors" src="libs/img2/colors.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Colors" src="/static/js/libs/img2/colors.png" width="20px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 

@@ -53,10 +53,7 @@ class WorkflowTracking:
 
     def processing_(self , corpus , step):
         try:
-            the_query = """ UPDATE node_node SET hyperdata=\'{ \"%s\" : 1}\' WHERE id=%d """ % ( step , corpus.id )
-            # print(the_query)
-            # print(step)
-            # print(" = = = = = = =")
+            the_query = """ UPDATE node_node SET hyperdata=\'{ \"%s\" : \"%s\"}\' WHERE id=%d """ % ( "Processing", step , corpus.id )
             cursor = connection.cursor()
             try:
                 cursor.execute(the_query)

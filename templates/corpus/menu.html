@@ -45,13 +45,7 @@
 																		</ul>
 																		'>Manage</a>
 
-<!--
-<div class="progress">
-  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 90%">
-    <span class="sr-only">45% Complete</span>
-  </div>
-</div>
---!>
+
 
 						{% if number == 0 %}
 								<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
@@ -65,8 +59,7 @@
 				<center>
 				<a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/documents">{{number}} Documents</a>
 							<a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
-						
-							{% if processing == 0 %}
+							{% if processing == 0 or processing == "0" %}
 							<a type="button" class="btn btn-default {% if view == "terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/terms">Terms (Bêta)</a>
 							{% endif %}
 				</center>

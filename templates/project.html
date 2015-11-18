@@ -293,7 +293,10 @@
 		      success: function(data) {
 				console.log("in doTheQuery() Ajax.Success:")
 		        console.log(data)
-		        location.reload();
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 5000);
 		      },
 		        error: function(result) {
 		            console.log("in doTheQuery(). Data not found");
@@ -527,8 +530,11 @@
 		      },
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
-		        console.log(data)
-		        location.reload();
+		        console.log(data)		        
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 5000);
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

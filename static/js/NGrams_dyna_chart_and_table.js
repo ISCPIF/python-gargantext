@@ -887,9 +887,6 @@ function GET_( url , callback ) {
         dataType: "json",
         success : function(data, textStatus, jqXHR) { 
         	callback(data.data);
-        	// for(var i in data.data) {
-        	// 	NGrams["stop"][data.data[i].id] = data.data[i]
-        	// }
         },
         error: function(exception) { 
             callback(false);
@@ -902,7 +899,7 @@ function GET_( url , callback ) {
 var corpus_id = getIDFromURL( "corpus" )
 var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=map&limit=1000",
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
 	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
 var NGrams = {
 	"group" : {},
@@ -927,9 +924,7 @@ GET_( url0 , function(result) {
 		}
 		GET_( url2 , function(result) {
 			if(result!=false) {
-				for(var i in result) {
-		    		NGrams["map"][result[i].id] = result[i]
-		    	}
+				NGrams["map"] = result 
 			}
 			GET_( url3 , function(result) {
 				if(result!=false) {

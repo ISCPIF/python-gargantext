@@ -90,9 +90,9 @@ class List(APIView):
             ngram_ids[node.ngram_id] = True
         ngrams = [int(i) for i in list(ngram_ids.keys())]
 
-        ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
+        # ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
 
-        return JsonHttpResponse(ngram_ids)
+        return JsonHttpResponse( {"data":ngram_ids} )
 
 
 class Ngrams(APIView):
@@ -245,7 +245,7 @@ class Ngrams(APIView):
 
         # print("\t\tSTEP 07","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         # print("")
-        print(ngrams_query)
+        # print(ngrams_query)
         total = ngrams_query.count()
 
         # print("")

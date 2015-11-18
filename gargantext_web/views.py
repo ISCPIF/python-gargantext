@@ -165,13 +165,14 @@ def get_about(request):
     date        = datetime.datetime.now()
 
     members     = about.get_team()
-    sponsors,grants    = about.get_partners()
+    institutions,labos,grants    = about.get_partners()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
-            'sponsors':sponsors,\
+            'institutions': institutions,\
+            'labos': labos,\
             'grants': grants,\
             }))
 

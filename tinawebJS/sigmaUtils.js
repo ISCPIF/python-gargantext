@@ -279,10 +279,34 @@ function getAcronyms() {
 }
 
 
-function clustersBy(daclass) {
+function clustersBy(daclass , att2change ) {
 
     cancelSelection(false);
     var v_nodes = getVisibleNodes();
+
+    if(daclass=="default") {
+
+        if( att2change=="size" ) {
+            var NodeID_Val = {}
+            var real_min = 1000000;
+            var real_max = -1;
+            var themult = Math.pow(10,min_pow);
+            for(var i in v_nodes) {
+                var the_node = Nodes[ v_nodes[i].id ]
+                var attval = (the_node.size)? Math.log(the_node.size+1) : 3 ;
+                var attnumber = Number(attval);
+                partialGraph._core.graph.nodesIndex[v_nodes[i].id].size = attval;
+                partialGraph._core.graph.nodesIndex[v_nodes[i].id].label = the_node.label;
+            }
+
+            partialGraph.refresh();
+            partialGraph.draw();
+
+            return true;
+        }
+    }
+
+
     var min_pow = 0;
     for(var i in v_nodes) {
         var the_node = Nodes[ v_nodes[i].id ]
@@ -331,15 +355,18 @@ function clustersBy(daclass) {
     var Max_size= 6;
     for(var i in NodeID_Val) {
 
-        var newval_color = Math.round( ( Min_color+(NodeID_Val[i]["round"]-real_min)*((Max_color-Min_color)/(real_max-real_min)) ) );
-        var hex_color = rgbToHex(255, (255-newval_color) , 0)
-        partialGraph._core.graph.nodesIndex[i].color = hex_color
+        if(att2change=="color") {
+            var newval_color = Math.round( ( Min_color+(NodeID_Val[i]["round"]-real_min)*((Max_color-Min_color)/(real_max-real_min)) ) );
+            var hex_color = rgbToHex(255, (255-newval_color) , 0)
+            partialGraph._core.graph.nodesIndex[i][att2change] = hex_color
+        }
 
-        var newval_size = Math.round( ( Min_size+(NodeID_Val[i]["round"]-real_min)*((Max_size-Min_size)/(real_max-real_min)) ) );
-        partialGraph._core.graph.nodesIndex[i].size = newval_size;
-        // pr("real:"+ NodeID_Val[i]["real"] + " | newvalue: "+newval_size)
+        if(att2change=="size") {
+            var newval_size = Math.round( ( Min_size+(NodeID_Val[i]["round"]-real_min)*((Max_size-Min_size)/(real_max-real_min)) ) );
+            partialGraph._core.graph.nodesIndex[i][att2change] = newval_size;
+            partialGraph._core.graph.nodesIndex[i].label = "("+NodeID_Val[i]["real"].toFixed(min_pow)+") "+Nodes[i].label
+        }
 
-        partialGraph._core.graph.nodesIndex[i].label = "("+NodeID_Val[i]["real"].toFixed(min_pow)+") "+Nodes[i].label
     }
     //    [ / Scaling node colours(0-255) and sizes(3-5) ]
 
@@ -372,7 +399,7 @@ function clustersBy(daclass) {
 }
 
 
-function colorsBy(daclass) {
+function colorsBy(daclass, att2change ) {
     
     pr("")
     pr(" = = = = = = = = = = = = = = = = = ")

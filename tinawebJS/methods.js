@@ -31,6 +31,7 @@ function cancelSelection (fromTagCloud) {
     
     if(fromTagCloud==false){
         $("#names").html(""); 
+        $("#ngrams_actions").html("")
         $("#topPapers").html(""); $("#topPapers").hide();
         $("#opossiteNodes").html(""); $("#tab-container").hide();
         $("#information").html("");
@@ -458,7 +459,6 @@ function htmlfied_nodesatts(elems){
     return socnodes.concat(semnodes)
 }
 
-
 //missing: getTopPapers for both node types
 //considering complete graphs case! <= maybe i should mv it
 function updateLeftPanel_fix( sels , oppos ) {
@@ -472,6 +472,12 @@ function updateLeftPanel_fix( sels , oppos ) {
     namesDIV+='<div id="selectionsBox"><h4>';
     namesDIV+= getNodeLabels( sels ).join(' <b>/</b> ')//aqui limitar
     namesDIV += '</h4></div>';
+
+    var ngram_actions = ''
+        // ngram_actions += '<center>'
+        // ngram_actions += '<span><button class="delete" onclick="modify_ngrams(this.className)">Delete</button></span>'
+        // ngram_actions += '<span><button class="group" onclick="modify_ngrams(this.className)">Group</button></span>'
+        // ngram_actions += '</center>'
 
     if(oppos.length>0) {
 	    alterNodesDIV+='<div id="opossitesBox">';//tagcloud
@@ -497,6 +503,7 @@ function updateLeftPanel_fix( sels , oppos ) {
     // pushing my commit
     // because i need more lines, idk
     $("#names").html(namesDIV).readmore({maxHeight:100}); 
+    $("#ngrams_actions").html(ngram_actions)
     $("#tab-container").show();
     $("#opossiteNodes").html(alterNodesDIV).readmore({maxHeight:200}); 
     $("#sameNodes").html(sameNodesDIV).readmore({maxHeight:200}); 

@@ -88,18 +88,19 @@
 
 				<div class="col-md-6">
 						<div class="jumbotron">
-				{% if processing > 0 %}
-						<h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Networks (later)</h3>
-                        <ol>
-                                <li>Terms</li>
-                                <li>Journals and Terms</li>
-                                <li>Authors and Terms</li>
-                        </ol>
-                {% else %}
+				{% if processing == 0 or processing == "0" %}
                         <h3> Networks </h3>
                         <ol>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Terms</a></li>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=journal&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Journals and Terms</a></li>
+                                <li>Authors and Terms</li>
+                        </ol>
+                {% else %}
+						<h3><img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Networks </h3>
+						<h6>(Updating: <i>{{processing}}</i>)</h6>
+                        <ol>
+                                <li>Terms</li>
+                                <li>Journals and Terms</li>
                                 <li>Authors and Terms</li>
                         </ol>
                 {% endif %}

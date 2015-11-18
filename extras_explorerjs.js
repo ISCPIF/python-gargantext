@@ -657,7 +657,6 @@ function printCorpuses() {
 // Just for Garg
 function GetUserPortfolio() {
     //http://localhost:8000/api/corpusintersection/1a50317a50145
-
     var pageurl = window.location.href.split("/")
     var pid;
     for(var i in pageurl) {
@@ -676,6 +675,9 @@ function GetUserPortfolio() {
         }
     } 
     var corpus_id = pageurl[cid+1];
+
+    if( Object.keys( corpusesList ).length > 0 )
+        return true;
 
     var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
     $.ajax({

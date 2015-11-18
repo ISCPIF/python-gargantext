@@ -22,13 +22,15 @@ from ..NgramsExtractors import *
 
 from admin.utils import PrintException
 
-class EuropressFileParser(FileParser):
-    def _parse_header(self, header):
-        pass
-
+class EuropressFileParser_fr(FileParser):
     def _parse(self, file):
-        localeEncoding = "fr_FR"
-        codif      = "UTF-8"
+        localeEncoding          = "fr_FR"
+        codif                   = "UTF-8"
+        format_date             = re.compile('.*\d{4}.*', re.UNICODE)
+        
+        def parse_date(date, lang):
+            d = dateparser.parse(date.strip(), languages=[lang])
+            return d
 
         if isinstance(file, str):
             file = open(file, 'rb')
@@ -73,7 +75,6 @@ class EuropressFileParser(FileParser):
         # parse all the articles, one by one
         try:
             for html_article in html_articles:
-                print('article')
 
                 hyperdata = {}
                 
@@ -90,12 +91,40 @@ class EuropressFileParser(FileParser):
                     
                 
                 header = html_article.xpath(header_xpath)[0].text
-                hyperdata.update(self._parse_header(header))
+                if header is not None:
+                    header = header.split(', ')
+                    if parse_date(header[0], 'fr') is not None:
+                        date       = header[0]
+                    elif parse_date(header[1], 'fr') is not None:
+                        hyperdata['rubrique']   = header[0]
+                        date       = header[1]
+                        try:
+                            hyperdata['page']       = header[2].split(' ')[1]
+                        except:
+                            pass
+                    
+                    elif parse_date(header[2], 'fr') is not None:
+                        date       = header[2]
+                    
+                    elif parse_date(header[0], 'en') is not None:
+                        date = ' '.join(header[0:])
+                    elif parse_date(header[1], 'en') is not None:
+                        date = ' '.join(header[1:])
+                    elif parse_date(header[2], 'en') is not None:
+                        date = ' '.join(header[2:])
+
+                
+                try:
+                    hyperdata['publication_date'] = dateparser.parse(date.strip(), languages=['fr', 'en'])
+                    
+                except:
+                    hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
                 hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
                 hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
-                
+
+                #print(hyperdata['publication_date'])
                 try:
                     title   = paragraph_list(html_article.xpath(title_xpath))
                     hyperdata['title'] = title[0]
@@ -113,60 +142,6 @@ class EuropressFileParser(FileParser):
         except :
             PrintException()
             pass
-
-
-
-class EuropressFileParser_fr(EuropressFileParser):
-    def _parse_header(self, header):
-        format_date = re.compile('.*\d{4}.*', re.UNICODE)
-        hyperdata = dict()
-        if header is not None:
-            header = header.split(', ')
-            if format_date.match(header[0]):
-                date       = header[0]
-            elif format_date.match(header[1]):
-                hyperdata['rubrique']   = header[0]
-                date       = header[1]
-                try:
-                    hyperdata['page']       = header[2].split(' ')[1]
-                except:
-                    pass
-            else:
-                date       = header[2]
-        
-        try:
-            hyperdata['publication_date'] = dateparser.parse(date.strip(), languages=['fr'])
-            
-        except:
-            hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        return(hyperdata)
-        #print(hyperdata['publication_date'])
-
-class EuropressFileParser_en(EuropressFileParser):
-    def _parse_header(self, header):
-        format_date = re.compile('.*\d{4}.*', re.UNICODE)
-        if header is not None:
-            header = header.split(', ')
-            if format_date.match(header[0]):
-                date       = header[0]
-            elif format_date.match(header[1]):
-                hyperdata['rubrique']   = header[0]
-                date       = header[1]
-                try:
-                    hyperdata['page']       = header[2].split(' ')[1]
-                except:
-                    pass
-            else:
-                date       = header[2]
-        
-        try:
-            hyperdata['publication_date'] = dateparser.parse(date.strip(), languages=['fr'])
-            
-        except:
-            hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-
 
 if __name__ == "__main__":
     e = EuropressFileParser()

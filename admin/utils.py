@@ -3,6 +3,7 @@ import linecache
 from time import time
 
 from gargantext_web.settings import MEDIA_ROOT
+from django.db import connection
 
 class DebugTime:
     def __init__(self, prefix):
@@ -18,7 +19,6 @@ class DebugTime:
         self.__del__()
         self.message = message
         self.time = time()
-
 
 def ensure_dir(user):
     '''
@@ -46,3 +46,18 @@ def PrintException():
     print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
 
 
+class WorkflowTracking:
+
+    def __init__( self ):
+        self.hola = "mundo"
+
+    def processing_(self , corpus , step):
+        try:
+            the_query = """ UPDATE node_node SET hyperdata=\'{ \"%s\" : \"%s\"}\' WHERE id=%d """ % ( "Processing", step , corpus.id )
+            cursor = connection.cursor()
+            try:
+                cursor.execute(the_query)
+            finally:
+                connection.close()
+        except :
+            PrintException()

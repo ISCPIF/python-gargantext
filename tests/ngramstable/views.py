@@ -122,7 +122,7 @@ def get_ngrams(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -187,7 +187,7 @@ def get_journals(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -328,3 +328,10 @@ def get_ngrams_json(request , project_id, corpus_id ):
     # print ("LALALALALALALALLLALALALALA")
 
     return JsonHttpResponse(Metrics)
+
+def get_corpuses( request , node_ids ):
+    ngrams = [int(i) for i in node_ids.split("+") ]
+    results = session.query(Node.id,Node.hyperdata).filter(Node.id.in_(ngrams) ).all()
+    for r in results:
+        print(r)
+    return JsonHttpResponse( [ "tudo" , "bem" ] )

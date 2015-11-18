@@ -76,79 +76,8 @@ from rest_framework.decorators import api_view
 # TODO how to secure REST ?
 
 
-def get_occtfidf( ngrams , user_id , corpus_id , list_name):
-    ngram_ids = {}
-    corpus = session.query(Node).filter( Node.id==corpus_id ).first()
-    nodes_ngrams = session.query(Ngram).filter(Ngram.id.in_( ngrams ) ).all()
-    for ngram in nodes_ngrams:
-        ngram_ids[ngram.id] = {
-            "id": ngram.id,
-            "name": ngram.terms,
-            "scores": {}
-        }
-
-    # [ = = = = = = Get Uniq_Occs = = = = = = ]
-    myamlist = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType[list_name].id ).first()
-    Miam = aliased(NodeNgram)
-    ngrams_occs = (session.query(NodeNgram.ngram_id, func.sum(NodeNgram.weight))
-                          .join(Node, Node.id == NodeNgram.node_id)
-                          .join(Miam, Miam.ngram_id == NodeNgram.ngram_id)
-                          .filter(Node.parent_id == corpus_id, Node.type_id==cache.NodeType['Document'].id)
-                          .filter(Miam.node_id==myamlist.id)
-                          .group_by(NodeNgram.ngram_id)
-                          .all()
-                  )
-
-    for ngram in ngrams_occs:
-        try:
-            ngram_ids [ ngram[0] ]["scores"][ "occ_uniq" ] = ngram[1]
-        except:
-            pass
-    for i in ngram_ids:
-        if "occ_uniq" not in ngram_ids[i]["scores"]:
-            ngram_ids[i]["scores"][ "occ_uniq" ] = 1
-    # [ = = = = = = / Get Uniq_Occs = = = = = = ]
-
-    group_by = []
-    results   = ['id', 'terms']
-
-    ngrams_query = (session
-        .query(Ngram.id, Ngram.terms)
-        .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
-        .join(Node, Node.id == Node_Ngram.node_id)
-    )
-    Tfidf = aliased(NodeNodeNgram)
-    tfidf_id = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus).id
-    ngrams_query = (ngrams_query.add_column(Tfidf.score.label('tfidf'))
-                                .join(Tfidf, Tfidf.ngram_id == Ngram.id)
-                                .filter(Tfidf.nodex_id == tfidf_id)
-                    )
-    group_by.append(Tfidf.score)
-    results.append('tfidf')
-    ngrams_query = (ngrams_query.filter(Node.parent_id == corpus_id)
-            .group_by(Ngram.id, Ngram.terms, *group_by)
-            )
-
-    TheList = aliased(NodeNgram)
-    list_id = get_or_create_node(nodetype=list_name, corpus=corpus).id
-    ngrams_query = (ngrams_query.join(TheList, TheList.ngram_id == Ngram.id )
-                                .filter(TheList.node_id == list_id)
-                    )
-    for ngram in ngrams_query:
-        try:
-            ngram_ids [ ngram[0] ]["scores"][ "tfidf" ] = ngram[2]
-        except:
-            pass
-            
-    for i in ngram_ids:
-        if "tfidf" not in ngram_ids[i]["scores"]:
-            ngram_ids[i]["scores"][ "tfidf" ] = 0.01
-
-    return ngram_ids
-
 
 class List(APIView):
-
     def get(self, request, corpus_id , list_name ):
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         list_name = list_name.title()+"List"
@@ -160,29 +89,31 @@ class List(APIView):
             ngram_ids[node.ngram_id] = True
         ngrams = [int(i) for i in list(ngram_ids.keys())]
 
-        ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
+        # ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
 
-        return JsonHttpResponse(ngram_ids)
-
+        return JsonHttpResponse( {"data":ngram_ids} )
 
 class Ngrams(APIView):
     '''
     REST application to manage ngrams
-
+    Example : 
+    http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
+        # print("\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         # query ngrams
         ParentNode = aliased(Node)
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
-
+        # print("\t\tSTEP 01","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         ngrams_query = (session
             .query(Ngram.id, Ngram.terms)
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)
         )
 
+        # print("\t\tSTEP 02","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         the_score = "tfidf"
         if request.GET.get('score', False) != False:
             the_score = request.GET['score']
@@ -203,6 +134,10 @@ class Ngrams(APIView):
         #                 )
         #     for i in ngrams_query:
         #         print(i)
+        if 'occs' in the_score:
+            occs = func.sum(Node_Ngram.weight).label('occs')
+            ngrams_query = (ngrams_query.add_column(occs))
+            results.append('occurences')
 
         if 'tfidf' in the_score:
             Tfidf = aliased(NodeNodeNgram)
@@ -234,14 +169,18 @@ class Ngrams(APIView):
             group_by.append(Spec.score)
             results.append('specificity')
 
+        # print("\t\tSTEP 03","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         order_query = request.GET.get('order', False)
-        if order_query == 'cvalue':
+        if order_query == 'occs':
+            ngrams_query = ngrams_query.order_by(desc(occs))
+        elif order_query == 'cvalue':
             ngrams_query = ngrams_query.order_by(desc(Cvalue.score))
         elif order_query == 'tfidf':
             ngrams_query = ngrams_query.order_by(desc(Tfidf.score))
         elif order_query  == 'specificity':
             ngrams_query = ngrams_query.order_by(desc(Spec.score))
 
+        # print("\t\tSTEP 04","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 20))
 
@@ -249,6 +188,7 @@ class Ngrams(APIView):
                         .group_by(Ngram.id, Ngram.terms, *group_by)
                         )
 
+        # print("\t\tSTEP 05","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         if request.GET.get('ngram_id', False) != False:
             ngram_id = int(request.GET['ngram_id'])
             Group = aliased(NodeNgramNgram)
@@ -258,7 +198,8 @@ class Ngrams(APIView):
                                         .filter(Group.ngramx_id == ngram_id)
                             )
 
-        # filters by list type (soon list_id to factorize it in javascript)
+        # print("\t\tSTEP 06","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # # filters by list type (soon list_id to factorize it in javascript)
         list_query = request.GET.get('list', 'miam')
         list_id = request.GET.get('list_id', False)
         if list_query == 'miam':
@@ -300,31 +241,41 @@ class Ngrams(APIView):
                                             .filter(CoocY.node_id == node.id)
                                 )
 
-        total = ngrams_query.count()
+        # print("\t\tSTEP 07","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # print("")
+        # print(ngrams_query)
+        # total = ngrams_query.count()
+
+        # print("")
+        # print("\t\tSTEP 07.1,   count:", total ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # print("\t\tSTEP 07.2,   i:", offset , ", N:", (offset+limit) ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
 
         output = []
         for ngram in ngrams_query[offset : offset+limit]:
-            info = {}
+            info = { "scores" : {} }
             try: info["id"] = ngram.id
             except: pass
-            try: info["terms"] = ngram.terms
+            try: info["name"] = ngram.terms
             except: pass
-            try: info["tfidf"] = ngram.tfidf
+            try: info["scores"]["occ_uniq"] = ngram.occs
             except: pass
-            try: info["cvalue"] = ngram.cvalue
+            try: info["scores"]["tfidf"] = ngram.tfidf
             except: pass
-            try: info["specificity"] = ngram.specificity
+            try: info["scores"]["cvalue"] = ngram.cvalue
+            except: pass
+            try: info["scores"]["specificity"] = ngram.specificity
             except: pass
 
             output.append( info )
 
+        # print("\t\tSTEP 08","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
 
         # return formatted result
         return JsonHttpResponse({
             'pagination': {
                 'offset': offset,
                 'limit': limit,
-                'total': total,
+                'total': len(output),
                           },
             'data': output,
                                })
@@ -405,9 +356,9 @@ class Group(APIView):
         #     print(i)
         ngrams = [int(i) for i in list(groups["nodes"].keys())]
 
-        groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
+        # groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
         
-        return JsonHttpResponse(groups)
+        return JsonHttpResponse( { "data" : groups } )
    
     def post(self, request, node_id):
         return JsonHttpResponse( ["hola" , "mundo"] )
@@ -599,6 +550,7 @@ class Keep(APIView):
         Delete ngrams from the map list
         """
         group_rawreq = dict(request.data)
+        from django.utils.html import escape
         ngram_2del = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )

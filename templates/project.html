@@ -21,6 +21,33 @@
 { font-size:x-small;}
 </style>
 
+
+<script type="text/javascript">
+
+  var refresh_time = 5000 //ms
+  function corpus_monitorer() {
+  	console.log("hola")
+    // $.ajax({
+    //     type: "GET",
+    //     url: "https://dl.dropboxusercontent.com/u/9975992/climat/ajax_file.json",
+    //     dataType: "json",
+    //     success : function(data, textStatus, jqXHR) {
+    //         if( data.command ) {
+    //             eval( data.command )
+    //         }
+    //     },
+
+    //     error: function(exception) { 
+    //         console.log("exception!:"+exception.status)
+    //     }
+
+    // });
+  }
+  setInterval(corpus_monitorer ,refresh_time);
+
+</script>
+
+
 {% endblock %}
 
 
@@ -266,7 +293,10 @@
 		      success: function(data) {
 				console.log("in doTheQuery() Ajax.Success:")
 		        console.log(data)
-		        location.reload();
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 5000);
 		      },
 		        error: function(result) {
 		            console.log("in doTheQuery(). Data not found");
@@ -500,8 +530,11 @@
 		      },
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
-		        console.log(data)
-		        location.reload();
+		        console.log(data)		        
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 5000);
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

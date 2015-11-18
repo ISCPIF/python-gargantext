@@ -19,23 +19,27 @@ class Graph(APIView):
         start  = request.GET.get('start', None)
         end    = request.GET.get('end'  , None)
         
-        format_   =  request.GET.get('format', 'json')
-        type_    = request.GET.get('type', 'node_link')
-        hapax    = request.GET.get('hapax', 1)
+        format_     = request.GET.get('format', 'json')
+        type_       = request.GET.get('type', 'node_link')
+        hapax       = request.GET.get('hapax', 1)
+        distance    = request.GET.get('distance', 'conditional')
         
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
         
         accepted_field1 = ['ngrams', 'journal', 'source', 'authors']
         accepted_field2 = ['ngrams',]
-        options = ['start', 'end', 'hapax']
+        options = ['start', 'end', 'hapax', 'distance']
         
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
-                    data = get_cooc(corpus=corpus,field1=field1, field2=field2, start=start, end=end, hapax=hapax)
+                    data = get_cooc(corpus=corpus,field1=field1, field2=field2
+                                    , start=start, end=end
+                                    , hapax=hapax, distance=distance)
                 else:
-                    data = get_cooc(corpus=corpus,field1=field1, field2=field2, hapax=hapax)
+                    data = get_cooc(corpus=corpus,field1=field1, field2=field2
+                            , hapax=hapax, distance = distance)
                 if format_ == 'json':
                     return JsonHttpResponse(data)
         else:

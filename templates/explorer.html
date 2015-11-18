@@ -181,8 +181,6 @@
                   </ul>
 
 
-
-
                   <ul class="nav navbar-nav navbar-right">
                      <li><a>
                               <input type="checkbox" id="checkboxdiv" onclick="alertCheckBox(this);">Add</input>
@@ -194,7 +192,18 @@
                      </a></li>
                   </ul>
                   
+                  <ul class="nav navbar-nav navbar-right">
+                     <li>
+                        <a>
+                              <img width="17%" title="Compare with other corpus!" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" src="{% static "js/libs/img2/INTER.png" %}"></img>
+                        </a>
+                     </li>
+                  </ul>
+
                   <div class="colorgraph_div"></div>
+
+                  <div class="sizegraph_div"></div>
+
                   <!---->
 
 
@@ -287,6 +296,7 @@
       <div id="leftcolumn">      
         <div id="tips"></div>
         <div id="names"></div>
+        <div id="ngrams_actions"></div>
 
         
         <br>
@@ -314,7 +324,7 @@
 
            <ul class='etabs'>
              <li id="tabmed" class='tab active'><a href="#tabs3">Medline Pubs</a></li>
-             <li id="tabgps" class='tab'><a onclick="$('#corpuses').modal('show');">+</a></li>
+             <li id="tabgps" class='tab'><a href="#tabs3"></a></li>
            </ul>
 
            <div class='panel-container'>

@@ -7,17 +7,20 @@ from ngram.group import compute_groups
 from gargantext_web.db import get_or_create_node
 from ngram.mapList import compute_mapList
 
-from gargantext_web.db import NodeNgram
-#from gargantext_web.celery import update_processing
+from gargantext_web.db import session , Node , NodeNgram
+from admin.utils import WorkflowTracking
 
 
 def ngram_workflow(corpus, n=5000):
     '''
     All the workflow to filter the ngrams.
     '''
-    
+    update_state = WorkflowTracking()
+
+    update_state.processing_(corpus, "Stop words")
     compute_stop(corpus)
     
+    update_state.processing_(corpus, "TF-IDF global score")
     compute_tfidf_global(corpus)
     
     part = round(n * 0.9)
@@ -27,6 +30,7 @@ def ngram_workflow(corpus, n=5000):
 #    part = round(part * 0.8)
     #print('spec part:', part)
 
+    update_state.processing_(corpus, "Specificity score")
     compute_specificity(corpus,limit=part)
     
     part = round(part * 0.8)
@@ -34,10 +38,13 @@ def ngram_workflow(corpus, n=5000):
     limit_inf = round(part * 1)
     limit_sup = round(part * 5)
     #print(limit_inf,limit_sup)
+    update_state.processing_(corpus, "Synonyms")
     compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
     
+    update_state.processing_(corpus, "Map list terms")
     compute_mapList(corpus,limit=1000) # size
     
+    update_state.processing_(corpus, "TF-IDF local score")
     compute_tfidf(corpus)
     
 
@@ -46,7 +53,7 @@ def ngram_workflow(corpus, n=5000):
 
 
 
-#update_processing(corpus, 0)
+#update_stateprocessing(corpus, 0)
 
 check_stop = False
 

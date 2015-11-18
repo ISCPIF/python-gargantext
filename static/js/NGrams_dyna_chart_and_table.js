@@ -879,12 +879,28 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
+function GET_( url , callback ) {
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { 
+        	callback(data.data);
+        },
+        error: function(exception) { 
+            callback(false);
+        }
+    })
+}
+
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
+// http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop",
+var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
-	url3=window.location.href+"/ngrams.json";
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
+	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
@@ -894,44 +910,42 @@ var NGrams = {
 }
 
 $("#corpusdisplayer").hide()
-$.when(
-    $.ajax({
-        type: "GET",
-        url: url0,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["stop"] = data },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url1,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["group"] = data },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url2,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["map"] = data },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url3,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { NGrams["main"] = data },
-        error: function(exception) { 
-            console.log("second ajax, exception!: "+exception.status)
-        }
-    })
-).then(function() {
+
+// The AJAX's in cascade:
+GET_( url0 , function(result) {
+	if(result!=false) {
+		for(var i in result) {
+    		NGrams["stop"][result[i].id] = result[i]
+    	}
+	}
+	GET_( url1 , function(result) {
+		if(result!=false) {
+			NGrams["group"] = result 
+		}
+		GET_( url2 , function(result) {
+			if(result!=false) {
+				NGrams["map"] = result 
+			}
+			GET_( url3 , function(result) {
+				if(result!=false) {
+		        	NGrams["main"] = {
+		        		"ngrams": result,
+		        		"scores": {
+					        "initial":"occ_uniq",
+					        "nb_docs":result.length,
+					        "orig_nb_ngrams":1,
+					        "nb_ngrams":result.length,
+					    }
+		        	}
+		        	AfterAjax()
+	        	}
+			});
+		});
+	});
+});
+
+
+function AfterAjax() {
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -963,7 +977,6 @@ $.when(
     	}
     }
 
-
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial
     var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
@@ -992,5 +1005,7 @@ $.when(
     $("#corpusdisplayer").show()
     $("#content_loader").remove()
     $("#corpusdisplayer").click()
+}
 
-});
+
+

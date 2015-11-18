@@ -890,13 +890,6 @@ function GetUserPortfolio() {
     });
 }
 
-
-$.doTimeout(3000,function (){
-    GetUserPortfolio()
-});
-
-
-
 function camaraButton(){
     $("#PhotoGraph").click(function (){
         

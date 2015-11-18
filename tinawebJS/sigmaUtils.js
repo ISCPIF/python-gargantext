@@ -293,7 +293,7 @@ function clustersBy(daclass , att2change ) {
             var themult = Math.pow(10,min_pow);
             for(var i in v_nodes) {
                 var the_node = Nodes[ v_nodes[i].id ]
-                var attval = (the_node.size)? Math.log(the_node.size+1) : 3 ;
+                var attval = the_node.size;
                 var attnumber = Number(attval);
                 partialGraph._core.graph.nodesIndex[v_nodes[i].id].size = attval;
                 partialGraph._core.graph.nodesIndex[v_nodes[i].id].label = the_node.label;

@@ -35,21 +35,7 @@
 						<div class="panel-body">
 								<div class="container">
 										<ul>
-                        <li>Versions from 0.1 to 0.9</li>
-														<ul>
-                                <li>[NAME] Black Salade</li>
-																<li>[Law] Licence of Gargantext is GPL v3+ </li>
-																<li>[NLP] NLTK, TreeTagger</li>
-																<li>[FEATURE] Graph Explorer</li>
-														</ul>
-                        <li>Versions from 1.0 to 1.9</li>
-														<ul>
-                                <li>[NAME] Rose Bonbon</li>
-																<li>[Law] Licence of Gargantext is (and will be for next versions) AGPL</li>
-																<li>[NLP] Turbo Parser, TreeTagger</li>
-                                <li>[FEATURE] Advanced Chart</li>
-                                <li>[FEATURE] Remove duplicates</li>
-														</ul>
+
                         <li>Version 2.0</li>
 														<ul>
                                 <li>[NAME] Red Lemon</li>
@@ -59,7 +45,29 @@
                                 <li>[FEATURE] Lexical Graph with temporal filter</li>
                                 <li>[FEATURE] Graph bi-Partite</li>
 														</ul>
-										</ul>
+
+    
+                        <li>Versions from 1.0 to 1.9</li>
+														<ul>
+                                <li>[NAME] Rose Bonbon</li>
+																<li>[Law] Licence of Gargantext is (and will be for next versions) AGPL</li>
+																<li>[NLP] Turbo Parser, TreeTagger</li>
+                                <li>[FEATURE] Advanced Chart</li>
+                                <li>[FEATURE] Remove duplicates</li>
+														</ul>
+
+    
+                        <li>Versions from 0.1 to 0.9</li>
+														<ul>
+                                <li>[NAME] Black Salade</li>
+																<li>[Law] Licence of Gargantext is GPL v3+ </li>
+																<li>[NLP] NLTK, TreeTagger</li>
+																<li>[FEATURE] Graph Explorer</li>
+														</ul>
+
+
+
+                    </ul>
 								</div>
 						</div>
 				</div>
@@ -157,7 +165,7 @@
 				<div class="panel-heading">
 						<h2 class="panel-title">
 										<center>
-										<h2>Institutional and financial support</h2>
+										<h2>Institutional, research and financial support</h2>
 										<h3>Host institutions</h3>
 										<a href="http://www.cnrs.fr" target="_blank" >
 										<img src="{% static "img/sponsors/cnrs.png"%}" alt="CNRS"  style="height:100px">
@@ -169,14 +177,27 @@
 										<img src="{% static "img/sponsors/cams.jpg"%}" style="height:100px">
 										</a>
 										
-                    <h3>Partners</h3>
-										{% for sponsor in sponsors %}
-										<a href="{{ sponsor.website }}" target="_blank" >
-										<img src="{% static "img/sponsors/"%}{{ sponsor.picture }}" style="height:100px">
+                    <h3>Institutional Partners</h3>
+                    <p>
+										{% for institution in institutions %}
+										<a href="{{ institution.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ institution.picture }}" style="height:100px">
 										</a>
 										{% endfor %}
+                    </p>
 										
-                    <h3>Grants</h3>
+
+                    <h4>Laboratory Partners</h4>
+                    <p>
+										{% for labo in labos %}
+										<a href="{{ labo.website }}" target="_blank" >
+										<img src="{% static "img/sponsors/"%}{{ labo.picture }}" style="height:50px">
+										</a>
+										{% endfor %}
+                    </p>
+										
+
+                    <h4>Grants</h4>
                     {% for grant in grants %}
 										<a href="{{ grant.website }}" target="_blank" >
 										<img src="{% static "img/sponsors/"%}{{ grant.picture }}" style="height:100px">

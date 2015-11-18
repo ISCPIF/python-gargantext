@@ -165,13 +165,14 @@ def get_about(request):
     date        = datetime.datetime.now()
 
     members     = about.get_team()
-    sponsors,grants    = about.get_partners()
+    institutions,labos,grants    = about.get_partners()
 
     html = template.render(Context({\
             'user': user,\
             'date': date,\
             'team': members,\
-            'sponsors':sponsors,\
+            'institutions': institutions,\
+            'labos': labos,\
             'grants': grants,\
             }))
 
@@ -349,7 +350,7 @@ def corpus(request, project_id, corpus_id):
     except Exception as error:
         print(error)
         processing = 0
-    print('processing', processing)
+    print('corpus',corpus_id,' , processing', processing)
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -572,7 +573,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
 
     html = t.render(Context({\
             'debug': settings.DEBUG,
-            'user'      : user,\
+            'user': request.user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\

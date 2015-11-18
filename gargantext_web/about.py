@@ -59,11 +59,17 @@ def get_partners():
     Function to get list of each sponsor as dict of institutional informations.
 
     '''
-    sponsors = [
+    institutions = [
             { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png', 'funds':''},
             { 'name' : 'Institut Pasteur', 'website' : 'http://www.pasteur.fr', 'picture' : 'pasteur.png', 'funds':''},
             { 'name' : 'ADEME', 'website' : 'http://www.ademe.fr', 'picture' : 'ademe.png', 'funds':''},
             { 'name' : 'EHESS', 'website' : 'http://www.ehess.fr', 'picture' : 'ehess.png', 'funds':''},
+            #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
+            # copy paste the line above and write your informations please
+            ]
+    
+    labos = [
+            { 'name' : 'Centre de Sociologie de l\'innovation', 'website' : 'http://www.csi.mines-paristech.fr/en/', 'picture' : 'csi.png', 'funds':''},
             #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
             # copy paste the line above and write your informations please
             ]
@@ -75,9 +81,9 @@ def get_partners():
             ]
 
 
-    random.shuffle(sponsors)
+    random.shuffle(institutions)
     #random.shuffle(grants)
-    return(sponsors,grants)
+    return(institutions,labos,grants)
 
 
 

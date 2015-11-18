@@ -45,6 +45,9 @@ def apply_workflow(corpus_id):
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
     update_state.processing_(corpus, "0")
 
+    print("End of the Workflow for corpus %d" % (corpus_id))
+
+
 @shared_task
 def empty_trash(corpus_id):
     nodes = models.Node.objects.filter(type_id=cache.NodeType['Trash'].id).all()

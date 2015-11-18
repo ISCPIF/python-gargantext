@@ -550,6 +550,7 @@ class Keep(APIView):
         Delete ngrams from the map list
         """
         group_rawreq = dict(request.data)
+        from django.utils.html import escape
         ngram_2del = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )

@@ -38,10 +38,10 @@ def ngram_workflow(corpus, n=5000):
     limit_inf = round(part * 1)
     limit_sup = round(part * 5)
     #print(limit_inf,limit_sup)
-    update_state.processing_(corpus, "Sinonims")
+    update_state.processing_(corpus, "Synonyms")
     compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
     
-    update_state.processing_(corpus, "Map list")
+    update_state.processing_(corpus, "Map list terms")
     compute_mapList(corpus,limit=1000) # size
     
     update_state.processing_(corpus, "TF-IDF local score")

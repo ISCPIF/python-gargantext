@@ -549,6 +549,22 @@ function changeLevel_old() {
 //	EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
 //	EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
 function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
+	// console.log("")
+	// console.log("")
+	// console.log(" - - - - EdgeWeightFilter -  - - ")
+	// console.log( "sliderDivID:" )
+	// console.log( sliderDivID )
+	// console.log( "type_attrb:" )
+	// console.log( type_attrb )
+	// console.log( "type:" )
+	// console.log( type )
+	// console.log( "criteria:" )
+	// console.log( criteria )
+	// console.log(" - - - - /EdgeWeightFilter -  - - ")
+	// console.log("")
+	// console.log("")
+
+
 	// if ($(sliderDivID).html()!="") {
 	// 	pr("\t\t\t\t\t\t[[ algorithm not applied "+sliderDivID+" ]]")
 	// 	return;
@@ -858,7 +874,14 @@ function NodeWeightFilter( categories ,  sliderDivID , type_attrb , type ,  crit
 
 function getGraphElement(elem) {
     if(elem.split(";").length==1) return partialGraph._core.graph.nodesIndex[elem];
-    else return partialGraph._core.graph.edgesIndex[elem]
+    else {
+    	if(!isUndef(partialGraph._core.graph.edgesIndex[elem]))
+    		return partialGraph._core.graph.edgesIndex[elem]
+    	else {
+    		var newID = elem.split(";")
+    		return partialGraph._core.graph.edgesIndex[newID[1]+";"+newID[0]]
+    	}
+    }
 }
 //   Execution modes:
 // AlgorithmForSliders ( partialGraph._core.graph.edges , "label" , "nodes1" , "weight") 
@@ -866,6 +889,15 @@ function getGraphElement(elem) {
 // AlgorithmForSliders ( partialGraph._core.graph.nodes , "type" ,  "Document" ,  "size") 
 // AlgorithmForSliders ( partialGraph._core.graph.nodes , "type" ,  "NGram" ,  "size") 
 function AlgorithmForSliders( elements , type_attrb , type , criteria) {
+	// console.clear()
+	// console.log( "\t - - - - - AlgorithmForSliders - - - - -" )
+	// console.log( "" )
+	// console.log( "elements:" )
+	// console.log( elements )
+	// console.log( "type_attrb:  " + type_attrb )
+	// console.log( "type:  "+type )
+	// console.log( "criteria:  "+criteria )
+
 	// //  ( 1 )
     // // get visible sigma nodes|edges
     if(isUndef(elements)) return {"steps":0 , "finalarray":[]};

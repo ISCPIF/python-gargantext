@@ -122,7 +122,7 @@ def get_ngrams(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -187,7 +187,7 @@ def get_journals(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,

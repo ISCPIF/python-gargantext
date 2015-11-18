@@ -572,7 +572,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
 
     html = t.render(Context({\
             'debug': settings.DEBUG,
-            'user'      : user,\
+            'user': request.user,\
             'date'      : date,\
             'corpus'    : corpus,\
             'project'   : project,\

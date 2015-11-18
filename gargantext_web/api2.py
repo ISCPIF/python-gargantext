@@ -96,6 +96,7 @@ class NodeNgramsQueries(APIView):
         'str': str,
     }
 
+
     def post(self, request, project_id):
 
         # example only
@@ -158,7 +159,7 @@ class NodeNgramsQueries(APIView):
         # build query: prepare columns
         column_x = func.date_trunc(input['x']['resolution'], Node_Hyperdata.value_datetime)
         column_y = {
-            'documents_count':  func.count(Node.id),
+            'documents_count':  func.count(Node.id.distinct()),
             'ngrams_count':     func.sum(Node_Ngram.weight),
             # 'ngrams_tfidf':     func.sum(Node_Node_Ngram.weight),
         }[input['y']['value']]
@@ -218,6 +219,7 @@ class NodeNgramsQueries(APIView):
                     .filter(NH.hyperdata_id == hyperdata_id)
                     .filter(operator(NH_column, value))
                 )
+
         # build result: prepare data
         date_value_list = query_result.all()
         if date_value_list:
@@ -238,7 +240,7 @@ class NodeNgramsQueries(APIView):
         query_normalize = None
         if date_value_list and 'divided_by' in input['y'] and input['y']['divided_by']:
             if input['y']['divided_by'] == 'total_documents_count':
-                query_normalize = query_base.add_column(func.count(Node.id))
+                query_normalize = query_base.add_column(func.count(Node.id.distinct()))
             elif input['y']['divided_by'] == 'total_ngrams_count':
                 query_normalize = query_base.add_column(func.sum(Node_Ngram.weight))
         if query_normalize is not None:

@@ -879,13 +879,31 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
+function GET_( url , callback ) {
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        dataType: "json",
+        success : function(data, textStatus, jqXHR) { 
+        	callback(data.data);
+        	// for(var i in data.data) {
+        	// 	NGrams["stop"][data.data[i].id] = data.data[i]
+        	// }
+        },
+        error: function(exception) { 
+            callback(false);
+        }
+    })
+}
+
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=999999",
+var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=map&limit=999999",
-	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=999999";
+	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=map&limit=1000",
+	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
@@ -895,65 +913,44 @@ var NGrams = {
 }
 
 $("#corpusdisplayer").hide()
-$.when(
-    $.ajax({
-        type: "GET",
-        url: url0,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { 
-        	for(var i in data.data) {
-        		NGrams["stop"][data.data[i].id] = data.data[i]
-        	}
-        },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url1,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { 
-        	NGrams["group"] = data 
-        },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url2,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { 
-        	for(var i in data.data) {
-        		NGrams["map"][data.data[i].id] = data.data[i]
-        	}
-        },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url3,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) {
 
-        	NGrams["main"] = {
-        		"ngrams": data.data,
-        		"scores": {
-			        "initial":"occ_uniq",
-			        "nb_docs":data.data.length,
-			        "orig_nb_ngrams":1,
-			        "nb_ngrams":data.data.length,
-			    }
-        	}
-        },
-        error: function(exception) { 
-            console.log("second ajax, exception!: "+exception.status)
-        }
-    })
-).then(function() {
+// The AJAX's in cascade:
+GET_( url0 , function(result) {
+	if(result!=false) {
+		for(var i in result) {
+    		NGrams["stop"][result[i].id] = result[i]
+    	}
+	}
+	GET_( url1 , function(result) {
+		if(result!=false) {
+			NGrams["group"] = result 
+		}
+		GET_( url2 , function(result) {
+			if(result!=false) {
+				for(var i in result) {
+		    		NGrams["map"][result[i].id] = result[i]
+		    	}
+			}
+			GET_( url3 , function(result) {
+				if(result!=false) {
+		        	NGrams["main"] = {
+		        		"ngrams": result,
+		        		"scores": {
+					        "initial":"occ_uniq",
+					        "nb_docs":result.length,
+					        "orig_nb_ngrams":1,
+					        "nb_ngrams":result.length,
+					    }
+		        	}
+		        	AfterAjax()
+	        	}
+			});
+		});
+	});
+});
+
+
+function AfterAjax() {
 	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -1013,5 +1010,130 @@ $.when(
     $("#corpusdisplayer").show()
     $("#content_loader").remove()
     $("#corpusdisplayer").click()
+}
 
-});
+
+
+
+
+// hola.split("")
+// $.when(
+//     $.ajax({
+//         type: "GET",
+//         url: url0,
+//         dataType: "json",
+//         success : function(data, textStatus, jqXHR) { 
+//         	for(var i in data.data) {
+//         		NGrams["stop"][data.data[i].id] = data.data[i]
+//         	}
+//         },
+//         error: function(exception) { 
+//             console.log("first ajax, exception!: "+exception.status)
+//         }
+//     }),
+//     $.ajax({
+//         type: "GET",
+//         url: url1,
+//         dataType: "json",
+//         success : function(data, textStatus, jqXHR) { 
+//         	NGrams["group"] = data 
+//         },
+//         error: function(exception) { 
+//             console.log("first ajax, exception!: "+exception.status)
+//         }
+//     }),
+//     $.ajax({
+//         type: "GET",
+//         url: url2,
+//         dataType: "json",
+//         success : function(data, textStatus, jqXHR) { 
+//         	for(var i in data.data) {
+//         		NGrams["map"][data.data[i].id] = data.data[i]
+//         	}
+//         },
+//         error: function(exception) { 
+//             console.log("first ajax, exception!: "+exception.status)
+//         }
+//     }),
+//     $.ajax({
+//         type: "GET",
+//         url: url3,
+//         dataType: "json",
+//         success : function(data, textStatus, jqXHR) {
+
+//         	NGrams["main"] = {
+//         		"ngrams": data.data,
+//         		"scores": {
+// 			        "initial":"occ_uniq",
+// 			        "nb_docs":data.data.length,
+// 			        "orig_nb_ngrams":1,
+// 			        "nb_ngrams":data.data.length,
+// 			    }
+//         	}
+//         },
+//         error: function(exception) { 
+//             console.log("second ajax, exception!: "+exception.status)
+//         }
+//     })
+// ).then(function() {
+// 	// Deleting subforms from the ngrams-table, clean start baby!
+//     if( Object.keys(NGrams["group"].links).length>0 ) {
+
+//     	var _forms = {  "main":{} , "sub":{}  }
+//     	for(var i in NGrams["group"].links) {
+//     		_forms["main"][i] = true
+//     		for(var j in NGrams["group"].links[i]) {
+//     			_forms["sub"][ NGrams["group"].links[i][j] ] = true
+//     		}
+//     	}
+//     	var ngrams_data_ = []
+//     	for(var i in NGrams["main"].ngrams) {
+//     		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
+//     			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
+//     		} else {
+//     			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
+//     			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
+//     			ngrams_data_.push( NGrams["main"].ngrams[i] )
+//     		}
+//     	}
+//     	NGrams["main"].ngrams = ngrams_data_;
+//     }
+
+//     if( Object.keys(NGrams["map"]).length>0 ) {
+//     	for(var i in NGrams["main"].ngrams) {
+//     		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
+//     			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
+//     		}
+//     	}
+//     }
+
+//     // Building the Score-Selector //NGrams["scores"]
+//     var FirstScore = NGrams["main"].scores.initial
+//     var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
+//     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
+//     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
+//     for( var i in possible_scores ) {
+//       if(possible_scores[i]!=FirstScore) {
+//         scores_div += "\t"+'<option value="'+possible_scores[i]+'">'+possible_scores[i]+'</option>'+"\n"
+//       }
+//     }
+//     // Initializing the Charts and Table
+//     console.log( NGrams["main"] )
+//     var result = Main_test( NGrams["main"] , FirstScore , "filter_all")
+//     console.log( result )
+
+//     // Listener for onchange Score-Selector
+//     scores_div += "<select>"+"\n";
+//     $("#ScoresBox").html(scores_div)
+//     $("#scores_selector").on('change', function() {
+//       console.log( this.value )
+//       var result = Main_test( NGrams["main"] , this.value , "filter_all")
+//       console.log( result )
+
+//     });
+
+//     $("#corpusdisplayer").show()
+//     $("#content_loader").remove()
+//     $("#corpusdisplayer").click()
+
+// });

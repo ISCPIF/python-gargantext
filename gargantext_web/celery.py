@@ -43,7 +43,7 @@ def apply_workflow(corpus_id):
     ngram_workflow(corpus)
 
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
-    update_state.processing_(corpus, "OK")
+    update_state.processing_(corpus, "0")
 
 @shared_task
 def empty_trash(corpus_id):

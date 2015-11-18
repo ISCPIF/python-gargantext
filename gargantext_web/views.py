@@ -349,7 +349,7 @@ def corpus(request, project_id, corpus_id):
     except Exception as error:
         print(error)
         processing = 0
-    print('processing', processing)
+    print('corpus',corpus_id,' , processing', processing)
 
     html = t.render(Context({
             'debug': settings.DEBUG,

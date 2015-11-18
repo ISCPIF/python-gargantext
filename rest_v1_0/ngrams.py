@@ -102,18 +102,20 @@ class Ngrams(APIView):
     http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
+        # print("\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         # query ngrams
         ParentNode = aliased(Node)
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
-
+        # print("\t\tSTEP 01","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         ngrams_query = (session
             .query(Ngram.id, Ngram.terms)
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)
         )
 
+        # print("\t\tSTEP 02","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         the_score = "tfidf"
         if request.GET.get('score', False) != False:
             the_score = request.GET['score']
@@ -169,6 +171,7 @@ class Ngrams(APIView):
             group_by.append(Spec.score)
             results.append('specificity')
 
+        # print("\t\tSTEP 03","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         order_query = request.GET.get('order', False)
         if order_query == 'occs':
             ngrams_query = ngrams_query.order_by(desc(occs))
@@ -179,6 +182,7 @@ class Ngrams(APIView):
         elif order_query  == 'specificity':
             ngrams_query = ngrams_query.order_by(desc(Spec.score))
 
+        # print("\t\tSTEP 04","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 20))
 
@@ -186,6 +190,7 @@ class Ngrams(APIView):
                         .group_by(Ngram.id, Ngram.terms, *group_by)
                         )
 
+        # print("\t\tSTEP 05","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         if request.GET.get('ngram_id', False) != False:
             ngram_id = int(request.GET['ngram_id'])
             Group = aliased(NodeNgramNgram)
@@ -195,7 +200,8 @@ class Ngrams(APIView):
                                         .filter(Group.ngramx_id == ngram_id)
                             )
 
-        # filters by list type (soon list_id to factorize it in javascript)
+        # print("\t\tSTEP 06","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # # filters by list type (soon list_id to factorize it in javascript)
         list_query = request.GET.get('list', 'miam')
         list_id = request.GET.get('list_id', False)
         if list_query == 'miam':
@@ -237,11 +243,18 @@ class Ngrams(APIView):
                                             .filter(CoocY.node_id == node.id)
                                 )
 
+        # print("\t\tSTEP 07","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # print("")
+        print(ngrams_query)
         total = ngrams_query.count()
+
+        # print("")
+        # print("\t\tSTEP 07.1,   count:", total ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+        # print("\t\tSTEP 07.2,   i:", offset , ", N:", (offset+limit) ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
 
         output = []
         for ngram in ngrams_query[offset : offset+limit]:
-            info = { "scores":{} }
+            info = { "scores" : {} }
             try: info["id"] = ngram.id
             except: pass
             try: info["name"] = ngram.terms
@@ -257,6 +270,7 @@ class Ngrams(APIView):
 
             output.append( info )
 
+        # print("\t\tSTEP 08","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
 
         # return formatted result
         return JsonHttpResponse({
@@ -346,7 +360,7 @@ class Group(APIView):
 
         # groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
         
-        return JsonHttpResponse(groups)
+        return JsonHttpResponse( { "data" : groups } )
    
     def post(self, request, node_id):
         return JsonHttpResponse( ["hola" , "mundo"] )

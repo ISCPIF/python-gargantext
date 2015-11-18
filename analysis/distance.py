@@ -2,10 +2,11 @@ from admin.utils import PrintException
 from gargantext_web.db import *
 
 from collections import defaultdict
+from operator import itemgetter
 from django.db import connection, transaction
 
 import math
-from math import log
+from math import log,sqrt
 
 import scipy
 
@@ -149,12 +150,19 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
                                 if i != j and r[i][j] > minmax and r[i][j] > r[j][i]
                           ]
                         )
+        
+#        degree_max = max([(n, d) for n,d in G.degree().items()], key=itemgetter(1))[1]
+#        nodes_to_remove = [n for (n,d) in G.degree().items() if d <= round(degree_max/2)]
+#        G.remove_nodes_from(nodes_to_remove)
 
     # Removing too connected nodes (find automatic way to do it)
     #edges_to_remove = [ e for e in G.edges_iter() if
 
     #   nodes_to_remove = [n for n in degree if degree[n] <= 1]
     #   G.remove_nodes_from(nodes_to_remove)
+
+
+
 
     def getWeight(item):
         return item[1]

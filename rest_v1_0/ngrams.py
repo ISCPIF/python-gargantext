@@ -246,7 +246,7 @@ class Ngrams(APIView):
         # print("\t\tSTEP 07","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         # print("")
         # print(ngrams_query)
-        total = ngrams_query.count()
+        # total = ngrams_query.count()
 
         # print("")
         # print("\t\tSTEP 07.1,   count:", total ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
@@ -277,7 +277,7 @@ class Ngrams(APIView):
             'pagination': {
                 'offset': offset,
                 'limit': limit,
-                'total': total,
+                'total': len(output),
                           },
             'data': output,
                                })

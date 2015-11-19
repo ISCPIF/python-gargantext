@@ -76,13 +76,14 @@ def get_partners():
     
     grants = [
             { 'name' : 'Forccast', 'website' : 'http://forccast.hypotheses.org/', 'picture' : 'forccast.png', 'funds':''},
+            { 'name' : 'Mastodons', 'website' : 'http://www.cnrs.fr/mi/spip.php?article53&lang=fr', 'picture' : 'mastodons.png', 'funds':''},
             #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
             # copy paste the line above and write your informations please
             ]
 
 
     random.shuffle(institutions)
-    #random.shuffle(grants)
+    random.shuffle(grants)
     return(institutions,labos,grants)
 
 

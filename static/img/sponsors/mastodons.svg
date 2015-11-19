@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="mastodons.svg"
+   inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+   inkscape:export-xdpi="61.073017"
+   inkscape:export-ydpi="61.073017">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3782">
+      <stop
+         style="stop-color:#09097e;stop-opacity:1;"
+         offset="0"
+         id="stop3784" />
+      <stop
+         id="stop3790"
+         offset="0.5"
+         style="stop-color:#09097e;stop-opacity:0.49803922;" />
+      <stop
+         style="stop-color:#09097e;stop-opacity:0;"
+         offset="1"
+         id="stop3786" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.0998446"
+     inkscape:cx="68.070083"
+     inkscape:cy="793.17743"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="963"
+     inkscape:window-height="762"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#04047e;fill-opacity:1;stroke:#191559;stroke-width:2.68011474999999999;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;fill-rule:nonzero;opacity:1"
+       d="m 67.957124,219.89012 c -21.951494,0 -40.977621,8.69677 -50.335489,21.40826 4.292013,3.79798 7.034932,9.55548 7.047344,16.00434 l 0,0.0396 c 0,7.23734 -3.440309,13.61318 -8.653863,17.32815 8.645806,13.99801 28.643543,23.80892 51.942008,23.80892 23.496654,0 43.642766,-9.96848 52.167926,-24.15469 -4.08915,-3.80631 -6.68337,-9.43968 -6.68337,-15.71784 0,-6.0475 2.40661,-11.48933 6.23781,-15.28316 -8.76845,-13.80251 -28.630779,-23.4335 -51.722366,-23.4335 z"
+       id="path2989"
+       inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+       inkscape:export-xdpi="150.35899"
+       inkscape:export-ydpi="150.35899"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:29.44009972px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#00ffff;fill-opacity:1;stroke:none;font-family:Courier;-inkscape-font-specification:Courier"
+       x="160.47124"
+       y="119.38621"
+       id="text2985"
+       sodipodi:linespacing="125%"
+       transform="scale(0.43195474,2.3150573)"
+       inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+       inkscape:export-xdpi="150.35899"
+       inkscape:export-ydpi="150.35899"><tspan
+         sodipodi:role="line"
+         id="tspan2987"
+         x="160.47124"
+         y="119.38621">M<tspan
+   style="fill:#ffffff"
+   id="tspan2985">a</tspan>s<tspan
+   style="fill:#ffffff"
+   id="tspan2988">t</tspan>o<tspan
+   style="fill:#ffffff"
+   id="tspan2990">n</tspan>d<tspan
+   style="fill:#ffffff"
+   id="tspan2992">o</tspan>n<tspan
+   style="fill:#ffffff"
+   id="tspan2996">s</tspan></tspan></text>
+  </g>
+</svg>

@@ -313,7 +313,7 @@ function MainFunction( RES ) {
 
     partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
 
-    // fa2enabled=true; partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
+    // fa2enabled=true; //partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
     // $.doTimeout(1,function(){
     //     fa2enabled=true; partialGraph.startForceAtlas2();
     //     $.doTimeout(10,function(){
@@ -336,6 +336,14 @@ function MainFunction( RES ) {
     set_ClustersLegend ( "clust_default" )
 
     $("footer").remove()
+
+    
+    console.log( "FIN" )
+    fa2enabled=true; partialGraph.startForceAtlas2(); 
+    setTimeout(function() {
+        console.log( "LALALALALALLA" )
+        partialGraph.stopForceAtlas2();
+    }, fa2seconds*1000);
     
 }
 

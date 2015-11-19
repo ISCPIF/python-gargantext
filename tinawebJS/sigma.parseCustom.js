@@ -689,7 +689,7 @@ function dictfyJSON( data , categories ) {
 
             if(!edges[target+";"+source]) {
                 if(nodes[source].color && nodes[target].color) {
-                    edges[target+";"+source] = edge;
+                    edges[source+";"+target] = edge;
                 }
             }
 

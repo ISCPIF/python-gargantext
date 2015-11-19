@@ -7,6 +7,108 @@ function newPopup(url) {
 }
 
 
+function getIDFromURL( item ) {
+    var pageurl = window.location.href.split("/")
+    var cid;
+    for(var i in pageurl) {
+        if(pageurl[i]==item) {
+            cid=parseInt(i);
+            break;
+        }
+    } 
+    return pageurl[cid+1];
+}
+
+function modify_ngrams( classname ) {
+    var selected_ngrams = Object.keys(selections).map(Number)
+    console.clear()
+    console.log( selected_ngrams )
+
+    var corpus_id = getIDFromURL( "corpus" ) // not used
+    var list_id = $("#list_id").val()
+    var nodes = []
+    var http_method = "DELETE" //"GET"
+    var args = selected_ngrams //[]
+
+    if(classname=="delete") {
+
+        var the_url = window.location.origin+"/api/node/"+corpus_id+"/ngrams"+"/keep"+"/"+nodes.join("+");
+        the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+        $.ajax({
+          method: http_method,
+          url: the_url,
+          data: args,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function(data){
+                console.log("GET" + " ok!!")
+                console.log(nodes)
+                console.log(data)
+                console.log("Success");
+          },
+          error: function(result) {
+              console.log(result)
+              console.log("Fail");
+          }
+        });
+        // CRUD_( corpus_id , "/keep" , [] , selected_ngrams , "DELETE" , function(result) {
+        //     console.log(" Delete from Map-list: "+result)
+        //     // CRUD( list_id , "" , selected_ngrams , [] , "DELETE", function(result) {
+        //     //     console.log(" Add to Stop-list "+result)
+        //     //     for(var i in selected_ngrams) {
+        //     //         partialGraph.dropNode( selected_ngrams[i] )
+        //     //         delete Nodes[selected_ngrams[i]]
+        //     //     }
+        //     //     partialGraph.refresh()
+        //     //     partialGraph.draw()
+        //     // });
+        //         // cancelSelection(false)
+        //         // for(var i in selected_ngrams) {
+        //         //     partialGraph.dropNode( selected_ngrams[i] )
+        //         //     delete Nodes[selected_ngrams[i]]
+        //         // }
+        //         // partialGraph.refresh()
+        //         // partialGraph.draw()
+        // });
+    }
+
+    // if(classname=="group") {
+    //     CRUD( corpus_id , "/group" , [] , selected_ngrams , "PUT" , function(result) {
+    //         console.log(" UN ELEFANTE "+result)
+    //         CRUD( corpus_id , "/keep" , [] , selected_ngrams , "PUT" , function(result) {
+    //         });
+    //     });
+    // }
+}
+
+function CRUD_( parent_id , action , nodes , args , http_method , callback) {
+    var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
+    the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+    console.log( the_url )
+    console.log( args )
+    if(nodes.length>0 || Object.keys(args).length>0) {
+        $.ajax({
+          method: http_method,
+          url: the_url,
+          data: args,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function(data){
+                console.log(http_method + " ok!!")
+                console.log(nodes)
+                console.log(data)
+                callback("Success");
+          },
+          error: function(result) {
+              console.log(result)
+              callback("Fail");
+          }
+        });
+
+    } else callback(false);
+}
 // = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = // 
 
     // Execution:    ChangeGraphAppearanceByAtt( true )
@@ -61,7 +163,6 @@ function newPopup(url) {
             return b-a
         });
 
-        // console.log( "I AM IN ChangeGraphAppearanceByAtt( true )" )
         // console.log( AttsDict_sorted )
 
 
@@ -81,20 +182,71 @@ function newPopup(url) {
             var att_c = AttsDict_sorted[i].value;
             var the_method = "clustersBy"
             if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
-            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'")\'>By '+att_s+'('+att_c+')'+'</a></li>'
-            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>'
+            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>')
         }
         div_info += '  </ul>'
         div_info += ' </li>'
 
         console.log('$( ".colorgraph_div" ).length')
         console.log($( ".colorgraph_div" ).length)
+
         if( $( ".colorgraph_div" ).length>0 )   {
             div_info += '</ul>'
             $( div_info ).insertAfter(".colorgraph_div");
             $( ".colorgraph_div" ).remove();
         } else {
             $("#colorGraph").html(div_info)
+        }
+
+
+
+
+
+        div_info = "";            
+
+        if( $( ".sizegraph_div" ).length>0 )          
+            div_info += '<ul id="sizeGraph" class="nav navbar-nav navbar-right">'
+
+        div_info += ' <li class="dropdown">'
+        div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
+        div_info += '        <img title="Set Sizes" src="/static/js/libs/img2/NodeSize.png" width="20px"><b class="caret"></b></img>'
+        div_info += '</a>'
+        div_info += '  <ul class="dropdown-menu">'
+
+        for(var i in AttsDict) {
+            if( i.indexOf("clust")>-1 )
+                delete AttsDict[i]
+        }
+        var AttsDict_sorted = ArraySortByValue(AttsDict, function(a,b){
+            return b-a
+        });
+
+        console.clear()
+        console.log( AttsDict_sorted )
+        for (var i in AttsDict_sorted) {
+            var att_s = AttsDict_sorted[i].key;
+            var att_c = AttsDict_sorted[i].value;
+            var the_method = "clustersBy"
+            if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>'
+            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+        }
+        div_info += '<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>'
+        console.log('<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>' )
+        div_info += '  </ul>'
+        div_info += ' </li>'
+
+        console.log('$( ".sizegraph_div" ).length')
+        console.log($( ".sizegraph_div" ).length)
+        
+
+        if( $( ".sizegraph_div" ).length>0 )   {
+            div_info += '</ul>'
+            $( div_info ).insertAfter(".sizegraph_div");
+            $( ".sizegraph_div" ).remove();
+        } else {
+            $("#sizeGraph").html(div_info)
         }
     }
 
@@ -737,13 +889,6 @@ function GetUserPortfolio() {
         }
     });
 }
-
-
-$.doTimeout(3000,function (){
-    GetUserPortfolio()
-});
-
-
 
 function camaraButton(){
     $("#PhotoGraph").click(function (){

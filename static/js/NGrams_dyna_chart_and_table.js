@@ -897,10 +897,10 @@ function GET_( url , callback ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
+var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=3000",
 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
 	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
-	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
+	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=3000";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 

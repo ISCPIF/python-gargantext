@@ -60,17 +60,27 @@ def compute_mapList(corpus,limit=500,n=1):
                 .order_by(desc(Spec.score))
                 .limit(multigrams_limit)
                )
+    
+    stop_ngrams = (session.query(NodeNgram.ngram_id)
+                         .filter(NodeNgram.node_id == node_stop.id)
+                         .all()
+                 )
 
-
+    grouped_ngrams = (session.query(NodeNgramNgram.ngramy_id)
+                             .filter(NodeNgramNgram.node_id == node_group.id)
+                             .all()
+                    )
     #print([t for t in top_ngrams])
     
     node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus)
     session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id).delete()
     session.commit()
-
+    
     data = zip(
         [node_mapList.id for i in range(1,limit)]
-        , [n[0] for n in list(top_multigrams) + list(top_monograms)]
+        , [n[0] for n in list(top_multigrams) + list(top_monograms)
+                if (n[0],) not in list(stop_ngrams) + list(grouped_ngrams)
+            ]
         , [1 for i in range(1,limit)]
     )
     #print([d for d in data])

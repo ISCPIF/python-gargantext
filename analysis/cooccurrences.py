@@ -185,17 +185,16 @@ def do_cooc(corpus=None
             cooc = matrix & miam_list
         elif miam_id is not None and stop_id is not None and group_id is None :
             cooc = matrix & (miam_list - stop_list)
+        
         elif miam_id is not None and stop_id is not None and group_id is not None :
             print("miam_id is not None and stop_id is not None and group_id is not None") 
-            #cooc = matrix & (miam_list * group_list - stop_list)
-            cooc = matrix & (miam_list - stop_list)
+            cooc = matrix & (miam_list * group_list - stop_list)
+            #cooc = matrix & (miam_list - stop_list)
         elif miam_id is not None and stop_id is None and group_id is not None :
             cooc = matrix & (miam_list * group_list)
         else :
             cooc = matrix
     else:
         cooc = matrix
-    #print(cooc)
-    #print(" x " * 30)
     cooc.save(node_cooc.id)
     return(node_cooc.id)

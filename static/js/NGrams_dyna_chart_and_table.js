@@ -897,10 +897,10 @@ function GET_( url , callback ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
-	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
-	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
+// var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
+// 	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+// 	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
+// 	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
@@ -911,71 +911,120 @@ var NGrams = {
 
 $("#corpusdisplayer").hide()
 
+// // The AJAX's in cascade:
+// GET_( url0 , function(result) {
+// 	if(result!=false) {
+// 		for(var i in result) {
+//     		NGrams["stop"][result[i].id] = result[i]
+//     	}
+// 	}
+// 	GET_( url1 , function(result) {
+// 		if(result!=false) {
+// 			NGrams["group"] = result 
+// 		}
+// 		GET_( url2 , function(result) {
+// 			if(result!=false) {
+// 				NGrams["map"] = result 
+// 			}
+// 			GET_( url3 , function(result) {
+// 				if(result!=false) {
+// 		        	NGrams["main"] = {
+// 		        		"ngrams": result,
+// 		        		"scores": {
+// 					        "initial":"tfidf",
+// 					        "nb_docs":result.length,
+// 					        "orig_nb_ngrams":1,
+// 					        "nb_ngrams":result.length,
+// 					    }
+// 		        	}
+// 		        	AfterAjax()
+// 	        	}
+// 			});
+// 		});
+// 	});
+// });
+
+
+
+
+var url = [
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map?custom",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
+]
+
+
+
 // The AJAX's in cascade:
-GET_( url0 , function(result) {
+GET_( url[0] , function(result) {
 	if(result!=false) {
-		for(var i in result) {
-    		NGrams["stop"][result[i].id] = result[i]
+
+    	NGrams["main"] = {
+    		"ngrams": [],
+    		"scores": {
+		        "initial":"tfidf",
+		        "nb_docs":result.length,
+		        "orig_nb_ngrams":1,
+		        "nb_ngrams":result.length,
+		    }
     	}
+    	var counter = 0
+		for(var i in result) {
+    		NGrams["map"][result[i].id] = true
+    		NGrams["main"].ngrams.push(result[i])  
+    		NGrams["main"].ngrams[counter]["state"] = System[0]["statesD"]["keep"]
+    		counter++;
+    	}
+    	console.log(NGrams["main"])
+
+    	AfterAjax()
 	}
-	GET_( url1 , function(result) {
+	GET_( url[1] , function(result) {
 		if(result!=false) {
 			NGrams["group"] = result 
 		}
-		GET_( url2 , function(result) {
-			if(result!=false) {
-				NGrams["map"] = result 
-			}
-			GET_( url3 , function(result) {
-				if(result!=false) {
-		        	NGrams["main"] = {
-		        		"ngrams": result,
-		        		"scores": {
-					        "initial":"occ_uniq",
-					        "nb_docs":result.length,
-					        "orig_nb_ngrams":1,
-					        "nb_ngrams":result.length,
-					    }
-		        	}
-		        	AfterAjax()
-	        	}
-			});
+
+		GET_( url[2] , function(result) {
+			for(var i in result) {
+	    		NGrams["stop"][result[i].id] = result[i]
+	    	}
 		});
 	});
 });
 
 
+
 function AfterAjax() {
-	// Deleting subforms from the ngrams-table, clean start baby!
-    if( Object.keys(NGrams["group"].links).length>0 ) {
+	// // Deleting subforms from the ngrams-table, clean start baby!
+    // if( Object.keys(NGrams["group"].links).length>0 ) {
 
-    	var _forms = {  "main":{} , "sub":{}  }
-    	for(var i in NGrams["group"].links) {
-    		_forms["main"][i] = true
-    		for(var j in NGrams["group"].links[i]) {
-    			_forms["sub"][ NGrams["group"].links[i][j] ] = true
-    		}
-    	}
-    	var ngrams_data_ = []
-    	for(var i in NGrams["main"].ngrams) {
-    		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
-    			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
-    		} else {
-    			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
-    			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
-    			ngrams_data_.push( NGrams["main"].ngrams[i] )
-    		}
-    	}
-    	NGrams["main"].ngrams = ngrams_data_;
-    }
+    // 	var _forms = {  "main":{} , "sub":{}  }
+    // 	for(var i in NGrams["group"].links) {
+    // 		_forms["main"][i] = true
+    // 		for(var j in NGrams["group"].links[i]) {
+    // 			_forms["sub"][ NGrams["group"].links[i][j] ] = true
+    // 		}
+    // 	}
+    // 	var ngrams_data_ = []
+    // 	for(var i in NGrams["main"].ngrams) {
+    // 		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
+    // 			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
+    // 		} else {
+    // 			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
+    // 			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
+    // 			ngrams_data_.push( NGrams["main"].ngrams[i] )
+    // 		}
+    // 	}
+    // 	NGrams["main"].ngrams = ngrams_data_;
+    // }
 
-    if( Object.keys(NGrams["map"]).length>0 ) {
-    	for(var i in NGrams["main"].ngrams) {
-    		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
-    			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
-    		}
-    	}
-    }
+    // if( Object.keys(NGrams["map"]).length>0 ) {
+    // 	for(var i in NGrams["main"].ngrams) {
+    // 		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
+    // 			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
+    // 		}
+    // 	}
+    // }
 
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial
@@ -1006,6 +1055,3 @@ function AfterAjax() {
     $("#content_loader").remove()
     $("#corpusdisplayer").click()
 }
-
-
-

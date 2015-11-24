@@ -1,3 +1,5 @@
+from admin.env import *
+import sys
 from node.models import User
 from django.core.mail import send_mail
 
@@ -53,13 +55,17 @@ def active_user(username, active=True):
     user.active_user = active
     user.save()
 
-def mines_account_creation(fichier=None):
+def mass_account_creation(fichier=None):
     if fichier is None:
-        fichier = "/home/alexandre/projets/forccast/Tutorat/2014-2015/comptes_gargantext.csv"
+        fichier = "/tmp/comptes.csv"
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password, fin = line.split(',')
-        create_user(username, email, password=password, notify=False)
+        create_user(username, email, password=password, active=True, notify=False)
         #delete_user(username)
     accounts.close()
+
+if __name__ == "__main__":
+    mass_account_creation(fichier=sys.argv[1])
+
 

@@ -35,6 +35,10 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
     
+    authorized = ['conditional', 'distributional', 'cosine']
+    if distance not in authorized:
+        distance = 'conditional'
+
     matrix = defaultdict(lambda : defaultdict(float))
     ids    = defaultdict(lambda : defaultdict(int))
     labels = dict()
@@ -98,9 +102,50 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
         G = nx.relabel_nodes(G, dict(enumerate([ ids[id_][1] for id_ in list(xx.columns)])))
     
     elif distance == 'cosine':
-        xs = x / np.sqrt((x**2).sum(axis=1) * (x**2).sum(axis=0))
-        n = np.max(xs.sum(axis=1))
-        m = np.min(xs.sum(axis=1))
+        scd = defaultdict(lambda : defaultdict(int))
+
+        for i in matrix.keys():
+            for j in matrix.keys():
+                numerator = sum(
+                                [
+                                matrix[i][k] * matrix[j][k]
+                                    for k in matrix.keys()
+                                    if i != j and k != i and k != j
+                                ]
+                            )
+                
+                denominator  = sqrt(
+                                    sum([
+                                    matrix[i][k] 
+                                        for k in matrix.keys()
+                                        if k != i and k != j #and matrix[i][k] > 0
+                                       ])
+                                    *
+                                    sum([
+                                    matrix[i][k] 
+                                        for k in matrix.keys()
+                                        if k != i and k != j #and matrix[i][k] > 0
+                                       ])
+
+                               )
+
+                try:
+                    scd[i][j] = numerator / denominator
+                except Exception as error:
+                    scd[i][j] = 0
+
+        minmax = min([ max([ scd[i][j] for i in scd.keys()]) for j in scd.keys()])
+
+        G = nx.DiGraph()
+        G.add_edges_from(
+                          [
+                            (i, j, {'weight': scd[i][j]}) 
+                                for i in scd.keys() for j in scd.keys()
+                                if i != j and scd[i][j] > minmax and scd[i][j] > scd[j][i]
+                          ]
+                        )
+
+
 
     elif distance == 'distributional':
         mi = defaultdict(lambda : defaultdict(int))
@@ -113,7 +158,6 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
                 if i!=j :
                     mi[i][j] = log( matrix[i][j] / ((si * sj) / total_cooc) )
         
-        # r = result
         r = defaultdict(lambda : defaultdict(int))
         
         for i in matrix.keys():

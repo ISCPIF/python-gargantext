@@ -23,6 +23,7 @@ from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram\
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 
+import time
 import json
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -78,20 +79,65 @@ from rest_framework.decorators import api_view
 
 
 class List(APIView):
+
+    def get_metadata ( self , ngram_ids , parent_id ):
+
+        start_ = time.time()
+
+        nodes_ngrams = session.query(Ngram.id , Ngram.terms).filter( Ngram.id.in_( list(ngram_ids.keys()))).all()
+        for node in nodes_ngrams:
+            if node.id in ngram_ids:
+                ngram_ids[node.id] = {
+                    "id": node.id,
+                    "name": node.terms,
+                    "scores": {
+                        "tfidf": 0
+                    }
+                }
+
+        tfidf_list = get_or_create_node(nodetype='Tfidf (global)', corpus_id=parent_id).id
+        ngram_tfidf = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==tfidf_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
+        for n in ngram_tfidf:
+            if n.ngram_id in ngram_ids:
+                ngram_ids[n.ngram_id]["scores"]["tfidf"] += n.score
+
+        end_ = time.time()
+
+        return { "data":ngram_ids , "secs":(end_ - start_) }
+
+
+
     def get(self, request, corpus_id , list_name ):
+
+        start_ = time.time()
+
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         list_name = list_name.title()+"List"
         node_list = get_or_create_node(nodetype=list_name, corpus=corpus )
-        nodes_ngrams = session.query(NodeNgram).filter(NodeNgram.node_id==node_list.id ).all()
+        nodes_ngrams = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id==node_list.id ).all()
+
 
         ngram_ids = {}
         for node in nodes_ngrams:
             ngram_ids[node.ngram_id] = True
-        ngrams = [int(i) for i in list(ngram_ids.keys())]
 
-        # ngram_ids = get_occtfidf( ngrams , request.user.id , corpus_id , list_name)
+        
+        end_ = time.time()
+        measurements = {
+            "get_ngram_ids" : {
+                "s":(end_ - start_),
+                "n": len(ngram_ids.keys())
+            }
+        }
+        if request.GET.get('custom', False) != False:
+            ngrams_meta = self.get_metadata( ngram_ids , corpus_id  )
+            ngram_ids = ngrams_meta["data"]
+            measurements["tfidf"] = {
+                "s" : ngrams_meta["secs"],
+                "n": len(ngrams_meta["data"].keys())
+            }
 
-        return JsonHttpResponse( {"data":ngram_ids} )
+        return JsonHttpResponse( {"data":ngram_ids , "time":measurements } )
 
 class Ngrams(APIView):
     '''
@@ -100,40 +146,24 @@ class Ngrams(APIView):
     http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
-        # print("\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         # query ngrams
+        start_ = time.time()
+
         ParentNode = aliased(Node)
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
-        # print("\t\tSTEP 01","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
+
         ngrams_query = (session
             .query(Ngram.id, Ngram.terms)
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
             .join(Node, Node.id == Node_Ngram.node_id)
         )
 
-        # print("\t\tSTEP 02","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         the_score = "tfidf"
         if request.GET.get('score', False) != False:
             the_score = request.GET['score']
-        # # get the scores
-        # print( je peux pas prenez les ngrams occs avec l'aliased et get_or_create_node )
-        # if 'occs' in the_score:
-        #     print("OOOOOOOCCCSSSS:")
-        #     miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==node_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
-        #     print( miamlist )
-        #     Miam = aliased(NodeNgram)
-        #     ngrams_query = (  session.query(NodeNgram.ngram_id, func.sum(NodeNgram.weight))
-        #                     .join(Node, Node.id == NodeNgram.node_id)
-        #                     .join(Miam, Miam.ngram_id == NodeNgram.ngram_id)
-        #                     .filter(Node.parent_id == node_id, Node.type_id==cache.NodeType['Document'].id)
-        #                     .filter(Miam.node_id==miamlist.id)
-        #                     .group_by(NodeNgram.ngram_id)
-        #                     .all()
-        #                 )
-        #     for i in ngrams_query:
-        #         print(i)
+
         if 'occs' in the_score:
             occs = func.sum(Node_Ngram.weight).label('occs')
             ngrams_query = (ngrams_query.add_column(occs))
@@ -169,7 +199,6 @@ class Ngrams(APIView):
             group_by.append(Spec.score)
             results.append('specificity')
 
-        # print("\t\tSTEP 03","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         order_query = request.GET.get('order', False)
         if order_query == 'occs':
             ngrams_query = ngrams_query.order_by(desc(occs))
@@ -180,7 +209,6 @@ class Ngrams(APIView):
         elif order_query  == 'specificity':
             ngrams_query = ngrams_query.order_by(desc(Spec.score))
 
-        # print("\t\tSTEP 04","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 20))
 
@@ -188,7 +216,6 @@ class Ngrams(APIView):
                         .group_by(Ngram.id, Ngram.terms, *group_by)
                         )
 
-        # print("\t\tSTEP 05","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
         if request.GET.get('ngram_id', False) != False:
             ngram_id = int(request.GET['ngram_id'])
             Group = aliased(NodeNgramNgram)
@@ -198,8 +225,6 @@ class Ngrams(APIView):
                                         .filter(Group.ngramx_id == ngram_id)
                             )
 
-        # print("\t\tSTEP 06","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
-        # # filters by list type (soon list_id to factorize it in javascript)
         list_query = request.GET.get('list', 'miam')
         list_id = request.GET.get('list_id', False)
         if list_query == 'miam':
@@ -215,7 +240,6 @@ class Ngrams(APIView):
                                         .filter(Stop.node_id == stop_id)
                             )
         elif list_query == 'map':
-        # ngram could be in ngramx_id or ngramy_id
             CoocX = aliased(NodeNgramNgram)
             CoocY = aliased(NodeNgramNgram)
             cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
@@ -241,15 +265,6 @@ class Ngrams(APIView):
                                             .filter(CoocY.node_id == node.id)
                                 )
 
-        # print("\t\tSTEP 07","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
-        # print("")
-        # print(ngrams_query)
-        # total = ngrams_query.count()
-
-        # print("")
-        # print("\t\tSTEP 07.1,   count:", total ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
-        # print("\t\tSTEP 07.2,   i:", offset , ", N:", (offset+limit) ,"\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
-
         output = []
         for ngram in ngrams_query[offset : offset+limit]:
             info = { "scores" : {} }
@@ -268,17 +283,22 @@ class Ngrams(APIView):
 
             output.append( info )
 
-        # print("\t\tSTEP 08","\tCORPUS:",node_id," LIST:",request.GET.get('list', False) , " SCORES:",request.GET.get('score', False))
 
+        end_ = time.time()
+        measurements = {
+            "s":(end_ - start_),
+            "n": len(output)
+        }
         # return formatted result
         return JsonHttpResponse({
             'pagination': {
                 'offset': offset,
                 'limit': limit,
                 'total': len(output),
-                          },
+            },
             'data': output,
-                               })
+            "time" : measurements
+        })
 
     def post(self , request , node_id ):
         return JsonHttpResponse(["POST","ok"])

@@ -897,10 +897,6 @@ function GET_( url , callback ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpus" )
-var url0=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
-	url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
-	url3=window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=miam&limit=1000";
 var NGrams = {
 	"group" : {},
 	"stop" : {}, 
@@ -911,42 +907,67 @@ var NGrams = {
 
 $("#corpusdisplayer").hide()
 
+
+var url = [
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/miam?custom",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
+]
+
+
+
 // The AJAX's in cascade:
-GET_( url0 , function(result) {
+
+GET_( url[0] , function(result) {
+	// = = = = MIAM = = = = //
 	if(result!=false) {
-		for(var i in result) {
-    		NGrams["stop"][result[i].id] = result[i]
+    	NGrams["main"] = {
+    		"ngrams": [],
+    		"scores": {
+		        "initial":"tfidf",
+		        "nb_docs":result.length,
+		        "orig_nb_ngrams":1,
+		        "nb_ngrams":result.length,
+		    }
     	}
+
+		for(var i in result) 
+			NGrams["main"].ngrams.push(result[i])  
+
 	}
-	GET_( url1 , function(result) {
+	// = = = = /MIAM = = = = //
+	
+	GET_( url[1] , function(result) {
+		// = = = = MAP = = = = //
 		if(result!=false) {
-			NGrams["group"] = result 
+			NGrams["map"] = result 
 		}
-		GET_( url2 , function(result) {
+		// = = = = /MAP = = = = //
+
+		GET_( url[2] , function(result) {
+			// = = = = GROUP = = = = //
 			if(result!=false) {
-				NGrams["map"] = result 
+				NGrams["group"] = result 
 			}
-			GET_( url3 , function(result) {
-				if(result!=false) {
-		        	NGrams["main"] = {
-		        		"ngrams": result,
-		        		"scores": {
-					        "initial":"occ_uniq",
-					        "nb_docs":result.length,
-					        "orig_nb_ngrams":1,
-					        "nb_ngrams":result.length,
-					    }
-		        	}
-		        	AfterAjax()
-	        	}
+			// = = = = /GROUP = = = = //
+
+	    	AfterAjax()
+			GET_( url[3] , function(result) {
+				// = = = = STOP = = = = //
+				for(var i in result) {
+		    		NGrams["stop"][result[i].id] = result[i]
+		    	}
+				// = = = = /STOP = = = = //
 			});
 		});
 	});
 });
 
 
+
 function AfterAjax() {
-	// Deleting subforms from the ngrams-table, clean start baby!
+	// // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
     	var _forms = {  "main":{} , "sub":{}  }
@@ -1006,6 +1027,3 @@ function AfterAjax() {
     $("#content_loader").remove()
     $("#corpusdisplayer").click()
 }
-
-
-

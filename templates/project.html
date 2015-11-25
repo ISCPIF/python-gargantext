@@ -24,26 +24,6 @@
 
 <script type="text/javascript">
 
-  var refresh_time = 5000 //ms
-  function corpus_monitorer() {
-  	console.log("hola")
-    // $.ajax({
-    //     type: "GET",
-    //     url: "https://dl.dropboxusercontent.com/u/9975992/climat/ajax_file.json",
-    //     dataType: "json",
-    //     success : function(data, textStatus, jqXHR) {
-    //         if( data.command ) {
-    //             eval( data.command )
-    //         }
-    //     },
-
-    //     error: function(exception) { 
-    //         console.log("exception!:"+exception.status)
-    //     }
-
-    // });
-  }
-  setInterval(corpus_monitorer ,refresh_time);
 
 </script>
 
@@ -363,6 +343,7 @@
 			        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 			      },
 			      success: function(data) {
+			        console.log("SUCCESS")
 					console.log("in getGlobalResults")
 			        console.log(data)
 					console.log("enabling "+"#"+value.id)
@@ -379,12 +360,15 @@
 		            	$('#submit_thing').prop('disabled', false);
 		            } else {
 		            	$("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+		            	if(data[0]==false)
+			            	$("#theresults").html("Pubmed connection error!</i><br>")
 		            	$('#submit_thing').prop('disabled', true);
 		            }
 
 			      },
 			        error: function(result) {
-			            console.log("Data not found");
+		            	$("#theresults").html("Pubmed connection error!</i><br>")
+		            	$('#submit_thing').prop('disabled', true);
 			        }
 			    });	
 			}

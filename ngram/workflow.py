@@ -49,7 +49,6 @@ def ngram_workflow(corpus, n=5000):
     compute_tfidf(corpus)
     # update_state.processing_(corpus, "OCCS local score")
     # compute_occs(corpus)
-    
 
 #corpus=session.query(Node).filter(Node.id==540420).first()
 #corpus=session.query(Node).filter(Node.id==559637).first()

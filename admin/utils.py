@@ -57,6 +57,7 @@ class WorkflowTracking:
             cursor = connection.cursor()
             try:
                 cursor.execute(the_query)
+                cursor.execute("COMMIT;")
             finally:
                 connection.close()
         except :

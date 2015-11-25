@@ -92,7 +92,9 @@ urlpatterns = patterns('',
     ############################################################################
     url(r'^tests/', include('tests.urls')),
     url(r'^project/(\d+)/corpus/(\d+)/terms$', samtest.get_ngrams),
+    url(r'^api/corpus/(\d+)$', samtest.get_corpus_state),
     url(r'^test_cores$', samtest.get_cores)
+    
 )
 
 

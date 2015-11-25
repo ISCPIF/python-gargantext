@@ -167,3 +167,18 @@ def get_cores( request ):
 	import multiprocessing
 	cpus = multiprocessing.cpu_count()
 	return JsonHttpResponse( {"data":cpus} )
+
+
+def get_corpus_state( request , corpus_id ):
+    if not request.user.is_authenticated():
+        return JsonHttpResponse( {"request" : "forbidden"} )
+    processing = ["Waiting"]
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]
+    finally:
+        connection.close()
+    # processing = corpus.hyperdata['Processing']
+    return JsonHttpResponse(  processing )

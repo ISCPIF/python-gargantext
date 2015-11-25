@@ -345,12 +345,14 @@ def corpus(request, project_id, corpus_id):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
+   
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
-    print('corpus',corpus_id,' , processing', processing)
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,

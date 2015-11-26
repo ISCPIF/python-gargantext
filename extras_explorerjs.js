@@ -39,7 +39,7 @@ function modify_ngrams( classname ) {
                     delete partialGraph._core.graph.nodesIndex[i]
                 }
                 partialGraph.refresh()
-                partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
+                $("#lensButton").click()
             });
         });
     }

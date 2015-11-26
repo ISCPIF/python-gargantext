@@ -103,7 +103,7 @@ var maxSearchResults = 10;
 var strSearchBar = "Search";
 
 var cursor_size_min= 0;
-var cursor_size= 0;
+var cursor_size= 10;
 var cursor_size_max= 100;
 
 var desirableTagCloudFont_MIN=12;

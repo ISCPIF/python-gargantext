@@ -474,10 +474,13 @@ function updateLeftPanel_fix( sels , oppos ) {
     namesDIV += '</h4></div>';
 
     var ngram_actions = ''
-        // ngram_actions += '<center>'
-        // ngram_actions += '<span><button class="delete" onclick="modify_ngrams(this.className)">Delete</button></span>'
-        // ngram_actions += '<span><button class="group" onclick="modify_ngrams(this.className)">Group</button></span>'
-        // ngram_actions += '</center>'
+    if(partialGraph.states[1].categories.length==1) {
+        ngram_actions += '<center>'
+        ngram_actions += '<span><button class="delete" onclick="modify_ngrams(this.className)">Delete</button></span>'
+        // if( Object.keys(sels).length>1)
+        //     ngram_actions += '<span><button class="group" onclick="modify_ngrams(this.className)">Group</button></span>'
+        ngram_actions += '</center>'
+    }
 
     if(oppos.length>0) {
 	    alterNodesDIV+='<div id="opossitesBox">';//tagcloud

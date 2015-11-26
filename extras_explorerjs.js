@@ -20,69 +20,39 @@ function getIDFromURL( item ) {
 }
 
 function modify_ngrams( classname ) {
-    var selected_ngrams = Object.keys(selections).map(Number)
     console.clear()
-    console.log( selected_ngrams )
 
     var corpus_id = getIDFromURL( "corpus" ) // not used
     var list_id = $("#list_id").val()
-    var nodes = []
-    var http_method = "DELETE" //"GET"
-    var args = selected_ngrams //[]
+    var selected_ngrams = $.extend({}, selections)
+    console.log( selected_ngrams )
 
     if(classname=="delete") {
-
-        var the_url = window.location.origin+"/api/node/"+corpus_id+"/ngrams"+"/keep"+"/"+nodes.join("+");
-        the_url = the_url.replace(/\/$/, ""); //remove trailing slash
-        $.ajax({
-          method: http_method,
-          url: the_url,
-          data: args,
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-          },
-          success: function(data){
-                console.log("GET" + " ok!!")
-                console.log(nodes)
-                console.log(data)
-                console.log("Success");
-          },
-          error: function(result) {
-              console.log(result)
-              console.log("Fail");
-          }
+        CRUD( corpus_id , "/keep" , [] , selected_ngrams , "DELETE" , function(result) {
+            console.log(" Delete from Map-list: "+result)
+            CRUD( list_id , "" , Object.keys(selected_ngrams).map(Number) , [] , "DELETE", function(result) {
+                console.log(" Add to Stop-list "+result)
+                cancelSelection(false)
+                for(var i in selected_ngrams) {
+                    partialGraph.dropNode( i )
+                    delete Nodes[i]
+                }
+                partialGraph.refresh()
+                partialGraph.draw()
+            });
         });
-        // CRUD_( corpus_id , "/keep" , [] , selected_ngrams , "DELETE" , function(result) {
-        //     console.log(" Delete from Map-list: "+result)
-        //     // CRUD( list_id , "" , selected_ngrams , [] , "DELETE", function(result) {
-        //     //     console.log(" Add to Stop-list "+result)
-        //     //     for(var i in selected_ngrams) {
-        //     //         partialGraph.dropNode( selected_ngrams[i] )
-        //     //         delete Nodes[selected_ngrams[i]]
-        //     //     }
-        //     //     partialGraph.refresh()
-        //     //     partialGraph.draw()
-        //     // });
-        //         // cancelSelection(false)
-        //         // for(var i in selected_ngrams) {
-        //         //     partialGraph.dropNode( selected_ngrams[i] )
-        //         //     delete Nodes[selected_ngrams[i]]
-        //         // }
-        //         // partialGraph.refresh()
-        //         // partialGraph.draw()
-        // });
     }
 
     // if(classname=="group") {
     //     CRUD( corpus_id , "/group" , [] , selected_ngrams , "PUT" , function(result) {
-    //         console.log(" UN ELEFANTE "+result)
+    //         console.log(" GROUP  "+result)
     //         CRUD( corpus_id , "/keep" , [] , selected_ngrams , "PUT" , function(result) {
     //         });
     //     });
     // }
 }
 
-function CRUD_( parent_id , action , nodes , args , http_method , callback) {
+function CRUD( parent_id , action , nodes , args , http_method , callback) {
     var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
     the_url = the_url.replace(/\/$/, ""); //remove trailing slash
     console.log( the_url )
@@ -719,7 +689,7 @@ function printCorpuses() {
     for(var i in partialGraph._core.graph.nodes) {
         thenodes.push(partialGraph._core.graph.nodes[i].id)
     }
-
+    console.log( thenodes )
     $.ajax({
         type: 'GET',
         url: window.location.origin+'/api/corpusintersection/'+the_ids.join("a"),
@@ -729,7 +699,6 @@ function printCorpuses() {
             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },
         success : function(data){
-            console.clear()
             console.log( "!!!!!!!! in printCorpuses() AJAX!!!!!!!! " )
         
             for(var i in Nodes) {
@@ -740,7 +709,11 @@ function printCorpuses() {
             }
             cancelSelection(false)
             ChangeGraphAppearanceByAtt(true)
-            clustersBy("inter")
+
+            console.log("YOLOYOLYOLYOYKOYYKYOY")
+            clustersBy("inter" , "color")
+            clustersBy("inter" , "size")
+
             
         },
         error: function(xhr, status, error) {

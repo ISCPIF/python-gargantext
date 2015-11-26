@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     url(r'nodes$', api.NodesList.as_view()),
     url(r'nodes/(\d+)$', api.Nodes.as_view()),
     url(r'nodes/(\d+)/children/ngrams$', api.NodesChildrenNgrams.as_view()),  # => repeated children ?
+    url(r'nodes/(\d+)/children/ids$', api.NodesChildrenNgramsIds.as_view()),  # => repeated children ?
 
     # NGRAMS table & annotations
     url(r'node/(\d+)/ngrams$'      , ngrams.Ngrams.as_view()),

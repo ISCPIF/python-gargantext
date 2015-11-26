@@ -11,7 +11,7 @@ import datetime
 import copy
 
 from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
+from gargantext_web.db import session, cache, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
         , NodeType, Node_Hyperdata
 from gargantext_web.validation import validate, ValidationException
 from node import models
@@ -138,6 +138,50 @@ class NodesChildrenNgrams(APIView):
                 for ngram in ngrams_query[offset : offset+limit]
             ],
         })
+
+class NodesChildrenNgramsIds(APIView):
+
+    def get(self, request, node_id):
+        # query ngrams
+        ParentNode = aliased(Node)
+        ngrams_query = (session
+            .query(Node.id, func.sum(Node_Ngram.weight).label('count'))
+            .join(Node_Ngram, Node_Ngram.node_id == Node.id)
+            .join(Ngram, Ngram.id == Node_Ngram.ngram_id)
+            .filter(Node.parent_id == node_id)
+            .filter(Node.type_id == cache.NodeType['Document'].id)
+            .group_by(Node.id)
+            # .group_by(Ngram)
+            .order_by(func.sum(Node_Ngram.weight).desc())
+        )
+        # filters
+        if 'startwith' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
+        if 'contain' in request.GET:
+            ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
+        #if 'doesnotcontain' in request.GET:
+        #    ngrams_query = ngrams_query.filter(not_(Ngram.terms.contains(request.GET['doesnotcontain'])))
+        # pagination
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 20))
+        total = ngrams_query.count()
+        # return formatted result
+        return JsonHttpResponse({
+            'pagination': {
+                'offset': offset,
+                'limit': limit,
+                'total': total,
+            },
+            'data': [
+                {
+                    'id': node,
+                    'count': count
+                }
+                for node, count in ngrams_query[offset : offset+limit]
+            ],
+        })
+
+
 
 from gargantext_web.db import get_or_create_node
 

@@ -132,10 +132,7 @@ class List(APIView):
         if request.GET.get('custom', False) != False:
             ngrams_meta = self.get_metadata( ngram_ids , corpus_id  )
             ngram_ids = ngrams_meta["data"]
-            measurements["tfidf"] = {
-                "s" : ngrams_meta["secs"],
-                "n": len(ngrams_meta["data"].keys())
-            }
+            measurements["tfidf"] = { "s" : ngrams_meta["secs"], "n": len(ngrams_meta["data"].keys()) }
 
         return JsonHttpResponse( {"data":ngram_ids , "time":measurements } )
 
@@ -165,9 +162,14 @@ class Ngrams(APIView):
             the_score = request.GET['score']
 
         if 'occs' in the_score:
-            occs = func.sum(Node_Ngram.weight).label('occs')
-            ngrams_query = (ngrams_query.add_column(occs))
-            results.append('occurences')
+            Occs = NodeNodeNgram
+            occs_id = get_or_create_node(nodetype='Occurrences', corpus=corpus).id
+            ngrams_query = (ngrams_query.add_column(Occs.score.label('occs'))
+                                        .join(Occs, Occs.ngram_id == Ngram.id)
+                                        .filter(Occs.nodex_id==occs_id)
+                    )
+            group_by.append(Occs.score)
+            results.append('occs')
 
         if 'tfidf' in the_score:
             Tfidf = aliased(NodeNodeNgram)
@@ -272,7 +274,7 @@ class Ngrams(APIView):
             except: pass
             try: info["name"] = ngram.terms
             except: pass
-            try: info["scores"]["occ_uniq"] = ngram.occs
+            try: info["scores"]["occs"] = ngram.occs
             except: pass
             try: info["scores"]["tfidf"] = ngram.tfidf
             except: pass
@@ -570,6 +572,8 @@ class Keep(APIView):
         Delete ngrams from the map list
         """
         group_rawreq = dict(request.data)
+        # print("group_rawreq:")
+        # print(group_rawreq)
         from django.utils.html import escape
         ngram_2del = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()

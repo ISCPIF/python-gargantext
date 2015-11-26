@@ -130,7 +130,7 @@ def doTheQuery(request , project_id):
 			parent_id = project_id,
 			type_id = cache.NodeType['Corpus'].id,
 			language_id = None,
-                        hyperdata    = {'Processing' : 1,}
+                        hyperdata    = {'Processing' : "Parsing documents",}
 		)
 		session.add(corpus)
 		session.commit()
@@ -243,7 +243,7 @@ def testISTEX(request , project_id):
 			parent_id = project_id,
 			type_id = cache.NodeType['Corpus'].id,
 			language_id = None,
-			hyperdata    = {'Processing' : 1,}
+			hyperdata    = {'Processing' : "Parsing documents",}
 		)
 		session.add(corpus)
 		session.commit()

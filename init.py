@@ -93,7 +93,7 @@ node_types = [
         'Project', 'Corpus', 'Document',
         'MiamList', 'StopList', 'MainList', 'MapList', # TODO MiamList -> MainList
         'Stem', 'Lem', 'Group', 'Tfidf', 'Tfidf (global)', 'Cvalue', 'Specificity'
-        , 'Cooccurrence',
+        , 'Cooccurrence', 'Occurrences',
         ]
 
 for node_type in node_types:

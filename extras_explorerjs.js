@@ -38,7 +38,7 @@ function modify_ngrams( classname ) {
                     delete Nodes[i]
                 }
                 partialGraph.refresh()
-                partialGraph.draw()
+                partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
             });
         });
     }

@@ -6,7 +6,7 @@ from ngram.stop import compute_stop
 from ngram.group import compute_groups
 from gargantext_web.db import get_or_create_node
 from ngram.mapList import compute_mapList
-from ngram.occurrences import compute_occs
+# from ngram.occurrences import compute_occs
 
 from gargantext_web.db import session , Node , NodeNgram
 from admin.utils import WorkflowTracking
@@ -47,9 +47,8 @@ def ngram_workflow(corpus, n=5000):
     
     update_state.processing_(corpus, "TF-IDF local score")
     compute_tfidf(corpus)
-    update_state.processing_(corpus, "OCCS local score")
-    compute_occs(corpus)
-    
+    # update_state.processing_(corpus, "OCCS local score")
+    # compute_occs(corpus)
 
 #corpus=session.query(Node).filter(Node.id==540420).first()
 #corpus=session.query(Node).filter(Node.id==559637).first()

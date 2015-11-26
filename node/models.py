@@ -269,42 +269,42 @@ class Node(CTENode):
             for ngram_text, weight in associations.items()
         ])
 
-    @current_app.task(filter=task_method)
-    def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
-        import time
-        total = 0
-        print("LOG::TIME: In workflow()    parse_resources()")
-        start = time.time()
-        self.hyperdata['Processing'] = 1
-        self.save()
-        self.parse_resources()
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / parse_resources()")
+    # @current_app.task(filter=task_method)
+    # def workflow(self, keys=None, ngramsextractorscache=None, ngramscaches=None, verbose=False):
+    #     import time
+    #     total = 0
+    #     print("LOG::TIME: In workflow()    parse_resources()")
+    #     start = time.time()
+    #     self.hyperdata['Processing'] = 1
+    #     self.save()
+    #     self.parse_resources()
+    #     end = time.time()
+    #     total += (end - start)
+    #     print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" parse_resources() [s]",(end - start))
+    #     print("LOG::TIME: In workflow()    / parse_resources()")
 
-        start = time.time()
-        print("LOG::TIME: In workflow()    extract_ngrams()")
-        print("\n- - - - - - - - - -")
-        type_document   = NodeType.objects.get(name='Document')
-        self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
-        end = time.time()
-        print("- - - - - - - - - - \n")
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / extract_ngrams()")
+    #     start = time.time()
+    #     print("LOG::TIME: In workflow()    extract_ngrams()")
+    #     print("\n- - - - - - - - - -")
+    #     type_document   = NodeType.objects.get(name='Document')
+    #     self.children.filter(type_id=type_document.pk).extract_ngrams(keys=['title',])
+    #     end = time.time()
+    #     print("- - - - - - - - - - \n")
+    #     total += (end - start)
+    #     print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" extract_ngrams() [s]",(end - start))
+    #     print("LOG::TIME: In workflow()    / extract_ngrams()")
 
-        start = time.time()
-        print("In workflow()    do_tfidf()")
-        from analysis.functions import do_tfidf
-        do_tfidf(self)
-        end = time.time()
-        total += (end - start)
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
-        print("LOG::TIME: In workflow()    / do_tfidf()")
-        print("In workflow() END")
-        self.hyperdata['Processing'] = 0
-        self.save()
+    #     start = time.time()
+    #     print("In workflow()    do_tfidf()")
+    #     from analysis.functions import do_tfidf
+    #     do_tfidf(self)
+    #     end = time.time()
+    #     total += (end - start)
+    #     print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" do_tfidf() [s]",(end - start))
+    #     print("LOG::TIME: In workflow()    / do_tfidf()")
+    #     print("In workflow() END")
+    #     self.hyperdata['Processing'] = 0
+    #     self.save()
 
 class Node_Hyperdata(models.Model):
     node        = models.ForeignKey(Node, on_delete=models.CASCADE)

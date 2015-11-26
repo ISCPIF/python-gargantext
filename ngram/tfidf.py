@@ -239,7 +239,6 @@ def compute_tfidf_global(corpus):
         lnD = log(D)
         cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
         # show off
-        dbg.show('insert tfidf')
         cursor.execute('''
             INSERT INTO
                 %s (nodex_id, nodey_id, ngram_id, score)
@@ -255,6 +254,7 @@ def compute_tfidf_global(corpus):
         ''' % (NodeNodeNgram.__table__.name, tfidf_node.id, corpus.id, ))
 
         db.commit()
+        dbg.show('insert tfidf')
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #compute_tfidf_global(corpus)

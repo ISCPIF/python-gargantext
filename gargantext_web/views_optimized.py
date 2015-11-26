@@ -140,7 +140,7 @@ def project(request, project_id):
                 parent_id   = project_id,
                 type_id     = cache.NodeType['Corpus'].id,
                 language_id = language_id,
-                hyperdata    = {'Processing' : 1,}
+                hyperdata    = {'Processing' : "Parsing documents",}
             )
             session.add(corpus)
             session.commit()

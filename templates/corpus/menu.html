@@ -85,7 +85,8 @@
 					</div>
 				</div>
 
-
+				<span style="display:none;" id="process_state">{{processing}}</span>
+				<span style="display:none;" id="corpus_id">{{corpus.id}}</span>
 				<div class="col-md-6">
 						<div class="jumbotron">
 				{% if processing == 0 or processing == "0" %}
@@ -96,8 +97,9 @@
                                 <li>Authors and Terms</li>
                         </ol>
                 {% else %}
+                		
 						<h3><img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Networks </h3>
-						<h6>(Updating: <i>{{processing}}</i>)</h6>
+						<h6>(Updating: <i id="process_id" data-since="date" >{{processing}}</i>)</h6>
                         <ol>
                                 <li>Terms</li>
                                 <li>Journals and Terms</li>
@@ -134,6 +136,35 @@
 		return window.open(url_,'_blank');
 		
 	}
+
+	var refresh_time = 3000 //ms
+	function corpus_monitorer() {
+		var url_ = "/api/corpus/"+$("#corpus_id").text()
+		$.ajax({
+		    type: "GET",
+		    url: url_,
+		    dataType: "json",
+		    success : function(data, textStatus, jqXHR) {
+		        if(data["Processing"]=="0") {
+		        	window.location.reload()
+		        } else {
+		        	$("#process_id").html(data["Processing"]+"...")
+		        }
+		    },
+		    error: function(exception) { 
+		        console.log("exception!:"+exception.status)
+		    }
+
+		});
+	}
+
+	if( $("#process_state").text()=="0" ) {
+		// workflow : finished!
+	} else {
+		setInterval(corpus_monitorer ,refresh_time);
+	}
+
+
 </script>
 
 

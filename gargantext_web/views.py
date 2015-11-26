@@ -345,12 +345,14 @@ def corpus(request, project_id, corpus_id):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
+   
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
-    print('corpus',corpus_id,' , processing', processing)
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -569,6 +571,9 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
     project_type_id = cache.NodeType['Project'].id
     corpus_type_id = cache.NodeType['Corpus'].id
 
+    miamlist_type_id = cache.NodeType['MiamList'].id
+    miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
 
     html = t.render(Context({\
@@ -576,6 +581,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
             'user': request.user,\
             'date'      : date,\
             'corpus'    : corpus,\
+            'list_id'    : miamlist.id,\
             'project'   : project,\
             'graphfile' : graphurl,\
             }))

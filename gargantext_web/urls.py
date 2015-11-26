@@ -91,11 +91,10 @@ urlpatterns = patterns('',
 
     ############################################################################
     url(r'^tests/', include('tests.urls')),
-    # TODO Samuel, lines below were on your tests, are they still used ?
-    # can we delete them ?
-    url(r'^project/(\d+)/corpus/(\d+)/terms/ngrams.json$', samtest.get_ngrams_json),
     url(r'^project/(\d+)/corpus/(\d+)/terms$', samtest.get_ngrams),
-    url(r'^project/(\d+)/corpus/(\d+)/stop_list.json$', samtest.get_stoplist)
+    url(r'^api/corpus/(\d+)$', samtest.get_corpus_state),
+    url(r'^test_cores$', samtest.get_cores)
+    
 )
 
 

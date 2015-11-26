@@ -43,9 +43,9 @@ def apply_workflow(corpus_id):
     ngram_workflow(corpus)
 
     #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
-    update_state.processing_(corpus, "0")
 
     print("End of the Workflow for corpus %d" % (corpus_id))
+    update_state.processing_(corpus, "0")
 
 
 @shared_task

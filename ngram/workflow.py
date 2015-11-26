@@ -50,23 +50,4 @@ def ngram_workflow(corpus, n=5000):
     # update_state.processing_(corpus, "OCCS local score")
     # compute_occs(corpus)
 
-#corpus=session.query(Node).filter(Node.id==540420).first()
-#corpus=session.query(Node).filter(Node.id==559637).first()
 
-
-
-#update_stateprocessing(corpus, 0)
-
-check_stop = False
-
-if check_stop:
-    stop = get_or_create_node(corpus=corpus,nodetype='StopList')
-#session.query(NodeNgram).filter(NodeNgram.node_id==stop.id).delete()
-#session.commit()
-    stop_ngrams = (session.query(Ngram)
-                          .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
-                          .filter(NodeNgram.node_id==stop.id)
-                          .all()
-                    )
-
-    print([n for n in stop_ngrams])

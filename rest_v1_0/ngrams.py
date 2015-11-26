@@ -132,10 +132,7 @@ class List(APIView):
         if request.GET.get('custom', False) != False:
             ngrams_meta = self.get_metadata( ngram_ids , corpus_id  )
             ngram_ids = ngrams_meta["data"]
-            measurements["tfidf"] = {
-                "s" : ngrams_meta["secs"],
-                "n": len(ngrams_meta["data"].keys())
-            }
+            measurements["tfidf"] = { "s" : ngrams_meta["secs"], "n": len(ngrams_meta["data"].keys()) }
 
         return JsonHttpResponse( {"data":ngram_ids , "time":measurements } )
 
@@ -575,6 +572,8 @@ class Keep(APIView):
         Delete ngrams from the map list
         """
         group_rawreq = dict(request.data)
+        # print("group_rawreq:")
+        # print(group_rawreq)
         from django.utils.html import escape
         ngram_2del = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()

@@ -36,6 +36,7 @@ function modify_ngrams( classname ) {
                 for(var i in selected_ngrams) {
                     partialGraph.dropNode( i )
                     delete Nodes[i]
+                    delete partialGraph._core.graph.nodesIndex[i]
                 }
                 partialGraph.refresh()
                 partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
@@ -823,7 +824,7 @@ function GetUserPortfolio() {
                 html_ += '    </h4>'+"\n"
                 html_ += '   </div>'+"\n"
                 html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
-                html_ += '    <div class="panel-body">'+"\n"
+                html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
                 html_ += '     <ul>'+"\n"
                 for(var c in v1["corpuses"]) {
                     var Ci = v1["corpuses"][c]

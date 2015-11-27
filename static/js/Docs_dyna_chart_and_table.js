@@ -453,6 +453,7 @@ function Main_test( Data , SearchFilter ) {
 
   var the_content = $("#filter_search").html();
   $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
+
   // .insertAfter("#dynatable-query-search-my-ajax-table")
   
   return "OK"

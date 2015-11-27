@@ -434,6 +434,9 @@ function Main_test( Data , SearchFilter ) {
                 pushState: false,
                 // sort: false //i need to fix the sorting function... the current one just sucks
               },
+              // inputs: {
+              //   queries: $('#searchAB')
+              // },
               writers: {
                 _rowWriter: ulWriter
                 // _cellWriter: customCellWriter
@@ -454,10 +457,24 @@ function Main_test( Data , SearchFilter ) {
   var the_content = $("#filter_search").html();
   $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
 
+
+  // $('#searchAB').click( function() {
+  //   if($(this).is(':checked')) {
+  //       console.log( "Do stuff")
+  //       $("#dynatable-query-search-my-ajax-table").keyup(function (e) {
+  //         if (e.keyCode == 13) {
+  //           console.log("Do stuff: Just pressed ENTER")
+  //         }
+  //       })
+  //   }
+  // });
+    // MyTable.data('dynatable').settings.inputs.queries = { $('#searchAB') }
+
   // .insertAfter("#dynatable-query-search-my-ajax-table")
   
   return "OK"
 }
+
 
 
 
@@ -497,6 +514,7 @@ function SearchFilters( elem ) {
   }
 
 }
+
 
 
 

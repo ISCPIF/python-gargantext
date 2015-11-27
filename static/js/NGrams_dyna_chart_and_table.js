@@ -20,6 +20,8 @@ function getCookie(name) {
 }
 
 
+
+
 var latest,oldest;
 
 var TheBuffer = false
@@ -85,7 +87,7 @@ for(var i in System[GState]["states"]) {
   FlagsBuffer[System[GState]["states"][i]] = {}
 }
 
-
+var corpusesList = {}
 var MyTable;
 var RecDict={};
 var AjaxRecords = []
@@ -94,6 +96,122 @@ var AjaxRecords = []
 var LineChart = dc.lineChart("#monthly-move-chart"); 
 var volumeChart = dc.barChart("#monthly-volume-chart");
 
+
+// Just for Garg
+function GetUserPortfolio() {
+    //http://localhost:8000/api/corpusintersection/1a50317a50145
+    var project_id = getIDFromURL("project")
+    var corpus_id =  getIDFromURL("corpus")
+
+    if( Object.keys( corpusesList ).length > 0 )
+        return true;
+
+    var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
+    $.ajax({
+        type: 'GET',
+        url: query_url,
+        success : function(data) {
+            
+            var html_ = ""
+            html_ += '<div class="panel-group" id="accordion">'+"\n"
+            html_ += ' <form id="corpuses_form" role="form">'+"\n"
+            corpusesList = data;
+            for (var k1 in data) {
+                var v1 = data[k1]
+                html_ += '  <div class="panel panel-default">'+"\n"
+                html_ += '   <div class="panel-heading">'+"\n"
+                html_ += '    <h4 class="panel-title">'+"\n"
+                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
+                html_ += '    </h4>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
+                html_ += '    <div class="panel-body">'+"\n"
+                html_ += '     <ul>'+"\n"
+                for(var c in v1["corpuses"]) {
+                    var Ci = v1["corpuses"][c]
+                    if( Ci["id"]!= corpus_id) {
+                        html_ += '      <li>'+"\n"
+                        html_ += '       <div class="radio">'+"\n"
+                        html_ += '        <label><input type="radio" id="'+k1+"_"+c+'" name="optradio">'+"\n"
+                        html_ += '         <a target="_blank" href="/project/'+k1+'/corpus/'+Ci["id"]+'/">'+Ci["name"] +' ('+Ci["c"]+' docs.)</a>'+"\n"
+                        html_ += '        </label>'+"\n"
+                        html_ += '       </div>'+"\n"
+                        html_ += '     </li>'+"\n"
+                    }
+                }
+                html_ += '     </ul>'+"\n"
+                html_ += '    </div>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '  </div>'+"\n"
+            }
+
+            html_ += ' </form>'+"\n"
+            html_ += '</div>'+"\n"
+
+            $("#user_portfolio").html( html_ )
+            $('#corpuses_form input:radio').change(function() {
+               $("#add_corpus_tab").prop("disabled",false)
+               var selected = $('input[name=optradio]:checked')[0].id.split("_")
+               var sel_p = selected[0], sel_c=selected[1]
+               $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
+
+            });
+
+
+        },
+        error: function(){ 
+            pr('Page Not found: TestFunction()');
+        }
+    });
+}
+function printCorpuses() {
+    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
+    pr(corpusesList)
+
+    var selected = $('input[name=optradio]:checked')[0].id.split("_")
+    var sel_p = selected[0], sel_c=selected[1]
+
+    var current_corpus =  getIDFromURL("corpus")
+
+    var selected_corpus = corpusesList[sel_p]["corpuses"][sel_c]["id"]
+    pr("current corpus: "+current_corpus)
+    var the_ids = []
+    the_ids.push( current_corpus )
+    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
+
+    $("#closecorpuses").click();
+
+    var whichlist = $('input[name=whichlist]:checked').val()
+	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist+"?custom"
+	console.log( url )
+
+	GET_( url , function(results) {
+		if(Object.keys( results ).length>0) {
+			var sub_ngrams_data = {
+				"ngrams":[],
+				"scores": $.extend({}, NGrams["main"].scores)
+			}
+
+			if(whichlist=="stop") {
+				for(var r in results) {
+					var a_ngram = results[r]
+					a_ngram["state"] = System[0]["statesD"]["delete"]
+					sub_ngrams_data["ngrams"].push( a_ngram )
+				}
+				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
+			}
+
+			if(whichlist=="miam") {
+				for(var i in NGrams["main"].ngrams) {
+					var local_ngram = NGrams["main"].ngrams[i]
+					console.log( local_ngram )
+				}
+				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+			}
+  	
+		}
+	});
+}
 
 
 function Push2Buffer( NewVal ) {
@@ -799,7 +917,7 @@ function Main_test( data , initial , search_filter) {
       Div_PossibleActions += '<label style="color:'+a.color+';" for="radio'+action+'">'+a.name+'</label>';
     }
     var Div_SelectAll = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'
-    $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
+    $(".imadiv").html('<div style="float: left; text-align:left; input[type=radio] {display: none;}">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
 
 
 	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
@@ -815,7 +933,6 @@ function SearchFilters( elem ) {
   var MODE = elem.value;
 
   if( MODE == "filter_all") {
-  	console.clear()
     var result = Main_test( NGrams["main"] , NGrams["main"].scores.initial , MODE)
     console.log( result )
 
@@ -825,7 +942,6 @@ function SearchFilters( elem ) {
   }
 
   if( MODE == "filter_map-list") {
-  	console.clear()
   	console.log("ngrams_map:")
   	console.log(NGrams["map"])
 
@@ -912,7 +1028,8 @@ var url = [
 	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/miam?custom",
 	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
 	window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop?custom",
+	// window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000", //doesnt work right now
 ]
 
 

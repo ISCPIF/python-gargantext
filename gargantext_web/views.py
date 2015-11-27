@@ -380,7 +380,12 @@ def newpaginatorJSON(request , corpus_id):
     user_id = request.user.id
     # documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
-    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
+    docs  = (session.query(Node)
+                .filter(Node.user_id == user_id
+                , Node.parent_id==corpus_id 
+                , Node.type_id == type_document_id )
+                .all()
+            )
 
     # for doc in documents:
     #     print(doc.name)
@@ -391,7 +396,7 @@ def newpaginatorJSON(request , corpus_id):
 
     # print(" = = = = = = = = = = = = = = = == = = = ")
     filtered_docs = []
-    for doc in documents:
+    for doc in docs:
         if "publication_date" in doc.hyperdata:
             try:
                 realdate = doc.hyperdata["publication_date"].replace('T',' ').split(" ")[0] # in database is = (year-month-day = 2015-01-06 00:00:00 = 06 jan 2015 00 hrs)

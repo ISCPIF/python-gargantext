@@ -86,6 +86,7 @@ class NodeNgramsQueries(APIView):
         'contains': lambda field, value: (field.contains(value)),
         'doesnotcontain': lambda field, value: (not_(field.contains(value))),
         'startswith': lambda field, value: (field.startswith(value)),
+        'endswith': lambda field, value: (field.endswith(value)),
     }
 
     _converters = {
@@ -93,7 +94,7 @@ class NodeNgramsQueries(APIView):
         'int': int,
         'datetime': lambda x: x + '2000-01-01 00:00:00Z'[len(x):],
         'text': str,
-        'str': str,
+        'string': str,
     }
 
 
@@ -219,7 +220,6 @@ class NodeNgramsQueries(APIView):
                     .filter(NH.hyperdata_id == hyperdata_id)
                     .filter(operator(NH_column, value))
                 )
-
         # build result: prepare data
         date_value_list = query_result.all()
         if date_value_list:

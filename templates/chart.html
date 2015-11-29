@@ -53,8 +53,9 @@
                 li.dataset select {cursor: pointer; border: 0; padding: 0; }
             ul.filters {list-style: none; margin: 0; padding: 0; margin-top: .25em;}
                 ul.filters>li {padding-top: .5em; margin-top: .5em; border-top: solid 1px rgba(0,0,0,.125);}
-                    ul.filters>li>ul {list-style: none; padding-left: 0; }
-                    ul.filters>li>ul label {font-weight: normal; cursor: pointer; }
+                    ul.filters>li>ul {list-style: none; padding-left: 0; margin-top: .5em; }
+                    ul.filters>li>ul>li.inline {width: 30%; display: inline-block; }
+                        ul.filters>li>ul>li>label {font-weight: normal; cursor: pointer; }
                     ul.filters>li input[type=checkbox] {opacity: .8;}
     </style>
 
@@ -85,7 +86,7 @@
                             <button ng-click="corporaSelectNone()">select none</button>
                             ...restrict to the following corpora:
                             <ul>
-                                <li ng-repeat="corpus in corpora">
+                                <li ng-repeat="corpus in corpora" class="inline">
                                     <label>
                                         <input type="checkbox" ng-model="corpus.is_selected" ng-change="updateHyperdataList();updateDataset()"/>
                                         <span style="font-weight: {{ corpus.is_selected ? 'bold' : 'normal' }}">{{ corpus.name }}</span>
@@ -104,12 +105,19 @@
                         <li>
                             <ul>
                                 <li ng-repeat="hyperdata in hyperdataList">
-                                    ...where the value of
-                                    <span ng-if="!hyperdata.operator">"{{ hyperdata.key }}"</span>
-                                    <strong ng-if="hyperdata.operator">{{ hyperdata.key }}</strong>
+                                    ...where
+                                    <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.name }}"</span>
+                                    <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.name }}</strong>
 
-                                    <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
-                                    <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    <span ng-if="hyperdata.values">
+                                        is
+                                        <select ng-model="hyperdata.value" ng-options="value for value in hyperdata.values" ng-change="updateDataset()"></select>
+                                    </span>
+                                    <span ng-if="!hyperdata.values">
+                                        <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
+                                        <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    </span>
+
                                 </li>
                             </ul>
                         </li>

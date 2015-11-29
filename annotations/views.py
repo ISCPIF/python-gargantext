@@ -90,6 +90,9 @@ class NgramEdit(APIView):
             'list_id': list_id,
             } for ngram_id in ngram_ids)
 
+    def put(self, request, list_id, ngram_ids):
+        return Response(None, 204)
+
     def delete(self, request, list_id, ngram_ids):
         """
         Delete a ngram from a list

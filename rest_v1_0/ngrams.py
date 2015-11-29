@@ -305,9 +305,14 @@ class Ngrams(APIView):
     def post(self , request , node_id ):
         return JsonHttpResponse(["POST","ok"])
 
-    def delete(self , request , node_id ):
-        print(node_id)
-        return JsonHttpResponse(["DELETE","ok"])
+    def put (self, request, corpus_id):
+        """
+        Add ngrams to Miam list
+        """
+        group_rawreq = dict(request.data)
+        print( "group_rawreq:" )
+        print( group_rawreq )
+        return JsonHttpResponse(["PUT","ok"])
 
 class Group(APIView):
     '''

@@ -45,19 +45,22 @@ class MedlineFetcher:
         query = query.replace(' ', '%20')
             
         eSearch = '%s/esearch.fcgi?db=%s&retmax=1&usehistory=y&term=%s' %(self.pubMedEutilsURL, self.pubMedDB, query)
-        eSearchResult = urlopen(eSearch)
-        data = eSearchResult.read()
 
-        root = etree.XML(data)
-
-        findcount = etree.XPath("/eSearchResult/Count/text()")
-        count = findcount(root)[0]
-        
-        findquerykey = etree.XPath("/eSearchResult/QueryKey/text()")
-        queryKey = findquerykey(root)[0]
-
-        findwebenv = etree.XPath("/eSearchResult/WebEnv/text()")
-        webEnv = findwebenv(root)[0]
+        try:
+            eSearchResult = urlopen(eSearch)
+            data = eSearchResult.read()
+            root = etree.XML(data)
+            findcount = etree.XPath("/eSearchResult/Count/text()")
+            count = findcount(root)[0]
+            findquerykey = etree.XPath("/eSearchResult/QueryKey/text()")
+            queryKey = findquerykey(root)[0]
+            findwebenv = etree.XPath("/eSearchResult/WebEnv/text()")
+            webEnv = findwebenv(root)[0]
+        except:
+            count=0
+            queryKey=False
+            webEnv=False
+            origQuery=False
 
         values = { "query":origQuery , "count": int(str(count)), "queryKey": queryKey , "webEnv":webEnv }
         return values
@@ -173,8 +176,13 @@ class MedlineFetcher:
         self.q.join()
         print('time:',time.perf_counter() - start)
 
+        Total = 0
+        Fails = 0
         for globalresults in self.firstResults:
             # globalresults = self.medlineEsearch(pubmedquery)
+            Total += 1
+            if globalresults["queryKey"]==False:
+                Fails += 1
             if globalresults["count"]>0:
                 N+=globalresults["count"]
                 queryhyperdata = { 
@@ -197,5 +205,8 @@ class MedlineFetcher:
             query["retmax"] = retmax_forthisyear
             if query["retmax"]==0: query["retmax"]+=1
             print(query["string"],"\t[",k,">",query["retmax"],"]")
+
+        if ((Fails+1)/(Total+1))==1 : # for identifying the epic fail or connection error
+            thequeries = [False]
 
         return thequeries

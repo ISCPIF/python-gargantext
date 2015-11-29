@@ -127,6 +127,9 @@ def compute_tfidf_global(corpus):
 
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
 
+    session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
+    session.commit()
+
     # compute terms frequency sum
     db, cursor = get_cursor()
 
@@ -171,8 +174,7 @@ def compute_tfidf_global(corpus):
             INSERT INTO
             tmp__idf(ngram_id, idf)
             SELECT
-            node_ngram.ngram_id,
-            -ln(COUNT(*))
+            node_ngram.ngram_id, -ln(COUNT(*))
             FROM
             %s AS node_ngram
             INNER JOIN
@@ -183,10 +185,10 @@ def compute_tfidf_global(corpus):
             %s as corpus ON corpus.id = doc.parent_id
             WHERE
             doc.language_id = %d AND doc.type_id = %d AND corpus.type_id=%d
-            AND RANDOM() < 0.01
+            -- AND RANDOM() < 0.01
             GROUP BY
             node_ngram.ngram_id
-            limit 10000
+            -- limit 10000
             ;
         ''' % (Node_Ngram.__table__.name
                , Node.__table__.name
@@ -202,8 +204,7 @@ def compute_tfidf_global(corpus):
             INSERT INTO
             tmp__idf(ngram_id, idf)
             SELECT
-            node_ngram.ngram_id,
-            -ln(COUNT(*))
+            node_ngram.ngram_id, -ln(COUNT(*))
             FROM
             %s AS node_ngram
             INNER JOIN
@@ -217,7 +218,7 @@ def compute_tfidf_global(corpus):
             AND RANDOM() < 0.01
             GROUP BY
             node_ngram.ngram_id
-            limit 10000
+            -- limit 10000
             ;
         ''' % (Node_Ngram.__table__.name
                , Node.__table__.name
@@ -238,7 +239,6 @@ def compute_tfidf_global(corpus):
         lnD = log(D)
         cursor.execute('UPDATE tmp__idf SET idf = idf + %f' % (lnD, ))
         # show off
-        dbg.show('insert tfidf')
         cursor.execute('''
             INSERT INTO
                 %s (nodex_id, nodey_id, ngram_id, score)
@@ -254,6 +254,7 @@ def compute_tfidf_global(corpus):
         ''' % (NodeNodeNgram.__table__.name, tfidf_node.id, corpus.id, ))
 
         db.commit()
+        dbg.show('insert tfidf')
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #compute_tfidf_global(corpus)

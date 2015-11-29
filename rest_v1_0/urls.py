@@ -6,6 +6,8 @@ from rest_v1_0 import api, ngrams, graph
 
 from annotations import views
 
+import tests.ngramstable.views as samtest
+
 urlpatterns = patterns('',
     # REST URLS
     # What is REST ?
@@ -15,6 +17,7 @@ urlpatterns = patterns('',
     url(r'nodes$', api.NodesList.as_view()),
     url(r'nodes/(\d+)$', api.Nodes.as_view()),
     url(r'nodes/(\d+)/children/ngrams$', api.NodesChildrenNgrams.as_view()),  # => repeated children ?
+    url(r'nodes/(\d+)/children/ids$', api.NodesChildrenNgramsIds.as_view()),  # => repeated children ?
 
     # NGRAMS table & annotations
     url(r'node/(\d+)/ngrams$'      , ngrams.Ngrams.as_view()),
@@ -22,7 +25,9 @@ urlpatterns = patterns('',
     url(r'node/(\d+)/ngrams/keep$', ngrams.Keep.as_view()),
     # url(r'node/(?P<list_id>[0-9]+)/ngrams/keep/(?P<ngram_ids>[0-9,\+]+)+$' , ngrams.Keep.as_view()),
     url(r'node/(?P<list_id>[0-9]+)/ngrams/(?P<ngram_ids>[0-9,\+]+)+$', views.NgramEdit.as_view()),
-    url(r'node/(\d+)/ngrams/list$' , ngrams.List.as_view()),
+    url(r'node/(?P<corpus_id>[0-9]+)/ngrams/list/(?P<list_name>\w+)$' , ngrams.List.as_view()),
+    url(r'node/corpus/(?P<node_ids>[0-9,\+]+)+$' , samtest.get_corpuses),
+
 
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),
     #url(r'nodes/(\d+)/children/hyperdata$', api.NodesChildrenMetatadata.as_view()),

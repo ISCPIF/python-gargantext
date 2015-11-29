@@ -45,13 +45,7 @@
 																		</ul>
 																		'>Manage</a>
 
-<!--
-<div class="progress">
-  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 90%">
-    <span class="sr-only">45% Complete</span>
-  </div>
-</div>
---!>
+
 
 						{% if number == 0 %}
 								<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
@@ -65,8 +59,7 @@
 				<center>
 				<a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/documents">{{number}} Documents</a>
 							<a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/journals">Journals</a>
-						
-							{% if processing == 0 %}
+							{% if processing == 0 or processing == "0" %}
 							<a type="button" class="btn btn-default {% if view == "terms" %}active{%endif%}" href="/project/{{project.id}}/corpus/{{ corpus.id }}/terms">Terms (Bêta)</a>
 							{% endif %}
 				</center>
@@ -92,21 +85,24 @@
 					</div>
 				</div>
 
-
+				<span style="display:none;" id="process_state">{{processing}}</span>
+				<span style="display:none;" id="corpus_id">{{corpus.id}}</span>
 				<div class="col-md-6">
 						<div class="jumbotron">
-				{% if processing > 0 %}
-						<h3> <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Networks (later)</h3>
-                        <ol>
-                                <li>Terms</li>
-                                <li>Journals and Terms</li>
-                                <li>Authors and Terms</li>
-                        </ol>
-                {% else %}
+				{% if processing == 0 or processing == "0" %}
                         <h3> Networks </h3>
                         <ol>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Terms</a></li>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=journal&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Journals and Terms</a></li>
+                                <li>Authors and Terms</li>
+                        </ol>
+                {% else %}
+                		
+						<h3><img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img> Networks </h3>
+						<h6>(Updating: <i id="process_id" data-since="date" >{{processing}}</i>)</h6>
+                        <ol>
+                                <li>Terms</li>
+                                <li>Journals and Terms</li>
                                 <li>Authors and Terms</li>
                         </ol>
                 {% endif %}
@@ -140,6 +136,35 @@
 		return window.open(url_,'_blank');
 		
 	}
+
+	var refresh_time = 10000 //ms
+	function corpus_monitorer() {
+		var url_ = "/api/corpus/"+$("#corpus_id").text()
+		$.ajax({
+		    type: "GET",
+		    url: url_,
+		    dataType: "json",
+		    success : function(data, textStatus, jqXHR) {
+		        if(data["Processing"]=="0") {
+		        	window.location.reload()
+		        } else {
+		        	$("#process_id").html(data["Processing"]+"...")
+		        }
+		    },
+		    error: function(exception) { 
+		        console.log("exception!:"+exception.status)
+		    }
+
+		});
+	}
+
+	if( $("#process_state").text()=="0" ) {
+		// workflow : finished!
+	} else {
+		setInterval(corpus_monitorer ,refresh_time);
+	}
+
+
 </script>
 
 

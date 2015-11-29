@@ -17,11 +17,6 @@ def get_team():
 
     '''
     team = [
-            { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',
-             'mail' : 'alexandre+gargantextATdelanoe.org',
-             'website' : 'http://alexandre.delanoe.org',
-             'picture' : 'alexandre.jpg',
-             'role' : 'principal investigator, developer'},
 
             { 'first_name' : 'David', 'last_name' : 'Chavalarias',
              'mail' : 'david.chavalariasATiscpif.fr',
@@ -46,6 +41,12 @@ def get_team():
              'picture' : 'samuel.jpg',
              'role' : 'developer'},
 
+            { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',
+             'mail' : 'alexandre+gargantextATdelanoe.org',
+             'website' : 'http://alexandre.delanoe.org',
+             'picture' : 'alexandre.jpg',
+             'role' : 'principal investigator, developer'},
+
             #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
             # copy paste the line above and write your informations please
             ]
@@ -53,21 +54,37 @@ def get_team():
     random.shuffle(team)
     return(team)
 
-def get_sponsors():
+def get_partners():
     '''
     Function to get list of each sponsor as dict of institutional informations.
 
     '''
-    sponsors = [
+    institutions = [
             { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png', 'funds':''},
             { 'name' : 'Institut Pasteur', 'website' : 'http://www.pasteur.fr', 'picture' : 'pasteur.png', 'funds':''},
-            { 'name' : 'Forccast', 'website' : 'http://forccast.hypotheses.org/', 'picture' : 'forccast.png', 'funds':''},
             { 'name' : 'ADEME', 'website' : 'http://www.ademe.fr', 'picture' : 'ademe.png', 'funds':''},
             { 'name' : 'EHESS', 'website' : 'http://www.ehess.fr', 'picture' : 'ehess.png', 'funds':''},
             #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
             # copy paste the line above and write your informations please
             ]
+    
+    labos = [
+            { 'name' : 'Centre de Sociologie de l\'innovation', 'website' : 'http://www.csi.mines-paristech.fr/en/', 'picture' : 'csi.png', 'funds':''},
+            #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
+            # copy paste the line above and write your informations please
+            ]
+    
+    grants = [
+            { 'name' : 'Forccast', 'website' : 'http://forccast.hypotheses.org/', 'picture' : 'forccast.png', 'funds':''},
+            { 'name' : 'Mastodons', 'website' : 'http://www.cnrs.fr/mi/spip.php?article53&lang=fr', 'picture' : 'mastodons.png', 'funds':''},
+            #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
+            # copy paste the line above and write your informations please
+            ]
 
-    random.shuffle(sponsors)
-    return(sponsors)
+
+    random.shuffle(institutions)
+    random.shuffle(grants)
+    return(institutions,labos,grants)
+
+
 

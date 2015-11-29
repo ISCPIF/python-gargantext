@@ -111,9 +111,15 @@ class NgramEdit(APIView):
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
         results = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
         ngram_2del = [int(i) for i in ngram_ids.split('+')]
-        ngram_2del = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
-        for map_node in ngram_2del:
+        ngram_2del_ = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
+        for map_node in ngram_2del_:
             session.delete(map_node)
+        session.commit()
+
+        node_stopList = get_or_create_node(nodetype='StopList', corpus=corpus )
+        for ngram_id in ngram_2del:
+            stop_node = NodeNgram( weight=1.0, ngram_id=ngram_id , node_id=node_stopList.id)
+            session.add(stop_node)
         session.commit()
         # [ = = = = / del from map-list = = = = ]
 
@@ -193,3 +199,5 @@ class Document(APIView):
             'id': node.id
         }
         return Response(data)
+
+

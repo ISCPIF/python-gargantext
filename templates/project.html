@@ -21,6 +21,13 @@
 { font-size:x-small;}
 </style>
 
+
+<script type="text/javascript">
+
+
+</script>
+
+
 {% endblock %}
 
 
@@ -266,7 +273,10 @@
 		      success: function(data) {
 				console.log("in doTheQuery() Ajax.Success:")
 		        console.log(data)
-		        location.reload();
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 3000);
 		      },
 		        error: function(result) {
 		            console.log("in doTheQuery(). Data not found");
@@ -333,6 +343,7 @@
 			        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
 			      },
 			      success: function(data) {
+			        console.log("SUCCESS")
 					console.log("in getGlobalResults")
 			        console.log(data)
 					console.log("enabling "+"#"+value.id)
@@ -349,12 +360,15 @@
 		            	$('#submit_thing').prop('disabled', false);
 		            } else {
 		            	$("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+		            	if(data[0]==false)
+			            	$("#theresults").html("Pubmed connection error!</i><br>")
 		            	$('#submit_thing').prop('disabled', true);
 		            }
 
 			      },
 			        error: function(result) {
-			            console.log("Data not found");
+		            	$("#theresults").html("Pubmed connection error!</i><br>")
+		            	$('#submit_thing').prop('disabled', true);
 			        }
 			    });	
 			}
@@ -500,8 +514,11 @@
 		      },
 		      success: function(data) {
 				console.log("ajax_success: in testISTEX()")
-		        console.log(data)
-		        location.reload();
+		        console.log(data)		        
+		        setTimeout(
+				    function() {
+			        location.reload();
+			    }, 5000);
 		      },
 		        error: function(result) {
 		            console.log("in testISTEX(). Data not found");

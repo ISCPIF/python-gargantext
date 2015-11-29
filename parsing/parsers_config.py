@@ -7,8 +7,8 @@ parsers = {
         'Zotero (RIS format)'               : ZoteroFileParser,
         'Jstor (RIS format)'                : JstorFileParser,
         #'Europress'                        : EuropressFileParser,
-        'Europress (French)'                : EuropressFileParser,
-        'Europress (English)'               : EuropressFileParser,
+        'Europress (French)'                : EuropressFileParser_fr,
+        'Europress (English)'               : EuropressFileParser_en,
         'CSVParser'                         : CSVParser,
         'ISTex'                             : ISTex,
     }

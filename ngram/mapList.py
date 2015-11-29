@@ -15,10 +15,15 @@ from sqlalchemy.orm import aliased
 from ngram.tools import insert_ngrams
 import csv
 
-def compute_mapList(corpus,limit=500):
+def compute_mapList(corpus,limit=500,n=1):
     '''
     According to Specificities and stoplist,
     '''
+
+    monograms_part = 0.005
+    monograms_limit = round(limit * monograms_part)
+    multigrams_limit = limit - monograms_limit
+
     dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
 
     node_miam  = get_or_create_node(nodetype='MiamList', corpus=corpus)
@@ -33,27 +38,49 @@ def compute_mapList(corpus,limit=500):
     
     Spec=aliased(NodeNodeNgram)
 
-    top_ngrams = (session.query(Spec.ngram_id, Spec.score)
+    query = (session.query(Spec.ngram_id, Spec.score)
                 .join(Miam, Spec.ngram_id == Miam.ngram_id)
+                .join(Ngram, Ngram.id == Spec.ngram_id)
                 #.outerjoin(Group, Group.ngramy_id == Spec.ngram_id)
                 #.outerjoin(Stop, Stop.ngram_id == Spec.ngram_id)
                 .filter(Miam.node_id == node_miam.id)
                 #.filter(Group.node_id == node_group.id)
                 #.filter(Stop.node_id == node_stop.id)
                 .filter(Spec.nodex_id == node_spec.id)
-                .order_by(desc(Spec.score))
-                .limit(limit)
-               )
+            )
 
+    top_monograms = (query
+                .filter(Ngram.n == 1)
+                .order_by(desc(Spec.score))
+                .limit(monograms_limit)
+               )
+    
+    top_multigrams = (query
+                .filter(Ngram.n >= 2)
+                .order_by(desc(Spec.score))
+                .limit(multigrams_limit)
+               )
+    
+    stop_ngrams = (session.query(NodeNgram.ngram_id)
+                         .filter(NodeNgram.node_id == node_stop.id)
+                         .all()
+                 )
+
+    grouped_ngrams = (session.query(NodeNgramNgram.ngramy_id)
+                             .filter(NodeNgramNgram.node_id == node_group.id)
+                             .all()
+                    )
     #print([t for t in top_ngrams])
     
     node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus)
     session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id).delete()
     session.commit()
-
+    
     data = zip(
         [node_mapList.id for i in range(1,limit)]
-        , [n[0] for n in top_ngrams]
+        , [n[0] for n in list(top_multigrams) + list(top_monograms)
+                if (n[0],) not in list(stop_ngrams) + list(grouped_ngrams)
+            ]
         , [1 for i in range(1,limit)]
     )
     #print([d for d in data])
@@ -99,38 +126,4 @@ def insert_miam(corpus, ngrams=None, path_file_csv=None):
 #corpus = session.query(Node).filter(Node.id==540420).first()
 #compute_mapList(corpus)
 #insert_miam(corpus=corpus, path_file_csv="Thesaurus_tag.csv")
-
-#def getNgrams(corpus=None, limit_inf=600, limit_sup=3000):
-#    '''
-#    getNgrams :: Corpus -> [(Int, String)] -> [(Int, String)]
-#    For a corpus, gives list of highest Cvalue ngrams and highest TFIDF (global)
-#    ngrams that have to be grouped with
-#    '''
-#    #tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
-#    cvalue_node = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-#    spec_node = get_or_create_node(nodetype='Specificity', corpus=corpus)
-#
-#
-#    #tfidf_ngrams  = queryNodeNodeNgram(nodeMeasure_id=tfidf_node.id, corpus_id=corpus.id)
-#    cvalue_ngrams = queryNodeNodeNgram(nodeMeasure_id=cvalue_node.id, corpus_id=corpus.id, limit=limit_sup)
-#    spec_ngrams   = queryNodeNodeNgram(nodeMeasure_id=spec_node.id, corpus_id=corpus.id, limit=limit_inf)
-#
-#    #print([n for n in tfidf_ngrams])
-#
-#    def list2set(_list):
-#        _set = set()
-#        for n in _list:
-#            _set.add((n[0],n[1]))
-#        return(_set)
-#
-#    cvalue_set = set()
-#    spec_set = set()
-#
-#    cvalue_set = list2set(cvalue_ngrams)
-#    spec_set   = list2set(spec_ngrams)
-#
-#    cvalue_setDiff = cvalue_set.difference(spec_set)
-#
-#    return(spec_set,cvalue_setDiff)
-#
 

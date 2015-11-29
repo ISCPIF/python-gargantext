@@ -56,43 +56,6 @@ from rest_v1_0.api import JsonHttpResponse
 from ngram.lists import listIds, listNgramIds, ngramList , doList
 
 
-def test_page(request , project_id , corpus_id):
-
-    if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
-
-    try:
-        offset = int(project_id)
-        offset = int(corpus_id)
-    except ValueError:
-        raise Http404()
-
-    t = get_template('tests/test_select-boostrap.html')
-
-    user = cache.User[request.user.username].id
-    date = datetime.datetime.now()
-    project = cache.Node[int(project_id)]
-    corpus  = cache.Node[int(corpus_id)]
-    type_doc_id = cache.NodeType['Document'].id
-    number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
-    try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
-
-    html = t.render(Context({
-            'debug': settings.DEBUG,
-            'user': request.user.username,
-            'date': date,
-            'project': project,
-            'corpus' : corpus,
-            'processing' : processing,
-            'number' : number,
-            }))
-
-    return HttpResponse(html)
-
 def get_ngrams(request , project_id , corpus_id ):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
@@ -122,7 +85,7 @@ def get_ngrams(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -132,32 +95,6 @@ def get_ngrams(request , project_id , corpus_id ):
             }))
 
     return HttpResponse(html)
-
-
-def get_stoplist(request , corpus_id , doc_id):
-    """Get All for a doc id"""
-
-    user_id = request.user.id
-    whitelist_type_id = cache.NodeType['WhiteList'].id
-    document_type_id = cache.NodeType['Document'].id
-    miam_id = listIds(typeList='MiamList', user_id=request.user.id, corpus_id=corpus_id)[0][0]
-    count_min = 2
-    size = 1000
-
-    corpus_id = int(corpus_id)
-    lists = dict()
-    for list_type in ['StopList']:
-        list_id = list()
-        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
-        lists["%s" % list_id[0][0]] = list_type
-    doc_ngram_list = listNgramIds(corpus_id=corpus_id, list_id=list_id[0][0], doc_id=list_id[0][0], user_id=request.user.id)
-    StopList = {}
-    for n in doc_ngram_list:
-        StopList[ n[0] ] = True
-
-    results = StopList.keys() #[ "hola" , "mundo" ]
-    return JsonHttpResponse(StopList)
-
 
 def get_journals(request , project_id , corpus_id ):
 
@@ -187,7 +124,7 @@ def get_journals(request , project_id , corpus_id ):
 
     html = t.render(Context({
             'debug': settings.DEBUG,
-            'user': request.user.username,
+            'user': request.user,
             'date': date,
             'project': project,
             'corpus' : corpus,
@@ -216,115 +153,32 @@ def get_journals_json(request , project_id, corpus_id ):
 from gargantext_web.db import session, cache, Node, NodeNgram
 from sqlalchemy import or_, func
 from sqlalchemy.orm import aliased
-def get_ngrams_json(request , project_id, corpus_id ):
-    results = ["holaaaa" , "mundo"]
-
-    user_id = request.user.id
-    whitelist_type_id = cache.NodeType['WhiteList'].id
-    document_type_id = cache.NodeType['Document'].id
-    miam_id = listIds(typeList='MiamList', user_id=request.user.id, corpus_id=corpus_id)[0][0]
-    count_min = 2
-    size = 1000
-
-    corpus_id = int(corpus_id)
-    lists = dict()
-    for list_type in ['StopList']:
-        list_id = list()
-        list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
-        lists["%s" % list_id[0][0]] = list_type
-    doc_ngram_list = listNgramIds(corpus_id=corpus_id, list_id=list_id[0][0], doc_id=list_id[0][0], user_id=request.user.id)
-    StopList = {}
-    for n in doc_ngram_list:
-        StopList[ n[0] ] = True
 
 
-    # [ Get Uniq_Occs ]
-    myamlist_type_id = cache.NodeType['MiamList'].id
-    myamlist = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
-    myamlists = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).all()
-    # sql_average = """SELECT avg(weight) as Average FROM node_node_ngram WHERE node_node_ngram.node_id=%d""" % (myamlist.id)
-    # cursor = connection.cursor()
-    # cursor.execute(sql_average)
-    # avg_result = cursor.fetchone()[0]
-    # threshold = min (10 , math.sqrt(avg_result) )
-
-    # OCCs  = session.query(Node_Ngram).filter( Node_Ngram.node_id==myamlist.id , Node_Ngram.weight >= threshold ).all()
-    # [ / Get Uniq_Occs ]
-    Miam = aliased(NodeNgram)
-    sql_average = (session.query(NodeNgram.ngram_id, func.sum(NodeNgram.weight))
-                          .join(Node, Node.id == NodeNgram.node_id)
-                          .join(Miam, Miam.ngram_id == NodeNgram.ngram_id)
-                          .filter(Node.parent_id == corpus_id, Node.type_id==cache.NodeType['Document'].id)
-                          .filter(Miam.node_id==myamlist.id)
-                          .group_by(NodeNgram.ngram_id)
-                          .all()
-                  )
-
-    # print([n for n in sql_average])
-    OCCs = {}
-    for ngram in sql_average:
-        OCCs [ ngram[0] ] = ngram[1]
+def get_corpuses( request , node_ids ):
+    ngrams = [int(i) for i in node_ids.split("+") ]
+    results = session.query(Node.id,Node.hyperdata).filter(Node.id.in_(ngrams) ).all()
+    for r in results:
+        print(r)
+    return JsonHttpResponse( [ "tudo" , "bem" ] )
 
 
-
-    # [ Initializing Ngrams_Scores with occ_uniq ]
-    Ngrams_Scores = {}
-
-    for ngram in OCCs:
-        if ngram not in StopList:
-            if ngram not in Ngrams_Scores:
-                Ngrams_Scores[ngram] = {}
-                Ngrams_Scores[ngram]["scores"] = {
-                        "occ_uniq": round(OCCs[ngram]),
-                        "tfidf_sum": 0.0
-                    }
-    # [ / Initializing Ngrams_Scores with occ_uniq ]
+def get_cores( request ):
+	import multiprocessing
+	cpus = multiprocessing.cpu_count()
+	return JsonHttpResponse( {"data":cpus} )
 
 
-
-    # [ Getting TF-IDF scores (sum per each ngram) ]
-    NgramTFIDF = session.query(NodeNodeNgram).filter( NodeNodeNgram.nodex_id==corpus_id ).all()
-    for ngram in NgramTFIDF:
-        if ngram.ngram_id not in StopList:
-            if ngram.ngram_id in Ngrams_Scores:
-                Ngrams_Scores[ngram.ngram_id]["scores"]["tfidf_sum"] += ngram.score
-    # [ / Getting TF-IDF scores ]
-
-
-
-    # [ Preparing JSON-Array full of Scores! ]
-    Metrics = {
-        "ngrams":[],
-        "scores": {}
-    }
-
-    ngrams_ids = Ngrams_Scores.keys()
-    query = session.query(Ngram).filter(Ngram.id.in_( ngrams_ids ))
-    ngrams_data = query.all()
-    for ngram in ngrams_data:
-        if ngram.id not in StopList:
-            occ_uniq = occ_uniq = Ngrams_Scores[ngram.id]["scores"]["occ_uniq"]
-            Ngrams_Scores[ngram.id]["name"] = ngram.terms
-            Ngrams_Scores[ngram.id]["id"] = ngram.id
-            Ngrams_Scores[ngram.id]["scores"]["tfidf"] = Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"] / occ_uniq
-            del Ngrams_Scores[ngram.id]["scores"]["tfidf_sum"]
-            Metrics["ngrams"].append( Ngrams_Scores[ngram.id] )
-
-
-
-    Metrics["scores"] = {
-        "initial":"occ_uniq",
-        "nb_docs":1,
-        "orig_nb_ngrams":1,
-        "nb_ngrams":len(Metrics["ngrams"]),
-        # "occs_threshold":threshold
-    }
-    # [ / Preparing JSON-Array full of Scores! ]
-
-
-    # print("miamlist:",myamlist.id)
-    # print("sql avg:",sql_average)
-    # print (avg_result)
-    # print ("LALALALALALALALLLALALALALA")
-
-    return JsonHttpResponse(Metrics)
+def get_corpus_state( request , corpus_id ):
+    if not request.user.is_authenticated():
+        return JsonHttpResponse( {"request" : "forbidden"} )
+    processing = ["Waiting"]
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]
+    finally:
+        connection.close()
+    # processing = corpus.hyperdata['Processing']
+    return JsonHttpResponse(  processing )

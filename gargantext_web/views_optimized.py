@@ -140,7 +140,7 @@ def project(request, project_id):
                 parent_id   = project_id,
                 type_id     = cache.NodeType['Corpus'].id,
                 language_id = language_id,
-                hyperdata    = {'Processing' : 1,}
+                hyperdata    = {'Processing' : "Parsing documents",}
             )
             session.add(corpus)
             session.commit()
@@ -212,7 +212,8 @@ def tfidf(request, corpus_id, ngram_ids):
         .query(Node, func.sum(NodeNodeNgram.score))
         .join(NodeNodeNgram, NodeNodeNgram.nodey_id == Node.id)
         .filter(NodeNodeNgram.nodex_id == tfidf_id)
-        .filter(NodeNodeNgram.ngram_id.in_(ngram_ids))
+        .filter(Node.type_id == cache.NodeType['Document'].id)
+        .filter(or_(*[NodeNodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
         .group_by(Node)
         .order_by(func.sum(NodeNodeNgram.score).desc())
         .limit(limit)
@@ -221,8 +222,21 @@ def tfidf(request, corpus_id, ngram_ids):
     # print("in TFIDF:")
     # print("\tcorpus_id:",corpus_id)
     # convert query result to a list of dicts
+    if nodes_query is None:
+        print("TFIDF error, juste take sums")
+        nodes_query = (session
+            .query(Node, func.sum(NodeNgram.weight))
+            .join(NodeNgram, NodeNgram.node_id == Node.id)
+            .filter(Node.parent_id == corpus_id)
+            .filter(Node.type_id == cache.NodeType['Document'].id)
+            .filter(or_(*[NodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+            .group_by(Node)
+            .order_by(func.sum(NodeNgram.weight).desc())
+            .limit(limit)
+        )
+
     for node, score in nodes_query:
-        # print("\t corpus:",corpus_id,"\t",node.name)
+        print("\t corpus:",corpus_id,"\t",node.name)
         node_dict = {
             'id': node.id,
             'score': score,

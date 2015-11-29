@@ -43,6 +43,9 @@ tr:hover {
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
   background-color: #F5A9A9;
 }*/
+.normal {
+  color: black;
+}
 
 .delete {
   color:red; 
@@ -69,14 +72,14 @@ tr:hover {
   border: 1px solid yellow;
 }
 
+#group_flag {
+}
+
 .dynatable-record-count {
   font-size: 0.7em;
 }
 .dynatable-pagination-links {
   font-size: 0.7em;  
-}
-input[type=radio] {
-    display:none;
 }
  
 input[type=radio] + label {
@@ -124,6 +127,13 @@ input[type=radio]:checked + label {
 
 {% block content %}
 
+<div id="content_loader">
+  <br>
+  <center>
+    <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+  </center>
+  <br>
+</div>
                 <div class="container">
                         <div class="container">
 
@@ -179,11 +189,10 @@ input[type=radio]:checked + label {
                     </table>
                 </p> -->
                 <p align="right">
-                    <button id="Clean_All" class="btn btn-warning">Clean</button>
+                    <!-- <button id="Clean_All" class="btn btn-warning">Clean</button> -->
                     <button id="Save_All" class="btn btn-primary">Save</button>
                 </p>
 
-
       </div>
     </div>
   </div>
@@ -192,31 +201,64 @@ input[type=radio]:checked + label {
 </div>
 
 
-<div id="savemodal" class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
+    <div id="corpuses" class="modal fade">
 
+      <div class="modal-dialog">
+        <div class="modal-content">
 
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Group NGrams</h4>
-      </div>
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 class="modal-title">Adding a list from another corpus</h3>
+          </div>
 
-      <div class="modal-body form-horizontal">
-        Do you want to merge this elements before continuing?:
-        <div id="to_group"></div>
-      </div>
+          <div class="modal-body form-horizontal">
+            
+            <div class="form-inline">
+                <label class="control-label">
+                    Which list do you want?</label>
+                <label class="radio">
+                    <input value="miam" name="whichlist" disabled type="radio">MiamList
+                </label>
+                <label class="radio">
+                    <input value="stop" name="whichlist" checked type="radio">StopList
+                </label>
+            </div>
 
-      <div class="modal-footer">
-        <button id="closesavemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="GroupNGrams();">Save</button>
-      </div>
+            <h4>Choose one corpus:</h4>
+            <div style="color:red;" id="selected_corpus"></div>
+            <div id="user_portfolio"></div>
+
+            <div class="modal-footer">
+              <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'>Add Tab</button>
+            </div>
+
+          </div>
+        </div>
+      </div> 
 
     </div>
-  </div>
-</div> 
 
 
+
+
+<div id="filter_search" style="visibility:hidden">
+<select id="example-single-optgroups" onchange="SearchFilters(this);">
+    <!-- <optgroup label=""> -->
+        <option id="filter_all" value="filter_all">All</option>
+        <!-- <option id="filter_title" value="filter_title">Title</option> -->
+        <!-- <option id="filter_date" value="filter_date">Date</option> -->
+    <!-- </optgroup> -->
+    <!-- <optgroup label="Duplicates"> -->
+        <!-- <option value="filter_doi">By DOI</option> -->
+        <option id="filter_map-list" value="filter_map-list">Map-List</option>
+        <option id="filter_stop-list" value="filter_stop-list">Stop-List</option>
+    <!-- </optgroup> -->
+</select>
+
+<button id="ImportList" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" class="btn btn-warning">Import a Corpus-List</button>
+
+</div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/charts/bootstrap.min.js" %}"></script>

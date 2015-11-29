@@ -20,6 +20,8 @@ function getCookie(name) {
 }
 
 
+
+
 var latest,oldest;
 
 var TheBuffer = false
@@ -85,7 +87,7 @@ for(var i in System[GState]["states"]) {
   FlagsBuffer[System[GState]["states"][i]] = {}
 }
 
-
+var corpusesList = {}
 var MyTable;
 var RecDict={};
 var AjaxRecords = []
@@ -94,6 +96,122 @@ var AjaxRecords = []
 var LineChart = dc.lineChart("#monthly-move-chart"); 
 var volumeChart = dc.barChart("#monthly-volume-chart");
 
+
+// Just for Garg
+function GetUserPortfolio() {
+    //http://localhost:8000/api/corpusintersection/1a50317a50145
+    var project_id = getIDFromURL("project")
+    var corpus_id =  getIDFromURL("corpus")
+
+    if( Object.keys( corpusesList ).length > 0 )
+        return true;
+
+    var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
+    $.ajax({
+        type: 'GET',
+        url: query_url,
+        success : function(data) {
+            
+            var html_ = ""
+            html_ += '<div class="panel-group" id="accordion">'+"\n"
+            html_ += ' <form id="corpuses_form" role="form">'+"\n"
+            corpusesList = data;
+            for (var k1 in data) {
+                var v1 = data[k1]
+                html_ += '  <div class="panel panel-default">'+"\n"
+                html_ += '   <div class="panel-heading">'+"\n"
+                html_ += '    <h4 class="panel-title">'+"\n"
+                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
+                html_ += '    </h4>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
+                html_ += '    <div class="panel-body">'+"\n"
+                html_ += '     <ul>'+"\n"
+                for(var c in v1["corpuses"]) {
+                    var Ci = v1["corpuses"][c]
+                    if( Ci["id"]!= corpus_id) {
+                        html_ += '      <li>'+"\n"
+                        html_ += '       <div class="radio">'+"\n"
+                        html_ += '        <label><input type="radio" id="'+k1+"_"+c+'" name="optradio">'+"\n"
+                        html_ += '         <a target="_blank" href="/project/'+k1+'/corpus/'+Ci["id"]+'/">'+Ci["name"] +' ('+Ci["c"]+' docs.)</a>'+"\n"
+                        html_ += '        </label>'+"\n"
+                        html_ += '       </div>'+"\n"
+                        html_ += '     </li>'+"\n"
+                    }
+                }
+                html_ += '     </ul>'+"\n"
+                html_ += '    </div>'+"\n"
+                html_ += '   </div>'+"\n"
+                html_ += '  </div>'+"\n"
+            }
+
+            html_ += ' </form>'+"\n"
+            html_ += '</div>'+"\n"
+
+            $("#user_portfolio").html( html_ )
+            $('#corpuses_form input:radio').change(function() {
+               $("#add_corpus_tab").prop("disabled",false)
+               var selected = $('input[name=optradio]:checked')[0].id.split("_")
+               var sel_p = selected[0], sel_c=selected[1]
+               $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
+
+            });
+
+
+        },
+        error: function(){ 
+            pr('Page Not found: TestFunction()');
+        }
+    });
+}
+function printCorpuses() {
+    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
+    pr(corpusesList)
+
+    var selected = $('input[name=optradio]:checked')[0].id.split("_")
+    var sel_p = selected[0], sel_c=selected[1]
+
+    var current_corpus =  getIDFromURL("corpus")
+
+    var selected_corpus = corpusesList[sel_p]["corpuses"][sel_c]["id"]
+    pr("current corpus: "+current_corpus)
+    var the_ids = []
+    the_ids.push( current_corpus )
+    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
+
+    $("#closecorpuses").click();
+
+    var whichlist = $('input[name=whichlist]:checked').val()
+	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist+"?custom"
+	console.log( url )
+
+	GET_( url , function(results) {
+		if(Object.keys( results ).length>0) {
+			var sub_ngrams_data = {
+				"ngrams":[],
+				"scores": $.extend({}, NGrams["main"].scores)
+			}
+
+			if(whichlist=="stop") {
+				for(var r in results) {
+					var a_ngram = results[r]
+					a_ngram["state"] = System[0]["statesD"]["delete"]
+					sub_ngrams_data["ngrams"].push( a_ngram )
+				}
+				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
+			}
+
+			if(whichlist=="miam") {
+				for(var i in NGrams["main"].ngrams) {
+					var local_ngram = NGrams["main"].ngrams[i]
+					console.log( local_ngram )
+				}
+				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+			}
+  	
+		}
+	});
+}
 
 
 function Push2Buffer( NewVal ) {
@@ -203,26 +321,32 @@ function save_groups() {
 	var count = 0
 	var mainform = -1
 	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
-		$(gcontent).children('span').each(function () {
-			var nid = $(this).data("id");
-			if (count==0) {
-				if(writeflag) {
-					// AjaxRecords[RecDict[nid]].name += "*" 
-					FlagsBuffer["group"][ nid ] = []
-					mainform = nid
-		    		AjaxRecords[RecDict[nid]].state = 1
-		    	} else {
-		    		AjaxRecords[RecDict[nid]].state = 0;
-		    	}
-		    } else {
-				if(writeflag) {
-					FlagsBuffer["group"][ mainform ].push( nid )
-		    		AjaxRecords[RecDict[nid]].state = -1
-				}
-		    }
-		    count++
-		});
+	$(gcontent).children('span').each(function () {
+		var nid = $(this).data("id");
+		if (count==0) {
+			if(writeflag) {
+				// AjaxRecords[RecDict[nid]].name += "*" 
+				FlagsBuffer["group"][ nid ] = []
+				mainform = nid
+	    		AjaxRecords[RecDict[nid]].state = 1
+	    		var label = AjaxRecords[RecDict[nid]].name
+	    		AjaxRecords[RecDict[nid]].name = (label[0]=="*") ? label : ("*"+label)
+
+	    	} else {
+	    		AjaxRecords[RecDict[nid]].state = 0;
+	    		// var label = AjaxRecords[RecDict[nid]].name
+	    		// AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label.name;
+	    	}
+	    } else {
+			if(writeflag) {
+				FlagsBuffer["group"][ mainform ].push( nid )
+	    		AjaxRecords[RecDict[nid]].state = -1
+			}
+	    }
+	    count++
+	});
 	$("#group_box").remove()
+	$("#group_flag").remove()
 	GState=0
 	MyTable.data('dynatable').dom.update();
 }
@@ -233,8 +357,11 @@ function cancel_groups() {
 	$(gcontent).children('span').each(function () {
 	    var nid = $(this).data("id");
 	    AjaxRecords[RecDict[nid]].state = 0
+		var label = AjaxRecords[RecDict[nid]].name
+		AjaxRecords[RecDict[nid]].name = (label[0] == '*') ? label.slice(1) : label;
 	});
 	$("#group_box").remove()
+	$("#group_flag").remove()
 	GState=0
 	MyTable.data('dynatable').dom.update();
 }
@@ -272,11 +399,11 @@ function add2group ( elem ) {
 		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
 		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
 		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
-			group_html += '        <span class="group_box header" id="group_box_header"></span>'+'\n';
 			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
 			group_html += '      </span>'+'\n';
+			group_html += '      <span id="group_flag"></span>'+'\n';
 			$(group_html).insertAfter( "#my-ajax-table > thead" )
-			$("#group_box").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
+			$("#group_flag").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
 	}
 	GState=1
 
@@ -357,7 +484,6 @@ function overRide(elem) {
   //   FlagsBuffer[this_newflag][id] = true;
   // else 
   //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-  AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
 
   var sum__selected_elems = 0;
   for(var i in FlagsBuffer)
@@ -375,52 +501,6 @@ function overRide(elem) {
   MyTable.data('dynatable').dom.update();
 
 }
-
-// Here you have to put the weird case of Change from Group-Mode
-function DeactivateSelectAll() {
-  if( $("#multiple_selection").length>0 )
-    $("#multiple_selection")[0].checked = false;
-
-  if( Object.keys(FlagsBuffer["to_group"]).length ){
-
-
-    $("#savemodal").modal("show").css({
-        'margin-top': function () { //vertical centering
-            console.log($(".modal-content").height())
-            return ($(this).height() / 2);
-        }
-    });
-
-    console.log("OH OH")
-    console.log("There are some nodes in group array!:")
-    // $("#to_group").html( Object.keys(FlagsBuffer["to_group"]).join(" , ") );
-    var labels = []
-    for (var i in FlagsBuffer["to_group"]){
-      var fake_id = i
-      console.log( AjaxRecords[fake_id] )
-      labels.push(AjaxRecords[fake_id].name)
-    //   $("#to_group").htm
-    }
-
-    $("#to_group").html( '<font color="blue">' + labels.join(" , ") + '</div>' );
-  }
-}
-
-
-function Mark_NGram( ngram_id , old_flag , new_flag ) {
-  if(new_flag){
-    for(var f in FlagsBuffer) {
-      if( new_flag==f )
-        FlagsBuffer[f][ngram_id] = true;
-      else 
-        delete FlagsBuffer[f][ngram_id];
-    }
-  } else {
-    delete FlagsBuffer[ old_flag ][ngram_id];
-  }
-  return new_flag;
-}
-
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
@@ -440,23 +520,17 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
-function SelectAll( the_checkbox ) {
-  console.log(the_checkbox)
+function SelectAll( box ) {
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
-      // AjaxRecords[id]["flag"] = (the_checkbox.checked)?the_flag:false;
+      if(box.checked) {
+      	AjaxRecords[id]["state_buff"] = AjaxRecords[id]["state"]
+      	AjaxRecords[id]["state"] = System[0]["statesD"][current_flag]
+      } else {
+      	AjaxRecords[id]["state"] = AjaxRecords[id]["state_buff"]
+      }
       
-
-      var this_newflag = (the_checkbox.checked)?current_flag:false;
-
-      // console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
-      // console.log("\t so the new flag is: "+this_newflag)
-
-      AjaxRecords[id]["flag"] = Mark_NGram ( id , AjaxRecords[id]["flag"] , this_newflag );
-
-
-
   });
   MyTable.data('dynatable').dom.update();
 }
@@ -490,7 +564,7 @@ $("#Save_All").click(function(){
 	FlagsBuffer["inmap"] = {}
 
 	for(var id in AjaxRecords) {
-		if( ngrams_map[ AjaxRecords[id]["id"] ] ) {
+		if( NGrams["map"][ AjaxRecords[id]["id"] ] ) {
 			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
 				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
 				if(AjaxRecords[id]["state"]==2) {
@@ -510,10 +584,10 @@ $("#Save_All").click(function(){
 		}
 	}
 	// [ = = = = For deleting subforms = = = = ]
-	for(var i in ngrams_groups.links) {
+	for(var i in NGrams["group"].links) {
 		if(FlagsBuffer["delete"][i]) {
-			for(var j in ngrams_groups.links[i] ) {
-				FlagsBuffer["delete"][ngrams_groups.links[i][j]] = true
+			for(var j in NGrams["group"].links[i] ) {
+				FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
 			}
 			for(var j in FlagsBuffer["delete"][i] ) {
 				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
@@ -601,16 +675,24 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	} else callback(false);
 }
 
-function Main_test( data , initial) {
+function Main_test( data , initial , search_filter) {
 
+	console.log("")
+	console.log(" = = = = MAIN_TEST: = = = = ")
+	console.log("data:")
+	console.log(data)
+	console.log("initial:")
+	console.log(initial)
+	console.log("search_filter:")	
+	console.log(search_filter)
+	console.log(" = = = = / MAIN_TEST: = = = = ")
+	console.log("")
 
     var DistributionDict = {}
     for(var i in DistributionDict)
         delete DistributionDict[i];
     delete DistributionDict;
     DistributionDict = {}
-
-    AjaxRecords = []
 
     var FirstScore = initial;
 
@@ -632,8 +714,6 @@ function Main_test( data , initial) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
-    
-
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
@@ -642,7 +722,7 @@ function Main_test( data , initial) {
     div_stats += "</p>"
     $("#stats").html(div_stats)
 
-
+    AjaxRecords = []
     for(var i in data.ngrams) {
     
       var le_ngram = data.ngrams[i]
@@ -650,7 +730,6 @@ function Main_test( data , initial) {
       var orig_id = le_ngram.id
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
-
       var node_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
@@ -658,13 +737,15 @@ function Main_test( data , initial) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": (le_ngram.map)?1:0
+        "state": (le_ngram.state)?le_ngram.state:0
       }
       AjaxRecords.push(node_info)
 
       if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
       DistributionDict[node_info.score]++;
     }
+
+    console.log(FirstScore)
 
     // console.log("The Distribution!:")
     // console.log(Distribution)
@@ -673,7 +754,7 @@ function Main_test( data , initial) {
     for(var i in DistributionDict) {
       var info = {
         "x_occ":Number(i),
-        "y_frec":DistributionDict[i]
+        "y_frec": Math.round(((Math.log( DistributionDict[i] ) + 1)))
       }
       DistributionList.push(info)
       if(info.x_occ > max_occ) max_occ = info.x_occ
@@ -682,6 +763,14 @@ function Main_test( data , initial) {
       if(info.y_frec < min_frec) min_frec = info.y_frec
     }
 
+ //    console.clear()
+	// for(var i in DistributionList) {
+	// 	// DistributionList[i].x_occ = Math.log( DistributionList[i].x_occ )
+	// 	// DistributionList[i].y_frec = Math.log( DistributionList[i].y_frec )+1
+	// 	console.log( DistributionList[i] )
+	// }
+
+	// return;
     oldest = Number(min_occ);
     latest = Number(max_occ);
 
@@ -697,10 +786,6 @@ function Main_test( data , initial) {
     var y_frecs = x_occs.group().reduceSum(function (d) {
         return d.y_frec;
     });
-
-    console.log("scores: [ "+min_occ+" , "+max_occ+" ] ")
-    console.log("frecs: [ "+min_frec+" , "+max_frec+" ] ")
-
 
     LineChart
       .width(800)
@@ -770,8 +855,8 @@ function Main_test( data , initial) {
                 });
             })
             .xAxis()
-      volumeChart.yAxis().ticks(5)
-      volumeChart.render()
+    volumeChart.yAxis().ticks(5)
+    volumeChart.render()
 
     LineChart.filterAll();
     volumeChart.filterAll();
@@ -828,14 +913,74 @@ function Main_test( data , initial) {
     for(var action in PossibleActions) {
       var a = PossibleActions[action];
       var ischecked = (Number(action)==0)?"checked":"";
-      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios" onclick="DeactivateSelectAll();" value="'+a.id+'" '+ischecked+'>';
+      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios"  value="'+a.id+'" '+ischecked+'>';
       Div_PossibleActions += '<label style="color:'+a.color+';" for="radio'+action+'">'+a.name+'</label>';
     }
     var Div_SelectAll = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'
-    $(".imadiv").html('<div style="float: left; text-align:left;">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
+    $(".imadiv").html('<div style="float: left; text-align:left; input[type=radio] {display: none;}">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
 
 
+	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+	$("#"+search_filter).attr( "selected" , "selected" )
+	var the_content = $("#filter_search").html();
+	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
+}
+
+
+
+function SearchFilters( elem ) {
+  var MODE = elem.value;
+
+  if( MODE == "filter_all") {
+    var result = Main_test( NGrams["main"] , NGrams["main"].scores.initial , MODE)
+    console.log( result )
+
+	MyTable.data('dynatable').sorts.clear();
+	MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+	MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_map-list") {
+  	console.log("ngrams_map:")
+  	console.log(NGrams["map"])
+
+  	var sub_ngrams_data = {
+  		"ngrams":[],
+  		"scores": $.extend({}, NGrams["main"].scores)
+  	}
+    for(var r in NGrams["main"].ngrams) {
+    	if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
+    		var a_ngram = NGrams["main"].ngrams[r]
+			a_ngram["state"] = System[0]["statesD"]["keep"]
+    		sub_ngrams_data["ngrams"].push( a_ngram )
+    	}
+    }
+
+    var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
+    console.log( result )
+    // MyTable.data('dynatable').sorts.clear();
+    // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    // MyTable.data('dynatable').process();
+  }
+
+  if( MODE == "filter_stop-list") {
+  	console.log( NGrams["stop"] )
+  	if(Object.keys(NGrams["stop"]).length>0) {
+		var sub_ngrams_data = {
+			"ngrams":[],
+			"scores": $.extend({}, NGrams["main"].scores)
+		}
+		for(var r in NGrams["stop"]) {
+			var a_ngram = NGrams["stop"][r]
+			a_ngram["state"] = System[0]["statesD"]["delete"]
+			sub_ngrams_data["ngrams"].push( a_ngram )
+		}
+		var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
+		console.log( result )
+  	}
+  }
+
 }
 
 function getIDFromURL( item ) {
@@ -850,77 +995,129 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
-// [ = = = = = = = = = = INIT = = = = = = = = = = ]
-var corpus_id = getIDFromURL( "corpus" )
-var url1=window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
-	url2=window.location.origin+"/api/node/"+corpus_id+"/ngrams/keep",
-	url3=window.location.href+"/ngrams.json";
-var ngrams_groups, ngrams_map, ngrams_data;
-$.when(
+function GET_( url , callback ) {
+
     $.ajax({
         type: "GET",
-        url: url1,
+        url: url,
         dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_groups = data },
+        success : function(data, textStatus, jqXHR) { 
+        	callback(data.data);
+        },
         error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url2,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_map = data },
-        error: function(exception) { 
-            console.log("first ajax, exception!: "+exception.status)
-        }
-    }),
-    $.ajax({
-        type: "GET",
-        url: url3,
-        dataType: "json",
-        success : function(data, textStatus, jqXHR) { ngrams_data = data },
-        error: function(exception) { 
-            console.log("second ajax, exception!: "+exception.status)
+            callback(false);
         }
     })
-).then(function() {
+}
 
-	// Deleting subforms from the ngrams-table, clean start baby!
-    if( Object.keys(ngrams_groups.links).length>0 ) {
+// [ = = = = = = = = = = INIT = = = = = = = = = = ]
+// http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
+var corpus_id = getIDFromURL( "corpus" )
+var NGrams = {
+	"group" : {},
+	"stop" : {}, 
+	"main" : {},
+	"map" : {},
+	"scores" : {}
+}
+
+$("#corpusdisplayer").hide()
+
+
+var url = [
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/miam?custom",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/map",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/group",
+	window.location.origin+"/api/node/"+corpus_id+"/ngrams/list/stop?custom",
+	// window.location.origin+"/api/node/"+corpus_id+"/ngrams?format=json&score=tfidf,occs&list=stop&limit=1000", //doesnt work right now
+]
+
+
+
+// The AJAX's in cascade:
+
+GET_( url[0] , function(result) {
+	// = = = = MIAM = = = = //
+	if(result!=false) {
+    	NGrams["main"] = {
+    		"ngrams": [],
+    		"scores": {
+		        "initial":"tfidf",
+		        "nb_docs":result.length,
+		        "orig_nb_ngrams":1,
+		        "nb_ngrams":result.length,
+		    }
+    	}
+
+		for(var i in result) 
+			NGrams["main"].ngrams.push(result[i])  
+
+	}
+	// = = = = /MIAM = = = = //
+	
+	GET_( url[1] , function(result) {
+		// = = = = MAP = = = = //
+		if(result!=false) {
+			NGrams["map"] = result 
+		}
+		// = = = = /MAP = = = = //
+
+		GET_( url[2] , function(result) {
+			// = = = = GROUP = = = = //
+			if(result!=false) {
+				NGrams["group"] = result 
+			}
+			// = = = = /GROUP = = = = //
+
+	    	AfterAjax()
+			GET_( url[3] , function(result) {
+				// = = = = STOP = = = = //
+				for(var i in result) {
+		    		NGrams["stop"][result[i].id] = result[i]
+		    	}
+				// = = = = /STOP = = = = //
+			});
+		});
+	});
+});
+
+
+
+function AfterAjax() {
+	// // Deleting subforms from the ngrams-table, clean start baby!
+    if( Object.keys(NGrams["group"].links).length>0 ) {
 
     	var _forms = {  "main":{} , "sub":{}  }
-    	for(var i in ngrams_groups.links) {
+    	for(var i in NGrams["group"].links) {
     		_forms["main"][i] = true
-    		for(var j in ngrams_groups.links[i]) {
-    			_forms["sub"][ ngrams_groups.links[i][j] ] = true
+    		for(var j in NGrams["group"].links[i]) {
+    			_forms["sub"][ NGrams["group"].links[i][j] ] = true
     		}
     	}
     	var ngrams_data_ = []
-    	for(var i in ngrams_data.ngrams) {
-    		if(_forms["sub"][ngrams_data.ngrams[i].id]) {
-    			ngrams_groups["nodes"][ngrams_data.ngrams[i].id] = ngrams_data.ngrams[i]
+    	for(var i in NGrams["main"].ngrams) {
+    		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
+    			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
     		} else {
-    			if( _forms["main"][ ngrams_data.ngrams[i].id ] )
-    				ngrams_data.ngrams[i].name = "*"+ngrams_data.ngrams[i].name
-    			ngrams_data_.push( ngrams_data.ngrams[i] )
+    			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
+    			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
+    			ngrams_data_.push( NGrams["main"].ngrams[i] )
     		}
     	}
-    	ngrams_data.ngrams = ngrams_data_;
+    	NGrams["main"].ngrams = ngrams_data_;
     }
 
-    if( Object.keys(ngrams_map).length>0 ) {
-    	for(var i in ngrams_data.ngrams) {
-    		if(ngrams_map[ngrams_data.ngrams[i].id]) {
-    			ngrams_data.ngrams[i]["map"] = true
+    if( Object.keys(NGrams["map"]).length>0 ) {
+    	for(var i in NGrams["main"].ngrams) {
+    		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
+    			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
     		}
     	}
     }
 
-
-    // Building the Score-Selector
-    var FirstScore = ngrams_data.scores.initial
-    var possible_scores = Object.keys( ngrams_data.ngrams[0].scores );
+    // Building the Score-Selector //NGrams["scores"]
+    var FirstScore = NGrams["main"].scores.initial
+    var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
     var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     for( var i in possible_scores ) {
@@ -929,7 +1126,8 @@ $.when(
       }
     }
     // Initializing the Charts and Table
-    var result = Main_test( ngrams_data , FirstScore )
+    console.log( NGrams["main"] )
+    var result = Main_test( NGrams["main"] , FirstScore , "filter_all")
     console.log( result )
 
     // Listener for onchange Score-Selector
@@ -937,9 +1135,12 @@ $.when(
     $("#ScoresBox").html(scores_div)
     $("#scores_selector").on('change', function() {
       console.log( this.value )
-      var result = Main_test( ngrams_data , this.value )
+      var result = Main_test( NGrams["main"] , this.value , "filter_all")
       console.log( result )
+
     });
 
-
-});
+    $("#corpusdisplayer").show()
+    $("#content_loader").remove()
+    $("#corpusdisplayer").click()
+}

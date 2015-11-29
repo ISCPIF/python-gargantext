@@ -12,6 +12,8 @@ import datetime
 import copy
 import json
 
+from gargantext_web.db import cache
+
 from gargantext_web.validation import validate, ValidationException
 
 from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram\
@@ -21,6 +23,7 @@ from gargantext_web.db import session, Node, NodeNgram, NodeNgramNgram\
 def DebugHttpResponse(data):
     return HttpResponse('<html><body style="background:#000;color:#FFF"><pre>%s</pre></body></html>' % (str(data), ))
 
+import time
 import json
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -74,17 +77,75 @@ from rest_framework.decorators import api_view
 # TODO how to secure REST ?
 
 
-class List(APIView):
-    pass
 
+class List(APIView):
+
+    def get_metadata ( self , ngram_ids , parent_id ):
+
+        start_ = time.time()
+
+        nodes_ngrams = session.query(Ngram.id , Ngram.terms).filter( Ngram.id.in_( list(ngram_ids.keys()))).all()
+        for node in nodes_ngrams:
+            if node.id in ngram_ids:
+                ngram_ids[node.id] = {
+                    "id": node.id,
+                    "name": node.terms,
+                    "scores": {
+                        "tfidf": 0
+                    }
+                }
+
+        tfidf_list = get_or_create_node(nodetype='Tfidf (global)', corpus_id=parent_id).id
+        ngram_tfidf = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==tfidf_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
+        for n in ngram_tfidf:
+            if n.ngram_id in ngram_ids:
+                ngram_ids[n.ngram_id]["scores"]["tfidf"] += n.score
+
+        end_ = time.time()
+
+        return { "data":ngram_ids , "secs":(end_ - start_) }
+
+
+
+    def get(self, request, corpus_id , list_name ):
+
+        start_ = time.time()
+
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        list_name = list_name.title()+"List"
+        node_list = get_or_create_node(nodetype=list_name, corpus=corpus )
+        nodes_ngrams = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id==node_list.id ).all()
+
+
+        ngram_ids = {}
+        for node in nodes_ngrams:
+            ngram_ids[node.ngram_id] = True
+
+        
+        end_ = time.time()
+        measurements = {
+            "get_ngram_ids" : {
+                "s":(end_ - start_),
+                "n": len(ngram_ids.keys())
+            }
+        }
+        if request.GET.get('custom', False) != False:
+            ngrams_meta = self.get_metadata( ngram_ids , corpus_id  )
+            ngram_ids = ngrams_meta["data"]
+            measurements["tfidf"] = { "s" : ngrams_meta["secs"], "n": len(ngrams_meta["data"].keys()) }
+
+        return JsonHttpResponse( {"data":ngram_ids , "time":measurements } )
 
 class Ngrams(APIView):
     '''
     REST application to manage ngrams
-
+    Example : 
+    http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
         # query ngrams
+        start_ = time.time()
+
         ParentNode = aliased(Node)
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
@@ -96,8 +157,21 @@ class Ngrams(APIView):
             .join(Node, Node.id == Node_Ngram.node_id)
         )
 
-        # get the scores
-        if 'tfidf' in request.GET['score']:
+        the_score = "tfidf"
+        if request.GET.get('score', False) != False:
+            the_score = request.GET['score']
+
+        if 'occs' in the_score:
+            Occs = NodeNodeNgram
+            occs_id = get_or_create_node(nodetype='Occurrences', corpus=corpus).id
+            ngrams_query = (ngrams_query.add_column(Occs.score.label('occs'))
+                                        .join(Occs, Occs.ngram_id == Ngram.id)
+                                        .filter(Occs.nodex_id==occs_id)
+                    )
+            group_by.append(Occs.score)
+            results.append('occs')
+
+        if 'tfidf' in the_score:
             Tfidf = aliased(NodeNodeNgram)
             tfidf_id = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Tfidf.score.label('tfidf'))
@@ -107,7 +181,7 @@ class Ngrams(APIView):
             group_by.append(Tfidf.score)
             results.append('tfidf')
 
-        if 'cvalue' in request.GET['score']:
+        if 'cvalue' in the_score:
             Cvalue = aliased(NodeNodeNgram)
             cvalue_id = get_or_create_node(nodetype='Cvalue', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Cvalue.score.label('cvalue'))
@@ -117,8 +191,7 @@ class Ngrams(APIView):
             group_by.append(Cvalue.score)
             results.append('cvalue')
 
-
-        if 'specificity' in request.GET['score']:
+        if 'specificity' in the_score:
             Spec = aliased(NodeNodeNgram)
             spec_id = get_or_create_node(nodetype='Specificity', corpus=corpus).id
             ngrams_query = (ngrams_query.add_column(Spec.score.label('specificity'))
@@ -129,7 +202,9 @@ class Ngrams(APIView):
             results.append('specificity')
 
         order_query = request.GET.get('order', False)
-        if order_query == 'cvalue':
+        if order_query == 'occs':
+            ngrams_query = ngrams_query.order_by(desc(occs))
+        elif order_query == 'cvalue':
             ngrams_query = ngrams_query.order_by(desc(Cvalue.score))
         elif order_query == 'tfidf':
             ngrams_query = ngrams_query.order_by(desc(Tfidf.score))
@@ -152,7 +227,6 @@ class Ngrams(APIView):
                                         .filter(Group.ngramx_id == ngram_id)
                             )
 
-        # filters by list type (soon list_id to factorize it in javascript)
         list_query = request.GET.get('list', 'miam')
         list_id = request.GET.get('list_id', False)
         if list_query == 'miam':
@@ -168,7 +242,6 @@ class Ngrams(APIView):
                                         .filter(Stop.node_id == stop_id)
                             )
         elif list_query == 'map':
-        # ngram could be in ngramx_id or ngramy_id
             CoocX = aliased(NodeNgramNgram)
             CoocY = aliased(NodeNgramNgram)
             cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
@@ -194,30 +267,40 @@ class Ngrams(APIView):
                                             .filter(CoocY.node_id == node.id)
                                 )
 
-        total = ngrams_query.count()
+        output = []
+        for ngram in ngrams_query[offset : offset+limit]:
+            info = { "scores" : {} }
+            try: info["id"] = ngram.id
+            except: pass
+            try: info["name"] = ngram.terms
+            except: pass
+            try: info["scores"]["occs"] = ngram.occs
+            except: pass
+            try: info["scores"]["tfidf"] = ngram.tfidf
+            except: pass
+            try: info["scores"]["cvalue"] = ngram.cvalue
+            except: pass
+            try: info["scores"]["specificity"] = ngram.specificity
+            except: pass
 
+            output.append( info )
+
+
+        end_ = time.time()
+        measurements = {
+            "s":(end_ - start_),
+            "n": len(output)
+        }
         # return formatted result
         return JsonHttpResponse({
             'pagination': {
                 'offset': offset,
                 'limit': limit,
-                'total': total,
-                          },
-            'data': [
-                        {
-                            'id' : ngram.id
-                            , 'terms' : ngram.terms
-                            , 'tfidf' : ngram.tfidf
-                            , 'cvalue': ngram.cvalue
-
-                        } for ngram in ngrams_query[offset : offset+limit]
-                # TODO : dict comprehension in list comprehension :
-                #                         results = ['id', 'terms']
-                #                        { x : eval('ngram.' + x) for x in results
-                #                        } for ngram in ngrams_query[offset : offset+limit]
-
-                    ],
-                               })
+                'total': len(output),
+            },
+            'data': output,
+            "time" : measurements
+        })
 
     def post(self , request , node_id ):
         return JsonHttpResponse(["POST","ok"])
@@ -232,10 +315,10 @@ class Group(APIView):
     Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
     '''
     def get_group_id(self , node_id):
-            node_id = int(node_id)
-            corpus = session.query(Node).filter(Node.id==node_id).first()
-            group = get_or_create_node(corpus=corpus, nodetype='Group')
-            return(group.id)
+        node_id = int(node_id)
+        corpus = session.query(Node).filter(Node.id==node_id).first()
+        group = get_or_create_node(corpus=corpus, nodetype='Group')
+        return(group.id)
 
     def get(self, request, corpus_id):
         # query ngrams
@@ -290,26 +373,16 @@ class Group(APIView):
                 if mainNode!=node:
                     mainNode_sinonims.append( node )
             groups["links"][ mainNode ] = mainNode_sinonims
+
+        # for i in groups["nodes"]:
+        #     print(i)
+        ngrams = [int(i) for i in list(groups["nodes"].keys())]
+
+        # groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
         
-        return JsonHttpResponse(groups)
+        return JsonHttpResponse( { "data" : groups } )
    
     def post(self, request, node_id):
-        
-        # # input validation
-        # input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
-        
-        # group_id = get_group_id(node_id)
-       
-        # for data in input['data']:
-        #     if data['source'] > 0 and len(data['target']) > 0:
-        #         for target_id in data['target']:
-        #             if target_id > 0:
-        #                 session.add(NodeNgramNgram(node_id=group_id, \
-        #                         ngramx_id=output['source'], ngramy_id=target_id, score=1))
-        #         session.commit()
-        #         return JsonHttpResponse(True, 201)
-        #     else:
-        #         raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
         return JsonHttpResponse( ["hola" , "mundo"] )
 
     def delete(self, request, corpus_id):
@@ -499,6 +572,9 @@ class Keep(APIView):
         Delete ngrams from the map list
         """
         group_rawreq = dict(request.data)
+        # print("group_rawreq:")
+        # print(group_rawreq)
+        from django.utils.html import escape
         ngram_2del = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )

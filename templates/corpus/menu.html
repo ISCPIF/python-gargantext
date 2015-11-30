@@ -78,6 +78,10 @@
 						<h3><a href="/project/{{project.id}}/corpus/{{corpus.id}}/chart">Advanced charts</a></h3>
 						<ol>
 								<li>Count</li> <!-- read, compute -->
+                    <ol>
+                        <li> Documents </li>
+                        <li> Terms or Expressions</li>
+                    </ol>
 								<li>Filter</li> <!-- count, compute -->
 								<li>Compare</li> <!-- select, cut -->
 						</ol>
@@ -93,6 +97,10 @@
                         <h3> Networks </h3>
                         <ol>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Terms</a></li>
+                                <ul>
+                                    <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'><a>Meso ++</a></li>
+                                    <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'><a>Meso --</a></li>
+                                </ul>
                                 <li data-url="/project/{{project.id}}/corpus/{{ corpus.id }}/explorer?field1=journal&amp;field2=ngrams" onclick='gotoexplorer(this)'><a>Journals and Terms</a></li>
                                 <li>Authors and Terms</li>
                         </ol>

@@ -3,6 +3,7 @@ from .IsiFileParser import IsiFileParser
 from .JstorFileParser import JstorFileParser
 from .ZoteroFileParser import ZoteroFileParser
 from .PubmedFileParser import PubmedFileParser
+from .EuropressFileParser_old import EuropressFileParser
 from .EuropressFileParser_en import EuropressFileParser_en
 from .EuropressFileParser_fr import EuropressFileParser_fr
 from .ISTex import ISTex

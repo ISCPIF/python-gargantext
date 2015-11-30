@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/srv/gargantext')
 
-from admin.env import *
+#from admin.env import *
 import re
 import locale
 from lxml import etree
@@ -168,6 +168,7 @@ class EuropressFileParser(FileParser):
 
 
                         if test_date_fr is not None or test_date_fr_v2 is not None:
+                            hyperdata['language_iso2'] = 'fr'
                             self.localeEncoding = "fr_FR"
                             locale.setlocale(locale.LC_ALL, "fr_FR.utf-8")
                             if encoding != "utf-8":
@@ -198,6 +199,7 @@ class EuropressFileParser(FileParser):
 
 
                         if test_date_en is not None:
+                            hyperdata['language_iso2'] = 'en'
                             localeEncoding = "en_GB.UTF-8"
                             locale.setlocale(locale.LC_ALL, localeEncoding)
                             try :
@@ -259,10 +261,6 @@ class EuropressFileParser(FileParser):
                     except :
                         hyperdata['publication_date'] = timezone.now()
 
-                    #if lang == 'fr':
-                    #hyperdata['language_iso2'] = 'fr'
-                    #elif lang == 'en':
-                    #    hyperdata['language_iso2'] = 'en'
 
                     hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
                     hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')

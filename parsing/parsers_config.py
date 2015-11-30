@@ -6,7 +6,7 @@ parsers = {
         'Scopus (RIS format)'               : RisFileParser,
         'Zotero (RIS format)'               : ZoteroFileParser,
         'Jstor (RIS format)'                : JstorFileParser,
-        #'Europress'                        : EuropressFileParser,
+        'Europress (old corpora)'           : EuropressFileParser,
         'Europress (French)'                : EuropressFileParser_fr,
         'Europress (English)'               : EuropressFileParser_en,
         'CSVParser'                         : CSVParser,

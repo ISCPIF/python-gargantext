@@ -182,35 +182,35 @@ function printCorpuses() {
     $("#closecorpuses").click();
 
     var whichlist = $('input[name=whichlist]:checked').val()
-	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist+"?custom"
-	console.log( url )
+  	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist+"?custom"
+  	console.log( url )
 
-	GET_( url , function(results) {
-		if(Object.keys( results ).length>0) {
-			var sub_ngrams_data = {
-				"ngrams":[],
-				"scores": $.extend({}, NGrams["main"].scores)
-			}
+  	GET_( url , function(results) {
+  		if(Object.keys( results ).length>0) {
+  			var sub_ngrams_data = {
+  				"ngrams":[],
+  				"scores": $.extend({}, NGrams["main"].scores)
+  			}
 
-			if(whichlist=="stop") {
-				for(var r in results) {
-					var a_ngram = results[r]
-					a_ngram["state"] = System[0]["statesD"]["delete"]
-					sub_ngrams_data["ngrams"].push( a_ngram )
-				}
-				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
-			}
+  			if(whichlist=="stop") {
+  				for(var r in results) {
+  					var a_ngram = results[r]
+  					a_ngram["state"] = System[0]["statesD"]["delete"]
+  					sub_ngrams_data["ngrams"].push( a_ngram )
+  				}
+  				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
+  			}
 
-			if(whichlist=="miam") {
-				for(var i in NGrams["main"].ngrams) {
-					var local_ngram = NGrams["main"].ngrams[i]
-					console.log( local_ngram )
-				}
-				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
-			}
-  	
-		}
-	});
+  			if(whichlist=="miam") {
+  				for(var i in NGrams["main"].ngrams) {
+  					var local_ngram = NGrams["main"].ngrams[i]
+  					console.log( local_ngram )
+  				}
+  				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+  			}
+    	
+  		}
+  	});
 }
 
 

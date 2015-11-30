@@ -23,6 +23,7 @@ class Graph(APIView):
         type_       = request.GET.get('type', 'node_link')
         hapax       = request.GET.get('hapax', 1)
         distance    = request.GET.get('distance', 'conditional')
+        bridgeness  = int(request.GET.get('bridgeness', -1))
         
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
@@ -39,7 +40,7 @@ class Graph(APIView):
                                     , hapax=hapax, distance=distance)
                 else:
                     data = get_cooc(corpus=corpus,field1=field1, field2=field2
-                            , hapax=hapax, distance = distance)
+                            , hapax=hapax, distance = distance, bridgeness=bridgeness)
                 if format_ == 'json':
                     return JsonHttpResponse(data)
         else:

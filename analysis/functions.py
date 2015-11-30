@@ -15,7 +15,7 @@ from analysis.cooccurrences import do_cooc
 from analysis.distance import do_distance
 
 import pandas as pd
-from copy import copy
+from copy import copy,deepcopy
 import numpy as np
 import scipy
 import networkx as nx
@@ -34,6 +34,7 @@ def get_cooc(request=None, corpus=None
         , start=None, end=None
         , hapax=1
         , distance='conditional'
+        , bridgeness=5
         ):
     '''
     get_ccoc : to compute the graph.
@@ -60,7 +61,6 @@ def get_cooc(request=None, corpus=None
     
     G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams"
                                             , isMonopartite=True, distance=distance)
-
     if type == "node_link":
         nodesB_dict = {}
         for node_id in G.nodes():
@@ -68,9 +68,9 @@ def get_cooc(request=None, corpus=None
                 #node,type(labels[node])
                 G.node[node_id]['pk'] = ids[node_id][1]
                 nodesB_dict [ ids[node_id][1] ] = True
+                # TODO the query below is not optimized (do it do_distance).
                 the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
                 the_label = ", ".join(the_label)
-                # TODO the query below is not optimized (do it do_distance).
                 G.node[node_id]['label']   = the_label
                 
                 G.node[node_id]['size']    = weight[node_id]
@@ -81,25 +81,62 @@ def get_cooc(request=None, corpus=None
                 pass #PrintException()
                 #print("error01: ",error)
 
-        B = json_graph.node_link_data(G)
+        
 
         links = []
         i=1
+        
+
+        if bridgeness > 0:
+            com_link = defaultdict(lambda: defaultdict(list))
+            com_ids = defaultdict(list)
+            
+            for k, v in partition.items():
+                com_ids[v].append(k)
+        
+
         for e in G.edges_iter():
             s = e[0]
             t = e[1]
-            info = { 
-                "s": ids[s][1] , 
-                "t": ids[t][1] ,
-                "w": G[ids[s][1]][ids[t][1]]["weight"]
-            }
-            # print(info)
-            links.append(info)
-            i+=1
-            # print(B)
+            weight = G[ids[s][1]][ids[t][1]]["weight"]
+            
+            if bridgeness < 0:
+                info = { 
+                        "s": ids[s][1] ,
+                        "t": ids[t][1] ,
+                        "w": weight
+                    }
+                links.append(info)
+            
+            else:
+                if partition[s] == partition[t]:
+
+                    info = { 
+                        "s": ids[s][1] ,
+                        "t": ids[t][1] ,
+                        "w": weight
+                    }
+                    links.append(info)
+                
+                if bridgeness > 0:
+                    if partition[s] < partition[t]:
+                        com_link[partition[s]][partition[t]].append((s,t,weight))
+        
+        if bridgeness > 0:
+            for c1 in com_link.keys():
+                for c2 in com_link[c1].keys():
+                    index = round(bridgeness*len(com_link[c1][c2]) / (len(com_ids[c1]) + len(com_ids[c2])))
+                    #print((c1,len(com_ids[c1])), (c2,len(com_ids[c2])), index)
+                    if index > 0:
+                        for link in sorted(com_link[c1][c2], key=lambda x: x[2], reverse=True)[:index]:
+                            #print(c1, c2, link[2])
+                            info = {"s": link[0], "t": link[1], "w": link[2]}
+                            links.append(info)
+
+
+        B = json_graph.node_link_data(G)
         B["links"] = []
         B["links"] = links
-
         if field1 == field2 == 'ngrams' :
             data["nodes"] = B["nodes"]
             data["links"] = B["links"]

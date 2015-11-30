@@ -242,18 +242,46 @@ gargantext.controller('DatasetController', function($scope, $http) {
         $.each($scope.corpora, function(c, corpus){
             corpus.is_selected = false;
         });
-        $scope.updateDataset();
+        $scope._updateHyperdataList(function() {
+            $scope.updateDataset();
+        });
     };
     $scope.corporaSelectAll = function() {
         $.each($scope.corpora, function(c, corpus){
             corpus.is_selected = true;
         });
-        $scope.updateDataset();
+        $scope._updateHyperdataList(function() {
+            $scope.updateDataset();
+        });
     };
 
-    // filters: metadata, according to the considered corpora
+    // filters: hyperdata, according to the considered corpora
     $scope.hyperdataList = [];
+    $scope.updateHyperdataTimer = null;
+    $scope.setHyperdataList = function(hyperdataList) {
+        // add an empty item for each value
+        $.each(hyperdataList, function(h, hyperdata) {
+            if (hyperdata.values) {
+                hyperdata.values.unshift(undefined);
+            }
+        });
+        // do not keep the ones we are not interested into
+        var rejectedHyperdata = ['doi', 'volume', 'page'];
+        $scope.hyperdataList = [];
+        $.each(hyperdataList, function(h, hyperdata) {
+            if (rejectedHyperdata.indexOf(hyperdata.key) == -1) {
+                hyperdata.name = hyperdata.key.split('_')[0];
+                $scope.hyperdataList.push(hyperdata);
+            }
+        });
+    }
     $scope.updateHyperdataList = function() {
+        if ($scope.updateHyperdataTimer) {
+            clearTimeout($scope.updateHyperdataTimer);
+        }
+        $scope.updateHyperdataTimer = setTimeout($scope._updateHyperdataList, 500);
+    };
+    $scope._updateHyperdataList = function(callback) {
         var corpus_id_list = getSelectedCorporaIdList();
         if (corpus_id_list && corpus_id_list.length) {
             var url = '/api/hyperdata?corpus_id=';
@@ -261,7 +289,10 @@ gargantext.controller('DatasetController', function($scope, $http) {
             $scope.is_loading = true;
             $http.get(url, {cache: true}).success(function(response){
                 $scope.is_loading = false;
-                $scope.hyperdataList = response.data;
+                $scope.setHyperdataList(response.data);
+                if (callback) {
+                    callback();
+                }
             });
         } else {
             $scope.hyperdataList = [];
@@ -269,7 +300,14 @@ gargantext.controller('DatasetController', function($scope, $http) {
     };
 
     // update the dataset, according to the various filters applied to it
+    $scope.updateDatasetTimer = null;
     $scope.updateDataset = function() {
+        if ($scope.updateDatasetTimer) {
+            clearTimeout($scope.updateDatasetTimer);
+        }
+        $scope.updateDatasetTimer = setTimeout($scope._updateDataset, 500);
+    };
+    $scope._updateDataset = function() {
         // parameters
         var parameters = {
             'x': {
@@ -296,6 +334,20 @@ gargantext.controller('DatasetController', function($scope, $http) {
             })
             console.log($scope.query_y.ngrams);
         }
+        // filter: hyperdata
+        parameters.filter.hyperdata = [];
+        $.each($scope.hyperdataList, function(h, hyperdata) {
+            if ((hyperdata.values || hyperdata.operator) && hyperdata.value) {
+                if (hyperdata.values) {
+                    hyperdata.operator = '=';
+                }
+                parameters.filter.hyperdata.push({
+                    'key': hyperdata.key,
+                    'operator': hyperdata.operator,
+                    'value': hyperdata.value
+                });
+            }
+        });
         // retrieve data
         var url = '/api2/nodes/' + $scope.project_id + '/histories';
         $scope.is_loading = true;

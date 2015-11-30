@@ -1149,6 +1149,8 @@
       if (settings.features.paginate) {
         settings.dataset.page = 1;
       }
+      console.log("ADD:")
+      console.log(value)
       settings.dataset.queries[name] = value;
       obj.$element.trigger('dynatable:queries:added', [name, value]);
       return dt;
@@ -1177,9 +1179,50 @@
             }
           }
           // collect all records that return true for query
-          settings.dataset.records = $.map(settings.dataset.records, function(record) {
-            return _this.functions[query](record, value) ? record : null;
-          });
+          if($('input[name=searchAB]:checked').length==0) {
+              settings.dataset.records = $.map(settings.dataset.records, function(record) {
+                return _this.functions[query](record, value) ? record : null;
+              });
+          } else {
+              var pageurl = window.location.href.split("/")
+              var cid;
+              for(var i in pageurl) {
+                  if(pageurl[i]=="corpus") {
+                      cid=parseInt(i);
+                      break;
+                  }
+              } 
+              var corpus_id = pageurl[cid+1];
+              var search_api = window.location.origin+"/v1.0/nodes/"+corpus_id+"/children/ids?limit=1000&contain="+encodeURI(value)
+              var coincidences_ = []
+              $.ajax({
+                  type: "GET",
+                  url: search_api,
+                  dataType: "json",
+                  async: false,
+                  success : function(data, textStatus, jqXHR) { 
+                    var results_ = {}
+                    if(data.pagination.total>0) {
+                      for(var i in data.data) {
+                        results_[data.data[i].id]=true
+                      }
+                      for(var i in settings.dataset.records) {
+                        if(   results_[settings.dataset.records[i].id]  ) {
+                          coincidences_.push( settings.dataset.records[i] )
+                        }
+                      }
+
+                    }
+                  },
+                  error: function(exception) { 
+                    console.log("error in search_api:");
+                    console.log(exception)
+                    console.log(" - - - -- - - -")
+                  }
+              })
+              settings.dataset.records = coincidences_
+          }
+
         }
       }
       settings.dataset.queryRecordCount = obj.records.count();

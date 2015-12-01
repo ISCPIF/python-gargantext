@@ -49,7 +49,7 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="963"
+     inkscape:window-width="1360"
      inkscape:window-height="762"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -62,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -71,8 +71,8 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#04047e;fill-opacity:1;stroke:#191559;stroke-width:2.68011474999999999;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;fill-rule:nonzero;opacity:1"
-       d="m 67.957124,219.89012 c -21.951494,0 -40.977621,8.69677 -50.335489,21.40826 4.292013,3.79798 7.034932,9.55548 7.047344,16.00434 l 0,0.0396 c 0,7.23734 -3.440309,13.61318 -8.653863,17.32815 8.645806,13.99801 28.643543,23.80892 51.942008,23.80892 23.496654,0 43.642766,-9.96848 52.167926,-24.15469 -4.08915,-3.80631 -6.68337,-9.43968 -6.68337,-15.71784 0,-6.0475 2.40661,-11.48933 6.23781,-15.28316 -8.76845,-13.80251 -28.630779,-23.4335 -51.722366,-23.4335 z"
+       style="fill:#04047e;fill-opacity:1;fill-rule:nonzero;stroke:#191559;stroke-width:2.37392211;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 67.957124,229.39485 c -21.951494,0 -40.977621,6.82314 -50.335489,16.79607 4.292013,2.97973 7.034932,7.49684 7.047344,12.55635 l 0,0.0311 c 0,5.67812 -3.440309,10.68036 -8.653863,13.59497 8.645806,10.98228 28.643543,18.67953 51.942008,18.67953 23.496654,0 43.642766,-7.82087 52.167926,-18.95081 -4.08915,-2.98628 -6.68337,-7.40599 -6.68337,-12.33159 0,-4.74462 2.40661,-9.01406 6.23781,-11.99055 -8.76845,-10.8289 -28.630779,-18.38499 -51.722366,-18.38499 z"
        id="path2989"
        inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
        inkscape:export-xdpi="150.35899"
@@ -80,25 +80,21 @@
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
-       style="font-size:29.44009972px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#00ffff;fill-opacity:1;stroke:none;font-family:Courier;-inkscape-font-specification:Courier"
-       x="160.47124"
-       y="119.38621"
+       style="font-size:24.17494011px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#00ffff;fill-opacity:1;stroke:none;font-family:Courier;-inkscape-font-specification:Courier"
+       x="120.14117"
+       y="156.8829"
        id="text2985"
        sodipodi:linespacing="125%"
-       transform="scale(0.43195474,2.3150573)"
+       transform="scale(0.58099746,1.7211779)"
        inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
        inkscape:export-xdpi="150.35899"
        inkscape:export-ydpi="150.35899"><tspan
          sodipodi:role="line"
          id="tspan2987"
-         x="160.47124"
-         y="119.38621">M<tspan
+         x="120.14117"
+         y="156.8829">M<tspan
    style="fill:#ffffff"
-   id="tspan2985">a</tspan>s<tspan
-   style="fill:#ffffff"
-   id="tspan2988">t</tspan>o<tspan
-   style="fill:#ffffff"
-   id="tspan2990">n</tspan>d<tspan
+   id="tspan2985">a</tspan>stod<tspan
    style="fill:#ffffff"
    id="tspan2992">o</tspan>n<tspan
    style="fill:#ffffff"

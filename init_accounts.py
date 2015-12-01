@@ -32,9 +32,9 @@ def create_user(username, email, password=None, active=False, notify=True):
     user.username = username
     user.email = email
     user.active_user = active
-    if password is None:
+    if password is None or password == "":
         password = User.objects.make_random_password()
-        print(password)
+        #print(password)
     user.set_password(password)
     user.save()
     
@@ -61,7 +61,12 @@ def mass_account_creation(fichier=None):
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password, fin = line.split(',')
-        create_user(username, email, password=password, active=True, notify=False)
+        try:
+            user = User.objects.get(username=username)
+            print("User %s does exist already" % (username))
+        except:
+            print("User %s does not exist already" % (username))
+            create_user(username, email, password=password, active=True, notify=True)
         #delete_user(username)
     accounts.close()
 

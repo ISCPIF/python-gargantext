@@ -1,12 +1,12 @@
 <html>
+{% load staticfiles %}
 <head>
+    <link rel="shortcut icon" href="{% static "/favicon.ico"%}">
 
-{% block css %}
-{% endblock %}
-
+    {% block css %}
+    {% endblock %}
 </head>
 
-{% load staticfiles %}
 <body>
 <!-- Fixed navbar -->
     <div id="dafixedtop" class="navbar navbar-inverse navbar-fixed-top" role="navigation">

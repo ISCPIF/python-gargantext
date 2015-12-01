@@ -23,6 +23,7 @@ class ISTex(FileParser):
             "doi"               : 'doi',
             "host"              : 'host',
             "publication_date"  : 'publicationDate',
+            "abstract"  : 'abstract',
             # "authors"           : 'author',
             "authorsRAW"        : 'author',
             "keywords"          : "keywords"

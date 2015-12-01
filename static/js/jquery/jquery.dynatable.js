@@ -1149,8 +1149,6 @@
       if (settings.features.paginate) {
         settings.dataset.page = 1;
       }
-      console.log("ADD:")
-      console.log(value)
       settings.dataset.queries[name] = value;
       obj.$element.trigger('dynatable:queries:added', [name, value]);
       return dt;
@@ -1193,7 +1191,7 @@
                   }
               } 
               var corpus_id = pageurl[cid+1];
-              var search_api = window.location.origin+"/v1.0/nodes/"+corpus_id+"/children/ids?limit=1000&contain="+encodeURI(value)
+              var search_api = window.location.origin+"/v1.0/nodes/"+corpus_id+"/children/ids?limit="+(settings.dataset.records.length)+"&contain="+encodeURI(value.toLowerCase())
               var coincidences_ = []
               $.ajax({
                   type: "GET",
@@ -1215,11 +1213,12 @@
                     }
                   },
                   error: function(exception) { 
-                    console.log("error in search_api:");
+                    console.log("error in abstracts-API:");
                     console.log(exception)
                     console.log(" - - - -- - - -")
                   }
               })
+              console.log( "abstracts-API: "+coincidences_.length)
               settings.dataset.records = coincidences_
           }
 

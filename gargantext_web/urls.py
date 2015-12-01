@@ -3,6 +3,9 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth.views import login
 
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
+
 from gargantext_web import views, views_optimized
 import gargantext_web.corpus_views as corpus_views
 
@@ -30,6 +33,13 @@ urlpatterns = patterns('',
     # Dynamic CSS
     url(r'^img/logo.svg$', views.logo),
     url(r'^css/bootstrap.css$', views.css),
+
+    url(r'^favicon.ico$',
+    RedirectView.as_view(
+    url=staticfiles_storage.url('favicon.ico'),
+    permanent=False),
+    name="favicon"),
+
 
     ############################################################################
     # User Home view

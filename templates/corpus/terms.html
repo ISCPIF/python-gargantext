@@ -126,21 +126,14 @@ input[type=radio]:checked + label {
 
 
 {% block content %}
-
-<div id="content_loader">
-  <br>
-  <center>
-    <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
-  </center>
-  <br>
-</div>
                 <div class="container">
                         <div class="container">
 
                             <div class="row">
                                     
                                     <center>
-                                    <div id="ScoresBox"></div> <br>(Blue bars: all,  Green line: zoom)
+                                    Blue bars: all,  Green line for zooming : select a time range to zoom in
+                                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
                                             <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
                                                     style="display: none;">reset</a>
                                             <div class="clearfix"></div>
@@ -150,11 +143,17 @@ input[type=radio]:checked + label {
 
                             <div class="row">
                                     <div id="monthly-volume-chart"></div>
-                                    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
                             </div>
-                    </div>
-                        <p align="center">
-                        <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+
+        <div id="content_loader">
+          <br>
+          <center>
+            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+          </center>
+          <br>
+        </div>
+    </div>
+</div>
 
 <input type="hidden" id="list_id" value="{{ list_id }}"></input>
 

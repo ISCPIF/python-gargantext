@@ -164,6 +164,7 @@ function GetUserPortfolio() {
         }
     });
 }
+
 function printCorpuses() {
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     pr(corpusesList)
@@ -181,33 +182,53 @@ function printCorpuses() {
 
     $("#closecorpuses").click();
 
+    // EXTERNAL CORPUS TO COMPARE:
     var whichlist = $('input[name=whichlist]:checked').val()
-  	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist+"?custom"
+  	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist//+"?custom"
   	console.log( url )
+
 
   	GET_( url , function(results) {
   		if(Object.keys( results ).length>0) {
-  			var sub_ngrams_data = {
-  				"ngrams":[],
-  				"scores": $.extend({}, NGrams["main"].scores)
-  			}
+         var sub_ngrams_data = {
+           "ngrams":[],
+           "scores": $.extend({}, NGrams["main"].scores)
+         }
+        for(var i in NGrams["main"].ngrams) {
+          if( results[ NGrams["main"].ngrams[i].id] ) {
+            var a_ngram = NGrams["main"].ngrams[i]
+            sub_ngrams_data["ngrams"].push( a_ngram )  
+          }
+          // if( results[ NGrams["main"].ngrams[i].id] && NGrams["main"].ngrams[i].name.split(" ").length==1 ) {
+          //   if( NGrams["map"][ NGrams["main"].ngrams[i].id] ) {
+          //     var a_ngram = NGrams["main"].ngrams[i]
+          //     // a_ngram["state"] = System[0]["statesD"]["delete"]
+          //     sub_ngrams_data["ngrams"].push( a_ngram )  
+          //   }
+          // }
+        }
+        var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+  	// 		var sub_ngrams_data = {
+  	// 			"ngrams":[],
+  	// 			"scores": $.extend({}, NGrams["main"].scores)
+  	// 		}
 
-  			if(whichlist=="stop") {
-  				for(var r in results) {
-  					var a_ngram = results[r]
-  					a_ngram["state"] = System[0]["statesD"]["delete"]
-  					sub_ngrams_data["ngrams"].push( a_ngram )
-  				}
-  				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
-  			}
+  	// 		if(whichlist=="stop") {
+  	// 			for(var r in results) {
+  	// 				var a_ngram = results[r]
+  	// 				a_ngram["state"] = System[0]["statesD"]["delete"]
+  	// 				sub_ngrams_data["ngrams"].push( a_ngram )
+  	// 			}
+  	// 			var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
+  	// 		}
 
-  			if(whichlist=="miam") {
-  				for(var i in NGrams["main"].ngrams) {
-  					var local_ngram = NGrams["main"].ngrams[i]
-  					console.log( local_ngram )
-  				}
-  				var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
-  			}
+  	// 		if(whichlist=="miam") {
+  	// 			for(var i in NGrams["main"].ngrams) {
+  	// 				var local_ngram = NGrams["main"].ngrams[i]
+  	// 				console.log( local_ngram )
+  	// 			}
+  	// 			var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+  	// 		}
     	
   		}
   	});
@@ -926,7 +947,6 @@ function Main_test( data , initial , search_filter) {
 	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
 }
-
 
 
 function SearchFilters( elem ) {

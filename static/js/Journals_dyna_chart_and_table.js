@@ -502,6 +502,7 @@ $.ajax({
 
 
     console.log(data)
+    $("#content_loader").remove()
     // // Initializing the Charts and Table
     var result = Main_test( data , "FirstScore" )
     console.log( result )

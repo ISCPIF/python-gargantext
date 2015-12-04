@@ -524,7 +524,7 @@ function SearchFilters( elem ) {
 $.ajax({
   url: '/tests/paginator/corpus/'+url_mainIDs["corpus"],
   success: function(data){
-
+    $("#content_loader").remove()
     for(var i in data.records) {
       var orig_id = parseInt(data.records[i].id)
       var arr_id = parseInt(i)

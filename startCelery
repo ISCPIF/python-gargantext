@@ -2,4 +2,4 @@
 
 FILE=$(date +%Y%m%d-%H:%M:%S.log)
 source /srv/gargantext_env/bin/activate
-touch /var/log/gargantext/celery/$FILE && ./manage.py celery worker --loglevel=info >> $FILE
+touch /var/log/gargantext/celery/$FILE && ./manage.py celery worker -f $FILE

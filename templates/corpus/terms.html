@@ -137,10 +137,9 @@ input[type=radio]:checked + label {
                     <center>
                         Blue bars: all,  Green line for zooming : select a time range to zoom in
                     <p align="center">
-                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
 
-                    <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-                                        style="display: none;">reset</a>
                     <div class="clearfix"></div>
                     </center>
                 </div>

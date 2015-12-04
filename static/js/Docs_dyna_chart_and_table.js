@@ -519,6 +519,7 @@ function SearchFilters( elem ) {
 
 
 
+$("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
@@ -536,6 +537,11 @@ $.ajax({
     AjaxRecords = data.records; // backup-ing in global variable!
 
     var result = Main_test(data.records , "filter_all")
+    
+    $("#corpusdisplayer").show()
+    $("#content_loader").remove()
+    $("#corpusdisplayer").click()
+
     console.log( result )
   },
 });

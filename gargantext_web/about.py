@@ -41,6 +41,18 @@ def get_team():
              'picture' : 'samuel.jpg',
              'role' : 'developer'},
 
+
+            { 'first_name' : 'Maziyar', 'last_name' : 'Panahi',
+             'mail' : '',
+             'website'  : '',
+             'picture' : 'maziyar.jpg',
+             'role' : 'developer'},
+
+            { 'first_name' : 'Romain', 'last_name' : 'Loth',
+             'mail' : '',
+             'website'  : '',
+             'role' : 'developer'},
+
             { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',
              'mail' : 'alexandre+gargantextATdelanoe.org',
              'website' : 'http://alexandre.delanoe.org',

@@ -127,34 +127,38 @@ input[type=radio]:checked + label {
 
 {% block content %}
 
-<div id="content_loader">
-  <br>
-  <center>
-    <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
-  </center>
-  <br>
+
+
+<div class="container">
+    <div class="container">
+        <div class="jumbotron">
+            <div class="row">
+                <div id="monthly-move-chart">
+                    <center>
+                        Blue bars: all,  Green line for zooming : select a time range to zoom in
+                    <p align="center">
+                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+
+                    <div class="clearfix"></div>
+                    </center>
+                </div>
+            </div>
+        <div class="row">
+            <div id="monthly-volume-chart"></div>
+        </div>
+        
+        <div id="content_loader">
+          <br>
+          <center>
+            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+          </center>
+          <br>
+        </div>
+
+    </div>
 </div>
-                <div class="container">
-                        <div class="container">
 
-                            <div class="row">
-                                    
-                                    <center>
-                                    <div id="ScoresBox"></div> <br>(Blue bars: all,  Green line: zoom)
-                                            <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-                                                    style="display: none;">reset</a>
-                                            <div class="clearfix"></div>
-                                    </center>
-                                    <div id="monthly-move-chart"></div>
-                            </div>
-
-                            <div class="row">
-                                    <div id="monthly-volume-chart"></div>
-                                    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
-                            </div>
-                    </div>
-                        <p align="center">
-                        <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
 
 <input type="hidden" id="list_id" value="{{ list_id }}"></input>
 
@@ -217,7 +221,7 @@ input[type=radio]:checked + label {
                 <label class="control-label">
                     Which list do you want?</label>
                 <label class="radio">
-                    <input value="miam" name="whichlist" disabled type="radio">MiamList
+                    <input value="miam" name="whichlist" type="radio">MiamList
                 </label>
                 <label class="radio">
                     <input value="stop" name="whichlist" checked type="radio">StopList
@@ -259,9 +263,9 @@ input[type=radio]:checked + label {
         <option id="filter_stop-list" value="filter_stop-list">Stop-List</option>
     <!-- </optgroup> -->
 </select>
-<!-- 
+
 <button id="ImportList" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" class="btn btn-warning">Import a Corpus-List</button>
- -->
+
 </div>
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>

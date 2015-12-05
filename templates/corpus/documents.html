@@ -48,77 +48,84 @@ th a {
 
 {% block content %}
 
-                <div class="container">
-                        <div class="container">
+<div class="container">
+    <div class="container">
+        <div class="jumbotron">
+            <div class="row">
+                <div id="monthly-move-chart">
+                    <center>
+                        Blue bars: all,  Green line for zooming : select a time range to zoom in
+                    <p align="center">
+                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
 
-                            <div class="row">
-                                    <div id="monthly-move-chart">
-                                    <center>
-                                    <strong>Title</strong> (Blue bars: all,  Green line: zoom)
-                                            <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-                                                    style="display: none;">reset</a>
-                                            <div class="clearfix"></div>
-                                    </center>
-                                    </div>
-                            </div>
+                    <div class="clearfix"></div>
+                    </center>
+                </div>
+            </div>
+        <div class="row">
+            <div id="monthly-volume-chart"></div>
+        </div>
+        
+        <div id="content_loader">
+          <br>
+          <center>
+            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+          </center>
+          <br>
+        </div>
 
-                            <div class="row">
-                                    <div id="monthly-volume-chart"></div>
-                                    <p class="muted pull-left" style="margin-right: 15px;">Select a time range to zoom in</p>
-                            </div>
-                    </div>
-                        <p align="center">
-                        <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
-
+    </div>
+</div>
 
 
 <input type="hidden" id="list_id" value="{{ list_id }}"></input>
 
 <div class="container">
-        <div class="jumbotron">
 
-<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-  <div class="panel panel-body">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-           <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
-        </a>
-      </h4>
+
+    <div class="jumbotron">
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-body">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
+                  <div class="panel-body">
+                    <div id="div-table"></div>
+                            <p align="right">
+                                <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
+                            </p>
+
+                  </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
-      <div class="panel-body">
-                  <div id="div-table"></div>
-                <p align="right">
-                    <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
-                </p>
-
-
-      </div>
-    </div>
-  </div>
 </div>
-</div>
-</div>
-
 
 
 <div id="filter_search" style="visibility:hidden">
-<span style="font-size:70%;">
-  <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
-  <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
-</span>&nbsp;&nbsp;
-<select id="example-single-optgroups" onchange="SearchFilters(this);">
-    <!-- <optgroup label=""> -->
-        <option id="filter_all" value="filter_all">All</option>
-        <!-- <option id="filter_title" value="filter_title">Title</option> -->
-        <!-- <option id="filter_date" value="filter_date">Date</option> -->
-    <!-- </optgroup> -->
-    <!-- <optgroup label="Duplicates"> -->
-        <!-- <option value="filter_doi">By DOI</option> -->
-        <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
-    <!-- </optgroup> -->
-</select>
+    <span style="font-size:70%;">
+      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
+      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
+    </span>&nbsp;&nbsp;
+
+    <select id="example-single-optgroups" onchange="SearchFilters(this);">
+        <!-- <optgroup label=""> -->
+            <option id="filter_all" value="filter_all">All</option>
+            <!-- <option id="filter_title" value="filter_title">Title</option> -->
+            <!-- <option id="filter_date" value="filter_date">Date</option> -->
+        <!-- </optgroup> -->
+        <!-- <optgroup label="Duplicates"> -->
+            <!-- <option value="filter_doi">By DOI</option> -->
+            <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
+        <!-- </optgroup> -->
+    </select>
 
 </div>
 
@@ -129,7 +136,6 @@ th a {
 
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "js/Docs_dyna_chart_and_table.js" %}"></script>
-
 
 
 

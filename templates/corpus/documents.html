@@ -56,10 +56,9 @@ th a {
                     <center>
                         Blue bars: all,  Green line for zooming : select a time range to zoom in
                     <p align="center">
-                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a></p>
+                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
 
-                    <a class="reset" href="javascript:volumeChart.filterAll();dc.redrawAll();"
-                                        style="display: none;">reset</a>
                     <div class="clearfix"></div>
                     </center>
                 </div>
@@ -91,8 +90,7 @@ th a {
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' 
-                        class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
                         </a>
                     </h4>
                 </div>

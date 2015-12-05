@@ -20,8 +20,6 @@ function getCookie(name) {
 }
 
 
-
-
 var latest,oldest;
 
 var TheBuffer = false

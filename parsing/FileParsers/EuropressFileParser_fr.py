@@ -22,6 +22,7 @@ from ..NgramsExtractors import *
 
 from admin.utils import PrintException
 
+
 class EuropressFileParser_fr(FileParser):
     def _parse(self, file):
         localeEncoding          = "fr_FR"
@@ -54,23 +55,32 @@ class EuropressFileParser_fr(FileParser):
 
         name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
         header_xpath    = "./header/div/span[@class = 'DocHeader']"
-        title_xpath     = "./header/div[@class='titreArticle']/descendant-or-self::*"
-        text_xpath      = "./section/div[@class='DocText']/descendant-or-self::*"
+        title_xpath     = "./header/div[@class='titreArticle']"
+        text_xpath      = "./section/div[@class='DocText']/div[@class='docOcurrContainer']/p"
         
 
-        def paragraph_list(data_xpath):
+        def scrap_text(data_xpath):
+            """
+            Récupère le texte de toute arborescence
+            sous une liste de noeuds (par ex liste de <p>)
+            et renvoie une liste de string
+            """
             result = list()
+            
+            # a priori un seul titre ou plusieurs p dans data_xpath
             for elem in data_xpath:
-                if elem.text is not None:
-                    if elem.text.strip() != '':
-                        if elem.tag == 'p':
-                            result.append(elem.text)
-                        else:
-                            if len(result) > 0:
-                                result.append(result.pop() + elem.text)
-                            else:
-                                result.append(elem.text)
+                all_text = list()
+                # on utilise itertext pour avoir
+                # tous les sous éléments 1 fois
+                # quelque soit la profondeur
+                for sub_txt in elem.itertext(with_tail=True):
+                    sub_txt_clean = sub_txt.strip()
+                    if sub_txt_clean != '':
+                        all_text.append(sub_txt_clean)
+                result.append(" ".join(all_text))
             return result
+
+
 
         # parse all the articles, one by one
         try:
@@ -126,14 +136,14 @@ class EuropressFileParser_fr(FileParser):
 
                 #print(hyperdata['publication_date'])
                 try:
-                    title   = paragraph_list(html_article.xpath(title_xpath))
+                    title   = scrap_text(html_article.xpath(title_xpath))
                     hyperdata['title'] = title[0]
                 except:
                     pass
                 
                 try:
-                    text    = paragraph_list(html_article.xpath(text_xpath))
-                    hyperdata['abstract'] = ' '.join([ ' <p> ' + p + ' </p> ' for p in title[1:] + text])
+                    text    = scrap_text(html_article.xpath(text_xpath))
+                    hyperdata['abstract'] = ' '.join([ p_text for p_text in title[1:] + text])
                 except:
                     pass
 

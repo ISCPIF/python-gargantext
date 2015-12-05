@@ -25,7 +25,7 @@ Install the requirements
 3)  Type: source [your virtual environment directory]/bin/activate
 
 4)  sudo chown -R user:user /srv/gargantext_env
-    pip install -r /srv/gargantext/init/requirements.txt
+    pip install -r /srv/gargantext/init/install/2-requirements.txt
 
 5)  Type: deactivate
 
@@ -73,7 +73,7 @@ Last steps of configuration
     rm gargantext_lib.tar.bz2
 
 3)  init nodetypes and main variables
-    /srv/gargantext/manage.py shell < /srv/gargantext/init/init.py
+    /srv/gargantext/manage.py shell < /srv/gargantext/init.py
 
 4)  patch CTE:
     patch /srv/gargantext_env/lib/python3.4/site-packages/cte_tree/models.py /srv/gargantext/init/patches/cte_tree.models.diff
@@ -89,7 +89,7 @@ Last steps of configuration
 Start Turbo parser server
 -------------------------
 See dependences in init/dependences.sh
-See README for install instructions /srv/gargantext/parsing/Taggers/nlpserver/README.rst
+See README for install instructions /srv/gargantext/parsing/Taggers/lib/nlpserver/README.rst
 
 
 Start the Python Notebook server

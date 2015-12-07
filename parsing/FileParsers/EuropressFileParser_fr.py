@@ -143,7 +143,10 @@ class EuropressFileParser_fr(FileParser):
                 
                 try:
                     text    = scrap_text(html_article.xpath(text_xpath))
-                    hyperdata['abstract'] = ' '.join([ p_text for p_text in title[1:] + text])
+                    hyperdata['abstract'] = '\n'.join([ '<p>\n'+p_text+'</p>\n' for p_text in title[1:] + text])
+                    
+                    
+                    # join([ ' <p> ' + p + ' </p> ' for p in title[1:] + text])
                 except:
                     pass
 

@@ -54,23 +54,32 @@ class EuropressFileParser_en(FileParser):
 
         name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
         header_xpath    = "./header/div/span[@class = 'DocHeader']"
-        title_xpath     = "./header/div[@class='titreArticle']/descendant-or-self::*"
-        text_xpath      = "./section/div[@class='DocText']/descendant-or-self::*"
+        title_xpath     = "./header/div[@class='titreArticle']"
+        text_xpath      = "./section/div[@class='DocText']//p"
         
 
-        def paragraph_list(data_xpath):
+        def scrap_text(data_xpath):
+            """
+            Récupère le texte de toute arborescence
+            sous une liste de noeuds (par ex liste de <p>)
+            et renvoie une liste de string
+            """
             result = list()
+            
+            # a priori un seul titre ou plusieurs p dans data_xpath
             for elem in data_xpath:
-                if elem.text is not None:
-                    if elem.text.strip() != '':
-                        if elem.tag == 'p':
-                            result.append(elem.text)
-                        else:
-                            if len(result) > 0:
-                                result.append(result.pop() + elem.text)
-                            else:
-                                result.append(elem.text)
+                all_text = list()
+                # on utilise itertext pour avoir
+                # tous les sous éléments 1 fois
+                # quelque soit la profondeur
+                for sub_txt in elem.itertext(with_tail=True):
+                    sub_txt_clean = sub_txt.strip()
+                    if sub_txt_clean != '':
+                        all_text.append(sub_txt_clean)
+                result.append(" ".join(all_text))
             return result
+
+
 
         # parse all the articles, one by one
         try:
@@ -88,26 +97,25 @@ class EuropressFileParser_en(FileParser):
                         hyperdata['journal']    =  pub_name.strip()
                     except:
                         pass
-                    
-                #print(hyperdata['publication_date'])
-                try:
-                    title   = paragraph_list(html_article.xpath(title_xpath))
-                    hyperdata['title'] = title[0]
-                except:
-                    pass
-
+                
                 header = html_article.xpath(header_xpath)[0].text
                 if header is not None:
+                    # attention en anglais la date contient 1 ou 2 virgules
+                    # ex: "Tuesday, November 7, 2012" 
+                    # ==> dans tous ces cas 'en' dateparser.parse 
+                    #     sera lancé sur header[i:] et non header[i]
                     header = header.split(', ')
                     header = list(filter(lambda x: format_page.match(x) is None, header))
-                    print(header)
                     if parse_date(header[0], 'en') is not None:
                         date = ' '.join(header[0:])
                     elif parse_date(header[1], 'en') is not None:
+                        hyperdata['rubrique']   = header[0]
                         date = ' '.join(header[1:])
                     elif parse_date(header[2], 'en') is not None:
+                        hyperdata['rubrique']   = header[0]
                         date = ' '.join(header[2:])
                     elif parse_date(header[3], 'en') is not None:
+                        hyperdata['rubrique']   = header[0]
                         date = ' '.join(header[3:])
                     else: 
                         date = '2016'
@@ -127,10 +135,16 @@ class EuropressFileParser_en(FileParser):
                     print(hyperdata['title'])
                     print(date)
 
+                try:
+                    title   = scrap_text(html_article.xpath(title_xpath))
+                    hyperdata['title'] = title[0]
+                except:
+                    pass
                                 
                 try:
-                    text    = paragraph_list(html_article.xpath(text_xpath))
-                    hyperdata['abstract'] = ' '.join([ ' <p> ' + p + ' </p> ' for p in title[1:] + text])
+                    text    = scrap_text(html_article.xpath(text_xpath))
+                    hyperdata['abstract'] = '\n'.join([ '<p>\n'+p_text+'</p>\n' for p_text in title[1:] + text])
+                    
                 except:
                     pass
 

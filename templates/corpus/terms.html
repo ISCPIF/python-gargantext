@@ -238,8 +238,70 @@ input[type=radio]:checked + label {
             </div>
 
           </div>
+
         </div>
+
+
       </div> 
+
+    </div>
+
+
+    <div id="pre_savechanges" class="modal fade">
+
+      <div class="modal-dialog">
+
+        <div class="modal-content">
+          
+
+          <div class="modal-header">
+            <h3 class="modal-title">Do you want to apply these to the whole Project as well?:</h3>
+          </div>
+
+          <div class="modal-body">
+
+            <div id="stoplist_content">
+            </div>
+
+            <!-- 
+              <ul class="nav nav-tabs">
+                <li class="active"><a id="stoplist" href="#stoplist_content">Stop List</a></li>
+                <li><a id="maplist" href="#maplist_content">Map List</a></li>
+                <li><a id="grouplist" href="#grouplist_content">Group List</a></li>
+              </ul>
+
+              <div class="tab-content">
+                <div id="stoplist_content" class="tab-pane fade in active">
+                  <ul>
+                    <li>jiji01</li>
+                    <li>jiji02</li>
+                    <li>jiji03</li>
+                  </ul>
+                </div>
+
+                <div id="maplist_content" class="tab-pane fade">
+                  qowieuoqiwueowq
+                </div>
+
+                <div id="grouplist_content" class="tab-pane fade">
+                  asdhasjkdhasjdh
+                </div>
+
+              </div>
+            -->
+
+            <div class="modal-footer">
+              <button onclick="SaveGlobalChanges(this.id)" id="nope" type="button" class="btn btn-default" data-dismiss="modal">No</button>
+              <button onclick="SaveGlobalChanges(this.id)" id="yep" type="button" class="btn btn-primary">Yes</button>
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+      </div>
 
     </div>
 
@@ -264,7 +326,7 @@ input[type=radio]:checked + label {
     <!-- </optgroup> -->
 </select>
 
-<button id="ImportList" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" class="btn btn-warning">Import a Corpus-List</button>
+<button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
 
 </div>
 

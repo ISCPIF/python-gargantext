@@ -1,3 +1,4 @@
+# import * via __init__.py
 from .FileParsers import *
 
 parsers = {
@@ -6,9 +7,16 @@ parsers = {
         'Scopus (RIS format)'               : RisFileParser,
         'Zotero (RIS format)'               : ZoteroFileParser,
         'Jstor (RIS format)'                : JstorFileParser,
+        
+        'Europress (French)'                : EuropressFileParser,
+        'Europress (English)'               : EuropressFileParser,
+        
+        # Une seule entrée pourra remplacer les variantes French/English
+        # mais (TODO) il faudra juste vérifier cohérence:
+        #   - avec DB: node_resourcetype
+        #   - avec admin/update_corpus.py
         #'Europress'                        : EuropressFileParser,
-        'Europress (French)'                : EuropressFileParser_fr,
-        'Europress (English)'               : EuropressFileParser_en,
+
         'CSVParser'                         : CSVParser,
         'ISTex'                             : ISTex,
     }

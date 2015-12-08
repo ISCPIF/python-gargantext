@@ -21,14 +21,15 @@ def notify_user(username, email, password):
 
     ''' % (username, password)
 
-    send_mail('[Gargantext] Création de votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
+    send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
     #send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre@delanoe.org'] )
 
 
     # add option for mass sending email
 
-def create_user(username, email, password=None, active=False, notify=True):
-    user = User()
+def create_user(username, email, user=None, password=None, active=False, notify=True):
+    if user is None:
+        user = User()
     user.username = username
     user.email = email
     user.active_user = active
@@ -55,7 +56,7 @@ def active_user(username, active=True):
     user.active_user = active
     user.save()
 
-def mass_account_creation(fichier=None):
+def mass_account_creation(fichier=None,init=False):
     if fichier is None:
         fichier = "/tmp/comptes.csv"
     accounts = open(fichier, "r")
@@ -64,6 +65,9 @@ def mass_account_creation(fichier=None):
         try:
             user = User.objects.get(username=username)
             print("User %s does exist already" % (username))
+            if init == True:
+                create_user(username, email, user=user, password=password, active=True, notify=True)
+                print("User %s updated" % (username))
         except:
             print("User %s does not exist already" % (username))
             create_user(username, email, password=password, active=True, notify=True)
@@ -71,6 +75,6 @@ def mass_account_creation(fichier=None):
     accounts.close()
 
 if __name__ == "__main__":
-    mass_account_creation(fichier=sys.argv[1])
+    mass_account_creation(fichier=sys.argv[1], init=True)
 
 

@@ -1,4 +1,6 @@
 
+
+
 function pr(msg) {
     console.log(msg)
 }
@@ -111,7 +113,7 @@ function GetUserPortfolio() {
         success : function(data) {
             
             var html_ = ""
-            html_ += '<div class="panel-group" id="accordion">'+"\n"
+            html_ += '<div class="panel-group" id="accordion_">'+"\n"
             html_ += ' <form id="corpuses_form" role="form">'+"\n"
             corpusesList = data;
             for (var k1 in data) {
@@ -119,7 +121,7 @@ function GetUserPortfolio() {
                 html_ += '  <div class="panel panel-default">'+"\n"
                 html_ += '   <div class="panel-heading">'+"\n"
                 html_ += '    <h4 class="panel-title">'+"\n"
-                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
+                html_ += '     <a data-toggle="collapse" data-parent="#accordion_" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
                 html_ += '    </h4>'+"\n"
                 html_ += '   </div>'+"\n"
                 html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
@@ -154,6 +156,8 @@ function GetUserPortfolio() {
                $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
 
             });
+
+            $('#corpuses').modal('show');
 
 
         },
@@ -449,26 +453,6 @@ function clickngram_action ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
-// function YOLO() {
-
-//   var sum__selected_elems = 0;
-
-//   for(var i in FlagsBuffer["group"])
-//   	sum__selected_elems += Object.keys( FlagsBuffer["group"][i] ).length
-//   for(var i in FlagsBuffer)
-//     sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-
-//   console.log("")
-//   console.log("Current Buffer size: "+sum__selected_elems)
-//   console.log(FlagsBuffer)
-
-//   if ( sum__selected_elems>0 )
-//     $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
-//   else 
-//     $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-// }
-
-
 // modified
 function transformContent(rec_id) {
 	var elem = AjaxRecords[rec_id];
@@ -554,6 +538,144 @@ function SelectAll( box ) {
   MyTable.data('dynatable').dom.update();
 }
 
+function SaveGlobalChanges(elem) {
+  console.log( "iterating over global stop words:" )
+  $('.globalstopwords').each(function(i, obj) {
+      console.log( obj )
+  });  
+  console.log( " - - - - -" )
+  console.log( elem )
+}
+
+function SaveGlobalChanges_Form( nodes2del) {
+  console.log( "In SaveGlobalChanges:" )
+  console.log( nodes2del )
+  //AjaxRecords[RecDict[1731]]
+  $("#stoplist_content").html("")
+  var html_globalstop = ""
+  for(var i in nodes2del) {
+    $('<span/>', {
+      "class": "globalstopwords",
+      "data-id":AjaxRecords[RecDict[nodes2del[i]]].id,
+      "data-stuff": RecDict[nodes2del[i]],
+        title: 'Click to remove',
+        text: AjaxRecords[RecDict[nodes2del[i]]].name,
+        css: {
+          "cursor":"pointer",
+          "border": "1px solid red",
+          "margin": "3px",
+          "padding": "3px",
+        }
+    })
+    .click(function() {
+        $(this).remove()
+        // if nothing in group div, then remove it
+        if( $("#stoplist_content").children().length==0 ) {
+          SaveLocalChanges()
+        }
+    })
+    .appendTo('#stoplist_content')
+
+  }
+  $("#pre_savechanges").modal("show")
+}
+
+function SaveLocalChanges() {
+
+  console.clear()
+  console.log("In SaveChanges()")
+  var sum__selected_elems = 0;
+
+  FlagsBuffer["delete"] = {}
+  FlagsBuffer["keep"] = {}
+  FlagsBuffer["outmap"] = {}
+  FlagsBuffer["inmap"] = {}
+
+  for(var id in AjaxRecords) {
+    if( NGrams["map"][ AjaxRecords[id]["id"] ] ) {
+      if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"] || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+        FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
+        if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+          FlagsBuffer["delete"][AjaxRecords[id].id] = true
+        }
+      }
+      if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
+        FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+      }
+    } else {    
+      if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
+        FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+      }
+      if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+        FlagsBuffer["delete"][AjaxRecords[id].id] = true
+      }
+    }
+  }
+  // [ = = = = For deleting subforms = = = = ]
+  for(var i in NGrams["group"].links) {
+    if(FlagsBuffer["delete"][i]) {
+      for(var j in NGrams["group"].links[i] ) {
+        FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
+      }
+      for(var j in FlagsBuffer["delete"][i] ) {
+        FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
+      }
+    }
+    if(FlagsBuffer["inmap"][i]) {
+      for(var j in FlagsBuffer["group"][i] ) {
+        FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
+      }
+    }
+  }
+  // [ = = = = / For deleting subforms = = = = ]
+
+  // console.log(" = = = = = = = = = == ")
+  // console.log("FlagsBuffer:")
+  // console.log(FlagsBuffer)
+
+
+  var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
+  var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
+  var nodes_2group = $.extend({}, FlagsBuffer["group"])
+  var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
+  var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
+
+  // console.log("")
+  // console.log("")
+  // console.log(" nodes_2del: ")
+  // console.log(nodes_2del)
+  // console.log(" nodes_2keep: ")
+  // console.log(nodes_2keep)
+  // console.log(" nodes_2group: ")
+  // console.log(nodes_2group)
+  // console.log(" nodes_2inmap: ")
+  // console.log(nodes_2inmap)
+  // console.log(" nodes_2outmap: ")
+  // console.log(nodes_2outmap)
+  // console.log("")
+  // console.log("")
+
+  var list_id = $("#list_id").val()
+  var corpus_id = getIDFromURL( "corpus" ) // not used
+
+  $("#stoplist_content").html()
+
+  // CRUD( list_id , "" , Object.keys(FlagsBuffer["inmap"]).map(Number) , [] , "PUT", function(result) {
+  //   console.log( result )
+  // });
+
+  $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
+  CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" , function(result) {
+   CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" , function(result) {
+     CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" , function(result) {
+         CRUD( list_id , "" , nodes_2del , [] , "DELETE", function(result) {
+          window.location.reload()
+         });
+     });
+   });
+  });
+}
+
 
 $("#Clean_All").click(function(){
 
@@ -569,103 +691,23 @@ $("#Clean_All").click(function(){
 		for(var j in FlagsBuffer[i])
 			delete FlagsBuffer[i][j];
   // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-
 });
 
 $("#Save_All").click(function(){
-	console.clear()
-	console.log("click in save all 01")
-	var sum__selected_elems = 0;
-
-	FlagsBuffer["delete"] = {}
-	FlagsBuffer["keep"] = {}
-	FlagsBuffer["outmap"] = {}
-	FlagsBuffer["inmap"] = {}
-
-	for(var id in AjaxRecords) {
-		if( NGrams["map"][ AjaxRecords[id]["id"] ] ) {
-			if(AjaxRecords[id]["state"]==0 || AjaxRecords[id]["state"]==2) {
-				FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
-				if(AjaxRecords[id]["state"]==2) {
-					FlagsBuffer["delete"][AjaxRecords[id].id] = true
-				}
-			}
-			if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==1)  {
-				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
-			}
-		} else {		
-			if(AjaxRecords[id]["state"]==1) {
-				FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
-			}
-			if(AjaxRecords[id]["state"]==2) {
-				FlagsBuffer["delete"][AjaxRecords[id].id] = true
-			}
-		}
-	}
-	// [ = = = = For deleting subforms = = = = ]
-	for(var i in NGrams["group"].links) {
-		if(FlagsBuffer["delete"][i]) {
-			for(var j in NGrams["group"].links[i] ) {
-				FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
-			}
-			for(var j in FlagsBuffer["delete"][i] ) {
-				FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
-			}
-		}
-		if(FlagsBuffer["inmap"][i]) {
-			for(var j in FlagsBuffer["group"][i] ) {
-				FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
-			}
-		}
-	}
-	// [ = = = = / For deleting subforms = = = = ]
-
-	// console.log(" = = = = = = = = = == ")
-	// console.log("FlagsBuffer:")
-	// console.log(FlagsBuffer)
-
-
-	var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
-	var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
-	var nodes_2group = $.extend({}, FlagsBuffer["group"])
-	var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
-	var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
-
-	// console.log("")
-	// console.log("")
-	// console.log(" nodes_2del: ")
-	// console.log(nodes_2del)
-	// console.log(" nodes_2keep: ")
-	// console.log(nodes_2keep)
-	// console.log(" nodes_2group: ")
-	// console.log(nodes_2group)
-	// console.log(" nodes_2inmap: ")
-	// console.log(nodes_2inmap)
-	// console.log(" nodes_2outmap: ")
-	// console.log(nodes_2outmap)
-	// console.log("")
-	// console.log("")
-
-	var list_id = $("#list_id").val()
-	var corpus_id = getIDFromURL( "corpus" ) // not used
-
-
-  // CRUD( list_id , "" , Object.keys(FlagsBuffer["inmap"]).map(Number) , [] , "PUT", function(result) {
-  //   console.log( result )
-  // });
-
-	$("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
-	CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" , function(result) {
-		CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" , function(result) {
-			CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" , function(result) {
-  				CRUD( list_id , "" , nodes_2del , [] , "DELETE", function(result) {
-  					window.location.reload()
-  				});
-			});
-		});
-	});
-
+  SaveLocalChanges()
+  // var Elems_2Del = {};
+  // for(var id in AjaxRecords) {
+  //   if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+  //     Elems_2Del[AjaxRecords[id].id] = true
+  //   }
+  // }
+  // if( Object.keys(Elems_2Del).length>0 ) {
+  //   SaveGlobalChanges_Form( Object.keys(Elems_2Del).map(Number) )
+  // } else {
+  //   // SaveLocalChanges() //At the end, reload!
+  // }
 });
+
 
 function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
@@ -1161,4 +1203,17 @@ function AfterAjax() {
     $("#corpusdisplayer").show()
     $("#content_loader").remove()
     $("#corpusdisplayer").click()
+
+
+    $(".nav-tabs a").click(function(e){
+      e.preventDefault();
+      $(this).tab('show');
+    });
+    $('.nav-tabs a').on('shown.bs.tab', function(event){
+        var x = $(event.target).text();         // active tab
+        var y = $(event.relatedTarget).text();  // previous tab
+        $(".act span").text(x);
+        $(".prev span").text(y);
+    });
+
 }

@@ -73,11 +73,14 @@ def test_page(request , project_id , corpus_id):
     corpus  = cache.Node[int(corpus_id)]
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
+    
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -115,11 +118,13 @@ def get_ngrams(request , project_id , corpus_id ):
         list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
         lists["%s" % list_id[0][0]] = list_type
 
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -183,11 +188,13 @@ def get_journals(request , project_id , corpus_id ):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,

@@ -77,11 +77,14 @@ def get_ngrams(request , project_id , corpus_id ):
     myamlist_type_id = cache.NodeType['MiamList'].id
     miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
+    t
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -116,11 +119,13 @@ def get_journals(request , project_id , corpus_id ):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
+    the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
+    cursor = connection.cursor()
     try:
-        processing = corpus.hyperdata['Processing']
-    except Exception as error:
-        print(error)
-        processing = 0
+        cursor.execute(the_query)
+        processing = cursor.fetchone()[0]["Processing"]
+    except:
+        processing = "Error"
 
     html = t.render(Context({
             'debug': settings.DEBUG,

@@ -1,4 +1,5 @@
 #!/bin/bash
 
-FILE=$(date +%Y%m%d-%H:%M:%S.log)
-touch /var/log/gargantext/uwsgi/$FILE && uwsgi gargantext.ini >> $FILE
+FILE="/var/log/gargantext/uwsgi/$(date +%Y%m%d-%H:%M:%S).log"
+#touch /var/log/gargantext/uwsgi/$FILE && sudo 
+uwsgi gargantext.ini --logto $FILE

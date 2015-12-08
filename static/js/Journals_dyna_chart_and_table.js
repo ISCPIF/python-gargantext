@@ -495,6 +495,11 @@ function Main_test( data , initial) {
     return "OK"
 }
 
+
+
+
+$("#corpusdisplayer").hide()
+
 console.log(window.location.href+"/journals.json")
 $.ajax({
   url: window.location.href+"/journals.json",
@@ -502,12 +507,14 @@ $.ajax({
 
 
     console.log(data)
+    $("#content_loader").remove()
     // // Initializing the Charts and Table
     var result = Main_test( data , "FirstScore" )
     console.log( result )
 
-
-
+    $("#corpusdisplayer").show()
+    $("#content_loader").remove()
+    $("#corpusdisplayer").click()
 
   }
 });

@@ -42,7 +42,7 @@ def ngram_workflow(corpus, n=5000):
     update_state.processing_(corpus, "Synonyms")
     try:
         compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
-    except Error as error:
+    except Exception as error:
         print("Workflow Ngram Group error", error)
         pass
     

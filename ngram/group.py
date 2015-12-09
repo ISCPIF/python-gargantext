@@ -131,8 +131,8 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
     session.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
     session.commit()
 
-    bulk_insert(NodeNgramNgram
-                , ('node_id', 'ngramx_id', 'ngramy_id', 'score')
-                , [data for data in group_to_insert])
-
-    bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
+#    bulk_insert(NodeNgramNgram
+#                , ('node_id', 'ngramx_id', 'ngramy_id', 'score')
+#                , [data for data in group_to_insert])
+#
+#    bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])

@@ -43,7 +43,7 @@ def ngram_workflow(corpus, n=5000):
     try:
         compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
     except Error as error:
-        print("Workflow Ngram Group error": error)
+        print("Workflow Ngram Group error", error)
         pass
     
     update_state.processing_(corpus, "Map list terms")

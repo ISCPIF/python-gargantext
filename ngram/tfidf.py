@@ -119,14 +119,16 @@ def compute_tfidf(corpus):
         # the end!
         db.commit()
 
-#http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
-
 def compute_tfidf_global(corpus):
+    '''
+    Maybe improve this with:
+    #http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
+    '''
     dbg = DebugTime('Corpus #%d - tfidf global' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
 
+    # update would be better
     session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
     session.commit()
 
@@ -215,7 +217,7 @@ def compute_tfidf_global(corpus):
             %s as corpus ON corpus.id = doc.parent_id
             WHERE
             corpus.language_id = %d AND doc.type_id = %d AND corpus.type_id=%d
-            AND RANDOM() < 0.01
+            --AND RANDOM() < 0.01
             GROUP BY
             node_ngram.ngram_id
             -- limit 10000

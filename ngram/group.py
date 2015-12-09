@@ -94,42 +94,36 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
                     .all()
                     )
 
-    ngrams = [n for n in ngrams if n not in stops]
+    ngrams = [n + (str(stemIt(n[1])),) for n in ngrams if n not in stops]
     #print(ngrams)
-    #group = defaultdict(lambda : defaultdict())
-    ids_dict = dict()
-    mainform_dict = dict()
-    count_dict = dict()
+    group = dict()
+    group_to_insert = list()
+    miam_to_insert = set()
 
     for n in ngrams:
-        stem = str(stemIt(n[1]))
-        
-        if stem is not None :
-        
-            ids_dict[stem] = ids_dict.get(stem, []) + [n[0]]
+        # n has form (id, terms, freq, stem)
+        # first if stem is not None:
+        if n[3] is not None:
 
-            count = count_dict.get(stem, 0)
+            # Adding the id to the forms
+            group[n[3]] = group.get(n[3], dict())
+            group[n[3]]['forms'] = group[n[3]].get('forms', set())
+            group[n[3]]['forms'].add(n[0])
+            
+            # Take current max
+            group[n[3]]['freq'] = group[n[3]].get('freq', 0)
+            
+            # Update max and mainForm if present ngram (n) has more freq
+            if n[2] > group[n[3]]['freq'] :
+                group[n[3]]['freq'] = n[2]
+                group[n[3]]['mainForm'] = n[0]
 
-            if n[2] > count:
-                mainform_dict[stem] = n[0]
-                count_dict[stem] = n[2]
+    # Adding all ngrams in the list
+    for key in group.keys():
+        for form in list(group[key]['forms']):
+            group_to_insert.append((node_group.id, group[key]['mainForm'], form, 1))
+            miam_to_insert.add((miam_node.id, group[key]['mainForm'], 1))
 
-
-            for key in mainform_dict.keys():
-                miam_to_insert.add((miam_node.id, mainform_dict[key], 1))
-                
-                try:
-                    ids = ids_dict[key]
-                    
-                    if ids is not None and len(ids) > 1:
-                        for ngram_id in ids :
-                            if ngram_id != mainform_dict[key]:
-                                group_to_insert.add((node_group.id, mainform_dict[key], ngram_id, 1))
-                except exception as e:
-                    print(e)
-                    print(group[stem])
-
-        #print(ids_dict[stem])
     
 #    # Deleting previous groups
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()

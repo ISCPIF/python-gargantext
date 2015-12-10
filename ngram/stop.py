@@ -56,6 +56,7 @@ def isStopWord(ngram, stop_words=None):
             , "(.*)\d(.*)"
             , "(.*)(\.)(.*)"
             , "(.*)(\,)(.*)"
+            , "(.*)(< ?/?p ?>)(.*)"       # marques de paragraphes
             , "(.*)(study)(.*)"
             , "(.*)(xx|xi|xv)(.*)"
             , "(.*)(result)(.*)"

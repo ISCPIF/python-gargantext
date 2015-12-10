@@ -125,21 +125,14 @@ def project(request, project_id):
             thefile = form.cleaned_data['file']
             resourcetype = cache.ResourceType[form.cleaned_data['type']]
 
-            # which default language shall be used?
-            if resourcetype.name == "Europress (French)":
-                language_id = cache.Language['fr'].id
-            elif resourcetype.name == "Europress (English)":
-                language_id = cache.Language['en'].id
-            else:
-                language_id = None
-
             # corpus node instanciation as a Django model
             corpus = Node(
                 name        = name,
                 user_id     = request.user.id,
                 parent_id   = project_id,
                 type_id     = cache.NodeType['Corpus'].id,
-                language_id = language_id,
+                # no default language at this point
+                language_id = None,
                 hyperdata    = {'Processing' : "Parsing documents",}
             )
             session.add(corpus)

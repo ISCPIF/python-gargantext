@@ -51,7 +51,8 @@ def ngram_workflow(corpus, n=5000):
     
     update_state.processing_(corpus, "TF-IDF local score")
     compute_tfidf(corpus)
-    # update_state.processing_(corpus, "OCCS local score")
-    # compute_occs(corpus)
+
+    update_state.processing_(corpus, "Occurrences")
+    compute_occs(corpus)
 
 

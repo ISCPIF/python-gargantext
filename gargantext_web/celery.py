@@ -30,7 +30,7 @@ from admin.utils import WorkflowTracking
 def apply_workflow(corpus_id):
 
     dbg = DebugTime('Corpus #%d - WORKFLOW TIMER' % corpus_id)
-    dbg.show('ALL WORKFLOW' % corpus_id)
+    dbg.show('ALL WORKFLOW')
     
     update_state = WorkflowTracking()
 

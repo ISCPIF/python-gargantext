@@ -147,15 +147,15 @@ def importNgramList(node,filename,delimiter="\t",modify_lists=[0,1,2]):
     
     # on supprime tous les NodeNgrams des listes à modifier
     # ------------------------------------------------------
-    for list_shortcut in modify_lists:
-        # find previous listnode id
-        list_type = list_types_shortcuts[list_shortcut]
-        list_node = get_or_create_node(nodetype=list_type, corpus=node)
-        node_id = listnode.id
-        
-        # delete previous lists
-        session.query(NodeNgram).filter(NodeNgram.node_id==list_node.id).delete()
-        session.commit()
+#    for list_shortcut in modify_lists:
+#        # find previous listnode id
+#        list_type = list_types_shortcuts[list_shortcut]
+#        list_node = get_or_create_node(nodetype=list_type, corpus=node)
+#        node_id = listnode.id
+#        
+#        # delete previous lists
+#        session.query(NodeNgram).filter(NodeNgram.node_id==list_node.id).delete()
+#        session.commit()
     
     
     # on lit le CSV
@@ -168,50 +168,58 @@ def importNgramList(node,filename,delimiter="\t",modify_lists=[0,1,2]):
                                  quoting   = QUOTE_MINIMAL
                                  )
     
-    all_read_terms = list()
-    
-    for csv_row in ngrams_csv_rows:
-        this_ng_id           = csv_row[0]
-        this_ng_terms        = csv_row[1]
-        this_ng_nlen         = csv_row[2]
-        this_ng_list_type_id = csv_row[3]
-        this_ng_grouped_ngs  = csv_row[4]
-        
-        # --- quelle liste cible ?
-        
-        # par ex: "MiamList"
-        list_type = type_ids_cache[this_ng_list_type_id]
-        
-        tgt_list_node = get_or_create_node(nodetype=list_type, corpus=node)
+        all_read_terms = list()
+        map_terms = set()
+        for csv_row in ngrams_csv_rows:
+            this_ng_id           = csv_row[0]
+            this_ng_terms        = csv_row[1]
+            this_ng_nlen         = csv_row[2]
+            this_ng_list_type_id = csv_row[3]
+            this_ng_grouped_ngs  = csv_row[4]
             
-        
-        # --- test 1: forme existante dans node_ngram ?
-        
-        #preexisting = session.query(Ngram).filter(Ngram.terms == this_ng_terms).first()
-        
-        #if preexisting is None:
-        #   # todo ajouter Ngram dans la table node_ngram
-            #      avec un nouvel ID
-        
-        
-        # --- test 2: forme déjà dans une liste ?
-        
-        #if preexisting is not None:
-        #    # premier node de type "liste" mentionnant ce ngram_id
-        #    #
-        #    node_ngram = preexisting.node_node_ngram_collection[0]
-        #    previous_list = node_ngram.node_id
-        #
-        
-        # ---------------
-        
-        data[0] = tgt_list_node.id
-        data[1] = this_ng_id          # on suppose le même ngram_id
-        data[2] = 
-    
-    size = len(list(stop_words))
+            if this_ng_list_type_id == str(2):
+                map_terms.add(this_ng_terms)
 
-    
+            # --- quelle liste cible ?
+            
+            # par ex: "MiamList"
+            #list_type = type_ids_cache[this_ng_list_type_id]
+            
+            #tgt_list_node = get_or_create_node(nodetype=list_type, corpus=node)
+                
+            
+            # --- test 1: forme existante dans node_ngram ?
+            
+            #preexisting = session.query(Ngram).filter(Ngram.terms == this_ng_terms).first()
+            
+            #if preexisting is None:
+            #   # todo ajouter Ngram dans la table node_ngram
+                #      avec un nouvel ID
+            
+            
+            # --- test 2: forme déjà dans une liste ?
+            
+            #if preexisting is not None:
+            #    # premier node de type "liste" mentionnant ce ngram_id
+            #    #
+            #    node_ngram = preexisting.node_node_ngram_collection[0]
+            #    previous_list = node_ngram.node_id
+            #
+            
+            # ---------------
+            
+            #data[0] = tgt_list_node.id
+            #data[1] = this_ng_id          # on suppose le même ngram_id
+            #data[2] = 
+        
+    map_node = get_or_create_node(corpus=node, nodetype='MapList')
+    session.query(NodeNgram).filter(NodeNgram.node_id==map_node.id).delete()
+    map_id_terms = (session.query(Ngram.id, Ngram.terms)
+                           .filter(Ngram.terms.in_(list(map_terms)))
+                           .all()
+                           )
+
+    data = [(map_node.id, ngram[0], 1) for ngram in map_id_terms]
     
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
     

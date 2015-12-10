@@ -10,7 +10,7 @@ from ngram.mapList import compute_mapList
 
 from gargantext_web.db import NodeNgram
 from admin.utils import WorkflowTracking
-
+from ngram.importExport import exportNgramList, importNgramList
 
     
 
@@ -56,5 +56,7 @@ def ngram_workflow(corpus, n=5000):
 if __name__ == "__main__":
     node_id = sys.argv[1] 
     corpus=session.query(Node).filter(Node.id==node_id).first()
-    ngram_workflow(corpus)
+    exportNgramList(corpus, "list.csv")
+    #importNgramList(corpus, "list.csv")
+    #ngram_workflow(corpus)
 

@@ -345,7 +345,8 @@ def corpus(request, project_id, corpus_id):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
-   
+
+    # [ getting workflow status ] #
     the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
     cursor = connection.cursor()
     try:
@@ -353,6 +354,21 @@ def corpus(request, project_id, corpus_id):
         processing = cursor.fetchone()[0]["Processing"]
     except:
         processing = "Error"
+    # [ / getting workflow status ] #
+
+
+    # [ how many groups ? ] #
+    nb_groups = 0
+    the_query = """ SELECT group_id FROM auth_user_groups WHERE user_id=%d """ % ( int(request.user.id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        results = cursor.fetchall()
+        nb_groups = len(results)
+    except:
+        pass
+    # [ / how many groups ? ] #
+
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -363,6 +379,7 @@ def corpus(request, project_id, corpus_id):
             'processing' : processing,
 #            'documents': documents,\
             'number' : number,
+            'nb_groups' : nb_groups,
             'view'   : "documents"
             }))
 

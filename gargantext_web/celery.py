@@ -3,6 +3,7 @@
 from celery import shared_task
 from node import models
 from django.db import transaction
+from admin.utils import DebugTime
 
 import cProfile
 #@app.task(bind=True)
@@ -28,6 +29,9 @@ from admin.utils import WorkflowTracking
 @shared_task
 def apply_workflow(corpus_id):
 
+    dbg = DebugTime('Corpus #%d - WORKFLOW TIMER' % corpus_id)
+    dbg.show('ALL WORKFLOW')
+    
     update_state = WorkflowTracking()
 
     corpus = session.query(Node).filter(Node.id==corpus_id).first()

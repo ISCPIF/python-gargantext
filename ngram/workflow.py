@@ -40,14 +40,19 @@ def ngram_workflow(corpus, n=5000):
     limit_sup = round(part * 5)
     #print(limit_inf,limit_sup)
     update_state.processing_(corpus, "Synonyms")
-    compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
+    try:
+        compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
+    except Exception as error:
+        print("Workflow Ngram Group error", error)
+        pass
     
     update_state.processing_(corpus, "Map list terms")
     compute_mapList(corpus,limit=1000) # size
     
     update_state.processing_(corpus, "TF-IDF local score")
     compute_tfidf(corpus)
-    # update_state.processing_(corpus, "OCCS local score")
-    # compute_occs(corpus)
+
+    update_state.processing_(corpus, "Occurrences")
+    compute_occs(corpus)
 
 

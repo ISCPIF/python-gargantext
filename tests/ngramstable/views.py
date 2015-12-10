@@ -77,7 +77,6 @@ def get_ngrams(request , project_id , corpus_id ):
     myamlist_type_id = cache.NodeType['MiamList'].id
     miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
-    t
     the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
     cursor = connection.cursor()
     try:
@@ -85,6 +84,18 @@ def get_ngrams(request , project_id , corpus_id ):
         processing = cursor.fetchone()[0]["Processing"]
     except:
         processing = "Error"
+
+    # [ how many groups ? ] #
+    nb_groups = 0
+    the_query = """ SELECT group_id FROM auth_user_groups WHERE user_id=%d """ % ( int(request.user.id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        results = cursor.fetchall()
+        nb_groups = len(results)
+    except:
+        pass
+    # [ / how many groups ? ] #
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -94,6 +105,7 @@ def get_ngrams(request , project_id , corpus_id ):
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
+            'nb_groups' : nb_groups,
             'list_id': miamlist.id,
             }))
 
@@ -187,3 +199,74 @@ def get_corpus_state( request , corpus_id ):
         connection.close()
     # processing = corpus.hyperdata['Processing']
     return JsonHttpResponse(  processing )
+
+
+def get_groups( request ):
+    if not request.user.is_authenticated():
+        return JsonHttpResponse( {"request" : "forbidden"} )
+
+    results = []
+    the_query = """ SELECT auth_user_groups.group_id, auth_group.name \
+                    FROM auth_user_groups,auth_group \
+                    WHERE auth_user_groups.user_id=%d \
+                    AND auth_user_groups.group_id=auth_group.id """ % ( int(request.user.id) )
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        results = cursor.fetchall()
+    except:
+        pass
+
+    return JsonHttpResponse(  results )
+
+
+def graph_share(request, generic=100, specific=100):
+
+    if request.method== 'GET' and "token" in request.GET:
+        import json
+        le_token = json.loads(request.GET["token"])[0]
+        import base64
+        le_query = base64.b64decode(le_token).decode("utf-8")
+        le_query = le_query.split("/")
+        if len(le_query)<2: return JsonHttpResponse( {"request" : "forbidden"} )
+        user_id = le_query[0]
+        corpus_id = le_query[1]
+        # resource_id = cache.ResourceType["Pubmed (xml format)"].id
+        # corpus = session.query(Node).filter( Node.type_id==resource_id , Node.user_id==user_id , Node.id==corpus_id , Node.type_id == cache.NodeType['Corpus'].id ).first()
+        # if corpus==None: return JsonHttpResponse( {"request" : "forbidden"} )
+        miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+        if miamlist==None: return JsonHttpResponse( {"request" : "forbidden"} )
+        graphurl = "node_link_share.json?token="+request.GET["token"]
+        date = datetime.datetime.now()
+        t = get_template('explorer_share.html')
+        html = t.render(Context({\
+                'debug': settings.DEBUG,
+                'date'      : date,\
+                'list_id'    : miamlist.id,\
+                'graphfile' : graphurl,\
+                }))
+        return HttpResponse(html)
+
+    return JsonHttpResponse(request.GET["token"])
+
+
+def node_link_share(request):
+    data = {"hola":"mundo"}
+    if request.method== 'GET' and "token" in request.GET:
+        import json
+        le_token = json.loads(request.GET["token"])[0]
+        import base64
+        le_query = base64.b64decode(le_token).decode("utf-8")
+        le_query = le_query.split("/")
+        if len(le_query)<2:
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        user_id = le_query[0]
+        corpus_id = le_query[1]
+
+        from analysis.functions import get_cooc
+        data = []
+        corpus = session.query(Node).filter( Node.user_id==user_id , Node.id==corpus_id).first()
+        data = get_cooc(request=request, corpus=corpus, type="node_link")
+
+    return JsonHttpResponse(data)

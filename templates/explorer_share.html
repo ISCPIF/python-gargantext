@@ -59,34 +59,8 @@
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">About</a>
+                <li><a href="http://gargantext.org/about/" target="_blank" title="More informations about the project, its sponsors and its authors.">Powered by Gargantext</a>
                 </li>
-                {% if user.is_authenticated %}
-                <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
-                {% endif %}
-                {% if project %}
-                <li><a href="/project/{{project.id}}">{{project.name}}</a></li>
-                {% endif %}
-                {% if corpus %}
-                <li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></li>
-                {% endif %}
-              </ul>
-
-              <ul class="nav pull-right">
-                  <li class="dropdown">
-                      <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
-
-                      </a>
-                      <ul class="dropdown-menu">
-                          <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">Report Feedback</a></li>
-                          <li class="divider"></li>
-                      {% if user.is_authenticated %}
-                          <li><a tabindex="-1" href="/auth/logout" title="Click here to logout especially on public devices">Logout</a></li>
-                          {% else %}
-                          <li><a tabindex="-1" href="/auth/">Login</a></li>
-                      {% endif %}
-                      </ul>
-                  </li>
               </ul>
 
             </div>
@@ -137,7 +111,6 @@
                           <a>
                               <div id="graphid" style="visibility: hidden;">{{graphfile}}</div>
                               <input type="hidden" id="list_id" value="{{ list_id }}"></input>
-                              <div id="jquerytemplatenb" style="visibility: hidden;">{{user.id}}</div>
                           </a>
                         </li>
 
@@ -192,14 +165,7 @@
                               <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
                      </a></li>
                   </ul>
-                  
-                  <ul class="nav navbar-nav navbar-right">
-                     <li>
-                        <a>
-                              <img width="17%" title="Compare with other corpus!" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" src="{% static "js/libs/img2/INTER.png" %}"></img>
-                        </a>
-                     </li>
-                  </ul>
+                
 
                   <div class="colorgraph_div"></div>
 
@@ -297,7 +263,6 @@
       <div id="leftcolumn">      
         <div id="tips"></div>
         <div id="names"></div>
-        <div id="ngrams_actions"></div>
 
         
         <br>
@@ -412,34 +377,6 @@
 
 
     <div id="corpuses" class="modal fade">
-
-
-      <div class="modal-dialog">
-        <div class="modal-content">
-
-
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 class="modal-title">Corpus Comparison Tool</h3>
-          </div>
-
-
-
-          <div class="modal-body form-horizontal">
-            <h4>Choose one corpus:</h4>
-            <div style="color:red;" id="selected_corpus"></div>
-            <div id="user_portfolio">
-
-            </div>
-
-
-          <div class="modal-footer">
-            <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'>Add Tab</button>
-          </div>
-
-        </div>
-      </div>
     </div> 
 
 

@@ -116,7 +116,10 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
 
 
             for key in mainform_dict.keys():
-                miam_to_insert.add((miam_node.id, mainform_dict[key], 1))
+                try:
+                    miam_to_insert.add((miam_node.id, mainform_dict[key], 1))
+                except:
+                    pass
                 
                 try:
                     ids = ids_dict[key]
@@ -125,9 +128,8 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
                         for ngram_id in ids :
                             if ngram_id != mainform_dict[key]:
                                 group_to_insert.add((node_group.id, mainform_dict[key], ngram_id, 1))
-                except exception as e:
+                except Exception as e:
                     print(e)
-                    print(group[stem])
 
         #print(ids_dict[stem])
     

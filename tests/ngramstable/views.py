@@ -77,7 +77,6 @@ def get_ngrams(request , project_id , corpus_id ):
     myamlist_type_id = cache.NodeType['MiamList'].id
     miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
-    t
     the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
     cursor = connection.cursor()
     try:
@@ -85,6 +84,18 @@ def get_ngrams(request , project_id , corpus_id ):
         processing = cursor.fetchone()[0]["Processing"]
     except:
         processing = "Error"
+
+    # [ how many groups ? ] #
+    nb_groups = 0
+    the_query = """ SELECT group_id FROM auth_user_groups WHERE user_id=%d """ % ( int(request.user.id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        results = cursor.fetchall()
+        nb_groups = len(results)
+    except:
+        pass
+    # [ / how many groups ? ] #
 
     html = t.render(Context({
             'debug': settings.DEBUG,
@@ -94,6 +105,7 @@ def get_ngrams(request , project_id , corpus_id ):
             'corpus' : corpus,
             'processing' : processing,
             'number' : number,
+            'nb_groups' : nb_groups,
             'list_id': miamlist.id,
             }))
 
@@ -187,3 +199,23 @@ def get_corpus_state( request , corpus_id ):
         connection.close()
     # processing = corpus.hyperdata['Processing']
     return JsonHttpResponse(  processing )
+
+
+def get_groups( request ):
+    if not request.user.is_authenticated():
+        return JsonHttpResponse( {"request" : "forbidden"} )
+
+    results = []
+    the_query = """ SELECT auth_user_groups.group_id, auth_group.name \
+                    FROM auth_user_groups,auth_group \
+                    WHERE auth_user_groups.user_id=%d \
+                    AND auth_user_groups.group_id=auth_group.id """ % ( int(request.user.id) )
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        results = cursor.fetchall()
+    except:
+        pass
+
+    return JsonHttpResponse(  results )

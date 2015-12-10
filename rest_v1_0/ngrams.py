@@ -108,10 +108,12 @@ class List(APIView):
 
 
     def get(self, request, corpus_id , list_name ):
-
+        if not request.user.is_authenticated():
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        corpus = session.query(Node).filter( Node.user_id==request.user.id , Node.id==corpus_id ).first()
+        if corpus==None:
+            return JsonHttpResponse( {"request" : "forbidden"} )
         start_ = time.time()
-
-        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         list_name = list_name.title()+"List"
         node_list = get_or_create_node(nodetype=list_name, corpus=corpus )
         nodes_ngrams = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id==node_list.id ).all()
@@ -143,11 +145,13 @@ class Ngrams(APIView):
     http://localhost:8000/api/node/1444485/ngrams?format=json&score=tfidf,occs
     '''
     def get(self, request, node_id):
-        # query ngrams
+        if not request.user.is_authenticated():
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        corpus = session.query(Node).filter( Node.user_id==request.user.id , Node.id==node_id).first()
+        if corpus==None:
+            return JsonHttpResponse( {"request" : "forbidden"} )
         start_ = time.time()
-
         ParentNode = aliased(Node)
-        corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
 
@@ -319,15 +323,19 @@ class Group(APIView):
     REST API to manage groups of Ngrams
     Groups can be synonyms, a cathegory or ngrams groups with stems or lems.
     '''
-    def get_group_id(self , node_id):
+    def get_group_id(self , node_id , user_id):
         node_id = int(node_id)
-        corpus = session.query(Node).filter(Node.id==node_id).first()
+        corpus = session.query(Node).filter( Node.user_id==user_id , Node.id==node_id).first()
+        if corpus==None: return None
         group = get_or_create_node(corpus=corpus, nodetype='Group')
         return(group.id)
 
     def get(self, request, corpus_id):
-        # query ngrams
-        group_id = self.get_group_id(corpus_id)
+        if not request.user.is_authenticated():
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        group_id = self.get_group_id(corpus_id , request.user.id)
+        if group_id==None:
+            return JsonHttpResponse( {"request" : "forbidden"} )
         #api/node/$corpus_id/ngrams?ngram_id=12
         # ngram_id = 1 #request.GET.get('ngram_id', False)
         # ngram_id = int(node_id)
@@ -395,7 +403,7 @@ class Group(APIView):
         # input validation
         input = validate(request.DATA, {'data' : {'source': int, 'target': list}})
         
-        group_id = get_group_id(corpus_id)
+        group_id = get_group_id(corpus_id , request.user.id)
 
         for data in input['data']:
 
@@ -424,7 +432,7 @@ class Group(APIView):
             for subform in group_new[mainform]:
                 gdict.append(subform)
             GDict.append( gdict )
-        existing_group_id = self.get_group_id(corpus_id)
+        existing_group_id = self.get_group_id(corpus_id , request.user.id)
         grouped_ngrams = (session
                 .query(NodeNgramNgram)
                 .filter(NodeNgramNgram.node_id==existing_group_id)

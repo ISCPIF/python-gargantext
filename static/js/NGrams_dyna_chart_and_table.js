@@ -538,13 +538,18 @@ function SelectAll( box ) {
   MyTable.data('dynatable').dom.update();
 }
 
-function SaveGlobalChanges(elem) {
+function SaveGlobalChanges( delete_ ) {
   console.log( "iterating over global stop words:" )
-  $('.globalstopwords').each(function(i, obj) {
-      console.log( obj )
+  $('.globalstopwords').each(function() {
+      console.log( $(this).data("id") )
   });  
   console.log( " - - - - -" )
-  console.log( elem )
+  console.log( "delete: "+delete_ )
+  if(!delete_) {
+    // SaveLocalChanges()
+  } else {
+    
+  }
 }
 
 function SaveGlobalChanges_Form( nodes2del) {
@@ -1082,6 +1087,9 @@ var NGrams = {
 }
 
 $("#corpusdisplayer").hide()
+if( $("#share_button").length==0 ) {
+  $("#ImportList").remove()
+}
 
 
 var url = [

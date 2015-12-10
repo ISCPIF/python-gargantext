@@ -124,7 +124,6 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
             group_to_insert.append((node_group.id, group[key]['mainForm'], form, 1))
             miam_to_insert.add((miam_node.id, group[key]['mainForm'], 1))
 
-    
 #    # Deleting previous groups
     session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
 #    # Deleting previous ngrams miam list

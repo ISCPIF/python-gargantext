@@ -229,12 +229,14 @@ def graph_share(request, generic=100, specific=100):
         import base64
         le_query = base64.b64decode(le_token).decode("utf-8")
         le_query = le_query.split("/")
-        if len(le_query)<2:
-            return JsonHttpResponse( {"request" : "forbidden"} )
+        if len(le_query)<2: return JsonHttpResponse( {"request" : "forbidden"} )
         user_id = le_query[0]
         corpus_id = le_query[1]
-        try: miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
-        except: return JsonHttpResponse( {"request" : "forbidden"} )
+        # resource_id = cache.ResourceType["Pubmed (xml format)"].id
+        # corpus = session.query(Node).filter( Node.type_id==resource_id , Node.user_id==user_id , Node.id==corpus_id , Node.type_id == cache.NodeType['Corpus'].id ).first()
+        # if corpus==None: return JsonHttpResponse( {"request" : "forbidden"} )
+        miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+        if miamlist==None: return JsonHttpResponse( {"request" : "forbidden"} )
         graphurl = "node_link_share.json?token="+request.GET["token"]
         date = datetime.datetime.now()
         t = get_template('explorer_share.html')
@@ -261,8 +263,6 @@ def node_link_share(request):
             return JsonHttpResponse( {"request" : "forbidden"} )
         user_id = le_query[0]
         corpus_id = le_query[1]
-        try: miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
-        except: return JsonHttpResponse( {"request" : "forbidden"} )
 
         from analysis.functions import get_cooc
         data = []

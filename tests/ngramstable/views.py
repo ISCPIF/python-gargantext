@@ -219,3 +219,54 @@ def get_groups( request ):
         pass
 
     return JsonHttpResponse(  results )
+
+
+def graph_share(request, generic=100, specific=100):
+
+    if request.method== 'GET' and "token" in request.GET:
+        import json
+        le_token = json.loads(request.GET["token"])[0]
+        import base64
+        le_query = base64.b64decode(le_token).decode("utf-8")
+        le_query = le_query.split("/")
+        if len(le_query)<2:
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        user_id = le_query[0]
+        corpus_id = le_query[1]
+        try: miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+        except: return JsonHttpResponse( {"request" : "forbidden"} )
+        graphurl = "node_link_share.json?token="+request.GET["token"]
+        date = datetime.datetime.now()
+        t = get_template('explorer_share.html')
+        html = t.render(Context({\
+                'debug': settings.DEBUG,
+                'date'      : date,\
+                'list_id'    : miamlist.id,\
+                'graphfile' : graphurl,\
+                }))
+        return HttpResponse(html)
+
+    return JsonHttpResponse(request.GET["token"])
+
+
+def node_link_share(request):
+    data = {"hola":"mundo"}
+    if request.method== 'GET' and "token" in request.GET:
+        import json
+        le_token = json.loads(request.GET["token"])[0]
+        import base64
+        le_query = base64.b64decode(le_token).decode("utf-8")
+        le_query = le_query.split("/")
+        if len(le_query)<2:
+            return JsonHttpResponse( {"request" : "forbidden"} )
+        user_id = le_query[0]
+        corpus_id = le_query[1]
+        try: miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+        except: return JsonHttpResponse( {"request" : "forbidden"} )
+
+        from analysis.functions import get_cooc
+        data = []
+        corpus = session.query(Node).filter( Node.user_id==user_id , Node.id==corpus_id).first()
+        data = get_cooc(request=request, corpus=corpus, type="node_link")
+
+    return JsonHttpResponse(data)

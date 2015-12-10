@@ -1,0 +1,439 @@
+<html>
+  <head>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+    <link rel="stylesheet" href="{% static "js/libs/jquery/jquery-ui.css" %}" media="screen">
+    <!-- <link rel="stylesheet" href="{% static "js/libs/bootstrap/css/bootstrap.css" %}" media="screen"> -->
+    <link rel="stylesheet" href="{% static "js/libs/css2/freshslider.css" %}" media="screen">
+    <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %}" media="screen">
+    <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %}" media="screen">
+
+    <style>
+
+      #leftcolumn {
+        font-size: 10px;
+        width:20%;
+        overflow: auto;
+      }
+
+      #ctlzoom {
+        width:7%;        
+      }
+
+      #topPapers{
+          margin: 7px;
+          padding: 5px 0px 5px 5px;
+      }
+      #topPapers ul {
+        list-style-type: none;
+      }
+
+      #ctlzoom {
+          position: absolute; right: 16%; bottom: 1%; list-style: none; padding: 0; margin: 0;
+      }
+
+      #category0 ul li { margin: 0 12px 12px 0; }
+      #category1 ul li { margin: 0 12px 12px 0; }
+    </style>
+    <!-- 
+    <link rel="stylesheet" href="{% static "js/libs/bootswatch/css/bootswatch.css" %}">
+    <link rel="stylesheet" href="{% static "js/libs/css2/font.css" %}" type="text/css">
+    -->
+  </head>
+
+
+  <body>
+
+    <div class="navbar navbar-inverse" role="navigation">
+        <div class="container">
+            <div class="navbar-inner">
+              <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="/img/logo.svg" title="Back to home."></a>
+            </div>
+
+
+            <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="http://gargantext.org/about/" target="_blank" title="More informations about the project, its sponsors and its authors.">Powered by Gargantext</a>
+                </li>
+              </ul>
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <!-- this is the tweakbar -->
+    <div id="defaultop" class="navbar navbar-default">
+        <div class="navbar-collapse collapse navbar-responsive-collapse">
+          <div id="left" style="margin:0em 2em;">
+                  <ul class="nav navbar-nav">
+                      <!-- 
+
+                      <li>
+                         <a>                            
+                          <select id="aselector" onchange="console.log('salut monde')" class="selectpicker"  data-style="btn btn-success btn-sm"  data-width="auto">
+                            <option value="Document" selected>Scholars</option>
+                            <option value="NGram">Keywords</option>
+                          </select>
+                         </a>
+                      </li> -->
+
+                      <li>
+                         <a>
+                          <button type="button" id="changetype" class="btn btn-success btn-sm">Change Type</button>
+                         </a>
+                      </li>
+
+
+                      <li>
+                         <a>
+                          <button type="button" id="changelevel" class="btn btn-info btn-sm" disabled>Change Level</button>
+                         </a>
+                      </li>
+
+
+                       <li>
+                         <a>
+                          <div style="margin:0em 2em;" id="unranged-value"></div>
+                          <label style="margin:0em 2em;" for="unranged-value">selector size</label>
+                         </a>
+                       </li>
+
+                        <li>
+                          <a>
+                              <div id="graphid" style="visibility: hidden;">{{graphfile}}</div>
+                              <input type="hidden" id="list_id" value="{{ list_id }}"></input>
+                          </a>
+                        </li>
+
+                      <!--
+                      <li>
+                         <a>
+                          <button type="button" onclick="partialGraph.stopForceAtlas2();" class="btn btn-sm">wu</button>
+                         </a>
+                      </li>
+                      -->
+                      
+
+                  </ul>
+                  
+
+                  <ul id="category0" class="nav navbar-nav navbar-right">
+                    <li>
+                      <ul style="list-style-type: none; margin:.5em 0em 1em 1em;">
+                        <li><div id="slidercat0nodesweight"></div></li>
+                        <li><div id="slidercat0edgesweight"></div></li>
+                        <li><div id="slidercat0nodessize"></div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <ul id="filterslegend" class="nav navbar-nav navbar-right">
+                        <li>
+                            <ul style="list-style-type: none;">
+                                <li>Nodes</li>
+                                <li>Edges</li>
+                                <li>Size</li>
+                            </ul>
+                        </li>
+                  </ul>
+                  <ul id="category1" class="nav navbar-nav navbar-right">
+                    <li>
+                      <ul style="list-style-type: none; margin:0em 1em;">
+                        <li><div id="slidercat1nodesweight"></div></li>
+                        <li><div id="slidercat1edgesweight"></div></li>
+                        <li><div id="slidercat1nodessize"></div></li>
+                      </ul>
+                    </li>
+                  </ul>
+
+
+                  <ul class="nav navbar-nav navbar-right">
+                     <li><a>
+                              <input type="checkbox" id="checkboxdiv" onclick="alertCheckBox(this);">Add</input>
+                     </a></li>
+                  </ul>
+                  <ul class="nav navbar-nav navbar-right">
+                     <li><a>
+                              <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
+                     </a></li>
+                  </ul>
+                
+
+                  <div class="colorgraph_div"></div>
+
+                  <div class="sizegraph_div"></div>
+
+                  <!---->
+
+
+
+                </div>
+
+                  <!--
+                  <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#">Link</a></li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                  -->
+            
+        </div><!-- /.nav-collapse -->
+    </div><!-- /.navbar -->
+
+
+    <div id="wrapper">
+
+
+      <div id="zonecentre">
+          
+
+          <!-- Page content -->
+          <div id="sigma-example"></div>
+
+          <div style="visibility: hidden;" id="sigma-othergraph"></div>
+
+          <img id="semLoader" style="position:absolute; top:50%; left:40%; width:80px;" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>
+
+          <ul id="ctlzoom">
+
+                <!-- <div class="content-header">
+                        <button id="menu-toggle">X</button>
+                </div> -->
+                  <!--
+                   <li>
+                      <a href="#" id="geomapicon" onclick="$('#geomapmodal').modal('show'); callGeomap();">
+                        <img title="World Map Distribution" width="34px" src="{% static "js/libs/img2/world.png" %}" ></img>
+                      </a>
+                  </li>
+                  --> 
+
+
+                   <li>
+                      <a href="#" id="snapicon" onclick="saveGraphIMG();" >
+                        <img title="Take a photo!" width="34px" src="{% static "js/libs/img2/camera.png" %}" ></img>
+                      </a>
+                  </li>
+                  
+                   <li>
+                      <a href="#" id="saveAs">
+                        <img width="30px" title="Save As..." src="{% static "js/libs/img2/save.png" %}" ></img>
+                      </a>
+                  </li> 
+                  
+                  <li>
+                      <a href="#" id="zoomPlusButton" title="S'approcher"> </a>
+                  </li>
+
+                  <li id="zoomSliderzone">
+                      <div id="zoomSlider"></div>
+                  </li>
+
+                  <li>
+                      <a href="#" id="zoomMinusButton" title="S'éloigner"> </a>
+                  </li>
+
+
+                  <li>
+                      <a href="#" id="lensButton"> </a>
+                  </li>
+
+                  <li>
+                      <a href="#" id="edgesButton"> </a>
+                  </li>
+          </ul>
+      </div>
+
+      <!-- Sidebar -->
+      <div id="leftcolumn">      
+        <div id="tips"></div>
+        <div id="names"></div>
+
+        
+        <br>
+        <div id="tab-container" class='tab-container' style="display: none;">
+
+           <ul class='etabs'>
+             <li id="taboppos" class='tab'><a href="#tabs1">Opposite-Neighbors</a></li>
+             <li id="tabneigh" class='tab'><a href="#tabs2">Neighbors</a></li>
+           </ul>
+
+           <div class='panel-container'>
+              <div id="tabs1">
+                <div id="opossiteNodes"></div>
+              </div>
+              <div id="tabs2">
+                <div id="sameNodes"></div>
+              </div>
+           </div>
+
+        </div>
+
+        <!-- <div id="topPapers"></div> -->
+               
+        <div id="tab-container-top" class='tab-container' style="display: none;">
+
+           <ul class='etabs'>
+             <li id="tabmed" class='tab active'><a href="#tabs3">Pubs</a></li>
+             <li id="tabgps" class='tab'><a href="#tabs3"></a></li>
+           </ul>
+
+           <div class='panel-container'>
+              <div id="tabs3">
+                <div id="topPapers"></div>
+              </div>
+              <div id="tabs4">
+                <div id="topProposals"></div>
+              </div>
+           </div>
+        </div>
+        
+
+
+
+
+        <div id="information"></div>
+      </div>
+    </div>
+
+
+
+    <div id="savemodal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title">Exporting GEXF file</h4>
+          </div>
+
+          <div class="modal-body form-horizontal">
+            What do you want to save?:
+            <div class="form-group">
+              <label class="col-lg-2 control-label"> </label>
+              <div class="col-lg-10">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="optionsRadios" id="fullgraph" value="option1" checked="true">
+                    Full Graph
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="optionsRadios" id="visgraph" value="option2">
+                    Visible Graph
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-body form-horizontal">
+            Which atributes do you want to keep?:
+            <div class="form-group">
+              <label class="col-lg-2 control-label"> </label>
+              <div class="col-lg-10">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="optionsRadios" id="check_size" value="option1">
+                    Size
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="optionsRadios" id="check_color" value="option2">
+                    Color
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button id="closesavemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="saveGraph();">Save File</button>
+          </div>
+
+        </div>
+      </div>
+    </div> 
+
+
+
+    <div id="corpuses" class="modal fade">
+    </div> 
+
+
+    <div id="modalloader" class="modal fade">
+        <div id="loader" class="loader">
+            <img src="{% static "js/libs/img2/loader.gif" %}" ></img>
+        </div>
+        <div id="closeloader" data-dismiss="modal"></div>
+    </div>
+
+
+    <script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/libs/jquery/jquery-ui.js" %}" type="text/javascript"></script>
+
+    <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
+
+    <script type="text/javascript" src="{% static "js/libs/freshslider.1.0.js" %}"></script>    
+    <script type="text/javascript" src="{% static "js/libs/readmore.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/libs/jquery/jquery.easytabs.min.js" %}"></script>
+    
+    
+    <script src="{% static "js/libs/bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
+    
+
+    <script src="{% static "js/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/tinawebJS/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/sigma.parseCustom.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/extras_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/sigmaUtils.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/methods.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/minimap.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/enviroment.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/Tinaweb.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
+
+    <script type="text/javascript">
+      function newPopup(url) {
+        popupWindow = window.open(
+          url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
+      }
+      $('#tab-container').easytabs({updateHash:false});
+      // $('#tab-container-top').easytabs({updateHash:false});
+    </script>
+
+  </body>
+
+
+
+
+
+
+
+</html>

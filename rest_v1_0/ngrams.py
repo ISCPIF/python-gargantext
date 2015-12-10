@@ -95,6 +95,8 @@ class List(APIView):
                     }
                 }
 
+        # occ_list = get_or_create_node(nodetype='Occurrences', corpus_id=parent_id).id
+        # print( occ_list )
         tfidf_list = get_or_create_node(nodetype='Tfidf (global)', corpus_id=parent_id).id
         ngram_tfidf = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==tfidf_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
         for n in ngram_tfidf:

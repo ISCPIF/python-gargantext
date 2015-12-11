@@ -1,4 +1,4 @@
-from ..Taggers import NltkTagger
+from ..Taggers import TurboTagger #NltkTagger #,
 import nltk
 from re import sub
 
@@ -9,12 +9,6 @@ class NgramsExtractor:
 
     """Class instanciation.
     This method can be overriden.
-    
-    -*-*-*-*-
-    contenus :
-    [...'__dict__', '_grammar', '_label', '_rule', 'extract_ngrams', 'start', 'stop', 'tagger']
-    
-    
     """
     def __init__(self, rule="{<JJ.*>*<NN.*|>+<JJ.*>*}"):
     # TODO add this regex
@@ -28,7 +22,7 @@ class NgramsExtractor:
         self.stop()
 
     def start(self):
-        self.tagger = NltkTagger()
+        self.tagger = TurboTagger()
 
     def stop(self):
         pass

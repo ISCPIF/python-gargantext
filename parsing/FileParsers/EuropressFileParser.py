@@ -74,7 +74,7 @@ class EuropressFileParser(FileParser):
 
 
         name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
-        header_xpath    = "./header/div/span[@class = 'DocHeader']"
+        detailed_header_xpath    = "./header/div/span[@class = 'DocHeader']"
         title_xpath     = "./header/div[@class='titreArticle']"
         text_xpath      = "./section/div[@class='DocText']//p"
         
@@ -127,10 +127,19 @@ class EuropressFileParser(FileParser):
                     except:
                         pass
                 
-                header = html_article.xpath(header_xpath)[0].text
-                if header is not None:
-                    # Article headers in europress
-                    # -----------------------------
+                # span de class DocHeader fournissant rubrique et date
+                get_dated_header = html_article.xpath(detailed_header_xpath)
+                
+                # le detailed_header est occasionnellement absent
+                # => FIX TEMPORAIRE: on skippe le document
+                if len(get_dated_header) == 0 or get_dated_header[0].text is None:
+                    print("WARNING (document skip) unformatted europress header")
+                    continue
+                else:
+                    header = get_dated_header[0].text
+                    
+                    # Article detailed headers in europress
+                    # --------------------------------------
                     # ex: "Seine-Saint-Denis, lundi 28 janvier 2013, p. 93_T_17"
                     # ex: "Votre ville, jeudi 6 février 2014"
                     # ex: "World, Friday, November 13, 2015"

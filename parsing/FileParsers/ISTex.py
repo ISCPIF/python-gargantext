@@ -82,10 +82,20 @@ class ISTex(FileParser):
                 if len(hyperdata["genre"])==0:
                     hyperdata.pop("genre")
             if "language_iso3" in hyperdata:
-                if len(hyperdata["language_iso3"])>0:
+                # retrieve lang if lang != [] and lang != ["unknown"]
+                # ---------------------------------------------------
+                if len(hyperdata["language_iso3"])>0 and hyperdata["language_iso3"][0] != "unknown" :
                     hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
+                
+                # default value = eng
+                # possible even better: langid.classify(abstract)
                 else:
+                    # NB 97% des docs istex sont eng donc par défaut
+                    # ----------------------------------------------
                     hyperdata["language_iso3"] = "eng"
+                    # (cf. api.istex.fr/document/?q=*&facet=language 
+                    #  et  tests langid sur les language=["unknown"])
+                    
 
             if "publication_date" in hyperdata:
                 RealDate = hyperdata["publication_date"]

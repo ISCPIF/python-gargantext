@@ -91,17 +91,30 @@ class List(APIView):
                     "id": node.id,
                     "name": node.terms,
                     "scores": {
-                        "tfidf": 0
+                        "tfidf": 0,
+                        "occs":0
                     }
                 }
 
         # occ_list = get_or_create_node(nodetype='Occurrences', corpus_id=parent_id).id
         # print( occ_list )
-        tfidf_list = get_or_create_node(nodetype='Tfidf (global)', corpus_id=parent_id).id
-        ngram_tfidf = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==tfidf_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
-        for n in ngram_tfidf:
+        try:
+            tfidf_list = get_or_create_node(nodetype='Tfidf (global)', corpus_id=parent_id).id
+            ngram_tfidf = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==tfidf_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
+            for n in ngram_tfidf:
+                if n.ngram_id in ngram_ids:
+                    ngram_ids[n.ngram_id]["scores"]["tfidf"] += n.score
+        except:
+            pass
+
+        try:
+        occ_list = get_or_create_node(nodetype='Occurrences', corpus_id=parent_id).id
+        ngram_occs = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==occ_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
+        for n in ngram_occs:
             if n.ngram_id in ngram_ids:
-                ngram_ids[n.ngram_id]["scores"]["tfidf"] += n.score
+                ngram_ids[n.ngram_id]["scores"]["occs"] += round(n.score)
+        except:
+            pass
 
         end_ = time.time()
 

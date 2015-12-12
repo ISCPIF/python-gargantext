@@ -108,11 +108,11 @@ class List(APIView):
             pass
 
         try:
-        occ_list = get_or_create_node(nodetype='Occurrences', corpus_id=parent_id).id
-        ngram_occs = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==occ_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
-        for n in ngram_occs:
-            if n.ngram_id in ngram_ids:
-                ngram_ids[n.ngram_id]["scores"]["occs"] += round(n.score)
+            occ_list = get_or_create_node(nodetype='Occurrences', corpus_id=parent_id).id
+            ngram_occs = session.query(NodeNodeNgram.ngram_id,NodeNodeNgram.score).filter( NodeNodeNgram.nodex_id==occ_list , NodeNodeNgram.ngram_id.in_( list(ngram_ids.keys()) )).all()
+            for n in ngram_occs:
+                if n.ngram_id in ngram_ids:
+                    ngram_ids[n.ngram_id]["scores"]["occs"] += round(n.score)
         except:
             pass
 

@@ -458,7 +458,6 @@ class Group(APIView):
         NewGroups = {}
         Rels_2_delete = {}
         for ng in grouped_ngrams:
-            print(ng)
             for i in range(len(GDict)):
                 clique_i = GDict[i]
                 neighbours = {}

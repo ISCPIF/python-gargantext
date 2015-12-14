@@ -1,4 +1,5 @@
-from ..Taggers import TurboTagger #NltkTagger #, 
+from ..Taggers import TurboTagger
+# from ..Taggers import NltkTagger
 import nltk
 
 

@@ -70,7 +70,6 @@ def compute_mapList(corpus,limit=500,n=1):
                              .filter(NodeNgramNgram.node_id == node_group.id)
                              .all()
                     )
-    #print([t for t in top_ngrams])
     
     node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus)
     session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id).delete()
@@ -79,7 +78,7 @@ def compute_mapList(corpus,limit=500,n=1):
     data = zip(
         [node_mapList.id for i in range(1,limit)]
         , [n[0] for n in list(top_multigrams) + list(top_monograms)
-                if (n[0],) not in list(stop_ngrams) + list(grouped_ngrams)
+                if (n[0],) not in list(stop_ngrams) 
             ]
         , [1 for i in range(1,limit)]
     )

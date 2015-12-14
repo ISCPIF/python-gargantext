@@ -97,14 +97,16 @@ var LineChart = dc.lineChart("#monthly-move-chart");
 var volumeChart = dc.barChart("#monthly-volume-chart");
 
 
-// Just for Garg
+// Get all projects and corpuses of the user
 function GetUserPortfolio() {
     //http://localhost:8000/api/corpusintersection/1a50317a50145
     var project_id = getIDFromURL("project")
     var corpus_id =  getIDFromURL("corpus")
 
-    if( Object.keys( corpusesList ).length > 0 )
-        return true;
+    if( Object.keys( corpusesList ).length > 0 ) {
+      $('#corpuses').modal('show');
+      return true;
+    }
 
     var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
     $.ajax({
@@ -158,8 +160,6 @@ function GetUserPortfolio() {
             });
 
             $('#corpuses').modal('show');
-
-
         },
         error: function(){ 
             pr('Page Not found: TestFunction()');
@@ -167,6 +167,7 @@ function GetUserPortfolio() {
     });
 }
 
+//Getting a corpusB-list and intersecting it with current corpusA-miamlist. 
 function printCorpuses() {
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     pr(corpusesList)
@@ -585,6 +586,7 @@ function SaveGlobalChanges_Form( nodes2del) {
   $("#pre_savechanges").modal("show")
 }
 
+// Save changes to all corpusA-lists 
 function SaveLocalChanges() {
 
   console.clear()
@@ -713,7 +715,7 @@ $("#Save_All").click(function(){
   // }
 });
 
-
+// For lists, all http-requests
 function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
@@ -1060,6 +1062,7 @@ function getIDFromURL( item ) {
 	return pageurl[cid+1];
 }
 
+// For lists, only GET requests
 function GET_( url , callback ) {
 
     $.ajax({
@@ -1107,18 +1110,23 @@ var url = [
 GET_( url[0] , function(result) {
 	// = = = = MIAM = = = = //
 	if(result!=false) {
-    	NGrams["main"] = {
-    		"ngrams": [],
-    		"scores": {
-		        "initial":"tfidf",
-		        "nb_docs":result.length,
-		        "orig_nb_ngrams":1,
-		        "nb_ngrams":result.length,
-		    }
-    	}
+  	NGrams["main"] = {
+  		"ngrams": [],
+  		"scores": {
+	        "initial":"occs",
+	        "nb_docs":result.length,
+	        "orig_nb_ngrams":1,
+	        "nb_ngrams":result.length,
+	    }
+  	}
 
-		for(var i in result) 
+    var occs_sum = 0
+		for(var i in result) {
 			NGrams["main"].ngrams.push(result[i])  
+      occs_sum += result[i].scores.occs
+    }
+    if(occs_sum==0)
+      NGrams["main"]["scores"]["initial"] = "tfidf";
 
 	}
 	// = = = = /MIAM = = = = //

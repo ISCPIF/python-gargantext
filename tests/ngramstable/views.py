@@ -252,7 +252,7 @@ def graph_share(request, generic=100, specific=100):
 
 
 def node_link_share(request):
-    data = {"hola":"mundo"}
+    data = { "request" : "error" }
     if request.method== 'GET' and "token" in request.GET:
         import json
         le_token = json.loads(request.GET["token"])[0]

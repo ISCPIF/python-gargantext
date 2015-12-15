@@ -1090,9 +1090,9 @@ var NGrams = {
 }
 
 $("#corpusdisplayer").hide()
-if( $("#share_button").length==0 ) {
-  $("#ImportList").remove()
-}
+// if( $("#share_button").length==0 ) {
+//   $("#ImportList").remove()
+// }
 
 
 var url = [

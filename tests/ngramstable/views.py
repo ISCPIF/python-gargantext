@@ -75,7 +75,7 @@ def get_ngrams(request , project_id , corpus_id ):
     type_doc_id = cache.NodeType['Document'].id
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
     myamlist_type_id = cache.NodeType['MiamList'].id
-    miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
+    miamlist = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
 
     the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
     cursor = connection.cursor()
@@ -158,7 +158,7 @@ def get_journals_json(request , project_id, corpus_id ):
 
     user_id = request.user.id
     document_type_id = cache.NodeType['Document'].id
-    documents  = session.query(Node).filter(Node.user_id == user_id , Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
+    documents  = session.query(Node).filter( Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
     for doc in documents:
         if "journal" in doc.hyperdata:
             journal = doc.hyperdata["journal"]

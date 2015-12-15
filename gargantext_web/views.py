@@ -416,8 +416,7 @@ def newpaginatorJSON(request , corpus_id):
     # documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
     docs  = (session.query(Node)
-                .filter(Node.user_id == user_id
-                , Node.parent_id==corpus_id 
+                .filter(Node.parent_id==corpus_id 
                 , Node.type_id == type_document_id )
                 .all()
             )

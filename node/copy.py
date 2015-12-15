@@ -22,7 +22,7 @@ def copy_corpus(from_id=None, to_id=None, title=None):
     
     corpus = session.query(Node).filter(Node.id==from_id).first()
     group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
-
+    print( [from_id, cache.NodeType['Document'].id, 'journal', group_id, title, to_id] )
     cursor.execute('''
     CREATE TEMPORARY TABLE node_node__tmp AS
       SELECT 

@@ -322,7 +322,9 @@ input[type=radio]:checked + label {
     <!-- </optgroup> -->
 </select>
 
-<button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
+{% if nb_groups > 0 %}
+  <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
+{% endif %}
 
 </div>
 

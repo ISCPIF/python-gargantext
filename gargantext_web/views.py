@@ -232,8 +232,39 @@ def projects(request):
     # print(Logger.write("STATIC_ROOT"))
 
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
-
     number = len(projects)
+    
+
+
+    # common_users = session.query(User_User.user_parent).filter( User_User.user_id==user_id ).all()
+    # [ Getting shared projects ] #
+    common_users = []
+    common_projects = []
+    the_query = """ SELECT node_user_user.user_parent, auth_user.username \
+                    FROM node_user_user, auth_user \
+                    WHERE node_user_user.user_id=%d \
+                    AND node_user_user.user_parent=auth_user.id """ % ( int(request.user.id) )
+    cursor = connection.cursor()
+    try:
+        cursor.execute(the_query)
+        common_users = cursor.fetchall()
+    except:
+        pass
+
+    for u in common_users:
+        u_id = u[0]
+        u_name = u[1]
+        shared_projects = session.query(Node).filter(Node.user_id == u_id, Node.type_id == project_type_id).order_by(Node.date).all()
+        print("admin group user ID:",u_id , " | nb_projects:",len(shared_projects))
+        if len(shared_projects)>0:
+            for p in shared_projects:
+                common_projects.append( p )
+
+    if len(common_projects)==0:
+        common_projects = False
+    if len(common_users)==0:
+        common_users = False
+    # [ / Getting shared projects ] #
 
     form = ProjectForm()
     if request.method == 'POST':
@@ -253,7 +284,9 @@ def projects(request):
         'date': date,
         'form': form,
         'number': number,
-        'projects': projects
+        'projects': projects,
+        'common_projects':common_projects,
+        'common_users':common_users,
         })
 
 
@@ -356,20 +389,6 @@ def corpus(request, project_id, corpus_id):
         processing = "Error"
     # [ / getting workflow status ] #
 
-
-    # [ how many groups ? ] #
-    nb_groups = 0
-    the_query = """ SELECT group_id FROM auth_user_groups WHERE user_id=%d """ % ( int(request.user.id) )
-    cursor = connection.cursor()
-    try:
-        cursor.execute(the_query)
-        results = cursor.fetchall()
-        nb_groups = len(results)
-    except:
-        pass
-    # [ / how many groups ? ] #
-
-
     html = t.render(Context({
             'debug': settings.DEBUG,
             'user': request.user,
@@ -379,7 +398,6 @@ def corpus(request, project_id, corpus_id):
             'processing' : processing,
 #            'documents': documents,\
             'number' : number,
-            'nb_groups' : nb_groups,
             'view'   : "documents"
             }))
 
@@ -398,8 +416,7 @@ def newpaginatorJSON(request , corpus_id):
     # documents  = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == type_document_id ).all()
 
     docs  = (session.query(Node)
-                .filter(Node.user_id == user_id
-                , Node.parent_id==corpus_id 
+                .filter(Node.parent_id==corpus_id 
                 , Node.type_id == type_document_id )
                 .all()
             )

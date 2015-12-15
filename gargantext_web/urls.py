@@ -107,7 +107,9 @@ urlpatterns = patterns('',
     url(r'^explorer$', samtest.graph_share), # global explorer
     url(r'^explorer/(\d+)/(\d+)$', samtest.graph_share), # global explorer
     url(r'^node_link_share.json$', samtest.node_link_share), # global explorer
-    url(r'^get_groups$', samtest.get_groups)
+    url(r'^get_groups$', samtest.get_groups),
+    url(r'^api/share/(\d+)/(\d+)$', samtest.share_resource),
+    # url(r'^lalala/(\d+)/(\d+)$', samtest.copy_corpus_GET),
     
 )
 

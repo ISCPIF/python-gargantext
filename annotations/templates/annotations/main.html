@@ -86,6 +86,16 @@
                 <li class="list-group-item small"><span class="badge">date</span>{[{publication_date}]}</li>
               </ul>
             </div>
+
+            <div ng-if="dataLoading">
+                Loading text...
+                <br>
+                  <center>
+                    <img width="10%" src="{% static 'img/ajax-loader.gif'%}"></img>
+                  </center>
+                <br>
+            </div>
+
             <div ng-if="abstract_text != null">
                 <span class="badge">abstract</span>
             </div>

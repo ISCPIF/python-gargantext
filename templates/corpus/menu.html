@@ -48,9 +48,6 @@
 						{% if number == 0 %}
 								<a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
 						{% endif %}
-						{% if nb_groups != None and nb_groups > 0 %}
-								<a id="share_button" class="btn btn-primary btn-lg" role="button" >Share!!!</a></p>
-						{% endif %}
 				</div>
 </div>
 
@@ -121,46 +118,6 @@
 </div>
 
 
-<div id="sharemodal" class="modal fade">
-
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 class="modal-title">Share this Corpus with your Groups</h3>
-      </div>
-
-      <div class="modal-body form-horizontal">
-      	<h4>List of available groups:</h4>
-        <div id="groups_list">here show the groups</div>
-
-        <div class="modal-footer">
-          <button id="closesharemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button id="send_share" type="button" class="btn btn-primary" >Share</button>
-        </div>
-
-      </div>
-
-    </div>
-
-
-  </div> 
-
-</div>
-
-<style>
-label {
- padding:10px;
- margin:0 0 10px;
- display:block; 
-}
-label:hover {
- background:#eee;
- cursor:pointer;
-}
-</style>
-
 <script type="text/javascript">
 	function gotoexplorer(elem) {
 
@@ -209,45 +166,6 @@ label:hover {
 		// workflow : finished!
 	} else {
 		setInterval(corpus_monitorer ,refresh_time);
-	}
-
-
-
-	function get_groups() {
-		console.log( "IN get_groups()!" )
-		var url_ = "/get_groups"
-		$.ajax({
-		    type: "GET",
-		    url: url_,
-		    dataType: "json",
-		    success : function(data, textStatus, jqXHR) {
-		    	var _content = ""
-		    	for(var i in data) {
-		    		var g_id = data[i][0] , g_name=data[i][1] 
-					_content += '<label><input name="groups" data-id="'+g_id+'" type="checkbox" />&nbsp;'+g_name+'</label>'
-		    	}
-		    	$("#groups_list").html( _content )
-		    },
-		    error: function(exception) { 
-		        console.log("exception!:"+exception.status)
-		    }
-
-		});
-	}
-
-	if( $("#share_button").length>0 ) {
-
-		$("#share_button").click(function() {
-			get_groups()
-			$("#sharemodal").modal("show");
-		});
-
-		$("#send_share").click(function() {
-			$('input[name=groups]:checked').each(function () {
-				console.log( $(this).data("id") );
-			});
-		});
-
 	}
 
 

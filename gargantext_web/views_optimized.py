@@ -18,6 +18,7 @@ from gargantext_web.db import *
 from gargantext_web.db import get_or_create_node
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
+from django.db import connection
 
 import json
 import re
@@ -51,7 +52,15 @@ def project(request, project_id):
     if not user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     if project.user_id != user.id:
-        return HttpResponseForbidden()
+        in_group = """ SELECT user_parent FROM node_user_user WHERE user_id=%d""" % ( int(user.id)  )
+        cursor = connection.cursor()
+        cursor.execute(in_group)
+        in_group = False
+        for c in cursor.fetchall():
+            if c[0]==project.user_id:
+                in_group = True
+        if not in_group:
+            return JsonHttpResponse( {"request" : "forbidden"} )
 
     # Let's find out about the children nodes of the project
     ChildrenNode = aliased(Node)
@@ -241,7 +250,6 @@ def tfidf(request, corpus_id, ngram_ids):
 
     return JsonHttpResponse(nodes_list)
 
-
 def getCorpusIntersection(request , corpuses_ids):
 
     FinalDict = False
@@ -259,7 +267,7 @@ def getCorpusIntersection(request , corpuses_ids):
             return JsonHttpResponse(FinalDict)
          # If corpus[1] has a coocurrence.id then lets continue
 
-        Cooc_Avg = {}
+        Coocs = {}
         import networkx as nx
         G = nx.Graph() # I use an undirected graph, because direction doesnt matter here, coocs should be a triangular matrix, so...
         ngrams_data1 = session.query(NodeNgramNgram).filter( NodeNgramNgram.node_id==cooc_ids[0], NodeNgramNgram.ngramx_id.in_( node_ids )).all()
@@ -275,20 +283,19 @@ def getCorpusIntersection(request , corpuses_ids):
             n1 = e[0]
             n2 = e[1]
             # print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
-            if n1 not in Cooc_Avg:
-                Cooc_Avg[n1]=0
-            if n2 not in Cooc_Avg:
-                Cooc_Avg[n2]=0
-            Cooc_Avg[n1]+=G[n1][n2]["weight"] 
-            Cooc_Avg[n2]+=G[n1][n2]["weight"] 
+            if n1 not in Coocs:
+                Coocs[n1]=0
+            if n2 not in Coocs:
+                Coocs[n2]=0
+            Coocs[n1]+=G[n1][n2]["weight"] 
+            Coocs[n2]+=G[n1][n2]["weight"] 
         FinalDict = {}
         for node in node_ids:
-            if node in Cooc_Avg:
-                FinalDict[node] = Cooc_Avg[node]/G.degree(node)
+            if node in Coocs:
+                FinalDict[node] = Coocs[node]/G.degree(node)
         # Getting AVG-COOC of each ngram that exists in the cooc-matrix of the compared-corpus. 
 
     return JsonHttpResponse(FinalDict)
-
 
 def getUserPortfolio(request , project_id):
     user = request.user
@@ -298,6 +305,18 @@ def getUserPortfolio(request , project_id):
 
     results = {}
     projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id ).all()
+
+
+    in_group = """ SELECT user_parent FROM node_user_user WHERE user_id=%d""" % ( int(user_id)  )
+    cursor = connection.cursor()
+    cursor.execute(in_group)
+    for c in cursor.fetchall():
+        user_parent = c[0]
+        more_projs = session.query(Node).filter(Node.user_id == user_parent,Node.type_id==project_type_id ).all()
+        if more_projs!=None:
+            for p in more_projs:
+                projs.append( p )
+
     for i in projs:
         # print (i.id,i.name)
         if i.id not in results: 
@@ -319,5 +338,6 @@ def getUserPortfolio(request , project_id):
 
         if len(results[i.id]["corpuses"])==0:
             del results[i.id]
+
 
     return JsonHttpResponse( results )

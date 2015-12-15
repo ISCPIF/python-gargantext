@@ -87,7 +87,7 @@ def get_ngrams(request , project_id , corpus_id ):
 
     # [ how many groups ? ] #
     nb_groups = 0
-    the_query = """ SELECT group_id FROM auth_user_groups WHERE user_id=%d """ % ( int(request.user.id) )
+    the_query = """ SELECT user_parent FROM node_user_user WHERE user_id=%d""" % ( int(request.user.id) )
     cursor = connection.cursor()
     try:
         cursor.execute(the_query)
@@ -205,20 +205,22 @@ def get_groups( request ):
     if not request.user.is_authenticated():
         return JsonHttpResponse( {"request" : "forbidden"} )
 
-    results = []
-    the_query = """ SELECT auth_user_groups.group_id, auth_group.name \
-                    FROM auth_user_groups,auth_group \
-                    WHERE auth_user_groups.user_id=%d \
-                    AND auth_user_groups.group_id=auth_group.id """ % ( int(request.user.id) )
-
+    # [ getting shared projects ] #
+    common_users = []
+    common_projects = []
+    the_query = """ SELECT node_user_user.user_parent, auth_user.username \
+                    FROM node_user_user, auth_user \
+                    WHERE node_user_user.user_id=%d \
+                    AND node_user_user.user_parent=auth_user.id """ % ( int(request.user.id) )
     cursor = connection.cursor()
     try:
         cursor.execute(the_query)
-        results = cursor.fetchall()
+        common_users = cursor.fetchall()
     except:
         pass
+    # [ / getting shared projects ] #
 
-    return JsonHttpResponse(  results )
+    return JsonHttpResponse(  common_users )
 
 
 def graph_share(request, generic=100, specific=100):
@@ -270,3 +272,55 @@ def node_link_share(request):
         data = get_cooc(request=request, corpus=corpus, type="node_link")
 
     return JsonHttpResponse(data)
+
+def copy_corpus_GET(request , project_id , corpus_id):
+    from node import copy
+    corpus_id = int(corpus_id)
+    user_id    = request.user.id
+    project_id = project_id
+    import random
+    title = "clone_"+str(random.random())
+    corpus_clone_id = copy.create_corpus(title, project_id=project_id, user_id=user_id)
+    # print(corpus_clone_id)
+    copy.copy_corpus(from_id=corpus_id, to_id=corpus_clone_id, title=title)
+    return JsonHttpResponse([title , corpus_clone_id])
+
+def share_resource(request , resource_id , group_id) :
+    results = ["OK"]
+    if request.method == 'POST':
+        project2share = session.query(Node).filter(Node.user_id == request.user.id, Node.id == resource_id).first()
+        if project2share!=None: # project exists?
+
+            # [  is the received group in fact the group of the current user?  ]
+            in_group = """ SELECT * FROM node_user_user WHERE user_id=%d AND user_parent=%d""" % ( int(request.user.id) , int(group_id) )
+            cursor = connection.cursor()
+            cursor.execute(in_group)
+            if len(cursor.fetchall())<1:
+                return JsonHttpResponse( {"request" : "forbidden"} )
+            # [ / is the received group in fact the group of the current user?  ]
+
+            # [  getting all childs ids of this project  ]
+            ids2changeowner = [ project2share.id ]
+            corpuses = session.query(Node.id).filter(Node.user_id == request.user.id, Node.parent_id==resource_id , Node.type_id == cache.NodeType["Corpus"].id ).all()
+            for corpus in corpuses:
+                ids2changeowner.append(corpus.id)
+                lists = session.query(Node.id,Node.name).filter(Node.user_id == request.user.id, Node.parent_id==corpus.id ).all()
+                for l in lists:
+                    ids2changeowner.append(l.id)
+            # [  / getting all childs ids of this project  ]
+
+            # [  changing owner  ]
+            print( "ids to change owner: ",len(ids2changeowner))
+            print("old owner:", request.user.id , " | new owner:" , group_id)
+            query = """UPDATE node_node set user_id=%d WHERE id IN (%s)""" % ( int(group_id) , ','.join((str(n) for n in ids2changeowner)) )
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+                cursor.execute("COMMIT;")
+            except Exception as error:
+                print(error)
+                pass
+            connection.close()
+            # [  / changing owner  ]
+
+    return JsonHttpResponse(  results )

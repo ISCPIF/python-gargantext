@@ -14,7 +14,7 @@ from ngram.importExport import exportNgramList, importNgramList
 from analysis.periods import phylo_clusters
 
 from ngram.occurrences import compute_occs
-from analysis.periods import get_partitions
+
 
 def ngram_workflow(corpus, n=5000):
     '''
@@ -64,7 +64,5 @@ if __name__ == "__main__":
     #exportNgramList(corpus, "list.csv")
     #importNgramList(corpus, "list.csv")
 
-    #phylo_clusters(corpus, range(2012,2016))
-    get_partitions(corpus)
-    #ngram_workflow(corpus)
+    phylo_clusters(corpus, range(2012,2016))
 

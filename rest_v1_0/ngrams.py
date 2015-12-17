@@ -125,9 +125,9 @@ class List(APIView):
     def get(self, request, corpus_id , list_name ):
         if not request.user.is_authenticated():
             return JsonHttpResponse( {"request" : "forbidden"} )
-        corpus = session.query(Node).filter( Node.user_id==request.user.id , Node.id==corpus_id ).first()
-        if corpus==None:
-            return JsonHttpResponse( {"request" : "forbidden"} )
+        corpus = session.query(Node).filter( Node.id==corpus_id ).first()
+        # if corpus==None:
+        #     return JsonHttpResponse( {"request" : "forbidden"} )
         start_ = time.time()
         list_name = list_name.title()+"List"
         node_list = get_or_create_node(nodetype=list_name, corpus=corpus )
@@ -162,9 +162,9 @@ class Ngrams(APIView):
     def get(self, request, node_id):
         if not request.user.is_authenticated():
             return JsonHttpResponse( {"request" : "forbidden"} )
-        corpus = session.query(Node).filter( Node.user_id==request.user.id , Node.id==node_id).first()
-        if corpus==None:
-            return JsonHttpResponse( {"request" : "forbidden"} )
+        corpus = session.query(Node).filter( Node.id==node_id).first()
+        # if corpus==None:
+        #     return JsonHttpResponse( {"request" : "forbidden"} )
         start_ = time.time()
         ParentNode = aliased(Node)
         group_by = []
@@ -340,7 +340,7 @@ class Group(APIView):
     '''
     def get_group_id(self , node_id , user_id):
         node_id = int(node_id)
-        corpus = session.query(Node).filter( Node.user_id==user_id , Node.id==node_id).first()
+        corpus = session.query(Node).filter(  Node.id==node_id).first()
         if corpus==None: return None
         group = get_or_create_node(corpus=corpus, nodetype='Group')
         return(group.id)
@@ -458,7 +458,6 @@ class Group(APIView):
         NewGroups = {}
         Rels_2_delete = {}
         for ng in grouped_ngrams:
-            print(ng)
             for i in range(len(GDict)):
                 clique_i = GDict[i]
                 neighbours = {}

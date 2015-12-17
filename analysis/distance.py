@@ -1,5 +1,6 @@
 from admin.utils import PrintException
 from gargantext_web.db import *
+from gargantext_web.db import get_or_create_node
 
 from collections import defaultdict
 from operator import itemgetter
@@ -8,18 +9,13 @@ from django.db import connection, transaction
 import math
 from math import log,sqrt
 
-import scipy
-
-from gargantext_web.db import get_or_create_node
-
-
-import pandas as pd
-from copy import copy
 import numpy as np
 import scipy
+import pandas as pd
+
+from copy import copy
 import networkx as nx
 from networkx.readwrite import json_graph
-from rest_v1_0.api import JsonHttpResponse
 
 from analysis.louvain import best_partition, generate_dendogram, partition_at_level
 

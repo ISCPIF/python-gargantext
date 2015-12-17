@@ -35,11 +35,11 @@ class Graph(APIView):
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
-                    data = get_cooc(corpus=corpus,field1=field1, field2=field2
+                    data = get_cooc(corpus=corpus, field1=field1, field2=field2
                                     , start=start, end=end
                                     , hapax=hapax, distance=distance)
                 else:
-                    data = get_cooc(corpus=corpus,field1=field1, field2=field2
+                    data = get_cooc(corpus=corpus, field1=field1, field2=field2
                             , hapax=hapax, distance = distance, bridgeness=bridgeness)
                 if format_ == 'json':
                     return JsonHttpResponse(data)

@@ -2,7 +2,7 @@
 Import and export all lists from a corpus node
 
 
-TODO : FEAT GROUPED ITEMS ARE NOT HANDLED
+TODO : FEAT GROUPED ITEMS ARE NOT HANDLED (synonyms)
             =======
 
 TODO : DEBUG 1) weight is always 0 /!\ after import ???
@@ -35,6 +35,10 @@ def exportNgramLists(node,filename,delimiter="\t"):
     export des 3 listes associées à un node corpus
            en combinaison locale avec les groupements
     """
+    
+    # the node arg has to be a corpus here
+    if not hasattr(node, "type_id") or node.type_id != 4:
+        raise TypeError("EXPORT: node argument must be a Corpus Node")
     
     # les nodes couvrant les listes
     # -----------------------------
@@ -181,6 +185,11 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
                          mais pas la mapList (aka 2)
     '''
     
+    # the node arg has to be a corpus here
+    if not hasattr(node, "type_id") or node.type_id != 4:
+        raise TypeError("IMPORT: node argument must be a Corpus Node")
+    
+    # for stats
     added_nd_ng = 0   # number of added list elements
     added_ng = 0      # number of added unknown ngrams
     
@@ -311,8 +320,14 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
                         our_ls[ltype]['add_data'].append(
                             [tgt_list_node.id, preexisting.id, our_ls[ltype]['weight']]
                          )
-            
-            
+                
+                # si c'est une liste à effacer on ajoute toujours
+                else:
+                    # append to results
+                    our_ls[ltype]['add_data'].append(
+                        [tgt_list_node.id, preexisting.id, our_ls[ltype]['weight']]
+                     )
+        
             
             # --- TODO éléments groupés
             #data[0] = tgt_list_node.id

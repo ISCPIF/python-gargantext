@@ -2,10 +2,13 @@
   'use strict';
 
   var annotationsAppDocument = angular.module('annotationsAppDocument', ['annotationsAppHttp']);
-
   annotationsAppDocument.controller('DocController',
     ['$scope', '$rootScope', '$timeout', 'NgramListHttpService', 'DocumentHttpService',
     function ($scope, $rootScope, $timeout, NgramListHttpService, DocumentHttpService) {
+
+      // dataLoading = signal pour afficher wait
+      $scope.dataLoading = true ;
+
       $rootScope.documentResource = DocumentHttpService.get(
         {'docId': $rootScope.docId},
         function(data, responseHeaders) {
@@ -27,6 +30,7 @@
             function(data) {
               $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
               $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
+              $scope.dataLoading = false ;
             },
             function(data) {
               console.error("unable to get the list of ngrams");
@@ -34,6 +38,7 @@
           );
 
       });
+
       // TODO setup article pagination
       $scope.onPreviousClick = function () {
         DocumentHttpService.get($scope.docId - 1);

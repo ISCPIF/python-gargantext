@@ -11,8 +11,10 @@ from ngram.mapList import compute_mapList
 from gargantext_web.db import NodeNgram
 from admin.utils import WorkflowTracking
 from ngram.importExport import exportNgramList, importNgramList
+from analysis.periods import phylo_clusters
 
-    
+from ngram.occurrences import compute_occs
+
 
 def ngram_workflow(corpus, n=5000):
     '''
@@ -50,13 +52,17 @@ def ngram_workflow(corpus, n=5000):
 #    update_state.processing_(corpus, "TF-IDF local score")
 #    compute_tfidf(corpus)
     # update_state.processing_(corpus, "OCCS local score")
-    # compute_occs(corpus)
-    update_state.processing_(corpus, "0")
+    compute_occs(corpus)
+    #update_state.processing_(corpus, "0")
 
 if __name__ == "__main__":
     node_id = sys.argv[1] 
     corpus=session.query(Node).filter(Node.id==node_id).first()
-    exportNgramList(corpus, "list.csv")
-    #importNgramList(corpus, "list.csv")
+    
     #ngram_workflow(corpus)
+    
+    #exportNgramList(corpus, "list.csv")
+    #importNgramList(corpus, "list.csv")
+
+    phylo_clusters(corpus, range(2012,2016))
 

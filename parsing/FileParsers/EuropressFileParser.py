@@ -39,7 +39,7 @@ class EuropressFileParser(FileParser):
         
         localeEncoding          = "fr_FR"
         codif                   = "UTF-8"
-        format_page             = re.compile('p\. .*', re.UNICODE)
+        
         # les docs europresse en/fr
         # se distinguent principalement
         # par la forme de leur date
@@ -72,11 +72,21 @@ class EuropressFileParser(FileParser):
         html = html5parser.etree.fromstring(contents, html_parser)
         html_articles = html.xpath('//article')
 
-
-        name_xpath      = "./header/div/span[@class = 'DocPublicationName']"
-        detailed_header_xpath    = "./header/div/span[@class = 'DocHeader']"
-        title_xpath     = "./header/div[@class='titreArticle']"
-        text_xpath      = "./section/div[@class='DocText']//p"
+        # all except detail_header are mandatory to parse the article
+        name_xpath  = "./header/div/span[@class = 'DocPublicationName']"
+        
+        # title_xpath (cas normal):
+        #         "./header/div[@class='titreArticle']"
+        # title_xpath (rapports):
+        #         "./header/div/p[@class='titreArticleVisu grandTitre']"
+        #
+        # title_xpath (chemin plus générique)
+        title_xpath         = "./header//*[contains(@class,'titreArticle')]"
+        text_xpath          = "./section/div[@class='DocText']//p"
+        entire_header_xpath = "./header"
+        
+        # diagnosed during date retrieval and used for rubrique
+        detail_header_xpath = "./header/div/span[@class = 'DocHeader']"
         
 
         def scrap_text(data_xpath):
@@ -106,16 +116,40 @@ class EuropressFileParser(FileParser):
         try:
             for html_article in html_articles:
                 
-                # print("2 en 1 ==============================new article")
-
+                # print("==============================new article")
+                
+                # s'il n'y a pas du tout de header on doit skip
+                all_header = html_article.xpath(entire_header_xpath)
+                if len(all_header) == 0:
+                    print("WARNING: europress (skip) article without header")
+                    continue
+                
                 hyperdata = {}
                 
-                # analyse de la langue  => utile pour la date
-                # faite localement pour permettre aux utilisateurs
-                # de choisir ResourceType "Europress" sans s'occuper
-                # du détail de la langue sourc
-                doc_language = None
                 
+                # TITLE
+                # -----
+                title = []
+                try:
+                    title   = scrap_text(html_article.xpath(title_xpath))
+                    hyperdata['title'] = title[0]
+                except:
+                    # il y aura un problème d'affichage si pas de titre !
+                    print("WARNING: europress (skip) article without title")
+                    continue
+                
+                
+                # FULLTEXT
+                # --------
+                try:
+                    text    = scrap_text(html_article.xpath(text_xpath))
+                    hyperdata['abstract'] = '\n'.join([ '<p>'+p_text+'</p>' for p_text in title[1:] + text])
+                    
+                except:
+                    pass
+                
+                # PUBLICATIONNAME
+                # ----------------
                 try:
                     pub_name = html_article.xpath(name_xpath)[0].text
                     name = pub_name.split(', ')
@@ -127,115 +161,109 @@ class EuropressFileParser(FileParser):
                     except:
                         pass
                 
-                # span de class DocHeader fournissant rubrique et date
-                get_dated_header = html_article.xpath(detailed_header_xpath)
                 
-                # le detailed_header est occasionnellement absent
-                # => FIX TEMPORAIRE: on skippe le document
-                if len(get_dated_header) == 0 or get_dated_header[0].text is None:
-                    print("WARNING (document skip) unformatted europress header")
-                    continue
-                else:
-                    header = get_dated_header[0].text
-                    
-                    # Article detailed headers in europress
-                    # --------------------------------------
+                # DATE et LANGUAGE
+                # ----------------
+                # analyse locale de la langue via le format de la date
+                # 
+                # permet de choisir ResourceType "Europress" sans s'occuper
+                # du détail de la langue source
+                doc_language = None
+                date = None
+                
+                # le texte sur lequel on cherchera la date/langue
+                search_text = None
+                
+                # zone DocHeader fournissant précisément rubrique et date
+                detailed_text = None
+                get_detail_header = html_article.xpath(detail_header_xpath)
+                
+                if len(get_detail_header) != 0:
+                    # cas le plus courant
+                    # -------------------
                     # ex: "Seine-Saint-Denis, lundi 28 janvier 2013, p. 93_T_17"
                     # ex: "Votre ville, jeudi 6 février 2014"
                     # ex: "World, Friday, November 13, 2015"
+                    detailed_text = get_detail_header[0].text
+                    search_text = detailed_text
+                
+                else:
+                    # occasionellment DocHeader absent
+                    # (on se rabat sur le header entier)
+                    search_text = " ".join(scrap_text(all_header[0]))
                     
-                    # 1) test language before splitting
+                    # print("---using all header: '%s'" % search_text)
+                
+                
+                # on poursuit date/langue avec la zone obtenue
+                
+                # 1) Une REGEXP identifie la langue ET attrape la date
+                test_date_fr = re.search(format_date_fr,search_text)
+                
+                if test_date_fr:
+                    doc_language = 'fr'
+                    # print("=============== Header date fr")
                     
-                    if re.search(format_date_fr,header):
-                        doc_language = 'fr'
-                        # print("=============== Header date fr")
-                        
-                        # save for FileParser
-                        hyperdata["language_iso2"] = 'fr'
+                    # save for FileParser
+                    hyperdata["language_iso2"] = 'fr'
                     
-                    elif re.search(format_date_en,header):
+                    # match str
+                    date_str = test_date_fr.group()
+                
+                else:
+                    # ex:  November 7, 2012
+                    test_date_en = re.search(format_date_en,search_text)
+                
+                    if test_date_en:
                         doc_language = 'en'
                         # print("=============== Header date en")
                         
                         # save for FileParser
                         hyperdata["language_iso2"] = 'en'
-                    
+                        # match str
+                        date_str = test_date_en.group()
                     else:
-                        print("WARNING europress: echec diagnostic langue header sur '%s'" % header)
-                        # default value, used locally, not saved
+                        print("WARNING europress: echec diagnostic date/langue header sur '%s'" % header)
+                        # default lg value, used locally, not saved
                         doc_language = 'en'
-                    
-                    # attention en anglais la date contient 1 ou 2 virgules
-                    # ex: "Tuesday, November 7, 2012" 
-                    # ==> dans tous ces cas 'en' dateparser.parse 
-                    #     sera lancé sur header[i:] et non header[i]
-                    header = header.split(', ')
-                    
-                    # mais dateparser ne veut pas d'éléments autres à la suite de la date
-                    # ==> on filtre les indications de pages qu'europress met souvent après
-                    header = list(filter(lambda x: format_page.match(x) is None, header))
-                    
-                    date = None
-                    
-                    if parse_date(header[0], doc_language) is not None:
-                        if doc_language == 'fr':
-                            date = header[0]
-                            # print("match 1 fre => 0 = %s " % date)
-                        else:
-                            date = ' '.join(header[0:])
-                            # print("match 0 eng => 0: = %s " % date)
-                    else:
-                        # most probably news_topic before beginning of date
-                        hyperdata['rubrique']   = header[0]
-                        
-                        # [1..last_header_fragment]
-                        for i in range(1,len(header)):
-                            if parse_date(header[i], doc_language) is not None:
-                                if doc_language == 'fr':
-                                    date = header[i]
-                                    # print("match %i fre => %i = %s " % (i,i,date))
-                                else:
-                                    date = ' '.join(header[i:])
-                                    # print("match %i eng => %i: = %s " % (i,i,date))
-                    
-                    # default
-                    if date is None:
-                        date = '2016'
-                        # print("no match => 2016")
-
-                # we parse the retrieved datestring into a formal date
+                        # default date value, will be saved
+                        date_str = "2016"
+                
+                # 2) we parse the retrieved datestring into a formal date
                 try:
-                    hyperdata['publication_date'] = dateparser.parse(date.strip(), doc_language)
+                    hyperdata['publication_date'] = dateparser.parse(
+                     date_str.strip(), 
+                     languages=[doc_language],
+                     date_formats=['%d %B %Y','%B %d, %Y']
+                     )
                     # print("RES POSTPROC:",hyperdata['publication_date'])
                     
                 except:
                     hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                try:
-                    hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
-                    hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
-                    hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
-                except:
-                    print(hyperdata['title'])
-                    print(date)
-                #print(hyperdata['publication_date'])
-		
-                try:
-                    title   = scrap_text(html_article.xpath(title_xpath))
-                    hyperdata['title'] = title[0]
-                except:
-                    pass
-                                
-                try:
-                    text    = scrap_text(html_article.xpath(text_xpath))
-                    hyperdata['abstract'] = '\n'.join([ '<p>\n'+p_text+'</p>\n' for p_text in title[1:] + text])
-                    
-                except:
-                    pass
-
+                
+                
+                # infos dérivées
+                hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
+                hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
+                hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
+                
+                
+                # RUBRIQUE
+                # --------
+                # quand on a le DocHeader détaillé on peut vérifier la rubrique
+                # (si présente elle est juste avant la date)
+                if detailed_text is not None:
+                    header_elts = detailed_text.split(', ')
+                    # on vérifie que le premier élément n'est pas une date ou un fragment de date
+                    if parse_date(header_elts[0], doc_language) is None:
+                        # most probably news_topic before beginning of date
+                        hyperdata['rubrique']   = header_elts[0]
+                
+                
                 yield hyperdata
 
-        except :
+        except:
             PrintException()
             pass
 

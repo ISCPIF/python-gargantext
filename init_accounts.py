@@ -18,7 +18,7 @@ def notify_user(username, email, password):
     Inscription obligatoire pour les dernière places:
     http://iscpif.fr/event/formation-gargantext/
 
-    Nous restons votre disposition pour tout complément d'information.
+    Nous restons à votre disposition pour tout complément d'information.
     Cordialement
     --
         L'équipe de Gargantext (CNRS)

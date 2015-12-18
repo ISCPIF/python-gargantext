@@ -5,9 +5,6 @@ Import and export all lists from a corpus node
 TODO : FEAT GROUPED ITEMS ARE NOT HANDLED (synonyms)
             =======
 
-TODO : DEBUG 1) weight is always 0 /!\ after import ???
-TODO : DEBUG 2) check if argument node is a corpus
-
 TODO : REFACTOR 1) split list logic from corpus logic
                     => possibility to act on one list 
 
@@ -183,6 +180,12 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
     del_lists = [0,1] => effacera la stopList (aka 0)
                                et la miamList (aka 1)
                          mais pas la mapList (aka 2)
+    
+    
+    TODO: 
+      - import "group cliques joining" from rest_v1_0.ngrams.Group
+        (and ideally add its logic to analysis.lists.Translations)
+    
     '''
     
     # the node arg has to be a corpus here
@@ -205,15 +208,14 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
     
     # on mettra dans add_data les termes avec le ngram_id retrouvé/créé
     
-    # find previous listnode objects
+    # find previous list node objects
     # (les 3 listes où on va écrire)
     for ltype in [0,1,2]:
         our_ls[ltype]['node'] = get_or_create_node(
                                    nodetype=our_ls[ltype]['name'], 
                                    corpus=node
                                 )
-    
-    
+        
     # si del_lists, on supprime tous les NodeNgrams des listes
     # --------------------------------------------------------
     for ltype in del_lists:
@@ -225,6 +227,15 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
         # todo garbage collect terms ?
     
     
+    
+    # also find group node
+    group = get_or_create_node(nodetype='Group', corpus=node)
+    
+    # it will be fusionned at the end with the imported_groups dict
+    imported_groups = defaultdict(set)
+    
+    
+    # --------------
     # on lit le CSV
     # --------------
     ngrams_csv_rows = []
@@ -244,7 +255,7 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
             this_ng_terms        = csv_row[1]
             this_ng_nlen         = int(csv_row[2])
             this_ltype           = int(csv_row[3])
-            this_ng_grouped_ngs  = csv_row[4]
+            this_ng_group        = csv_row[4]
             
             # --- vérif terme
             if not len(this_ng_terms) > 0:
@@ -284,6 +295,7 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
                          )
                 
                 # £TODO ici indexation dans les docs
+                # => Occurrences
                 # node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
             
             
@@ -330,11 +342,12 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
         
             
             # --- TODO éléments groupés
-            #data[0] = tgt_list_node.id
-            #data[1] = this_ng_id          # on suppose le même ngram_id
-            #data[2] = 
-        
-    
+            
+            # grouped synonyms set (if any)
+            if len(this_ng_group) != 0:
+                imported_groups[this_ng_id] = set(
+                    [int(ng_id) for ng_id in this_ng_group.split('|')]
+                    )
     
     
     # INSERT INTO node_node_ngram
@@ -348,10 +361,96 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
         
         added_nd_ng += len(our_ls[list_type]['add_data'])
     
+    # synonyms set unions
+    #
+    # original arcs (directed couples)
+    old_arcs = session.query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id).filter(NodeNgramNgram.node_id == group.id).all()
+    
+    # TODO groupes: correspondance entre les IDS_source et les nouveaux IDS
+    
+    # TODO groupes: factoriser le code de fusion de groupes
+    #               depuis rest_v1_0.ngrams.Group.get
+    #               ou la remplacer par une agrégation sql + sets
+    #               cf. long commentaire en bas
+    
+    # INSERT INTO node_nodengramngram
+    # ===============================
     
     print("INFO: added %i elements in the lists indices" % added_nd_ng)
     print("INFO: added %i new ngrams in the lexicon" % added_ng)
     
 
+
+
+
+
 # à chronométrer:
 # [w.node_ngram for w in listnode.node_node_ngram_collection]
+
+
+
+
+
+
+##################################
+#    essais fusion de groupes
+##################################
+# # tentative pour refaire le code de Samuel (dans rest_v1_0.ngrams.Group.get)
+# # qui fait les cliques de synonymes, directement en sql
+# 
+# select ngramx_id as root, ngramy_id as kid 
+#  into temporary tempo_1 
+#  from node_nodengramngram 
+#  where node_id = 199 
+#  and ngramx_id != ngramy_id ;
+#  
+# --  root | kid  
+# -- ------+------
+# --  3447 | 3443
+# --  3456 | 3462
+# --  3455 | 3462
+# --  3455 | 3456
+# --  3441 | 3448
+# --  3452 | 3446
+# --  3452 | 3444
+# 
+# puis parcours récursif cf http://stackoverflow.com/questions/28758058/
+# 
+# with recursive mes_cliques as (
+#   select root as root_id, root, kid
+#   from tempo_1
+#   union all
+#   select p.root_id, c.root, c.kid
+#   from tempo_1 as c
+#     join mes_cliques p on p.kid = c.root
+# )
+# select root_id, array_agg(kid) as edges_in_group
+# from mes_cliques
+# group by root_id;
+# 
+# RESULTAT
+# -- root_id |  edges_in_group  
+# -- --------+------------------
+# --    3441 | {3448}
+# --    3456 | {3462}
+# --    3452 | {3446,3444}
+# --    3447 | {3443}
+# --    3455 | {3462,3456,3462}
+# 
+# 
+
+# # autre résultat plus direct avec agrégat simple
+# # -----------------------------------------------
+# select ngramx_id as root, array_agg(ngramy_id) as kids 
+#  from node_nodengramngram
+#  where node_id = 199
+#  and ngramx_id != ngramy_id
+# group by ngramx_id ;
+# 
+# --  root |    kids     
+# -- ------+-------------
+# --  3441 | {3448}
+# --  3452 | {3446,3444}
+# --  3455 | {3462,3456}
+# --  3447 | {3443}
+# --  3456 | {3462}

@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from node.models import Node
-from gargantext_web.db import session, cache, Node, NodeNgram
+from gargantext_web.db import session, cache, Node, NodeNgram, Ngram
 from ngram.lists import listIds, listNgramIds
 from gargantext_web.db import get_or_create_node
 
@@ -138,6 +138,8 @@ class NgramCreate(APIView):
     def post(self, request, list_id):
         """
         create NGram in a given list
+        
+        example: request.data = {'text': 'phylogeny'}
         """
         list_id = int(list_id)
         # format the ngram's text
@@ -161,6 +163,7 @@ class NgramCreate(APIView):
         ngram_id = ngram.id
         # create the new node_ngram relation
         # TODO check existing Node_Ngram ?
+        # £TODO ici indexation
         node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
         session.add(node_ngram)
         session.commit()

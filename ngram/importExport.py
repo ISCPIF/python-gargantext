@@ -11,7 +11,7 @@ TODO : REFACTOR 1) split list logic from corpus logic
 TODO : REFACTOR 2) improvements in ngram creation (?bulk like node_ngram links)
 """
 
-from gargantext_web.db import Ngram, NodeNgram, NodeNodeNgram
+from gargantext_web.db import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext_web.db import cache, session, get_or_create_node, bulk_insert
 
 # import sqlalchemy as sa

@@ -19,6 +19,7 @@ class RisFileParser(FileParser):
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
             b"ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
             b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
+            b"T2":  {"type": "hyperdata", "key": "journal"},
             b"UR":  {"type": "hyperdata", "key": "doi"},
             b"PY":  {"type": "hyperdata", "key": "publication_year"},
             b"PD":  {"type": "hyperdata", "key": "publication_month"},

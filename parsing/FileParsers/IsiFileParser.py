@@ -15,6 +15,7 @@ class IsiFileParser(RisFileParser):
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
             b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
             b"DI":  {"type": "hyperdata", "key": "doi"},
+            b"SO":  {"type": "hyperdata", "key": "journal"},
             b"PY":  {"type": "hyperdata", "key": "publication_year"},
             b"PD":  {"type": "hyperdata", "key": "publication_month"},
             b"LA":  {"type": "hyperdata", "key": "language_fullname"},

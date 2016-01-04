@@ -14,16 +14,18 @@ def notify_user(username, email, password):
     Votre login est: %s
     Votre mot de passe est : %s
 
-    Nous restons votre disposition pour tout complément d'information.
+    En janvier prochain, il y aura une formation Gargantext (gratuite).
+    Inscription obligatoire pour les dernière places:
+    http://iscpif.fr/event/formation-gargantext/
+
+    Nous restons à votre disposition pour tout complément d'information.
     Cordialement
     --
         L'équipe de Gargantext (CNRS)
 
     ''' % (username, password)
 
-    send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], fail_silently=False )
-    #send_mail('[Gargantext] Votre compte', message, 'alexandre.delanoe@mines-paristech.fr', [email], ['alexandre@delanoe.org'] )
-
+    send_mail('[Gargantext] Votre accès à la plateforme', message, 'alexandre.delanoe@iscpif.fr', [email], fail_silently=False )
 
     # add option for mass sending email
 

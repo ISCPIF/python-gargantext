@@ -12,6 +12,7 @@ class ZoteroFileParser(RisFileParser):
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
             b"AU":  {"type": "hyperdata", "key": "authors", "separator": ", "},
+            b"T2":  {"type": "hyperdata", "key": "journal"},
             b"UR":  {"type": "hyperdata", "key": "doi"},
             b"DA":  {"type": "hyperdata", "key": "publication_date_to_parse"},
             b"PY":  {"type": "hyperdata", "key": "publication_year"},

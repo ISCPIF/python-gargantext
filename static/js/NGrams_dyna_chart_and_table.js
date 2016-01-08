@@ -2,10 +2,14 @@
 
 
 function pr(msg) {
+    // rl dbg
+    console.log("\nFUN pr()")
     console.log(msg)
 }
 
 function getCookie(name) {
+    // rl dbg
+    console.log("\nFUN getCookie()")
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
         var cookies = document.cookie.split(';');
@@ -99,6 +103,8 @@ var volumeChart = dc.barChart("#monthly-volume-chart");
 
 // Get all projects and corpuses of the user
 function GetUserPortfolio() {
+    // rl dbg
+    console.log("\nFUN GetUserPortfolio()")
     //http://localhost:8000/api/corpusintersection/1a50317a50145
     var project_id = getIDFromURL("project")
     var corpus_id =  getIDFromURL("corpus")
@@ -169,6 +175,8 @@ function GetUserPortfolio() {
 
 //Getting a corpusB-list and intersecting it with current corpusA-miamlist. 
 function printCorpuses() {
+    // rl dbg
+    console.log("\nFUN printCorpuses()")
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     pr(corpusesList)
 
@@ -239,6 +247,8 @@ function printCorpuses() {
 
 
 function Push2Buffer( NewVal ) {
+    // rl dbg
+    console.log("\nFUN Push2Buffer()")
     if ( TheBuffer == false) {
         if( ! NewVal ) {
             var limits = [ oldest , latest ];
@@ -275,6 +285,8 @@ function Push2Buffer( NewVal ) {
 }
 
 function Final_UpdateTable( action ) {
+    // rl dbg
+    console.log("\nFUN Final_UpdateTable()")
     // (1) Identifying if the button is collapsed:   
     var isCollapsed=false;
     var accordiontext = $("#collapseOne").attr("class")
@@ -331,15 +343,21 @@ function Final_UpdateTable( action ) {
 }
 
 function getRecord(rec_id) {
+    // rl dbg
+    console.log("\nFUN getRecord()")
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
   // return AjaxRecords[rec_id]
 }
 
 function getRecords() {
+    // rl dbg
+    console.log("\nFUN getRecords()")
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
 function save_groups() {
+    // rl dbg
+    console.log("\nFUN save_groups()")
 	var groupdiv = "#group_box"
 	var gcontent = groupdiv+"_content"
 	var count = 0
@@ -376,6 +394,8 @@ function save_groups() {
 }
 
 function cancel_groups() {
+    // rl dbg
+    console.log("\nFUN cancel_groups()")
 	var groupdiv = "#group_box"
 	var gcontent = groupdiv+"_content"
 	$(gcontent).children('span').each(function () {
@@ -391,6 +411,8 @@ function cancel_groups() {
 }
 
 function add2groupdiv( elem_id ) {
+    // rl dbg
+    console.log("\nFUN add2groupdiv()")
 	$('<span/>', {
 		"data-id":AjaxRecords[elem_id].id,
 		"data-stuff": elem_id,
@@ -418,6 +440,8 @@ function add2groupdiv( elem_id ) {
 }
 // new
 function add2group ( elem ) {
+    // rl dbg
+    console.log("\nFUN add2group()")
 
 	if( $("#group_box").length==0 ) {
 		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
@@ -448,6 +472,8 @@ function add2group ( elem ) {
 // new
 // click red, click keep, click normal...
 function clickngram_action ( elem ) {
+    // rl dbg
+    console.log("\nFUN clickngram_action() !!!!")
 	var elem_id = $( elem ).data("stuff")
 	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
 
@@ -455,8 +481,22 @@ function clickngram_action ( elem ) {
 }
 
 // modified
+/**
+ * @param rec_id - an id to an ngram record in AjaxRecords
+ */
 function transformContent(rec_id) {
+  // rl dbg
+  console.log("\nFUN transformContent() !!!!")
 	var elem = AjaxRecords[rec_id];
+  
+  // ex: elem = {
+  //             "id":2349,"name":"failure","score":1,"flag":false,
+  //             "group_plus":true,"group_blocked":false,"state":0
+  //            }
+  //~ console.log(
+    //~ "transformContent got elem no " + rec_id + ": " 
+    //~ + JSON.stringify(elem)
+    //~ )
 	var result = {}
 	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
 	var plus_event = ""
@@ -468,6 +508,10 @@ function transformContent(rec_id) {
 		}
 	}
 	result["id"] = elem["id"]
+	// rl simple tests for additional columns ----
+  result["add_to_map"] = elem["add_to_map"]
+	result["add_to_stop"] = elem["add_to_stop"]
+  // -------------------------------------------
 	result["score"] = '<span class="'+atts.id+'">'+elem["score"]+'</span>'
 	result["name"] = "<span class=\""+atts.id+
 					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+elem["name"]+"</span>"+
@@ -478,6 +522,8 @@ function transformContent(rec_id) {
 // to delete
 // Affecting the tr element somehow
 function overRide(elem) {
+    // rl dbg
+    console.log("\nFUN overRide() !!!!")
   var id = elem.id
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   var this_newflag = (current_flag==AjaxRecords[id]["flag"])?false:current_flag
@@ -506,25 +552,59 @@ function overRide(elem) {
 
 }
 
-//generic enough
+
+/**
+ * "generic enough"
+ * 
+ * Writes a row for each datum 
+ * (function passed to dynatable config "writers" property)
+ * @eachData
+ * 
+ * @param rowIndex: int i++
+ * @param record: { "id":1793,"name":"planet","score":1,"flag":false,
+ *                   "group_plus":true,"group_blocked":false,
+ *                   "state":0}
+ * @param columns: constant array 
+ *                 (with column template for cellWriter)
+ *                 (auto-built from html <thead> elements)
+ *              ex: [
+ *                  {"index":0,"label":"Terms","id":"name",
+ *                   "sorts":["name"],"hidden":false,
+ *                   "textAlign":"left","cssClass":false},
+ *                  {"index":1,"label":"Score","id":"score",
+ *                   "sorts":["score"],"hidden":false,
+ *                   "textAlign":"left","cssClass":false}
+ *                  ]
+ */
 function ulWriter(rowIndex, record, columns, cellWriter) {
+  // rl dbg
+  console.log("\nFUN ulWriter()")
   var tr = '';
   var cp_rec = {}
-
+  //console.log("rowIndex:" + rowIndex)
+  console.log("record" + JSON.stringify(record))
+  console.log("columns" + JSON.stringify(columns))
+  
+  
+  
   if( AjaxRecords[RecDict[record.id]].state < 0 )
   	return false;
-
+  
+  // £TODO add states as checkboxes
   cp_rec = transformContent(RecDict[record.id])
   
   // grab the record's attribute for each column
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }
+  console.log("tr" + tr)
   var data_id = RecDict[record.id]
   return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
 function SelectAll( box ) {
+  // rl dbg
+  console.log("\nFUN SelectAll()")
   var current_flag = $("input[type='radio'][name='radios']:checked").val()
   $("tbody tr").each(function (i, row) {
       var id = $(row).data('stuff')
@@ -540,6 +620,8 @@ function SelectAll( box ) {
 }
 
 function SaveGlobalChanges( delete_ ) {
+  // rl dbg
+  console.log("\nFUN SaveGlobalChanges()")
   console.log( "iterating over global stop words:" )
   $('.globalstopwords').each(function() {
       console.log( $(this).data("id") )
@@ -554,6 +636,8 @@ function SaveGlobalChanges( delete_ ) {
 }
 
 function SaveGlobalChanges_Form( nodes2del) {
+  // rl dbg
+  console.log("\nFUN SaveGlobalChanges_Form()")
   console.log( "In SaveGlobalChanges:" )
   console.log( nodes2del )
   //AjaxRecords[RecDict[1731]]
@@ -588,8 +672,9 @@ function SaveGlobalChanges_Form( nodes2del) {
 
 // Save changes to all corpusA-lists 
 function SaveLocalChanges() {
-
-  console.clear()
+  // rl dbg
+  console.log("\nFUN SaveGlobalChanges()")
+  // console.clear()
   console.log("In SaveChanges()")
   var sum__selected_elems = 0;
 
@@ -717,6 +802,8 @@ $("#Save_All").click(function(){
 
 // For lists, all http-requests
 function CRUD( parent_id , action , nodes , args , http_method , callback) {
+  // rl dbg
+  console.log("\n!!!! FUN CRUD() !!!! ----------------")
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
 	if(nodes.length>0 || Object.keys(args).length>0) {
@@ -743,18 +830,35 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	} else callback(false);
 }
 
+
+
+/**
+ * 1. Creates the html of the table
+ *    => therefore thead for dynatable columns template
+ * 2. Fills the AjaxRecords from data
+ * 3. Creates the scores distribution chart over table
+ * 4. ???
+ * 5. PROFIT!
+ * 
+ * @param data: a response from the api/node/CID/ngrams/list/ routes
+ * @param initial: initial score type "occs" or "tfidf"
+ * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
+ * 
+ * minor modifications rloth 2016 (previous work: Samuel Castillo 2015)
+ */
 function Main_test( data , initial , search_filter) {
 
 	console.log("")
 	console.log(" = = = = MAIN_TEST: = = = = ")
 	console.log("data:")
 	console.log(data)
-	console.log("initial:")
+	console.log("initial:")   // 
 	console.log(initial)
-	console.log("search_filter:")	
+	console.log("search_filter:")	    // eg 'filter_all'
 	console.log(search_filter)
 	console.log(" = = = = / MAIN_TEST: = = = = ")
 	console.log("")
+  
 
     var DistributionDict = {}
     for(var i in DistributionDict)
@@ -772,6 +876,9 @@ function Main_test( data , initial , search_filter) {
     var div_table = '<p align="right">'+"\n"
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
+      // each <th> will affect "columns" template arg in ulWriter()
+      div_table += "\t"+"\t"+'<th data-dynatable-column="add_to_map">Add to map</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="add_to_stop">Add to stop</th>'+"\n"
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n"
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"
@@ -805,7 +912,11 @@ function Main_test( data , initial , search_filter) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": (le_ngram.state)?le_ngram.state:0
+        "state": (le_ngram.state)?le_ngram.state:0,
+        
+        // rl: simple tests for new columns
+        "add_to_map": "hello",
+        "add_to_stop": false
       }
       AjaxRecords.push(node_info)
 
@@ -997,6 +1108,8 @@ function Main_test( data , initial , search_filter) {
 
 
 function SearchFilters( elem ) {
+  // rl dbg
+  console.log("\nFUN SearchFilters()")
   var MODE = elem.value;
 
   if( MODE == "filter_all") {
@@ -1051,6 +1164,8 @@ function SearchFilters( elem ) {
 }
 
 function getIDFromURL( item ) {
+  // rl dbg
+  console.log("\nFUN getIDFromURL()")
 	var pageurl = window.location.href.split("/")
 	var cid;
 	for(var i in pageurl) {
@@ -1064,7 +1179,8 @@ function getIDFromURL( item ) {
 
 // For lists, only GET requests
 function GET_( url , callback ) {
-
+  // rl dbg
+  console.log("\nFUN GET_("+url+")")
     $.ajax({
         type: "GET",
         url: url,
@@ -1160,6 +1276,8 @@ GET_( url[0] , function(result) {
 
 
 function AfterAjax() {
+  // rl dbg
+  console.log("\nFUN AfterAjax()")
 	// // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 

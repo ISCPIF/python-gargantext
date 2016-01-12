@@ -485,6 +485,7 @@ function add2group ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
+
 /**
  * click red, click keep, click normal...
  * 
@@ -524,9 +525,9 @@ function transformContent(rec_id) {
   //            }
   
   // console.log(
-  //  "transformContent got ngram_info no " + rec_id + ": " 
-  //  + JSON.stringify(ngram_info)
-  //  )
+  //   "transformContent got ngram_info no " + rec_id + ": " 
+  //   + JSON.stringify(ngram_info)
+  // )
     
     
     // result {} contains instanciated column html for dynatables
@@ -675,21 +676,41 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 function SelectAll(boxType, boxElem ) {
   // debug
   // console.log("\nFUN SelectAll()")
+
+    // we will need status of the other "check all box"
+    if (boxType == 'keep') { otherBoxId = "delAll" ; }
+    else                  { otherBoxId = "mapAll" ; }
+    
+    
+    otherWasChecked = $("input#"+otherBoxId).prop('checked') ;
+    if (otherWasChecked) {
+        // we visually uncheck the other box if necessary
+        $('#'+otherBoxId).attr('checked', false);
+    }
+  
   $("tbody tr").each(function (i, row) {
       var rec_id = $(row).data('stuff') ;     // for old state system
       var ngramId = AjaxRecords[rec_id].id ;  // for future state system (cols)
+      
       if(boxElem.checked) {
-        // stateId: 1 if boxType == 'keep'  
+        // stateId: 1 if boxType == 'keep'
         //          2 if boxType == 'delete'
         var stateId = System[0]["statesD"][boxType] ;
         
-        // buffer useful if restore
-        AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"]
+        // a buffer to restore previous states if unchecked
+        // (except if there was a click on the other 'all' box
+        //  b/c then buffer is already filled and we shouldn't redo it)
+        if (!otherWasChecked) {
+            AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
+        }
+        
+        // do the requested change
         AjaxRecords[rec_id]["state"] = stateId ;
       } 
       // restore previous states
       else {
         AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
+        AjaxRecords[rec_id]["state_buff"] = null ;
       }
   });
   MyTable.data('dynatable').dom.update();
@@ -924,7 +945,7 @@ function Main_test( data , initial , search_filter) {
                             + '>'
                             + 'Map'
                             + '<p class="note">'
-                            + '<input type="checkbox"'
+                            + '<input type="checkbox" id="mapAll"'
                             + ' onclick="SelectAll(\'keep\',this)" title="Check to select all currently visible terms"></input>'
                             + '<label>All</label>'
                             + '</p>'
@@ -936,7 +957,7 @@ function Main_test( data , initial , search_filter) {
                             + '>'
                             + 'Del'
                             + '<p class="note">'
-                            + '<input type="checkbox"'
+                            + '<input type="checkbox" id="delAll"'
                             + ' onclick="SelectAll(\'delete\',this)" title="Check to select all currently visible terms"></input>'
                             + '<label>All</label>'
                             + '</p>'
@@ -1129,6 +1150,13 @@ function Main_test( data , initial , search_filter) {
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
+    
+    // hook on page change
+    MyTable.bind('dynatable:page:set', function(){
+        // we visually uncheck both 'all' boxes
+        $('input#mapAll').attr('checked', false);
+        $('input#delAll').attr('checked', false);
+    })
 
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();

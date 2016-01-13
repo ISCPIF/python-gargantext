@@ -1,11 +1,13 @@
 from rest_v1_0.api import APIView, APIException, JsonHttpResponse, CsvHttpResponse
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-from gargantext_web.db import session, Node
+from gargantext_web.db import get_session, Node
 from analysis.functions import get_cooc
 
 class Graph(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
+    session = get_session()
+    
     def get(self, request, corpus_id):
         '''
         Graph.get :: Get graph data as REST api.

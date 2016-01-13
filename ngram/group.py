@@ -5,7 +5,7 @@ from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, get_session
 
 from analysis.lists import Translations, UnweightedList
 from parsing.corpustools import *
@@ -55,6 +55,7 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
 
+    session = get_session()
     #spec,cvalue = getNgrams(corpus, limit_inf=limit_inf, limit_sup=limit_sup)
     #list_to_check=cvalue.union(spec)
 
@@ -62,16 +63,18 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
         stemIt = getStemmer(corpus)
 
     group_to_insert = set()
-    node_group = get_or_create_node(nodetype='Group', corpus=corpus)
+    node_group = get_or_create_node(nodetype='Group', corpus=corpus, session=session)
 
     miam_to_insert = set()
-    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus)
+    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus, session=session)
 
-    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus)
+    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus, session=session)
     #stop_list = UnweightedList(stop_node.id)
 
     Stop = aliased(NodeNgram)
     frequency = sa.func.count(NodeNgram.weight)
+    
+
     ngrams = (session.query(Ngram.id, Ngram.terms, frequency )
             .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
             .join(Node, Node.id == NodeNgram.node_id)

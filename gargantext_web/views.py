@@ -39,14 +39,14 @@ from django.contrib.auth import authenticate, login, logout
 
 from scrappers.scrap_pubmed.admin import Logger
 
-from gargantext_web.db import *
 
 from sqlalchemy import or_, func
 
 from gargantext_web import about
 from gargantext_web.celery import empty_trash
 
-from gargantext_web.db import cache, NodeNgram, NodeNgramNgram
+from gargantext_web.db import *
+from gargantext_web.db import get_session, cache, NodeNgram, NodeNgramNgram
 
 def login_user(request):
     logout(request)
@@ -230,7 +230,7 @@ def projects(request):
 
     date = datetime.datetime.now()
     # print(Logger.write("STATIC_ROOT"))
-
+    session = get_session()
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
     number = len(projects)
     
@@ -300,6 +300,7 @@ def update_nodes(request, project_id, corpus_id, view=None):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
+    session = get_session()
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -376,6 +377,8 @@ def corpus(request, project_id, corpus_id):
     corpus  = cache.Node[int(corpus_id)]
 
     type_doc_id = cache.NodeType['Document'].id
+    
+    session = get_session()
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
 
@@ -410,6 +413,7 @@ def newpaginatorJSON(request , corpus_id):
     # t = get_template('tests/newpag/thetable.html')
 
     # project = session.query(Node).filter(Node.id==project_id).first()
+    session = get_session()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
     user_id = request.user.id
@@ -464,6 +468,7 @@ def newpaginatorJSON(request , corpus_id):
 
 def move_to_trash(node_id):
     try:
+        session = get_session()
         node = session.query(Node).filter(Node.id == node_id).first()
 
         previous_type_id = node.type_id
@@ -493,6 +498,7 @@ def move_to_trash_multiple(request):
         nodes2trash = json.loads(request.POST["nodeids"])
         print("nodes to the trash:")
         print(nodes2trash)
+        session = get_session()
         nodes = session.query(Node).filter(Node.id.in_(nodes2trash)).all()
         for node in nodes:
             node.type_id = cache.NodeType['Trash'].id
@@ -508,6 +514,8 @@ def delete_node(request, node_id):
 
     # do we have a valid user?
     user = request.user
+    
+    session = get_session()
     node = session.query(Node).filter(Node.id == node_id).first()
 
     if not user.is_authenticated():
@@ -549,6 +557,7 @@ def chart(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
 
+    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -566,6 +575,7 @@ def sankey(request, corpus_id):
     user = request.user
     date = datetime.datetime.now()
 
+    session = get_session()
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
@@ -584,6 +594,7 @@ def matrix(request, project_id, corpus_id):
     user = request.user
     date = datetime.datetime.now()
 
+    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -602,6 +613,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
     user = request.user
     date = datetime.datetime.now()
 
+    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -665,6 +677,7 @@ def corpus_csv(request, project_id, corpus_id):
 
     writer = csv.writer(response)
 
+    session = get_session()
     corpus_id = session.query(Node.id).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
     documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
@@ -737,6 +750,7 @@ def node_link(request, corpus_id):
     '''
 
     data = []
+    session = get_session()
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
@@ -744,6 +758,7 @@ def node_link(request, corpus_id):
 
 def sankey_csv(request, corpus_id):
     data = []
+    session = get_session()
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = [
             ["source", "target", "value"]

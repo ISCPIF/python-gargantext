@@ -11,7 +11,7 @@ import datetime
 import copy
 
 from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, cache, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
+from gargantext_web.db import get_session, cache, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
         , NodeType, Node_Hyperdata
 from gargantext_web.validation import validate, ValidationException
 from node import models
@@ -65,6 +65,7 @@ class APIException(_APIException):
         self.status_code = code
         self.detail = message
 
+session = get_session()
 
 _operators_dict = {
     "=":                lambda field, value: (field == value),
@@ -102,6 +103,7 @@ class NodesChildrenNgrams(APIView):
     def get(self, request, node_id):
         # query ngrams
         ParentNode = aliased(Node)
+        session = get_session()
         ngrams_query = (session
             .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -144,6 +146,7 @@ class NodesChildrenNgramsIds(APIView):
     def get(self, request, node_id):
         # query ngrams
         ParentNode = aliased(Node)
+        session = get_session()
         ngrams_query = (session
             .query(Node.id, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.node_id == Node.id)
@@ -189,6 +192,7 @@ class Ngrams(APIView):
     def get(self, request, node_id):
         # query ngrams
         ParentNode = aliased(Node)
+        session = get_session()
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
@@ -315,6 +319,7 @@ class NodesChildrenDuplicates(APIView):
             raise APIException('Missing GET parameter: "keys"', 400)
         keys = request.GET['keys'].split(',')
         # hyperdata retrieval
+        session = get_session()
         hyperdata_query = (session
             .query(Hyperdata)
             .filter(Hyperdata.name.in_(keys))
@@ -398,6 +403,7 @@ def get_metadata(corpus_id_list):
 
     # query hyperdata keys
     ParentNode = aliased(Node)
+    session = get_session()
     hyperdata_query = (session
         .query(Hyperdata)
         .join(Node_Hyperdata, Node_Hyperdata.hyperdata_id == Hyperdata.id)
@@ -472,6 +478,7 @@ class ApiNgrams(APIView):
 
         # query ngrams
         ParentNode = aliased(Node)
+        session = get_session()
         ngrams_query = (session
             .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -696,6 +703,7 @@ class NodesList(APIView):
 
     def get(self, request):
         print("user id : " + str(request.user))
+        session = get_session()
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
             .filter(Node.user_id == int(request.user.id))
@@ -713,6 +721,7 @@ class NodesList(APIView):
 
 class Nodes(APIView):
     def get(self, request, node_id):
+        session = get_session()
         node = session.query(Node).filter(Node.id == node_id).first()
         if node is None:
             raise APIException('This node does not exist', 404)
@@ -733,6 +742,7 @@ class Nodes(APIView):
     def delete(self, request, node_id):
 
         user = request.user
+        session = get_session()
         node = session.query(Node).filter(Node.id == node_id).first()
 
         msgres = str()
@@ -752,6 +762,7 @@ class CorpusController:
             corpus_id = int(corpus_id)
         except:
             raise ValidationError('Corpora are identified by an integer.', 400)
+        session = get_session()
         corpusQuery = session.query(Node).filter(Node.id == corpus_id).first()
         # print(str(corpusQuery))
         # raise Http404("404 error.")
@@ -773,6 +784,7 @@ class CorpusController:
 
         # build query
         ParentNode = aliased(Node)
+        session = get_session()
         query = (session
             .query(Ngram.terms, func.count('*'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)

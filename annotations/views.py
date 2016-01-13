@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from node.models import Node
-from gargantext_web.db import session, cache, Node, NodeNgram, Ngram
+from gargantext_web.db import get_session, cache, Node, NodeNgram, Ngram
 from ngram.lists import listIds, listNgramIds
 from gargantext_web.db import get_or_create_node
 
@@ -63,6 +63,7 @@ class NgramEdit(APIView):
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
+    session = get_session()
 
     def post(self, request, list_id, ngram_ids):
         """
@@ -134,7 +135,8 @@ class NgramCreate(APIView):
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
-
+    session = get_session()
+    
     def post(self, request, list_id):
         """
         create NGram in a given list

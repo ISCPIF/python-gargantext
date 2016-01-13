@@ -1,5 +1,5 @@
 
-from gargantext_web.db import session, cache, get_cursor
+from gargantext_web.db import get_session, cache, get_cursor
 from gargantext_web.db import Node, NodeNgram, NodeNodeNgram
 from gargantext_web.db import get_or_create_node
 from admin.utils import DebugTime
@@ -9,6 +9,7 @@ def compute_occs(corpus):
     dbg.show('Calculate occurrences')
     occs_node = get_or_create_node(nodetype='Occurrences', corpus=corpus)
     
+    session = get_session()
     #print(occs_node.id)
 
     (session.query(NodeNodeNgram)

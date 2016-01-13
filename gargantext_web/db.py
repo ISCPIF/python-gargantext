@@ -2,7 +2,7 @@ from django.conf import settings
 
 from node import models
 
-__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor', 'User']
+__all__ = ['literalquery', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor', 'User']
 
 
 # initialize sqlalchemy
@@ -136,10 +136,11 @@ def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
-Session = get_sessionmaker()
-session = scoped_session(Session)
+def get_session():
+    Session = get_sessionmaker()
+    return scoped_session(Session)
 
-
+session = get_session()
 # SQLAlchemy model objects caching
 
 from sqlalchemy import or_
@@ -161,6 +162,7 @@ class ModelCache(dict):
             for column in self._columns
             if column.type.python_type == str or key.__class__ == column.type.python_type
         ]
+        session = get_session()
         element = session.query(self._model).filter(or_(*conditions)).first()
         if element is None:
             raise KeyError
@@ -169,6 +171,7 @@ class ModelCache(dict):
 
     def preload(self):
         self.clear()
+        session = get_session()
         for element in session.query(self._model).all():
             for column_name in self._columns_names:
                 key = getattr(element, column_name)
@@ -234,12 +237,15 @@ class bulk_insert:
 
     readline = read
 
-def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None):
+def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None, session=None):
     '''
     Should be a method of the object. __get_or_create__ ?
     name_str :: String
     hyperdata :: Dict
     '''
+    if session is None:
+        session = get_session()
+
     if nodetype is None:
         print("Need to give a type node")
     else:

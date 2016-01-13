@@ -5,7 +5,7 @@ from admin.env import *
 from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram,NodeNgramNgram
-from gargantext_web.db import get_or_create_node, session, bulk_insert
+from gargantext_web.db import get_or_create_node, get_session, bulk_insert
 
 from sqlalchemy.sql import func
 from sqlalchemy import desc, asc, or_, and_, Date, cast, select
@@ -19,6 +19,7 @@ def compute_mapList(corpus,limit=500,n=1):
     '''
     According to Specificities and stoplist,
     '''
+    session = get_session()
 
     monograms_part = 0.005
     monograms_limit = round(limit * monograms_part)
@@ -89,7 +90,7 @@ def compute_mapList(corpus,limit=500,n=1):
 
 def insert_miam(corpus, ngrams=None, path_file_csv=None):
     dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
-    
+    session = get_session()
     node_miam = get_or_create_node(nodetype='MiamList', corpus=corpus)
     session.query(NodeNgram).filter(NodeNgram.node_id==node_miam.id).delete()
     session.commit()

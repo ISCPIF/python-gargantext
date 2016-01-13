@@ -7,6 +7,7 @@ from math import log
 from admin.utils import DebugTime
 
 from gargantext_web.db import *
+from gargantext_web.db import get_session
 
 from .parsers_config import parsers as _parsers
 from ngram.tools import insert_ngrams
@@ -30,7 +31,7 @@ parsers = Parsers()
 # resources management
 def add_resource(corpus, **kwargs):
     # only for tests
-    session = Session()
+    session = get_session()
     resource = Resource(guid=str(random()), **kwargs )
     # User
     if 'user_id' not in kwargs:
@@ -66,7 +67,9 @@ def add_resource(corpus, **kwargs):
 
 def parse_resources(corpus, user=None, user_id=None):
     dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
-    session = Session()
+    
+    session = get_session()
+
     corpus_id = corpus.id
     type_id = cache.NodeType['Document'].id
     if user_id is None and user is not None:
@@ -205,6 +208,7 @@ ngramsextractors = NgramsExtractors()
 
 def extract_ngrams(corpus, keys, nlp=True):
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
+    session = get_session()
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the hyperdata associated with the given keys
     columns = [Node.id, Node.language_id] + [Node.hyperdata[key] for key in keys]

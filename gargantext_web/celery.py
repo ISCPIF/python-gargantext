@@ -11,13 +11,14 @@ import cProfile
 def debug_task(request):
     print('Request: {0!r}'.format(request))
 
-from gargantext_web.db import session, cache, Node
+from gargantext_web.db import get_session, cache, Node
 from ngram.workflow import ngram_workflow
 
 
 @shared_task
 def apply_sum(x, y):
     print(x+y)
+    session = get_session()
     print(session.query(Node.name).first())
 
 
@@ -33,7 +34,8 @@ def apply_workflow(corpus_id):
     dbg.show('ALL WORKFLOW')
     
     update_state = WorkflowTracking()
-
+    
+    session = get_session()
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
     update_state.processing_(corpus, "Parsing")

@@ -6,7 +6,8 @@ from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, get_session
+
 
 from parsing.corpustools import *
 
@@ -43,6 +44,7 @@ def getNgrams(corpus=None, limit=1000):
     terms = dict()
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)'
                                     , corpus=corpus)
+    session = get_session()
     #print(corpus.name)
     ngrams = (session.query(Ngram.id, Ngram.terms, func.sum(NodeNgram.weight), NodeNodeNgram.score)
                         .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
@@ -122,6 +124,7 @@ def compute_cvalue(corpus=None, limit=1000):
 
     result = cvalueAll()
     #print([n for n in result])
+    session = get_session()
     session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==cvalue_node.id).delete()
     session.commit()
 

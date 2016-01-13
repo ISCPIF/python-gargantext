@@ -1,7 +1,7 @@
 #from admin.env import *
 from math import log
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_session, get_or_create_node
 
 from admin.utils import DebugTime
 
@@ -128,6 +128,7 @@ def compute_tfidf_global(corpus):
     dbg.show('calculate terms frequencies sums')
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
 
+    session = get_session()
     # update would be better
     session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
     session.commit()

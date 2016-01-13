@@ -189,7 +189,7 @@ def testISTEX(request , project_id):
 	print("testISTEX:")
 	print(request.method)
 	alist = ["bar","foo"]
-
+	session = get_session()
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)

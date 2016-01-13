@@ -7,12 +7,14 @@ __all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine
 
 # initialize sqlalchemy
 
-from sqlalchemy.orm import Session, mapper
+from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
 from sqlalchemy.ext.automap import automap_base
 
 from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey
 from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import JSON
+
+
 
 # SQLAlchemy session management
 def get_engine():
@@ -129,12 +131,13 @@ def literalquery(statement, dialect=None):
     return LiteralCompiler(dialect, statement)
 
 
+
 def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
 Session = get_sessionmaker()
-session = Session()
+session = scoped_session(Session)
 
 
 # SQLAlchemy model objects caching

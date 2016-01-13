@@ -1,4 +1,35 @@
-
+/**
+ * @fileoverview
+ * Manages behavior of the terms view (at: project/PID/corpus/CID/terms)
+ *   - the ngrams table with normal/keep/delete states
+ *   - the ngrams groupings
+ *   - the score chart
+ * 
+ * Main_test() is the entry point. A dynatable is the main UI element.
+ * 
+ * Dynatable uses <thead> for columns and ulWriter() for row formatting.
+ * 
+ * Here, the user can modify DB lists by toggling Ngrams states and 
+ * save to DB via the API in the functions SaveLocalChanges() and CRUD()
+ * 
+ * Local persistence of states is in AjaxRecord[tableId].state
+ *   (access by table ids, *not* ngram ids)
+ * 
+ * Their values are initialized in the functions AfterAjax() and Refresh().
+ * 
+ * The stateIds are described by the System object.
+ *   - columns use stateId [0..2]  (miam aka normal, map aka keep, stop aka delete)
+ *   - stateId 3 is for grouped items (TODO clarify use)
+ * 
+ * @author
+ *   Samuel Castillo (original 2015 work)
+ *   Romain Loth (minor 2016 modifications + doc)
+ *
+ * @version 1.0 beta
+ * 
+ * @requires jquery.dynatable
+ * @requires d3
+ */
 
 
 function pr(msg) {
@@ -50,7 +81,7 @@ var System = {
 	// },
 	0: {
 		"states" : [ "normal" , "keep" , "delete" , "group"] ,
-		"statesD" : {} ,
+		"statesD" : {} , // will be inverted map of states
 		"dict" : {
 			"normal": {
 			  "id":"normal",
@@ -77,10 +108,18 @@ var System = {
 	
 }
 
+
+// States : [ "normal" , "keep" , "delete"]
+
+
+/**
+ * inverted mapping useful for state_id lookup
+ * 
+ * System[GState]["statesD"] = {'normal':0,'keep':1,'delete':2,'group':3}
+ */
 for(var i in System[GState]["states"] ) {
 	System[GState]["statesD"][ System[GState]["states"][i] ] = Number(i)
 }
-
 
 var FlagsBuffer = {}
 for(var i in System[GState]["states"]) {
@@ -275,6 +314,8 @@ function Push2Buffer( NewVal ) {
 }
 
 function Final_UpdateTable( action ) {
+    // debug
+    // console.log("\nFUN Final_UpdateTable()")
     // (1) Identifying if the button is collapsed:   
     var isCollapsed=false;
     var accordiontext = $("#collapseOne").attr("class")
@@ -285,8 +326,8 @@ function Final_UpdateTable( action ) {
     var UpdateTable = false
     if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
         UpdateTable = true;
-        $("#corpusdisplayer").html("Close Folder")
-    } else $("#corpusdisplayer").html("Open Folder")
+        $("#corpusdisplayer").html("Close Term List")
+    } else $("#corpusdisplayer").html("Show Term List")
 
     pr("update table??: "+UpdateTable)
 
@@ -418,7 +459,6 @@ function add2groupdiv( elem_id ) {
 }
 // new
 function add2group ( elem ) {
-
 	if( $("#group_box").length==0 ) {
 		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
 		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
@@ -445,151 +485,242 @@ function add2group ( elem ) {
 	MyTable.data('dynatable').dom.update();
 }
 
-// new
-// click red, click keep, click normal...
-function clickngram_action ( elem ) {
-	var elem_id = $( elem ).data("stuff")
-	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
 
+/**
+ * click red, click keep, click normal...
+ * 
+ * @param elem - the table row that contains the term cell
+ */
+function clickngram_action ( elem ) {
+    // local id
+	var elem_id = $( elem ).data("stuff") ;
+    console.log("click: state before: "+ AjaxRecords[elem_id].state) ;
+    
+    // cycle the statuses (omitting status 3 = group)
+	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
+    
+    // State <=> term color <=> checked colums
+    
+    console.log("\n\nRECORD visible on click --- " + JSON.stringify(AjaxRecords[elem_id])) ;
+    
+    var ngramId = AjaxRecords[elem_id].id ;
+        
+    console.log("click: state after: "+ AjaxRecords[elem_id].state) ;
 	MyTable.data('dynatable').dom.update();
 }
 
-// modified
+/**
+ * Works for ulWriter. Connects a record's state with table UI outcome.
+ * 
+ * @param rec_id - the local id for this ngram record in AjaxRecords
+ */
 function transformContent(rec_id) {
-	var elem = AjaxRecords[rec_id];
+  // debug
+  // console.log("\nFUN transformContent() !!!!")
+	var ngram_info = AjaxRecords[rec_id];
+  
+  // ex: ngram_info = {
+  //             "id":2349,"name":"failure","score":1,"flag":false,
+  //             "group_plus":true,"group_blocked":false,"state":0
+  //            }
+  
+  // console.log(
+  //   "transformContent got ngram_info no " + rec_id + ": " 
+  //   + JSON.stringify(ngram_info)
+  // )
+    
+    
+    // result {} contains instanciated column html for dynatables
 	var result = {}
-	var atts = System[0]["dict"][ System[0]["states"][elem.state] ]
+	var atts = System[0]["dict"][ System[0]["states"][ngram_info.state] ]
 	var plus_event = ""
-	if(GState==0 && elem.state!=System[0]["statesD"]["delete"] ) // if deleted, no + button
+    
+    
+    // GState = 1 if previously had add_group
+    // it influences state lookup
+	if(GState==0 && ngram_info.state!=System[0]["statesD"]["delete"] ) // if deleted, no + button
 		plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(+)</a>"
 	if(GState==1 ) {
-		if(elem.state!=System[0]["statesD"]["delete"] && elem.state!=System[0]["statesD"]["group"]) { // if deleted and already group, no Up button
+		if(ngram_info.state!=System[0]["statesD"]["delete"] && ngram_info.state!=System[0]["statesD"]["group"]) { // if deleted and already group, no Up button
 			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
 		}
 	}
-	result["id"] = elem["id"]
-	result["score"] = '<span class="'+atts.id+'">'+elem["score"]+'</span>'
+	
+    // uncomment if column tableId
+    // result['rec_id'] = rec_id ;
+    
+    // uncomment if column ngramId
+    // result["ngramId"] = ngram_info["id"] ;
+    
+    // uncomment if column state
+    // result["state"] = AjaxRecords[rec_id].state
+    
+    // -------------------------------------------
+    // check box state columns 'will_be_map' and 'will_be_stop'
+    
+    map_flag = (AjaxRecords[rec_id].state == 1) ;    // 1 = System[0]["statesD"]["keep"]
+    stop_flag = (AjaxRecords[rec_id].state == 2) ;   // 2 = System[0]["statesD"]["delete"]
+    
+    result["will_be_map"] = '<input type="checkbox" onclick="checkBox(\'keep\',this.parentNode.parentNode)" '
+                           +(map_flag?'checked':'')
+                           +'></input>'
+    result["will_be_stop"] = '<input type="checkbox" onclick="checkBox(\'delete\', this.parentNode.parentNode)" '
+                           +(stop_flag?'checked':'')
+                           +'></input>'
+    // possible todo: 3 way switch ?? 
+    // par exemple http://codepen.io/pamgriffith/pen/zcntm
+    // -------------------------------------------
+    
+    result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>'
 	result["name"] = "<span class=\""+atts.id+
-					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+elem["name"]+"</span>"+
+					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+ngram_info["name"]+"</span>"+
 					 plus_event
 	return result;
 }
 
-// to delete
-// Affecting the tr element somehow
-function overRide(elem) {
-  var id = elem.id
-  var current_flag = $("input[type='radio'][name='radios']:checked").val()
-  var this_newflag = (current_flag==AjaxRecords[id]["flag"])?false:current_flag
 
-  console.log("striking: "+id+" | this-elem_flag: "+AjaxRecords[id]["flag"]+" | current_flag: "+current_flag)
-  console.log("\t so the new flag is: "+this_newflag)
-  // if(this_newflag)
-  //   FlagsBuffer[this_newflag][id] = true;
-  // else 
-  //   delete FlagsBuffer[ AjaxRecords[id]["flag"] ][id];
-
-  var sum__selected_elems = 0;
-  for(var i in FlagsBuffer)
-    sum__selected_elems += Object.keys(FlagsBuffer[i]).length;
-
-  console.log("")
-  console.log("Current Buffer size: "+sum__selected_elems)
-  console.log(FlagsBuffer)
-
-  if ( sum__selected_elems>0 )
-    $("#Clean_All, #Save_All").removeAttr("disabled", "disabled");
-  else 
-    $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-
-  MyTable.data('dynatable').dom.update();
-
+/**
+ * Click on a checkbox in a row
+ * 
+ * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
+ * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ */
+ 
+function checkBox(boxType, elem) {
+    console.log ('CLICK on check box') ;
+    
+    var elemId = elem.getAttribute("data-stuff") ;
+    var ngramId = AjaxRecords[elemId].id ;
+    var currentState = AjaxRecords[elemId].state ;
+    // alert('ELEMENT: ' + elemId + '\n'
+    //        + 'NGRAM: ' + ngramId + '\n'
+    //        + 'CURRENT STATE: ' + currentState) ;
+    
+    // find out which box
+    // if (boxType == 'keep') => affectedState = 1
+    // if (boxType == 'delete') => affectedState = 2
+    affectedState = System[0]["statesD"][boxType] ;
+    
+    // turn on if it's not already on
+    if (currentState != affectedState) {
+        targetState = affectedState
+    }
+    // otherwise turn the 2 boxes off
+    else {
+        targetState = 0 ;
+    }
+    
+    // set old state and color
+    AjaxRecords[elemId].state = targetState ;
+    MyTable.data('dynatable').dom.update();
 }
 
-//generic enough
+/**
+ * "generic enough"
+ * 
+ * Writes a row for each datum 
+ * (function passed to dynatable config "writers" property)
+ * @eachData
+ * 
+ * @param rowIndex: int i++
+ * @param record: { "id":1793,"name":"planet","score":1,"flag":false,
+ *                   "group_plus":true,"group_blocked":false,
+ *                   "state":0}
+ * @param columns: constant array 
+ *                 (with column template for cellWriter)
+ *                 (auto-built from html <thead> elements)
+ *              ex: [
+ *                  {"index":0,"label":"Terms","id":"name",
+ *                   "sorts":["name"],"hidden":false,
+ *                   "textAlign":"left","cssClass":false},
+ *                  {"index":1,"label":"Score","id":"score",
+ *                   "sorts":["score"],"hidden":false,
+ *                   "textAlign":"left","cssClass":false}
+ *                  ]
+ */
 function ulWriter(rowIndex, record, columns, cellWriter) {
+  // debug
+  // console.log("\nFUN ulWriter()")
   var tr = '';
   var cp_rec = {}
-
-  if( AjaxRecords[RecDict[record.id]].state < 0 )
-  	return false;
-
+  
+  if( AjaxRecords[RecDict[record.id]].state < 0 ) {
+      return false;
+  }
+  
+  // Add cells content (values OR custom html) from record
+  // -----------------------------------------------------
   cp_rec = transformContent(RecDict[record.id])
+  
+  // console.log("cp_rec" + JSON.stringify(cp_rec))
+  // console.log("\n----\nrecord" + JSON.stringify(record))
   
   // grab the record's attribute for each column
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }
+  
+  // we could directly use record.id (ngram_id) if store states separately
   var data_id = RecDict[record.id]
   return '<tr data-stuff='+data_id+'>' + tr + '</tr>';
 }
 
-function SelectAll( box ) {
-  var current_flag = $("input[type='radio'][name='radios']:checked").val()
+/**
+ * SelectAll: toggle all checkboxes in a row by changing state in System
+ * 
+ * (new version without the old Delete|Keep radio choice)
+ * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
+ * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ */
+ 
+function SelectAll(boxType, boxElem ) {
+  // debug
+  // console.log("\nFUN SelectAll()")
+
+    // we will need status of the other "check all box"
+    if (boxType == 'keep') { otherBoxId = "delAll" ; }
+    else                  { otherBoxId = "mapAll" ; }
+    
+    
+    otherWasChecked = $("input#"+otherBoxId).prop('checked') ;
+    if (otherWasChecked) {
+        // we visually uncheck the other box if necessary
+        $('#'+otherBoxId).attr('checked', false);
+    }
+  
   $("tbody tr").each(function (i, row) {
-      var id = $(row).data('stuff')
-      if(box.checked) {
-      	AjaxRecords[id]["state_buff"] = AjaxRecords[id]["state"]
-      	AjaxRecords[id]["state"] = System[0]["statesD"][current_flag]
-      } else {
-      	AjaxRecords[id]["state"] = AjaxRecords[id]["state_buff"]
-      }
+      var rec_id = $(row).data('stuff') ;     // for old state system
+      var ngramId = AjaxRecords[rec_id].id ;  // for future state system (cols)
       
+      if(boxElem.checked) {
+        // stateId: 1 if boxType == 'keep'
+        //          2 if boxType == 'delete'
+        var stateId = System[0]["statesD"][boxType] ;
+        
+        // a buffer to restore previous states if unchecked
+        // (except if there was a click on the other 'all' box
+        //  b/c then buffer is already filled and we shouldn't redo it)
+        if (!otherWasChecked) {
+            AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
+        }
+        
+        // do the requested change
+        AjaxRecords[rec_id]["state"] = stateId ;
+      } 
+      // restore previous states
+      else {
+        AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
+        AjaxRecords[rec_id]["state_buff"] = null ;
+      }
   });
   MyTable.data('dynatable').dom.update();
 }
 
-function SaveGlobalChanges( delete_ ) {
-  console.log( "iterating over global stop words:" )
-  $('.globalstopwords').each(function() {
-      console.log( $(this).data("id") )
-  });  
-  console.log( " - - - - -" )
-  console.log( "delete: "+delete_ )
-  if(!delete_) {
-    // SaveLocalChanges()
-  } else {
-    
-  }
-}
-
-function SaveGlobalChanges_Form( nodes2del) {
-  console.log( "In SaveGlobalChanges:" )
-  console.log( nodes2del )
-  //AjaxRecords[RecDict[1731]]
-  $("#stoplist_content").html("")
-  var html_globalstop = ""
-  for(var i in nodes2del) {
-    $('<span/>', {
-      "class": "globalstopwords",
-      "data-id":AjaxRecords[RecDict[nodes2del[i]]].id,
-      "data-stuff": RecDict[nodes2del[i]],
-        title: 'Click to remove',
-        text: AjaxRecords[RecDict[nodes2del[i]]].name,
-        css: {
-          "cursor":"pointer",
-          "border": "1px solid red",
-          "margin": "3px",
-          "padding": "3px",
-        }
-    })
-    .click(function() {
-        $(this).remove()
-        // if nothing in group div, then remove it
-        if( $("#stoplist_content").children().length==0 ) {
-          SaveLocalChanges()
-        }
-    })
-    .appendTo('#stoplist_content')
-
-  }
-  $("#pre_savechanges").modal("show")
-}
 
 // Save changes to all corpusA-lists 
 function SaveLocalChanges() {
-
-  console.clear()
+  console.log("\nFUN SaveLocalChanges()")
+  // console.clear()
   console.log("In SaveChanges()")
   var sum__selected_elems = 0;
 
@@ -636,10 +767,10 @@ function SaveLocalChanges() {
   }
   // [ = = = = / For deleting subforms = = = = ]
 
-  // console.log(" = = = = = = = = = == ")
-  // console.log("FlagsBuffer:")
-  // console.log(FlagsBuffer)
-
+  console.log(" = = = = = = = = = == ")
+  console.log("FlagsBuffer:")
+  console.log(JSON.stringify(FlagsBuffer))
+  
 
   var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
   var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
@@ -647,21 +778,21 @@ function SaveLocalChanges() {
   var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
   var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
 
-  // console.log("")
-  // console.log("")
-  // console.log(" nodes_2del: ")
-  // console.log(nodes_2del)
-  // console.log(" nodes_2keep: ")
-  // console.log(nodes_2keep)
-  // console.log(" nodes_2group: ")
-  // console.log(nodes_2group)
-  // console.log(" nodes_2inmap: ")
-  // console.log(nodes_2inmap)
-  // console.log(" nodes_2outmap: ")
-  // console.log(nodes_2outmap)
-  // console.log("")
-  // console.log("")
-
+   console.log("")
+   console.log("")
+   console.log(" nodes_2del: ")
+   console.log(nodes_2del)
+   console.log(" nodes_2keep: ")
+   console.log(nodes_2keep)
+   console.log(" nodes_2group: ")
+   console.log(nodes_2group)
+   console.log(" nodes_2inmap: ")
+   console.log(nodes_2inmap)
+   console.log(" nodes_2outmap: ")
+   console.log(nodes_2outmap)
+   console.log("")
+   console.log("")
+  
   var list_id = $("#list_id").val()
   var corpus_id = getIDFromURL( "corpus" ) // not used
 
@@ -702,24 +833,17 @@ $("#Clean_All").click(function(){
 
 $("#Save_All").click(function(){
   SaveLocalChanges()
-  // var Elems_2Del = {};
-  // for(var id in AjaxRecords) {
-  //   if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-  //     Elems_2Del[AjaxRecords[id].id] = true
-  //   }
-  // }
-  // if( Object.keys(Elems_2Del).length>0 ) {
-  //   SaveGlobalChanges_Form( Object.keys(Elems_2Del).map(Number) )
-  // } else {
-  //   // SaveLocalChanges() //At the end, reload!
-  // }
 });
 
 // For lists, all http-requests
 function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
 	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
-	if(nodes.length>0 || Object.keys(args).length>0) {
+	
+    // debug
+    // console.log("CRUD AJAX => URL: " + the_url + " (" + http_method + ")")
+    
+    if(nodes.length>0 || Object.keys(args).length>0) {
 		$.ajax({
 		  method: http_method,
 		  url: the_url,
@@ -743,18 +867,39 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 	} else callback(false);
 }
 
-function Main_test( data , initial , search_filter) {
 
+
+/**
+ * 1. Creates the html of the table
+ *    => therefore thead for dynatable columns template
+ * 2. Fills the AjaxRecords from data 
+ *    record.id, record.name, record.score... all except record.state
+ *    record.state is initalized in:
+ *       - AfterAjax for map items
+ *       - ??? for stop items
+ * 3. Creates the scores distribution chart over table
+ * 4. Set up Search div
+ * 
+ * @param data: a response from the api/node/CID/ngrams/list/ routes
+ * @param initial: initial score type "occs" or "tfidf"
+ * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
+ */
+function Main_test( data , initial , search_filter) {
+    
+    // debug
+    // alert("refresh main")
+    
 	console.log("")
 	console.log(" = = = = MAIN_TEST: = = = = ")
 	console.log("data:")
 	console.log(data)
-	console.log("initial:")
+	console.log("initial:")   // 
 	console.log(initial)
-	console.log("search_filter:")	
+	console.log("search_filter:")	    // eg 'filter_all'
 	console.log(search_filter)
 	console.log(" = = = = / MAIN_TEST: = = = = ")
 	console.log("")
+  
 
     var DistributionDict = {}
     for(var i in DistributionDict)
@@ -769,16 +914,60 @@ function Main_test( data , initial , search_filter) {
     //  div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select'+"\n"
     $("#div-table").html("")
     $("#div-table").empty();
+    
+    // ? TODO move this to terms.html template
+    // ----------------------------------------
     var div_table = '<p align="right">'+"\n"
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
-      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n"
-      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
-      div_table += "\t"+"\t"+'</th>'+"\n"
-      div_table += "\t"+'</thead>'+"\n"
-      div_table += "\t"+'<tbody>'+"\n"
-      div_table += "\t"+'</tbody>'+"\n"
-      div_table += '</table>'+"\n"
+      div_table += "\t"+'<tr>'+"\n"
+      // ------------------------------------------------------------------
+      // Any <th> defined here will end up in the 'columns' arg of ulWriter
+      // ------------------------------------------------------------------
+      
+      // uncomment for column tableId
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="rec_id" style="background-color:grey">local id</th>'+"\n";
+      
+      // uncomment for column ngramId
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
+      
+      // uncomment for column stateId
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
+      
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
+      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n";
+      div_table += "\t"+"\t"+'</th>'+"\n";
+      // selector columns... not sortable to allow 'click => check all'
+      div_table += "\t"+"\t"+'<th data-dynatable-column="will_be_map"'
+                            + ' data-dynatable-no-sort="true"'
+                            + ' title="Selected terms will appear in the map."'
+                            + ' style="width:3em;"'
+                            + '>'
+                            + 'Map'
+                            + '<p class="note">'
+                            + '<input type="checkbox" id="mapAll"'
+                            + ' onclick="SelectAll(\'keep\',this)" title="Check to select all currently visible terms"></input>'
+                            + '<label>All</label>'
+                            + '</p>'
+                            + '</th>'+"\n" ;
+      div_table += "\t"+"\t"+'<th data-dynatable-column="will_be_stop"'
+                            + ' data-dynatable-no-sort="true"'
+                            + ' title="Selected terms will be removed from all lists."'
+                            + ' style="width:3em;"'
+                            + '>'
+                            + 'Del'
+                            + '<p class="note">'
+                            + '<input type="checkbox" id="delAll"'
+                            + ' onclick="SelectAll(\'delete\',this)" title="Check to select all currently visible terms"></input>'
+                            + '<label>All</label>'
+                            + '</p>'
+                            + '</th>'+"\n" ;
+      div_table += "\t"+'</tr>'+"\n";
+      div_table += "\t"+'</thead>'+"\n";
+      div_table += "\t"+'<tbody>'+"\n";
+      div_table += "\t"+"\t"+'<tr><td>a</td><td>a</td><td>a</td><td>a</td></tr>'+"\n";
+      div_table += "\t"+'</tbody>'+"\n";
+      div_table += '</table>'+"\n";
       div_table += '</p>';
     $("#div-table").html(div_table)
 
@@ -793,8 +982,8 @@ function Main_test( data , initial , search_filter) {
     AjaxRecords = []
     for(var i in data.ngrams) {
     
-      var le_ngram = data.ngrams[i]
-
+      var le_ngram = data.ngrams[i] ;
+      
       var orig_id = le_ngram.id
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
@@ -805,7 +994,11 @@ function Main_test( data , initial , search_filter) {
         "flag":false,
         "group_plus": true,
         "group_blocked": false,
-        "state": (le_ngram.state)?le_ngram.state:0
+        "state": (le_ngram.state)?le_ngram.state:0,
+        
+        // rl: 2 new columns showing 'state == map' and 'state == del'
+        "will_be_map": null,
+        "will_be_stop": null
       }
       AjaxRecords.push(node_info)
 
@@ -929,7 +1122,7 @@ function Main_test( data , initial , search_filter) {
     LineChart.filterAll();
     volumeChart.filterAll();
     dc.redrawAll();
-
+    
     MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
@@ -944,17 +1137,7 @@ function Main_test( data , initial , search_filter) {
                   // _cellWriter: customCellWriter
                 }
               })
-              // .bind("dynatable:afterUpdate",  function(e, rows) {
-              //   $(e.target).children("tbody").children().each(function(i) {
-              //      $(this).click(function(){
-              //        var row_nodeid = $(this).data('stuff')
-              //        var elem = { "id":row_nodeid , "checked":false }
-              //        overRide(elem); //Select one row -> select one ngram
-
-              //       });
-              //   });
-              // });
-
+    
     // MyTable.data('dynatable').settings.dataset.records = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
@@ -963,9 +1146,17 @@ function Main_test( data , initial , search_filter) {
     MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
     MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
+    MyTable.data('dynatable').paginationPerPage.set(20);  // default:10
     // MyTable.data('dynatable').process();
     // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
+    
+    // hook on page change
+    MyTable.bind('dynatable:page:set', function(){
+        // we visually uncheck both 'all' boxes
+        $('input#mapAll').attr('checked', false);
+        $('input#delAll').attr('checked', false);
+    })
 
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();
@@ -976,18 +1167,7 @@ function Main_test( data , initial , search_filter) {
     $(".dynatable-pagination-links").insertAfter(".imadiv")
 
 
-
-    var Div_PossibleActions = ""
-    for(var action in PossibleActions) {
-      var a = PossibleActions[action];
-      var ischecked = (Number(action)==0)?"checked":"";
-      Div_PossibleActions += '<input type="radio" id="radio'+action+'" name="radios"  value="'+a.id+'" '+ischecked+'>';
-      Div_PossibleActions += '<label style="color:'+a.color+';" for="radio'+action+'">'+a.name+'</label>';
-    }
-    var Div_SelectAll = ' <input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select All'
-    $(".imadiv").html('<div style="float: left; text-align:left; input[type=radio] {display: none;}">'+Div_PossibleActions+Div_SelectAll+'</div><br>');
-
-
+    // Search
 	$("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
 	$("#"+search_filter).attr( "selected" , "selected" )
 	var the_content = $("#filter_search").html();
@@ -1030,6 +1210,7 @@ function SearchFilters( elem ) {
     // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
     // MyTable.data('dynatable').process();
   }
+    
 
   if( MODE == "filter_stop-list") {
   	console.log( NGrams["stop"] )
@@ -1039,9 +1220,13 @@ function SearchFilters( elem ) {
 			"scores": $.extend({}, NGrams["main"].scores)
 		}
 		for(var r in NGrams["stop"]) {
-			var a_ngram = NGrams["stop"][r]
-			a_ngram["state"] = System[0]["statesD"]["delete"]
+			var a_ngram = NGrams["stop"][r] ;
+            // deletestateId = 2
+            var deletestateId = System[0]["statesD"]["delete"] ;
+			a_ngram["state"] = deletestateId ;
+
 			sub_ngrams_data["ngrams"].push( a_ngram )
+            
 		}
 		var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
 		console.log( result )
@@ -1064,7 +1249,6 @@ function getIDFromURL( item ) {
 
 // For lists, only GET requests
 function GET_( url , callback ) {
-
     $.ajax({
         type: "GET",
         url: url,
@@ -1160,6 +1344,8 @@ GET_( url[0] , function(result) {
 
 
 function AfterAjax() {
+  // debug
+  // console.log("\nFUN AfterAjax()")
 	// // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -1182,11 +1368,16 @@ function AfterAjax() {
     	}
     	NGrams["main"].ngrams = ngrams_data_;
     }
-
+    
+    
+    // initialize state of maplist items
     if( Object.keys(NGrams["map"]).length>0 ) {
     	for(var i in NGrams["main"].ngrams) {
-    		if(NGrams["map"][NGrams["main"].ngrams[i].id]) {
-    			NGrams["main"].ngrams[i]["state"] = System[0]["statesD"]["keep"]
+            myMiamNgram = NGrams["main"].ngrams[i]
+    		if(NGrams["map"][myMiamNgram.id]) {
+                // keepstateId = 1
+                keepstateId = System[0]["statesD"]["keep"]
+                myMiamNgram["state"] = keepstateId ;
     		}
     	}
     }

@@ -1,8 +1,8 @@
 from django.shortcuts import redirect
-from django.shortcuts import render
-from django.db import transaction
-
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+# from django.shortcuts import render
+# from django.db import transaction
+# 
+from django.http import Http404, HttpResponse #, HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.template import Context
 
@@ -13,47 +13,39 @@ from django.db import connection
 #        Node, NodeType, Node_Resource, Project, Corpus, \
 #        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
-from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
-
-from django.contrib.auth.models import User
-
+# from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
+# 
+# from django.contrib.auth.models import User
+# 
 import datetime
-from itertools import *
-from dateutil.parser import parse
-
-from django.db import connection
-from django import forms
-
-
-from collections import defaultdict
-
-from parsing.FileParsers import *
-import os
+# from itertools import *
+# from dateutil.parser import parse
+# 
+# from django.db import connection
+# from django import forms
+# 
+# 
+# from collections import defaultdict
+# 
+# from parsing.FileParsers import *
+# import os
 import json
-import math
+# import math
 
 # SOME FUNCTIONS
 
 from gargantext_web import settings
+# 
+# from django.http import *
+# from django.shortcuts import render_to_response,redirect
+# from django.template import RequestContext
 
-from django.http import *
-from django.shortcuts import render_to_response,redirect
-from django.template import RequestContext
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
+# from gargantext_web.db import *
 
-from scrappers.scrap_pubmed.admin import Logger
-
-from gargantext_web.db import *
-
-from sqlalchemy import or_, func
-
-from gargantext_web import about
+from gargantext_web.db import session, cache, Node, NodeNgram
+from sqlalchemy import func
 
 from rest_v1_0.api import JsonHttpResponse
-
-
-from ngram.lists import listIds, listNgramIds, ngramList , doList
 
 
 def get_ngrams(request , project_id , corpus_id ):
@@ -167,9 +159,7 @@ def get_journals_json(request , project_id, corpus_id ):
             JournalsDict[journal] += 1
     return JsonHttpResponse(JournalsDict)
 
-from gargantext_web.db import session, cache, Node, NodeNgram
-from sqlalchemy import or_, func
-from sqlalchemy.orm import aliased
+
 
 
 def get_corpuses( request , node_ids ):
@@ -202,6 +192,11 @@ def get_corpus_state( request , corpus_id ):
 
 
 def get_groups( request ):
+    """
+    User groups for current user.id
+    
+    route: /get_groups
+    """
     if not request.user.is_authenticated():
         return JsonHttpResponse( {"request" : "forbidden"} )
 
@@ -226,7 +221,7 @@ def get_groups( request ):
 def graph_share(request, generic=100, specific=100):
 
     if request.method== 'GET' and "token" in request.GET:
-        import json
+        # import json
         le_token = json.loads(request.GET["token"])[0]
         import base64
         le_query = base64.b64decode(le_token).decode("utf-8")
@@ -256,7 +251,7 @@ def graph_share(request, generic=100, specific=100):
 def node_link_share(request):
     data = { "request" : "error" }
     if request.method== 'GET' and "token" in request.GET:
-        import json
+        # import json
         le_token = json.loads(request.GET["token"])[0]
         import base64
         le_query = base64.b64decode(le_token).decode("utf-8")

@@ -136,7 +136,7 @@ def doTheQuery(request , project_id):
 		)
 		session.add(corpus)
 		session.commit()
-
+		corpus_id = corpus.id
 		# """
 		# urlreqs: List of urls to query.
 		# - Then, to each url in urlreqs you do:
@@ -172,9 +172,9 @@ def doTheQuery(request , project_id):
 
 		try:
 			if not DEBUG:
-				apply_workflow.apply_async((corpus.id,),)
+				apply_workflow.apply_async((corpus_id,),)
 			else:
-				thread = threading.Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
+				thread = threading.Thread(target=apply_workflow, args=(corpus_id, ), daemon=True)
 				thread.start()
 		except Exception as error:
 			print('WORKFLOW ERROR')

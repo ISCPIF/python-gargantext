@@ -29,6 +29,7 @@ import threading
 
 from node.admin import CustomForm
 from gargantext_web.db import *
+from gargantext_web.db import get_session
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
 
@@ -84,7 +85,7 @@ def getGlobalStatsISTEXT(request ):
 
 def doTheQuery(request , project_id):
 	alist = ["hola","mundo"]
-
+	session = get_session()
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
@@ -92,6 +93,7 @@ def doTheQuery(request , project_id):
 		raise Http404()
 
 	# do we have a valid project?
+	session = get_session()
 	project = (session
 		.query(Node)
 		.filter(Node.id == project_id)

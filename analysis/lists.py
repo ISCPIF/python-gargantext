@@ -76,6 +76,7 @@ class Translations(BaseClass):
             self.groups = defaultdict(set)
             for key, value in self.items.items():
                 self.groups[value].add(key)
+            session.remove()
         elif isinstance(other, Translations):
             self.items = other.items.copy()
             self.groups = other.groups.copy()
@@ -128,6 +129,7 @@ class Translations(BaseClass):
             ('node_id', 'ngramy_id', 'ngramx_id', 'score'),
             ((node_id, key, value, 1.0) for key, value in self.items.items())
         )
+        session.remove()
 
 
 class WeightedMatrix(BaseClass):
@@ -144,6 +146,7 @@ class WeightedMatrix(BaseClass):
             self.items = defaultdict(lambda: defaultdict(float))
             for key1, key2, value in self.items.items():
                 self.items[key1][key2] = value
+            session.remove()
         elif isinstance(other, WeightedMatrix):
             self.items = defaultdict(lambda: defaultdict(float))
             for key1, key2, value in other:
@@ -171,6 +174,7 @@ class WeightedMatrix(BaseClass):
             ('node_id', 'ngramx_id', 'ngramy_id', 'score'),
             ((node_id, key1, key2, value) for key1, key2, value in self)
         )
+        session.remove()
 
     def __radd__(self, other):
         result = NotImplemented
@@ -253,6 +257,7 @@ class UnweightedList(BaseClass):
                 .filter(NodeNgram.node_id == other)
             )
             self.items = {row[0] for row in query}
+            session.remove()
         elif isinstance(other, WeightedList):
             self.items = set(other.items.keys())
         elif isinstance(other, UnweightedList):
@@ -337,6 +342,7 @@ class UnweightedList(BaseClass):
             ('node_id', 'ngram_id', 'weight'),
             ((node_id, key, 1.0) for key in self.items)
         )
+        session.remove()
 
 
 class WeightedList(BaseClass):
@@ -351,6 +357,7 @@ class WeightedList(BaseClass):
                 .filter(NodeNgram.node_id == other)
             )
             self.items = defaultdict(float, query)
+            session.remove()
         elif isinstance(other, WeightedList):
             self.items = other.items.copy()
         elif isinstance(other, UnweightedList):
@@ -451,6 +458,7 @@ class WeightedList(BaseClass):
             ('node_id', 'ngram_id', 'weight'),
             ((node_id, key, value) for key, value in self.items.items())
         )
+        session.remove()
 
 
 def test():

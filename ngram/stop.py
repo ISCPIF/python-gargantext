@@ -36,6 +36,7 @@ def importStopList(node,filename,language='fr'):
     )
     
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
+    session.remove()
 
 def isStopWord(ngram, stop_words=None):
     '''
@@ -78,10 +79,11 @@ def compute_stop(corpus,limit=2000,debug=False):
     '''
     do some statitics on all stop lists of database of the same type
     '''
+    session = get_session()
+    
     stop_node_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     
     # TODO do a function to get all stop words with social scores
-    session = get_session()
     root = session.query(Node).filter(Node.type_id == cache.NodeType['Root'].id).first()
     root_stop_id = get_or_create_node(nodetype='StopList', corpus=root).id
     
@@ -112,4 +114,5 @@ def compute_stop(corpus,limit=2000,debug=False):
 
     stop = WeightedList({ n[0] : -1 for n in ngrams_to_stop})
     stop.save(stop_node_id)
-
+    
+    session.remove()

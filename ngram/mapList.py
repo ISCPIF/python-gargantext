@@ -87,10 +87,12 @@ def compute_mapList(corpus,limit=500,n=1):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
 
     dbg.show('MapList computed')
+    session.remove()
 
 def insert_miam(corpus, ngrams=None, path_file_csv=None):
-    dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
     session = get_session()
+    dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
+    
     node_miam = get_or_create_node(nodetype='MiamList', corpus=corpus)
     session.query(NodeNgram).filter(NodeNgram.node_id==node_miam.id).delete()
     session.commit()
@@ -122,8 +124,6 @@ def insert_miam(corpus, ngrams=None, path_file_csv=None):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
     file_csv.close()
     dbg.show('Miam computed')
+    session.remove()
 
-#corpus = session.query(Node).filter(Node.id==540420).first()
-#compute_mapList(corpus)
-#insert_miam(corpus=corpus, path_file_csv="Thesaurus_tag.csv")
 

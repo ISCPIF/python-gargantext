@@ -59,6 +59,9 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
 
     else:
         raise Exception("Usage (Warning): Need corpus_id and user_id")
+    
+    session.remove()
+
 
 # Some functions to manage ngrams according to the lists
 
@@ -118,6 +121,8 @@ def listNgramIds(list_id=None, typeList=None,
                 )
 
     return(query.all())
+    
+    session.remove()
 
 def ngramList(do, list_id, ngram_ids=None) :
     '''
@@ -129,8 +134,9 @@ def ngramList(do, list_id, ngram_ids=None) :
         ngram_id  = [Int]  : list of Ngrams id (Ngrams.id)
         list_id   = Int    : list id (Node.id)
     '''
-    results = []
     session = get_session()
+    
+    results = []
 
     if do == 'create':
         terms = copy(ngram_ids)
@@ -163,6 +169,7 @@ def ngramList(do, list_id, ngram_ids=None) :
 
     session.commit()
     return(results)
+    session.remove()
 
 # Some functions to manage automatically the lists
 def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=None):
@@ -202,6 +209,7 @@ def ngrams2miam(user_id=None, corpus_id=None):
                 .all()
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
+    session.remove()
 
 from gargantext_web.db import get_or_create_node
 from analysis.lists import Translations, UnweightedList
@@ -232,6 +240,7 @@ def ngrams2miamBis(corpus):
                 .all()
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
+    session.remove()
 
 def doList(
         type_list='MiamList',
@@ -365,6 +374,6 @@ def doList(
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
     return(list_dict[type_list]['id'])
-
+    session.remove()
 
 

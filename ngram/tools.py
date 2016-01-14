@@ -8,8 +8,8 @@ def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=Tru
     '''
     session = get_session()
 
-    list_node = get_or_create_node(corpus=corpus, nodetype=list_type)
-    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList')
+    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, session=session)
+    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', session=session)
     group_list = (session.query(NodeNgramNgram.ngramy_id)
                          .filter(NodeNgramNgram.id==group_node.id)
                          .all()
@@ -35,6 +35,7 @@ def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=Tru
     #print(list_to_insert)
     db, cursor = get_cursor()
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [n for n in list_to_insert])
+    session.remove()
 
 def insert_ngrams(ngrams,get='terms-id'):
     '''

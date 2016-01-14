@@ -20,7 +20,7 @@ def apply_sum(x, y):
     print(x+y)
     session = get_session()
     print(session.query(Node.name).first())
-
+    session.remove()
 
 from parsing.corpustools import  parse_resources, extract_ngrams #add_resource,
 from ngram.lists import ngrams2miam
@@ -52,7 +52,8 @@ def apply_workflow(corpus_id):
 
     print("End of the Workflow for corpus %d" % (corpus_id))
     update_state.processing_(corpus, "0")
-
+    
+    session.remove()
 
 @shared_task
 def empty_trash(corpus_id):

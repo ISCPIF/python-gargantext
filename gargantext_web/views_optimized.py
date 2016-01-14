@@ -199,6 +199,8 @@ def project(request, project_id):
         'number'        : corpora_count,
     })
 
+    session.remove()
+
 def tfidf(request, corpus_id, ngram_ids):
     """Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
@@ -254,11 +256,13 @@ def tfidf(request, corpus_id, ngram_ids):
         nodes_list.append(node_dict)
 
     return JsonHttpResponse(nodes_list)
+    session.remove()
 
 def getCorpusIntersection(request , corpuses_ids):
 
-    FinalDict = False
     session = get_session()
+    
+    FinalDict = False
 
     if request.method == 'POST' and "nodeids" in request.POST and len(request.POST["nodeids"])>0:
         import ast
@@ -303,15 +307,16 @@ def getCorpusIntersection(request , corpuses_ids):
         # Getting AVG-COOC of each ngram that exists in the cooc-matrix of the compared-corpus. 
 
     return JsonHttpResponse(FinalDict)
+    session.remove()
 
 def getUserPortfolio(request , project_id):
+    session = get_session()
     user = request.user
     user_id         = cache.User[request.user.username].id
     project_type_id = cache.NodeType['Project'].id
     corpus_type_id = cache.NodeType['Corpus'].id
 
     results = {}
-    session = get_session()
     projs = session.query(Node).filter(Node.user_id == user_id,Node.type_id==project_type_id ).all()
 
 
@@ -349,3 +354,4 @@ def getUserPortfolio(request , project_id):
 
 
     return JsonHttpResponse( results )
+    session.remove()

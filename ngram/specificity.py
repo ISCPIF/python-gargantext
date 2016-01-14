@@ -20,6 +20,7 @@ def specificity(cooc_id=None, corpus=None, limit=100):
     Compute the specificity, simple calculus.
     '''
     session = get_session()
+    
     cooccurrences = (session.query(NodeNgramNgram)
                     .filter(NodeNgramNgram.node_id==cooc_id)
                     .order_by(NodeNgramNgram.score)
@@ -54,6 +55,7 @@ def specificity(cooc_id=None, corpus=None, limit=100):
     bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [d for d in data])
 
     return(node.id)
+    session.remove()
 
 def compute_specificity(corpus,limit=100):
     '''
@@ -62,15 +64,16 @@ def compute_specificity(corpus,limit=100):
         1) Compute the cooc matrix
         2) Compute the specificity score, saving it in database, return its Node
     '''
+    session = get_session()
+    
     dbg = DebugTime('Corpus #%d - specificity' % corpus.id)
     
-    session = get_session()
     list_cvalue = get_or_create_node(nodetype='Cvalue', corpus=corpus, session=session)
     cooc_id = do_cooc(corpus=corpus, cvalue_id=list_cvalue.id,limit=limit)
 
     specificity(cooc_id=cooc_id,corpus=corpus,limit=limit)
     dbg.show('specificity')
-
+    session.remove()
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #compute_specificity(corpus)

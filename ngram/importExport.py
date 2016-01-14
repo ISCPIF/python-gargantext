@@ -131,7 +131,7 @@ def exportNgramLists(node,filename,delimiter="\t"):
         
         # csv_rows = [[ligne1_a, ligne1_b..],[ligne2_a, ligne2_b..],..]
         return csv_rows
-    
+        session.remove()
     
     # on applique notre fonction ng_to_csv sur chaque liste
     # ------------------------------------------------------
@@ -380,9 +380,7 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
     print("INFO: added %i elements in the lists indices" % added_nd_ng)
     print("INFO: added %i new ngrams in the lexicon" % added_ng)
     
-
-
-
+    session.remove()
 
 
 # à chronométrer:

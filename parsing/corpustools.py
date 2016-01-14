@@ -30,8 +30,9 @@ parsers = Parsers()
 
 # resources management
 def add_resource(corpus, **kwargs):
-    # only for tests
     session = get_session()
+    
+    # only for tests
     resource = Resource(guid=str(random()), **kwargs )
     # User
     if 'user_id' not in kwargs:
@@ -64,11 +65,12 @@ def add_resource(corpus, **kwargs):
     session.commit()
     # return result
     return resource
+    session.remove()
 
 def parse_resources(corpus, user=None, user_id=None):
-    dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
-    
     session = get_session()
+    
+    dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
 
     corpus_id = corpus.id
     type_id = cache.NodeType['Document'].id
@@ -176,7 +178,7 @@ def parse_resources(corpus, user=None, user_id=None):
 
     # mark the corpus as parsed
     corpus.parsed = True
-
+    session.remove()
 
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
@@ -207,8 +209,9 @@ class NgramsExtractors(defaultdict):
 ngramsextractors = NgramsExtractors()
 
 def extract_ngrams(corpus, keys, nlp=True):
-    dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     session = get_session()
+    
+    dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the hyperdata associated with the given keys
     columns = [Node.id, Node.language_id] + [Node.hyperdata[key] for key in keys]
@@ -289,4 +292,4 @@ def extract_ngrams(corpus, keys, nlp=True):
     dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database
     db.commit()
-
+    session.remove()

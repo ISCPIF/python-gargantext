@@ -168,6 +168,7 @@ class ModelCache(dict):
             raise KeyError
         self[key] = element
         return element
+        session.remove()
 
     def preload(self):
         self.clear()
@@ -176,6 +177,7 @@ class ModelCache(dict):
             for column_name in self._columns_names:
                 key = getattr(element, column_name)
                 self[key] = element
+        session.remove()
 
 class Cache():
 
@@ -243,8 +245,11 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
     name_str :: String
     hyperdata :: Dict
     '''
+    
+    sessionToRemove = False
     if session is None:
         session = get_session()
+        sessionToRemove = True
 
     if nodetype is None:
         print("Need to give a type node")
@@ -285,3 +290,7 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
         session.commit()
     #print(parent_id, n.parent_id, n.id, n.name)
     return(node)
+
+    if sessionToRemove:
+        session.remove()
+

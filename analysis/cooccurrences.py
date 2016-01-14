@@ -200,3 +200,4 @@ def do_cooc(corpus=None
         cooc = matrix
     cooc.save(node_cooc.id)
     return(node_cooc.id)
+    session.remove()

@@ -6,7 +6,6 @@ from analysis.functions import get_cooc
 
 class Graph(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
-    session = get_session()
     
     def get(self, request, corpus_id):
         '''
@@ -15,6 +14,8 @@ class Graph(APIView):
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
         '''
+        session = get_session()
+        
         field1 = request.GET.get('field1', 'ngrams')
         field2 = request.GET.get('field2', 'ngrams')
         
@@ -52,3 +53,5 @@ class Graph(APIView):
                 , 'field2' : accepted_field2
                 , 'options': options
                 })
+        
+        session.remove()

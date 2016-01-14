@@ -84,15 +84,12 @@ def getGlobalStatsISTEXT(request ):
 
 
 def doTheQuery(request , project_id):
-	alist = ["hola","mundo"]
-	makeSession = get_sessionmaker()
-	session = makeSession() # get_session()
+	session = get_session()
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
 	except ValueError:
 		raise Http404()
-
 	# do we have a valid project?
 	project = (session
 		.query(Node)
@@ -184,14 +181,14 @@ def doTheQuery(request , project_id):
 
 	data = alist
 	return JsonHttpResponse(data)
+	session.remove()
 
 
 def testISTEX(request , project_id):
 	print("testISTEX:")
 	print(request.method)
 	alist = ["bar","foo"]
-	sessionMaker = get_sessionmaker() # get_session()
-	session = sessionMaker()
+	session = get_session()
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
@@ -292,4 +289,4 @@ def testISTEX(request , project_id):
 
 	data = [query_string,query,N]
 	return JsonHttpResponse(data)
-
+	session.remove()

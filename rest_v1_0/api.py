@@ -97,13 +97,16 @@ def Root(request, format=None):
         'snippets': reverse('snippet-list', request=request, format=format)
     })
 
+session.remove()
 
 class NodesChildrenNgrams(APIView):
 
     def get(self, request, node_id):
+        session = get_session()
+        
         # query ngrams
         ParentNode = aliased(Node)
-        session = get_session()
+        
         ngrams_query = (session
             .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -140,13 +143,16 @@ class NodesChildrenNgrams(APIView):
                 for ngram in ngrams_query[offset : offset+limit]
             ],
         })
+        
+        session.remove()
 
 class NodesChildrenNgramsIds(APIView):
 
     def get(self, request, node_id):
+        session = get_session()
+        
         # query ngrams
         ParentNode = aliased(Node)
-        session = get_session()
         ngrams_query = (session
             .query(Node.id, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.node_id == Node.id)
@@ -183,16 +189,18 @@ class NodesChildrenNgramsIds(APIView):
                 for node, count in ngrams_query[offset : offset+limit]
             ],
         })
-
+        
+        session.remove()
 
 
 from gargantext_web.db import get_or_create_node
 
 class Ngrams(APIView):
     def get(self, request, node_id):
+        session = get_session()
+        
         # query ngrams
         ParentNode = aliased(Node)
-        session = get_session()
         corpus = session.query(Node).filter(Node.id==node_id).first()
         group_by = []
         results   = ['id', 'terms']
@@ -307,11 +315,13 @@ class Ngrams(APIView):
 
                     ],
                                })
-    
+        session.remove()
         
 
 class NodesChildrenDuplicates(APIView):
     def _fetch_duplicates(self, request, node_id, extra_columns=None, min_count=1):
+        session = get_session()
+        
         # input validation
         if extra_columns is None:
             extra_columns = []
@@ -319,7 +329,6 @@ class NodesChildrenDuplicates(APIView):
             raise APIException('Missing GET parameter: "keys"', 400)
         keys = request.GET['keys'].split(',')
         # hyperdata retrieval
-        session = get_session()
         hyperdata_query = (session
             .query(Hyperdata)
             .filter(Hyperdata.name.in_(keys))
@@ -351,6 +360,8 @@ class NodesChildrenDuplicates(APIView):
         duplicates_query = duplicates_query.having(func.count() > min_count)
         # and now, return it
         return duplicates_query
+        
+        session.remove()
 
     def get(self, request, node_id):
         # data to be returned
@@ -400,10 +411,11 @@ class NodesChildrenDuplicates(APIView):
 
 # retrieve metadata from a given list of parent node
 def get_metadata(corpus_id_list):
+    
+    session = get_session()
 
     # query hyperdata keys
     ParentNode = aliased(Node)
-    session = get_session()
     hyperdata_query = (session
         .query(Hyperdata)
         .join(Node_Hyperdata, Node_Hyperdata.hyperdata_id == Hyperdata.id)
@@ -455,6 +467,7 @@ def get_metadata(corpus_id_list):
 
     # give the result back
     return collection
+    session.remove()
 
 class ApiHyperdata(APIView):
 
@@ -520,6 +533,7 @@ class ApiNgrams(APIView):
 
 class NodesChildrenQueries(APIView):
     def _sql(self, input, node_id):
+        session = get_session()
         fields = dict()
         tables = set('nodes')
         hyperdata_aliases = dict()
@@ -602,6 +616,7 @@ class NodesChildrenQueries(APIView):
             else query[input['pagination']['offset']:]
         )
         return output
+        session.remove()
 
     def _haskell(self, input, node_id):
         output = copy.deepcopy(input)
@@ -702,8 +717,9 @@ class NodesList(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get(self, request):
-        print("user id : " + str(request.user))
         session = get_session()
+        
+        print("user id : " + str(request.user))
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
             .filter(Node.user_id == int(request.user.id))
@@ -718,10 +734,13 @@ class NodesList(APIView):
             node._asdict()
             for node in query.all()
         ]})
+        
+        session.remove()
 
 class Nodes(APIView):
     def get(self, request, node_id):
         session = get_session()
+        
         node = session.query(Node).filter(Node.id == node_id).first()
         if node is None:
             raise APIException('This node does not exist', 404)
@@ -734,6 +753,8 @@ class Nodes(APIView):
             #'hyperdata': dict(node.hyperdata),
             'hyperdata': node.hyperdata,
         })
+        
+        session.remove()
 
     # deleting node by id
     # currently, very dangerous.
@@ -741,8 +762,9 @@ class Nodes(APIView):
     # for better constistency...
     def delete(self, request, node_id):
 
-        user = request.user
         session = get_session()
+        
+        user = request.user
         node = session.query(Node).filter(Node.id == node_id).first()
 
         msgres = str()
@@ -754,6 +776,8 @@ class Nodes(APIView):
 
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
+        
+        session.remove()
 
 class CorpusController:
     @classmethod
@@ -774,7 +798,7 @@ class CorpusController:
         # if corpus.user != request.user:
         #     raise Http403("Unauthorized access.")
         return corpus
-
+        session.remove()
 
     @classmethod
     def ngrams(cls, request, node_id):
@@ -785,6 +809,7 @@ class CorpusController:
         # build query
         ParentNode = aliased(Node)
         session = get_session()
+        
         query = (session
             .query(Ngram.terms, func.count('*'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -811,3 +836,5 @@ class CorpusController:
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
+
+        session.remove()

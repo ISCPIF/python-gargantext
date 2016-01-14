@@ -220,6 +220,7 @@ def projects(request):
     Each project is described with hyperdata that are updateded on each following view.
     To each project, we can link a resource that can be an image.
     '''
+    session = get_session()
     if not request.user.is_authenticated():
         return redirect('/auth/')
 
@@ -230,7 +231,6 @@ def projects(request):
 
     date = datetime.datetime.now()
     # print(Logger.write("STATIC_ROOT"))
-    session = get_session()
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
     number = len(projects)
     
@@ -288,7 +288,7 @@ def projects(request):
         'common_projects':common_projects,
         'common_users':common_users,
         })
-
+    session.remove()
 
 def update_nodes(request, project_id, corpus_id, view=None):
     '''
@@ -297,10 +297,11 @@ def update_nodes(request, project_id, corpus_id, view=None):
         - permanent deletion of Trash
 
     '''
+    session = get_session()
+    
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
-    session = get_session()
     try:
         offset = int(project_id)
         offset = int(corpus_id)
@@ -358,8 +359,12 @@ def update_nodes(request, project_id, corpus_id, view=None):
 #            context_instance=RequestContext(request)
 #        )
 #
+    session.remove()
 
 def corpus(request, project_id, corpus_id):
+    
+    session = get_session()
+    
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -378,7 +383,6 @@ def corpus(request, project_id, corpus_id):
 
     type_doc_id = cache.NodeType['Document'].id
     
-    session = get_session()
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
 
@@ -405,15 +409,15 @@ def corpus(request, project_id, corpus_id):
             }))
 
     return HttpResponse(html)
+    session.remove()
 
 def newpaginatorJSON(request , corpus_id):
 
-    results = ["hola" , "mundo"]
-
+    session = get_session()
+    
     # t = get_template('tests/newpag/thetable.html')
 
     # project = session.query(Node).filter(Node.id==project_id).first()
-    session = get_session()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
     user_id = request.user.id
@@ -464,11 +468,11 @@ def newpaginatorJSON(request , corpus_id):
         "totalRecordCount":len(results)
     }
     return JsonHttpResponse(finaldict)
-
+    session.remove()
 
 def move_to_trash(node_id):
+    session = get_session()
     try:
-        session = get_session()
         node = session.query(Node).filter(Node.id == node_id).first()
 
         previous_type_id = node.type_id
@@ -486,9 +490,14 @@ def move_to_trash(node_id):
         #return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + str(node_id) + ":" + str(error))
+    
+    session.remove()
 
 def move_to_trash_multiple(request):
+    session = get_session()
+    
     user = request.user
+    
     if not user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -498,7 +507,6 @@ def move_to_trash_multiple(request):
         nodes2trash = json.loads(request.POST["nodeids"])
         print("nodes to the trash:")
         print(nodes2trash)
-        session = get_session()
         nodes = session.query(Node).filter(Node.id.in_(nodes2trash)).all()
         for node in nodes:
             node.type_id = cache.NodeType['Trash'].id
@@ -509,13 +517,15 @@ def move_to_trash_multiple(request):
         results = ["tudo","fixe"]
 
     return JsonHttpResponse(results)
+    session.remove()
 
 def delete_node(request, node_id):
 
+    session = get_session()
+    
     # do we have a valid user?
     user = request.user
     
-    session = get_session()
     node = session.query(Node).filter(Node.id == node_id).first()
 
     if not user.is_authenticated():
@@ -531,7 +541,8 @@ def delete_node(request, node_id):
         return HttpResponseRedirect('/project/' + str(node_parent_id))
     else:
         return HttpResponseRedirect('/projects/')
-
+    
+    session.remove()
 
 def delete_corpus(request, project_id, node_id):
     # ORM Django
@@ -553,11 +564,12 @@ def delete_corpus(request, project_id, node_id):
 
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
+    session = get_session()
+    
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
 
-    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -569,13 +581,15 @@ def chart(request, project_id, corpus_id):
         'corpus'    : corpus,
     }))
     return HttpResponse(html)
+    session.remove()
 
 def sankey(request, corpus_id):
+    session = get_session()
+    
     t = get_template('sankey.html')
     user = request.user
     date = datetime.datetime.now()
 
-    session = get_session()
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
     html = t.render(Context({\
@@ -586,15 +600,15 @@ def sankey(request, corpus_id):
             }))
 
     return HttpResponse(html)
-
+    session.remove()
 
 
 def matrix(request, project_id, corpus_id):
+    session = get_session()
     t = get_template('matrix.html')
     user = request.user
     date = datetime.datetime.now()
 
-    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus =  session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -607,13 +621,15 @@ def matrix(request, project_id, corpus_id):
             }))
 
     return HttpResponse(html)
+    session.remove()
 
 def graph(request, project_id, corpus_id, generic=100, specific=100):
+    session = get_session()
+    
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
 
-    session = get_session()
     project = session.query(Node).filter(Node.id==project_id).first()
     corpus  = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -638,6 +654,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
             }))
 
     return HttpResponse(html)
+    session.remove()
 
 def exploration(request):
     t = get_template('exploration.html')
@@ -672,12 +689,13 @@ def corpus_csv(request, project_id, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
     '''
+    session = get_session()
+    
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="corpus.csv"'
 
     writer = csv.writer(response)
 
-    session = get_session()
     corpus_id = session.query(Node.id).filter(Node.id==corpus_id).first()
     type_document_id = cache.NodeType['Document'].id
     documents = session.query(Node).filter(Node.parent_id==corpus_id, Node.type_id==type_document_id).all()
@@ -700,6 +718,7 @@ def corpus_csv(request, project_id, corpus_id):
 
 
     return response
+    session.remove()
 
 def send_csv(request, corpus_id):
     '''
@@ -748,17 +767,17 @@ def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
     '''
-
-    data = []
     session = get_session()
+    data = []
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
-
+    session.remove()
 
 def sankey_csv(request, corpus_id):
-    data = []
     session = get_session()
+    
+    data = []
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = [
             ["source", "target", "value"]
@@ -775,6 +794,7 @@ def sankey_csv(request, corpus_id):
             , ["Theme_3", "Reco_par_5", 1]
             ]
     return(CsvHttpResponse(data))
+    session.remove()
 
 def adjacency(request, corpus_id):
     '''

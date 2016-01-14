@@ -41,10 +41,11 @@ def getNgrams(corpus=None, limit=1000):
     '''
     getNgrams :: Corpus -> [(Int, String, String, Float)]
     '''
+    session = get_session()
+    
     terms = dict()
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)'
                                     , corpus=corpus)
-    session = get_session()
     #print(corpus.name)
     ngrams = (session.query(Ngram.id, Ngram.terms, func.sum(NodeNgram.weight), NodeNodeNgram.score)
                         .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
@@ -64,6 +65,7 @@ def getNgrams(corpus=None, limit=1000):
         except:
             PrintException()
     return(terms)
+    session.remove()
 
 def compute_cvalue(corpus=None, limit=1000):
     '''
@@ -130,7 +132,7 @@ def compute_cvalue(corpus=None, limit=1000):
 
     #bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in islice(result,0,100)])
     bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in result])
-
+    session.remove()
 # test
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #computeCvalue(corpus)

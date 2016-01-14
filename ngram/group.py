@@ -52,10 +52,11 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
     '''
     group ngrams according to a function (stemming or lemming)
     '''
+    session = get_session()
+    
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
 
-    session = get_session()
     #spec,cvalue = getNgrams(corpus, limit_inf=limit_inf, limit_sup=limit_sup)
     #list_to_check=cvalue.union(spec)
 
@@ -138,3 +139,5 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
                 , [data for data in group_to_insert])
 
     bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
+
+    session.remove()

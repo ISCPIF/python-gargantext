@@ -7,9 +7,11 @@ from admin.utils import DebugTime
 
 def compute_tfidf(corpus):
     # compute terms frequency sum
+    session = get_session()
+    
     dbg = DebugTime('Corpus #%d - TFIDF' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-    tfidf_node = get_or_create_node(nodetype='Tfidf', corpus=corpus)
+    tfidf_node = get_or_create_node(nodetype='Tfidf', corpus=corpus, session=session)
 
     db, cursor = get_cursor()
     cursor.execute('''
@@ -119,16 +121,20 @@ def compute_tfidf(corpus):
         # the end!
         db.commit()
 
+    session.remove()
+
 def compute_tfidf_global(corpus):
     '''
     Maybe improve this with:
     #http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
     '''
+    session = get_session()
+    
     dbg = DebugTime('Corpus #%d - tfidf global' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
+    
+    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus, session=session)
 
-    session = get_session()
     # update would be better
     session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
     session.commit()
@@ -258,6 +264,8 @@ def compute_tfidf_global(corpus):
 
         db.commit()
         dbg.show('insert tfidf')
+    
+    session.remove()
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #compute_tfidf_global(corpus)

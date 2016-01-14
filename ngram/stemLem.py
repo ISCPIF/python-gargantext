@@ -11,6 +11,7 @@ def get_ngramogram(corpus, limit=None):
     Ngram is a composition of ograms (ogram = 1gram)
     """
     session = get_session()
+    
     try:
         query = (session
          .query(Ngram.id, Ngram.terms)
@@ -34,6 +35,8 @@ def get_ngramogram(corpus, limit=None):
 
     except Exception as error:
         PrintException()
+    
+    session.remove()
 
 def split_ngram(ngram):
     if isinstance(ngram, str):
@@ -329,6 +332,7 @@ def stem_corpus(corpus_id=None):
             PrintException()
     else:
         print('Usage: stem_corpus(corpus_id=corpus.id)')
-
+    
+    session.remove()
 
 

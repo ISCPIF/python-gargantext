@@ -82,9 +82,10 @@ class List(APIView):
 
     def get_metadata ( self , ngram_ids , parent_id ):
 
+        session = get_session()
+        
         start_ = time.time()
 
-        session = get_session()
         nodes_ngrams = session.query(Ngram.id , Ngram.terms).filter( Ngram.id.in_( list(ngram_ids.keys()))).all()
         for node in nodes_ngrams:
             if node.id in ngram_ids:
@@ -120,7 +121,7 @@ class List(APIView):
         end_ = time.time()
 
         return { "data":ngram_ids , "secs":(end_ - start_) }
-
+        session.remove()
 
 
     def get(self, request, corpus_id , list_name ):
@@ -154,6 +155,8 @@ class List(APIView):
             measurements["tfidf"] = { "s" : ngrams_meta["secs"], "n": len(ngrams_meta["data"].keys()) }
 
         return JsonHttpResponse( {"data":ngram_ids , "time":measurements } )
+        
+        session.remove()
 
 class Ngrams(APIView):
     '''
@@ -323,6 +326,8 @@ class Ngrams(APIView):
             'data': output,
             "time" : measurements
         })
+        
+        session.remove()
 
     def post(self , request , node_id ):
         return JsonHttpResponse(["POST","ok"])
@@ -343,11 +348,15 @@ class Group(APIView):
     '''
     def get_group_id(self , node_id , user_id):
         node_id = int(node_id)
+        
         session = get_session()
+        
         corpus = session.query(Node).filter(  Node.id==node_id).first()
         if corpus==None: return None
         group = get_or_create_node(corpus=corpus, nodetype='Group')
         return(group.id)
+        
+        session.remove()
 
     def get(self, request, corpus_id):
         if not request.user.is_authenticated():
@@ -376,6 +385,7 @@ class Group(APIView):
         DG = nx.DiGraph()
         
         session = get_session()
+        
         ngrams_ngrams = (session
                 .query(NodeNgramNgram)
                 .filter(NodeNgramNgram.node_id==group_id)
@@ -415,7 +425,8 @@ class Group(APIView):
         # groups["nodes"] = get_occtfidf( ngrams , request.user.id , corpus_id , "Group")
         
         return JsonHttpResponse( { "data" : groups } )
-   
+        session.remove()
+
     def post(self, request, node_id):
         return JsonHttpResponse( ["hola" , "mundo"] )
 
@@ -440,6 +451,8 @@ class Group(APIView):
                 return JsonHttpResponse(True, 201)
             else:
                 raise APIException('Missing parameter: "{\'data\' : [\'source\': Int, \'target\': [Int]}"', 400)
+        
+        session.remove()
 
     def put(self , request , corpus_id ):
         session = get_session()
@@ -523,6 +536,7 @@ class Group(APIView):
                 nodengramngram = NodeNgramNgram(node_id=existing_group_id, ngramx_id=n1 , ngramy_id=n2, score=1.0)
                 session.add(nodengramngram)
         session.commit()
+        
         # [ - - - / doing links of new clique and adding to DB - - - ] #
 
 
@@ -573,6 +587,7 @@ class Group(APIView):
 
 
         return JsonHttpResponse(True, 201)
+        session.remove()
 
 class Keep(APIView):
     """
@@ -580,9 +595,9 @@ class Keep(APIView):
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
-    session = get_session()
 
     def get (self, request, corpus_id):
+        session = get_session()
         # list_id = session.query(Node).filter(Node.id==list_id).first()
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
@@ -591,11 +606,13 @@ class Keep(APIView):
         for node in nodes_in_map:
             results[node.ngram_id] = True
         return JsonHttpResponse(results)
-    
+        session.remove()
+
     def put (self, request, corpus_id):
         """
         Add ngrams to map list
         """
+        session = get_session()
         group_rawreq = dict(request.data)
         ngram_2add = [int(i) for i in list(group_rawreq.keys())]
         corpus = session.query(Node).filter( Node.id==corpus_id ).first()
@@ -605,11 +622,14 @@ class Keep(APIView):
             session.add(map_node)
             session.commit()
         return JsonHttpResponse(True, 201)
+        session.remove()
 
     def delete (self, request, corpus_id):
         """
         Delete ngrams from the map list
         """
+        session = get_session()
+        
         group_rawreq = dict(request.data)
         # print("group_rawreq:")
         # print(group_rawreq)
@@ -627,5 +647,5 @@ class Keep(APIView):
         
 
         return JsonHttpResponse(True, 201)
-
+        session.remove()
 

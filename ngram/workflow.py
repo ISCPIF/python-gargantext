@@ -8,7 +8,7 @@ from gargantext_web.db import get_or_create_node
 from ngram.mapList import compute_mapList
 from ngram.occurrences import compute_occs
 
-from gargantext_web.db import session , Node , NodeNgram
+from gargantext_web.db import Node , NodeNgram
 from admin.utils import WorkflowTracking
 
 

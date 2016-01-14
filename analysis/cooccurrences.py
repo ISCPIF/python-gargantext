@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 
 from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
         NodeNodeNgram, NodeHyperdataNgram, NodeHyperdata, Hyperdata
-from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
+from gargantext_web.db import get_session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 import inspect
 import datetime
@@ -40,24 +40,26 @@ def do_cooc(corpus=None
     # Security test
     field1,field2 = str(field1), str(field2)
     
+    session = get_session()
     # Get node
     node_cooc = get_or_create_node(nodetype='Cooccurrence', corpus=corpus
                                    , name_str="Cooccurrences corpus " \
                                     + str(corpus.id) + "list_id: " + str(miam_id)
                                     #, hyperdata={'field1': field1, 'field2':field2}
-                                   )
+                                   , session=session)
 
     
     # BEGIN
     # Saving the parameters of the analysis in the Node JSONB hyperdata field
     args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
-    hyperdata = dict()
-    
-    for parameter in parameters.keys():
-        if parameter != 'corpus' and parameter != 'node_cooc':
-            hyperdata[parameter] = parameters[parameter]
-    
-    node_cooc.hyperdata = hyperdata
+#    hyperdata = dict()
+#    
+#    for parameter in parameters.keys():
+#        if parameter != 'corpus' and parameter != 'node_cooc':
+#            hyperdata[parameter] = parameters[parameter]
+#    
+#    node_cooc.hyperdata = hyperdata
+#
     session.add(node_cooc)
     session.commit()
     # END
@@ -198,3 +200,4 @@ def do_cooc(corpus=None
         cooc = matrix
     cooc.save(node_cooc.id)
     return(node_cooc.id)
+    session.remove()

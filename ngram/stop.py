@@ -2,7 +2,7 @@ import re
 from admin.utils import PrintException
 
 from gargantext_web.db import Node, Ngram, NodeNgram,NodeNodeNgram
-from gargantext_web.db import cache, session, get_or_create_node, bulk_insert
+from gargantext_web.db import cache, get_session, get_or_create_node, bulk_insert
 
 import sqlalchemy as sa
 from sqlalchemy.sql import func
@@ -14,6 +14,8 @@ from ngram.tools import insert_ngrams
 from analysis.lists import WeightedList, UnweightedList
 
 def importStopList(node,filename,language='fr'):
+    session = get_session()
+
     with open(filename, "r") as f:
         stop_list = f.read().splitlines()
     
@@ -34,6 +36,7 @@ def importStopList(node,filename,language='fr'):
     )
     
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
+    session.remove()
 
 def isStopWord(ngram, stop_words=None):
     '''
@@ -76,7 +79,9 @@ def compute_stop(corpus,limit=2000,debug=False):
     '''
     do some statitics on all stop lists of database of the same type
     '''
-    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus)
+    session = get_session()
+    
+    stop_node_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     
     # TODO do a function to get all stop words with social scores
     root = session.query(Node).filter(Node.type_id == cache.NodeType['Root'].id).first()
@@ -108,5 +113,6 @@ def compute_stop(corpus,limit=2000,debug=False):
     #print([n for n in ngrams_to_stop])
 
     stop = WeightedList({ n[0] : -1 for n in ngrams_to_stop})
-    stop.save(stop_node.id)
-
+    stop.save(stop_node_id)
+    
+    session.remove()

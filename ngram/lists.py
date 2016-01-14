@@ -1,6 +1,6 @@
 from admin.utils import PrintException
 
-from gargantext_web.db import NodeNgram
+from gargantext_web.db import NodeNgram, get_session
 from gargantext_web.db import *
 from parsing.corpustools import *
 
@@ -20,6 +20,9 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
     typeList  :: String, Type of the Node that should be created
     [Node]      :: List of Int, returned or created by the function
     '''
+    
+    session = get_session()
+
     if typeList is None:
         typeList = 'MiamList'
 
@@ -56,6 +59,9 @@ def listIds(typeList=None, user_id=None, corpus_id=None):
 
     else:
         raise Exception("Usage (Warning): Need corpus_id and user_id")
+    
+    session.remove()
+
 
 # Some functions to manage ngrams according to the lists
 
@@ -74,6 +80,9 @@ def listNgramIds(list_id=None, typeList=None,
     doc_id    : to get specific ngrams related to a document with Node.id=doc_id
     user_id   : needed to create list if it does not exist
     '''
+    
+    session = get_session()
+
     if typeList is None:
         typeList = ['MiamList', 'StopList']
     elif isinstance(typeList, string):
@@ -112,6 +121,8 @@ def listNgramIds(list_id=None, typeList=None,
                 )
 
     return(query.all())
+    
+    session.remove()
 
 def ngramList(do, list_id, ngram_ids=None) :
     '''
@@ -123,6 +134,8 @@ def ngramList(do, list_id, ngram_ids=None) :
         ngram_id  = [Int]  : list of Ngrams id (Ngrams.id)
         list_id   = Int    : list id (Node.id)
     '''
+    session = get_session()
+    
     results = []
 
     if do == 'create':
@@ -156,6 +169,7 @@ def ngramList(do, list_id, ngram_ids=None) :
 
     session.commit()
     return(results)
+    session.remove()
 
 # Some functions to manage automatically the lists
 def doStopList(user_id=None, corpus_id=None, stop_id=None, reset=False, limit=None):
@@ -174,6 +188,7 @@ def ngrams2miam(user_id=None, corpus_id=None):
     '''
     Create a Miam List only
     '''
+    session = get_session()
 
     miam_id = listIds(typeList='MiamList', user_id=user_id, corpus_id=corpus_id)[0][0]
     print(miam_id)
@@ -194,6 +209,7 @@ def ngrams2miam(user_id=None, corpus_id=None):
                 .all()
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
+    session.remove()
 
 from gargantext_web.db import get_or_create_node
 from analysis.lists import Translations, UnweightedList
@@ -205,6 +221,8 @@ def ngrams2miamBis(corpus):
 
     miam_id = get_or_create_node(corpus=corpus, nodetype='MiamList')
     stop_id = get_or_create_node(corpus=corpus,nodetype='StopList')
+    
+    session = get_session()
 
     query = (session.query(
                 literal_column(str(miam_id)).label("node_id"),
@@ -222,6 +240,7 @@ def ngrams2miamBis(corpus):
                 .all()
                 )
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
+    session.remove()
 
 def doList(
         type_list='MiamList',
@@ -247,6 +266,7 @@ def doList(
         lem     = equivalent Words which are lemmatized (but the main form)
         cvalue  = equivalent N-Words according to C-Value (but the main form)
     '''
+    session = get_session()
 
     if type_list not in ['MiamList', 'MainList']:
         raise Exception("Type List (%s) not supported, try: \'MiamList\' or \'MainList\'" % type_list)
@@ -354,6 +374,6 @@ def doList(
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], query)
 
     return(list_dict[type_list]['id'])
-
+    session.remove()
 
 

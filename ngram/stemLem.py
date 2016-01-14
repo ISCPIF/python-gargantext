@@ -4,12 +4,14 @@ from parsing.corpustools import *
 
 from gargantext_web.db import NodeNgram
 from sqlalchemy import desc, asc, or_, and_, Date, cast, select
-from gargantext_web.db import get_cursor, bulk_insert
+from gargantext_web.db import get_cursor, bulk_insert, get_session
 
 def get_ngramogram(corpus, limit=None):
     """
     Ngram is a composition of ograms (ogram = 1gram)
     """
+    session = get_session()
+    
     try:
         query = (session
          .query(Ngram.id, Ngram.terms)
@@ -33,6 +35,8 @@ def get_ngramogram(corpus, limit=None):
 
     except Exception as error:
         PrintException()
+    
+    session.remove()
 
 def split_ngram(ngram):
     if isinstance(ngram, str):
@@ -303,6 +307,7 @@ def stem_corpus(corpus_id=None):
     Returns Int as id of the Stem Node
     stem_corpus :: Int
     '''
+    session = get_session()
 
     corpus = session.query(Node).filter(Node.id == corpus_id).first()
     #print('Number of new ngrams to stem:',
@@ -327,6 +332,7 @@ def stem_corpus(corpus_id=None):
             PrintException()
     else:
         print('Usage: stem_corpus(corpus_id=corpus.id)')
-
+    
+    session.remove()
 
 

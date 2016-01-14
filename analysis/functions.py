@@ -9,7 +9,7 @@ from math import log
 
 import scipy
 
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_session, get_or_create_node
 
 from analysis.cooccurrences import do_cooc
 from analysis.distance import do_distance
@@ -39,12 +39,14 @@ def get_cooc(request=None, corpus=None
     '''
     get_ccoc : to compute the graph.
     '''
+    session = get_session()
+
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
     print("Cooccurrences do not exist yet, creating it.")
-    miam_id = get_or_create_node(nodetype='MapList', corpus=corpus).id
-    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
-    group_id = get_or_create_node(nodetype='Group', corpus=corpus).id
+    miam_id = get_or_create_node(nodetype='MapList', corpus=corpus, session=session).id
+    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus, session=session).id
+    group_id = get_or_create_node(nodetype='Group', corpus=corpus, session=session).id
     
     SamuelFlag = False
     # if field1 == field2 == 'ngrams' :
@@ -168,6 +170,7 @@ def get_cooc(request=None, corpus=None
         return(partition)
 
     return(data)
+    session.remove()
 
 def get_graphA( nodeA_type , NodesB , links , corpus ):
     from analysis.InterUnion import Utils

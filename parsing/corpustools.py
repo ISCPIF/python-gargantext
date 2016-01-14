@@ -420,4 +420,3 @@ def text_prepa(my_str):
     my_str = sub(r'ꜩ', 'tz', my_str)
         
     return my_str
->>>>>>> origin/romain-text_cleaner

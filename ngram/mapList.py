@@ -5,7 +5,7 @@ from admin.env import *
 from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram,NodeNgramNgram
-from gargantext_web.db import get_or_create_node, session, bulk_insert
+from gargantext_web.db import get_or_create_node, get_session, bulk_insert
 
 from sqlalchemy.sql import func
 from sqlalchemy import desc, asc, or_, and_, Date, cast, select
@@ -19,6 +19,7 @@ def compute_mapList(corpus,limit=500,n=1):
     '''
     According to Specificities and stoplist,
     '''
+    session = get_session()
 
     monograms_part = 0.005
     monograms_limit = round(limit * monograms_part)
@@ -86,8 +87,10 @@ def compute_mapList(corpus,limit=500,n=1):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
 
     dbg.show('MapList computed')
+    session.remove()
 
 def insert_miam(corpus, ngrams=None, path_file_csv=None):
+    session = get_session()
     dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
     
     node_miam = get_or_create_node(nodetype='MiamList', corpus=corpus)
@@ -121,8 +124,6 @@ def insert_miam(corpus, ngrams=None, path_file_csv=None):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
     file_csv.close()
     dbg.show('Miam computed')
+    session.remove()
 
-#corpus = session.query(Node).filter(Node.id==540420).first()
-#compute_mapList(corpus)
-#insert_miam(corpus=corpus, path_file_csv="Thesaurus_tag.csv")
 

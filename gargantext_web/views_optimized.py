@@ -15,7 +15,7 @@ from threading import Thread
 
 from node.admin import CustomForm
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, get_session
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
 from django.db import connection
@@ -39,6 +39,8 @@ def project(request, project_id):
         raise Http404()
 
     # do we have a valid project?
+    session = get_session()
+
     project = (session
         .query(Node)
         .filter(Node.id == project_id)
@@ -144,6 +146,7 @@ def project(request, project_id):
                 language_id = None,
                 hyperdata    = {'Processing' : "Parsing documents",}
             )
+            session = get_session()
             session.add(corpus)
             session.commit()
 
@@ -196,6 +199,8 @@ def project(request, project_id):
         'number'        : corpora_count,
     })
 
+    session.remove()
+
 def tfidf(request, corpus_id, ngram_ids):
     """Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
@@ -205,8 +210,10 @@ def tfidf(request, corpus_id, ngram_ids):
     # filter input
     ngram_ids = ngram_ids.split('a')
     ngram_ids = [int(i) for i in ngram_ids]
-
+    
+    session = get_session()
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    
     tfidf_id = get_or_create_node(corpus=corpus, nodetype='Tfidf').id
     print(tfidf_id)
     # request data
@@ -249,10 +256,14 @@ def tfidf(request, corpus_id, ngram_ids):
         nodes_list.append(node_dict)
 
     return JsonHttpResponse(nodes_list)
+    session.remove()
 
 def getCorpusIntersection(request , corpuses_ids):
 
+    session = get_session()
+    
     FinalDict = False
+
     if request.method == 'POST' and "nodeids" in request.POST and len(request.POST["nodeids"])>0:
         import ast
         node_ids = [int(i) for i in (ast.literal_eval( request.POST["nodeids"] )) ]
@@ -296,8 +307,10 @@ def getCorpusIntersection(request , corpuses_ids):
         # Getting AVG-COOC of each ngram that exists in the cooc-matrix of the compared-corpus. 
 
     return JsonHttpResponse(FinalDict)
+    session.remove()
 
 def getUserPortfolio(request , project_id):
+    session = get_session()
     user = request.user
     user_id         = cache.User[request.user.username].id
     project_type_id = cache.NodeType['Project'].id
@@ -341,3 +354,4 @@ def getUserPortfolio(request , project_id):
 
 
     return JsonHttpResponse( results )
+    session.remove()

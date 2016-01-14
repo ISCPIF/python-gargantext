@@ -7,7 +7,6 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views.generic.base import RedirectView
 
 from gargantext_web import views, views_optimized
-import gargantext_web.corpus_views as corpus_views
 
 from annotations import urls as annotations_urls
 from annotations.views import main as annotations_main_view

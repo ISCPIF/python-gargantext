@@ -23,7 +23,6 @@ from math import log
 from functools import reduce
 
 
-
 def getStemmer(corpus):
     '''
     getStemmer :: Corpus -> Stemmer
@@ -48,11 +47,14 @@ def getStemmer(corpus):
 
     return(stemIt)
 
-def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
+def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=None):
     '''
     group ngrams according to a function (stemming or lemming)
     '''
-    session = get_session()
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
@@ -140,4 +142,4 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
 
     bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
 
-    session.remove()
+    if sessionToRemove: session.remove()

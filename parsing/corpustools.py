@@ -31,8 +31,12 @@ parsers = Parsers()
 
 
 # resources management
-def add_resource(corpus, **kwargs):
-    session = get_session()
+def add_resource(corpus, session=None, **kwargs):
+    
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     # only for tests
     resource = Resource(guid=str(random()), **kwargs )
@@ -67,10 +71,16 @@ def add_resource(corpus, **kwargs):
     session.commit()
     # return result
     return resource
-    session.remove()
+    
+    if sessionToRemove:
+        session.remove()
 
-def parse_resources(corpus, user=None, user_id=None):
-    session = get_session()
+def parse_resources(corpus, user=None, user_id=None, session=None):
+    
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
 
@@ -180,7 +190,9 @@ def parse_resources(corpus, user=None, user_id=None):
 
     # mark the corpus as parsed
     corpus.parsed = True
-    session.remove()
+
+    if sessionToRemove:
+        session.remove()
 
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
@@ -210,8 +222,12 @@ class NgramsExtractors(defaultdict):
 
 ngramsextractors = NgramsExtractors()
 
-def extract_ngrams(corpus, keys, nlp=True):
-    session = get_session()
+def extract_ngrams(corpus, keys, nlp=True, session=None):
+    
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
@@ -304,7 +320,9 @@ def extract_ngrams(corpus, keys, nlp=True):
     dbg.message = 'insert %d associations' % len(node_ngram_data)
     # commit to database
     db.commit()
-    session.remove()
+    
+    if sessionToRemove:
+        session.remove()
 
 
 def text_prepa(my_str):

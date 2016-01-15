@@ -75,11 +75,14 @@ def isStopWord(ngram, stop_words=None):
         if test_match(word, regex) is True :
             return(True)
 
-def compute_stop(corpus,limit=2000,debug=False):
+def compute_stop(corpus,limit=2000,debug=False, session=None):
     '''
     do some statitics on all stop lists of database of the same type
     '''
-    session = get_session()
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     stop_node_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
     
@@ -115,4 +118,4 @@ def compute_stop(corpus,limit=2000,debug=False):
     stop = WeightedList({ n[0] : -1 for n in ngrams_to_stop})
     stop.save(stop_node_id)
     
-    session.remove()
+    if sessionToRemove: session.remove()

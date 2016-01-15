@@ -5,7 +5,14 @@ from gargantext_web.db import get_or_create_node
 from admin.utils import DebugTime
 
 def compute_occs(corpus):
-    session = get_session()
+    '''
+    compute_occs :: Corpus -> IO ()
+
+    '''
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - OCCURRENCES' % corpus.id)
     dbg.show('Calculate occurrences')
@@ -48,7 +55,7 @@ def compute_occs(corpus):
             )
     )
     db.commit()
-    session.remove()
+    if sessionToRemove: session.remove()
 
 
     #data = session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==occs_node.id).all()

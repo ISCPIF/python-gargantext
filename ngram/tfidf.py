@@ -5,9 +5,13 @@ from gargantext_web.db import get_session, get_or_create_node
 
 from admin.utils import DebugTime
 
-def compute_tfidf(corpus):
+def compute_tfidf(corpus, session=None):
     # compute terms frequency sum
-    session = get_session()
+    
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - TFIDF' % corpus.id)
     dbg.show('calculate terms frequencies sums')
@@ -121,15 +125,18 @@ def compute_tfidf(corpus):
         # the end!
         db.commit()
 
-    session.remove()
+    if sessionToRemove: session.remove()
 
-def compute_tfidf_global(corpus):
+def compute_tfidf_global(corpus, session=None):
     '''
     Maybe improve this with:
     #http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
     '''
-    session = get_session()
-    
+    sessionToRemove = False
+    if session is None:
+        session = get_session()
+        sessionToRemove = True
+ 
     dbg = DebugTime('Corpus #%d - tfidf global' % corpus.id)
     dbg.show('calculate terms frequencies sums')
     
@@ -265,7 +272,7 @@ def compute_tfidf_global(corpus):
         db.commit()
         dbg.show('insert tfidf')
     
-    session.remove()
+    if sessionToRemove: session.remove()
 
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #compute_tfidf_global(corpus)

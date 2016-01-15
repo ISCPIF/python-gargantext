@@ -35,25 +35,28 @@ def apply_workflow(corpus_id):
     
     update_state = WorkflowTracking()
     
-    session = get_session()
-    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+    try :
+        session = get_session()
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
-    update_state.processing_(corpus, "Parsing")
-    #cProfile.runctx('parse_resources(corpus)', global,locals)
-    parse_resources(corpus)
+        update_state.processing_(corpus, "Parsing")
+        #cProfile.runctx('parse_resources(corpus)', global,locals)
+        parse_resources(corpus, session=session)
 
-    update_state.processing_(corpus, "Terms extraction")
-    extract_ngrams(corpus, ['title', 'abstract'], nlp=True)
+        update_state.processing_(corpus, "Terms extraction")
+        extract_ngrams(corpus, ['title', 'abstract'], nlp=True, session=session)
 
-    # update_state.processing_(corpus, "")
-    ngram_workflow(corpus)
+        # update_state.processing_(corpus, "")
+        ngram_workflow(corpus, session=session)
 
-    #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
+        #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
 
-    print("End of the Workflow for corpus %d" % (corpus_id))
-    update_state.processing_(corpus, "0")
-    
-    session.remove()
+        print("End of the Workflow for corpus %d" % (corpus_id))
+        update_state.processing_(corpus, "0")
+        
+        session.remove()
+    except :
+        session.remove()
 
 @shared_task
 def empty_trash(corpus_id):

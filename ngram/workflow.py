@@ -12,17 +12,17 @@ from gargantext_web.db import Node , NodeNgram
 from admin.utils import WorkflowTracking
 
 
-def ngram_workflow(corpus, n=5000):
+def ngram_workflow(corpus, n=5000, session=None):
     '''
     All the workflow to filter the ngrams.
     '''
     update_state = WorkflowTracking()
 
     update_state.processing_(corpus, "Stop words")
-    compute_stop(corpus)
+    compute_stop(corpus, session=session)
     
     update_state.processing_(corpus, "TF-IDF global score")
-    compute_tfidf_global(corpus)
+    compute_tfidf_global(corpus, session=session)
     
     part = round(n * 0.9)
 
@@ -32,7 +32,7 @@ def ngram_workflow(corpus, n=5000):
     #print('spec part:', part)
 
     update_state.processing_(corpus, "Specificity score")
-    compute_specificity(corpus,limit=part)
+    compute_specificity(corpus,limit=part, session=session)
     
     part = round(part * 0.8)
 
@@ -41,18 +41,18 @@ def ngram_workflow(corpus, n=5000):
     #print(limit_inf,limit_sup)
     update_state.processing_(corpus, "Synonyms")
     try:
-        compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
+        compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup, session=session)
     except Exception as error:
         print("Workflow Ngram Group error", error)
         pass
     
     update_state.processing_(corpus, "Map list terms")
-    compute_mapList(corpus,limit=1000) # size
+    compute_mapList(corpus,limit=1000, session=session) # size
     
     update_state.processing_(corpus, "TF-IDF local score")
-    compute_tfidf(corpus)
+    compute_tfidf(corpus, session=session)
 
     update_state.processing_(corpus, "Occurrences")
-    compute_occs(corpus)
+    compute_occs(corpus, session=session)
 
 

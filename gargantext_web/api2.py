@@ -13,7 +13,7 @@ import collections
 
 from gargantext_web.views import move_to_trash
 from gargantext_web.db import *
-from gargantext_web.db import get_session
+from gargantext_web.db import session
 from gargantext_web.validation import validate, ValidationException
 from node import models
 
@@ -102,7 +102,6 @@ class NodeNgramsQueries(APIView):
     def post(self, request, project_id):
 
         # example only
-        session = get_session()
 
         input = request.data or {
             'x': {
@@ -260,4 +259,3 @@ class NodeNgramsQueries(APIView):
         elif input['format'] == 'csv':
             return CsvHttpResponse(sorted(result.items()), ('date', 'value'), 201)
 
-        session.remove()

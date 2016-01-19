@@ -138,8 +138,10 @@ def get_sessionmaker():
 
 def get_session():
     Session = get_sessionmaker()
-    get_ = scoped_session(Session)
-    return get_()
+    return scoped_session(Session)
+    
+    #get_ = scoped_session(Session)
+    #return get_()
 
 session = get_session()
 # SQLAlchemy model objects caching

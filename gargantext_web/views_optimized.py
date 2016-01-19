@@ -33,7 +33,6 @@ from gargantext_web.celery import apply_workflow
 from admin.utils import ensure_dir
 
 def project(request, project_id):
-
     # do we have a valid project id?
     try:
         project_id = int(project_id)
@@ -199,7 +198,6 @@ def project(request, project_id):
         'number'        : corpora_count,
     })
 
-
 def tfidf(request, corpus_id, ngram_ids):
     """Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
@@ -256,8 +254,6 @@ def tfidf(request, corpus_id, ngram_ids):
     return JsonHttpResponse(nodes_list)
 
 def getCorpusIntersection(request , corpuses_ids):
-
-    
     FinalDict = False
     if request.method == 'POST' and "nodeids" in request.POST and len(request.POST["nodeids"])>0 :
 

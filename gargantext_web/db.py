@@ -140,8 +140,8 @@ def get_session():
     Session = get_sessionmaker()
     return scoped_session(Session)
 
-session = get_session()
-
+sessioncreator = get_session()
+session = sessioncreator()
 # SQLAlchemy model objects caching
 
 from sqlalchemy import or_

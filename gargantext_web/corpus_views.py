@@ -141,7 +141,6 @@ def get_ngrams(request , project_id , corpus_id ):
     return HttpResponse(html)
 
 
-
 def test_test(request , corpus_id , doc_id):
     """Get All for a doc id"""
     corpus_id = int(corpus_id)

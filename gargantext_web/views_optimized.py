@@ -15,7 +15,9 @@ from threading import Thread
 
 from node.admin import CustomForm
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node, session
+from gargantext_web.db import get_or_create_node
+from gargantext_web.views import session
+
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
 from django.db import connection

@@ -138,10 +138,10 @@ def get_sessionmaker():
 
 def get_session():
     Session = get_sessionmaker()
-    return scoped_session(Session)
+    get_ = scoped_session(Session)
+    return get_()
 
-sessioncreator = get_session()
-session = sessioncreator()
+session = get_session()
 # SQLAlchemy model objects caching
 
 from sqlalchemy import or_
@@ -163,22 +163,22 @@ class ModelCache(dict):
             for column in self._columns
             if column.type.python_type == str or key.__class__ == column.type.python_type
         ]
-        session = get_session()
+        #session = get_session()
         element = session.query(self._model).filter(or_(*conditions)).first()
         if element is None:
             raise KeyError
         self[key] = element
         return element
-        session.remove()
+        #session.remove()
 
     def preload(self):
         self.clear()
-        session = get_session()
+        #session = get_session()
         for element in session.query(self._model).all():
             for column_name in self._columns_names:
                 key = getattr(element, column_name)
                 self[key] = element
-        session.remove()
+        #session.remove()
 
 class Cache():
 

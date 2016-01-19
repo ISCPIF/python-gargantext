@@ -13,7 +13,7 @@ import collections
 
 from gargantext_web.views import move_to_trash
 from gargantext_web.db import *
-from gargantext_web.db import session
+from gargantext_web.views import session
 from gargantext_web.validation import validate, ValidationException
 from node import models
 

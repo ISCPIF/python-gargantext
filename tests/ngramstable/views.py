@@ -104,6 +104,7 @@ def get_ngrams(request , project_id , corpus_id ):
             }))
 
     return HttpResponse(html)
+    session.remove()
 
 def get_journals(request , project_id , corpus_id ):
 
@@ -146,6 +147,7 @@ def get_journals(request , project_id , corpus_id ):
             }))
 
     return HttpResponse(html)
+    session.remove()
 
 def get_journals_json(request , project_id, corpus_id ):
     results = ["hola" , "mundo"]
@@ -165,9 +167,7 @@ def get_journals_json(request , project_id, corpus_id ):
                 JournalsDict [journal] = 0
             JournalsDict[journal] += 1
     return JsonHttpResponse(JournalsDict)
-
-
-
+    session.remove()
 
 def get_corpuses( request , node_ids ):
     ngrams = [int(i) for i in node_ids.split("+") ]
@@ -178,12 +178,10 @@ def get_corpuses( request , node_ids ):
         print(r)
     return JsonHttpResponse( [ "tudo" , "bem" ] )
 
-
 def get_cores( request ):
 	import multiprocessing
 	cpus = multiprocessing.cpu_count()
 	return JsonHttpResponse( {"data":cpus} )
-
 
 def get_corpus_state( request , corpus_id ):
     if not request.user.is_authenticated():
@@ -198,7 +196,6 @@ def get_corpus_state( request , corpus_id ):
         connection.close()
     # processing = corpus.hyperdata['Processing']
     return JsonHttpResponse(  processing )
-
 
 def get_groups( request ):
     """
@@ -226,9 +223,7 @@ def get_groups( request ):
 
     return JsonHttpResponse(  common_users )
 
-
 def graph_share(request, generic=100, specific=100):
-
     if request.method== 'GET' and "token" in request.GET:
         # import json
         le_token = json.loads(request.GET["token"])[0]
@@ -257,9 +252,9 @@ def graph_share(request, generic=100, specific=100):
                 'graphfile' : graphurl,\
                 }))
         return HttpResponse(html)
+        session.remove()
 
     return JsonHttpResponse(request.GET["token"])
-
 
 def node_link_share(request):
     data = { "request" : "error" }

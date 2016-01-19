@@ -69,7 +69,6 @@ def logout_user(request):
     return HttpResponseRedirect('/')
     # Redirect to a success page.
 
-
 def logo(request):
     template = get_template('logo.svg')
     group = "mines"
@@ -113,7 +112,6 @@ def css(request):
             'css': css,\
             }))
     return HttpResponse(css_data, mimetype="text/css")
-
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -234,7 +232,6 @@ def projects(request):
     number = len(projects)
     
 
-
     # common_users = session.query(User_User.user_parent).filter( User_User.user_id==user_id ).all()
     # [ Getting shared projects ] #
     common_users = []
@@ -278,6 +275,8 @@ def projects(request):
     else:
         form = ProjectForm()
 
+    session.remove()
+    
     return render(request, 'projects.html', {
         'debug': settings.DEBUG,
         'date': date,
@@ -287,6 +286,7 @@ def projects(request):
         'common_projects':common_projects,
         'common_users':common_users,
         })
+    
 
 def update_nodes(request, project_id, corpus_id, view=None):
     '''
@@ -359,7 +359,6 @@ def update_nodes(request, project_id, corpus_id, view=None):
 
 def corpus(request, project_id, corpus_id):
     
-    
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -403,6 +402,7 @@ def corpus(request, project_id, corpus_id):
             'view'   : "documents"
             }))
 
+    session.remove()
     return HttpResponse(html)
 
 def newpaginatorJSON(request , corpus_id):

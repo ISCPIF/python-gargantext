@@ -55,7 +55,8 @@ def apply_workflow(corpus_id):
         update_state.processing_(corpus, "0")
         
         session.remove()
-    except :
+    except Exception as error:
+        print(error)
         session.remove()
 
 @shared_task

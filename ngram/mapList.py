@@ -15,7 +15,7 @@ from sqlalchemy.orm import aliased
 from ngram.tools import insert_ngrams
 import csv
 
-def compute_mapList(corpus,limit=500,n=1):
+def compute_mapList(corpus,limit=500,n=1, session=None):
     '''
     According to Specificities and stoplist,
     '''

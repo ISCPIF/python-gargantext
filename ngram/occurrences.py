@@ -4,7 +4,7 @@ from gargantext_web.db import Node, NodeNgram, NodeNodeNgram
 from gargantext_web.db import get_or_create_node
 from admin.utils import DebugTime
 
-def compute_occs(corpus):
+def compute_occs(corpus, session=None):
     '''
     compute_occs :: Corpus -> IO ()
 

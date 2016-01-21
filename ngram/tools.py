@@ -1,15 +1,15 @@
 from gargantext_web.db import Ngram, NodeNgram, NodeNgramNgram
 
-from gargantext_web.db import get_cursor, bulk_insert, get_or_create_node, get_session
+from gargantext_web.db import get_cursor, bulk_insert, get_or_create_node, session,get_session
 
 def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=True):
     '''
     Works only for Stop and Map
     '''
-    session = get_session()
+    # implicit global session
 
-    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, session=session)
-    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', session=session)
+    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, mysession=session)
+    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', mysession=session)
     group_list = (session.query(NodeNgramNgram.ngramy_id)
                          .filter(NodeNgramNgram.id==group_node.id)
                          .all()
@@ -35,7 +35,6 @@ def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=Tru
     #print(list_to_insert)
     db, cursor = get_cursor()
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [n for n in list_to_insert])
-    session.remove()
 
 def insert_ngrams(ngrams,get='terms-id'):
     '''

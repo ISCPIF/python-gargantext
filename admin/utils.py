@@ -47,13 +47,12 @@ def PrintException():
 
 
 class WorkflowTracking:
-
     def __init__( self ):
         self.hola = "mundo"
 
-    def processing_(self , corpus , step):
+    def processing_(self , corpus_id , step):
         try:
-            the_query = """ UPDATE node_node SET hyperdata=\'{ \"%s\" : \"%s\"}\' WHERE id=%d """ % ( "Processing", step , corpus.id )
+            the_query = """ UPDATE node_node SET hyperdata=\'{ \"%s\" : \"%s\"}\' WHERE id=%d """ % ( "Processing", step , corpus_id )
             cursor = connection.cursor()
             try:
                 cursor.execute(the_query)

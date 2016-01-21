@@ -131,24 +131,24 @@ def literalquery(statement, dialect=None):
     return LiteralCompiler(dialect, statement)
 
 
-
+#
 def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
-#def get_session():
-#    session_factory = get_sessionmaker()
-#    return scoped_session(session_factory)
+def get_session():
+    session_factory = get_sessionmaker()
+    return scoped_session(session_factory)
 
 
 # get_session à importer, plus pratique pour les remove
-session_factory = get_sessionmaker()
-get_session = scoped_session(session_factory)
+#session_factory = get_sessionmaker()
+#get_session = scoped_session(session_factory)
 
 # the global session ------------
 # pour les modules qui importent
 # directement session
-session = get_session()
+session = get_session()()
 # -------------------------------
 
 

@@ -46,7 +46,8 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 1000
+		#N = 1000
+		N = 300
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )

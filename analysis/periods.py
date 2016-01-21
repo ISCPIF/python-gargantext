@@ -51,7 +51,7 @@ def periods(corpus, start=None, end=None):
     if duration.days > 365 * 3 :
         print("OK")
 
-    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=session).id
 
     result_list = list()
     for t in times:
@@ -86,7 +86,7 @@ def jacquard(period1, period2):
 def get_partition(corpus, start=None, end=None, distance=distance):
     session = get_session()
     
-    miam_id = get_or_create_node(corpus=corpus, nodetype='MapList', session=session).id
+    miam_id = get_or_create_node(corpus=corpus, nodetype='MapList', mysession=session).id
     print("get Partition %s - %s" % (start, end))
     cooc_id = do_cooc(corpus=corpus
             , start=start

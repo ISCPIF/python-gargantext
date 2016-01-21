@@ -44,9 +44,9 @@ def get_cooc(request=None, corpus=None
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
     print("Cooccurrences do not exist yet, creating it.")
-    miam_id = get_or_create_node(nodetype='MapList', corpus=corpus, session=session).id
-    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus, session=session).id
-    group_id = get_or_create_node(nodetype='Group', corpus=corpus, session=session).id
+    miam_id = get_or_create_node(nodetype='MapList', corpus=corpus, mysession=session).id
+    stop_id = get_or_create_node(nodetype='StopList', corpus=corpus, mysession=session).id
+    group_id = get_or_create_node(nodetype='Group', corpus=corpus, mysession=session).id
     
     SamuelFlag = False
     # if field1 == field2 == 'ngrams' :

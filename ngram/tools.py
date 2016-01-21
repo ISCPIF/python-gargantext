@@ -8,8 +8,8 @@ def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=Tru
     '''
     session = get_session()
 
-    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, session=session)
-    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', session=session)
+    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, mysession=session)
+    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', mysession=session)
     group_list = (session.query(NodeNgramNgram.ngramy_id)
                          .filter(NodeNgramNgram.id==group_node.id)
                          .all()

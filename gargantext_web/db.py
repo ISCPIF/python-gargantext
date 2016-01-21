@@ -242,17 +242,16 @@ class bulk_insert:
 
     readline = read
 
-def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None, session=None):
+def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None, mysession=None):
     '''
     Should be a method of the object. __get_or_create__ ?
     name_str :: String
     hyperdata :: Dict
     '''
     
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
 
     if nodetype is None:
         print("Need to give a type node")
@@ -262,13 +261,13 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
         except KeyError:
             ntype = cache.NodeType[nodetype] = NodeType()
             ntype.name = nodetype
-            session.add(ntype)
-            session.commit()
+            mysession.add(ntype)
+            mysession.commit()
 
     if corpus_id is not None and corpus is None:
-        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        corpus = mysession.query(Node).filter(Node.id==corpus_id).first()
 
-    node = (session.query(Node).filter(Node.type_id    == ntype.id
+    node = (mysession.query(Node).filter(Node.type_id    == ntype.id
                                    , Node.parent_id == corpus.id
                                    , Node.user_id   == corpus.user_id
                                     )
@@ -289,11 +288,9 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
             node.name=name_str
         else:
             node.name=ntype.name
-        session.add(node)
-        session.commit()
+        mysession.add(node)
+        mysession.commit()
     #print(parent_id, n.parent_id, n.id, n.name)
     return(node)
 
-    if sessionToRemove:
-        session.remove()
 

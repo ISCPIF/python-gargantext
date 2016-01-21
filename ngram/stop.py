@@ -75,22 +75,18 @@ def isStopWord(ngram, stop_words=None):
         if test_match(word, regex) is True :
             return(True)
 
-def compute_stop(corpus,limit=2000,debug=False, session=None):
+def compute_stop(corpus,limit=2000,debug=False, mysession=None):
     '''
     do some statitics on all stop lists of database of the same type
     '''
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
     
-    stop_node_id = get_or_create_node(nodetype='StopList', corpus=corpus).id
+    stop_node_id = get_or_create_node(nodetype='StopList', corpus=corpus, mysession=mysession).id
     
     # TODO do a function to get all stop words with social scores
-    root = session.query(Node).filter(Node.type_id == cache.NodeType['Root'].id).first()
-    root_stop_id = get_or_create_node(nodetype='StopList', corpus=root).id
+    root = mysession.query(Node).filter(Node.type_id == cache.NodeType['Root'].id).first()
+    root_stop_id = get_or_create_node(nodetype='StopList', corpus=root, mysession=mysession).id
     
-    stop_words = (session.query(Ngram.terms)
+    stop_words = (mysession.query(Ngram.terms)
                          .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
                          .filter(NodeNgram.node_id == root_stop_id)
                          .all()
@@ -99,7 +95,7 @@ def compute_stop(corpus,limit=2000,debug=False, session=None):
     #print([n for n in stop_words])
     
     frequency = sa.func.count( NodeNgram.weight )
-    ngrams = ( session.query( Ngram.id, Ngram.terms, frequency )
+    ngrams = ( mysession.query( Ngram.id, Ngram.terms, frequency )
             .join( NodeNgram, NodeNgram.ngram_id == Ngram.id )
             .join( Node, Node.id == NodeNgram.node_id )
             .filter( Node.parent_id == corpus.id, 
@@ -118,4 +114,3 @@ def compute_stop(corpus,limit=2000,debug=False, session=None):
     stop = WeightedList({ n[0] : -1 for n in ngrams_to_stop})
     stop.save(stop_node_id)
     
-    if sessionToRemove: session.remove()

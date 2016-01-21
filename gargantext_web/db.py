@@ -148,7 +148,8 @@ def get_session():
 # the global session ------------
 # pour les modules qui importent
 # directement session
-session = get_session()()
+session = get_session()
+#session = get_session()()
 # -------------------------------
 
 

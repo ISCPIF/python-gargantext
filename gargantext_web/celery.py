@@ -3,7 +3,7 @@
 from celery import shared_task
 from node import models
 from django.db import transaction
-from admin.utils import DebugTime
+from admin.utils import DebugTime, PrintException
 
 import cProfile
 #@app.task(bind=True)
@@ -15,15 +15,8 @@ from gargantext_web.db import get_session, cache, Node
 from ngram.workflow import ngram_workflow
 
 
-@shared_task
-def apply_sum(x, y):
-    print(x+y)
-    session = get_session()
-    print(session.query(Node.name).first())
-    session.remove()
-
 from parsing.corpustools import  parse_resources, extract_ngrams #add_resource,
-from ngram.lists import ngrams2miam
+#from ngram.lists import ngrams2miam
 
 from admin.utils import WorkflowTracking
 
@@ -36,28 +29,31 @@ def apply_workflow(corpus_id):
     update_state = WorkflowTracking()
     
     try :
-        session = get_session()
-        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        mysession = get_session()
+        corpus = mysession.query(Node).filter(Node.id==corpus_id).first()
 
-        update_state.processing_(corpus, "Parsing")
+        update_state.processing_(int(corpus_id), "Parsing")
         #cProfile.runctx('parse_resources(corpus)', global,locals)
-        parse_resources(corpus, session=session)
+        parse_resources(corpus, mysession=mysession)
 
-        update_state.processing_(corpus, "Terms extraction")
-        extract_ngrams(corpus, ['title', 'abstract'], nlp=True, session=session)
+        update_state.processing_(int(corpus_id), "Terms extraction")
+        extract_ngrams(corpus, ['title', 'abstract'], nlp=True, mysession=mysession)
 
         # update_state.processing_(corpus, "")
-        ngram_workflow(corpus, session=session)
+        ngram_workflow(corpus, mysession=mysession)
 
         #ngrams2miam(user_id=corpus.user_id, corpus_id=corpus_id)
 
         print("End of the Workflow for corpus %d" % (corpus_id))
-        update_state.processing_(corpus, "0")
+        update_state.processing_(int(corpus_id), "0")
         
-        session.remove()
+        mysession.close()
+        get_session.remove()
     except Exception as error:
         print(error)
-        session.remove()
+        PrintException()
+        mysession.close()
+        get_session.remove()
 
 @shared_task
 def empty_trash(corpus_id):

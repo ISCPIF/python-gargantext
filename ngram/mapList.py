@@ -15,15 +15,11 @@ from sqlalchemy.orm import aliased
 from ngram.tools import insert_ngrams
 import csv
 
-def compute_mapList(corpus,limit=500,n=1, session=None):
+def compute_mapList(corpus,limit=500,n=1, mysession=None):
     '''
     According to Specificities and stoplist,
     '''
     
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
  
     monograms_part = 0.005
     monograms_limit = round(limit * monograms_part)
@@ -31,11 +27,11 @@ def compute_mapList(corpus,limit=500,n=1, session=None):
 
     dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
 
-    node_miam  = get_or_create_node(nodetype='MiamList', corpus=corpus)
-    node_stop  = get_or_create_node(nodetype='StopList', corpus=corpus)
-    node_group = get_or_create_node(nodetype='Group', corpus=corpus)
+    node_miam  = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=mysession)
+    node_stop  = get_or_create_node(nodetype='StopList', corpus=corpus, mysession=mysession)
+    node_group = get_or_create_node(nodetype='Group', corpus=corpus, mysession=mysession)
     
-    node_spec  = get_or_create_node(nodetype='Specificity', corpus=corpus)
+    node_spec  = get_or_create_node(nodetype='Specificity', corpus=corpus, mysession=mysession)
 
     Miam=aliased(NodeNgram)
     Stop=aliased(NodeNgram)
@@ -43,7 +39,7 @@ def compute_mapList(corpus,limit=500,n=1, session=None):
     
     Spec=aliased(NodeNodeNgram)
 
-    query = (session.query(Spec.ngram_id, Spec.score)
+    query = (mysession.query(Spec.ngram_id, Spec.score)
                 .join(Miam, Spec.ngram_id == Miam.ngram_id)
                 .join(Ngram, Ngram.id == Spec.ngram_id)
                 #.outerjoin(Group, Group.ngramy_id == Spec.ngram_id)
@@ -66,19 +62,19 @@ def compute_mapList(corpus,limit=500,n=1, session=None):
                 .limit(multigrams_limit)
                )
     
-    stop_ngrams = (session.query(NodeNgram.ngram_id)
+    stop_ngrams = (mysession.query(NodeNgram.ngram_id)
                          .filter(NodeNgram.node_id == node_stop.id)
                          .all()
                  )
 
-    grouped_ngrams = (session.query(NodeNgramNgram.ngramy_id)
+    grouped_ngrams = (mysession.query(NodeNgramNgram.ngramy_id)
                              .filter(NodeNgramNgram.node_id == node_group.id)
                              .all()
                     )
     
-    node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus)
-    session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id).delete()
-    session.commit()
+    node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus, mysession=mysession)
+    mysession.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id).delete()
+    mysession.commit()
     
     data = zip(
         [node_mapList.id for i in range(1,limit)]
@@ -91,20 +87,14 @@ def compute_mapList(corpus,limit=500,n=1, session=None):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
 
     dbg.show('MapList computed')
-    if sessionToRemove: session.remove()
 
-def insert_miam(corpus, ngrams=None, path_file_csv=None):
-    
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
+def insert_miam(corpus, ngrams=None, path_file_csv=None, mysession=None):
     
     dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
     
-    node_miam = get_or_create_node(nodetype='MiamList', corpus=corpus)
-    session.query(NodeNgram).filter(NodeNgram.node_id==node_miam.id).delete()
-    session.commit()
+    node_miam = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=mysession)
+    mysession.query(NodeNgram).filter(NodeNgram.node_id==node_miam.id).delete()
+    mysession.commit()
     
     stop_words = set()
     miam_words = set()
@@ -133,6 +123,5 @@ def insert_miam(corpus, ngrams=None, path_file_csv=None):
     bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
     file_csv.close()
     dbg.show('Miam computed')
-    if sessionToRemove: session.remove()
 
 

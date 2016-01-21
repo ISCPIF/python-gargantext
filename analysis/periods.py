@@ -1,7 +1,7 @@
 
 from collections import defaultdict
 
-from gargantext_web.db import get_or_create_node, get_session, Node, NodeHyperdata, Hyperdata, Ngram
+from gargantext_web.db import get_or_create_node, session,get_session, Node, NodeHyperdata, Hyperdata, Ngram
 
 import pandas as pd
 import numpy as np
@@ -29,7 +29,7 @@ def periods(corpus, start=None, end=None):
     # distance.cosine(a,b)
     # search for min and split
     '''
-    session = get_session()
+    # implicit global session
 
     Doc    = aliased(Node)
     Corpus = aliased(Node)
@@ -51,14 +51,12 @@ def periods(corpus, start=None, end=None):
     if duration.days > 365 * 3 :
         print("OK")
 
-    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus).id
+    miam_id = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=session).id
 
     result_list = list()
     for t in times:
         for ngram in miam_list:
             result_list.add(temporal_tfidf(ngram, time))
-    
-    session.remove()
 
 def tfidf_temporal(corpus, start=None, end=None):
     pass
@@ -84,9 +82,9 @@ def jacquard(period1, period2):
         comNode[x[1]] = comNode.get(x[1], set()).union({x[0]})
 
 def get_partition(corpus, start=None, end=None, distance=distance):
-    session = get_session()
+    # implicit global session
     
-    miam_id = get_or_create_node(corpus=corpus, nodetype='MapList', session=session).id
+    miam_id = get_or_create_node(corpus=corpus, nodetype='MapList', mysession=session).id
     print("get Partition %s - %s" % (start, end))
     cooc_id = do_cooc(corpus=corpus
             , start=start
@@ -100,14 +98,13 @@ def get_partition(corpus, start=None, end=None, distance=distance):
                                     , isMonopartite=True
                                     , distance=distance)
     return(partition, weight)
-    session.remove()
 
 def phylo_clusters(corpus, years):
     '''
     corpus :: Node Corpus
     years  :: [Year]
     '''
-    session = get_session()
+    # implicit global session
 
     clusters     = dict()
     nodes_weight = dict()
@@ -214,5 +211,4 @@ def phylo_clusters(corpus, years):
                         data.append(flow)
 
     return(data)
-    session.remove()
 

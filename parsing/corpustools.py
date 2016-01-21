@@ -31,12 +31,11 @@ parsers = Parsers()
 
 
 # resources management
-def add_resource(corpus, session=None, **kwargs):
+def add_resource(corpus, mysession=None, **kwargs):
     
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
     
     # only for tests
     resource = Resource(guid=str(random()), **kwargs )
@@ -50,7 +49,7 @@ def add_resource(corpus, session=None, **kwargs):
     f.close()
     resource.digest = h.hexdigest()
     # check if a resource on this node already has this hash
-    tmp_resource = (session
+    tmp_resource = (mysession
         .query(Resource)
         .join(Node_Resource, Node_Resource.resource_id == Resource.id)
         .filter(Resource.digest == resource.digest)
@@ -59,28 +58,24 @@ def add_resource(corpus, session=None, **kwargs):
     if tmp_resource is not None:
         return tmp_resource
     else:
-        session.add(resource)
-        session.commit()
+        mysession.add(resource)
+        mysession.commit()
     # link with the resource
     node_resource = Node_Resource(
         node_id = corpus.id,
         resource_id = resource.id,
         parsed = False,
     )
-    session.add(node_resource)
-    session.commit()
-    # return result
+    mysession.add(node_resource)
+    mysession.commit()
     return resource
     
-    if sessionToRemove:
-        session.remove()
 
-def parse_resources(corpus, user=None, user_id=None, session=None):
+def parse_resources(corpus, user=None, user_id=None, mysession=None):
     
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
     
     dbg = DebugTime('Corpus #%d - parsing' % corpus.id)
 
@@ -91,7 +86,7 @@ def parse_resources(corpus, user=None, user_id=None, session=None):
     else:
         user_id = corpus.user_id
     # find resource of the corpus
-    resources_query = (session
+    resources_query = (mysession
         .query(Resource, ResourceType)
         .join(ResourceType, ResourceType.id == Resource.type_id)
         .join(Node_Resource, Node_Resource.resource_id == Resource.id)
@@ -134,14 +129,14 @@ def parse_resources(corpus, user=None, user_id=None, session=None):
             # TODO: mark node-resources associations as parsed
             #
     dbg.show('insert %d documents' % len(nodes))
-    session.add_all(nodes)
-    session.commit()
+    mysession.add_all(nodes)
+    mysession.commit()
     # now, index the hyperdata
     dbg.show('insert hyperdata')
     node_hyperdata_lists = defaultdict(list)
     hyperdata_types = {
         hyperdata.name: hyperdata
-        for hyperdata in session.query(Hyperdata)
+        for hyperdata in mysession.query(Hyperdata)
     }
     #print('hyperdata_types', hyperdata_types)
     for node in nodes:
@@ -166,7 +161,7 @@ def parse_resources(corpus, user=None, user_id=None, session=None):
     node_hyperdata_ngrams = set()
     #for field in ['source', 'authors', 'journal']:
     for field in ['journal', 'authors']:
-        hyperdata_set.add(session.query(Hyperdata.id).filter(Hyperdata.name==field).first()[0])
+        hyperdata_set.add(mysession.query(Hyperdata.id).filter(Hyperdata.name==field).first()[0])
     
     #print("hyperdata_set", hyperdata_set)
 
@@ -190,9 +185,6 @@ def parse_resources(corpus, user=None, user_id=None, session=None):
 
     # mark the corpus as parsed
     corpus.parsed = True
-
-    if sessionToRemove:
-        session.remove()
 
 # ngrams extraction
 from .NgramsExtractors import EnglishNgramsExtractor, FrenchNgramsExtractor, NgramsExtractor
@@ -222,18 +214,17 @@ class NgramsExtractors(defaultdict):
 
 ngramsextractors = NgramsExtractors()
 
-def extract_ngrams(corpus, keys, nlp=True, session=None):
+def extract_ngrams(corpus, keys, nlp=True, mysession=None):
     
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
     
     dbg = DebugTime('Corpus #%d - ngrams' % corpus.id)
     default_language_iso2 = None if corpus.language_id is None else cache.Language[corpus.language_id].iso2
     # query the hyperdata associated with the given keys
     columns = [Node.id, Node.language_id] + [Node.hyperdata[key] for key in keys]
-    hyperdata_query = (session
+    hyperdata_query = (mysession
         .query(*columns)
         .filter(Node.parent_id == corpus.id)
         .filter(Node.type_id == cache.NodeType['Document'].id)
@@ -242,7 +233,7 @@ def extract_ngrams(corpus, keys, nlp=True, session=None):
     dbg.show('find ngrams')
     languages_by_id = {
         language.id: language.iso2
-        for language in session.query(Language)
+        for language in mysession.query(Language)
     }
 
     ngrams_data = set()
@@ -321,9 +312,6 @@ def extract_ngrams(corpus, keys, nlp=True, session=None):
     # commit to database
     db.commit()
     
-    if sessionToRemove:
-        session.remove()
-
 
 def text_prepa(my_str):
     """

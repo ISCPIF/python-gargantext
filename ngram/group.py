@@ -47,14 +47,10 @@ def getStemmer(corpus):
 
     return(stemIt)
 
-def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=None):
+def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', mysession=None):
     '''
     group ngrams according to a function (stemming or lemming)
     '''
-    sessionToRemove = False
-    if session is None:
-        session = get_session()
-        sessionToRemove = True
     
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
@@ -66,19 +62,19 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=N
         stemIt = getStemmer(corpus)
 
     group_to_insert = set()
-    node_group = get_or_create_node(nodetype='Group', corpus=corpus, session=session)
+    node_group = get_or_create_node(nodetype='Group', corpus=corpus, mysession=mysession)
 
     miam_to_insert = set()
-    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus, session=session)
+    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=mysession)
 
-    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus, session=session)
+    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus, mysession=mysession)
     #stop_list = UnweightedList(stop_node.id)
 
     Stop = aliased(NodeNgram)
     frequency = sa.func.count(NodeNgram.weight)
     
 
-    ngrams = (session.query(Ngram.id, Ngram.terms, frequency )
+    ngrams = (mysession.query(Ngram.id, Ngram.terms, frequency )
             .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
             .join(Node, Node.id == NodeNgram.node_id)
             #.outerjoin(Stop, Stop.ngram_id == Ngram.id)
@@ -90,7 +86,7 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=N
             .limit(limit_sup)
             )
     
-    stops = (session.query(Ngram.id, Ngram.terms, frequency)
+    stops = (mysession.query(Ngram.id, Ngram.terms, frequency)
                     .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
                     .join(Node, Node.id == NodeNgram.node_id)
                     .join(Stop, Stop.ngram_id == Ngram.id)
@@ -131,10 +127,10 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=N
             miam_to_insert.add((miam_node.id, group[key]['mainForm'], 1))
 
 #    # Deleting previous groups
-    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
+    mysession.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
 #    # Deleting previous ngrams miam list
-    session.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
-    session.commit()
+    mysession.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
+    mysession.commit()
 
     bulk_insert(NodeNgramNgram
                 , ('node_id', 'ngramx_id', 'ngramy_id', 'score')
@@ -142,4 +138,3 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', session=N
 
     bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
 
-    if sessionToRemove: session.remove()

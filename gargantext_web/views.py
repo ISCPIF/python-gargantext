@@ -228,6 +228,8 @@ def projects(request):
 
     date = datetime.datetime.now()
     # print(Logger.write("STATIC_ROOT"))
+    
+    # implicit global session
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
     number = len(projects)
     
@@ -274,8 +276,6 @@ def projects(request):
             return HttpResponseRedirect('/projects/')
     else:
         form = ProjectForm()
-
-    session.remove()
     
     return render(request, 'projects.html', {
         'debug': settings.DEBUG,
@@ -377,6 +377,7 @@ def corpus(request, project_id, corpus_id):
 
     type_doc_id = cache.NodeType['Document'].id
     
+    # implicit global session
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
 
@@ -402,7 +403,6 @@ def corpus(request, project_id, corpus_id):
             'view'   : "documents"
             }))
 
-    session.remove()
     return HttpResponse(html)
 
 def newpaginatorJSON(request , corpus_id):

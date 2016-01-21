@@ -47,11 +47,13 @@ def apply_workflow(corpus_id):
         print("End of the Workflow for corpus %d" % (corpus_id))
         update_state.processing_(int(corpus_id), "0")
         
-        mysession.remove()
+        mysession.close()
+        get_session.remove()
     except Exception as error:
         print(error)
         PrintException()
-        mysession.remove()
+        mysession.close()
+        get_session.remove()
 
 @shared_task
 def empty_trash(corpus_id):

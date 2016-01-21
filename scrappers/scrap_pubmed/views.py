@@ -29,7 +29,7 @@ import threading
 
 from node.admin import CustomForm
 from gargantext_web.db import *
-from gargantext_web.db import get_sessionmaker, get_session
+from gargantext_web.db import get_sessionmaker, session,get_session
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
 
@@ -84,7 +84,7 @@ def getGlobalStatsISTEXT(request ):
 
 
 def doTheQuery(request , project_id):
-	session = get_session()
+	# implicit global session
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
@@ -181,14 +181,13 @@ def doTheQuery(request , project_id):
 
 	data = alist
 	return JsonHttpResponse(data)
-	session.remove()
 
 
 def testISTEX(request , project_id):
 	print("testISTEX:")
 	print(request.method)
 	alist = ["bar","foo"]
-	session = get_session()
+	# implicit global session
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
@@ -289,4 +288,3 @@ def testISTEX(request , project_id):
 
 	data = [query_string,query,N]
 	return JsonHttpResponse(data)
-	session.remove()

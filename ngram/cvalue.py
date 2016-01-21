@@ -6,7 +6,7 @@ from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node, get_session
+from gargantext_web.db import get_or_create_node, session,get_session
 
 
 from parsing.corpustools import *
@@ -41,7 +41,7 @@ def getNgrams(corpus=None, limit=1000):
     '''
     getNgrams :: Corpus -> [(Int, String, String, Float)]
     '''
-    session = get_session()
+    # implicit global session
     
     terms = dict()
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)'
@@ -65,7 +65,6 @@ def getNgrams(corpus=None, limit=1000):
         except:
             PrintException()
     return(terms)
-    session.remove()
 
 def compute_cvalue(corpus=None, limit=1000, mysession=None):
     '''

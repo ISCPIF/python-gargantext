@@ -136,14 +136,23 @@ def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
-def get_session():
-    Session = get_sessionmaker()
-    return scoped_session(Session)
-    
-    #get_ = scoped_session(Session)
-    #return get_()
+#def get_session():
+#    session_factory = get_sessionmaker()
+#    return scoped_session(session_factory)
 
+
+# get_session à importer, plus pratique pour les remove
+session_factory = get_sessionmaker()
+get_session = scoped_session(session_factory)
+
+# the global session ------------
+# pour les modules qui importent
+# directement session
 session = get_session()
+# -------------------------------
+
+
+
 # SQLAlchemy model objects caching
 
 from sqlalchemy import or_

@@ -1,7 +1,7 @@
 from rest_v1_0.api import APIView, APIException, JsonHttpResponse, CsvHttpResponse
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-from gargantext_web.db import get_session, Node
+from gargantext_web.db import session,get_session, Node
 from analysis.functions import get_cooc
 
 class Graph(APIView):
@@ -14,7 +14,7 @@ class Graph(APIView):
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
         '''
-        session = get_session()
+        # implicit global session
         
         field1 = request.GET.get('field1', 'ngrams')
         field2 = request.GET.get('field2', 'ngrams')
@@ -53,5 +53,3 @@ class Graph(APIView):
                 , 'field2' : accepted_field2
                 , 'options': options
                 })
-        
-        session.remove()

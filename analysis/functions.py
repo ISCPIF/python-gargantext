@@ -9,7 +9,7 @@ from math import log
 
 import scipy
 
-from gargantext_web.db import get_session, get_or_create_node
+from gargantext_web.db import session,get_session, get_or_create_node,session
 
 from analysis.cooccurrences import do_cooc
 from analysis.distance import do_distance
@@ -39,7 +39,7 @@ def get_cooc(request=None, corpus=None
     '''
     get_ccoc : to compute the graph.
     '''
-    session = get_session()
+    # implicit global session
 
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
@@ -170,7 +170,6 @@ def get_cooc(request=None, corpus=None
         return(partition)
 
     return(data)
-    session.remove()
 
 def get_graphA( nodeA_type , NodesB , links , corpus ):
     from analysis.InterUnion import Utils

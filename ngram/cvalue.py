@@ -6,7 +6,8 @@ from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, session,get_session
+
 
 from parsing.corpustools import *
 
@@ -40,6 +41,8 @@ def getNgrams(corpus=None, limit=1000):
     '''
     getNgrams :: Corpus -> [(Int, String, String, Float)]
     '''
+    # implicit global session
+    
     terms = dict()
     tfidf_node = get_or_create_node(nodetype='Tfidf (global)'
                                     , corpus=corpus)
@@ -63,7 +66,7 @@ def getNgrams(corpus=None, limit=1000):
             PrintException()
     return(terms)
 
-def compute_cvalue(corpus=None, limit=1000):
+def compute_cvalue(corpus=None, limit=1000, mysession=None):
     '''
     computeCvalue :: Corpus
     frequency :: String -> Int -> Int
@@ -122,12 +125,11 @@ def compute_cvalue(corpus=None, limit=1000):
 
     result = cvalueAll()
     #print([n for n in result])
-    session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==cvalue_node.id).delete()
-    session.commit()
+    mysession.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==cvalue_node.id).delete()
+    mysession.commit()
 
     #bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in islice(result,0,100)])
     bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [n for n in result])
-
 # test
 #corpus=session.query(Node).filter(Node.id==244250).first()
 #computeCvalue(corpus)

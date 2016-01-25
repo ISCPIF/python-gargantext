@@ -8,21 +8,21 @@ from gargantext_web.db import get_or_create_node
 from ngram.mapList import compute_mapList
 from ngram.occurrences import compute_occs
 
-from gargantext_web.db import session , Node , NodeNgram
+from gargantext_web.db import Node , NodeNgram
 from admin.utils import WorkflowTracking
 
 
-def ngram_workflow(corpus, n=5000):
+def ngram_workflow(corpus, n=5000, mysession=None):
     '''
     All the workflow to filter the ngrams.
     '''
     update_state = WorkflowTracking()
 
-    update_state.processing_(corpus, "Stop words")
-    compute_stop(corpus)
+    update_state.processing_(corpus.id, "Stop words")
+    compute_stop(corpus, mysession=mysession)
     
-    update_state.processing_(corpus, "TF-IDF global score")
-    compute_tfidf_global(corpus)
+    update_state.processing_(corpus.id, "TF-IDF global score")
+    compute_tfidf_global(corpus, mysession=mysession)
     
     part = round(n * 0.9)
 
@@ -31,28 +31,28 @@ def ngram_workflow(corpus, n=5000):
 #    part = round(part * 0.8)
     #print('spec part:', part)
 
-    update_state.processing_(corpus, "Specificity score")
-    compute_specificity(corpus,limit=part)
+    update_state.processing_(corpus.id, "Specificity score")
+    compute_specificity(corpus,limit=part, mysession=mysession)
     
     part = round(part * 0.8)
 
     limit_inf = round(part * 1)
     limit_sup = round(part * 5)
     #print(limit_inf,limit_sup)
-    update_state.processing_(corpus, "Synonyms")
+    update_state.processing_(corpus.id, "Synonyms")
     try:
-        compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup)
+        compute_groups(corpus,limit_inf=limit_inf, limit_sup=limit_sup, mysession=mysession)
     except Exception as error:
         print("Workflow Ngram Group error", error)
         pass
     
-    update_state.processing_(corpus, "Map list terms")
-    compute_mapList(corpus,limit=1000) # size
+    update_state.processing_(corpus.id, "Map list terms")
+    compute_mapList(corpus,limit=1000, mysession=mysession) # size
     
-    update_state.processing_(corpus, "TF-IDF local score")
-    compute_tfidf(corpus)
+    update_state.processing_(corpus.id, "TF-IDF local score")
+    compute_tfidf(corpus, mysession=mysession)
 
-    update_state.processing_(corpus, "Occurrences")
-    compute_occs(corpus)
+    update_state.processing_(corpus.id, "Occurrences")
+    compute_occs(corpus, mysession=mysession)
 
 

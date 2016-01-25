@@ -1,7 +1,7 @@
 from collections import defaultdict
 from math import sqrt
 
-from gargantext_web.db import session, NodeNgram, NodeNgramNgram, bulk_insert
+from gargantext_web.db import session,get_session, NodeNgram, NodeNgramNgram, bulk_insert
 
 
 class BaseClass:
@@ -67,6 +67,7 @@ class Translations(BaseClass):
             self.items = defaultdict(int)
             self.groups = defaultdict(set)
         elif isinstance(other, int):
+            # implicit global session
             query = (session
                 .query(NodeNgramNgram.ngramy_id, NodeNgramNgram.ngramx_id)
                 .filter(NodeNgramNgram.node_id == other)
@@ -118,6 +119,7 @@ class Translations(BaseClass):
 
     def save(self, node_id):
         # delete previous data
+        # implicit global session
         session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_id).delete()
         session.commit()
         # insert new data
@@ -134,6 +136,7 @@ class WeightedMatrix(BaseClass):
         if other is None:
             self.items = defaultdict(lambda: defaultdict(float))
         elif isinstance(other, int):
+            # implicit global session
             query = (session
                 .query(NodeNgramNgram.ngramx_id, NodeNgramNgram.ngramy_id, NodeNgramNgram.score)
                 .filter(NodeNgramNgram.node_id == other)
@@ -159,6 +162,7 @@ class WeightedMatrix(BaseClass):
 
     def save(self, node_id):
         # delete previous data
+        # implicit global session
         session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_id).delete()
         session.commit()
         # insert new data
@@ -243,6 +247,7 @@ class UnweightedList(BaseClass):
         if other is None:
             self.items = set()
         elif isinstance(other, int):
+            # implicit global session
             query = (session
                 .query(NodeNgram.ngram_id)
                 .filter(NodeNgram.node_id == other)
@@ -323,6 +328,7 @@ class UnweightedList(BaseClass):
 
     def save(self, node_id):
         # delete previous data
+        # implicit global session
         session.query(NodeNgram).filter(NodeNgram.node_id == node_id).delete()
         session.commit()
         # insert new data
@@ -339,6 +345,7 @@ class WeightedList(BaseClass):
         if other is None:
             self.items = defaultdict(float)
         elif isinstance(other, int):
+            # implicit global session
             query = (session
                 .query(NodeNgram.ngram_id, NodeNgram.weight)
                 .filter(NodeNgram.node_id == other)
@@ -435,6 +442,7 @@ class WeightedList(BaseClass):
 
     def save(self, node_id):
         # delete previous data
+        # implicit global session
         session.query(NodeNgram).filter(NodeNgram.node_id == node_id).delete()
         session.commit()
         # insert new data

@@ -24,10 +24,10 @@ def get_team():
              'picture' : 'david.jpg',
              'role':'principal investigator'},
 
-            { 'first_name' : 'Elias', 'last_name' : 'Showk',
-             'mail' : '',
-             'website' : 'https://github.com/elishowk',
-             'picture' : '', 'role' : 'developer'},
+#            { 'first_name' : 'Elias', 'last_name' : 'Showk',
+#             'mail' : '',
+#             'website' : 'https://github.com/elishowk',
+#             'picture' : '', 'role' : 'developer'},
 
             { 'first_name' : 'Mathieu', 'last_name' : 'Rodic',
              'mail' : '',
@@ -41,7 +41,6 @@ def get_team():
              'picture' : 'samuel.jpg',
              'role' : 'developer'},
 
-
             { 'first_name' : 'Maziyar', 'last_name' : 'Panahi',
              'mail' : '',
              'website'  : '',
@@ -51,6 +50,7 @@ def get_team():
             { 'first_name' : 'Romain', 'last_name' : 'Loth',
              'mail' : '',
              'website'  : '',
+             'picture' : 'romain.jpg',
              'role' : 'developer'},
 
             { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',

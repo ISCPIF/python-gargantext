@@ -1,20 +1,25 @@
 
-from gargantext_web.db import session, cache, get_cursor
+from gargantext_web.db import get_session, cache, get_cursor
 from gargantext_web.db import Node, NodeNgram, NodeNodeNgram
 from gargantext_web.db import get_or_create_node
 from admin.utils import DebugTime
 
-def compute_occs(corpus):
+def compute_occs(corpus, mysession=None):
+    '''
+    compute_occs :: Corpus -> IO ()
+
+    '''
+    
     dbg = DebugTime('Corpus #%d - OCCURRENCES' % corpus.id)
     dbg.show('Calculate occurrences')
-    occs_node = get_or_create_node(nodetype='Occurrences', corpus=corpus)
+    occs_node = get_or_create_node(nodetype='Occurrences', corpus=corpus, mysession=mysession)
     
     #print(occs_node.id)
 
-    (session.query(NodeNodeNgram)
+    (mysession.query(NodeNodeNgram)
             .filter(NodeNodeNgram.nodex_id==occs_node.id).delete()
             )
-    session.commit()
+    mysession.commit()
 
     db, cursor = get_cursor()
     cursor.execute('''
@@ -46,5 +51,7 @@ def compute_occs(corpus):
             )
     )
     db.commit()
+
+
     #data = session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==occs_node.id).all()
     #print([n for n in data])

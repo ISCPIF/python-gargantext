@@ -9,7 +9,6 @@ import numpy as np
 import collections
 
 
-session = get_session()
 
 def result2dict(query):
     results = dict()
@@ -27,6 +26,7 @@ def diachronic_specificity(corpus_id, terms, order=True):
     Values are measure to indicate diachronic specificity.
     Nowadays, the measure is rather simple: distance of frequency of period from mean of frequency of all corpus.
     '''
+    # implicit global session
     ngram_frequency_query = (session
         .query(Node.hyperdata['publication_year'], func.count('*'))
         .join(NodeNgram, Node.id == NodeNgram.node_id)
@@ -63,7 +63,6 @@ def diachronic_specificity(corpus_id, terms, order=True):
         return collections.OrderedDict(sorted(relative_terms_count.items()))
     else:
         return relative_terms_count
-
 
 # For tests
 # diachronic_specificity(102750, "bayer", order=True)

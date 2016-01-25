@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from node.models import Node
-from gargantext_web.db import session, cache, Node, NodeNgram, Ngram
+from gargantext_web.db import session,get_session, cache, Node, NodeNgram, Ngram
 from ngram.lists import listIds, listNgramIds
 from gargantext_web.db import get_or_create_node
 
@@ -68,6 +68,7 @@ class NgramEdit(APIView):
         """
         Edit an existing NGram in a given list
         """
+        # implicit global session
         list_id = int(list_id)
         list_node = session.query(Node).filter(Node.id==list_id).first()
         # TODO add 1 for MapList social score ?
@@ -97,6 +98,7 @@ class NgramEdit(APIView):
         """
         Delete a ngram from a list
         """
+        # implicit global session
         print("to del",ngram_ids)
         for ngram_id in ngram_ids.split('+'):
             print('ngram_id', ngram_id)
@@ -134,13 +136,14 @@ class NgramCreate(APIView):
     """
     renderer_classes = (JSONRenderer,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
-
+    
     def post(self, request, list_id):
         """
         create NGram in a given list
         
         example: request.data = {'text': 'phylogeny'}
         """
+        # implicit global session
         list_id = int(list_id)
         # format the ngram's text
         ngram_text = request.data.get('text', None)
@@ -175,7 +178,6 @@ class NgramCreate(APIView):
             'list_id': list_id,
         })
 
-
 class Document(APIView):
     """
     Read-only Document view, similar to /api/nodes/
@@ -184,6 +186,7 @@ class Document(APIView):
 
     def get(self, request, doc_id):
         """Document by ID"""
+        # implicit global session
         node = session.query(Node).filter(Node.id == doc_id).first()
         if node is None:
             raise APIException('This node does not exist', 404)
@@ -205,5 +208,4 @@ class Document(APIView):
             'id': node.id
         }
         return Response(data)
-
 

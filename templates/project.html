@@ -299,7 +299,7 @@
 					var origQuery = $("#id_name").val()
 					console.log("printing the results:")
 					console.log(origQuery)
-					testISTEX(origQuery.replace(" ","+"),1000)
+					testISTEX(origQuery.replace(" ","+"),300)
 				}
 			}
 			else {
@@ -349,7 +349,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 1000 sample!")
+					$("#submit_thing").html("Process a 300 sample!")
 
 		            thequeries = data
 		            var N=0,k=0;
@@ -388,7 +388,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 1000 sample!")
+					$("#submit_thing").html("Process a 300 sample!")
 
 		            thequeries = data
 		            var N=data.length,k=0;

@@ -2,17 +2,19 @@ from django.conf import settings
 
 from node import models
 
-__all__ = ['literalquery', 'session', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor', 'User']
+__all__ = ['literalquery', 'cache', 'Session', 'bulk_insert', 'engine', 'get_cursor', 'User']
 
 
 # initialize sqlalchemy
 
-from sqlalchemy.orm import Session, mapper
+from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
 from sqlalchemy.ext.automap import automap_base
 
 from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey
 from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import JSON
+
+
 
 # SQLAlchemy session management
 def get_engine():
@@ -129,12 +131,27 @@ def literalquery(statement, dialect=None):
     return LiteralCompiler(dialect, statement)
 
 
+#
 def get_sessionmaker():
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
 
-Session = get_sessionmaker()
-session = Session()
+def get_session():
+    session_factory = get_sessionmaker()
+    return scoped_session(session_factory)
+
+
+# get_session à importer, plus pratique pour les remove
+#session_factory = get_sessionmaker()
+#get_session = scoped_session(session_factory)
+
+# the global session ------------
+# pour les modules qui importent
+# directement session
+session = get_session()
+#session = get_session()()
+# -------------------------------
+
 
 
 # SQLAlchemy model objects caching
@@ -158,18 +175,22 @@ class ModelCache(dict):
             for column in self._columns
             if column.type.python_type == str or key.__class__ == column.type.python_type
         ]
+        #session = get_session()
         element = session.query(self._model).filter(or_(*conditions)).first()
         if element is None:
             raise KeyError
         self[key] = element
         return element
+        #session.remove()
 
     def preload(self):
         self.clear()
+        #session = get_session()
         for element in session.query(self._model).all():
             for column_name in self._columns_names:
                 key = getattr(element, column_name)
                 self[key] = element
+        #session.remove()
 
 class Cache():
 
@@ -231,12 +252,17 @@ class bulk_insert:
 
     readline = read
 
-def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None):
+def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hyperdata=None, mysession=None):
     '''
     Should be a method of the object. __get_or_create__ ?
     name_str :: String
     hyperdata :: Dict
     '''
+    
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
+
     if nodetype is None:
         print("Need to give a type node")
     else:
@@ -245,13 +271,13 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
         except KeyError:
             ntype = cache.NodeType[nodetype] = NodeType()
             ntype.name = nodetype
-            session.add(ntype)
-            session.commit()
+            mysession.add(ntype)
+            mysession.commit()
 
     if corpus_id is not None and corpus is None:
-        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        corpus = mysession.query(Node).filter(Node.id==corpus_id).first()
 
-    node = (session.query(Node).filter(Node.type_id    == ntype.id
+    node = (mysession.query(Node).filter(Node.type_id    == ntype.id
                                    , Node.parent_id == corpus.id
                                    , Node.user_id   == corpus.user_id
                                     )
@@ -272,7 +298,9 @@ def get_or_create_node(nodetype=None,corpus=None,corpus_id=None,name_str=None,hy
             node.name=name_str
         else:
             node.name=ntype.name
-        session.add(node)
-        session.commit()
+        mysession.add(node)
+        mysession.commit()
     #print(parent_id, n.parent_id, n.id, n.name)
     return(node)
+
+

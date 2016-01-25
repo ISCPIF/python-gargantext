@@ -12,7 +12,7 @@ TODO : REFACTOR 2) improvements in ngram creation (?bulk like node_ngram links)
 """
 
 from gargantext_web.db import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
-from gargantext_web.db import cache, session, get_or_create_node, bulk_insert
+from gargantext_web.db import cache, session,get_session, get_or_create_node, bulk_insert
 
 # import sqlalchemy as sa
 from sqlalchemy.sql import func, exists
@@ -105,6 +105,7 @@ def exportNgramLists(node,filename,delimiter="\t"):
           2  <=> mapList
         """
         # récupérer d'un coup les objets Ngram (avec terme)
+        # implicit global session
         if len(ngram_ids):
             ng_objs = session.query(Ngram).filter(Ngram.id.in_(ngram_ids)).all()
         else:
@@ -130,7 +131,6 @@ def exportNgramLists(node,filename,delimiter="\t"):
         
         # csv_rows = [[ligne1_a, ligne1_b..],[ligne2_a, ligne2_b..],..]
         return csv_rows
-    
     
     # on applique notre fonction ng_to_csv sur chaque liste
     # ------------------------------------------------------
@@ -187,7 +187,7 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
         (and ideally add its logic to analysis.lists.Translations)
     
     '''
-    
+    # implicit global session
     # the node arg has to be a corpus here
     if not hasattr(node, "type_id") or node.type_id != 4:
         raise TypeError("IMPORT: node argument must be a Corpus Node")
@@ -378,10 +378,6 @@ def importNgramLists(node,filename,delimiter="\t", del_lists=[]):
     
     print("INFO: added %i elements in the lists indices" % added_nd_ng)
     print("INFO: added %i new ngrams in the lexicon" % added_ng)
-    
-
-
-
 
 
 # à chronométrer:

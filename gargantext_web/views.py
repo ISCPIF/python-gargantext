@@ -39,14 +39,14 @@ from django.contrib.auth import authenticate, login, logout
 
 from scrappers.scrap_pubmed.admin import Logger
 
-from gargantext_web.db import *
 
 from sqlalchemy import or_, func
 
 from gargantext_web import about
 from gargantext_web.celery import empty_trash
 
-from gargantext_web.db import cache, NodeNgram, NodeNgramNgram
+from gargantext_web.db import *
+from gargantext_web.db import session, cache, NodeNgram, NodeNgramNgram
 
 def login_user(request):
     logout(request)
@@ -68,7 +68,6 @@ def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/')
     # Redirect to a success page.
-
 
 def logo(request):
     template = get_template('logo.svg')
@@ -113,7 +112,6 @@ def css(request):
             'css': css,\
             }))
     return HttpResponse(css_data, mimetype="text/css")
-
 
 def query_to_dicts(query_string, *query_args):
     """Run a simple query and produce a generator
@@ -230,11 +228,11 @@ def projects(request):
 
     date = datetime.datetime.now()
     # print(Logger.write("STATIC_ROOT"))
-
+    
+    # implicit global session
     projects = session.query(Node).filter(Node.user_id == user_id, Node.type_id == project_type_id).order_by(Node.date).all()
     number = len(projects)
     
-
 
     # common_users = session.query(User_User.user_parent).filter( User_User.user_id==user_id ).all()
     # [ Getting shared projects ] #
@@ -278,7 +276,7 @@ def projects(request):
             return HttpResponseRedirect('/projects/')
     else:
         form = ProjectForm()
-
+    
     return render(request, 'projects.html', {
         'debug': settings.DEBUG,
         'date': date,
@@ -288,7 +286,7 @@ def projects(request):
         'common_projects':common_projects,
         'common_users':common_users,
         })
-
+    
 
 def update_nodes(request, project_id, corpus_id, view=None):
     '''
@@ -297,6 +295,7 @@ def update_nodes(request, project_id, corpus_id, view=None):
         - permanent deletion of Trash
 
     '''
+    
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -359,6 +358,7 @@ def update_nodes(request, project_id, corpus_id, view=None):
 #
 
 def corpus(request, project_id, corpus_id):
+    
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -376,6 +376,8 @@ def corpus(request, project_id, corpus_id):
     corpus  = cache.Node[int(corpus_id)]
 
     type_doc_id = cache.NodeType['Document'].id
+    
+    # implicit global session
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
 
@@ -405,8 +407,7 @@ def corpus(request, project_id, corpus_id):
 
 def newpaginatorJSON(request , corpus_id):
 
-    results = ["hola" , "mundo"]
-
+    
     # t = get_template('tests/newpag/thetable.html')
 
     # project = session.query(Node).filter(Node.id==project_id).first()
@@ -461,7 +462,6 @@ def newpaginatorJSON(request , corpus_id):
     }
     return JsonHttpResponse(finaldict)
 
-
 def move_to_trash(node_id):
     try:
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -481,9 +481,12 @@ def move_to_trash(node_id):
         #return(previous_type_id)
     except Exception as error:
         print("can not move to trash Node" + str(node_id) + ":" + str(error))
+    
 
 def move_to_trash_multiple(request):
+    
     user = request.user
+    
     if not user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
 
@@ -506,8 +509,10 @@ def move_to_trash_multiple(request):
 
 def delete_node(request, node_id):
 
+    
     # do we have a valid user?
     user = request.user
+    
     node = session.query(Node).filter(Node.id == node_id).first()
 
     if not user.is_authenticated():
@@ -523,7 +528,7 @@ def delete_node(request, node_id):
         return HttpResponseRedirect('/project/' + str(node_parent_id))
     else:
         return HttpResponseRedirect('/projects/')
-
+    
 
 def delete_corpus(request, project_id, node_id):
     # ORM Django
@@ -545,6 +550,7 @@ def delete_corpus(request, project_id, node_id):
 
 def chart(request, project_id, corpus_id):
     ''' Charts to compare, filter, count'''
+    
     t = get_template('chart.html')
     user = request.user
     date = datetime.datetime.now()
@@ -562,6 +568,7 @@ def chart(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def sankey(request, corpus_id):
+    
     t = get_template('sankey.html')
     user = request.user
     date = datetime.datetime.now()
@@ -576,7 +583,6 @@ def sankey(request, corpus_id):
             }))
 
     return HttpResponse(html)
-
 
 
 def matrix(request, project_id, corpus_id):
@@ -598,6 +604,7 @@ def matrix(request, project_id, corpus_id):
     return HttpResponse(html)
 
 def graph(request, project_id, corpus_id, generic=100, specific=100):
+    
     t = get_template('explorer.html')
     user = request.user
     date = datetime.datetime.now()
@@ -660,6 +667,7 @@ def corpus_csv(request, project_id, corpus_id):
     '''
     Create the HttpResponse object with the appropriate CSV header.
     '''
+    
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="corpus.csv"'
 
@@ -735,30 +743,48 @@ def node_link(request, corpus_id):
     '''
     Create the HttpResponse object with the node_link dataset.
     '''
-
     data = []
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
     data = get_cooc(request=request, corpus=corpus, type="node_link")
     return JsonHttpResponse(data)
 
+from analysis.periods import phylo_clusters
 
 def sankey_csv(request, corpus_id):
+    
     data = []
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
+#
+#    header = ["source", "target", "value"] 
+#    data.append(header)
+#    
+#    flows = phylo_clusters(corpus, range(2005,2013)) 
+#    for flow in flows: 
+#        data.append(flow) 
+#    print(data)
+#
+
     data = [
-            ["source", "target", "value"]
-            , ["Comment_1", "Theme_1", 1]
-            
-            , ["Comment_2", "Theme_2", 2]
-            , ["Comment_3", "Theme_2", 2]
-            , ["Comment_7", "Theme_1", 2]
-            , ["Comment_8", "Theme_3", 2]
-            
-            , ["Theme_1", "Reco_par_1", 2]
-            , ["Theme_2", "Reco_par_2", 2]
-            , ["Theme_2", "Reco_par_5", 2]
-            , ["Theme_3", "Reco_par_5", 1]
+              ['source', 'target', 'value']
+            , ['inégalités,rapports sociaux,P1', 'critique,travail social,P2', 8]
+            , ['inégalités,rapports sociaux,P1', 'inégalités,éducation,P2', 21]
+            , ['éducation,institutions,P1', 'critique,travail social,P2', 7]
+            , ['éducation,institutions,P1', 'inégalités,éducation,P2', 10]
+            #, ['éducation,institutions,P1', 'personnes âgées,pouvoirs publics,P2', 8]
+            , ['éducation,institutions,P1', 'politiques publiques,personnes âgées dépendantes,P2', 8]
+            #, ['éducation,institutions,P1', 'intervention sociale,travailleur social,P2', 8]
+            #, ['intervention sociale,travailleur social,2011-01-01 2013-12-31', 'intervention sociale,travailleur social,P3', 0]
+            , ['critique,enseignement supérieur,P1', 'critique,travail social,P2', 6]
+            #, ['critique,enseignement supérieur,P1', 'personnes âgées,pouvoirs publics,P2', 7]
+            , ['justice,exclusion,violence,P1', 'inégalités,éducation,P2', 12]
+            , ['critique,travail social,P2', 'justice,travail social,P3', 14]
+            , ['inégalités,éducation,P2', 'justice,travail social,P3', 20]
+            , ['inégalités,éducation,P2', 'justice sociale,éducation,P3', 8]
+            , ['inégalités,éducation,P2', 'action publique,institutions,P3', 9]
+            , ['inégalités,éducation,P2', 'inégalités,inégalités sociales,P3', 18]
+            , ['politiques publiques,personnes âgées dépendantes,P2', 'justice sociale,éducation,P3', 20]
             ]
+
     return(CsvHttpResponse(data))
 
 def adjacency(request, corpus_id):
@@ -817,7 +843,6 @@ def ngrams(request):
         'ngrams' : ngrams_list,
     }))
     return HttpResponse(html)
-
 
 def nodeinfo(request , node_id):
     '''Structure of the popUp for topPapers div '''

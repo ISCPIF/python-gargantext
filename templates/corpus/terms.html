@@ -25,13 +25,34 @@
   -o-transition: height 0.1s;
   transition: height 0.1s;
 }
-th { color: #fff; }
+th { 
+  color: #fff;
+  font-weight: normal;
+  font-size: 0.9em;
+  vertical-align: top ;
+}
+
+/* specific selector to override equally specific bootstrap.css */
+.table > thead > tr > th { vertical-align: top ; }
 
 th a {
   color: #fff;
-  font-weight: normal;
   font-style: italic;
-  font-size: 0.9em;
+}
+
+th p.note {
+  color: #ccc;
+  font-size: 0.6em;
+  margin: 1em 0 0 0 ;
+}
+
+th p.note > input {
+  float: left;
+  margin: 0 .2em 0 0 ;
+}
+
+th p.note > label {
+  float: left;
 }
 
 tr:hover {
@@ -171,7 +192,7 @@ input[type=radio]:checked + label {
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-           <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+           <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Close Term List</h2></p>
         </a>
       </h4>
     </div>
@@ -194,7 +215,7 @@ input[type=radio]:checked + label {
                 </p> -->
                 <p align="right">
                     <!-- <button id="Clean_All" class="btn btn-warning">Clean</button> -->
-                    <button id="Save_All" class="btn btn-primary">Save</button>
+                    <button id="Save_All" class="btn btn-primary">Save changes permanently</button>
                 </p>
 
       </div>
@@ -245,66 +266,6 @@ input[type=radio]:checked + label {
       </div> 
 
     </div>
-
-
-    <div id="pre_savechanges" class="modal fade">
-
-      <div class="modal-dialog">
-
-        <div class="modal-content">
-          
-
-          <div class="modal-header">
-            <h3 class="modal-title">Do you want to apply these to the whole Project as well?:</h3>
-          </div>
-
-          <div class="modal-body">
-
-            <div id="stoplist_content">
-            </div>
-
-            <!-- 
-              <ul class="nav nav-tabs">
-                <li class="active"><a id="stoplist" href="#stoplist_content">Stop List</a></li>
-                <li><a id="maplist" href="#maplist_content">Map List</a></li>
-                <li><a id="grouplist" href="#grouplist_content">Group List</a></li>
-              </ul>
-
-              <div class="tab-content">
-                <div id="stoplist_content" class="tab-pane fade in active">
-                  <ul>
-                    <li>jiji01</li>
-                    <li>jiji02</li>
-                    <li>jiji03</li>
-                  </ul>
-                </div>
-
-                <div id="maplist_content" class="tab-pane fade">
-                  qowieuoqiwueowq
-                </div>
-
-                <div id="grouplist_content" class="tab-pane fade">
-                  asdhasjkdhasjdh
-                </div>
-
-              </div>
-            -->
-
-            <div class="modal-footer">
-              <button onclick="SaveGlobalChanges(false)" id="nope" type="button" class="btn btn-default" data-dismiss="modal">No</button>
-              <button onclick="SaveGlobalChanges(true)" id="yep" type="button" class="btn btn-primary">Yes</button>
-            </div>
-
-
-          </div>
-
-
-        </div>
-
-      </div>
-
-    </div>
-
 
 
 

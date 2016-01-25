@@ -1,8 +1,8 @@
 from django.shortcuts import redirect
-from django.shortcuts import render
-from django.db import transaction
-
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+# from django.shortcuts import render
+# from django.db import transaction
+# 
+from django.http import Http404, HttpResponse #, HttpResponseRedirect, HttpResponseForbidden
 from django.template.loader import get_template
 from django.template import Context
 
@@ -13,47 +13,39 @@ from django.db import connection
 #        Node, NodeType, Node_Resource, Project, Corpus, \
 #        Ngram, Node_Ngram, NodeNgramNgram, NodeNodeNgram
 
-from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
-
-from django.contrib.auth.models import User
-
+# from node.admin import CorpusForm, ProjectForm, ResourceForm, CustomForm
+# 
+# from django.contrib.auth.models import User
+# 
 import datetime
-from itertools import *
-from dateutil.parser import parse
-
-from django.db import connection
-from django import forms
-
-
-from collections import defaultdict
-
-from parsing.FileParsers import *
-import os
+# from itertools import *
+# from dateutil.parser import parse
+# 
+# from django.db import connection
+# from django import forms
+# 
+# 
+# from collections import defaultdict
+# 
+# from parsing.FileParsers import *
+# import os
 import json
-import math
+# import math
 
 # SOME FUNCTIONS
 
 from gargantext_web import settings
+# 
+# from django.http import *
+# from django.shortcuts import render_to_response,redirect
+# from django.template import RequestContext
 
-from django.http import *
-from django.shortcuts import render_to_response,redirect
-from django.template import RequestContext
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
+# from gargantext_web.db import *
 
-from scrappers.scrap_pubmed.admin import Logger
-
-from gargantext_web.db import *
-
-from sqlalchemy import or_, func
-
-from gargantext_web import about
+from gargantext_web.db import session,get_session, cache, Node, NodeNgram
+from sqlalchemy import func
 
 from rest_v1_0.api import JsonHttpResponse
-
-
-from ngram.lists import listIds, listNgramIds, ngramList , doList
 
 
 def get_ngrams(request , project_id , corpus_id ):
@@ -73,6 +65,8 @@ def get_ngrams(request , project_id , corpus_id ):
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
     type_doc_id = cache.NodeType['Document'].id
+
+    # implicit global session
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
     myamlist_type_id = cache.NodeType['MiamList'].id
     miamlist = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == myamlist_type_id ).first()
@@ -129,6 +123,8 @@ def get_journals(request , project_id , corpus_id ):
     project = cache.Node[int(project_id)]
     corpus  = cache.Node[int(corpus_id)]
     type_doc_id = cache.NodeType['Document'].id
+    
+    # implicit global session
     number = session.query(func.count(Node.id)).filter(Node.parent_id==corpus_id, Node.type_id==type_doc_id).all()[0][0]
 
     the_query = """ SELECT hyperdata FROM node_node WHERE id=%d """ % ( int(corpus_id) )
@@ -158,7 +154,10 @@ def get_journals_json(request , project_id, corpus_id ):
 
     user_id = request.user.id
     document_type_id = cache.NodeType['Document'].id
+    
+    # implicit global session
     documents  = session.query(Node).filter( Node.parent_id==corpus_id , Node.type_id == document_type_id ).all()
+    
     for doc in documents:
         if "journal" in doc.hyperdata:
             journal = doc.hyperdata["journal"]
@@ -167,24 +166,19 @@ def get_journals_json(request , project_id, corpus_id ):
             JournalsDict[journal] += 1
     return JsonHttpResponse(JournalsDict)
 
-from gargantext_web.db import session, cache, Node, NodeNgram
-from sqlalchemy import or_, func
-from sqlalchemy.orm import aliased
-
-
 def get_corpuses( request , node_ids ):
     ngrams = [int(i) for i in node_ids.split("+") ]
+    
+    # implicit global session
     results = session.query(Node.id,Node.hyperdata).filter(Node.id.in_(ngrams) ).all()
     for r in results:
         print(r)
     return JsonHttpResponse( [ "tudo" , "bem" ] )
 
-
 def get_cores( request ):
 	import multiprocessing
 	cpus = multiprocessing.cpu_count()
 	return JsonHttpResponse( {"data":cpus} )
-
 
 def get_corpus_state( request , corpus_id ):
     if not request.user.is_authenticated():
@@ -200,8 +194,12 @@ def get_corpus_state( request , corpus_id ):
     # processing = corpus.hyperdata['Processing']
     return JsonHttpResponse(  processing )
 
-
 def get_groups( request ):
+    """
+    User groups for current user.id
+    
+    route: /get_groups
+    """
     if not request.user.is_authenticated():
         return JsonHttpResponse( {"request" : "forbidden"} )
 
@@ -222,11 +220,9 @@ def get_groups( request ):
 
     return JsonHttpResponse(  common_users )
 
-
 def graph_share(request, generic=100, specific=100):
-
     if request.method== 'GET' and "token" in request.GET:
-        import json
+        # import json
         le_token = json.loads(request.GET["token"])[0]
         import base64
         le_query = base64.b64decode(le_token).decode("utf-8")
@@ -237,11 +233,15 @@ def graph_share(request, generic=100, specific=100):
         # resource_id = cache.ResourceType["Pubmed (xml format)"].id
         # corpus = session.query(Node).filter( Node.type_id==resource_id , Node.user_id==user_id , Node.id==corpus_id , Node.type_id == cache.NodeType['Corpus'].id ).first()
         # if corpus==None: return JsonHttpResponse( {"request" : "forbidden"} )
+        
+        # implicit global session
         miamlist = session.query(Node).filter( Node.user_id==user_id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+        
         if miamlist==None: return JsonHttpResponse( {"request" : "forbidden"} )
         graphurl = "node_link_share.json?token="+request.GET["token"]
         date = datetime.datetime.now()
         t = get_template('explorer_share.html')
+        
         html = t.render(Context({\
                 'debug': settings.DEBUG,
                 'date'      : date,\
@@ -252,11 +252,10 @@ def graph_share(request, generic=100, specific=100):
 
     return JsonHttpResponse(request.GET["token"])
 
-
 def node_link_share(request):
     data = { "request" : "error" }
     if request.method== 'GET' and "token" in request.GET:
-        import json
+        # import json
         le_token = json.loads(request.GET["token"])[0]
         import base64
         le_query = base64.b64decode(le_token).decode("utf-8")
@@ -268,6 +267,8 @@ def node_link_share(request):
 
         from analysis.functions import get_cooc
         data = []
+        
+        # implicit global session
         corpus = session.query(Node).filter( Node.user_id==user_id , Node.id==corpus_id).first()
         data = get_cooc(request=request, corpus=corpus, type="node_link")
 
@@ -301,7 +302,10 @@ def share_resource(request , resource_id , group_id) :
 
             # [  getting all childs ids of this project  ]
             ids2changeowner = [ project2share.id ]
+            
+            # implicit global session
             corpuses = session.query(Node.id).filter(Node.user_id == request.user.id, Node.parent_id==resource_id , Node.type_id == cache.NodeType["Corpus"].id ).all()
+            
             for corpus in corpuses:
                 ids2changeowner.append(corpus.id)
                 lists = session.query(Node.id,Node.name).filter(Node.user_id == request.user.id, Node.parent_id==corpus.id ).all()

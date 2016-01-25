@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 
 from gargantext_web.db import Node, Ngram, NodeNgram, NodeNgramNgram, \
         NodeNodeNgram, NodeHyperdataNgram, NodeHyperdata, Hyperdata
-from gargantext_web.db import session, cache, get_or_create_node, bulk_insert
+from gargantext_web.db import get_session, cache, get_or_create_node, bulk_insert
 from analysis.lists import WeightedMatrix, UnweightedList, Translations
 import inspect
 import datetime
@@ -18,7 +18,8 @@ def do_cooc(corpus=None
          , start=None, end=None
          , limit=1000
          , isMonopartite=True
-         , hapax = 3):
+         , hapax = 3
+         , mysession=None):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -40,30 +41,35 @@ def do_cooc(corpus=None
     # Security test
     field1,field2 = str(field1), str(field2)
     
+    if mysession is None:
+        from gargantext_web.db import session
+        mysession = session
+
     # Get node
     node_cooc = get_or_create_node(nodetype='Cooccurrence', corpus=corpus
                                    , name_str="Cooccurrences corpus " \
                                     + str(corpus.id) + "list_id: " + str(miam_id)
                                     #, hyperdata={'field1': field1, 'field2':field2}
-                                   )
+                                   , mysession=mysession)
 
     
     # BEGIN
     # Saving the parameters of the analysis in the Node JSONB hyperdata field
     args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
-    hyperdata = dict()
-    
-    for parameter in parameters.keys():
-        if parameter != 'corpus' and parameter != 'node_cooc':
-            hyperdata[parameter] = parameters[parameter]
-    
-    node_cooc.hyperdata = hyperdata
-    session.add(node_cooc)
-    session.commit()
+#    hyperdata = dict()
+#    
+#    for parameter in parameters.keys():
+#        if parameter != 'corpus' and parameter != 'node_cooc':
+#            hyperdata[parameter] = parameters[parameter]
+#    
+#    node_cooc.hyperdata = hyperdata
+#
+    mysession.add(node_cooc)
+    mysession.commit()
     # END
 
-    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
-    session.commit()
+    mysession.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==node_cooc.id).delete()
+    mysession.commit()
 
     doc_id = cache.NodeType['Document'].id
     
@@ -75,7 +81,7 @@ def do_cooc(corpus=None
     if isMonopartite :
         NodeNgramY = aliased(NodeNgram)
 
-        cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
+        cooc_query = (mysession.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeNgramX.node_id)
                  .join(NodeNgramY, NodeNgramY.node_id == Node.id)
                  .filter(Node.parent_id==corpus.id, Node.type_id==doc_id)
@@ -83,7 +89,7 @@ def do_cooc(corpus=None
     else :
         NodeNgramY = aliased(NodeNgram)
         
-        cooc_query = (session.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
+        cooc_query = (mysession.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
                  .join(Node, Node.id == NodeHyperdataNgram.node_id)
                  .join(NodeNgramY, NodeNgramY.node_id == Node.id)
                  .join(Hyperdata, Hyperdata.id == NodeHyperdataNgram.hyperdata_id)
@@ -167,7 +173,7 @@ def do_cooc(corpus=None
     # Select according some scores
     if cvalue_id is not None :
         #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-        cvalue_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
+        cvalue_list = UnweightedList(mysession.query(NodeNodeNgram.ngram_id)
                                    .filter(NodeNodeNgram.nodex_id == cvalue_id).all()
                                    )
     

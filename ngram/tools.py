@@ -1,14 +1,15 @@
-from gargantext_web.db import session
 from gargantext_web.db import Ngram, NodeNgram, NodeNgramNgram
 
-from gargantext_web.db import get_cursor, bulk_insert, get_or_create_node
+from gargantext_web.db import get_cursor, bulk_insert, get_or_create_node, session,get_session
 
 def insert_ngrams_to_list(list_of_ngrams, corpus, list_type='MapList', erase=True):
     '''
     Works only for Stop and Map
     '''
-    list_node = get_or_create_node(corpus=corpus, nodetype=list_type)
-    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList')
+    # implicit global session
+
+    list_node = get_or_create_node(corpus=corpus, nodetype=list_type, mysession=session)
+    group_node = get_or_create_node(corpus=corpus, nodetype='GroupList', mysession=session)
     group_list = (session.query(NodeNgramNgram.ngramy_id)
                          .filter(NodeNgramNgram.id==group_node.id)
                          .all()

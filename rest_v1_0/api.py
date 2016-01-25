@@ -11,8 +11,11 @@ import datetime
 import copy
 
 from gargantext_web.views import move_to_trash
-from gargantext_web.db import session, cache, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
+from gargantext_web.db import cache, Node, NodeNgram, NodeNgramNgram, NodeNodeNgram, Ngram, Hyperdata, Node_Ngram\
         , NodeType, Node_Hyperdata
+
+from gargantext_web.views import session
+
 from gargantext_web.validation import validate, ValidationException
 from node import models
 
@@ -100,8 +103,10 @@ def Root(request, format=None):
 class NodesChildrenNgrams(APIView):
 
     def get(self, request, node_id):
+        
         # query ngrams
         ParentNode = aliased(Node)
+        
         ngrams_query = (session
             .query(Ngram.terms, func.sum(Node_Ngram.weight).label('count'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -138,10 +143,12 @@ class NodesChildrenNgrams(APIView):
                 for ngram in ngrams_query[offset : offset+limit]
             ],
         })
+        
 
 class NodesChildrenNgramsIds(APIView):
 
     def get(self, request, node_id):
+        
         # query ngrams
         ParentNode = aliased(Node)
         ngrams_query = (session
@@ -180,13 +187,14 @@ class NodesChildrenNgramsIds(APIView):
                 for node, count in ngrams_query[offset : offset+limit]
             ],
         })
-
+        
 
 
 from gargantext_web.db import get_or_create_node
 
 class Ngrams(APIView):
     def get(self, request, node_id):
+        
         # query ngrams
         ParentNode = aliased(Node)
         corpus = session.query(Node).filter(Node.id==node_id).first()
@@ -303,11 +311,11 @@ class Ngrams(APIView):
 
                     ],
                                })
-    
         
 
 class NodesChildrenDuplicates(APIView):
     def _fetch_duplicates(self, request, node_id, extra_columns=None, min_count=1):
+        
         # input validation
         if extra_columns is None:
             extra_columns = []
@@ -346,6 +354,7 @@ class NodesChildrenDuplicates(APIView):
         duplicates_query = duplicates_query.having(func.count() > min_count)
         # and now, return it
         return duplicates_query
+        
 
     def get(self, request, node_id):
         # data to be returned
@@ -395,6 +404,7 @@ class NodesChildrenDuplicates(APIView):
 
 # retrieve metadata from a given list of parent node
 def get_metadata(corpus_id_list):
+    
 
     # query hyperdata keys
     ParentNode = aliased(Node)
@@ -695,6 +705,7 @@ class NodesList(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def get(self, request):
+        
         print("user id : " + str(request.user))
         query = (session
             .query(Node.id, Node.name, NodeType.name.label('type'))
@@ -710,9 +721,11 @@ class NodesList(APIView):
             node._asdict()
             for node in query.all()
         ]})
+        
 
 class Nodes(APIView):
     def get(self, request, node_id):
+        
         node = session.query(Node).filter(Node.id == node_id).first()
         if node is None:
             raise APIException('This node does not exist', 404)
@@ -725,6 +738,7 @@ class Nodes(APIView):
             #'hyperdata': dict(node.hyperdata),
             'hyperdata': node.hyperdata,
         })
+        
 
     # deleting node by id
     # currently, very dangerous.
@@ -732,6 +746,7 @@ class Nodes(APIView):
     # for better constistency...
     def delete(self, request, node_id):
 
+        
         user = request.user
         node = session.query(Node).filter(Node.id == node_id).first()
 
@@ -744,6 +759,7 @@ class Nodes(APIView):
 
         except Exception as error:
             msgres ="error deleting : " + node_id + str(error)
+        
 
 class CorpusController:
     @classmethod
@@ -764,7 +780,6 @@ class CorpusController:
         #     raise Http403("Unauthorized access.")
         return corpus
 
-
     @classmethod
     def ngrams(cls, request, node_id):
 
@@ -773,6 +788,7 @@ class CorpusController:
 
         # build query
         ParentNode = aliased(Node)
+        
         query = (session
             .query(Ngram.terms, func.count('*'))
             .join(Node_Ngram, Node_Ngram.ngram_id == Ngram.id)
@@ -799,3 +815,4 @@ class CorpusController:
             )
         else:
             raise ValidationError('Unrecognized "format=%s", should be "csv" or "json"' % (format, ))
+

@@ -29,6 +29,7 @@ import threading
 
 from node.admin import CustomForm
 from gargantext_web.db import *
+from gargantext_web.db import get_sessionmaker, session,get_session
 from gargantext_web.settings import DEBUG, MEDIA_ROOT
 from rest_v1_0.api import JsonHttpResponse
 
@@ -45,7 +46,8 @@ def getGlobalStats(request ):
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 1000
+		#N = 1000
+		N = 300
 		query = request.POST["query"]
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
@@ -83,14 +85,12 @@ def getGlobalStatsISTEXT(request ):
 
 
 def doTheQuery(request , project_id):
-	alist = ["hola","mundo"]
-
+	# implicit global session
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
 	except ValueError:
 		raise Http404()
-
 	# do we have a valid project?
 	project = (session
 		.query(Node)
@@ -134,7 +134,7 @@ def doTheQuery(request , project_id):
 		)
 		session.add(corpus)
 		session.commit()
-
+		corpus_id = corpus.id
 		# """
 		# urlreqs: List of urls to query.
 		# - Then, to each url in urlreqs you do:
@@ -170,9 +170,9 @@ def doTheQuery(request , project_id):
 
 		try:
 			if not DEBUG:
-				apply_workflow.apply_async((corpus.id,),)
+				apply_workflow.apply_async((corpus_id,),)
 			else:
-				thread = threading.Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
+				thread = threading.Thread(target=apply_workflow, args=(corpus_id, ), daemon=True)
 				thread.start()
 		except Exception as error:
 			print('WORKFLOW ERROR')
@@ -188,7 +188,7 @@ def testISTEX(request , project_id):
 	print("testISTEX:")
 	print(request.method)
 	alist = ["bar","foo"]
-
+	# implicit global session
 	# do we have a valid project id?
 	try:
 		project_id = int(project_id)
@@ -247,7 +247,7 @@ def testISTEX(request , project_id):
 		)
 		session.add(corpus)
 		session.commit()
-
+		corpus_id = corpus.id
 
 		ensure_dir(request.user)
 		tasks = MedlineFetcher()
@@ -276,9 +276,9 @@ def testISTEX(request , project_id):
 		###########################
 		try:
 			if not DEBUG:
-				apply_workflow.apply_async((corpus.id,),)
+				apply_workflow.apply_async((corpus_id,),)
 			else:
-				thread = threading.Thread(target=apply_workflow, args=(corpus.id, ), daemon=True)
+				thread = threading.Thread(target=apply_workflow, args=(corpus_id, ), daemon=True)
 				thread.start()
 		except Exception as error:
 			print('WORKFLOW ERROR')
@@ -289,4 +289,3 @@ def testISTEX(request , project_id):
 
 	data = [query_string,query,N]
 	return JsonHttpResponse(data)
-

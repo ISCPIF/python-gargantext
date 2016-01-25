@@ -5,7 +5,7 @@ from admin.utils import PrintException,DebugTime
 
 from gargantext_web.db import NodeNgram,NodeNodeNgram
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, get_session
 
 from analysis.lists import Translations, UnweightedList
 from parsing.corpustools import *
@@ -21,7 +21,6 @@ from collections import defaultdict
 #from testlists import *
 from math import log
 from functools import reduce
-
 
 
 def getStemmer(corpus):
@@ -48,10 +47,11 @@ def getStemmer(corpus):
 
     return(stemIt)
 
-def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
+def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem', mysession=None):
     '''
     group ngrams according to a function (stemming or lemming)
     '''
+    
     dbg = DebugTime('Corpus #%d - group' % corpus.id)
     dbg.show('Group')
 
@@ -62,17 +62,19 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
         stemIt = getStemmer(corpus)
 
     group_to_insert = set()
-    node_group = get_or_create_node(nodetype='Group', corpus=corpus)
+    node_group = get_or_create_node(nodetype='Group', corpus=corpus, mysession=mysession)
 
     miam_to_insert = set()
-    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus)
+    miam_node = get_or_create_node(nodetype='MiamList', corpus=corpus, mysession=mysession)
 
-    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus)
+    stop_node = get_or_create_node(nodetype='StopList', corpus=corpus, mysession=mysession)
     #stop_list = UnweightedList(stop_node.id)
 
     Stop = aliased(NodeNgram)
     frequency = sa.func.count(NodeNgram.weight)
-    ngrams = (session.query(Ngram.id, Ngram.terms, frequency )
+    
+
+    ngrams = (mysession.query(Ngram.id, Ngram.terms, frequency )
             .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
             .join(Node, Node.id == NodeNgram.node_id)
             #.outerjoin(Stop, Stop.ngram_id == Ngram.id)
@@ -84,7 +86,7 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
             .limit(limit_sup)
             )
     
-    stops = (session.query(Ngram.id, Ngram.terms, frequency)
+    stops = (mysession.query(Ngram.id, Ngram.terms, frequency)
                     .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
                     .join(Node, Node.id == NodeNgram.node_id)
                     .join(Stop, Stop.ngram_id == Ngram.id)
@@ -125,13 +127,14 @@ def compute_groups(corpus, limit_inf=None, limit_sup=None, how='Stem'):
             miam_to_insert.add((miam_node.id, group[key]['mainForm'], 1))
 
 #    # Deleting previous groups
-    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
+    mysession.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_group.id).delete()
 #    # Deleting previous ngrams miam list
-    session.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
-    session.commit()
+    mysession.query(NodeNgram).filter(NodeNgram.node_id == miam_node.id).delete()
+    mysession.commit()
 
     bulk_insert(NodeNgramNgram
                 , ('node_id', 'ngramx_id', 'ngramy_id', 'score')
                 , [data for data in group_to_insert])
 
     bulk_insert(NodeNgram, ('node_id', 'ngram_id', 'weight'), [data for data in list(miam_to_insert)])
+

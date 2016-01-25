@@ -1,15 +1,16 @@
 #from admin.env import *
 from math import log
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_session, get_or_create_node
 
 from admin.utils import DebugTime
 
-def compute_tfidf(corpus):
+def compute_tfidf(corpus, mysession=None):
     # compute terms frequency sum
+    
     dbg = DebugTime('Corpus #%d - TFIDF' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-    tfidf_node = get_or_create_node(nodetype='Tfidf', corpus=corpus)
+    tfidf_node = get_or_create_node(nodetype='Tfidf', corpus=corpus, mysession=mysession)
 
     db, cursor = get_cursor()
     cursor.execute('''
@@ -119,18 +120,20 @@ def compute_tfidf(corpus):
         # the end!
         db.commit()
 
-def compute_tfidf_global(corpus):
+
+def compute_tfidf_global(corpus, mysession=None):
     '''
     Maybe improve this with:
     #http://stackoverflow.com/questions/8674718/best-way-to-select-random-rows-postgresql
     '''
     dbg = DebugTime('Corpus #%d - tfidf global' % corpus.id)
     dbg.show('calculate terms frequencies sums')
-    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus)
+    
+    tfidf_node = get_or_create_node(nodetype='Tfidf (global)', corpus=corpus, mysession=mysession)
 
     # update would be better
-    session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
-    session.commit()
+    mysession.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==tfidf_node.id).delete()
+    mysession.commit()
 
     # compute terms frequency sum
     db, cursor = get_cursor()
@@ -257,6 +260,3 @@ def compute_tfidf_global(corpus):
 
         db.commit()
         dbg.show('insert tfidf')
-
-#corpus=session.query(Node).filter(Node.id==244250).first()
-#compute_tfidf_global(corpus)

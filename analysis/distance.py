@@ -1,6 +1,6 @@
 from admin.utils import PrintException
 from gargantext_web.db import *
-from gargantext_web.db import get_or_create_node
+from gargantext_web.db import get_or_create_node, session,get_session
 
 from collections import defaultdict
 from operator import itemgetter
@@ -31,6 +31,8 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
     
+    # implicit global session
+
     authorized = ['conditional', 'distributional', 'cosine']
     if distance not in authorized:
         distance = 'conditional'
@@ -200,7 +202,6 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
 
     #   nodes_to_remove = [n for n in degree if degree[n] <= 1]
     #   G.remove_nodes_from(nodes_to_remove)
-
 
 
 

@@ -673,7 +673,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
  * @elem : entire element row with attribute 'data-stuff' (= rec_id)
  */
  
-function SelectAll(boxType, boxElem ) {
+function SelectAll(boxType, boxElem) {
   // debug
   // console.log("\nFUN SelectAll()")
 
@@ -750,6 +750,8 @@ function SaveLocalChanges() {
     }
   }
   // [ = = = = For deleting subforms = = = = ]
+  
+  // see TODO Prevent empty Ngram["group"]["links"]
   for(var i in NGrams["group"].links) {
     if(FlagsBuffer["delete"][i]) {
       for(var j in NGrams["group"].links[i] ) {
@@ -778,20 +780,20 @@ function SaveLocalChanges() {
   var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
   var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
 
-   console.log("")
-   console.log("")
-   console.log(" nodes_2del: ")
-   console.log(nodes_2del)
-   console.log(" nodes_2keep: ")
-   console.log(nodes_2keep)
-   console.log(" nodes_2group: ")
-   console.log(nodes_2group)
-   console.log(" nodes_2inmap: ")
-   console.log(nodes_2inmap)
-   console.log(" nodes_2outmap: ")
-   console.log(nodes_2outmap)
-   console.log("")
-   console.log("")
+   // console.log("")
+   // console.log("")
+   // console.log(" nodes_2del: ")
+   // console.log(nodes_2del)
+   // console.log(" nodes_2keep: ")
+   // console.log(nodes_2keep)
+   // console.log(" nodes_2group: ")
+   // console.log(nodes_2group)
+   // console.log(" nodes_2inmap: ")
+   // console.log(nodes_2inmap)
+   // console.log(" nodes_2outmap: ")
+   // console.log(nodes_2outmap)
+   // console.log("")
+   // console.log("")
   
   var list_id = $("#list_id").val()
   var corpus_id = getIDFromURL( "corpus" ) // not used
@@ -1292,7 +1294,8 @@ var url = [
 // The AJAX's in cascade:
 
 GET_( url[0] , function(result) {
-	// = = = = MIAM = = = = //
+    
+    // = = = = MIAM = = = = //
 	if(result!=false) {
   	NGrams["main"] = {
   		"ngrams": [],
@@ -1325,6 +1328,10 @@ GET_( url[0] , function(result) {
 		GET_( url[2] , function(result) {
 			// = = = = GROUP = = = = //
 			if(result!=false) {
+                // TODO Prevent empty NGrams["group"]["links"]
+                // "group":{"links":{"119":[],"449":[],"674":[]...}}
+                // (then correct for i in links with if 'i' in links)
+                
 				NGrams["group"] = result 
 			}
 			// = = = = /GROUP = = = = //
@@ -1344,8 +1351,17 @@ GET_( url[0] , function(result) {
 
 
 function AfterAjax() {
-  // debug
-  // console.log("\nFUN AfterAjax()")
+  // -------------------------------------------------------------------
+  // dbg: Ngrams structure is too large & redundant
+  
+  // 1- Prevent empty groups (see TODO)
+  // 2- Ngrams list would be shorter in binary format than JSON
+  // 3- If sorted, top Ngrams could be loaded partly for 1st page show
+  // 4- We could keep less ngrams altogether at indexation upstream
+  
+  // console.log(JSON.stringify(NGrams))
+  // -------------------------------------------------------------------
+    
 	// // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -1358,6 +1374,10 @@ function AfterAjax() {
     	}
     	var ngrams_data_ = []
     	for(var i in NGrams["main"].ngrams) {
+            
+            // FIXME is it necessary to keep NGrams["group"]["nodes"]
+            //       when afterwards only using NGrams["group"]["links"]
+            // ex: "nodes":{"119":false,"449":false,"674":false,...}
     		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
     			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
     		} else {
@@ -1368,7 +1388,6 @@ function AfterAjax() {
     	}
     	NGrams["main"].ngrams = ngrams_data_;
     }
-    
     
     // initialize state of maplist items
     if( Object.keys(NGrams["map"]).length>0 ) {

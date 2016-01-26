@@ -54,17 +54,19 @@ def login_user(request):
 
     next_page = ""
 
-    if request.GET:
+    if request.method == "GET":
+        additional_context = {}
         # if for exemple: auth/?next=/project/5/corpus/554/document/556/
         #   => we'll forward ?next="..." into template with form
-        additional_context = {'next_page':request.GET['next']}
+        if ('next' in request.GET):
+            additional_context = {'next_page':request.GET['next']}
 
         return render_to_response('authentication.html', 
                             additional_context,
                             context_instance=RequestContext(request)
                             )
 
-    elif request.POST:
+    elif request.method == "POST":
         username = request.POST['username']
         
         # /!\ pass is sent clear in POST data
@@ -77,11 +79,11 @@ def login_user(request):
                 login(request, user)
 
                 # if "next" forwarded from the GET via the template form
-                next_page = request.POST['the_next_page']
-                if next_page:
-                    return HttpResponseRedirect(next_page)
+                if ('the_next_page' in request.POST):
+                    return HttpResponseRedirect(request.POST['the_next_page'])
                 else:
                     return HttpResponseRedirect('/projects/')
+
 
 def logout_user(request):
     logout(request)

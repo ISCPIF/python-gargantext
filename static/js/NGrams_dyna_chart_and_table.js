@@ -666,54 +666,146 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 /**
- * SelectAll: toggle all checkboxes in a row by changing state in System
+ * SelectAll: toggle all checkboxes in a column by changing their list in System
  * 
- * (new version without the old Delete|Keep radio choice)
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
  * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ * 
+ * 2016-01-12: new version without the old Delete|Keep radio choice
+ * 2016-01-26: new version with 3-state boxes:
+ *  - indeterminate (SOME del SOME map SOME normal) = original state
+ *  - check         (ALL del or map)
+ *  - uncheck       (NONE --- " ---)
+ *    => we get 3 visual expected result 
+ *       + 3 "vertical" possibilities for each checkall
+ *          that combine with the "horizontal" states
+ *          of each commanded ngrams (map, stop, miam)
  */
  
 function SelectAll(boxType, boxElem) {
   // debug
   // console.log("\nFUN SelectAll()")
-
-    // we will need status of the other "check all box"
+    
+    // real checkAll flags : SOME|ALL|NONE
+    var previousColumnSelection = $(boxElem).data("columnSelection") ;
+    var newColumnSelection = "" ;
+       
+    // we will also need the other "checkall box"
+    // - to uncheck "delete" when we check "map" & vice-versa
+    // - to make them both "indeterminate" when we restore buffered original state
+    // - to prevent buffering if the second column is already buffered
     if (boxType == 'keep') { otherBoxId = "delAll" ; }
-    else                  { otherBoxId = "mapAll" ; }
+    else                  { otherBoxId = "mapAll" ; }   
+    
+    // did we already buffer original states ?
+    var columnBufferExists = null ;
+    
+    console.log("-------------INCOMING----------------")
+    console.log(boxElem.id)
+    console.log("check:" + $(boxElem).prop("checked"))
+    console.log("indet:" + $(boxElem).prop('indeterminate'))
+    console.log("data:" + previousColumnSelection)
     
     
-    otherWasChecked = $("input#"+otherBoxId).prop('checked') ;
-    if (otherWasChecked) {
-        // we visually uncheck the other box if necessary
-        $('#'+otherBoxId).attr('checked', false);
+    // toggle column ALL => NONE => SOME => again
+    switch (previousColumnSelection) {
+        case 'ALL':   
+            newColumnSelection = "NONE" ;
+            columnBufferExists = true ;
+            break ;
+        case 'NONE':
+            newColumnSelection = "SOME" ;
+            columnBufferExists = true ;
+            break ;
+        case 'SOME':
+            newColumnSelection = "ALL"  ;
+            // probably no buffer, except if other column was set
+            columnBufferExists = ($("input#"+otherBoxId).data('columnSelection') != 'SOME') ;
+            break ;
+        
+        default: alert('invalid flag for columnSelection');
     }
+    
+    // we'll find the target state for each row in this column
+    //    0 = normal = miam
+    //    1 = keep   = map
+    //    2 = delete = stop
+    var stateId = null;
+    
+    switch (newColumnSelection) {
+        // nothing in the column
+        case 'NONE':   
+            // visual consequences
+            $(boxElem).prop('checked', false);
+            $(boxElem).prop('indeterminate', false);
+            $('#'+otherBoxId).prop('indeterminate', false);
+            $('#'+otherBoxId).data('columnSelection', 'NONE');
+
+            // target stateId: 0 for 'normal'
+            stateId = 0 ;
+
+            break;
+        
+        // the 'indeterminate' case
+        case 'SOME':
+            // visual consequences
+            $(boxElem).prop('checked', false);
+            $(boxElem).prop('indeterminate', true);
+            $('#'+otherBoxId).prop('indeterminate', true);
+            $('#'+otherBoxId).data('columnSelection', 'SOME');
+
+            // target stateId: undef <=> restore original ngram states
+            stateId = null ;
+
+            break;
+        
+        // all in the column
+        case 'ALL':
+            // visual consequences
+            $(boxElem).prop('checked', true);
+            $(boxElem).prop('indeterminate', false);
+            $('#'+otherBoxId).prop('indeterminate', false);
+            $('#'+otherBoxId).data('columnSelection', 'NONE');
+            
+            // target stateId: 1 if boxType == 'keep'
+            //                 2 if boxType == 'delete'
+            stateId = System[0]["statesD"][boxType] ;
+
+            break;
+        
+        default: alert('invalid result for columnSelection');
+    }   
+    
+    // and anyway the other box can't stay checked
+    $('#'+otherBoxId).prop('checked', false);
+    
+    console.log("data became:" + newColumnSelection)
   
   $("tbody tr").each(function (i, row) {
-      var rec_id = $(row).data('stuff') ;     // for old state system
-      var ngramId = AjaxRecords[rec_id].id ;  // for future state system (cols)
+      var rec_id = $(row).data('stuff');     // ids for old state system
+      //var ngramId = AjaxRecords[rec_id].id; // for future by ngramId
       
-      if(boxElem.checked) {
-        // stateId: 1 if boxType == 'keep'
-        //          2 if boxType == 'delete'
-        var stateId = System[0]["statesD"][boxType] ;
-        
-        // a buffer to restore previous states if unchecked
-        // (except if there was a click on the other 'all' box
-        //  b/c then buffer is already filled and we shouldn't redo it)
-        if (!otherWasChecked) {
-            AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
-        }
-        
-        // do the requested change
-        AjaxRecords[rec_id]["state"] = stateId ;
-      } 
-      // restore previous states
-      else {
-        AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
-        AjaxRecords[rec_id]["state_buff"] = null ;
+      // a buffer to restore previous states if unchecked
+      if (!columnBufferExists) {
+          AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
       }
+      
+      if (stateId != null) {
+          // check all with the requested change
+          AjaxRecords[rec_id]["state"] = stateId ;
+      }
+      else {
+          // restore previous states, remove buffer
+          AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
+          AjaxRecords[rec_id]["state_buff"] = null ;
+      } 
   });
+  
+  // OK update this table page
   MyTable.data('dynatable').dom.update();
+  
+  // and update our own "column situation" storage
+  $(boxElem).data('columnSelection', newColumnSelection);
 }
 
 
@@ -972,7 +1064,16 @@ function Main_test( data , initial , search_filter) {
       div_table += '</table>'+"\n";
       div_table += '</p>';
     $("#div-table").html(div_table)
-
+    
+    
+    // indeterminate: only visual
+    $('#delAll').prop("indeterminate", true)
+    $('#mapAll').prop("indeterminate", true)
+    
+    // real checkAll states : SOME|ALL|NONE
+    $('#delAll').data("columnSelection", 'SOME')
+    $('#mapAll').data("columnSelection", 'SOME')
+    
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];

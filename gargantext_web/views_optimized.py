@@ -52,7 +52,7 @@ def project(request, project_id):
     # do we have a valid user?
     user = request.user
     if not user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
     if project.user_id != user.id:
         in_group = """ SELECT user_parent FROM node_user_user WHERE user_id=%d""" % ( int(user.id)  )
         cursor = connection.cursor()

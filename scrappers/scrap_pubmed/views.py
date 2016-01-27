@@ -104,7 +104,7 @@ def doTheQuery(request , project_id):
 	# do we have a valid user?
 	user = request.user
 	if not user.is_authenticated():
-		return redirect('/login/?next=%s' % request.path)
+		return redirect('/auth/?next=%s' % request.path)
 	if project.user_id != user.id:
 		return HttpResponseForbidden()
 
@@ -208,7 +208,7 @@ def testISTEX(request , project_id):
 	# do we have a valid user?
 	user = request.user
 	if not user.is_authenticated():
-		return redirect('/login/?next=%s' % request.path)
+		return redirect('/auth/?next=%s' % request.path)
 	if project.user_id != user.id:
 		return HttpResponseForbidden()
 

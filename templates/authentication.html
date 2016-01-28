@@ -62,8 +62,8 @@
                                     <div id="login">
                                         <form class="form-horizontal" name="LoginForm" action="/auth/" method="post">
                                         {% csrf_token %}
-                                        {% if next %}
-                                            <input type="hidden" name="next" value="{{ next }}" />
+                                        {% if next_page %}
+                                            <input type="hidden" name="the_next_page" value="{{ next_page }}" />
                                         {% endif %}
                                         <div class="grp-row">
                                             <label class="control-label" for="username">Username</label>

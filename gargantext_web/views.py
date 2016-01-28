@@ -51,9 +51,25 @@ from gargantext_web.db import session, cache, NodeNgram, NodeNgramNgram
 def login_user(request):
     logout(request)
     username = password = ''
-    print(request)
-    if request.POST:
+
+    next_page = ""
+
+    if request.method == "GET":
+        additional_context = {}
+        # if for exemple: auth/?next=/project/5/corpus/554/document/556/
+        #   => we'll forward ?next="..." into template with form
+        if ('next' in request.GET):
+            additional_context = {'next_page':request.GET['next']}
+
+        return render_to_response('authentication.html', 
+                            additional_context,
+                            context_instance=RequestContext(request)
+                            )
+
+    elif request.method == "POST":
         username = request.POST['username']
+        
+        # /!\ pass is sent clear in POST data
         password = request.POST['password']
 
         user = authenticate(username=username, password=password)
@@ -61,8 +77,13 @@ def login_user(request):
 
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/projects/')
-    return render_to_response('authentication.html', context_instance=RequestContext(request))
+
+                # if "next" forwarded from the GET via the template form
+                if ('the_next_page' in request.POST):
+                    return HttpResponseRedirect(request.POST['the_next_page'])
+                else:
+                    return HttpResponseRedirect('/projects/')
+
 
 def logout_user(request):
     logout(request)
@@ -297,7 +318,7 @@ def update_nodes(request, project_id, corpus_id, view=None):
     '''
     
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     try:
         offset = int(project_id)
@@ -360,7 +381,7 @@ def update_nodes(request, project_id, corpus_id, view=None):
 def corpus(request, project_id, corpus_id):
     
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     try:
         offset = int(project_id)
@@ -488,7 +509,7 @@ def move_to_trash_multiple(request):
     user = request.user
     
     if not user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     results = ["operation","failed"]
 
@@ -516,7 +537,7 @@ def delete_node(request, node_id):
     node = session.query(Node).filter(Node.id == node_id).first()
 
     if not user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
     if node.user_id != user.id:
         return HttpResponseForbidden()
 
@@ -618,7 +639,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
     corpus_type_id = cache.NodeType['Corpus'].id
 
     miamlist_type_id = cache.NodeType['MiamList'].id
-    miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+    miamlist = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
 
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
 

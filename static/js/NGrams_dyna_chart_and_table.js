@@ -494,18 +494,18 @@ function add2group ( elem ) {
 function clickngram_action ( elem ) {
     // local id
 	var elem_id = $( elem ).data("stuff") ;
-    console.log("click: state before: "+ AjaxRecords[elem_id].state) ;
+    // console.log("click: state before: "+ AjaxRecords[elem_id].state) ;
     
     // cycle the statuses (omitting status 3 = group)
 	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
     
     // State <=> term color <=> checked colums
     
-    console.log("\n\nRECORD visible on click --- " + JSON.stringify(AjaxRecords[elem_id])) ;
+    // console.log("\n\nRECORD visible on click --- " + JSON.stringify(AjaxRecords[elem_id])) ;
     
     var ngramId = AjaxRecords[elem_id].id ;
         
-    console.log("click: state after: "+ AjaxRecords[elem_id].state) ;
+    // console.log("click: state after: "+ AjaxRecords[elem_id].state) ;
 	MyTable.data('dynatable').dom.update();
 }
 
@@ -546,13 +546,13 @@ function transformContent(rec_id) {
 		}
 	}
 	
-    // uncomment if column tableId
+    // uncomment if column tableId (here and in Main_test)
     // result['rec_id'] = rec_id ;
     
-    // uncomment if column ngramId
+    // uncomment if column ngramId (here and in Main_test)
     // result["ngramId"] = ngram_info["id"] ;
     
-    // uncomment if column state
+    // uncomment if column state (here and in Main_test)
     // result["state"] = AjaxRecords[rec_id].state
     
     // -------------------------------------------
@@ -666,54 +666,146 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 /**
- * SelectAll: toggle all checkboxes in a row by changing state in System
+ * SelectAll: toggle all checkboxes in a column by changing their list in System
  * 
- * (new version without the old Delete|Keep radio choice)
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
  * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ * 
+ * 2016-01-12: new version without the old Delete|Keep radio choice
+ * 2016-01-26: new version with 3-state boxes:
+ *  - indeterminate (SOME del SOME map SOME normal) = original state
+ *  - check         (ALL del or map)
+ *  - uncheck       (NONE --- " ---)
+ *    => we get 3 visual expected result 
+ *       + 3 "vertical" possibilities for each checkall
+ *          that combine with the "horizontal" states
+ *          of each commanded ngrams (map, stop, miam)
  */
  
-function SelectAll(boxType, boxElem ) {
+function SelectAll(boxType, boxElem) {
   // debug
   // console.log("\nFUN SelectAll()")
-
-    // we will need status of the other "check all box"
+    
+    // real checkAll flags : SOME|ALL|NONE
+    var previousColumnSelection = $(boxElem).data("columnSelection") ;
+    var newColumnSelection = "" ;
+       
+    // we will also need the other "checkall box"
+    // - to uncheck "delete" when we check "map" & vice-versa
+    // - to make them both "indeterminate" when we restore buffered original state
+    // - to prevent buffering if the second column is already buffered
     if (boxType == 'keep') { otherBoxId = "delAll" ; }
-    else                  { otherBoxId = "mapAll" ; }
+    else                  { otherBoxId = "mapAll" ; }   
+    
+    // did we already buffer original states ?
+    var columnBufferExists = null ;
+    
+    // console.log("-------------INCOMING----------------")
+    // console.log(boxElem.id)
+    // console.log("check:" + $(boxElem).prop("checked"))
+    // console.log("indet:" + $(boxElem).prop('indeterminate'))
+    // console.log("data:" + previousColumnSelection)
     
     
-    otherWasChecked = $("input#"+otherBoxId).prop('checked') ;
-    if (otherWasChecked) {
-        // we visually uncheck the other box if necessary
-        $('#'+otherBoxId).attr('checked', false);
+    // toggle column ALL => NONE => SOME => again
+    switch (previousColumnSelection) {
+        case 'ALL':   
+            newColumnSelection = "NONE" ;
+            columnBufferExists = true ;
+            break ;
+        case 'NONE':
+            newColumnSelection = "SOME" ;
+            columnBufferExists = true ;
+            break ;
+        case 'SOME':
+            newColumnSelection = "ALL"  ;
+            // probably no buffer, except if other column was set
+            columnBufferExists = ($("input#"+otherBoxId).data('columnSelection') != 'SOME') ;
+            break ;
+        
+        default: alert('invalid flag for columnSelection');
     }
+    
+    // we'll find the target state for each row in this column
+    //    0 = normal = miam
+    //    1 = keep   = map
+    //    2 = delete = stop
+    var stateId = null;
+    
+    switch (newColumnSelection) {
+        // nothing in the column
+        case 'NONE':   
+            // visual consequences
+            $(boxElem).prop('checked', false);
+            $(boxElem).prop('indeterminate', false);
+            $('#'+otherBoxId).prop('indeterminate', false);
+            $('#'+otherBoxId).data('columnSelection', 'NONE');
+
+            // target stateId: 0 for 'normal'
+            stateId = 0 ;
+
+            break;
+        
+        // the 'indeterminate' case
+        case 'SOME':
+            // visual consequences
+            $(boxElem).prop('checked', false);
+            $(boxElem).prop('indeterminate', true);
+            $('#'+otherBoxId).prop('indeterminate', true);
+            $('#'+otherBoxId).data('columnSelection', 'SOME');
+
+            // target stateId: undef <=> restore original ngram states
+            stateId = null ;
+
+            break;
+        
+        // all in the column
+        case 'ALL':
+            // visual consequences
+            $(boxElem).prop('checked', true);
+            $(boxElem).prop('indeterminate', false);
+            $('#'+otherBoxId).prop('indeterminate', false);
+            $('#'+otherBoxId).data('columnSelection', 'NONE');
+            
+            // target stateId: 1 if boxType == 'keep'
+            //                 2 if boxType == 'delete'
+            stateId = System[0]["statesD"][boxType] ;
+
+            break;
+        
+        default: alert('invalid result for columnSelection');
+    }   
+    
+    // and anyway the other box can't stay checked
+    $('#'+otherBoxId).prop('checked', false);
+    
+    // console.log("data became:" + newColumnSelection)
   
   $("tbody tr").each(function (i, row) {
-      var rec_id = $(row).data('stuff') ;     // for old state system
-      var ngramId = AjaxRecords[rec_id].id ;  // for future state system (cols)
+      var rec_id = $(row).data('stuff');     // ids for old state system
+      //var ngramId = AjaxRecords[rec_id].id; // for future by ngramId
       
-      if(boxElem.checked) {
-        // stateId: 1 if boxType == 'keep'
-        //          2 if boxType == 'delete'
-        var stateId = System[0]["statesD"][boxType] ;
-        
-        // a buffer to restore previous states if unchecked
-        // (except if there was a click on the other 'all' box
-        //  b/c then buffer is already filled and we shouldn't redo it)
-        if (!otherWasChecked) {
-            AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
-        }
-        
-        // do the requested change
-        AjaxRecords[rec_id]["state"] = stateId ;
-      } 
-      // restore previous states
-      else {
-        AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
-        AjaxRecords[rec_id]["state_buff"] = null ;
+      // a buffer to restore previous states if unchecked
+      if (!columnBufferExists) {
+          AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
       }
+      
+      if (stateId != null) {
+          // check all with the requested change
+          AjaxRecords[rec_id]["state"] = stateId ;
+      }
+      else {
+          // restore previous states, remove buffer
+          AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
+          AjaxRecords[rec_id]["state_buff"] = null ;
+      } 
   });
+  
+  // OK update this table page
   MyTable.data('dynatable').dom.update();
+  
+  // and update our own "column situation" storage
+  $(boxElem).data('columnSelection', newColumnSelection);
 }
 
 
@@ -750,7 +842,9 @@ function SaveLocalChanges() {
     }
   }
   // [ = = = = For deleting subforms = = = = ]
+    
   for(var i in NGrams["group"].links) {
+    // i is ngram_id of a group mainNode
     if(FlagsBuffer["delete"][i]) {
       for(var j in NGrams["group"].links[i] ) {
         FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
@@ -778,20 +872,20 @@ function SaveLocalChanges() {
   var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
   var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
 
-   console.log("")
-   console.log("")
-   console.log(" nodes_2del: ")
-   console.log(nodes_2del)
-   console.log(" nodes_2keep: ")
-   console.log(nodes_2keep)
-   console.log(" nodes_2group: ")
-   console.log(nodes_2group)
-   console.log(" nodes_2inmap: ")
-   console.log(nodes_2inmap)
-   console.log(" nodes_2outmap: ")
-   console.log(nodes_2outmap)
-   console.log("")
-   console.log("")
+   // console.log("")
+   // console.log("")
+   // console.log(" nodes_2del: ")
+   // console.log(nodes_2del)
+   // console.log(" nodes_2keep: ")
+   // console.log(nodes_2keep)
+   // console.log(" nodes_2group: ")
+   // console.log(nodes_2group)
+   // console.log(" nodes_2inmap: ")
+   // console.log(nodes_2inmap)
+   // console.log(" nodes_2outmap: ")
+   // console.log(nodes_2outmap)
+   // console.log("")
+   // console.log("")
   
   var list_id = $("#list_id").val()
   var corpus_id = getIDFromURL( "corpus" ) // not used
@@ -925,13 +1019,13 @@ function Main_test( data , initial , search_filter) {
       // Any <th> defined here will end up in the 'columns' arg of ulWriter
       // ------------------------------------------------------------------
       
-      // uncomment for column tableId
+      // uncomment for column tableId (here and in transformContent)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="rec_id" style="background-color:grey">local id</th>'+"\n";
       
-      // uncomment for column ngramId
+      // uncomment for column ngramId (here and in transformContent - l553)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
       
-      // uncomment for column stateId
+      // uncomment for column stateId (here and in transformContent)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
       
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
@@ -970,7 +1064,16 @@ function Main_test( data , initial , search_filter) {
       div_table += '</table>'+"\n";
       div_table += '</p>';
     $("#div-table").html(div_table)
-
+    
+    
+    // indeterminate: only visual
+    $('#delAll').prop("indeterminate", true)
+    $('#mapAll').prop("indeterminate", true)
+    
+    // real checkAll states : SOME|ALL|NONE
+    $('#delAll').data("columnSelection", 'SOME')
+    $('#mapAll').data("columnSelection", 'SOME')
+    
     var div_stats = "<p>";
     for(var i in data.scores) {
       var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
@@ -1099,7 +1202,7 @@ function Main_test( data , initial , search_filter) {
             .renderlet(function (chart) {
                 chart.select("g.y").style("display", "none");
                 LineChart.filter(chart.filter());
-                console.log("lalaal moveChart.focus(chartfilt);")
+                // console.log("lalaal moveChart.focus(chartfilt);")
             })
             .on("filtered", function (chart) {
                 dc.events.trigger(function () {
@@ -1292,7 +1395,8 @@ var url = [
 // The AJAX's in cascade:
 
 GET_( url[0] , function(result) {
-	// = = = = MIAM = = = = //
+    
+    // = = = = MIAM = = = = //
 	if(result!=false) {
   	NGrams["main"] = {
   		"ngrams": [],
@@ -1344,32 +1448,60 @@ GET_( url[0] , function(result) {
 
 
 function AfterAjax() {
-  // debug
-  // console.log("\nFUN AfterAjax()")
-	// // Deleting subforms from the ngrams-table, clean start baby!
+  // -------------------------------------------------------------------
+  // dbg: Ngrams structure is too large
+  
+  // 1- Ngrams list would be shorter in binary format than JSON
+  // 2- If sorted, top Ngrams could be loaded partly for 1st page show
+  // 3- We could keep less ngrams altogether at indexation upstream
+  
+  // console.log(JSON.stringify(NGrams))
+  // -------------------------------------------------------------------
+    
+	// Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
     	var _forms = {  "main":{} , "sub":{}  }
+        // subforms inventory
     	for(var i in NGrams["group"].links) {
     		_forms["main"][i] = true
     		for(var j in NGrams["group"].links[i]) {
+                // for each subform {subform_ngramid : true}
     			_forms["sub"][ NGrams["group"].links[i][j] ] = true
     		}
     	}
+        
+        // console.log('_forms["sub"]')
+        // console.log( _forms["sub"] )
+        
+        // ngrams_data_ will update NGrams.main (with subforms removed)
     	var ngrams_data_ = []
     	for(var i in NGrams["main"].ngrams) {
-    		if(_forms["sub"][NGrams["main"].ngrams[i].id]) {
-    			NGrams["group"]["nodes"][NGrams["main"].ngrams[i].id] = NGrams["main"].ngrams[i]
-    		} else {
-    			// if( _forms["main"][ NGrams["main"].ngrams[i].id ] )
-    			// 	NGrams["main"].ngrams[i].name = "*"+NGrams["main"].ngrams[i].name
-    			ngrams_data_.push( NGrams["main"].ngrams[i] )
-    		}
-    	}
-    	NGrams["main"].ngrams = ngrams_data_;
+            
+            var ngram_id = NGrams["main"].ngrams[i].id ;
+
+            // if ngram is subform of another
+            if(_forms["sub"][ngram_id]) {
+                // subform info storage into NGrams.group.nodes
+                // ---------------------------------------------
+                // (subform goes away from new list but info preserved)
+                // (useful if we want to see/revive subforms in future)
+                NGrams["group"]["nodes"][ngram_id] = NGrams["main"].ngrams[i]
+            }
+            // normal case
+            else {
+                // we keep the info untouched in the new list
+                ngrams_data_.push( NGrams["main"].ngrams[i] )
+            }
+        }
+
+        // the new list of ngrams replaces the old main
+        NGrams["main"].ngrams = ngrams_data_;
     }
     
-    
+    // console.log('NGrams["group"]["nodes"]')
+    // console.log( NGrams["group"]["nodes"] )
+
     // initialize state of maplist items
     if( Object.keys(NGrams["map"]).length>0 ) {
     	for(var i in NGrams["main"].ngrams) {
@@ -1382,6 +1514,9 @@ function AfterAjax() {
     	}
     }
 
+    // console.log('NGrams["main"]')
+    // console.log( NGrams["main"] )
+
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial
     var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
@@ -1392,10 +1527,10 @@ function AfterAjax() {
         scores_div += "\t"+'<option value="'+possible_scores[i]+'">'+possible_scores[i]+'</option>'+"\n"
       }
     }
+
     // Initializing the Charts and Table
-    console.log( NGrams["main"] )
     var result = Main_test( NGrams["main"] , FirstScore , "filter_all")
-    console.log( result )
+    console.log( result ) // OK
 
     // Listener for onchange Score-Selector
     scores_div += "<select>"+"\n";

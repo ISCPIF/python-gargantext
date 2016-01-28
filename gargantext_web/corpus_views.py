@@ -58,7 +58,7 @@ from ngram.lists import listIds, listNgramIds, ngramList , doList
 def test_page(request , project_id , corpus_id):
 
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     try:
         offset = int(project_id)
@@ -96,7 +96,7 @@ def test_page(request , project_id , corpus_id):
 
 def get_ngrams(request , project_id , corpus_id ):
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     try:
         offset = int(project_id)
@@ -170,7 +170,7 @@ def test_test(request , corpus_id , doc_id):
 def get_journals(request , project_id , corpus_id ):
 
     if not request.user.is_authenticated():
-        return redirect('/login/?next=%s' % request.path)
+        return redirect('/auth/?next=%s' % request.path)
 
     try:
         offset = int(project_id)

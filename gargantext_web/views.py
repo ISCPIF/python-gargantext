@@ -639,7 +639,7 @@ def graph(request, project_id, corpus_id, generic=100, specific=100):
     corpus_type_id = cache.NodeType['Corpus'].id
 
     miamlist_type_id = cache.NodeType['MiamList'].id
-    miamlist = session.query(Node).filter(Node.user_id == request.user.id , Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
+    miamlist = session.query(Node).filter(Node.parent_id==corpus_id , Node.type_id == cache.NodeType['MiamList'].id ).first()
 
     graphurl = "corpus/"+str(corpus_id)+"/node_link.json"
 

@@ -399,12 +399,20 @@ class Group(APIView):
             max_deg = -1
             mainNode = -1
             mainNode_sinonims = []
-            for node in clique:
-                groups["nodes"][node] = False
-                node_outdeg = DG.out_degree(node)
-                if node_outdeg>max_deg:
-                    max_deg = node_outdeg
-                    mainNode = node
+
+            if len(clique) > 1:
+                for node in clique:
+                    # just a lookup hash with *both*
+                    # the mainNode and the subnodes
+                    groups["nodes"][node] = False
+
+                    # choosing mainNode
+                    node_outdeg = DG.out_degree(node)
+                    if node_outdeg>max_deg:
+                        max_deg = node_outdeg
+                        mainNode = node
+
+            # the links themselves main => [subs]
             for node in clique:
                 if mainNode!=node:
                     mainNode_sinonims.append( node )

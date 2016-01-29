@@ -14,6 +14,8 @@ urlpatterns = patterns('',
     url(r'paginator/corpus/(\d+)/$', views.newpaginatorJSON),
     url(r'move2trash/$' , views.move_to_trash_multiple ),
 
+
+    # TODO correct and move to scappers
     url(r'istextquery$', pubmedscrapper.getGlobalStatsISTEXT), # api/query?type=istext ?
     url(r'pubmedquery$', pubmedscrapper.getGlobalStats),
     url(r'project/(\d+)/pubmedquery/go$', pubmedscrapper.doTheQuery),

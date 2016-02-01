@@ -14,9 +14,9 @@ def notify_user(username, email, password):
     Votre login est: %s
     Votre mot de passe est : %s
 
-    En janvier prochain, il y aura une formation Gargantext (gratuite).
+    Bientôt, il y aura une formation Gargantext (gratuite).
     Inscription obligatoire pour les dernière places:
-    http://iscpif.fr/event/formation-gargantext/
+    http://iscpif.fr/event/jediformation-gargantext-mars/
 
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement

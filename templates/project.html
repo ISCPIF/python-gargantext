@@ -249,7 +249,12 @@
 		    return cookieValue;
 		}
 
-		var thequeries = []
+		var thequeries = [] ;
+    
+    // load the template's value for N scan size
+    var querySize = parseInt({{query_size}}) ;
+    
+    // TODO if is_admin
 
 		function doTheQuery() {
 			if ( $('#submit_thing').prop('disabled') ) return;
@@ -257,7 +262,11 @@
 			var origQuery = $("#id_name").val()
 
 
-			var pubmedifiedQuery = { query : JSON.stringify(thequeries) , string: origQuery } ;
+			var pubmedifiedQuery = { 
+          query : JSON.stringify(thequeries) , 
+          string: origQuery ,
+          N : querySize
+        } ;
 			console.log(pubmedifiedQuery)
 
 			var projectid = window.location.href.split("project")[1].replace(/\//g, '')//replace all the slashes
@@ -299,7 +308,7 @@
 					var origQuery = $("#id_name").val()
 					console.log("printing the results:")
 					console.log(origQuery)
-					testISTEX(origQuery.replace(" ","+"),1000)
+					testISTEX(origQuery.replace(" ","+"), querySize)
 				}
 			}
 			else {
@@ -324,9 +333,9 @@
 			console.log("in getGlobalResults()")
 			// AJAX to django
 			var pubmedquery = $("#id_name").val()
-			var Npubs = $("#id_N").val();
+			// var Npubs = $("#id_N").val();
 			if(pubmedquery=="") return;
-			var formData = {query:pubmedquery , N:Npubs}
+			var formData = {query:pubmedquery , N:querySize}
 			$("#theresults").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
 			console.log("disabling "+"#"+value.id)
 			$("#"+value.id).prop('onclick',null);
@@ -349,7 +358,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 1000 sample!")
+					$("#submit_thing").html("Process a {{ query_size }} sample!")
 
 		            thequeries = data
 		            var N=0,k=0;
@@ -388,7 +397,7 @@
 					console.log("enabling "+"#"+value.id)
 					$("#"+value.id).attr('onclick','getGlobalResults(this);');
 					// $("#submit_thing").prop('disabled' , false)
-					$("#submit_thing").html("Process a 1000 sample!")
+					$("#submit_thing").html("Process a {{ query_size }} sample!")
 
 		            thequeries = data
 		            var N=data.length,k=0;
@@ -494,20 +503,19 @@
 			return false;
 		}
 
-		function testISTEX(query,Npubs) {
+		function testISTEX(query,N) {
 			console.log("in testISTEX:");
 			if(!query || query=="") return;
 			var origQuery = query
 
-
-			var pubmedifiedQuery = { query : query , string: query }
+      var postQuery = { query : query , N: N }
 
 			var projectid = window.location.href.split("project")[1].replace(/\//g, '')//replace all the slashes
 
 		    $.ajax({
 			  // contentType: "application/json",
 		      url: window.location.origin+"/tests/project/"+projectid+"/ISTEXquery/go",
-		      data: pubmedifiedQuery,
+		      data: postQuery,
 		      type: 'POST',
 		      beforeSend: function(xhr) {
 		        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));

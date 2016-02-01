@@ -30,7 +30,7 @@ import threading
 from node.admin import CustomForm
 from gargantext_web.db import *
 from gargantext_web.db import get_sessionmaker, session,get_session
-from gargantext_web.settings import DEBUG, MEDIA_ROOT
+from gargantext_web.settings import DEBUG, MEDIA_ROOT, BASE_DIR
 from rest_v1_0.api import JsonHttpResponse
 
 from parsing.corpustools import add_resource, parse_resources, extract_ngrams
@@ -41,16 +41,50 @@ from time import sleep
 
 from admin.utils import ensure_dir
 
+# pour lire la section [scrappers] de gargantext.ini
+from configparser import ConfigParser
+from os import path
+
+# --------------------------------------------------------------------
+# importing constants from config file
+CONF = ConfigParser()
+with open(path.join(BASE_DIR,'gargantext.ini')) as inifile:
+	CONF.read_file(inifile)
+
+QUERY_SIZE_N_MAX   = int(CONF['scrappers']['QUERY_SIZE_N_MAX'])
+
+# QUERY_SIZE_N_DEFAULT   = int(CONF['scrappers']['QUERY_SIZE_N_DEFAULT'])
+# --------------------------------------------------------------------
 def getGlobalStats(request ):
+	"""
+	Pubmed year by year results
+
+	# alist = [
+	# {'string': '2011[dp] serendipity', 'queryKey': '1', 
+	#  'webEnv': 'NCID_1_11...._F_1', 'count': 475, 'retmax': 6},
+	# {'string': '2012[dp] serendipity', 'queryKey': '1', 
+	#  'webEnv': 'NCID_1_14..._F_1', 'count': 345, 'retmax': 4},
+	#  ... ]
+	
+	(reused as thequeries in doTheQuery)
+	"""
 	print(request.method)
-	alist = ["bar","foo"]
+	alist = []
 
 	if request.method == "POST":
-		N = 1000
 		query = request.POST["query"]
+		N = int(request.POST["N"])
+		
+		if N > QUERY_SIZE_N_MAX:
+			msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
+			print("ERROR(scrap: pubmed stats): ",msg)
+			raise ValueError(msg)
+		
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		instancia = MedlineFetcher()
+		
+		# serialFetcher (n_last_years, query, query_size)
 		alist = instancia.serialFetcher( 5, query , N )
 
 	data = alist
@@ -59,12 +93,17 @@ def getGlobalStats(request ):
 
 
 def getGlobalStatsISTEXT(request ):
+	"""
+	ISTEX simply the total of hits for a query
+	
+	(not reused in testISTEX)
+	"""
 	print(request.method)
 	alist = ["bar","foo"]
 
 	if request.method == "POST":
-		N = 1000
 		query = request.POST["query"]
+		N = int(request.POST["N"])
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
 		print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
 		query_string = query.replace(" ","+")
@@ -109,11 +148,18 @@ def doTheQuery(request , project_id):
 
 
 	if request.method == "POST":
-		query = request.POST["query"]
+		queries = request.POST["query"]
 		name = request.POST["string"]
-
+		
+		# here we just realize queries already prepared by getGlobalStats
+		#    ===> no need to repeat N parameter like in testISTEX <===
+		
 		instancia = MedlineFetcher()
-		thequeries = json.loads(query)
+		thequeries = json.loads(queries)
+		
+		# fyi the sum of our prepared yearly proportional quotas
+		sampled_sum = sum([year_q['retmax'] for year_q in thequeries])
+		print("Scrapping Pubmed: '%s' (N=%i)" % (name,sampled_sum))
 
 		urlreqs = []
 		for yearquery in thequeries:
@@ -214,15 +260,22 @@ def testISTEX(request , project_id):
 
 
 	if request.method == "POST":
-		# print(alist)
 		query = "-"
 		query_string = "-"
-		N = 1000
-		if "query" in request.POST: query = request.POST["query"]
-		if "string" in request.POST: query_string = request.POST["string"].replace(" ","+")
-		# if "N" in request.POST: N = request.POST["N"]
-		print(query_string , query , N)
+		N = 0
+		
+		if "query" in request.POST: 
+			query = request.POST["query"]
+			query_string = query.replace(" ","+")   # url encoded q
 
+		if "N" in request.POST:
+			N = int(request.POST["N"])     # query_size from views_opti
+			if N > QUERY_SIZE_N_MAX:
+				msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
+				print("ERROR (scrap: istex d/l ): ",msg)
+				raise ValueError(msg)
+
+		print("Scrapping Istex: '%s' (%i)" % (query_string , N))
 
 		urlreqs = []
 		pagesize = 50
@@ -247,7 +300,8 @@ def testISTEX(request , project_id):
 		session.add(corpus)
 		session.commit()
 		corpus_id = corpus.id
-
+		
+		print("NEW CORPUS", corpus_id)
 		ensure_dir(request.user)
 		tasks = MedlineFetcher()
 

@@ -18,7 +18,7 @@ from gargantext_web.db import *
 from gargantext_web.db import get_or_create_node
 from gargantext_web.views import session
 
-from gargantext_web.settings import DEBUG, MEDIA_ROOT
+from gargantext_web.settings import DEBUG, MEDIA_ROOT, BASE_DIR
 from rest_v1_0.api import JsonHttpResponse
 from django.db import connection
 
@@ -31,6 +31,19 @@ from ngram.tfidf import compute_tfidf
 from gargantext_web.celery import apply_workflow
 
 from admin.utils import ensure_dir
+
+# pour lire la section [scrappers] de gargantext.ini
+from configparser import ConfigParser
+from os import path
+
+# --------------------------------------------------------------------
+# importing constants from config file
+CONF = ConfigParser()
+with open(path.join(BASE_DIR,'gargantext.ini')) as inifile:
+	CONF.read_file(inifile)
+
+QUERY_SIZE_N_DEFAULT = CONF['scrappers']['QUERY_SIZE_N_DEFAULT']
+# --------------------------------------------------------------------
 
 def project(request, project_id):
     # do we have a valid project id?
@@ -64,7 +77,7 @@ def project(request, project_id):
         if not in_group:
             return JsonHttpResponse( {"request" : "forbidden"} )
 
-    # Let's find out about the children nodes of the project
+    # Let's find out about the children nodes of the corpus
     ChildrenNode = aliased(Node)
     # This query is giving you the wrong number of docs from the pubmedquerier (x 5)
     #  ... sqlalchemy.func by Resource.type_id is the guilty
@@ -196,6 +209,8 @@ def project(request, project_id):
         'blacklists'    : '',
         'cooclists'     : '',
         'number'        : corpora_count,
+        'query_size'    : QUERY_SIZE_N_DEFAULT,
+        'user_is_admin' : user.is_superuser
     })
 
 def tfidf(request, corpus_id, ngram_ids):

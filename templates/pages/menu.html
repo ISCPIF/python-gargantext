@@ -1,0 +1,136 @@
+<html>
+{% load staticfiles %}
+<head>
+    <link rel="shortcut icon" href="{% static "/favicon.ico"%}">
+
+    {% block css %}
+    {% endblock %}
+</head>
+
+<body>
+<!-- Fixed navbar -->
+    <div id="dafixedtop" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+        <div class="navbar-inner">
+          <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+					<a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="/generated/img/logo.svg" title="Back to home."></a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">About</a>
+						</li>
+						{% if user.is_authenticated %}
+            <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
+						{% endif %}
+						{% if project %}
+						<li><a href="/project/{{project.id}}">{{project.name}}</a></li>
+						{% endif %}
+						{% if corpus %}
+						<li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></li>
+						{% endif %}
+
+
+          </ul>
+
+				<ul class="nav pull-right">
+						<li class="dropdown">
+								<a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
+
+								</a>
+								<ul class="dropdown-menu">
+										<li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">Report Feedback</a></li>
+										<li class="divider"></li>
+								{% if user.is_authenticated %}
+										<li><a tabindex="-1" href="/auth/logout" title="Click here to logout especially on public devices">Logout</a></li>
+										{% else %}
+										<li><a tabindex="-1" href="/auth/login">Login</a></li>
+								{% endif %}
+								</ul>
+						</li>
+				</ul>
+      </div>
+      </div>
+    </div>
+<!--/.nav-collapse -->
+
+{% block corpusBannerTop %}
+{% endblock %}
+
+
+{% block content %}
+{% endblock %}
+
+{% block corpusBannerBottom %}
+{% endblock %}
+
+
+
+
+<hr>
+
+<footer>
+		<p>Gargantext, version 2.0, <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">Copyrights CNRS {{ date.year }}</a>,
+		<a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank" title="Legal instructions of the project.">Licence aGPLV3</a>.</p>
+</footer>
+
+
+<!-- Place at the end of the document so the pages load faster -->
+{% load staticfiles %}
+
+
+<!--
+
+<script src="{% static "js/easy/jquery.easypiechart.js"%}"></script>
+
+<script type="text/javascript">
+$(function() {
+    $('.chart').easyPieChart({
+        //your configuration goes here
+				size : 50
+    });
+});
+
+</script>
+
+
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+-->
+
+<script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
+
+<script>$(function () { $("[data-toggle='popover']").popover({
+		html:true,
+		title: function() {
+				return $("#popover-head").html();
+		},
+		content: function() {
+				return $("#popover-content").html();
+		}
+});});</script>
+
+
+{% if debug == False %}
+<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+	  _paq.push(['trackPageView']);
+	  _paq.push(['enableLinkTracking']);
+	  (function() {
+	    var u="//piwik.iscpif.fr/";
+	    _paq.push(['setTrackerUrl', u+'piwik.php']);
+	    _paq.push(['setSiteId', 2]);
+	    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+	    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+	  })();
+</script>
+<noscript><p><img src="//piwik.iscpif.fr/piwik.php?idsite=2" style="border:0;" alt="" /></p></noscript>
+<!-- End Piwik Code -->
+{% endif %}
+
+</body>
+</html>

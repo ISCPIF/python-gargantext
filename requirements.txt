@@ -1,0 +1,4 @@
+Django==1.9.2
+RandomWords==0.1.12
+psycopg2==2.6.1
+ujson==1.35

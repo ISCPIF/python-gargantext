@@ -1,0 +1,97 @@
+{% extends "pages/menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+
+<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+        <div class="jumbotron">
+				<div class="row">
+						<div class="col-md-4 content">
+						<h1>Gargantext</h1>
+						<p>A web platform to explore text-mining</p>
+						<a class="btn btn-primary btn-lg" href="/projects" title="Click and test by yourself">Test Gargantext
+            </a>
+                <p>
+                <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
+                <small>
+                    <i>
+                Some features may not work without a javascript optimized browser (Chromium for instance).
+                    </i>
+                </small>
+                </p>
+            </div>
+						<div class="col-md-2 content"></div>
+            <div class="col-md-2 content"></div>
+						<div class="col-md-2 content">
+								<p class="right">
+										<div style="border:15px">
+												<img src="{% static "img/logo.png"%}" title="Logo designed by dacha and anoe" style="100px; height:150px; border:3px solid white">
+										</div>
+								</p>
+						</div>
+				</div>
+        </div>
+
+		<div class="container">
+				<div class="row">
+						<div class="content">
+						<center>
+						<img src="{% static "img/Gargantextuel-212x300.jpg"%}" title="Gargantextuel drawn by Cecile Meadel" style="border:2px solid black">
+
+						<!--
+						<h2>Introduction Video</h2>
+						<video width="320" height="240" controls>
+						<source src="movie.mp4" type="video/mp4">
+						<source src="movie.ogg" type="video/ogg">
+						Your browser does not support this video sorry. Try Firefox or Chromium.
+						</video>
+						-->
+						</center>
+				</div>
+				</div>
+		</div>
+</div>
+
+
+
+<div class="container">
+
+
+<div class="row">
+
+<div class="col-md-4 content">
+				<h3><a href="#" title="Random sentences in Gargantua's Books chapters, historically true">Historic</a></h3>
+												<p> {{ paragraph_gargantua }}</p>
+										</div>
+
+<div class="col-md-4 content">
+<h3><a href="#" title="Randomized words, semantically and syntaxically falses." >Presentation</a></h3>
+												<p> {{ paragraph_lorem }}
+												</p>
+										</div>
+
+
+<div class="col-md-4 content">
+<h3><a href="#" title="Randomized letters, true or false ?">Tutoreil</a></h3>
+												<p>
+                        {{ paragraph_tutoreil }}
+												<!-- Why not French ? -->
+												<!-- find Cambridge source which inspired this --!>
+												</p>
+										</div>
+
+
+
+    </div>
+</div>
+
+{% endblock %}

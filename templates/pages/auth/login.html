@@ -37,7 +37,7 @@
                         <div id="grp-content-container">
 
                             <div class="g-d-c g-d-10 g-centered">
-                                <form action="/auth/" method="post"><input type='hidden' name='csrfmiddlewaretoken' value='Yopwc8YatA3C68kSevZX9upoXdIcZzPn' />
+                                <form action="" method="post"><input type='hidden' name='csrfmiddlewaretoken' value='Yopwc8YatA3C68kSevZX9upoXdIcZzPn' />
                                     <fieldset class="grp-module grp-module-login">
                                         <h2>
                                             <span class="grp-current-page">Login</span>
@@ -48,7 +48,6 @@
 
                                             {% block main %}
                                                 <div id="login">
-                                                    <form class="form-horizontal" name="LoginForm" action="/auth/" method="post">
                                                     {% csrf_token %}
                                                     {% if next_page %}
                                                         <input type="hidden" name="the_next_page" value="{{ next_page }}" />

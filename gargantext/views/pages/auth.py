@@ -28,11 +28,11 @@ def login(request):
         # /!\ pass is sent clear in POST data
         password = request.POST['password']
 
-        user = authenticate(username=username, password=password)
+        user = auth.authenticate(username=username, password=password)
         if user is not None:
 
             if user.is_active:
-                login(request, user)
+                auth.login(request, user)
 
                 # if "next" forwarded from the GET via the template form
                 if ('the_next_page' in request.POST):

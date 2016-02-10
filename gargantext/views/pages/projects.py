@@ -13,7 +13,6 @@ def overview(request):
     To each project, we can link a resource that can be an image.
     '''
 
-    session = Session()
     user = cache.User[request.user.username]
     project_type = cache.NodeType['Project']
 
@@ -30,10 +29,10 @@ def overview(request):
             session.commit()
 
     # list of projects created by the logged user
-    user_projects = user.get_nodes(session=session, nodetype=project_type)
+    user_projects = user.get_nodes(nodetype=project_type)
 
     # list of contacts of the logged user
-    contacts = user.get_contacts(session=session)
+    contacts = user.get_contacts()
     contacts_projects = []
     for contact in contacts:
         contact_projects = (session

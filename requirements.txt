@@ -1,5 +1,6 @@
-Django==1.6.11
+Django==1.9.2
 RandomWords==0.1.12
+SQLAlchemy==1.0.11
 django-pgfields==1.4.4
 django-pgjsonb==0.0.16
 psycopg2==2.6.1

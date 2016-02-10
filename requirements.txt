@@ -1,4 +1,8 @@
-Django==1.9.2
+Django==1.6.11
 RandomWords==0.1.12
+django-pgfields==1.4.4
+django-pgjsonb==0.0.16
 psycopg2==2.6.1
+pytz==2015.7
+six==1.10.0
 ujson==1.35

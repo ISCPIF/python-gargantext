@@ -10,7 +10,7 @@ def logo(request):
     else:
         # color of the css adapted to the logo
         color = '#AE5C5C'
-    svg_data = template.render(Context({\
-            'color': color,\
-            }))
+    svg_data = template.render({
+        'color': color,
+    })
     return HttpResponse(svg_data, content_type='image/svg+xml')

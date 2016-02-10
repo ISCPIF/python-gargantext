@@ -26,7 +26,7 @@ def bootstrap(request):
         css['form']         = '#093558'
         css['help']         = '#093558'
 
-    css_data = template.render(Context({
+    css_data = template.render({
         'css': css,
-    }))
+    })
     return HttpResponse(css_data, content_type="text/css")

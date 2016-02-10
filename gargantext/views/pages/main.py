@@ -9,7 +9,7 @@ def home(request):
     A video draws the narratives.
     If not logged a project test is shown.
     '''
-    t = get_template('pages/main/home.html')
+    template = get_template('pages/main/home.html')
     user = request.user
     date = datetime.datetime.now()
     html = t.render(Context({

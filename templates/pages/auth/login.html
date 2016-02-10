@@ -1,17 +1,16 @@
 <html>
-    <body>
 
     <head>
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/static/css/morris.css">
     </head>
 
+    <body>
+        
         <div id="grp-container">
 
             <!-- HEADER -->
             <header id="grp-header" class="">
-
-
                     <!-- NAVIGATION -->
                     <div id="grp-navigation">
                         <h1 id="grp-admin-title">Gargantext</h1>
@@ -19,12 +18,8 @@
                     </div>
             </header>
 
-
             <!-- CONTENT -->
             <article id="grp-content" class="">
-
-
-
 
                 <!-- CONTENT TITLE -->
                 <header id="grp-content-title">
@@ -35,7 +30,6 @@
                     <div class="jumbotron">
                         <!-- CONTENT-CONTAINER -->
                         <div id="grp-content-container">
-
                             <div class="g-d-c g-d-10 g-centered">
                                 <form action="" method="post"><input type='hidden' name='csrfmiddlewaretoken' value='Yopwc8YatA3C68kSevZX9upoXdIcZzPn' />
                                     <fieldset class="grp-module grp-module-login">
@@ -43,25 +37,22 @@
                                             <span class="grp-current-page">Login</span>
                                         </h2a>
                                         <div class="grp-module">
-
-
-
                                             {% block main %}
-                                                <div id="login">
-                                                    {% csrf_token %}
-                                                    {% if next_page %}
-                                                        <input type="hidden" name="the_next_page" value="{{ next_page }}" />
-                                                    {% endif %}
-                                                    <div class="grp-row">
-                                                        <label class="control-label" for="username">Username</label>
-                                                        <input type="text" id="username" name="username"  placeholder="Username">
-                                                    </div>
-                                                    <div class="grp-row grp-connected">
-                                                        <label class="control-label" for="password">Password</label>
-                                                        <input type="password" name="password" id="password" placeholder="Password">
-                                                    </div>
-
-
+                                            <div id="login">
+                                                {% csrf_token %}
+                                                {% if next_page %}
+                                                <input type="hidden" name="the_next_page" value="{{ next_page }}" />
+                                                {% endif %}
+                                                <div class="grp-row">
+                                                    <label class="control-label" for="username">Username</label>
+                                                    <input type="text" id="username" name="username"  placeholder="Username">
+                                                </div>
+                                                <div class="grp-row grp-connected">
+                                                    <label class="control-label" for="password">Password</label>
+                                                    <input type="password" name="password" id="password" placeholder="Password">
+                                                </div>
+                                            </div>
+                                            {% endblock %}
                                         </div>
                                     </fieldset>
                                     <div class="grp-module grp-submit-row">
@@ -70,15 +61,14 @@
                                         </ul>
                                     </div>
                                 </form>
-                                </div>
-                            {% endblock %}
                             </div>
                         </div>
-
-                    </article>
-
                     </div>
-            </div>
+                </div>
+
+
+            </article>
+
         </div>
 
 

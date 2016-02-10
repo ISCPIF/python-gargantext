@@ -41,6 +41,7 @@
 
 <div class="container">
     <div class="row">
+
         {% if projects %}
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
@@ -62,152 +63,143 @@
             </h3>
 
             <h4>{{ project.subtitle }}<h4>
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            {% if common_projects %}
-            <br><br><br><br><br><br>
-            <h3><i> - - Shared projects - -</i></h3>
-            {% for project in common_projects %}
-            <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-            <div class="col-md-3 content">
-                <h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
-
-                    <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                    data-content='
-                    <ul>
-                        <li> Rename </li>
-                        <li><a href="/project/{{ project.id }}">Add new corpus</a></li>
-                        <li><a href="/delete/{{ project.id }}">Delete</a></li>
-                    </ul>
-                    '>Manage</button>
-
-                </h3>
-
-                <h4>{{ project.subtitle }}<h4>
-                </div>
-                {% endfor %}
-                {% endif %}
-
-            </div>
         </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if common_projects %}
+        <br><br><br><br><br><br>
+        <h3><i> - - Shared projects - -</i></h3>
+        {% for project in common_projects %}
+        <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
+        <div class="col-md-3 content">
+            <h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
+                <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                data-content='
+                <ul>
+                    <li> Rename </li>
+                    <li><a href="/project/{{ project.id }}">Add new corpus</a></li>
+                    <li><a href="/delete/{{ project.id }}">Delete</a></li>
+                </ul>
+                '>Manage</button>
+            </h3>
+            <h4>{{ project.subtitle }}<h4>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    </div>
+</div>
 
 
-        <div id="sharemodal" class="modal fade">
+<div id="sharemodal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
 
-            <div class="modal-dialog">
-                <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title">Share this Corpus with your Groups</h3>
+            </div>
 
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h3 class="modal-title">Share this Corpus with your Groups</h3>
-                    </div>
-
-                    <div class="modal-body form-horizontal">
-                        <h4>List of available groups:</h4>
-                        <div id="groups_list">here show the groups</div>
-
-                        <div class="modal-footer">
-                            <button id="closesharemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button id="send_share" type="button" class="btn btn-primary" >Share<span id="simpleloader"></span></button>
-                        </div>
-
-                    </div>
-
+            <div class="modal-body form-horizontal">
+                <h4>List of available groups:</h4>
+                <div id="groups_list">here show the groups</div>
+                <div class="modal-footer">
+                    <button id="closesharemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="send_share" type="button" class="btn btn-primary" >Share<span id="simpleloader"></span></button>
                 </div>
-
-
             </div>
 
         </div>
+    </div>
+</div>
 
-        <style>
-        label {
-            padding:10px;
-            margin:0 0 10px;
-            display:block;
-        }
-        label:hover {
-            background:#eee;
-            cursor:pointer;
-        }
-        </style>
+<style type="text/css">
+    label {
+        padding:10px;
+        margin:0 0 10px;
+        display:block;
+    }
+    label:hover {
+        background:#eee;
+        cursor:pointer;
+    }
+</style>
 
 
-        <script>
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+<script type="text/javascript">
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
+        return cookieValue;
+    }
 
-        var last_project = -1
+    var last_project = -1
 
-        function get_groups() {
-            console.log( "IN get_groups()!" )
-            var url_ = "/get_groups"
-            $.ajax({
-                type: "GET",
-                url: url_,
-                dataType: "json",
-                success : function(data, textStatus, jqXHR) {
-                    var _content = ""
-                    for(var i in data) {
-                        var g_id = data[i][0] , g_name=data[i][1]
-                        _content += '<label><input name="groups" data-id="'+g_id+'" type="checkbox" />&nbsp;'+g_name+'</label>'
-                    }
-                    $("#groups_list").html( _content )
-                },
-                error: function(exception) {
-                    console.log("exception!:"+exception.status)
+    function get_groups() {
+        console.log( "IN get_groups()!" )
+        var url_ = "/get_groups"
+        $.ajax({
+            type: "GET",
+            url: url_,
+            dataType: "json",
+            success : function(data, textStatus, jqXHR) {
+                var _content = ""
+                for(var i in data) {
+                    var g_id = data[i][0] , g_name=data[i][1]
+                    _content += '<label><input name="groups" data-id="'+g_id+'" type="checkbox" />&nbsp;'+g_name+'</label>'
                 }
+                $("#groups_list").html( _content )
+            },
+            error: function(exception) {
+                console.log("exception!:"+exception.status)
+            }
 
-            });
-        }
+        });
+    }
 
-        if( $(".share_button").length>0 ) {
+    if( $(".share_button").length>0 ) {
 
-            $(".share_button").click(function(){
-                last_project = $(this).data("id")
-                get_groups()
-                $("#sharemodal").modal("show");
-            });
+        $(".share_button").click(function(){
+            last_project = $(this).data("id")
+            get_groups()
+            $("#sharemodal").modal("show");
+        });
 
-            $("#send_share").click(function() {
-                $('input[name=groups]:checked').each(function () {
-                    $("#send_share").attr("disabled","disabled")
-                    console.log( $(this).data("id") );
-                    $("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
-                    $.ajax({
-                        url: "/api/share/"+last_project+"/"+$(this).data("id"),
-                        type: 'POST',
-                        beforeSend: function(xhr) {
-                            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-                        },
-                        success: function(data) {
-                            console.log("SUCCESS!")
-                            window.location.reload();
-                        },
-                        error: function(result) {
-                            console.log("FAIL!")
-                            console.log(result)
-                        }
-                    });
+        $("#send_share").click(function() {
+            $('input[name=groups]:checked').each(function () {
+                $("#send_share").attr("disabled","disabled")
+                console.log( $(this).data("id") );
+                $("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+                $.ajax({
+                    url: "/api/share/"+last_project+"/"+$(this).data("id"),
+                    type: 'POST',
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                    },
+                    success: function(data) {
+                        console.log("SUCCESS!")
+                        window.location.reload();
+                    },
+                    error: function(result) {
+                        console.log("FAIL!")
+                        console.log(result)
+                    }
                 });
             });
+        });
 
-        }
-        </script>
+    }
+</script>
 
-        {% endblock %}
+{% endblock %}

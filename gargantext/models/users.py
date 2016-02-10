@@ -22,10 +22,8 @@ class User(Base):
     is_active = Column(Boolean())
     date_joined = DateTime(timezone=False)
 
-    def get_contacts(self, session=None):
+    def get_contacts(self):
         """get all contacts in relation with the user"""
-        if session is None:
-            session = Session()
         Friend = aliased(User)
         query = (session
             .query(Friend)
@@ -34,11 +32,9 @@ class User(Base):
         )
         return query.all()
 
-    def get_nodes(self, session=None, nodetype=None):
+    def get_nodes(self, nodetype=None):
         """get all nodes belonging to the user"""
         from .nodes import Node
-        if session is None:
-            session = Session()
         query = (session
             .query(Node)
             .filter(Node.user_id == self.id)

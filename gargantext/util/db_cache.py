@@ -12,7 +12,6 @@ from gargantext import models
 class ModelCache(dict):
 
     def __init__(self, model, preload=False):
-        self._session = Session()
         self._model = model
         self._columns = [column for column in model.__table__.columns if column.unique or column.primary_key]
         self._columns_names = [column.name for column in self._columns]
@@ -20,7 +19,7 @@ class ModelCache(dict):
             self.preload()
 
     def __del__(self):
-        self._session.close()
+        session.close()
 
     def __missing__(self, key):
         formatted_key = None
@@ -34,7 +33,7 @@ class ModelCache(dict):
         if formatted_key in self:
             self[key] = self[formatted_key]
         else:
-            element = self._session.query(self._model).filter(or_(*conditions)).first()
+            element = session.query(self._model).filter(or_(*conditions)).first()
             if element is None:
                 raise KeyError
             self[key] = element
@@ -42,7 +41,7 @@ class ModelCache(dict):
 
     def preload(self):
         self.clear()
-        for element in self._session.query(self._model).all():
+        for element in session.query(self._model).all():
             for column_name in self._columns_names:
                 key = getattr(element, column_name)
                 self[key] = element

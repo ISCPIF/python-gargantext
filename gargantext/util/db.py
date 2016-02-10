@@ -1,10 +1,9 @@
-from aldjemy.core import get_engine
 from gargantext import settings
 
 
 # get engine, session, etc.
 
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
 def get_engine():
@@ -18,7 +17,7 @@ engine = get_engine()
 
 Base = declarative_base()
 
-Session = sessionmaker(bind=engine)
+session = scoped_session(sessionmaker(bind=engine))
 
 
 # tools to build models

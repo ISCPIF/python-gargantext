@@ -34,6 +34,7 @@ class User(Base):
 
     def get_nodes(self, nodetype=None):
         """get all nodes belonging to the user"""
+        # ↓ this below is a workaround because of Python's lame import system
         from .nodes import Node
         query = (session
             .query(Node)
@@ -54,7 +55,7 @@ class Contact(Base):
     id = Column(Integer, primary_key=True)
     user1_id = Column(Integer, primary_key=True)
     user2_id = Column(Integer, primary_key=True)
-    is_blocked = Column(Boolean())
-    date_creation = DateTime(timezone=False)
+    is_blocked = Column(Boolean(), default=False)
+    date_creation = Column(DateTime(timezone=False))
 
     __table_args__ = (UniqueConstraint('user1_id', 'user2_id'), )

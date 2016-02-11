@@ -46,13 +46,13 @@
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
         <div class="col-md-3 content">
-            <h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
+            <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
 
                 <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                 data-content='
                 <ul>
                     <li> Rename </li>
-                    <li><a href="/project/{{ project.id }}">Add new corpus</a></li>
+                    <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
                     <li><a href="/delete/{{ project.id }}">Delete</a></li>
                 </ul>
                 '>Manage</button>
@@ -73,12 +73,12 @@
         {% for project in common_projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
         <div class="col-md-3 content">
-            <h3><a href="/project/{{ project.id }}">{{ project.name }}</a>
+            <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
                 <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                 data-content='
                 <ul>
                     <li> Rename </li>
-                    <li><a href="/project/{{ project.id }}">Add new corpus</a></li>
+                    <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
                     <li><a href="/delete/{{ project.id }}">Delete</a></li>
                 </ul>
                 '>Manage</button>

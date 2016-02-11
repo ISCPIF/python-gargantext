@@ -58,3 +58,21 @@ def overview(request):
             'common_projects': contacts_projects if len(contacts_projects) else False,
         },
     )
+
+
+@requires_auth
+def project(request, project_id):
+    return render(
+        template_name = 'pages/projects/project.html',
+        request = request,
+        context = {
+            # 'debug': settings.DEBUG,
+            # 'date': datetime.now(),
+            # # projects owned by the user
+            # 'number': len(user_projects),
+            # 'projects': user_projects,
+            # # projects owned by the user's contacts
+            # 'common_users': contacts if len(contacts) else False,
+            # 'common_projects': contacts_projects if len(contacts_projects) else False,
+        },
+    )

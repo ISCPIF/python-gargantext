@@ -16,5 +16,6 @@ urlpatterns = [
 
     # overview on projects
     url(r'^projects/?$', projects.overview),
+    url(r'^projects/(\d+)/?$', projects.project),
 
 ]

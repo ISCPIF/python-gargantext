@@ -27,10 +27,10 @@
                         <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
                         {% endif %}
                         {% if project %}
-                        <li><a href="/project/{{project.id}}">{{project.name}}</a></li>
+                        <li><a href="/projects/{{project.id}}">{{project.name}}</a></li>
                         {% endif %}
                         {% if corpus %}
-                        <li><a href="/project/{{project.id}}/corpus/{{corpus.id}}">{{corpus.name}}</a></li>
+                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">{{corpus.name}}</a></li>
                         {% endif %}
                     </ul>
 

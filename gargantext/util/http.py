@@ -2,6 +2,8 @@ from django.template.loader import get_template
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, redirect
 
+from django import forms
+
 from urllib.parse import quote_plus as urlencode
 
 from gargantext import settings

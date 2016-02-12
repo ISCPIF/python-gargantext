@@ -22,7 +22,8 @@ session = scoped_session(sessionmaker(bind=engine))
 
 # tools to build models
 
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, synonym
 from sqlalchemy.types import *
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.hybrid import hybrid_property

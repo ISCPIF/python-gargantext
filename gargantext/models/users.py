@@ -32,7 +32,7 @@ class User(Base):
         )
         return query.all()
 
-    def get_nodes(self, nodetype=None):
+    def get_nodes(self, type=None):
         """get all nodes belonging to the user"""
         # ↓ this below is a workaround because of Python's lame import system
         from .nodes import Node
@@ -41,8 +41,8 @@ class User(Base):
             .filter(Node.user_id == self.id)
             .order_by(Node.date)
         )
-        if nodetype is not None:
-            query = query.filter(Node.type_id == nodetype.id)
+        if type is not None:
+            query = query.filter(Node.type == type)
         return query.all()
 
     def owns(user, node):

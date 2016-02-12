@@ -3,14 +3,14 @@
 {% block css %}
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-
-<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery.easy-pie-chart.css"%}">
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+
+<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/morris.css" %}">
 
 <script src="{% static "js/raphael-min.js"%}"></script>
-<script src="{% static "js/morris.min.js"%}"></script>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 <style type="text/css">
     .ui-autocomplete {
         z-index: 5000;
@@ -182,7 +182,7 @@
                                                     <td>
                                                         {{ field.errors }}
                                                         {{ field }}
-                                                        {% if field.name == "name" %}
+                                                        {% if field.name == 'name' %}
                                                         <span onclick="getGlobalResults(this);" id="scanpubmed"></span>
                                                         <div id="theresults"></div>
                                                         {% endif %}
@@ -437,9 +437,12 @@
                             //CSS events for changing the Select element
                             function CustomForSelect( selected ) {
                                 // show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-                                if(selected=="Pubmed (xml format)" || selected=="ISTex") {
+                                selected = selected.toLowerCase()
+                                var is_pubmed = (selected.indexOf('pubmed') != -1);
+                                var is_istex = (selected.indexOf('istex') != -1);
+                                if (is_pubmed || is_istex) {
                                     // if(selected=="pubmed") {
-                                    console.log("show the button for: "+selected)
+                                    console.log("show the button for: " + selected)
                                     $("#pubmedcrawl").css("visibility", "visible");
                                     $("#pubmedcrawl").show();
                                     $("#file_yes").click();

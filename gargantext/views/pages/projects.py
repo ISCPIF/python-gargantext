@@ -2,6 +2,7 @@ from gargantext.util.http import *
 from gargantext.util.db import *
 from gargantext.util.db_cache import cache
 from gargantext.models import *
+from gargantext.constants import *
 
 from datetime import datetime
 
@@ -14,22 +15,21 @@ def overview(request):
     '''
 
     user = cache.User[request.user.username]
-    project_type = cache.NodeType['Project']
 
     # If POST method, creates a new project...
     if request.method == 'POST':
         name = str(request.POST['name'])
         if name != '':
             new_project = Node(
-                name = name,
-                type_id = project_type.id,
                 user_id = user.id,
+                type = 'PROJECT',
+                name = name,
             )
             session.add(new_project)
             session.commit()
 
     # list of projects created by the logged user
-    user_projects = user.get_nodes(nodetype=project_type)
+    user_projects = user.get_nodes(type='PROJECT')
 
     # list of contacts of the logged user
     contacts = user.get_contacts()
@@ -38,7 +38,7 @@ def overview(request):
         contact_projects = (session
             .query(Node)
             .filter(Node.user_id == contact.id)
-            .filter(Node.type_id == project_type.id)
+            .filter(Node.type == 'PROJECT')
             .order_by(Node.date)
         ).all()
         contacts_projects += contact_projects
@@ -60,19 +60,37 @@ def overview(request):
     )
 
 
+from django.utils.translation import ugettext_lazy
+class NewCorpusForm(forms.Form):
+    type = forms.ChoiceField(
+        choices = enumerate(resourcetype['name'] for resourcetype in RESOURCETYPES),
+        widget = forms.Select(attrs={'onchange':'CustomForSelect( $("option:selected", this).text() );'})
+    )
+    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
+    file = forms.FileField()
+    def clean_file(self):
+        file_ = self.cleaned_data.get('file')
+        if len(file_) > 1024 ** 3: # we don't accept more than 1GB
+            raise forms.ValidationError(ugettext_lazy('File too heavy! (>1GB).'))
+        return file_
+
 @requires_auth
 def project(request, project_id):
+    project = session.query(Node).filter(project_id == project_id).first()
     return render(
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
-            # 'debug': settings.DEBUG,
-            # 'date': datetime.now(),
-            # # projects owned by the user
-            # 'number': len(user_projects),
-            # 'projects': user_projects,
-            # # projects owned by the user's contacts
-            # 'common_users': contacts if len(contacts) else False,
-            # 'common_projects': contacts_projects if len(contacts_projects) else False,
+            'form': NewCorpusForm,
+            'user': request.user,
+            'date': datetime.now(),
+            'project': project,
+            'donut': donut,
+            # 'list_corpora'  : dict(corpora_by_resourcetype),
+            'whitelists': [],
+            'blacklists': [],
+            'cooclists': [],
+            # 'number'        : corpora_count,
+            # 'query_size'    : QUERY_SIZE_N_DEFAULT,
         },
     )

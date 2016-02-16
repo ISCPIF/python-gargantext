@@ -31,6 +31,9 @@ def scheduled_celery(func):
     return go
 
 
-# scheduled = scheduled_now
-scheduled = scheduled_thread
-# scheduled = scheduled_celery
+from gargantext.settings import DEBUG
+if DEBUG:
+    # scheduled = scheduled_now
+    scheduled = scheduled_thread
+else:
+    scheduled = scheduled_celery

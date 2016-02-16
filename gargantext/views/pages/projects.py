@@ -2,6 +2,7 @@ from gargantext.util import workflow
 from gargantext.util.http import *
 from gargantext.util.db import *
 from gargantext.util.db_cache import cache
+from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
 
@@ -81,34 +82,40 @@ def project(request, project_id):
 
     # new corpus
     if request.method == 'POST':
-        corpus = project.add_corpus(
+        corpus = project.add_child(
             name = request.POST['name'],
-            resource_type = request.POST['type'],
-            resource_upload = request.FILES['file'],
+            typename = 'CORPUS',
         )
+        corpus.add_resource(
+            type = int(request.POST['type']),
+            path = upload(request.FILES['file']),
+        )
+        session.add(corpus)
+        session.commit()
         workflow.parse(corpus.id)
 
     # corpora within this project
     corpora = project.children('CORPUS').all()
-    corpora_by_source = defaultdict(list)
+    sourcename2corpora = defaultdict(list)
     for corpus in corpora:
-        resource_type = RESOURCETYPES[corpus['resource_type']]
-        corpora_by_source[resource_type['name']].append(corpus)
+        # we only consider the first resource of the corpus to determine its type
+        resource = corpus.resources()[0]
+        resource_type = RESOURCETYPES[resource['type']]
+        sourcename2corpora[resource_type['name']].append(corpus)
     # source & their respective counts
-    total_count = 0
-    sources_counts = defaultdict(int)
-    for document in corpora:
-        source = RESOURCETYPES[document['resource_type']]
-        sourcename = re.sub(' \(.*$', '', source['name'])
-        count = document.children('DOCUMENT').count()
-        sources_counts[sourcename] += count
-        count += total_count
+    total_documentscount = 0
+    sourcename2documentscount = defaultdict(int)
+    for sourcename, corpora in sourcename2corpora.items():
+        sourcename = re.sub(' \(.*$', '', sourcename)
+        count = corpus.children('DOCUMENT').count()
+        sourcename2documentscount[sourcename] += count
+        total_documentscount += count
     donut = [
         {   'source': sourcename,
             'count': count,
-            'part' : round(count * 100.0 / total_count) if total_count else 0,
+            'part' : round(count * 100.0 / total_documentscount, 1) if total_documentscount else 0,
         }
-        for sourcename, count in sources_counts.items()
+        for sourcename, count in sourcename2documentscount.items()
     ]
     # response!
     return render(
@@ -120,7 +127,7 @@ def project(request, project_id):
             'date': datetime.now(),
             'project': project,
             'donut': donut,
-            'list_corpora': dict(corpora_by_source),
+            'list_corpora': dict(sourcename2corpora),
             'whitelists': [],
             'blacklists': [],
             'cooclists': [],

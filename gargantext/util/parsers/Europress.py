@@ -30,7 +30,8 @@ from ._Parser import Parser
 
 
 class EuropressParser(Parser):
-    def _parse(self, file):
+
+    def parse(self, file):
         #print("europr_parser file", file)
 
         localeEncoding          = "fr_FR"
@@ -261,6 +262,7 @@ class EuropressParser(Parser):
 
         except:
             raise Exception('Something bad happened.')
+
 
 if __name__ == "__main__":
     e = EuropressFileParser()

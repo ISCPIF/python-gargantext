@@ -19,3 +19,10 @@ def requires_auth(func):
             return redirect(url)
         return func(request, *args, **kwargs)
     return _requires_auth
+
+
+import urllib.request
+
+def get(url):
+    response = urllib.request.urlopen(url)
+    html = response.read()

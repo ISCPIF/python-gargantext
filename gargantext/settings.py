@@ -29,6 +29,14 @@ MAINTENANCE = False
 ALLOWED_HOSTS = []
 
 
+# Asynchronous tasks
+
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+CELERY_IMPORTS = ('gargantext.util.workflow', )
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djcelery',
 ]
 
 MIDDLEWARE_CLASSES = [

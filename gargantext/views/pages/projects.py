@@ -5,6 +5,8 @@ from gargantext.models import *
 from gargantext.constants import *
 
 from datetime import datetime
+from collections import defaultdict
+import re
 
 
 @requires_auth
@@ -22,26 +24,17 @@ def overview(request):
         if name != '':
             new_project = Node(
                 user_id = user.id,
-                type = 'PROJECT',
+                typename = 'PROJECT',
                 name = name,
             )
             session.add(new_project)
             session.commit()
 
     # list of projects created by the logged user
-    user_projects = user.get_nodes(type='PROJECT')
+    user_projects = user.nodes(typename='PROJECT')
 
     # list of contacts of the logged user
-    contacts = user.get_contacts()
-    contacts_projects = []
-    for contact in contacts:
-        contact_projects = (session
-            .query(Node)
-            .filter(Node.user_id == contact.id)
-            .filter(Node.type == 'PROJECT')
-            .order_by(Node.date)
-        ).all()
-        contacts_projects += contact_projects
+    contacts_projects = list(user.contacts_nodes(typename='PROJECT'))
 
     # render page
     return render(
@@ -54,8 +47,8 @@ def overview(request):
             'number': len(user_projects),
             'projects': user_projects,
             # projects owned by the user's contacts
-            'common_users': contacts if len(contacts) else False,
-            'common_projects': contacts_projects if len(contacts_projects) else False,
+            'common_users': (contact for contact, projects in contacts_projects),
+            'common_projects': sum((projects for contact, projects in contacts_projects), []),
         },
     )
 
@@ -63,7 +56,7 @@ def overview(request):
 from django.utils.translation import ugettext_lazy
 class NewCorpusForm(forms.Form):
     type = forms.ChoiceField(
-        choices = enumerate(resourcetype['name'] for resourcetype in RESOURCETYPES),
+        choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
         widget = forms.Select(attrs={'onchange':'CustomForSelect( $("option:selected", this).text() );'})
     )
     name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
@@ -76,7 +69,46 @@ class NewCorpusForm(forms.Form):
 
 @requires_auth
 def project(request, project_id):
-    project = session.query(Node).filter(project_id == project_id).first()
+    # current user
+    user = cache.User[request.user.username]
+    # viewed project
+    project = session.query(Node).filter(Node.id == project_id).first()
+    if project is None:
+        raise Http404()
+    if not user.owns(project):
+        raise HttpResponseForbidden()
+
+    # new corpus
+    if request.method == 'POST':
+        corpus = project.add_corpus(
+            name = request.POST['name'],
+            resource_type = request.POST['type'],
+            resource_upload = request.FILES['file'],
+        )
+
+    # corpora within this project
+    corpora = project.children('CORPUS').all()
+    corpora_by_source = defaultdict(list)
+    for corpus in corpora:
+        resource_type = RESOURCETYPES[corpus['resource_type']]
+        corpora_by_source[resource_type['name']].append(corpus)
+    # source & their respective counts
+    total_count = 0
+    sources_counts = defaultdict(int)
+    for document in corpora:
+        source = RESOURCETYPES[document['resource_type']]
+        sourcename = re.sub(' \(.*$', '', source['name'])
+        count = document.children('DOCUMENT').count()
+        sources_counts[sourcename] += count
+        count += total_count
+    donut = [
+        {   'source': sourcename,
+            'count': count,
+            'part' : round(count * 100.0 / total_count) if total_count else 0,
+        }
+        for sourcename, count in sources_counts.items()
+    ]
+    # response!
     return render(
         template_name = 'pages/projects/project.html',
         request = request,
@@ -86,11 +118,11 @@ def project(request, project_id):
             'date': datetime.now(),
             'project': project,
             'donut': donut,
-            # 'list_corpora'  : dict(corpora_by_resourcetype),
+            'list_corpora': dict(corpora_by_source),
             'whitelists': [],
             'blacklists': [],
             'cooclists': [],
-            # 'number'        : corpora_count,
-            # 'query_size'    : QUERY_SIZE_N_DEFAULT,
+            'number': len(corpora),
+            'query_size': QUERY_SIZE_N_DEFAULT,
         },
     )

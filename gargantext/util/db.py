@@ -27,3 +27,8 @@ from sqlalchemy.types import *
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
+
+
+# other useful database stuff
+
+from sqlalchemy import func

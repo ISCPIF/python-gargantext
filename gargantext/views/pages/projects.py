@@ -1,3 +1,4 @@
+from gargantext.util import workflow
 from gargantext.util.http import *
 from gargantext.util.db import *
 from gargantext.util.db_cache import cache
@@ -85,6 +86,7 @@ def project(request, project_id):
             resource_type = request.POST['type'],
             resource_upload = request.FILES['file'],
         )
+        workflow.parse(corpus.id)
 
     # corpora within this project
     corpora = project.children('CORPUS').all()

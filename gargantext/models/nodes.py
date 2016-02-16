@@ -1,6 +1,5 @@
 from gargantext.util.db import *
 from gargantext.util.files import upload
-from gargantext.util import workflow
 from gargantext.constants import *
 
 from datetime import datetime
@@ -71,5 +70,4 @@ class Node(Base):
         })
         session.add(corpus)
         session.commit()
-        workflow.parse(corpus)
         return corpus

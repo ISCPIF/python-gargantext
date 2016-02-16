@@ -34,7 +34,12 @@ ALLOWED_HOSTS = []
 import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-CELERY_IMPORTS = ('gargantext.util.workflow', )
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+CELERY_IMPORTS = (
+    'gargantext.util.workflow',
+    # 'gargantext.models',
+    # 'gargantext.util.db',
+)
 
 
 # Application definition

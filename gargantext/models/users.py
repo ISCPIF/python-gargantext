@@ -22,7 +22,7 @@ class User(Base):
     is_active = Column(Boolean())
     date_joined = DateTime(timezone=False)
 
-    def get_contacts(self):
+    def contacts(self):
         """get all contacts in relation with the user"""
         Friend = aliased(User)
         query = (session
@@ -32,7 +32,7 @@ class User(Base):
         )
         return query.all()
 
-    def get_nodes(self, type=None):
+    def nodes(self, typename=None):
         """get all nodes belonging to the user"""
         # ↓ this below is a workaround because of Python's lame import system
         from .nodes import Node
@@ -41,13 +41,23 @@ class User(Base):
             .filter(Node.user_id == self.id)
             .order_by(Node.date)
         )
-        if type is not None:
-            query = query.filter(Node.type == type)
+        if typename is not None:
+            query = query.filter(Node.typename == typename)
         return query.all()
 
-    def owns(user, node):
+    def contacts_nodes(self, typename=None):
+        for contact in self.contacts():
+            contact_nodes = (session
+                .query(Node)
+                .filter(Node.user_id == contact.id)
+                .filter(Node.typename == typename)
+                .order_by(Node.date)
+            ).all()
+            yield contact, contact_nodes
+
+    def owns(self, node):
         """check if a given node is owned by the user"""
-        return True
+        return (node.user_id == self.id) or node.id in (contact.id for contact in self.contacts())
 
 
 class Contact(Base):

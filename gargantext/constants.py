@@ -10,9 +10,12 @@ NODETYPES = [
 ]
 
 LANGUAGES = {
-    # 'fr': {
-    #     'tagger': FrenchNgramsTagger
-    # }
+    'fr': {
+        # 'tagger': FrenchNgramsTagger
+    },
+    'en': {
+        # 'tagger': EnglishNgramsTagger
+    },
 }
 
 
@@ -66,5 +69,5 @@ QUERY_SIZE_N_DEFAULT = 1000
 import os
 from .settings import BASE_DIR
 UPLOAD_DIRECTORY = os.path.join(BASE_DIR, 'uploads')
-UPLOAD_LIMIT = 16 * 1024 * 1024
+UPLOAD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY

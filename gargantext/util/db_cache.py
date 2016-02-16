@@ -18,9 +18,6 @@ class ModelCache(dict):
         if preload:
             self.preload()
 
-    def __del__(self):
-        session.close()
-
     def __missing__(self, key):
         formatted_key = None
         conditions = []

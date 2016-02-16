@@ -4,7 +4,7 @@ from gargantext.util import http
 
 
 def save(contents, name='', basedir=''):
-    digest = str_digest(contents)
+    digest = str_digest(contents[:4096] + contents[-4096:])
     path = basedir
     for i in range(2, 8, 2):
         path += '/' + digest[:i]
@@ -17,7 +17,7 @@ def save(contents, name='', basedir=''):
 
 
 def download(url, name=''):
-    save(
+    return save(
         contents = http.get(url),
         name = name,
         basedir = DOWNLOAD_DIRECTORY,
@@ -30,7 +30,7 @@ def upload(uploaded):
             uploaded.size,
             UPLOAD_LIMIT,
         ))
-    save(
+    return save(
         contents = uploaded.file.read(),
         name = uploaded.name,
         basedir = UPLOAD_DIRECTORY,

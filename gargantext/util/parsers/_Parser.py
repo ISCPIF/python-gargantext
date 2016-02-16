@@ -1,8 +1,9 @@
-import collections
 import datetime
 import dateutil.parser
 import zipfile
 import re
+
+from gargantext.util.languages import languages
 
 
 DEFAULT_DATE = datetime.datetime(datetime.MINYEAR, 1, 1)
@@ -11,8 +12,15 @@ DEFAULT_DATE = datetime.datetime(datetime.MINYEAR, 1, 1)
 class Parser:
     """Base class for performing files parsing depending on their type.
     """
-    def __init__(self, language_cache=None):
-        self._languages_cache = LanguagesCache() if language_cache is None else language_cache
+
+    def __init__(self, file):
+        if isinstance(file, str):
+            self._file = open(file, 'rb')
+        else:
+            self._file = file
+
+    def __del__(self):
+        self._file.close()
 
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
@@ -20,7 +28,6 @@ class Parser:
         import chardet
         encoding = chardet.detect(string)
         return encoding.get('encoding', 'UTF-8')
-
 
     def format_hyperdata_dates(self, hyperdata):
         """Format the dates found in the hyperdata.
@@ -37,7 +44,6 @@ class Parser:
         date_string = hyperdata.get('publication_date_to_parse', None)
         if date_string is not None:
             date_string = re.sub(r'\/\/+(\w*|\d*)', '', date_string)
-            #date_string = re.sub(r'undefined', '', date_string)
             try:
                 hyperdata['publication' + "_date"] = dateutil.parser.parse(
                     date_string,
@@ -94,17 +100,25 @@ class Parser:
     def format_hyperdata_languages(self, hyperdata):
         """format the languages found in the hyperdata."""
         language = None
-        for key in ["fullname", "iso3", "iso2"]:
-            language_key = "language_" + key
+        language_keyerrors = {}
+        for key in ('name', 'iso3', 'iso2', ):
+            language_key = 'language_' + key
             if language_key in hyperdata:
-                language_symbol = hyperdata[language_key]
-                language = self._languages_cache[language_symbol]
-                if language:
-                    break
-        if language:
-            hyperdata["language_iso2"]       = language.iso2
-            hyperdata["language_iso3"]       = language.iso3
-            hyperdata["language_fullname"]   = language.fullname
+                try:
+                    language_symbol = hyperdata[language_key]
+                    language = languages[language_symbol]
+                    if language:
+                        break
+                except KeyError:
+                    language_keyerrors[key] = language_symbol
+        if language is not None:
+            hyperdata['language_iso2'] = language.iso2
+            hyperdata['language_iso3'] = language.iso3
+            hyperdata['language_name'] = language.name
+        elif language_keyerrors:
+            print('Unrecognized language: %s' % ', '.join(
+                '%s="%s"' % (key, value) for key, value in language_keyerrors.items()
+            ))
         return hyperdata
 
     def format_hyperdata(self, hyperdata):
@@ -113,34 +127,22 @@ class Parser:
         hyperdata = self.format_hyperdata_languages(hyperdata)
         return hyperdata
 
-
-    def _parse(self, file):
-        """This method shall be overriden by inherited classes."""
-        return list()
-
-    def parse(self, file):
+    def __iter__(self, file=None):
         """Parse the file, and its children files found in the file.
         """
-        # initialize the list of hyperdata
-        hyperdata_list = []
+        if file is None:
+            file = self._file
+        # if the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
-            # if the file is a ZIP archive, recurse on each of its files...
             zipArchive = zipfile.ZipFile(file)
             for filename in zipArchive.namelist():
-                try:
-                    f = zipArchive.open(filename, 'r')
-                    hyperdata_list += self.parse(f)
-                    f.close()
-                except Exception as error:
-                    print(error)
+                f = zipArchive.open(filename, 'r')
+                yield from self.__iter__(f)
+                f.close()
         # ...otherwise, let's parse it directly!
         else:
             try:
-                for hyperdata in self._parse(file):
-                    hyperdata_list.append(self.format_hyperdata(hyperdata))
-                if hasattr(file, 'close'):
-                    file.close()
-            except Exception as error:
-                print(error)
-        # return the list of formatted hyperdata
-        return hyperdata_list
+                file.seek(0)
+            except:pass
+            for hyperdata in self.parse(file):
+                yield self.format_hyperdata(hyperdata)

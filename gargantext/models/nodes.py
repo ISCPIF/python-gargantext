@@ -33,6 +33,10 @@ class Node(Base):
     # metadata
     hyperdata = Column(JSONB, default={})
 
+    def __init__(self, **kwargs):
+        Base.__init__(self, **kwargs)
+        self.hyperdata = {}
+
     def __getitem__(self, key):
         return self.hyperdata[key]
 
@@ -48,26 +52,37 @@ class Node(Base):
             query = query.filter(Node.typename == typename)
         return query
 
-    def add_child(self, typename, **kwargs):
+    def add_child(self, **kwargs):
         """Create and return a new direct child of the current node.
         """
         return Node(
             user_id = self.user_id,
-            typename = typename,
             parent_id = self.id,
             **kwargs
         )
 
-    def add_corpus(self, name, resource_type, resource_upload=None, resource_url=None):
-        if resource_upload is not None:
-            resource_path = upload(resource_upload)
+    def resources(self):
+        if 'resources' not in self.hyperdata:
+            self.hyperdata['resources'] = []
+        return self['resources']
+
+    def add_resource(self, type, path=None, url=None):
+        self.resources().append({'type': type, 'path':path, 'url':url})
+
+    def status(self, action=None, progress=None, autocommit=False):
+        if 'status' not in self.hyperdata:
+            self['status'] = {'action': action, 'progress': progress}
         else:
-            resource_path = None
-        corpus = self.add_child('CORPUS', name=name, hyperdata={
-            'resource_type': int(resource_type),
-            'resource_path': resource_path,
-            'resource_url': resource_url,
-        })
-        session.add(corpus)
-        session.commit()
-        return corpus
+            if action is not None:
+                self['status']['action'] = action
+            if progress is not None:
+                self['status']['progress'] = progress
+        if autocommit:
+            hyperdata = self.hyperdata.copy()
+            self.hyperdata = None
+            session.add(self)
+            session.commit()
+            self.hyperdata = hyperdata
+            session.add(self)
+            session.commit()
+        return self['status']

@@ -6,12 +6,31 @@ from io import BytesIO
 
 class PubmedParser(Parser):
 
-    def _parse(self, file):
+    hyperdata_path = {
+        "journal"           : 'MedlineCitation/Article/Journal/Title',
+        "title"             : 'MedlineCitation/Article/ArticleTitle',
+        "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
+        "title2"            : 'MedlineCitation/Article/VernacularTitle',
+        "language_iso3"     : 'MedlineCitation/Article/Language',
+        "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
+        "realdate_full_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/MedlineDate',
+        "realdate_year_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Year',
+        "realdate_month_"    : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Month',
+        "realdate_day_"      : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Day',
+        "publication_year"  : 'MedlineCitation/DateCreated/Year',
+        "publication_month" : 'MedlineCitation/DateCreated/Month',
+        "publication_day"   : 'MedlineCitation/DateCreated/Day',
+        "authors"           : 'MedlineCitation/Article/AuthorList',
+    }
+
+    # xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
+    xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
+
+    def parse(self, file):
         # open the file as XML
-        xml_parser = etree.XMLParser(resolve_entities=False, recover=True)
-        if type(file) == bytes:
+        if isinstance(file, bytes):
             file = BytesIO(file)
-        xml = etree.parse(file, parser=xml_parser)
+        xml = etree.parse(file, parser=self.xml_parser)
         xml_articles = xml.findall('PubmedArticle')
         # initialize the list of hyperdata
         hyperdata_list = []
@@ -19,23 +38,7 @@ class PubmedParser(Parser):
         for xml_article in xml_articles:
             # extract data from the document
             hyperdata = {}
-            hyperdata_path = {
-                "journal"           : 'MedlineCitation/Article/Journal/Title',
-                "title"             : 'MedlineCitation/Article/ArticleTitle',
-                "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
-                "title2"            : 'MedlineCitation/Article/VernacularTitle',
-                "language_iso3"     : 'MedlineCitation/Article/Language',
-                "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
-                "realdate_full_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/MedlineDate',
-                "realdate_year_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Year',
-                "realdate_month_"    : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Month',
-                "realdate_day_"      : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Day',
-                "publication_year"  : 'MedlineCitation/DateCreated/Year',
-                "publication_month" : 'MedlineCitation/DateCreated/Month',
-                "publication_day"   : 'MedlineCitation/DateCreated/Day',
-                "authors"           : 'MedlineCitation/Article/AuthorList',
-            }
-            for key, path in hyperdata_path.items():
+            for key, path in self.hyperdata_path.items():
                 try:
                     xml_node = xml_article.find(path)
                     # Authors tag

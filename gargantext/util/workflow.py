@@ -1,15 +1,16 @@
-from celery import shared_task
+from gargantext.util.db import *
+from gargantext.models import *
+from gargantext.util.schedule import scheduled
+
 from time import sleep
 
 
-@shared_task
-def _parse(corpus_id):
-    print('ABOUT TO PARSE CORPUS #%d' % corpus_id)
+@scheduled
+def parse(corpus_id):
+    print('CORPUS #%d...' % (corpus_id, ))
+    corpus = session.query(Node).filter(Node.id == corpus_id).first()
     sleep(2)
-    print('PARSED CORPUS #%d' % corpus_id)
-
-
-def parse(corpus):
-    print('ABOUT TO PLAN PARSING')
-    _parse.apply_async((corpus.id,),)
-    print('PLANNED PARSING')
+    if corpus is None:
+        print('NO SUCH CORPUS: #%d' % corpus_id)
+        return
+    print('CORPUS #%d: %s' % (corpus_id, corpus, ))

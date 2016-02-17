@@ -14,6 +14,7 @@ html5lib==0.9999999
 jdatetime==1.7.2
 kombu==3.0.33
 lxml==3.5.0
+nltk==3.1
 psycopg2==2.6.1
 pycountry==1.20
 python-dateutil==2.4.2

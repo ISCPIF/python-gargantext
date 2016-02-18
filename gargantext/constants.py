@@ -9,12 +9,18 @@ NODETYPES = [
     'DOCUMENT',
 ]
 
+
+from gargantext.util.taggers import *
+
 LANGUAGES = {
-    'fr': {
-        # 'tagger': FrenchNgramsTagger
-    },
     'en': {
-        # 'tagger': EnglishNgramsTagger
+        'tagger': TurboTagger,
+        # 'tagger': EnglishMeltTagger,
+        # 'tagger': NltkTagger,
+    },
+    'fr': {
+        'tagger': FrenchMeltTagger,
+        # 'tagger': TreeTagger,
     },
 }
 

@@ -51,11 +51,11 @@ def get_cursor():
 
 class bulk_insert:
 
-    def __init__(self, table, keys, data, cursor=None):
+    def __init__(self, table, fields, data, cursor=None):
         # prepare the iterator
         self.iter = iter(data)
         # template
-        self.template = '%s' + (len(keys) - 1) * '\t%s' + '\n'
+        self.template = '%s' + (len(fields) - 1) * '\t%s' + '\n'
         # prepare the cursor
         if cursor is None:
             db, cursor = get_cursor()
@@ -65,7 +65,7 @@ class bulk_insert:
         # insert data
         if not isinstance(table, str):
             table = table.__tablename__
-        cursor.copy_from(self, table, columns=keys)
+        cursor.copy_from(self, table, columns=fields)
         # commit if necessary
         if mustcommit:
             db.commit()
@@ -81,15 +81,19 @@ class bulk_insert:
     readline = read
 
 
-def bulk_insert_ifnotexists(model, uniquekey, fields, values):
-    db, cursor = get_cursor()
-    # create temporary table with given values
+def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
+    if cursor is None:
+        db, cursor = get_cursor()
+        mustcommit = True
+    else:
+        mustcommit = False
+    # create temporary table with given data
     sql_columns = 'id INTEGER'
     for field in fields:
         column = getattr(model, field)
         sql_columns += ', %s %s' % (field, column.type, )
     cursor.execute('CREATE TEMPORARY TABLE __tmp__ (%s)' % (sql_columns, ))
-    bulk_insert('__tmp__', fields, values, cursor=cursor)
+    bulk_insert('__tmp__', fields, data, cursor=cursor)
     # update ids of the temporary table
     cursor.execute('''
         UPDATE __tmp__
@@ -124,5 +128,6 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, values):
         row[1]: row[0] for row in cursor.fetchall()
     }
     # this is the end!
-    db.commit()
+    if mustcommit:
+        db.commit()
     return result

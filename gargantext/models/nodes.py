@@ -30,18 +30,35 @@ class Node(Base):
     # main data
     name = Column(String(255))
     date  = Column(DateTime(), default=datetime.now)
-    # metadata
-    hyperdata = Column(JSONB, default={})
+    # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
+    hyperdata = Column(JSONB, default=dict)
 
     def __init__(self, **kwargs):
+        if 'hyperdata' not in kwargs:
+            kwargs['hyperdata'] = kwargs.get('hyperdata', {})
         Base.__init__(self, **kwargs)
-        self.hyperdata = {}
 
     def __getitem__(self, key):
         return self.hyperdata[key]
 
     def __setitem__(self, key, value):
         self.hyperdata[key] = value
+
+    def save_hyperdata(self):
+        """This is a necessary, yet ugly trick.
+        Indeed, PostgreSQL does not yet manage incremental updates (see
+        https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
+        """
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(self, 'hyperdata')
+        # # previous trick (even super-uglier)
+        # hyperdata = self.hyperdata
+        # self.hyperdata = None
+        # session.add(self)
+        # session.commit()
+        # self.hyperdata = hyperdata
+        # session.add(self)
+        # session.commit()
 
     def children(self, typename=None):
         """Return a query to all the direct children of the current node.
@@ -63,26 +80,22 @@ class Node(Base):
 
     def resources(self):
         if 'resources' not in self.hyperdata:
-            self.hyperdata['resources'] = []
+            self['resources'] = MutableList()
         return self['resources']
 
     def add_resource(self, type, path=None, url=None):
-        self.resources().append({'type': type, 'path':path, 'url':url})
+        self.resources().append(MutableDict(
+            {'type': type, 'path':path, 'url':url, 'extracted': False}
+        ))
 
-    def status(self, action=None, progress=None, autocommit=False):
+    def status(self, action=None, progress=None):
         if 'status' not in self.hyperdata:
-            self['status'] = {'action': action, 'progress': progress}
+            self['status'] = MutableDict(
+                {'action': action, 'progress': progress}
+            )
         else:
             if action is not None:
                 self['status']['action'] = action
             if progress is not None:
                 self['status']['progress'] = progress
-        if autocommit:
-            hyperdata = self.hyperdata.copy()
-            self.hyperdata = None
-            session.add(self)
-            session.commit()
-            self.hyperdata = hyperdata
-            session.add(self)
-            session.commit()
         return self['status']

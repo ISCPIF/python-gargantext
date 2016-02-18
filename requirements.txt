@@ -1,7 +1,7 @@
 Django==1.9.2
 PyYAML==3.11
 RandomWords==0.1.12
-SQLAlchemy==1.0.11
+SQLAlchemy==1.1.0b1dev
 amqp==1.4.9
 anyjson==0.3.3
 billiard==3.3.0.22
@@ -15,6 +15,7 @@ jdatetime==1.7.2
 kombu==3.0.33
 lxml==3.5.0
 nltk==3.1
+numpy==1.10.4
 psycopg2==2.6.1
 pycountry==1.20
 python-dateutil==2.4.2

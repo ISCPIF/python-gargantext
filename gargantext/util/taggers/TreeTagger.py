@@ -42,10 +42,11 @@ def _readOutput(output, buffer):
             time.sleep(0.1)
 
 
-"""Use TreeTagger for the tagging.
-Shall be used for french texts.
-"""
 class TreeTagger(Tagger):
+
+    """Use TreeTagger for the tagging.
+    Shall be used for french texts.
+    """
 
     def start(self, treeTaggerPath='./lib/treetagger'):
         print(treeTaggerPath)

@@ -31,6 +31,8 @@ class NgramsExtractor:
 class NgramsExtractors(dict):
 
     def __missing__(self, key):
+        if not isinstance(key, str):
+            raise KeyError
         if len(key) == 2 and key == key.lower():
             tagger = LANGUAGES[key]['tagger']
             self[key] = NgramsExtractor(tagger)

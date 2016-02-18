@@ -54,8 +54,6 @@ class bulk_insert:
     def __init__(self, table, fields, data, cursor=None):
         # prepare the iterator
         self.iter = iter(data)
-        # template
-        self.template = '%s' + (len(fields) - 1) * '\t%s' + '\n'
         # prepare the cursor
         if cursor is None:
             db, cursor = get_cursor()
@@ -71,10 +69,13 @@ class bulk_insert:
             db.commit()
 
     def read(self, size=None):
+        # see http://www.postgresql.org/docs/9.4/static/sql-copy.html#AEN72054
         try:
-            return self.template % tuple(
-                str(x).replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').replace("\\","") for x in next(self.iter)
-            )
+            return '\t'.join(
+                value.replace('\\', '\\\\').replace('\n', '\\\n').replace('\r', '\\\r').replace('\t', '\\\t')
+                if isinstance(value, str) else str(value)
+                for value in next(self.iter)
+            ) + '\n'
         except StopIteration:
             return ''
 
@@ -128,6 +129,7 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
         row[1]: row[0] for row in cursor.fetchall()
     }
     # this is the end!
+    cursor.execute('DROP TABLE __tmp__')
     if mustcommit:
         db.commit()
     return result

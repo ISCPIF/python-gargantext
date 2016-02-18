@@ -15,5 +15,8 @@ def parse_extract(corpus):
             print('NO SUCH CORPUS: #%d' % corpus_id)
             return
     # apply actions
+    print('CORPUS #%d' % (corpus.id))
     parse(corpus)
+    print('CORPUS #%d: parsed' % (corpus.id))
     extract_ngrams(corpus)
+    print('CORPUS #%d: extracted ngrams' % (corpus.id))

@@ -6,6 +6,7 @@ sudo pip3 install virtualenv
 sudo apt-get install rabbitmq-server
 virtualenv-3.4 VENV
 source VENV/bin/activate
+pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1
 pip install -U -r requirements.txt
 ```
 

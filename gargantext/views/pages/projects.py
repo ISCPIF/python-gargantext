@@ -1,10 +1,12 @@
-from gargantext.util import workflow
 from gargantext.util.http import *
 from gargantext.util.db import *
 from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
+
+from gargantext.util.scheduling import scheduled
+from gargantext.util.toolchain import parse_extract
 
 from datetime import datetime
 from collections import defaultdict
@@ -92,7 +94,8 @@ def project(request, project_id):
         )
         session.add(corpus)
         session.commit()
-        workflow.parse(corpus.id)
+        parse_extract
+        scheduled(parse_extract)(corpus.id)
 
     # corpora within this project
     corpora = project.children('CORPUS').all()

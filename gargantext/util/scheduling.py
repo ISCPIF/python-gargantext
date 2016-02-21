@@ -36,11 +36,8 @@ from celery import shared_task
 def scheduled_celery(func):
     """Provides a decorator to schedule a task with Celery.
     """
-    @shared_task
-    def _func(*args, **kwargs):
-        func(*args, **kwargs)
     def go(*args, **kwargs):
-        _func.apply_async(args=args, kwargs=kwargs)
+        shared_task(func).apply_async(args=args, kwargs=kwargs)
     return go
 
 

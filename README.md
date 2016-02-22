@@ -20,7 +20,7 @@ pip install -U -r requirements.txt
 ./manage.py migrate --fake-initial
 ```
 
-...or...
+...or if it fails, try the commandes below:
 
 ```bash
 ./manage.py makemigrations

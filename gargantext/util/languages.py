@@ -47,3 +47,5 @@ for pycountry_language in pycountry.languages:
 # because PubMed has weird language codes:
 languages['fre'] = languages['fr']
 languages['ger'] = languages['de']
+languages['Français'] = languages['fr']
+languages['en_US'] = languages['en']

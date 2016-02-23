@@ -4,5 +4,6 @@ from . import nodes
 
 
 urlpatterns = [
-    url(r'^nodes$', nodes.NodesList.as_view()),
+    url(r'^nodes$', nodes.NodeListResource.as_view()),
+    url(r'^nodes/(\d+)$', nodes.NodeResource.as_view()),
 ]

@@ -1,8 +1,8 @@
 from django.conf.urls import url
 
-# from . import main
+from . import nodes
 
 
 urlpatterns = [
-    # url(r'^$', main.home),
+    url(r'^nodes$', nodes.NodesList.as_view()),
 ]

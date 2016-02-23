@@ -1,0 +1,143 @@
+{% extends "pages/menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<!-- here goes import stylesheet js/bootstrap/bootstrap-multiselect.css, mais ca marche pas-->
+
+<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
+
+<link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
+
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.easy-pie-chart.css"%}">
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
+
+<script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
+
+<style>
+.no-transition {
+  -webkit-transition: height 0.1s;
+  -moz-transition: height 0.1s;
+  -ms-transition: height 0.1s;
+  -o-transition: height 0.1s;
+  transition: height 0.1s;
+}
+th { color: #fff; }
+
+th a {
+  color: #fff;
+  font-weight: normal;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.dynatable-record-count {
+  font-size: 0.7em;
+}
+.dynatable-pagination-links {
+  font-size: 0.7em;
+}
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container">
+    <div class="container">
+        <div class="jumbotron">
+            <div class="row">
+                <div id="monthly-move-chart">
+                    <center>
+                        Select a time range in the chart with blue bars to zoom in
+                    <p align="center">
+                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+
+                    <div class="clearfix"></div>
+                    </center>
+                </div>
+            </div>
+        <div class="row">
+            <div id="monthly-volume-chart"></div>
+        </div>
+
+        <div id="content_loader">
+          <br>
+          <center>
+            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+          </center>
+          <br>
+        </div>
+
+    </div>
+</div>
+
+
+<input type="hidden" id="list_id" value="{{ list_id }}"></input>
+
+<div class="container">
+
+
+    <div class="jumbotron">
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-body">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
+                  <div class="panel-body">
+                    <div id="div-table"></div>
+                            <p align="right">
+                                <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
+                            </p>
+
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="filter_search" style="visibility:hidden">
+    <span style="font-size:70%;">
+      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
+      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
+    </span>&nbsp;&nbsp;
+
+    <select id="example-single-optgroups" onchange="SearchFilters(this);">
+        <!-- <optgroup label=""> -->
+            <option id="filter_all" value="filter_all">All</option>
+            <!-- <option id="filter_title" value="filter_title">Title</option> -->
+            <!-- <option id="filter_date" value="filter_date">Date</option> -->
+        <!-- </optgroup> -->
+        <!-- <optgroup label="Duplicates"> -->
+            <!-- <option value="filter_doi">By DOI</option> -->
+            <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
+        <!-- </optgroup> -->
+    </select>
+
+</div>
+
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
+<!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
+<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+
+<!-- custom-lib for dynatable.js and dc.js -->
+<script type="text/javascript" src="{% static "js/gargantext/Docs_dyna_chart_and_table.js" %}"></script>
+
+
+
+{% endblock %}

@@ -37,8 +37,11 @@ class NodesList(APIView):
         # filter by parent
         if 'parent_id' in parameters:
             query = query.filter(Node.parent_id == parameters['parent_id'])
-        # paginate the query
+        # count
         count = query.count()
+        # order
+        query = query.order_by(Node.hyperdata['publication_date'], Node.id)
+        # paginate the query
         if parameters['pagination_limit'] == -1:
             query = query[parameters['pagination_offset']:]
         else:

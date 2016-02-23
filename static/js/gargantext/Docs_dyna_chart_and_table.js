@@ -1,4 +1,13 @@
 
+function get_node_date(node) {
+    var hyperdata = node.hyperdata;
+    return new Date(
+        Number(hyperdata.publication_year),
+        Number(hyperdata.publication_month) - 1,
+        Number(hyperdata.publication_day)
+    );
+};
+
 function pr(msg) {
     console.log(msg)
 }
@@ -89,19 +98,21 @@ function Final_UpdateTable( action ) {
 
     var TimeRange = AjaxRecords;
 
-    var dataini = TheBuffer[0].toISOString().split("T")[0]
-    var datafin = TheBuffer[1].toISOString().split("T")[0]
+    var dataini = TheBuffer[0];
+    var datafin = TheBuffer[1];
     pr("show me the pubs of the selected period")
     console.log( TheBuffer )
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
     TimeRange = []
-    for (var i in AjaxRecords) {
-        if(AjaxRecords[i].date>=dataini && AjaxRecords[i].date<=datafin){
+    console.log(dataini, datafin)
+    $.each(AjaxRecords, function(i, node) {
+        if (node.date >= dataini && node.date >= dataini) {
             // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id )
-            TimeRange.push(AjaxRecords[i])
+            TimeRange.push(node);
         }
-    }
+    });
+    console.log(TimeRange)
 
     MyTable = $('#my-ajax-table').dynatable({
         dataset: {
@@ -292,16 +303,10 @@ function Main_test( Data , SearchFilter ) {
     // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["name"])
   }
 
-  var get_date = function(node) {
-      var hyperdata = node.hyperdata;
-      return new Date(
-          Number(hyperdata.publication_year),
-          Number(hyperdata.publication_month) - 1,
-          Number(hyperdata.publication_day)
-      );
-  };
-  var t0 = get_date(AjaxRecords[0]);
-  var t1 = get_date(AjaxRecords.slice(-1)[0]);
+  var t0 = get_node_date(AjaxRecords[0]);
+  var t1 = get_node_date(AjaxRecords.slice(-1)[0]);
+  oldest = t0;
+  latest = t1;
   console.log(t0, t1)
 
   TheBuffer = [t0, t1];
@@ -310,15 +315,13 @@ function Main_test( Data , SearchFilter ) {
 
   var arrayd3 = []
   $.each(Data, function(i, node) {
-      var date = node.hyperdata.publication_date;
-      if (justdates[date] != false) {
-          var info = {};
-          info.date = date;
-          info.dd = get_date(node);
-          info.month = d3.time.month(info.dd);
-          info.volume = justdates[date];
-          arrayd3.push(info);
-          justdates[date] = false;
+      if (node.date) {
+          arrayd3.push({
+              date: get_node_date(node),
+              dd: node.date,
+              month: d3.time.month(node.date),
+              volume: justdates[date],
+          });
       }
   });
 
@@ -529,7 +532,7 @@ $("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
-  url: '/api/nodes?type[]=DOCUMENT&parent_id=' + corpus_id,
+  url: '/api/nodes?type[]=DOCUMENT&pagination_limit=-1&parent_id=' + corpus_id,
   success: function(data){
     $("#content_loader").remove();
     $.each(data.records, function(i, record){
@@ -538,6 +541,7 @@ $.ajax({
       RecDict[orig_id] = arr_id;
       record.title = record.name;
       record.name = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
+      record.date = get_node_date(record);
       record.del = false;
     });
     for (var i in data.records) {

@@ -128,15 +128,14 @@ function Final_UpdateTable( action ) {
 var current_docs = {}
 var BIS_dict = {}
 
-var url_elems = window.location.href.split("/")
-var url_mainIDs = {}
-for(var i=0; i<url_elems.length; i++) {
-  // if the this element is a number:
-  if(url_elems[i]!="" && !isNaN(Number(url_elems[i]))) {
-    url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
-  }
-}
 
+var id_from_url = function(name) {
+    var regex = new RegExp(name + '/(\\d+)');
+    var result = regex.exec(location.href);
+    return result ? result[1] : null;
+};
+var project_id = id_from_url('projects');
+var corpus_id = id_from_url('corpora');
 
 
 
@@ -293,28 +292,35 @@ function Main_test( Data , SearchFilter ) {
     // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["name"])
   }
 
-  var t0 = AjaxRecords[0].date.split("-").map(Number)
-  var t1 = AjaxRecords.slice(-1)[0].date.split("-").map(Number)
-  oldest = t0;
-  latest = t1;
+  var get_date = function(node) {
+      var hyperdata = node.hyperdata;
+      return new Date(
+          Number(hyperdata.publication_year),
+          Number(hyperdata.publication_month) - 1,
+          Number(hyperdata.publication_day)
+      );
+  };
+  var t0 = get_date(AjaxRecords[0]);
+  var t1 = get_date(AjaxRecords.slice(-1)[0]);
+  console.log(t0, t1)
 
-  TheBuffer = [new Date(t0[0],t0[1]-1,t0[2]), new Date(t1[0],t1[1]-1,t1[2] ) ];
+  TheBuffer = [t0, t1];
   TheBuffer[0] = new Date(TheBuffer[0].setDate(TheBuffer[0].getDate()-1) );
   TheBuffer[1] = new Date(TheBuffer[1].setDate(TheBuffer[1].getDate()+1) );
 
   var arrayd3 = []
-  for(var e in Data) {
-      var date = Data[e]["date"];
-      if(justdates[date]!=false) {
-          var info = {}
-          info.date = date
-          info.dd = dateFormat.parse(date)
-          info.month = d3.time.month(info.dd)
-          info.volume = justdates[date]
-          arrayd3.push(info)
+  $.each(Data, function(i, node) {
+      var date = node.hyperdata.publication_date;
+      if (justdates[date] != false) {
+          var info = {};
+          info.date = date;
+          info.dd = get_date(node);
+          info.month = d3.time.month(info.dd);
+          info.volume = justdates[date];
+          arrayd3.push(info);
           justdates[date] = false;
       }
-  }
+  });
 
   for(var i in justdates)
       delete justdates[i];
@@ -370,7 +376,7 @@ function Main_test( Data , SearchFilter ) {
           .valueAccessor(function (d) {
               return d.value.avg;
           })
-          .x(d3.time.scale().domain([new Date(t0[0],t0[1],t0[2]), new Date(t1[0],t1[1],t1[2])]))
+          .x(d3.time.scale().domain([t0, t1]))
           .round(d3.time.month.round)
           .xUnits(d3.time.months)
           .elasticY(true)
@@ -488,7 +494,7 @@ function SearchFilters( elem ) {
 
   if( MODE == "filter_dupl-titles") {
 
-    var getDupl_API = "/api/nodes/"+url_mainIDs["corpus"]+"/children/duplicates?keys=title&limit=9999"
+    var getDupl_API = "/api/nodes/" + corpus_id + "/children/duplicates?keys=title&limit=9999"
     $.ajax({
       url: getDupl_API,
       success: function(data) {
@@ -523,16 +529,18 @@ $("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
-  url: '/tests/paginator/corpus/'+url_mainIDs["corpus"],
+  url: '/api/nodes?type[]=DOCUMENT&parent_id=' + corpus_id,
   success: function(data){
-    $("#content_loader").remove()
-    for(var i in data.records) {
-      var orig_id = parseInt(data.records[i].id)
+    $("#content_loader").remove();
+    $.each(data.records, function(i, record){
+      var orig_id = parseInt(record.id);
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
-      data.records[i]["title"] = data.records[i]["name"];
-      data.records[i]["name"] = '<a target="_blank" href="/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+orig_id+'">'+data.records[i]["name"]+'</a>'
-      data.records[i]["del"] = false
+      record.title = record.name;
+      record.name = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
+      record.del = false;
+    });
+    for (var i in data.records) {
     }
     AjaxRecords = data.records; // backup-ing in global variable!
 

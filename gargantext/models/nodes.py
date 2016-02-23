@@ -25,8 +25,9 @@ class Node(Base):
     __tablename__ = 'nodes'
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
-    user_id = Column(Integer, ForeignKey(User.id))
-    parent_id = Column(Integer, ForeignKey('nodes.id'))
+    # foreign keys
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    parent_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     # main data
     name = Column(String(255))
     date  = Column(DateTime(), default=datetime.now)

@@ -1,12 +1,13 @@
 from gargantext.util.http import *
 from gargantext.util.db import *
+from gargantext.util.db_cache import *
 from gargantext.models import *
 from gargantext.constants import *
 
 from gargantext.util.validation import validate
 
 
-class NodesList(APIView):
+class NodeListResource(APIView):
 
     _fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata']
     _types = NODETYPES
@@ -52,7 +53,6 @@ class NodesList(APIView):
         # return the result!
         return parameters, query, count
 
-
     def get(self, request):
         """Displays the list of nodes corresponding to the query.
         """
@@ -75,3 +75,32 @@ class NodesList(APIView):
             'parameters': parameters,
             'count': count,
         }, 200)
+
+class NodeResource(APIView):
+
+    def _query(self, request, node_id):
+        user = cache.User[request.user.username]
+        node = session.query(Node).filter(Node.id == node_id).first()
+        if node is None:
+            raise Http404()
+        if not user.owns(node):
+            raise HttpResponseForbidden()
+        return user, node
+
+    def get(self, request, node_id):
+        from sqlalchemy import delete
+        user, node = self._query(request, node_id)
+        return JsonHttpResponse({
+            'id': node.id,
+            'parent_id': node.parent_id,
+            'name': node.name,
+            'hyperdata': node.hyperdata,
+        })
+
+    def delete(self, request, node_id):
+        user, node = self._query(request, node_id)
+        result = session.execute(
+            delete(Node).where(Node.id == node_id)
+        )
+        session.commit()
+        return JsonHttpResponse({'deleted': result.rowcount})

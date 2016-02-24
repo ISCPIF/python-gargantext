@@ -4,6 +4,7 @@
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 
 <script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
@@ -75,7 +76,7 @@
             {{ key }}
             <ul>
                 {% for corpus in corpora %}
-                <li>
+                <li id="corpus_{{corpus.id}}">
                     {% ifequal corpus.processing 1 %}
                     {{corpus.name}}:
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
@@ -84,13 +85,16 @@
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">  {{corpus.name}} , {{ corpus.count }} documents</a>
                     {% endifequal %}
                     <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                    data-content='
+                    data-content="
                     <ul>
-                        <li> Rename </li>
-                        <li> Add new documents </li>
-                        <li><a href="/delete/{{corpus.id}}">Delete</a></li>
+                        <li>Rename</li>
+                        <li>Add new documents</li>
+                        <li onclick=&quot;
+                            garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                            $(this).parent().parent().parent().remove();
+                        &quot;><a href=&quot;#&quot;>Delete</a></li>
                     </ul>
-                    '>Manage</button>
+                    ">Manage</button>
                 </li>
                 {% endfor %}
             </ul>

@@ -63,6 +63,9 @@ class NodeListResource(APIView):
             'records': [dict(zip(parameters['fields'], node)) for node in query]
         })
 
+    def post(self, request):
+        pass
+
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
         WARNING! THIS IS TOTALLY UNTESTED!!!!!
@@ -76,6 +79,7 @@ class NodeListResource(APIView):
             'count': count,
         }, 200)
 
+
 class NodeResource(APIView):
 
     def _query(self, request, node_id):
@@ -88,7 +92,6 @@ class NodeResource(APIView):
         return user, node
 
     def get(self, request, node_id):
-        from sqlalchemy import delete
         user, node = self._query(request, node_id)
         return JsonHttpResponse({
             'id': node.id,
@@ -98,6 +101,7 @@ class NodeResource(APIView):
         })
 
     def delete(self, request, node_id):
+        from sqlalchemy import delete
         user, node = self._query(request, node_id)
         result = session.execute(
             delete(Node).where(Node.id == node_id)

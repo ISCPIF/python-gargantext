@@ -21,12 +21,13 @@ def parse(corpus):
             )
             session.add(document)
             if documents_count % 64 == 0:
-                corpus.status(action='parsing', progress=documents_count)
+                corpus.status('parsing', progress=documents_count)
                 corpus.save_hyperdata()
+                session.commit()
             documents_count += 1
         # update info about the resource
         resource['extracted'] = True
-        corpus.save_hyperdata()
     # commit all changes
-    corpus.status(action='parsing', progress=documents_count)
+    corpus.status('parsing', progress=documents_count, complete=True)
+    corpus.save_hyperdata()
     session.commit()

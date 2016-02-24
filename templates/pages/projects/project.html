@@ -82,7 +82,9 @@
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
                     Processing, drink a cup of tea, and refresh the page :)
                     {% else %}
-                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">  {{corpus.name}} , {{ corpus.count }} documents</a>
+                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                        {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
+                    </a>
                     {% endifequal %}
                     <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                     data-content="
@@ -108,7 +110,9 @@
         <h3>
             <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">{{corpus.name}}</a>
         </h3>
-        <h4>{{ corpus.count }} Documents </h4>
+        <h4>
+            {{ corpus.count }} documents
+        </h4>
         <h5>Activity:</h5>
         <div class="chart" data-percent="73">73%</div>
     </div>

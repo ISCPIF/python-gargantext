@@ -89,14 +89,30 @@ class Node(Base):
             {'type': type, 'path':path, 'url':url, 'extracted': False}
         ))
 
-    def status(self, action=None, progress=None):
-        if 'status' not in self.hyperdata:
-            self['status'] = MutableDict(
-                {'action': action, 'progress': progress}
-            )
-        else:
-            if action is not None:
-                self['status']['action'] = action
-            if progress is not None:
-                self['status']['progress'] = progress
-        return self['status']
+    def status(self, action=None, progress=None, complete=False):
+        """Get the status of the given action
+        """
+        # if the hyperdata do not have data about status
+        if 'statuses' not in self.hyperdata:
+            self['statuses'] = MutableList()
+        # if no action name is given, return the last appended status
+        if action is None:
+            for status in self['statuses']:
+                if not status['complete']:
+                    return status
+            if len(self['statuses']):
+                return self['statuses'][-1]
+            return None
+        # retrieve the status concerning by the given action name
+        for status in self['statuses']:
+            if status['action'] == action:
+                if progress is not None:
+                    status['progress'] = progress
+                if complete:
+                    status['complete'] = complete
+                return status
+        # if no status has been found for the action, append a new one
+        self['statuses'].append(MutableDict(
+            {'action': action, 'progress': progress, 'complete': complete}
+        ))
+        return self['statuses'][-1]

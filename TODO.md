@@ -1,3 +1,12 @@
+# API
+
+Be more careful about authorizations.
+
+# Constants
+
+Remove "magic numbers" (such as 4096, etc.) from the code and put them in
+`constants.py`.
+
 # Projects
 
 ## Overview of all projects

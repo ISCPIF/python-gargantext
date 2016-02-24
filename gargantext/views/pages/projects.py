@@ -102,6 +102,7 @@ def project(request, project_id):
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type
+        corpus.count = corpus.children('DOCUMENT').count()
         resource = corpus.resources()[0]
         resource_type = RESOURCETYPES[resource['type']]
         sourcename2corpora[resource_type['name']].append(corpus)

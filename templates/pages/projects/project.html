@@ -81,7 +81,7 @@
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
                     Processing, drink a cup of tea, and refresh the page :)
                     {% else %}
-                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">  {{corpus.name}} , {{ corpus.count }} Documents </a>
+                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">  {{corpus.name}} , {{ corpus.count }} documents</a>
                     {% endifequal %}
                     <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                     data-content='

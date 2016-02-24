@@ -44,7 +44,7 @@ def extract_ngrams(corpus, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', keys=('title', 'abstr
     resource_type_index = corpus.resources()[0]['type']
     resource_type = RESOURCETYPES[resource_type_index]
     default_language_iso2 = resource_type['default_language']
-    for document in corpus.children('DOCUMENT'):
+    for documents_count, document in enumerate(corpus.children('DOCUMENT')):
         # get ngrams extractor for the current document
         language_iso2 = document.hyperdata.get('language_iso2', default_language_iso2)
         try:
@@ -68,5 +68,12 @@ def extract_ngrams(corpus, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', keys=('title', 'abstr
             _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
             nodes_ngrams_count.clear()
             ngrams_data.clear()
+        if documents_count % 1024 == 0:
+            corpus.status('ngrams_extraction', progress=documents_count+1)
+            corpus.save_hyperdata()
+            session.commit()
     # integrate ngrams and nodes-ngrams
     _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
+    corpus.status('ngrams_extraction', progress=documents_count+1, complete=True)
+    corpus.save_hyperdata()
+    session.commit()

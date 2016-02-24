@@ -35,7 +35,7 @@ def corpus(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            # 'processing': processing,
+            # 'processing': corpus['extracted'],
             # 'number': number,
             'view': 'documents'
         },

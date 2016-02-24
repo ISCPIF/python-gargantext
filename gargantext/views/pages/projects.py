@@ -102,10 +102,20 @@ def project(request, project_id):
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type
-        corpus.count = corpus.children('DOCUMENT').count()
         resource = corpus.resources()[0]
-        resource_type = RESOURCETYPES[resource['type']]
-        sourcename2corpora[resource_type['name']].append(corpus)
+        resource_type_name = RESOURCETYPES[resource['type']]['name']
+        # add some data for the viewer
+        corpus.count = corpus.children('DOCUMENT').count()
+        status = corpus.status()
+        if status is not None and not status['complete']:
+            corpus.status_message = '(in progress: %s, %d complete)' % (
+                status['action'].replace('_', ' '),
+                status['progress'],
+            )
+        else:
+            corpus.status_message = ''
+        # add
+        sourcename2corpora[resource_type_name].append(corpus)
     # source & their respective counts
     total_documentscount = 0
     sourcename2documentscount = defaultdict(int)

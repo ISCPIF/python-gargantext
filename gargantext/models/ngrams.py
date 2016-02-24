@@ -16,7 +16,6 @@ class Ngram(Base):
 
 class NodeNgram(Base):
     __tablename__ = 'nodes_ngrams'
-    id = Column(Integer)
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float)

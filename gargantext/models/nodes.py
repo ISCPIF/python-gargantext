@@ -89,9 +89,10 @@ class Node(Base):
             {'type': type, 'path':path, 'url':url, 'extracted': False}
         ))
 
-    def status(self, action=None, progress=None, complete=False):
+    def status(self, action=None, progress=0, complete=False, error=None):
         """Get the status of the given action
         """
+        date = datetime.now()
         # if the hyperdata do not have data about status
         if 'statuses' not in self.hyperdata:
             self['statuses'] = MutableList()
@@ -106,13 +107,17 @@ class Node(Base):
         # retrieve the status concerning by the given action name
         for status in self['statuses']:
             if status['action'] == action:
-                if progress is not None:
+                if error:
+                    status['error'] = error
+                if progress:
                     status['progress'] = progress
                 if complete:
                     status['complete'] = complete
+                if error or progress or complete:
+                    status['date'] = date
                 return status
         # if no status has been found for the action, append a new one
         self['statuses'].append(MutableDict(
-            {'action': action, 'progress': progress, 'complete': complete}
+            {'action':action, 'progress':progress, 'complete':complete, 'error':error, 'date':date}
         ))
         return self['statuses'][-1]

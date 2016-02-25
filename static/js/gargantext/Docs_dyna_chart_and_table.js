@@ -532,7 +532,7 @@ $("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
-  url: '/api/nodes?type[]=DOCUMENT&pagination_limit=-1&parent_id=' + corpus_id,
+  url: '/api/nodes?types[]=DOCUMENT&pagination_limit=-1&parent_id=' + corpus_id,
   success: function(data){
     $("#content_loader").remove();
     $.each(data.records, function(i, record){

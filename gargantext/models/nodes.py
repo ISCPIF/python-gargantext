@@ -45,6 +45,26 @@ class Node(Base):
     def __setitem__(self, key, value):
         self.hyperdata[key] = value
 
+    @property
+    def ngrams(self):
+        from . import NodeNgram, Ngram
+        query = (session
+            .query(NodeNgram.weight, Ngram)
+            .select_from(NodeNgram)
+            .join(Ngram)
+            .filter(NodeNgram.node_id == self.id)
+        )
+        return query
+
+    def as_list(self):
+        try:
+            return LISTTYPES[self.typename](self.id)
+        except KeyError:
+            raise ValueError('This node\'s typename is not convertible to a list: %s (accepted values: %s)' % (
+                self.typename,
+                ', '.join(LISTTYPES.keys())
+            ))
+
     def save_hyperdata(self):
         """This is a necessary, yet ugly trick.
         Indeed, PostgreSQL does not yet manage incremental updates (see

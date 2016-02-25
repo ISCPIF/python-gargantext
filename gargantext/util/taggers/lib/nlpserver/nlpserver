@@ -2,6 +2,7 @@
  
 # In case this bash file is placed in another directory (e.g., /etc/init.d),
 # the following line should be changed to an absolute path
+PYTHON_VERSION=3.4
 DAEMON_DIR=$( cd "$(dirname "$BASH_SOURCE[0]")" && pwd)
 DAEMON_SCRIPT=$DAEMON_DIR/server.py
 DAEMON_NAME=nlpserver
@@ -17,7 +18,7 @@ do_start () {
     log_daemon_msg "Starting system '$DAEMON_NAME' daemon..."
     /sbin/start-stop-daemon --start --quiet \
         --make-pidfile --pidfile $DAEMON_PID --background \
-        --startas /bin/bash -- -c "python3 $DAEMON_SCRIPT $DAEMON_ARGS > /tmp/$DAEMON_NAME.log 2>&1"
+        --startas /bin/bash -- -c "python$PYTHON_VERSION $DAEMON_SCRIPT $DAEMON_ARGS > /tmp/$DAEMON_NAME.log 2>&1"
         # --exec $DAEMON_SCRIPT \
         # --user $DAEMON_USER --chuid $DAEMON_USER
     log_end_msg $?
@@ -25,6 +26,7 @@ do_start () {
 do_stop () {
     log_daemon_msg "Stopping system '$DAEMON_NAME' daemon..."
     /sbin/start-stop-daemon --stop --pidfile $DAEMON_PID --retry 10
+    rm $DAEMON_PID
     log_end_msg $?
 }
  

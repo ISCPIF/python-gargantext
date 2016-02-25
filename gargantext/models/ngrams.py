@@ -1,10 +1,8 @@
 from gargantext.util.db import *
-from gargantext.util.files import upload
-from gargantext.constants import *
 
 from .nodes import Node
 
-__all__ = ['Ngram', 'NodeNgram']
+__all__ = ['Ngram', 'NodeNgram', 'NodeNgramNgram']
 
 
 class Ngram(Base):
@@ -18,4 +16,12 @@ class NodeNgram(Base):
     __tablename__ = 'nodes_ngrams'
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
+    weight = Column(Float)
+
+
+class NodeNgramNgram(Base):
+    __tablename__ = 'nodes_ngrams_ngrams'
+    node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    ngram1_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
+    ngram2_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float)

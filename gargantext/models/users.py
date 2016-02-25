@@ -9,7 +9,7 @@ class User(Base):
 
     # Do not change!
     # The properties below are a reflection of Django's auth module's models.
-    __tablename__ = 'auth_user'
+    __tablename__ = models.User._meta.db_table
     id = Column(Integer, primary_key=True)
     password = Column(String(128))
     last_login = DateTime(timezone=False)
@@ -34,16 +34,14 @@ class User(Base):
 
     def nodes(self, typename=None):
         """get all nodes belonging to the user"""
-        # ↓ this below is a workaround because of Python's lame import system
         from .nodes import Node
         query = (session
             .query(Node)
             .filter(Node.user_id == self.id)
-            .order_by(Node.date)
         )
         if typename is not None:
             query = query.filter(Node.typename == typename)
-        return query.all()
+        return query
 
     def contacts_nodes(self, typename=None):
         for contact in self.contacts():

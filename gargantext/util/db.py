@@ -5,13 +5,17 @@ from gargantext import settings
 
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+from gargantext.util.json import json_dumps
 
 def get_engine():
     from sqlalchemy import create_engine
     url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
         **settings.DATABASES['default']
     )
-    return create_engine(url, use_native_hstore=True)
+    return create_engine(url,
+        use_native_hstore = True,
+        json_serializer = json_dumps,
+    )
 
 engine = get_engine()
 

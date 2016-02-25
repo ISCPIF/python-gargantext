@@ -36,8 +36,6 @@ def get(url):
 
 def get_parameters(request):
     parameters = {}
-    print(request.GET)
-    print(request.GET._iterlists())
     for key, value in request.GET._iterlists():
         if key.endswith('[]'):
             parameters[key[:-2]] = value
@@ -53,18 +51,7 @@ from rest_framework.views import APIView
 
 # provide a JSON response
 
-import json
-import datetime
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat()[:19] + 'Z'
-        elif isinstance(obj, (set, tuple)):
-            return list(obj)
-        else:
-            return super(self.__class__, self).default(obj)
-json_encoder = JSONEncoder(indent=4)
+from gargantext.util.json import json_encoder
 def JsonHttpResponse(data, status=200):
     return HttpResponse(
         content      = json_encoder.encode(data),

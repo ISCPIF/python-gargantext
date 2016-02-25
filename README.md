@@ -1,13 +1,32 @@
 # Installation
 
+First, install Python 3.5 (see https://www.python.org/downloads/ for
+download links).
+
 ```bash
-sudo apt-get install python3.4
-sudo pip3 install virtualenv
+cd /tmp
+wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tar.xz
+tar xvfJ Python-3.5.1.tar.xz
+cd Python-3.5.1
+./configure
+make -j4 # option is for multithreading
+sudo make install
+```
+
+Other components are required:
+
+```bash
+sudo pip3.5 install virtualenv
 sudo apt-get install rabbitmq-server
-virtualenv-3.4 VENV
+```
+
+Then build a virtual environment:
+
+```bash
+virtualenv-3.5 VENV
 source VENV/bin/activate
-pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1
-pip install -U -r requirements.txt
+pip3.5 install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1
+pip3.5 install -U -r requirements.txt
 ```
 
 
@@ -39,6 +58,6 @@ pip install -U -r requirements.txt
 # Start the Django server
 
 ```bash
-manage.py celeryd --loglevel=INFO # to ensure Celery is properly started
-manage.py runserver
+./manage.py celeryd --loglevel=INFO # to ensure Celery is properly started
+./manage.py runserver
 ```

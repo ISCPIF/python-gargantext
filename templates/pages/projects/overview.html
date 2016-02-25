@@ -30,7 +30,7 @@
 
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
-        <h1>My {{number}} projects</h1>
+        <h1>My projects</h1>
         <p>Template showing my working space</p>
         <p>
             <button
@@ -60,8 +60,8 @@
         {% if projects %}
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-        <div class="col-md-3 content">
-            <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
+        <div id="project_{{project.id}}" class="col-md-3 content">
+            <h3><a  href="/projects/{{ project.id }}">{{ project.name }}</a>
 
                 <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                 data-content="  <ul>

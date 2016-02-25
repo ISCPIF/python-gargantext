@@ -18,7 +18,6 @@ class NodeListResource(APIView):
         parameters = validate(parameters, {'type': dict, 'items': {
             'pagination_limit': {'type': int, 'default': 10},
             'pagination_offset': {'type': int, 'default': 0},
-            'pagination_offset': {'type': int, 'default': 0},
             'fields': {'type': list, 'default': self._fields, 'items': {
                 'type': str, 'range': self._fields,
             }},

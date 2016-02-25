@@ -94,7 +94,6 @@ def project(request, project_id):
         )
         session.add(corpus)
         session.commit()
-        parse_extract
         scheduled(parse_extract)(corpus.id)
 
     # corpora within this project

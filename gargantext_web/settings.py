@@ -66,6 +66,7 @@ TEMPLATE_DIRS = (
 #ALLOWED_HOSTS = ['*',]
 ALLOWED_HOSTS = ['localhost',
                 'gargantext.org',
+                'www.gargantext.org',
                 'stable.gargantext.org',
                 'dev.gargantext.org',
                 'iscpif.gargantext.org',

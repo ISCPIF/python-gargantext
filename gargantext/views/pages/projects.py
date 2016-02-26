@@ -48,7 +48,7 @@ def overview(request):
             'debug': settings.DEBUG,
             'date': datetime.now(),
             # projects owned by the user
-            'number': len(user_projects),
+            'number': user_projects.count(),
             'projects': user_projects,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),

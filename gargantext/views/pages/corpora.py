@@ -12,19 +12,22 @@ def _get_user_project_corpus(request, project_id, corpus_id):
     """Helper method to get a corpus, knowing the project's and corpus' ID.
     Raises HTTP errors when parameters (user, IDs...) are invalid.
     """
-    user = cache.User[request.user.username]
+    user = cache.User[request.user.id]
     project = session.query(Node).filter(Node.id == project_id).first()
     corpus = session.query(Node).filter(Node.id == corpus_id).filter(Node.parent_id == project_id).first()
     if corpus is None:
         raise Http404()
     if not user.owns(corpus):
-        raise HttpResponseForbidden()
-    return user, project, corpus
+        print("CORPORA: invalid user %i (User doesn't own this corpus)" % user.id)
+        return (False, user, project, corpus)
+    return (True, user, project, corpus)
 
 
 @requires_auth
 def corpus(request, project_id, corpus_id):
-    user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
+    authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
+    if not authorized:
+        return HttpResponseForbidden()
     # response!
     return render(
         template_name = 'pages/corpora/corpus.html',

@@ -46,4 +46,31 @@ def corpus(request, project_id, corpus_id):
 
 @requires_auth
 def chart(request, project_id, corpus_id):
-    user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
+    authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
+
+
+@requires_auth
+def docs_by_journals(request, project_id, corpus_id):
+    '''
+    Browse journal titles for a given corpus
+    NB: javascript in page will GET counts from our api: facets?subfield=journal
+    # TODO refactor Journals_dyna_charts_and_table.js
+    '''
+    # we pass our corpus to mark it's a corpora page
+    corpus = cache.Node[corpus_id]
+
+    # and the project just for project.id in corpusBannerTop
+    project = cache.Node[project_id]
+
+    # rendered page : journals.html
+    return render(
+        template_name = 'pages/corpora/journals.html',
+        request = request,
+        context = {
+            'debug': settings.DEBUG,
+            'date': datetime.now(),
+            'project': project,
+            'corpus' : corpus,
+            'view': 'journals'
+        },
+    )

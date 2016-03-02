@@ -6,6 +6,7 @@ from gargantext.constants import *
 
 from gargantext.util.validation import validate
 
+from collections import defaultdict
 
 _node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams']
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
@@ -109,3 +110,70 @@ class NodeResource(APIView):
         )
         session.commit()
         return JsonHttpResponse({'deleted': result.rowcount})
+
+
+class CorpusFacet(APIView):
+    """Loop through a corpus node's docs => do counts by a hyperdata field
+        (url: /api/nodes/<node_id>/facets?hyperfield=<journal>)
+    """
+    # - old url: '^project/(\d+)/corpus/(\d+)/journals/journals.json$',
+    # - old view: tests.ngramstable.views.get_journals_json()
+    # - now generalized for various hyperdata field:
+    #    -> journal
+    #    -> publication_year
+    #    -> rubrique
+    #    -> language...
+
+    def get(self, request, node_id):
+        # check that the node is a corpus
+        #   ? faster from cache than: corpus = session.query(Node)...
+        corpus = cache.Node[node_id]
+        if corpus.typename != 'CORPUS':
+            raise ValidationException(
+                "Only nodes of type CORPUS can accept facet queries" +
+                " (but this node has type %s)..." % corpus.typename
+            )
+        else:
+            self.corpus = corpus
+
+        # check that the hyperfield parameter makes sense
+        _facet_available_subfields = [
+            'journal', 'publication_year', 'rubrique',
+            'language_iso2', 'language_iso3', 'language_name'
+        ]
+        parameters = get_parameters(request)
+
+        # validate() triggers an info message if subfield not in range
+        parameters = validate(parameters, {'type': dict, 'items': {
+            'hyperfield': {'type': str, 'range': _facet_available_subfields}
+            }})
+
+        subfield = parameters['hyperfield']
+
+        # do the aggregated sum
+        (xcounts, total) = self._ndocs_by_facet(subfield)
+
+        # response
+        return JsonHttpResponse({
+            'doc_count' : total,
+            'by': { subfield: xcounts }
+        })
+
+    def _ndocs_by_facet(self, subfield='journal'):
+        """for example on 'journal'
+         xcounts = {'j good sci' : 25, 'nature' : 32, 'j bla bla' : 1... }"""
+
+        xcounts = defaultdict(int)
+        total = 0
+        for doc in self.corpus.children(typename='DOCUMENT'):
+            if subfield in doc.hyperdata:
+                xcounts[doc.hyperdata[subfield]] += 1
+            else:
+                xcounts["_NA_"] += 1
+
+            total += 1
+
+        # the counts below could also be memoized
+        #  // if subfield not in corpus.aggs:
+        #  //     corpus.aggs[subfield] = xcounts
+        return (xcounts, total)

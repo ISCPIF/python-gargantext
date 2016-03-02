@@ -13,7 +13,7 @@ LISTTYPES = {
 
 NODETYPES = [
     None,
-    # documents hierachy
+    # documents hierarchy
     'USER',
     'PROJECT',
     'CORPUS',
@@ -60,7 +60,7 @@ RESOURCETYPES = [
         'parser': PubmedParser,
         'default_language': 'en',
     },
-        {   'name': 'Scopus (RIS format)',
+    {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },

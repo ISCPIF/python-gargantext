@@ -1,12 +1,28 @@
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
 
+from gargantext.util.lists import *
+
+LISTTYPES = {
+    'DOCUMENT': WeightedList,
+    'SYNONYMS': Translations,
+    'MIAMLIST': UnweightedList,
+    'STOPLIST': UnweightedList,
+    'COOCCURRENCES': WeightedMatrix,
+}
+
 NODETYPES = [
     None,
+    # documents hierachy
     'USER',
     'PROJECT',
     'CORPUS',
     'DOCUMENT',
+    # lists
+    'SYNONYMS',
+    'MIAMLIST',
+    'STOPLIST',
+    'COOCCURRENCES',
 ]
 
 

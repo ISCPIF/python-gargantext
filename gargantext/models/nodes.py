@@ -12,7 +12,7 @@ __all__ = ['Node']
 
 class NodeType(TypeDecorator):
     """Define a new type of column to describe a Node's type.
-    This column type is implemented as an SQL integer.
+    Internally, this column type is implemented as an SQL integer.
     Values are detailed in `gargantext.constants.NODETYPES`.
     """
     impl = Integer
@@ -22,6 +22,11 @@ class NodeType(TypeDecorator):
         return NODETYPES[typeindex]
 
 class Node(Base):
+    """This model can fit many purposes.
+    It intends to provide a generic model, allowing hierarchical structure
+    and NoSQL-like data structuring.
+    The possible types are defined in `gargantext.constants.NODETYPES`.
+    """
     __tablename__ = 'nodes'
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
@@ -35,15 +40,50 @@ class Node(Base):
     hyperdata = Column(JSONB, default=dict)
 
     def __init__(self, **kwargs):
+        """Node's constructor.
+        Initialize the `hyperdata` as a dictionary if no value was given.
+        """
         if 'hyperdata' not in kwargs:
-            kwargs['hyperdata'] = kwargs.get('hyperdata', {})
+            kwargs['hyperdata'] = kwargs.get('hyperdata', MutableDict())
         Base.__init__(self, **kwargs)
 
     def __getitem__(self, key):
+        """Allow direct access to hyperdata via the bracket operator.
+        """
         return self.hyperdata[key]
 
     def __setitem__(self, key, value):
+        """Allow direct access to hyperdata via the bracket operator.
+        """
         self.hyperdata[key] = value
+
+    @property
+    def ngrams(self):
+        """Pseudo-attribute allowing to retrieve a node's ngrams.
+        Returns a query (which can be further filtered), of which returned rows
+        are the ngram's weight for this node and the ngram.
+        """
+        from . import NodeNgram, Ngram
+        query = (session
+            .query(NodeNgram.weight, Ngram)
+            .select_from(NodeNgram)
+            .join(Ngram)
+            .filter(NodeNgram.node_id == self.id)
+        )
+        return query
+
+    def as_list(self):
+        """Retrieve the current node as a list/matrix of ngrams identifiers.
+        See `gargantext.util.lists` and `gargantext.constants.LISTTYPES`
+        for more info.
+        """
+        try:
+            return LISTTYPES[self.typename](self.id)
+        except KeyError:
+            raise ValueError('This node\'s typename is not convertible to a list: %s (accepted values: %s)' % (
+                self.typename,
+                ', '.join(LISTTYPES.keys())
+            ))
 
     def save_hyperdata(self):
         """This is a necessary, yet ugly trick.
@@ -80,17 +120,27 @@ class Node(Base):
         )
 
     def resources(self):
+        """Return all the resources attached to a given node.
+        Mainly used for corpora.
+        """
         if 'resources' not in self.hyperdata:
             self['resources'] = MutableList()
         return self['resources']
 
     def add_resource(self, type, path=None, url=None):
+        """Attach a resource to a given node.
+        Mainly used for corpora.
+        """
         self.resources().append(MutableDict(
             {'type': type, 'path':path, 'url':url, 'extracted': False}
         ))
 
     def status(self, action=None, progress=0, complete=False, error=None):
-        """Get the status of the given action
+        """Get or update the status of the given action.
+        If no action is given, the status of the first uncomplete or last item
+        is returned.
+        The `complete` parameter should be a boolean.
+        The `error` parameter should be an exception.
         """
         date = datetime.now()
         # if the hyperdata do not have data about status

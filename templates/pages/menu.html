@@ -58,6 +58,23 @@
         <!--/.nav-collapse -->
 
         {% block corpusBannerTop %}
+
+        {% if corpus %}
+        <div class="container theme-showcase">
+            <div class="jumbotron" style="margin-bottom:0">
+                <div id="corpusbar" class="row">
+                    <div class="col-md-6">
+                        <div class="btn-group btn-group-justified">
+                            <center>
+                                <a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Documents</a>
+                                <a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals</a>
+                            </center>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% endblock %}
 
 

@@ -13,7 +13,7 @@ _node_available_types = NODETYPES
 
 
 def _query_nodes(request, node_id=None):
-    user = cache.User[request.user.username]
+    user = cache.User[request.user.id]
     # parameters validation
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {

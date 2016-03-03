@@ -25,8 +25,13 @@ NODETYPES = [
     'GROUPLIST',
     'MAINLIST',
     'MAPLIST',
-    'OCCURRENCES',
     'COOCCURRENCES',
+    # scores
+    'OCCURRENCES',
+    'SPECIFICITY',
+    'CVALUE',
+    'TFIDF-CORPUS',
+    'TFIDF-GLOBAL',
 ]
 
 

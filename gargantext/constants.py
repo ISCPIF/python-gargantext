@@ -9,6 +9,7 @@ LISTTYPES = {
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
+    'OCCURRENCES'  : WeightedList,
     'COOCCURRENCES': WeightedMatrix,
 }
 
@@ -24,6 +25,7 @@ NODETYPES = [
     'GROUPLIST',
     'MAINLIST',
     'MAPLIST',
+    'OCCURRENCES',
     'COOCCURRENCES',
 ]
 

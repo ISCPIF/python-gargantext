@@ -4,10 +4,11 @@
 from gargantext.util.lists import *
 
 LISTTYPES = {
-    'DOCUMENT': WeightedList,
-    'SYNONYMS': Translations,
-    'MIAMLIST': UnweightedList,
-    'STOPLIST': UnweightedList,
+    'DOCUMENT'     : WeightedList,
+    'GROUPLIST'    : Translations,
+    'STOPLIST'     : UnweightedList,
+    'MAINLIST'     : UnweightedList,
+    'MAPLIST'      : UnweightedList,
     'COOCCURRENCES': WeightedMatrix,
 }
 
@@ -19,9 +20,10 @@ NODETYPES = [
     'CORPUS',
     'DOCUMENT',
     # lists
-    'SYNONYMS',
-    'MIAMLIST',
     'STOPLIST',
+    'GROUPLIST',
+    'MAINLIST',
+    'MAPLIST',
     'COOCCURRENCES',
 ]
 

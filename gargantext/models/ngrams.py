@@ -2,7 +2,7 @@ from gargantext.util.db import *
 
 from .nodes import Node
 
-__all__ = ['Ngram', 'NodeNgram', 'NodeNgramNgram']
+__all__ = ['Ngram', 'NodeNgram', 'NodeNodeNgram', 'NodeNgramNgram']
 
 
 class Ngram(Base):
@@ -18,6 +18,23 @@ class NodeNgram(Base):
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float)
 
+class NodeNodeNgram(Base):
+    """ for instance for tfidf:
+    (
+        doc                              ::Node ,
+        corpus                           ::Node ,
+        word                             ::Ngram ,
+        tfidf of ngram in doc in corpus  ::Float (real)
+    )
+    """
+    __tablename__ = 'nodes_nodes_ngrams'
+    node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
+    score = Column(Float(precision=24))
+    # précision max 24 bit pour un type sql "real" (soit 7 chiffres après virgule)
+    # sinon par défaut on aurait un type sql "double_precision" (soit 15 chiffres)
+    # (cf. www.postgresql.org/docs/9.4/static/datatype-numeric.html#DATATYPE-FLOAT)
 
 class NodeNgramNgram(Base):
     __tablename__ = 'nodes_ngrams_ngrams'

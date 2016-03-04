@@ -2,11 +2,16 @@ from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
 
+from collections import defaultdict
 
 def parse(corpus):
     try:
         documents_count = 0
         corpus.status('parsing', progress=0)
+
+        # will gather info about languages
+        observed_languages = defaultdict(int)
+
         # retrieve resource information
         for resource in corpus.resources():
             # information about the resource
@@ -22,6 +27,7 @@ def parse(corpus):
                     hyperdata = hyperdata,
                 )
                 session.add(document)
+                observed_languages[hyperdata["language_iso2"]] += 1
                 if documents_count % BATCH_PARSING_SIZE == 0:
                     corpus.status('parsing', progress=documents_count)
                     corpus.save_hyperdata()
@@ -29,6 +35,8 @@ def parse(corpus):
                 documents_count += 1
             # update info about the resource
             resource['extracted'] = True
+        # add a corpus-level info about languages
+        corpus.hyperdata['languages'] = observed_languages
         # commit all changes
         corpus.status('parsing', progress=documents_count, complete=True)
         corpus.save_hyperdata()

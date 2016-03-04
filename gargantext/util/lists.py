@@ -70,8 +70,10 @@ class _BaseClass:
 
 class Translations(_BaseClass):
 
-    def __init__(self, source=None):
+    def __init__(self, source=None, just_items=False):
         self.items = defaultdict(int)
+        # TODO lazyinit for groups
+        #      (not necessary for save)
         self.groups = defaultdict(set)
         if source is None:
             return
@@ -83,15 +85,35 @@ class Translations(_BaseClass):
                 .filter(NodeNgramNgram.node_id == source)
             )
             self.items.update(query)
-            for key, value in self.items.items():
-                self.groups[value].add(key)
+            if not just_items:
+                for key, value in self.items.items():
+                    self.groups[value].add(key)
         elif isinstance(source, Translations):
             self.items.update(source.items)
-            self.groups.update(source.groups)
+            if not just_items:
+                self.groups.update(source.groups)
         elif hasattr(source, '__iter__'):
+            # not very intuitive with update here:
+            # /!\ source must be "reversed" (like self.items)
+
+            # bad exemple
+            # In > couples = [(1, 2), (1, 3)]
+            # In > tlko = Translations(couples)
+            # Out> Translations {1: 3}
+            # In > tlko.save()
+            # DB-- 3 -> 1
+
+            # good exemple
+            # In > reversed_couples = [(2, 1), (3, 1)]
+            # In > tlok = Translations(reversed_couples)
+            # Out> Translations {2: 1, 3: 1}
+            # In > tlok.save()
+            # DB-- 1 -> 2
+            # DB-- 1 -> 3
             self.items.update(source)
-            for key, value in self.items.items():
-                self.groups[value].add(key)
+            if not just_items:
+                for key, value in self.items.items():
+                    self.groups[value].add(key)
         else:
             raise TypeError
 
@@ -138,7 +160,7 @@ class Translations(_BaseClass):
         # insert new data
         bulk_insert(
             NodeNgramNgram,
-            ('node_id', 'ngram2_id', 'ngram1_id', 'score'),
+            ('node_id', 'ngram2_id', 'ngram1_id', 'weight'),
             ((node_id, key, value, 1.0) for key, value in self.items.items())
         )
 

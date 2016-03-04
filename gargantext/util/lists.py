@@ -2,7 +2,7 @@
 """
 
 
-__all__ = ['Translations', 'WeightedMatrix', 'UnweightedList', 'WeightedList']
+__all__ = ['Translations', 'WeightedMatrix', 'UnweightedList', 'WeightedList', 'WeightedContextIndex']
 
 
 from gargantext.util.db import session, bulk_insert
@@ -163,6 +163,22 @@ class Translations(_BaseClass):
             ('node_id', 'ngram2_id', 'ngram1_id', 'weight'),
             ((node_id, key, value, 1.0) for key, value in self.items.items())
         )
+
+
+class WeightedContextIndex(_BaseClass):
+    """
+    associated model   : NodeNodeNgram
+    associated columns : node1_id  |  node2_id  |  ngram_id  |  score (float)
+
+    Tensor representing a contextual index or registry
+    (matrix of weighted ngrams *per* doc *per* context)
+
+    Exemple : tfidf by corpus
+    """
+    def __init__(self, source=None):
+        self.items = defaultdict(float)
+
+
 
 
 class WeightedMatrix(_BaseClass):

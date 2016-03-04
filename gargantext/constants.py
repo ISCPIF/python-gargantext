@@ -9,29 +9,30 @@ LISTTYPES = {
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
-    'OCCURRENCES'  : WeightedList,
+    'OCCURRENCES'  : WeightedContextIndex,
     'COOCCURRENCES': WeightedMatrix,
+    'TFIDF-CORPUS' : WeightedContextIndex,
 }
 
 NODETYPES = [
     None,
     # documents hierarchy
-    'USER',
-    'PROJECT',
-    'CORPUS',
-    'DOCUMENT',
+    'USER',                  # 1
+    'PROJECT',               # 2
+    'CORPUS',                # 3
+    'DOCUMENT',              # 4
     # lists
-    'STOPLIST',
-    'GROUPLIST',
-    'MAINLIST',
-    'MAPLIST',
-    'COOCCURRENCES',
+    'STOPLIST',              # 5
+    'GROUPLIST',             # 6
+    'MAINLIST',              # 7
+    'MAPLIST',               # 8
+    'COOCCURRENCES',         # 9
     # scores
-    'OCCURRENCES',
-    'SPECIFICITY',
-    'CVALUE',
-    'TFIDF-CORPUS',
-    'TFIDF-GLOBAL',
+    'OCCURRENCES',           # 10
+    'SPECIFICITY',           # 11
+    'CVALUE',                # 12
+    'TFIDF-CORPUS',          # 13
+    'TFIDF-GLOBAL',          # 14
 ]
 
 

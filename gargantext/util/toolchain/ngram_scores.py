@@ -84,11 +84,13 @@ def compute_tfidf_local(corpus):
                     .all()
                    )
 
-    # ---------------------------------------------
+    # -------------------------------------------------
     tfidfs = {}
+    log_tot_docs = log(total_docs)
     for (ngram_id, tf, nd) in tf_nd:
-        tfidfs[ngram_id] = tf * log(total_docs/nd)
-    # ---------------------------------------------
+        # tfidfs[ngram_id] = tf * log(total_docs/nd)
+        tfidfs[ngram_id] = tf * (log_tot_docs-log(nd))
+    # -------------------------------------------------
 
     # create the new TFIDF-CORPUS node
     ltfidf = Node()

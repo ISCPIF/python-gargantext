@@ -1,87 +1,101 @@
-from gargantext.util.db import *
+from gargantext.util.db import session, aliased, func
 from gargantext.util.db_cache import *
 from gargantext.constants import *
 
-from gargantext.util.analysis.cooccurrences import do_cooc
+# from gargantext.util.analysis.cooccurrences import do_cooc
 
-from gargantext.models.ngrams import Ngram, NodeNgram,\
-        NodeNgramNgram, NodeNodeNgram
+from gargantext.models import Node, Ngram, NodeNgramNgram, NodeNodeNgram
 
-import numpy as np
 import pandas as pd
 from collections import defaultdict
-from sqlalchemy import desc, asc, or_, and_, Date, cast, select
 
-def specificity(cooc_id=None, corpus=None, limit=100, session=None):
+def compute_specificity(corpus, cooc_id, limit=100):
     '''
     Compute the specificity, simple calculus.
     '''
- 
+
     cooccurrences = (session.query(NodeNgramNgram)
                     .filter(NodeNgramNgram.node_id==cooc_id)
-                    .order_by(NodeNgramNgram.score)
-                    .limit(limit)
+                    # no filtering: new choice filter on tfidf before creation
+                    #    .order_by(NodeNgramNgram.weight)
+                    #    .limit(limit)
                     )
 
     matrix = defaultdict(lambda : defaultdict(float))
 
+    # £TODO re-rename weight => score
     for cooccurrence in cooccurrences:
-        matrix[cooccurrence.ngramx_id][cooccurrence.ngramy_id] = cooccurrence.score
-        matrix[cooccurrence.ngramy_id][cooccurrence.ngramx_id] = cooccurrence.score
+        matrix[cooccurrence.ngram1_id][cooccurrence.ngram2_id] = cooccurrence.weight
+        matrix[cooccurrence.ngram2_id][cooccurrence.ngram1_id] = cooccurrence.weight
 
-    x = pd.DataFrame(matrix).fillna(0)
-    x = x / x.sum(axis=1)
+    nb_ngrams = len(matrix)
 
-    xs = x.sum(axis=1)
-    ys = x.sum(axis=0)
+    d = pd.DataFrame(matrix).fillna(0)
 
-    m = ( xs - ys) / (2 * (x.shape[0] - 1))
-    m = m.sort(inplace=False)
+    # proba (x/y) ( <= on divise chaque colonne par son total)
+    d = d / d.sum(axis=0)
 
-    #node = get_or_create_node(nodetype='Specificity',corpus=corpus)
+    # d:Matrix => v: Vector (len = nb_ngrams)
+    v = d.sum(axis=1)
 
+    ## d ##
+    #######
+    #               Grenelle  biodiversité  kilomètres  site  élus  île
+    # Grenelle             0             0           4     0     0    0
+    # biodiversité         0             0           0     0     4    0
+    # kilomètres           4             0           0     0     4    0
+    # site                 0             0           0     0     4    6
+    # élus                 0             4           4     4     0    0
+    # île                  0             0           0     6     0    0
+
+
+    ## d.sum(axis=1) ##
+    ###################
+    # Grenelle         4
+    # biodiversité     4
+    # kilomètres       8
+    # site            10
+    # élus            12
+    # île              6
+
+    # résultat temporaire
+    # -------------------
+    # pour l'instant on va utiliser les sommes en ligne comme ranking de spécificité
+    # (**même** ordre qu'avec la formule d'avant le refactoring mais calcul + simple)
+    # TODO analyser la cohérence math ET sem de cet indicateur
+    v.sort_values(inplace=True)
+
+    # [ ('biodiversité' , 0.333 ),
+    #   ('Grenelle'     , 0.5   ),
+    #   ('île'          , 0.599 ),
+    #   ('kilomètres'   , 1.333 ),
+    #   ('site'         , 1.333 ),
+    #   ('élus'         , 1.899 ) ]
+
+    # ----------------
+    # specificity node
     node = session.query(Node).filter(
-        Node.parent_id==corpus_id,
+        Node.parent_id==corpus.id,
         Node.typename == "SPECIFICITY"
         ).first()
 
     if node == None:
-        corpus = cache.Node[corpus_id]
         user_id = corpus.user_id
-        node = Node(name="SPECIFICITY", parent_id=corpus_id, user_id=user_id, typename="SPECIFICITY")
+        node = Node(name="Specif (in:%i)" % corpus.id,
+                    parent_id=corpus.id,
+                    user_id=user_id,
+                    typename="SPECIFICITY")
         session.add(node)
         session.commit()
 
-
-    data = zip(  [node.id for i in range(1,m.shape[0])]
-               , [corpus.id for i in range(1,m.shape[0])]
-               , m.index.tolist()
-               , m.values.tolist()
+    data = zip(  [node.id] * nb_ngrams
+               , [corpus.id] * nb_ngrams
+               , v.index.tolist()
+               , v.values.tolist()
                )
-    session.query(NodeNodeNgram).filter(NodeNodeNgram.nodex_id==node.id).delete()
+    session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id==node.id).delete()
     session.commit()
 
-    bulk_insert(NodeNodeNgram, ['nodex_id', 'nodey_id', 'ngram_id', 'score'], [d for d in data])
+    bulk_insert(NodeNodeNgram, ['node1_id', 'node2_id', 'ngram_id', 'score'], [d for d in data])
 
     return(node.id)
-    
-
-def compute_specificity(corpus,limit=100, session=None):
-    '''
-    Computing specificities as NodeNodeNgram.
-    All workflow is the following:
-        1) Compute the cooc matrix
-        2) Compute the specificity score, saving it in database, return its Node
-    '''
-    
-    #dbg = DebugTime('Corpus #%d - specificity' % corpus.id)
-    
-    #list_cvalue = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-    cooc_id = do_cooc(corpus=corpus, cvalue_id=list_cvalue.id,limit=limit)
-
-    specificity(cooc_id=cooc_id,corpus=corpus,limit=limit,session=session)
-    #dbg.show('specificity')
-
-#corpus=session.query(Node).filter(Node.id==244250).first()
-#compute_specificity(corpus)
-

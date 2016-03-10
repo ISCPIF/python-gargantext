@@ -178,6 +178,8 @@ class WeightedContextIndex(_BaseClass):
     def __init__(self, source=None):
         self.items = defaultdict(float)
 
+    # £TODO
+
 
 
 
@@ -222,7 +224,7 @@ class WeightedMatrix(_BaseClass):
         # insert new data
         bulk_insert(
             NodeNgramNgram,
-            ('node_id', 'ngram1_id', 'ngram2_id', 'score'),
+            ('node_id', 'ngram1_id', 'ngram2_id', 'weight'),
             ((node_id, key1, key2, value) for key1, key2, value in self)
         )
 

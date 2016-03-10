@@ -20,7 +20,7 @@ def overview(request):
     To each project, we can link a resource that can be an image.
     '''
 
-    user = cache.User[request.user.username]
+    user = cache.User[request.user.id]
 
     # If POST method, creates a new project...
     if request.method == 'POST':
@@ -74,7 +74,7 @@ class NewCorpusForm(forms.Form):
 @requires_auth
 def project(request, project_id):
     # current user
-    user = cache.User[request.user.username]
+    user = cache.User[request.user.id]
     # viewed project
     project = session.query(Node).filter(Node.id == project_id).first()
     if project is None:

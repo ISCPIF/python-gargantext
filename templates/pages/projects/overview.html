@@ -4,8 +4,23 @@
 {% block css %}
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 
-<script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
+<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/morris.css" %}">
+
+<script src="{% static "js/raphael-min.js"%}"></script>
+<style type="text/css">
+    .ui-autocomplete {
+        z-index: 5000;
+    }
+    .ui-autocomplete .ui-menu-item {
+        font-size:x-small;
+    }
+</style>
 
 {% endblock %}
 
@@ -15,7 +30,7 @@
 
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
-        <h1>My {{number}} projects</h1>
+        <h1>My projects</h1>
         <p>Template showing my working space</p>
         <p>
             <button
@@ -45,17 +60,19 @@
         {% if projects %}
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-        <div class="col-md-3 content">
-            <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
+        <div id="project_{{project.id}}" class="col-md-3 content">
+            <h3><a  href="/projects/{{ project.id }}">{{ project.name }}</a>
 
                 <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                data-content='
-                <ul>
-                    <li> Rename </li>
-                    <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
-                    <li><a href="/delete/{{ project.id }}">Delete</a></li>
-                </ul>
-                '>Manage</button>
+                data-content="  <ul>
+                                <li>Rename</li>
+                                <li onclick=&quot;
+                                        garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
+                                        $(this).parent().parent().remove();
+                                    &quot;><a href=&quot;#&quot;>Delete</a></li>
+                                </ul>
+                ">Manage</button>
+                </li>
                 {% if common_users %}
                 <a style="cursor:pointer;"><img class="share_button" data-id="{{ project.id }}" title="Share it!" width="20px" src="{% static "img/share.png" %}"></img></a>
                 {% endif %}

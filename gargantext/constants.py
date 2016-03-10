@@ -4,25 +4,34 @@
 from gargantext.util.lists import *
 
 LISTTYPES = {
-    'DOCUMENT': WeightedList,
-    'SYNONYMS': Translations,
-    'MIAMLIST': UnweightedList,
-    'STOPLIST': UnweightedList,
+    'DOCUMENT'     : WeightedList,
+    'GROUPLIST'    : Translations,
+    'STOPLIST'     : UnweightedList,
+    'MAINLIST'     : UnweightedList,
+    'MAPLIST'      : UnweightedList,
+    'OCCURRENCES'  : WeightedList,
     'COOCCURRENCES': WeightedMatrix,
 }
 
 NODETYPES = [
     None,
-    # documents hierachy
+    # documents hierarchy
     'USER',
     'PROJECT',
     'CORPUS',
     'DOCUMENT',
     # lists
-    'SYNONYMS',
-    'MIAMLIST',
     'STOPLIST',
+    'GROUPLIST',
+    'MAINLIST',
+    'MAPLIST',
     'COOCCURRENCES',
+    # scores
+    'OCCURRENCES',
+    'SPECIFICITY',
+    'CVALUE',
+    'TFIDF-CORPUS',
+    'TFIDF-GLOBAL',
 ]
 
 import datetime
@@ -70,23 +79,23 @@ RESOURCETYPES = [
         'default_language': 'fr',
     },
     {   'name': 'Jstor (RIS format)',
-        # 'parser': RISParser,
+        'parser': RISParser,
         'default_language': 'en',
     },
     {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
     },
-        {   'name': 'Scopus (RIS format)',
-        # 'parser': RISParser,
+    {   'name': 'Scopus (RIS format)',
+        'parser': RISParser,
         'default_language': 'en',
     },
     {   'name': 'Web of Science (ISI format)',
-        # 'parser': ISIParser,
+        'parser': ISIParser,
         'default_language': 'fr',
     },
     {   'name': 'Zotero (RIS format)',
-        # 'parser': RISParser,
+        'parser': RISParser,
         'default_language': 'en',
     },
     # {   'name': 'CSV',

@@ -25,6 +25,23 @@ NODETYPES = [
     'COOCCURRENCES',
 ]
 
+import datetime
+import dateutil
+def convert_to_date(date):
+    if isinstance(date, (int, float)):
+        return datetime.datetime.timestamp(date)
+    else:
+        return dateutil.parser.parse(date)
+
+INDEXED_HYPERDATA = {
+    'publication_date':
+        {'id': 1, 'type': datetime.datetime, 'convert_to_db': convert_to_date, 'convert_from_db': datetime.datetime.fromtimestamp},
+    'title':
+        {'id': 2, 'type': str, 'convert_to_db': str, 'convert_from_db': str},
+    'count':
+        {'id': 3, 'type': int, 'convert_to_db': float, 'convert_from_db': int},
+}
+
 
 from gargantext.util.taggers import *
 

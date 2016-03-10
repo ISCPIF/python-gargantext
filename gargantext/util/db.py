@@ -28,9 +28,9 @@ session = scoped_session(sessionmaker(bind=engine))
 
 from sqlalchemy.types import *
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-
+Double = DOUBLE_PRECISION
 
 # useful for queries
 
@@ -77,7 +77,7 @@ class bulk_insert:
         try:
             return '\t'.join(
                 value.replace('\\', '\\\\').replace('\n', '\\\n').replace('\r', '\\\r').replace('\t', '\\\t')
-                if isinstance(value, str) else str(value)
+                if isinstance(value, str) else str(value) if value is not None else '\\N'
                 for value in next(self.iter)
             ) + '\n'
         except StopIteration:

@@ -55,7 +55,8 @@ class User(Base):
 
     def owns(self, node):
         """check if a given node is owned by the user"""
-        return (node.user_id == self.id) or node.id in (contact.id for contact in self.contacts())
+        return (node.user_id == self.id) or \
+                node.id in (contact.id for contact in self.contacts())
 
 
 class Contact(Base):

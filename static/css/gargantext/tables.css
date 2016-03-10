@@ -1,0 +1,29 @@
+// styles for dynatables
+
+.no-transition {
+  -webkit-transition: height 0.1s;
+  -moz-transition: height 0.1s;
+  -ms-transition: height 0.1s;
+  -o-transition: height 0.1s;
+  transition: height 0.1s;
+}
+th { color: #fff; }
+
+th a {
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.dynatable-record-count {
+  font-size: 0.7em;
+}
+.dynatable-pagination-links {
+  font-size: 0.7em;
+}
+
+#corpusdisplayer {
+    width:200px;
+    margin:0 auto;
+    display:block;
+}

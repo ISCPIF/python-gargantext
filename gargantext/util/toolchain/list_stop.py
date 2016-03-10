@@ -2,15 +2,13 @@ from gargantext.util.db import *
 from gargantext.util.db_cache import *
 from gargantext.constants import *
 
-from gargantext.models.users  import User
-from gargantext.models.nodes  import Node
-from gargantext.models.ngrams import Ngram, NodeNgram
+from gargantext.util.db    import session, aliased, func
+from gargantext.util.lists import WeightedMatrix
+
+from gargantext.models        import User, Node, Ngram, NodeNgram
 
 import re
-import sqlalchemy as sa
-from sqlalchemy.sql import func
-from sqlalchemy.orm import aliased
-from sqlalchemy import desc, asc, or_, and_, Date, cast, select, literal_column
+from sqlalchemy import desc, asc
 #from ngram.tools import insert_ngrams
 
 def isStopWord(ngram, stop_words=None):
@@ -23,20 +21,16 @@ def isStopWord(ngram, stop_words=None):
 
     if word in stop_words:
         return(True)
-    
-    def test_match(word, regex):
-        format_regex = re.compile(regex)
-        if format_regex.match(word) :
-            return(True)
 
+    compiled_regexes = []   # to compile them only once
     for regex in [
               "^.{1,2}$"
             , "(.*)\d(.*)"
-            , "(.*)(\.)(.*)"
+            # , "(.*)(\.)(.*)"         trop fort (enlève les sigles !)
             , "(.*)(\,)(.*)"
             , "(.*)(< ?/?p ?>)(.*)"       # marques de paragraphes
             , "(.*)(study)(.*)"
-            , "(.*)(xx|xi|xv)(.*)"
+            , "(.*)\b(xx|xi|xv)\b(.*)"
             , "(.*)(result)(.*)"
             , "(.*)(année|nombre|moitié)(.*)"
             , "(.*)(temps)(.*)"
@@ -47,8 +41,14 @@ def isStopWord(ngram, stop_words=None):
             , "(.*)(travers)(.*)"
             , "(.*)(:|\|)(.*)"
             ] :
-        if test_match(word, regex) is True :
+        compiled_regexes.append(re.compile(regex))
+
+    for format_regex in compiled_regexes:
+        if format_regex.match(word):
+            # print("STOPLIST += '%s' (regex: %s)" % (word, format_regex.pattern))
             return(True)
+
+    return False
 
 def create_gargantua_resources():
     gargantua_id = session.query(User.id).filter(User.username=="gargantua").first()
@@ -61,32 +61,33 @@ def create_gargantua_resources():
     session.add(stopList)
     session.commit()
 
-def compute_stop(corpus_id,stopList_id=None,limit=2000,debug=False):
+def compute_stop(corpus, stopList_id=None, debug=False):
     '''
     Create list of stop words.
     TODO do a function to get all stop words with social scores
     '''
-    
+
     # Get the StopList if it exist or create a new one
     # At this step of development, a new StopList should be created
     if stopList_id == None:
         stopList_id = session.query(Node.id).filter(
-            Node.parent_id==corpus_id,
+            Node.parent_id==corpus.id,
             Node.typename == "STOPLIST"
             ).first()
         if stopList_id == None:
-            corpus = cache.Node[corpus_id]
-            user_id = corpus.user_id
-            stopList = Node(name="STOPLIST", parent_id=corpus_id, user_id=user_id, typename="STOPLIST")
+            stopList = Node(name="STOPLIST",
+                        parent_id=corpus.id,
+                        user_id=corpus.user_id,
+                        typename="STOPLIST")
             session.add(stopList)
             session.commit()
             stopList_id = stopList.id
-    
+
     # For tests only
     if debug == True:
         session.query(Node).filter(Node.id==stopList_id).delete()
         session.commit()
-    
+
     # Get common resources, all common StopWords on the platform
     ## First get the id of the StopList of Gargantua super user
     gargantua_id = session.query(User.id).filter(User.username=="gargantua").first()
@@ -101,16 +102,16 @@ def compute_stop(corpus_id,stopList_id=None,limit=2000,debug=False):
                          .filter(NodeNgram.node_id == rootStopList_id)
                          .all()
                  )
-    print([n for n in stop_words])
-    
-    
+
+    # print([n for n in stop_words])
+
     ## Get the ngrams
     ## ngrams :: [(Int, String, Int)]
-    frequency = sa.func.count( NodeNgram.weight )
+    frequency = func.count( NodeNgram.weight )
     ngrams = (session.query( Ngram.id, Ngram.terms, frequency )
             .join( NodeNgram, NodeNgram.ngram_id == Ngram.id )
             .join( Node, Node.id == NodeNgram.node_id )
-            .filter( Node.parent_id == corpus_id,
+            .filter( Node.parent_id == corpus.id,
                      Node.typename == "DOCUMENT")
             .group_by( Ngram.id )
             .order_by( desc( frequency ) )
@@ -119,9 +120,10 @@ def compute_stop(corpus_id,stopList_id=None,limit=2000,debug=False):
             )
 
     ngrams_to_stop = filter(lambda x: isStopWord(x,stop_words=stop_words), ngrams)
-    
-    print([n for n in ngrams_to_stop])
+
+    # print([n for n in ngrams_to_stop])
 
     stop = LISTTYPES["STOPLIST"]({ n[0] : -1 for n in ngrams_to_stop})
+    # stop = LISTTYPES["STOPLIST"]([n[0] for n in ngrams_to_stop])
     stop.save(stopList_id)
-#    
+    return stopList_id

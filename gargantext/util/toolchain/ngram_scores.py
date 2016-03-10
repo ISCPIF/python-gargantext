@@ -1,6 +1,6 @@
 from gargantext.models   import Node, NodeNgram, NodeNodeNgram
 from gargantext.util.db  import session, bulk_insert
-
+from sqlalchemy import text
 # £TODO
 # from gargantext.util.lists import WeightedContextIndex
 
@@ -57,19 +57,48 @@ def compute_occurrences_local(corpus):
     return occnode.id
 
 
-def compute_tfidf_local(corpus):
+def compute_tfidf(corpus, scope="local"):
     """
     Calculates tfidf within the current corpus
+
+    Parameter:
+      - scope: {"local" or "global"}
     """
 
-    # ?? FIXME could we keep the docids somehow from previous computations ??
-    docids_subquery = (session
-                        .query(Node.id)
-                        .filter(Node.parent_id == corpus.id)
-                        .filter(Node.typename == "DOCUMENT")
-                        .subquery()
-                       )
+    # local <=> within this corpus
+    if scope == "local":
+        # All docs of this corpus
+        docids_subquery = (session
+                            .query(Node.id)
+                            .filter(Node.parent_id == corpus.id)
+                            .filter(Node.typename == "DOCUMENT")
+                            .subquery()
+                           )
+    # global <=> within all corpora of this source
+    elif scope == "global":
+        this_source_type = corpus.resources()[0]['type']
 
+        # all corpora with the same source type
+        # (we need raw SQL query for postgres JSON operators) (TODO test speed)
+        same_source_corpora_query = (session
+                            .query(Node.id)
+                            .from_statement(text(
+                                """
+                                SELECT id FROM nodes
+                                WHERE hyperdata->'resources' @> '[{\"type\"\:%s}]'
+                                """ % this_source_type
+                                ))
+                            )
+
+        # All docs **in all corpora of the same source**
+        docids_subquery = (session
+                            .query(Node.id)
+                            .filter(Node.parent_id.in_(same_source_corpora_query))
+                            .filter(Node.typename == "DOCUMENT")
+                            .subquery()
+                           )
+
+    # N
     total_docs = session.query(docids_subquery).count()
 
     # or perhaps at least do the occurrences right now at the same time
@@ -93,12 +122,14 @@ def compute_tfidf_local(corpus):
     # -------------------------------------------------
 
     # create the new TFIDF-CORPUS node
-    ltfidf = Node()
-    ltfidf.typename  = "TFIDF-CORPUS"
-    ltfidf.name      = "tfidf (in:%s)" % corpus.id
-    ltfidf.parent_id = corpus.id
-    ltfidf.user_id   = corpus.user_id
-    session.add(ltfidf)
+    tfidf_nd = Node(parent_id = corpus.id, user_id = corpus.user_id)
+    if scope == "local":
+        tfidf_nd.typename  = "TFIDF-CORPUS"
+        tfidf_nd.name      = "tfidf-c (in:%s)" % corpus.id
+    elif scope == "global":
+        tfidf_nd.typename  = "TFIDF-GLOBAL"
+        tfidf_nd.name      = "tfidf-g (in type:%s)" % this_source_type
+    session.add(tfidf_nd)
     session.commit()
 
     # reflect that in NodeNodeNgrams
@@ -106,7 +137,7 @@ def compute_tfidf_local(corpus):
     bulk_insert(
         NodeNodeNgram,
         ('node1_id' , 'node2_id', 'ngram_id', 'score'),
-        ((ltfidf.id,  corpus.id,     ng, tfidfs[ng]) for ng in tfidfs)
+        ((tfidf_nd.id,  corpus.id,     ng, tfidfs[ng]) for ng in tfidfs)
     )
 
-    return ltfidf.id
+    return tfidf_nd.id

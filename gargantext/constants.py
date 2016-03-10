@@ -92,6 +92,8 @@ RESOURCETYPES = [
     # },
 ]
 
+# linguistic extraction parameters
+DEFAULT_COOC_THRESHOLD = 4
 
 # other parameters
 # default number of docs POSTed to scrappers.views.py

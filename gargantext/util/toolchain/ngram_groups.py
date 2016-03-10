@@ -32,7 +32,7 @@ def compute_groups(corpus, stoplist_id = None):
     stop_ngrams_ids = {}
     # we will need the ngrams of the stoplist to filter
     if stoplist_id is not None:
-        for id in session.query(NodeNgram.id).filter(NodeNgram.node_id == stoplist_id).all():
+        for id in session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id == stoplist_id).all():
             stop_ngrams_ids[id[0]] = True
 
 

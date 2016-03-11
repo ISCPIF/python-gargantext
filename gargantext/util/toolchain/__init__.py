@@ -1,8 +1,9 @@
 from .parsing           import parse
 from .ngrams_extraction import extract_ngrams
 
-from .list_stop         import compute_stop
+from .list_stop         import do_stoplist
 from .ngram_scores      import compute_occurrences_local, compute_tfidf
+from .list_main         import do_mainlist
 from .ngram_coocs_tempo import compute_coocs
 from .score_specificity import compute_specificity
 from .list_map          import compute_mapList     # TEST
@@ -24,6 +25,12 @@ def parse_extract(corpus):
     # apply actions
     print('CORPUS #%d' % (corpus.id))
     parse(corpus)
+
+    # was there an error in the process ?
+    if corpus.status()['error']:
+        print("ERROR: aborting parse_extract for corpus #%i" % corpus_id)
+        return None
+
     print('CORPUS #%d: parsed' % (corpus.id))
     extract_ngrams(corpus)
     print('CORPUS #%d: extracted ngrams' % (corpus.id))
@@ -45,16 +52,16 @@ def parse_extract(corpus):
     gtfidf_id = compute_tfidf(corpus, scope="global")
     print('CORPUS #%d: [%s] new globaltfidf node #%i' % (corpus.id, t(), gtfidf_id))
 
-    # ?? mainlist: compute + write (to Node and NodeNgram)
-    # mainlist_id = compute_mainlist(corpus)
-    # print('CORPUS #%d: [%s] new mainlist node #%i' % (corpus.id, t(), mainlist_id))
+    # -> mainlist: compute + write (to Node and NodeNgram)
+    mainlist_id = mainlist_filter(corpus, tfidf_id = gtfidf_id, stoplist_id = stop_id)
+    print('CORPUS #%d: [%s] new mainlist node #%i' % (corpus.id, t(), mainlist_id))
 
     # -> cooccurrences: compute + write (=> Node and NodeNodeNgram)
-    cooc_id = compute_coocs(corpus, stop_id = None)
+    cooc_id = compute_coocs(corpus, mainlist_id = mainlist_id, stop_id = None)
     print('CORPUS #%d: [%s] new cooccs node #%i' % (corpus.id, t(), cooc_id))
 
     # ?? specificity: compute + write (=> NodeNodeNgram)
-    spec_id = compute_specificity(cooc_id=cooc_id, corpus=corpus)
+    spec_id = compute_specificity(corpus, cooc_id=cooc_id)
     print('CORPUS #%d: [%s] new specificity node #%i' % (corpus.id, t(), cooc_id))
 
     # ?? maplist: compute + write (to Node and NodeNgram)
@@ -68,6 +75,8 @@ def parse_extract(corpus):
     # -> write groups to Node and NodeNgramNgram
     group_id = compute_groups(corpus, stoplist_id = None)
     print('CORPUS #%d: [%s] new grouplist node #%i' % (corpus.id, t(), group_id))
+
+
 
 
 def t():

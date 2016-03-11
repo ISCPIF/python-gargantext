@@ -93,7 +93,9 @@ RESOURCETYPES = [
 ]
 
 # linguistic extraction parameters
-DEFAULT_COOC_THRESHOLD = 4
+DEFAULT_TFIDF_CUTOFF_RATIO = .55      # for MAINLIST maximum terms
+DEFAULT_TFIDF_HARD_LIMIT = 1000       # for MAINLIST maximum terms
+DEFAULT_COOC_THRESHOLD = 4            # for COOCCURRENCES node
 
 # other parameters
 # default number of docs POSTed to scrappers.views.py

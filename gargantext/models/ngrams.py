@@ -19,7 +19,7 @@ class NodeNgram(Base):
     weight = Column(Float)
 
 class NodeNodeNgram(Base):
-    """ for instance for tfidf:
+    """ for instance for TFIDF
     (
         doc                              ::Node ,
         corpus                           ::Node ,
@@ -37,8 +37,16 @@ class NodeNodeNgram(Base):
     # (cf. www.postgresql.org/docs/9.4/static/datatype-numeric.html#DATATYPE-FLOAT)
 
 class NodeNgramNgram(Base):
+    """ for instance for COOCCURRENCES and GROUPLIST
+    (
+        cooc_node/group_node  ::Node ,
+        term_A                ::Ngram ,
+        term_B                ::Ngram ,
+        weight                ::Float (real)
+    )
+    """
     __tablename__ = 'nodes_ngrams_ngrams'
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram1_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     ngram2_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
-    weight = Column(Float)
+    weight = Column(Float(precision=24))  # see comment for NodeNodeNgram.score

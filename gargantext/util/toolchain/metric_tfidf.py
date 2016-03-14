@@ -16,7 +16,7 @@ from math                import log
 # from gargantext.util.lists import WeightedContextIndex
 
 
-def compute_occurrences_local(corpus, overwrite_id = None):
+def compute_occs(corpus, overwrite_id = None):
     """
     Calculates sum of occs per ngram within corpus
     (used as info in the ngrams table view)

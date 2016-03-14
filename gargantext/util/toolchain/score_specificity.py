@@ -1,25 +1,26 @@
-from gargantext.util.db import session, aliased, func
-from gargantext.util.db_cache import *
-from gargantext.constants import *
+"""
+Computes a specificity metric from the ngram cooccurrence matrix.
+ + SAVE => WeightedList => NodeNgram
+"""
+from gargantext.models        import Node, Ngram, NodeNgram, NodeNgramNgram
+from gargantext.util.db       import session, aliased, func, bulk_insert
+from gargantext.util.lists    import WeightedList
+from collections              import defaultdict
+from pandas                   import DataFrame
 
-# from gargantext.util.analysis.cooccurrences import do_cooc
-
-from gargantext.models import Node, Ngram, NodeNgramNgram, NodeNodeNgram
-
-import pandas as pd
-from collections import defaultdict
-
-def compute_specificity(corpus, cooc_id, limit=100):
+def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
     '''
     Compute the specificity, simple calculus.
+
+    Parameters:
+        - cooc_id: mandatory id of a cooccurrences node to use as base
+        - overwrite_id: optional preexisting specificity node to overwrite
     '''
 
     cooccurrences = (session.query(NodeNgramNgram)
                     .filter(NodeNgramNgram.node_id==cooc_id)
-                    # no filtering: new choice filter on tfidf before creation
-                    #    .order_by(NodeNgramNgram.weight)
-                    #    .limit(limit)
                     )
+    # no filtering: new choice cooc already filtered on tfidf before creation
 
     matrix = defaultdict(lambda : defaultdict(float))
 
@@ -30,7 +31,9 @@ def compute_specificity(corpus, cooc_id, limit=100):
 
     nb_ngrams = len(matrix)
 
-    d = pd.DataFrame(matrix).fillna(0)
+    print("SPECIFICITY: computing on %i ngrams" % nb_ngrams)
+
+    d = DataFrame(matrix).fillna(0)
 
     # proba (x/y) ( <= on divise chaque colonne par son total)
     d = d / d.sum(axis=0)
@@ -74,28 +77,27 @@ def compute_specificity(corpus, cooc_id, limit=100):
 
     # ----------------
     # specificity node
-    node = session.query(Node).filter(
-        Node.parent_id==corpus.id,
-        Node.typename == "SPECIFICITY"
-        ).first()
-
-    if node == None:
-        user_id = corpus.user_id
-        node = Node(name="Specif (in:%i)" % corpus.id,
-                    parent_id=corpus.id,
-                    user_id=user_id,
-                    typename="SPECIFICITY")
-        session.add(node)
+    if overwrite_id:
+        # overwrite pre-existing id
+        the_id = overwrite_id
+        session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id==the_id).delete()
         session.commit()
+    else:
+        specnode = corpus.add_child(
+            typename  = "SPECIFICITY",
+            name = "Specif (in:%s)" % corpus.id
+        )
+        session.add(specnode)
+        session.commit()
+        the_id = specnode.id
 
-    data = zip(  [node.id] * nb_ngrams
-               , [corpus.id] * nb_ngrams
-               , v.index.tolist()
-               , v.values.tolist()
-               )
-    session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id==node.id).delete()
-    session.commit()
+    # print(v)
 
-    bulk_insert(NodeNodeNgram, ['node1_id', 'node2_id', 'ngram_id', 'score'], [d for d in data])
+    data = WeightedList(
+            zip(  v.index.tolist()
+                , v.values.tolist()
+             )
+           )
+    data.save(the_id)
 
-    return(node.id)
+    return(the_id)

@@ -1,12 +1,19 @@
-from gargantext.models   import Node, NodeNgramNgram
-from gargantext.util.db  import session
-from gargantext.util.lists import Translations
+"""
+For initial ngram groups via stemming
+ Exemple:
+   - groups['copper engrav'] = {'copper engraving':3, 'coppers engraver':1...}
+   - groups['post']          = {'poste':3, 'poster':5, 'postés':2...}
+"""
+
+from gargantext.models        import Node, NodeNgramNgram
+from gargantext.util.db       import session
+from gargantext.util.lists    import Translations
 # to convert fr => french :/
 from gargantext.util.languages import languages
 
-from nltk.stem.snowball  import SnowballStemmer
-from re                  import split as resplit
-from collections import defaultdict, Counter
+from re                       import split as resplit
+from collections              import defaultdict, Counter
+from nltk.stem.snowball       import SnowballStemmer
 
 def prepare_stemmers(corpus):
     """
@@ -22,7 +29,7 @@ def prepare_stemmers(corpus):
         stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
     return stemmers_by_lg
 
-def compute_groups(corpus, stoplist_id = None):
+def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     """
     1) Use a stemmer/lemmatizer to group forms if they have same stem/lemma
     2) Create an empty GROUPLIST node (for a list of "synonym" ngrams)
@@ -98,17 +105,21 @@ def compute_groups(corpus, stoplist_id = None):
 
     del my_groups
 
-    # 2) Create the list node
-    the_group = Node()
-    the_group.typename  = "GROUPLIST"
-    the_group.name      = "Group (src:%s)" % corpus.name[0:10]
-    the_group.parent_id = corpus.id    # could use corpus.parent_id if free list
-    the_group.user_id   = corpus.user_id
+    # 2) the list node
+    if overwrite_id:
+        # overwrite pre-existing id
+        the_id = overwrite_id
+    # or create the new id
+    else:
+        the_group =  corpus.add_child(
+            typename  = "GROUPLIST",
+            name = "Group (src:%s)" % corpus.name[0:10]
+        )
 
-    # and save the node
-    session.add(the_group)
-    session.commit()
-    the_id = the_group.id
+        # and save the node
+        session.add(the_group)
+        session.commit()
+        the_id = the_group.id
 
     # 3) Save each grouping couple to DB thanks to Translations.save() table
     ndngng_list = Translations(

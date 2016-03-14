@@ -1,16 +1,31 @@
+"""
+Computes ngram scores with 3 ranking functions:
+   - the simple sum of occurrences inside the corpus
+   - the tfidf inside the corpus
+   - the global tfidf for all corpora having same source
+
+FIXME: "having the same source" means we need to select inside hyperdata
+       with a (perhaps costly) JSON query: WHERE hyperdata->'resources' @> ...
+"""
+
 from gargantext.models   import Node, NodeNgram, NodeNodeNgram
-from gargantext.util.db  import session, bulk_insert
-from sqlalchemy import text
+from gargantext.util.db  import session, bulk_insert, func # = sqlalchemy.func like sum() or count()
+from sqlalchemy          import text  # for query from raw SQL statement
+from math                import log
 # £TODO
 # from gargantext.util.lists import WeightedContextIndex
 
-from gargantext.util.db import func # = sqlalchemy.func like sum() or count()
 
-from math  import log
-
-def compute_occurrences_local(corpus):
+def compute_occurrences_local(corpus, overwrite_id = None):
     """
     Calculates sum of occs per ngram within corpus
+    (used as info in the ngrams table view)
+
+    ? optimize ?  OCCS here could be calculated simultaneously within TFIDF-CORPUS loop
+
+    Parameters:
+        - overwrite_id: optional id of a pre-existing OCCURRENCES node for this corpus
+                     (the Node and its previous NodeNodeNgram rows will be replaced)
     """
 
     # 1) all the doc_ids of our corpus (scope of counts for filter)
@@ -37,32 +52,41 @@ def compute_occurrences_local(corpus):
     #                    ^^^^  ^^^
     #                ngram_id  sum_wei
 
-    # create the new OCCURRENCES node
-    occnode = Node()
-    occnode.typename  = "OCCURRENCES"
-    occnode.name      = "occ_sums (in:%s)" % corpus.id
-    occnode.parent_id = corpus.id
-    occnode.user_id   = corpus.user_id
-    session.add(occnode)
-    session.commit()
+
+    if overwrite_id:
+        # overwrite pre-existing id
+        the_id = overwrite_id
+        # occnode = cache.Node[overwrite_id]
+    else:
+        # create the new OCCURRENCES node
+        occnode = corpus.add_child(
+            typename  = "OCCURRENCES",
+            name = "occ_sums (in:%s)" % corpus.id
+        )
+        session.add(occnode)
+        session.commit()
+        the_id = occnode.id
 
     # reflect that in NodeNodeNgrams (could be NodeNgram but harmony with tfidf)
     # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
     bulk_insert(
         NodeNodeNgram,
         ('node1_id' , 'node2_id', 'ngram_id', 'score'),
-        ((occnode.id, corpus.id,  res[0], res[1]) for res in occ_sums)
+        ((the_id, corpus.id,  res[0], res[1]) for res in occ_sums)
     )
 
-    return occnode.id
+    return the_id
 
 
-def compute_tfidf(corpus, scope="local"):
+def compute_tfidf(corpus, scope="local", overwrite_id=None):
     """
     Calculates tfidf within the current corpus
 
-    Parameter:
+    Parameters:
+      - the corpus itself
       - scope: {"local" or "global"}
+      - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
+                   (the Node and its previous NodeNodeNgram rows will be replaced)
     """
 
     # local <=> within this corpus
@@ -121,23 +145,27 @@ def compute_tfidf(corpus, scope="local"):
         tfidfs[ngram_id] = tf * (log_tot_docs-log(nd))
     # -------------------------------------------------
 
-    # create the new TFIDF-CORPUS node
-    tfidf_nd = Node(parent_id = corpus.id, user_id = corpus.user_id)
-    if scope == "local":
-        tfidf_nd.typename  = "TFIDF-CORPUS"
-        tfidf_nd.name      = "tfidf-c (in:%s)" % corpus.id
-    elif scope == "global":
-        tfidf_nd.typename  = "TFIDF-GLOBAL"
-        tfidf_nd.name      = "tfidf-g (in type:%s)" % this_source_type
-    session.add(tfidf_nd)
-    session.commit()
+    if overwrite_id:
+        the_id = overwrite_id
+    else:
+        # create the new TFIDF-XXXX node
+        tfidf_nd = corpus.add_child()
+        if scope == "local":
+            tfidf_nd.typename  = "TFIDF-CORPUS"
+            tfidf_nd.name      = "tfidf-c (in:%s)" % corpus.id
+        elif scope == "global":
+            tfidf_nd.typename  = "TFIDF-GLOBAL"
+            tfidf_nd.name      = "tfidf-g (in type:%s)" % this_source_type
+        session.add(tfidf_nd)
+        session.commit()
+        the_id = tfidf_nd.id
 
     # reflect that in NodeNodeNgrams
     # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
     bulk_insert(
         NodeNodeNgram,
-        ('node1_id' , 'node2_id', 'ngram_id', 'score'),
-        ((tfidf_nd.id,  corpus.id,     ng, tfidfs[ng]) for ng in tfidfs)
+        ('node1_id', 'node2_id','ngram_id', 'score'),
+        ((the_id,    corpus.id,    ng,   tfidfs[ng]) for ng in tfidfs)
     )
 
-    return tfidf_nd.id
+    return the_id

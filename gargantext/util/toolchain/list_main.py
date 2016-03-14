@@ -2,26 +2,38 @@ from gargantext.models     import Node, NodeNgram, NodeNodeNgram
 from gargantext.util.db    import session
 from gargantext.util.lists import UnweightedList
 from sqlalchemy            import desc
-from gargantext.constants  import DEFAULT_TFIDF_CUTOFF_RATIO, DEFAULT_TFIDF_HARD_LIMIT
-from math                  import floor
+from gargantext.constants  import DEFAULT_TFIDF_CUTOFF_RATIO, \
+                                  DEFAULT_TFIDF_HARD_LIMIT
 
-def do_mainlist(corpus, tfidf_id=None, stoplist_id=None,
+def do_mainlist(corpus,
+                    overwrite_id  = None,
+                    tfidf_id=None, stoplist_id=None,
                     hard_limit=DEFAULT_TFIDF_HARD_LIMIT,
                     ratio_limit=DEFAULT_TFIDF_CUTOFF_RATIO
                     ):
     """
-    Select terms for the mainlist according to a global tfidf and stoplist.
+    Select top n terms according to a global tfidf ranking and stoplist filter.
 
     The number of selected terms will be:
         min(hard_limit, number_of_terms * ratio_limit)
 
     NB : We use a global tfidf node where the values are global but the ngrams
          are already selected (== only within this corpus documents).
+         TO DISCUSS: allow influence of the local tfidf scores too
 
     Parameters:
-        2 limits are useful to set a maximum amount of picked terms
-        - ratio_limit: relative to the number of distinct ngrams  [0,1]
-        - hard_limit: absolute value [default: 1000]
+        - the corpus itself
+        - a tfidf score for ranking the ngrams
+        - a stoplist for filtering some ngrams
+        - overwrite_id: optional id of a pre-existing MAINLIST node for this corpus
+                     (the Node and its previous NodeNgram rows will be replaced)
+
+      + 2 limits to set the amount of picked terms:
+        - ratio_limit ∈ [0,1]: a ratio relative to the number of distinct ngrams
+          (default: 0.55)
+        - hard_limit: an absolute max value
+          (default: 1000)
+
     """
 
     # retrieve helper nodes if not provided
@@ -61,20 +73,26 @@ def do_mainlist(corpus, tfidf_id=None, stoplist_id=None,
     nb_ngrams = ordered_filtered_tfidf.count()
 
     # apply ratio to find smallest limit
-    our_limit = min(hard_limit, floor(nb_ngrams * ratio_limit))
+    our_limit = min(hard_limit, round(nb_ngrams * ratio_limit))
+
+    print("MAINLIST: keeping %i ngrams out of %i" % (our_limit,nb_ngrams))
 
     # DB retrieve up to limit => MAINLIST
     top_ngrams_ids = ordered_filtered_tfidf.limit(our_limit).all()
 
-    # now create the new MAINLIST node
-    mainlist = corpus.add_child(
-        typename  = "MAINLIST",
-        name = "Mainlist (in:%s)" % corpus.name[0:10]
-    )
-    session.add(mainlist)
-    session.commit()
-
-    the_id = mainlist.id
+    if overwrite_id:
+        # overwrite pre-existing id
+        the_id = overwrite_id
+        # mainlist = cache.Node[overwrite_id]
+    else:
+        # now create the new MAINLIST node
+        mainlist = corpus.add_child(
+            typename  = "MAINLIST",
+            name = "Mainlist (in:%s)" % corpus.id
+        )
+        session.add(mainlist)
+        session.commit()
+        the_id = mainlist.id
 
     # create UnweightedList object and save (=> new NodeNgram rows)
     UnweightedList(top_ngrams_ids).save(the_id)

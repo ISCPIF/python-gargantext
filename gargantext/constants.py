@@ -9,9 +9,11 @@ LISTTYPES = {
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
+    'SPECIFICITY'  : WeightedList,
     'OCCURRENCES'  : WeightedContextIndex,
     'COOCCURRENCES': WeightedMatrix,
     'TFIDF-CORPUS' : WeightedContextIndex,
+    'TFIDF-GLOBAL' : WeightedContextIndex,
 }
 
 NODETYPES = [
@@ -92,10 +94,21 @@ RESOURCETYPES = [
     # },
 ]
 
-# linguistic extraction parameters
-DEFAULT_TFIDF_CUTOFF_RATIO = .55      # for MAINLIST maximum terms
-DEFAULT_TFIDF_HARD_LIMIT = 1000       # for MAINLIST maximum terms
-DEFAULT_COOC_THRESHOLD = 4            # for COOCCURRENCES node
+# linguistic extraction parameters ---------------------------------------------
+DEFAULT_TFIDF_CUTOFF_RATIO = .45             # MAINLIST maximum terms in %
+
+DEFAULT_TFIDF_HARD_LIMIT = 750               # MAINLIST maximum terms abs
+                                             # (makes COOCS larger ~ O(N²) /!\)
+
+DEFAULT_COOC_THRESHOLD = 5                   # inclusive minimum for COOCS coefs
+                                             # (makes COOCS more sparse)
+
+DEFAULT_MAPLIST_MAX = 300                    # MAPLIST maximum terms
+
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
+                                             # (NB: used to be 0.005 !!)
+
+# ------------------------------------------------------------------------------
 
 # other parameters
 # default number of docs POSTed to scrappers.views.py

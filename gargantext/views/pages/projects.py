@@ -94,6 +94,7 @@ def project(request, project_id):
         )
         session.add(corpus)
         session.commit()
+        # parse_extract: fileparsing -> ngram extraction -> lists
         scheduled(parse_extract)(corpus.id)
 
     # corpora within this project
@@ -101,16 +102,26 @@ def project(request, project_id):
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type
-        resource = corpus.resources()[0]
-        resource_type_name = RESOURCETYPES[resource['type']]['name']
+        resources = corpus.resources()
+        if len(resources):
+            resource = resources[0]
+            resource_type_name = RESOURCETYPES[resource['type']]['name']
+        else:
+            print("(WARNING) PROJECT view: no listed resource")
         # add some data for the viewer
         corpus.count = corpus.children('DOCUMENT').count()
         status = corpus.status()
         if status is not None and not status['complete']:
-            corpus.status_message = '(in progress: %s, %d complete)' % (
-                status['action'].replace('_', ' '),
-                status['progress'],
-            )
+            if not status['error']:
+                corpus.status_message = '(in progress: %s, %d complete)' % (
+                    status['action'].replace('_', ' '),
+                    status['progress'],
+                )
+            else:
+                corpus.status_message = '(aborted: "%s" after %i docs)' % (
+                    status['error'][-1],
+                    status['progress']
+                )
         else:
             corpus.status_message = ''
         # add

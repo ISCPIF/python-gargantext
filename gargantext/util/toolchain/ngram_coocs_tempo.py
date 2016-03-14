@@ -1,23 +1,28 @@
-from gargantext.models     import Node, NodeNgram, NodeNgramNgram
-from gargantext.util.lists import WeightedMatrix
-from gargantext.util.db    import session, aliased, func
-from gargantext.constants  import DEFAULT_COOC_THRESHOLD
+from gargantext.models         import Node, NodeNgram, NodeNgramNgram
+from gargantext.util.lists     import WeightedMatrix
+from gargantext.util.db        import session, aliased, func
+from gargantext.util.db_cache  import cache
+from gargantext.constants      import DEFAULT_COOC_THRESHOLD
 
 def compute_coocs(corpus,
-                    threshold = DEFAULT_COOC_THRESHOLD,
-                    weighted  = False,
-                    our_id    = None,
-                    stop_id   = None,
+                    overwrite_id  = None,
+                    threshold     = DEFAULT_COOC_THRESHOLD,
+                    mainlist_id     = None,
+                    stoplist_id     = None,
                     symmetry_filter = True):
     """
     Count how often some extracted terms appear
     together in a small context (document)
     throughout a larger context (corpus).
 
-    node_id | ngram_id | weight       ngram1_id | ngram2_id | ucooc | wcooc |
-    --------+----------+--------      ----------+-----------+-------+-------+
-      MYDOC |      487 |      1   =>        487 |       294 |     1 |     4 |
-      MYDOC |      294 |      3
+             [NodeNgram]                       [NodeNgramNgram]
+
+    node_id | ngram_id | weight       ngram1_id | ngram2_id | score |
+    --------+----------+--------      ----------+-----------+-------+
+     MYDOCA |      487 |      1   =>        487 |       294 |     2 |
+     MYDOCA |      294 |      3
+     MYDOCB |      487 |      1
+     MYDOCB |      294 |      4
 
     Fill that info in DB:
       - a *new* COOCCURRENCES node
@@ -25,14 +30,16 @@ def compute_coocs(corpus,
 
     worse case complexity ~ O(N²/2) with N = number of ngrams
 
+    If a mainlist is provided, we filter doc ngrams to those also in the list.
+
     Parameters:
-      - threshold: on output ucooc count (previously called hapax)
-      - weighted: if False normal cooc to be saved as result
-                  if True  weighted cooc (experimental)
-      - stop_id: stoplist for filtering input ngrams
-      - TODO cvalue_id: allow a metric as input filter
-      - TODO n_min, n_max : filter on Ngram.n (aka length of ngram)
-      - TODO start, end : filter on document date
+      - the corpus node
+      - overwrite_id: id of a pre-existing COOCCURRENCES node for this corpus
+                     (all hyperdata and previous NodeNgramNgram rows will be replaced)
+      - threshold: on output cooc count (previously called hapax)
+      - mainlist_id: mainlist to constrain the input ngrams
+      - stoplist_id: stoplist for filtering input ngrams
+                     (normally unnecessary if a mainlist is provided)
 
      (deprecated parameters)
       - field1,2: allowed to count other things than ngrams (eg tags) but no use case at present
@@ -54,13 +61,16 @@ def compute_coocs(corpus,
     coocs for each doc :
       - each given pair like (termA, termB) will likely appear several times
         => we do GROUP BY (x1.ngram_id, x2.ngram_id)
-      - normally we can count unique appearances of the pair (ucooc)
-      - we can count sum of sum of weights in the pair (wcooc or cofreq)
+      - we count unique appearances of the pair (cooc)
 
-    TODO
-    ====
-      use WeightedMatrix
+
     """
+
+        #   - TODO cvalue_id: allow a metric as additional  input filter
+        #   - TODO n_min, n_max : filter on Ngram.n (aka length of ngram)
+        #   - TODO start, end : filter on document date
+        #   - TODO weighted: if False normal cooc to be saved as result
+        #                    if True  weighted cooc (experimental)
 
     # /!\ big combinatorial complexity /!\
     # pour 8439 lignes dans l'index nodes_ngrams dont 1442 avec occ > 1
@@ -94,10 +104,22 @@ def compute_coocs(corpus,
 
     # 2) INPUT FILTERS (reduce N before O(N²))
     #    £TODO add possibility to restrict to the mainlist
-    if stop_id:
+    if mainlist_id:
+        main_subquery = (
+            session.query(NodeNgram.ngram_id)
+                .filter(NodeNgram.node_id == mainlist_id)
+                .subquery()
+                )
+
+        coocs_query = ( coocs_query
+            .filter( x1.ngram_id.in_(main_subquery) )
+            .filter( x2.ngram_id.in_(main_subquery) )
+        )
+
+    if stoplist_id:
         stop_subquery = (
             session.query(NodeNgram.ngram_id)
-                .filter(NodeNgram.node_id == stop_id)
+                .filter(NodeNgram.node_id == stoplist_id)
                 .subquery()
                 )
 
@@ -128,30 +150,36 @@ def compute_coocs(corpus,
     # 3) OUTPUT FILTERS
     # ------------------
     # threshold
-    #
-    coocs_query = coocs_query.having(ucooc > threshold)
+    coocs_query = coocs_query.having(ucooc >= threshold)
 
     # 4) EXECUTE QUERY
     # ----------------
     #  => storage in our matrix structure
     matrix = WeightedMatrix(coocs_query.all())
 
+    # fyi
+    # shape_0 = len({pair[0] for pair in matrix.items})
+    # shape_1 = len({pair[1] for pair in matrix.items})
+    # print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
+
     # 5) SAVE
     # --------
-    if our_id:
-        # use pre-existing id
-        the_id = our_id
+    # saving the parameters of the analysis in the Node JSON
+    new_hyperdata = { 'corpus': corpus.id,
+                      'threshold': threshold }
+    if overwrite_id:
+        # overwrite pre-existing id
+        the_cooc = cache.Node[overwrite_id]
+        the_cooc.hyperdata = new_hyperdata
+        the_cooc.save_hyperdata()
+        session.commit()
+        the_id = overwrite_id
     else:
         # create the new cooc node
-        the_cooc = Node(
+        the_cooc = corpus.add_child(
                         typename  = "COOCCURRENCES",
                         name      = "Coocs (in:%s)" % corpus.name[0:10],
-                        parent_id = corpus.id,
-                        user_id   = corpus.user_id,
-
-                        # saving the parameters of the analysis in the Node JSON
-                        hyperdata = { 'corpus': corpus.id,
-                                      'threshold': threshold }
+                        hyperdata = new_hyperdata,
                     )
         session.add(the_cooc)
         session.commit()

@@ -1,21 +1,19 @@
-from gargantext.util.db import *
-from gargantext.util.db_cache import *
-from gargantext.constants import *
-
-from gargantext.util.db    import session, aliased, func
-from gargantext.util.lists import WeightedMatrix
+"""
+Creates a filtering list for corpus ngrams.
+(implementation: regexp + "master" stoplist)
+"""
 
 from gargantext.models        import User, Node, Ngram, NodeNgram
+from gargantext.util.db       import session, func
+from gargantext.constants     import LISTTYPES
+from re                       import compile
+from sqlalchemy               import desc
 
-import re
-from sqlalchemy import desc, asc
-#from ngram.tools import insert_ngrams
-
-def isStopWord(ngram, stop_words=None):
+def is_stop_word(ngram, stop_words=None):
     '''
     ngram :: (Int, String) => (ngram_id, ngram_terms)
     stop_words :: Set of String
-    (to avoid SQL query each time isStopWord is invoked, get in as parameter)
+    (to avoid SQL query each time is_stop_word is invoked, get in as parameter)
     '''
     word = ngram[1]
 
@@ -41,7 +39,7 @@ def isStopWord(ngram, stop_words=None):
             , "(.*)(travers)(.*)"
             , "(.*)(:|\|)(.*)"
             ] :
-        compiled_regexes.append(re.compile(regex))
+        compiled_regexes.append(compile(regex))
 
     for format_regex in compiled_regexes:
         if format_regex.match(word):
@@ -61,32 +59,27 @@ def create_gargantua_resources():
     session.add(stopList)
     session.commit()
 
-def compute_stop(corpus, stopList_id=None, debug=False):
+def do_stoplist(corpus, overwrite_id=None):
     '''
     Create list of stop words.
     TODO do a function to get all stop words with social scores
+
+    Parameters:
+        - overwrite_id: optional preexisting STOPLIST node to overwrite
     '''
 
-    # Get the StopList if it exist or create a new one
+    # Get preexisting StopList if provided in overwrite_id param
+    if overwrite_id:
+        stoplist_id = overwrite_id
     # At this step of development, a new StopList should be created
-    if stopList_id == None:
-        stopList_id = session.query(Node.id).filter(
-            Node.parent_id==corpus.id,
-            Node.typename == "STOPLIST"
-            ).first()
-        if stopList_id == None:
-            stopList = Node(name="STOPLIST",
-                        parent_id=corpus.id,
-                        user_id=corpus.user_id,
-                        typename="STOPLIST")
-            session.add(stopList)
-            session.commit()
-            stopList_id = stopList.id
-
-    # For tests only
-    if debug == True:
-        session.query(Node).filter(Node.id==stopList_id).delete()
+    else:
+        stoplist = corpus.add_child(
+                    name="Stoplist (in:%s)" % corpus.id,
+                    typename="STOPLIST"
+                   )
+        session.add(stoplist)
         session.commit()
+        stoplist_id = stoplist.id
 
     # Get common resources, all common StopWords on the platform
     ## First get the id of the StopList of Gargantua super user
@@ -107,23 +100,23 @@ def compute_stop(corpus, stopList_id=None, debug=False):
 
     ## Get the ngrams
     ## ngrams :: [(Int, String, Int)]
-    frequency = func.count( NodeNgram.weight )
-    ngrams = (session.query( Ngram.id, Ngram.terms, frequency )
+    ngrams = (session.query( Ngram.id, Ngram.terms)
             .join( NodeNgram, NodeNgram.ngram_id == Ngram.id )
             .join( Node, Node.id == NodeNgram.node_id )
             .filter( Node.parent_id == corpus.id,
                      Node.typename == "DOCUMENT")
             .group_by( Ngram.id )
-            .order_by( desc( frequency ) )
             #.limit(limit)
             .all()
             )
 
-    ngrams_to_stop = filter(lambda x: isStopWord(x,stop_words=stop_words), ngrams)
+    ngrams_to_stop = filter(
+            lambda x: is_stop_word(x,stop_words=stop_words), ngrams
+        )
 
     # print([n for n in ngrams_to_stop])
 
     stop = LISTTYPES["STOPLIST"]({ n[0] : -1 for n in ngrams_to_stop})
     # stop = LISTTYPES["STOPLIST"]([n[0] for n in ngrams_to_stop])
-    stop.save(stopList_id)
-    return stopList_id
+    stop.save(stoplist_id)
+    return stoplist_id

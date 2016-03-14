@@ -1,117 +1,122 @@
-from gargantext.util.db import *
-from gargantext.util.db_cache import *
-from gargantext.constants import *
+"""
+Selects a subset of corpus ngrams to use in the graph map.
+"""
 
-from gargantext.models.ngrams import Ngram, NodeNgram,\
-        NodeNodeNgram, NodeNgramNgram
+from gargantext.models.ngrams import Node, Ngram, NodeNgram, \
+                                     NodeNgramNgram, NodeNodeNgram
+from gargantext.util.db       import session, aliased, func
+from gargantext.util.db_cache import cache
+from gargantext.util.lists    import UnweightedList
+from sqlalchemy               import desc
+from gargantext.constants     import DEFAULT_MAPLIST_MAX,\
+                                     DEFAULT_MAPLIST_MONOGRAMS_RATIO
 
-
-from sqlalchemy.sql import func
-from sqlalchemy import desc, asc, or_, and_, Date, cast, select
-from sqlalchemy import literal_column
-from sqlalchemy.orm import aliased
-
-from gargantext.util.toolchain.ngram_tools import insert_ngrams
-import csv
-
-def compute_mapList(corpus_id,limit=500,n=1, session=None):
+def do_maplist(corpus,
+               overwrite_id = None,
+               mainlist_id  = None,
+               specificity_id = None,
+               grouplist_id = None,
+               limit=DEFAULT_MAPLIST_MAX,
+               monograms_part=DEFAULT_MAPLIST_MONOGRAMS_RATIO
+               ):
     '''
-    According to Specificities and stoplist,
+    According to Specificities and mainlist
+
+    Parameters:
+      - mainlist_id (starting point, already cleaned of stoplist terms)
+      - specificity_id (ranking factor)
+      - grouplist_id (filtering grouped ones)
+      - overwrite_id: optional if preexisting MAPLIST node to overwrite
+
+      + 2 constants to modulate the terms choice
+        - limit for the amount of picked terms
+        - monograms_part: a ratio of terms with only one lexical unit to keep
     '''
-    
- 
-    monograms_part = 0.005
+
+    if not (mainlist_id and specificity_id and grouplist_id):
+        raise ValueError("Please provide mainlist_id, specificity_id and grouplist_id")
+
     monograms_limit = round(limit * monograms_part)
     multigrams_limit = limit - monograms_limit
+    print("MAPLIST: monograms_limit =", monograms_limit)
+    print("MAPLIST: multigrams_limit = ", multigrams_limit)
 
     #dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
-    
-    list_main_id  = session.query(Node.id).filter(
-            Node.typename  == "MAINLIST",
-            Node.parent_id == corpus_id).first()
 
-    list_stop_id  = session.query(Node.id).filter(
-            Node.typename  == "STOPLIST",
-            Node.parent_id == corpus_id).first()
-    
-    list_group_id = session.query(Node.id).filter(
-            Node.typename  == "GROUPLIST",
-            Node.parent_id == corpus_id).first()
+    mainterms_subquery = (session
+                            # we want only terms within mainlist
+                            .query(NodeNgram.ngram_id)
+                            .filter(NodeNgram.node_id == mainlist_id)
+                            .subquery()
+                         )
 
-    score_spec_id = session.query(Node.id).filter(
-            Node.typename  == "SPECIFICITY",
-            Node.parent_id == corpus_id).first()
+    primary_groupterms_subquery = (session
+                            # we want only primary terms (ngram1)
+                            .query(NodeNgramNgram.ngram1_id)
+                            .filter(NodeNgramNgram.node_id == grouplist_id)
+                            .subquery()
+                         )
 
+    ScoreSpec=aliased(NodeNgram)
 
-    ListMain=aliased(NodeNgram)
-    ListStop=aliased(NodeNgram)
-    ListGroup=aliased(NodeNgramNgram)
-    
-    ScoreSpec=aliased(NodeNodeNgram)
-    
-    # FIXME outerjoin does not work with current SqlAlchemy
-    # lines below the query do the job but it can be improved
-    query = (session.query(ScoreSpec.ngram_id, ScoreSpec.score)
-                .join(ListMain, ScoreSpec.ngram_id == ListMain.ngram_id)
+    # specificity-ranked
+    query = (session.query(ScoreSpec.ngram_id)
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
-                #.outerjoin(ListGroup, Group.ngramy_id == ScoreSpec.ngram_id)
-                #.outerjoin(ListStop, Stop.ngram_id == ScoreSpec.ngram_id)
-                .filter(ListMain.node_id == list_main_id)
-                #.filter(ListGroup.node_id == list_group_id)
-                #.filter(ListStop.node_id == list_stop_id)
-                .filter(ScoreSpec.nodex_id == score_spec_id)
+                .filter(ScoreSpec.node_id == specificity_id)
+                .filter(ScoreSpec.ngram_id.in_(mainterms_subquery))
+                .filter(ScoreSpec.ngram_id.in_(primary_groupterms_subquery))
             )
 
     top_monograms = (query
                 .filter(Ngram.n == 1)
-                .order_by(desc(ScoreSpec.score))
+                .order_by(desc(ScoreSpec.weight))
                 .limit(monograms_limit)
+                .all()
                )
-    
+
     top_multigrams = (query
                 .filter(Ngram.n >= 2)
-                .order_by(desc(ScoreSpec.score))
+                .order_by(desc(ScoreSpec.weight))
                 .limit(multigrams_limit)
+                .all()
                )
-    
-    stop_ngrams = (session.query(NodeNgram.ngram_id)
-                         .filter(NodeNgram.node_id == list_stop_id)
-                         .all()
-                 )
 
-    grouped_ngrams = (session.query(NodeNgramNgram.ngramy_id)
-                             .filter(NodeNgramNgram.node_id == list_group_id)
-                             .all()
-                    )
-    
-    
-    
-    list_map_id = session.query(Node.id).filter(
-        Node.parent_id==corpus_id,
-        Node.typename == "MAPLIST"
-        ).first()
-    
-    if list_map_id == None:
-        corpus = cache.Node[corpus_id]
-        user_id = corpus.user_id
-        list_map = Node(name="MAPLIST", parent_id=corpus_id, user_id=user_id, typename="MAPLIST")
-        session.add(list_map)
+    print("MAPLIST: top_monograms =", len(top_monograms))
+    print("MAPLIST: top_multigrams = ", len(top_multigrams))
+
+    # NEW MAPLIST NODE
+    # -----------------
+    # saving the parameters of the analysis in the Node JSON
+    new_hyperdata = { 'corpus': corpus.id,
+                      'limit' : limit,
+                      'monograms_part' : monograms_part
+                    }
+    if overwrite_id:
+        # overwrite pre-existing node
+        the_maplist = cache.Node[overwrite_id]
+        the_maplist.hyperdata = new_hyperdata
+        the_maplist.save_hyperdata()
         session.commit()
-        list_map_id = list_map.id
+        the_id = overwrite_id
+    else:
+        # create a new maplist node
+        the_maplist = corpus.add_child(
+                        name="Maplist (in %i)" % corpus.id,
+                        typename="MAPLIST",
+                        hyperdata = new_hyperdata
+                    )
+        session.add(the_maplist)
+        session.commit()
+        the_id = the_maplist.id
 
-    
-    session.query(NodeNgram).filter(NodeNgram.node_id==list_map_id).delete()
-    session.commit()
-    
-    data = zip(
-        [list_map_id for i in range(1,limit)]
-        , [n[0] for n in list(top_multigrams) + list(top_monograms)
-                if (n[0],) not in list(stop_ngrams) 
-            ]
-        , [1 for i in range(1,limit)]
-    )
-    #print([d for d in data])
-    bulk_insert(NodeNgram, ['node_id', 'ngram_id', 'weight'], [d for d in data])
+    # create UnweightedList object and save (=> new NodeNgram rows)
+    datalist = UnweightedList(
+                   [res.ngram_id for res in top_monograms + top_multigrams]
+               )
 
-    dbg.show('MapList computed')
+    # save
+    datalist.save(the_id)
 
+    # dbg.show('MapList computed')
+
+    return the_id

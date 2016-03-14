@@ -2,13 +2,13 @@ from .parsing           import parse
 from .ngrams_extraction import extract_ngrams
 
 # in usual run order
-from .list_stop         import do_stoplist
-from .ngram_scores      import compute_occurrences_local, compute_tfidf
-from .list_main         import do_mainlist
-from .ngram_coocs_tempo import compute_coocs
-from .score_specificity import compute_specificity
-from .list_map          import do_maplist     # TEST
-from .ngram_groups      import compute_groups
+from .list_stop           import do_stoplist
+from .metric_tfidf        import compute_occs, compute_tfidf
+from .list_main           import do_mainlist
+from .ngram_coocs         import compute_coocs
+from .metric_specificity  import compute_specificity
+from .list_map            import do_maplist     # TEST
+from .ngram_groups        import compute_groups
 
 from gargantext.util.db import session
 from gargantext.models  import Node
@@ -50,7 +50,7 @@ def parse_extract(corpus):
     print('CORPUS #%d: [%s] new grouplist node #%i' % (corpus.id, t(), group_id))
 
     # -> write occurrences to Node and NodeNodeNgram # possible: factorize with tfidf
-    occ_id = compute_occurrences_local(corpus)
+    occ_id = compute_occs(corpus)
     print('CORPUS #%d: [%s] new occs node #%i' % (corpus.id, t(), occ_id))
 
     # ------------

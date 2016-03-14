@@ -67,6 +67,7 @@ def do_maplist(corpus,
                 .filter(ScoreSpec.ngram_id.in_(primary_groupterms_subquery))
             )
 
+    # TODO: move these 2 pools up to mainlist selection
     top_monograms = (query
                 .filter(Ngram.n == 1)
                 .order_by(desc(ScoreSpec.weight))

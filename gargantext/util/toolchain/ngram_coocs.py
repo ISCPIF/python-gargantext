@@ -103,7 +103,6 @@ def compute_coocs(corpus,
            )
 
     # 2) INPUT FILTERS (reduce N before O(N²))
-    #    £TODO add possibility to restrict to the mainlist
     if mainlist_id:
         main_subquery = (
             session.query(NodeNgram.ngram_id)
@@ -150,6 +149,8 @@ def compute_coocs(corpus,
     # 3) OUTPUT FILTERS
     # ------------------
     # threshold
+    # £TODO adjust COOC_THRESHOLD a posteriori:
+    # ex: sometimes 2 sometimes 4 depending on sparsity
     coocs_query = coocs_query.having(ucooc >= threshold)
 
     # 4) EXECUTE QUERY

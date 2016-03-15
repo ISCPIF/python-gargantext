@@ -26,3 +26,4 @@ SQLAlchemy==1.1.0b1.dev0
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 wheel==0.29.0
+pandas==0.18.0

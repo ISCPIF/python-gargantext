@@ -27,7 +27,8 @@ def parse(corpus):
                     hyperdata = hyperdata,
                 )
                 session.add(document)
-                observed_languages[hyperdata["language_iso2"]] += 1
+                if "language_iso2" in hyperdata:
+                    observed_languages[hyperdata["language_iso2"]] += 1
                 if documents_count % BATCH_PARSING_SIZE == 0:
                     corpus.status('parsing', progress=documents_count)
                     corpus.save_hyperdata()

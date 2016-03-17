@@ -1,5 +1,5 @@
-#FROM debian:stretch
-FROM gargantext
+FROM debian:stretch
+#FROM gargantext
 MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 #
 ## Install docker.io
@@ -8,21 +8,35 @@ MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 ## cd /srv/gargantext/install
 ## sudo docker build -t gargantext .
 #
+
+
 RUN apt-get update && \
     apt-get install -y aptitude \
     apt-utils ca-certificates locales \
     sudo gcc wget git postgresql-9.5 vim
-    
 
-#USER root
+# Configure timezone and locale
+USER root
+RUN echo "Europe/Paris" > /etc/timezone && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
+    echo 'LANG="fr_FR.UTF-8"'>/etc/default/locale && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=fr_FR.UTF-8
+
+
+RUN apt-get update \
+    && apt-get install -y postgresql-server-dev-9.5 \
+    libpq-dev libxml2 libxml2-dev xml-core libgfortran-5-dev
+
+# CREATE USER and adding it to sudo
+RUN adduser --disabled-password --gecos "" gargantua
+RUN apt-get install -y sudo && adduser gargantua sudo \
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
+
 WORKDIR /home/gargantua
 
-#RUN apt-get update \
-#    && apt-get install -y postgresql-server-dev-9.5 \
-#    libpq-dev libxml2 libxml2-dev xml-core libgfortran-5-dev \
-#    && /bin/bash -c 'source env_3-5/bin/activate' \
-#    && /bin/bash -c 'env_3-5/bin/pip install -r requirements.txt'
-#
 RUN wget http://dl.delanoe.org/debian.txt \
     && apt-get update && dpkg --set-selections < debian.txt \
     && apt-get dselect-upgrade \
@@ -42,24 +56,8 @@ RUN wget http://dl.delanoe.org/debian.txt \
 #    && /bin/bash -c 'env_3-5/bin/pip install -r requirements.txt'
 
 #
+#
 
-#
-## Configure timezone and locale
-##USER root
-#RUN echo "Europe/Paris" > /etc/timezone && \
-#    dpkg-reconfigure -f noninteractive tzdata && \
-#    sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen && \
-#    sed -i -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
-#    echo 'LANG="fr_FR.UTF-8"'>/etc/default/locale && \
-#    dpkg-reconfigure --frontend=noninteractive locales && \
-#    update-locale LANG=fr_FR.UTF-8
-#
-#
-## CREATE USER and adding it to sudo
-#RUN adduser --disabled-password --gecos "" gargantua
-#RUN apt-get install -y sudo && adduser gargantua sudo \
-#    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
-#
 #
 #
 ## CONFIGURE POSTGRESQL

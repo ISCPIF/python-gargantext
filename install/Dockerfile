@@ -9,7 +9,6 @@ MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 ## sudo docker build -t gargantext .
 #
 
-
 RUN apt-get update && \
     apt-get install -y aptitude \
     apt-utils ca-certificates locales \

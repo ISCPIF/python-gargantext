@@ -1,14 +1,18 @@
-from gargantext.models         import Node, NodeNgram, NodeNgramNgram
+from gargantext.models         import Node, NodeNgram, NodeNgramNgram, \
+                                      NodeHyperdata
 from gargantext.util.lists     import WeightedMatrix
 from gargantext.util.db        import session, aliased, func
 from gargantext.util.db_cache  import cache
 from gargantext.constants      import DEFAULT_COOC_THRESHOLD
+from datetime                  import datetime
 
 def compute_coocs(corpus,
                     overwrite_id  = None,
                     threshold     = DEFAULT_COOC_THRESHOLD,
                     mainlist_id     = None,
                     stoplist_id     = None,
+                    start           = None,
+                    end             = None,
                     symmetry_filter = True):
     """
     Count how often some extracted terms appear
@@ -40,6 +44,10 @@ def compute_coocs(corpus,
       - mainlist_id: mainlist to constrain the input ngrams
       - stoplist_id: stoplist for filtering input ngrams
                      (normally unnecessary if a mainlist is provided)
+      - start, end: provide one or both temporal limits to filter on doc date
+                    NB the expected type of parameter value is datetime.datetime
+                        (string is also possible but format must follow
+                          this convention: "2001-01-01" aka "%Y-%m-%d")
 
      (deprecated parameters)
       - field1,2: allowed to count other things than ngrams (eg tags) but no use case at present
@@ -68,7 +76,6 @@ def compute_coocs(corpus,
 
         #   - TODO cvalue_id: allow a metric as additional  input filter
         #   - TODO n_min, n_max : filter on Ngram.n (aka length of ngram)
-        #   - TODO start, end : filter on document date
         #   - TODO weighted: if False normal cooc to be saved as result
         #                    if True  weighted cooc (experimental)
 
@@ -126,6 +133,42 @@ def compute_coocs(corpus,
             .filter( ~ x1.ngram_id.in_(stop_subquery) )
             .filter( ~ x2.ngram_id.in_(stop_subquery) )
         )
+
+    if start:
+        if isinstance(start, datetime):
+            start_str = start.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            start_str = str(start)
+
+        # doc_ids matching this limit
+        starttime_subquery = (session
+                                .query(NodeHyperdata.node_id)
+                                .filter(NodeHyperdata.key=="publication_date")
+                                .filter(NodeHyperdata.value_str >= start_str)
+                                .subquery()
+                           )
+        # direct use of str comparison op because there is consistency b/w
+        # sql alpha sort and chrono sort *in this format %Y-%m-%d %H:%M:%S*
+
+        # the filtering by start limit
+        coocs_query = coocs_query.filter(x1.node_id.in_(starttime_subquery))
+
+    if end:
+        if isinstance(end, datetime):
+            end_str = end.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            end_str = str(end)
+
+        endtime_subquery = (session
+                                .query(NodeHyperdata.node_id)
+                                .filter(NodeHyperdata.key=="publication_date")
+                                .filter(NodeHyperdata.value_str <= end_str)
+                                .subquery()
+                           )
+
+        # the filtering by end limit
+        coocs_query = coocs_query.filter(x1.node_id.in_(endtime_subquery))
+
 
     if symmetry_filter:
         # 1 filtre tenant en compte de la symétrie

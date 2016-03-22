@@ -37,6 +37,7 @@ NODETYPES = [
     'TFIDF-GLOBAL',          # 14
 ]
 
+# TODO find somewhere else than constants.py for function
 import datetime
 import dateutil
 def convert_to_date(date):
@@ -46,6 +47,7 @@ def convert_to_date(date):
         return dateutil.parser.parse(date)
 
 INDEXED_HYPERDATA = {
+    # TODO use properties during toolchain.hyperdata_indexing (type, convert_to_db, convert_from_db)
     'publication_date':
         {'id': 1, 'type': datetime.datetime, 'convert_to_db': convert_to_date, 'convert_from_db': datetime.datetime.fromtimestamp},
     'title':

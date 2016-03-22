@@ -78,6 +78,7 @@ class Parser:
                 except:
                     pass
         else:
+            print("WARNING: Date unknown at _Parser level, using now()")
             hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # ...then parse all the "date" fields, to parse it into separate elements

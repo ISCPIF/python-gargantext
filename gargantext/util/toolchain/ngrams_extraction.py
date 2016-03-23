@@ -4,6 +4,7 @@ from gargantext.constants import *
 from gargantext.util.ngramsextractors import ngramsextractors
 
 from collections import defaultdict
+from re          import sub
 
 
 def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
@@ -31,7 +32,7 @@ def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
     db.commit()
 
 
-def extract_ngrams(corpus, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', keys=('title', 'abstract', )):
+def extract_ngrams(corpus, keys=('title', 'abstract', )):
     """Extract ngrams for every document below the given corpus.
     Default language is given by the resource type.
     The result is then inserted into database.
@@ -61,7 +62,7 @@ def extract_ngrams(corpus, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', keys=('title', 'abstr
                 # get ngrams
                 for ngram in ngramsextractor.extract(value):
                     tokens = tuple(token[0] for token in ngram)
-                    terms = ' '.join(tokens)
+                    terms = normalize_terms(' '.join(tokens))
                     nodes_ngrams_count[(document.id, terms)] += 1
                     ngrams_data.add((terms[:255], len(tokens), ))
             # integrate ngrams and nodes-ngrams
@@ -83,3 +84,21 @@ def extract_ngrams(corpus, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', keys=('title', 'abstr
         corpus.save_hyperdata()
         session.commit()
         raise error
+
+
+def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
+    """
+    Removes unwanted trailing punctuation
+    AND optionally puts everything to lowercase
+
+    ex /'ecosystem services'/ => /ecosystem services/
+
+    (benefits from normalize_chars upstream so there's less cases to consider)
+    """
+    term_str = sub(r'^[-",;/%(){}\\\[\]\.\']+', '', term_str)
+    term_str = sub(r'[-",;/%(){}\\\[\]\.\']+$', '', term_str)
+
+    if do_lowercase:
+        term_str = term_str.lower()
+
+    return term_str

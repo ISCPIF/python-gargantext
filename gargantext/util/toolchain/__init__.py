@@ -84,6 +84,8 @@ def parse_extract(corpus):
                         grouplist_id=group_id)
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
 
+    print('CORPUS #%d: [%s] FINISHED ngram lists computation' % (corpus.id, t()))
+
 
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

@@ -47,7 +47,8 @@ def convert_to_date(date):
         return dateutil.parser.parse(date)
 
 INDEXED_HYPERDATA = {
-    # TODO use properties during toolchain.hyperdata_indexing (type, convert_to_db, convert_from_db)
+    # TODO use properties during toolchain.hyperdata_indexing 
+    # (type, convert_to_db, convert_from_db)
     'publication_date':
         { 'id'             : 1
         , 'type'           : datetime.datetime
@@ -128,15 +129,15 @@ RESOURCETYPES = [
 ]
 
 # linguistic extraction parameters ---------------------------------------------
-DEFAULT_TFIDF_CUTOFF_RATIO = .45             # MAINLIST maximum terms in %
+DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
 
-DEFAULT_TFIDF_HARD_LIMIT = 750               # MAINLIST maximum terms abs
+DEFAULT_TFIDF_HARD_LIMIT        = 750        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD = 5                   # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 5          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
-DEFAULT_MAPLIST_MAX = 300                    # MAPLIST maximum terms
+DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
 
 DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
                                              # (NB: used to be 0.005 !!)
@@ -150,11 +151,11 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 import os
 from .settings import BASE_DIR
-UPLOAD_DIRECTORY = os.path.join(BASE_DIR, 'uploads')
-UPLOAD_LIMIT = 1024 * 1024 * 1024
+UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads')
+UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 
 # about batch processing...
-BATCH_PARSING_SIZE = 256
+BATCH_PARSING_SIZE          = 256
 BATCH_NGRAMSEXTRACTION_SIZE = 1024

@@ -177,3 +177,46 @@ class CorpusFacet(APIView):
         #  // if subfield not in corpus.aggs:
         #  //     corpus.aggs[subfield] = xcounts
         return (xcounts, total)
+
+
+class CorpusGraph(APIView):
+    '''
+    Generate a graph
+    '''
+    def get(self, request, node_id):
+        # check that the node is a corpus
+        #   ? faster from cache than: corpus = session.query(Node)...
+        corpus = cache.Node[node_id]
+        if corpus.typename != 'CORPUS':
+            raise ValidationException(
+                "Only nodes of type CORPUS can accept facet queries" +
+                " (but this node has type %s)..." % corpus.typename
+            )
+        else:
+            self.corpus = corpus
+
+
+        # check that the hyperfield parameter makes sense
+        _facet_available_subfields = [
+            'journal', 'publication_year', 'rubrique',
+            'language_iso2', 'language_iso3', 'language_name'
+        ]
+        parameters = get_parameters(request)
+
+        # validate() triggers an info message if subfield not in range
+        parameters = validate(parameters, {'type': dict, 'items': {
+            'hyperfield': {'type': str, 'range': _facet_available_subfields}
+            }})
+
+        subfield = parameters['hyperfield']
+
+        # do_cooc
+        # do_distance
+
+        # response
+        return JsonHttpResponse({
+            'doc_count' : total,
+            'by': { subfield: xcounts }
+        })
+
+

@@ -49,26 +49,64 @@ def convert_to_date(date):
 INDEXED_HYPERDATA = {
     # TODO use properties during toolchain.hyperdata_indexing 
     # (type, convert_to_db, convert_from_db)
-    'publication_date':
+    
+    'count':
         { 'id'             : 1
+        , 'type'           : int
+        , 'convert_to_db'  : int
+        , 'convert_from_db': int
+        },
+ 
+    'publication_date':
+        { 'id'             : 2
         , 'type'           : datetime.datetime
         , 'convert_to_db'  : convert_to_date
         , 'convert_from_db': datetime.datetime.fromtimestamp
         },
     
     'title':
-        { 'id'             : 2
+        { 'id'             : 3
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
     
-    'count':
-        { 'id'             : 3
+   
+    'authors':
+        { 'id'             : 4
+        , 'type'           : str
+        , 'convert_to_db'  : str
+        , 'convert_from_db': str
+        },
+    
+    'journal':
+        { 'id'             : 5
+        , 'type'           : str
+        , 'convert_to_db'  : str
+        , 'convert_from_db': str
+        },
+    
+    'abstract':
+        { 'id'             : 6
+        , 'type'           : str
+        , 'convert_to_db'  : str
+        , 'convert_from_db': str
+        },
+     
+    'text':
+        { 'id'             : 7
+        , 'type'           : str
+        , 'convert_to_db'  : str
+        , 'convert_from_db': str
+        },
+    
+    'page':
+        { 'id'             : 8
         , 'type'           : int
-        , 'convert_to_db'  : float
+        , 'convert_to_db'  : int
         , 'convert_from_db': int
         },
+
 }
 
 

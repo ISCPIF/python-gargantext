@@ -64,11 +64,15 @@ class NodeHyperdata(Base):
         )
     """
     __tablename__ = 'nodes_hyperdata'
-    id = Column(Integer, primary_key=True)
-    node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'))
-    key = Column(HyperdataKey)
-    value_flt = Column(Double(), index=True)
-    value_str = Column(String(255), index=True)
+    id        = Column( Integer, primary_key=True )
+    node_id   = Column( Integer, ForeignKey(Node.id, ondelete='CASCADE'))
+    key       = Column( HyperdataKey )
+    value_int = Column( Integer                 , index=True )
+    value_flt = Column( Double()                , index=True )
+    value_utc = Column( DateTime(timezone=True) , index=True )
+    value_str = Column( String(255)             , index=True )
+    value_txt = Column( Text                    , index=True )
+
 
     def __init__(self, node=None, key=None, value=None):
         """Custom constructor
@@ -126,6 +130,13 @@ def HyperdataValueComparer_overrider(key):
     return comparator
 # ??
 for key in set(dir(NodeHyperdata.value_flt) + dir(NodeHyperdata.value_str)):
-    if key in ('__dict__', '__weakref__', '__repr__', '__str__') or 'attr' in key or 'class' in key or 'init' in key or 'new' in key:
+    if key in ( '__dict__'
+              , '__weakref__'
+              , '__repr__'
+              , '__str__')      \
+              or 'attr' in key  \
+              or 'class' in key \
+              or 'init' in key  \
+              or 'new' in key :
         continue
     setattr(HyperdataValueComparer, key, HyperdataValueComparer_overrider(key))

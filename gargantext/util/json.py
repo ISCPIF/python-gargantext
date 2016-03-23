@@ -27,7 +27,8 @@ class JSONEncoder(json.JSONEncoder):
         else:
             return super(self.__class__, self).default(obj)
 
-json_encoder = JSONEncoder(indent=4)
+# json_encoder = JSONEncoder(indent=4)
+json_encoder = JSONEncoder()   # compact json
 
 def json_dumps(obj):
     return json.dumps(obj, cls=JSONEncoder)

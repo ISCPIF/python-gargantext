@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from . import main, auth
-from . import projects, corpora
+from . import projects, corpora, terms
 
 
 urlpatterns = [
@@ -25,4 +25,7 @@ urlpatterns = [
 
     # corpus by journals
     url(r'^projects/(\d+)/corpora/(\d+)/journals/?$', corpora.docs_by_journals),
+
+    # terms table for the corpus
+    url(r'^projects/(\d+)/corpora/(\d+)/terms/?$', terms.ngramtable),
 ]

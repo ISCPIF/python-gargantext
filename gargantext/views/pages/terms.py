@@ -1,16 +1,11 @@
-from gargantext.util.http import requires_auth, render, settings
-from gargantext.util.db import session
+from gargantext.util.http     import requires_auth, render, settings
+from gargantext.util.db       import session
 from gargantext.util.db_cache import cache
-from gargantext.models import Node
-# from gargantext.constants import *
-#
-# from gargantext.util.scheduling import scheduled
-# from gargantext.util.toolchain import parse_extract
-
-from datetime import datetime
+from gargantext.models        import Node
+from datetime                 import datetime
 
 @requires_auth
-def ngramlists(request, project_id, corpus_id):
+def ngramtable(request, project_id, corpus_id):
     '''
     Browse and modify all lists together.
        => maplist and mainlist terms in a table

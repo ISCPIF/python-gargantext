@@ -1,0 +1,94 @@
+{% extends "pages/menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "css/gargantext/tables.css"%}"/>
+
+<script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="jumbotron">
+        <div class="row">
+            <div id="monthly-move-chart">
+                <center>
+                        Select a time range in the chart with blue bars to zoom in
+                <p align="center">
+                <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+                <div class="clearfix"></div>
+                </center>
+            </div>
+        </div>
+        <div class="row">
+            <div id="monthly-volume-chart"></div>
+        </div>
+        <div id="content_loader">
+          <br>
+          <center>
+            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+          </center>
+          <br>
+        </div>
+
+        <input type="hidden" id="list_id" value="{{ list_id }}"></input>
+
+        <div class="row">
+            <div class="panel panel-default">
+
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-target="#terms_table" href="#">
+                        <!-- Final_UpdateTable redraws the dynatable if necessary -->
+                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg">
+                          Close term list
+                        </p>
+                    </a>
+                  </h4>
+                </div>
+
+                <div id="terms_table" class="panel-collapse collapse in no-transition" role="tabpanel">
+                    <div class="panel-body">
+                      <div id="div-table">
+                          <!-- (table id="my-ajax-table") dynamically set by Ngrams_dyna_chart_and_table -->
+                      </div>
+
+                      <!-- under the table -->
+                      <p align="right">
+                          <button id="Save_All" class="btn btn-primary">Save changes permanently</button>
+                      </p>
+                    </div>
+                </div> <!-- /div panel-collapse -->
+
+            </div> <!-- /div panel -->
+        </div> <!-- /row with the dynatable panels -->
+
+    </div> <!-- /jumbotron -->
+
+    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
+        Import a Corpus-List
+    </button>
+
+</div> <!-- /container -->
+
+
+
+
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+
+<!-- custom-lib for dynatable.js and dc.js -->
+<script type="text/javascript" src="{% static "js/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
+
+{% endblock %}

@@ -25,20 +25,20 @@ class HyperdataValueComparer(object):
 
 
 class HyperdataKey(TypeDecorator):
-    """Define a new type of column to describe a Node's type.
+    """Define a new type of column to describe a Hyperdata field's type.
     Internally, this column type is implemented as an SQL integer.
-    Values are detailed in `gargantext.constants.NODETYPES`.
+    Values are detailed in `gargantext.constants.INDEXED_HYPERDATA`.
     """
     impl = Integer
     def process_bind_param(self, keyname, dialect):
         if keyname in INDEXED_HYPERDATA:
-            return INDEXED_HYPERDATA[keyname]
-        raise ValueError('Hyperdata key "%s" was not found in `gargantext.constants.NODETYPES`' % keyname)
+            return INDEXED_HYPERDATA[keyname]['id']
+        raise ValueError('Hyperdata key "%s" was not found in `gargantext.constants.INDEXED_HYPERDATA`' % keyname)
     def process_result_value(self, keyindex, dialect):
-        for keyname, key in INDEXED_HYPERDATA:
-            if key['id'] == keyindex:
+        for keyname, keysubhash in INDEXED_HYPERDATA.items():
+            if keysubhash['id'] == keyindex:
                 return keyname
-        raise ValueError('Hyperdata key with id=%d was not found in `gargantext.constants.NODETYPES`' % keyindex)
+        raise ValueError('Hyperdata key with id=%d was not found in `gargantext.constants.INDEXED_HYPERDATA`' % keyindex)
 
 
 class NodeHyperdata(Base):
@@ -85,6 +85,7 @@ class NodeHyperdata(Base):
         # value
         self.value = value
 
+    # FIXME
     @property
     def value(self):
         """Pseudo-attribute used to extract the value in the right format.
@@ -123,6 +124,7 @@ def HyperdataValueComparer_overrider(key):
         if isinstance(args[0], str):
             return getattr(NodeHyperdata.value_str, key)(*args)
     return comparator
+# ??
 for key in set(dir(NodeHyperdata.value_flt) + dir(NodeHyperdata.value_str)):
     if key in ('__dict__', '__weakref__', '__repr__', '__str__') or 'attr' in key or 'class' in key or 'init' in key or 'new' in key:
         continue

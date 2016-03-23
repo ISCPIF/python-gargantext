@@ -16,28 +16,61 @@ def _nodes_hyperdata_generator(corpus):
                 if not isinstance(values, list):
                     values = [values]
                 for value in values:
-                    if isinstance(value, (int, float, )):
+                    if isinstance(value, (int, )):
                         yield (
                             document.id,
                             key['id'],
                             value,
                             None,
+                            None,
+                            None,
+                            None,
                         )
-                    elif isinstance(value, (str, )):
+                    elif isinstance(value, (float, )):
                         yield (
                             document.id,
                             key['id'],
                             None,
-                            value[:255],
+                            value,
+                            None,
+                            None,
+                            None,
                         )
+
                     elif isinstance(value, (datetime, )):
                         yield (
                             document.id,
                             key['id'],
                             None,
-                            # value_str
-                            value.strftime("%Y-%m-%d %H:%M:%S"),
+                            None,
+                            value.strftime("%Y-%m-%d %H:%M:%S"), 
+                            # FIXME check timestamp +%Z
+                            None,
+                            None,
                         )
+
+                    elif isinstance(value, (str, )) :
+                        if len(value) < 255 :
+                            yield (
+                                document.id,
+                                key['id'],
+                                None,
+                                None,
+                                None,
+                                value[:255],
+                                None,
+                            )
+                        else :
+                             yield (
+                                document.id,
+                                key['id'],
+                                None,
+                                None,
+                                None,
+                                None,
+                                value,
+                            )
+
                     else:
                         print("WARNING: Couldn't insert an INDEXED_HYPERDATA value because of unknown type:", type(value))
 
@@ -45,6 +78,11 @@ def _nodes_hyperdata_generator(corpus):
 def index_hyperdata(corpus):
     bulk_insert(
         table = NodeHyperdata,
-        fields = ('node_id', 'key', 'value_flt', 'value_str', ),
+        fields = ( 'node_id', 'key'
+                 , 'value_int'
+                 , 'value_flt'
+                 , 'value_utc'
+                 , 'value_str'
+                 , 'value_txt' ),
         data = _nodes_hyperdata_generator(corpus),
     )

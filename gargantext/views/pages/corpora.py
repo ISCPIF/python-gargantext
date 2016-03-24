@@ -30,7 +30,7 @@ def corpus(request, project_id, corpus_id):
         return HttpResponseForbidden()
     # response!
     return render(
-        template_name = 'pages/corpora/corpus.html',
+        template_name = 'pages/corpora/titles.html',
         request = request,
         context = {
             'debug': DEBUG,

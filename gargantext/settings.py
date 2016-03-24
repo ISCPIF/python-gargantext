@@ -23,10 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 MAINTENANCE = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Asynchronous tasks
@@ -35,11 +35,7 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_IMPORTS = (
-    'gargantext.util.toolchain',
-    # 'gargantext.models',
-    # 'gargantext.util.db',
-)
+CELERY_IMPORTS = ("gargantext.util.toolchain")
 
 
 # Application definition
@@ -87,6 +83,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gargantext.wsgi.application'
+
+STATIC_ROOT = '/srv/gargantext_static/'
+STATIC_URL = '/static/'
+
+MEDIA_ROOT = '/srv/gargantext_media'
+#MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
+MEDIA_URL   = '/media/'
 
 
 # Database
@@ -140,10 +143,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/static/'
+#STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+
+
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',

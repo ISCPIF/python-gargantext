@@ -26,7 +26,7 @@ SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 DEBUG = True
 MAINTENANCE = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Asynchronous tasks
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'djcelery',
+    'annotations',
 ]
 
 MIDDLEWARE_CLASSES = [

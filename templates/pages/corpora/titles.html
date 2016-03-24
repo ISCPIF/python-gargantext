@@ -4,28 +4,21 @@
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
-<!-- here goes import stylesheet js/bootstrap/bootstrap-multiselect.css, mais ca marche pas-->
-
-<link rel="stylesheet" type="text/css" href="{% static "css/morris.css" %}">
-
 <link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
-
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.easy-pie-chart.css"%}">
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
+
 <link rel="stylesheet" type="text/css" href="{% static "css/gargantext/tables.css"%}"/>
 
 <script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
-<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
 <script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
 
 {% endblock %}
-
 
 
 {% block content %}
 
 <div class="container">
-    <div class="container">
         <div class="jumbotron">
             <div class="row">
                 <div id="monthly-move-chart">
@@ -51,22 +44,18 @@
           <br>
         </div>
 
-    </div>
-</div>
 
 
 <input type="hidden" id="list_id" value="{{ list_id }}"></input>
 
 <div class="container">
-
-
     <div class="jumbotron">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             <div class="panel panel-body">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Open Folder</h2></p>
+                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Titles</h2></p>
                         </a>
                     </h4>
                 </div>
@@ -76,7 +65,6 @@
                             <p align="right">
                                 <button id="move2trash" class="btn btn-primary btn-lg" >Trash It!</button>
                             </p>
-
                   </div>
                 </div>
             </div>
@@ -105,6 +93,7 @@
 
 </div>
 
+</div>
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->

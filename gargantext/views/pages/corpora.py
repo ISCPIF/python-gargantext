@@ -24,7 +24,7 @@ def _get_user_project_corpus(request, project_id, corpus_id):
 
 
 @requires_auth
-def corpus(request, project_id, corpus_id):
+def docs_by_titles(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
@@ -34,13 +34,10 @@ def corpus(request, project_id, corpus_id):
         request = request,
         context = {
             'debug': DEBUG,
-            'user': user,
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            # 'processing': corpus['extracted'],
-            # 'number': number,
-            'view': 'documents'
+            'view': 'titles'
         },
     )
 

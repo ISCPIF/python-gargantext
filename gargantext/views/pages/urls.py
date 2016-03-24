@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/?$', projects.project),
 
     # corpora
-    url(r'^projects/(\d+)/corpora/(\d+)/?$', corpora.corpus),
+    url(r'^projects/(\d+)/corpora/(\d+)/?$', corpora.docs_by_titles),
     url(r'^projects/(\d+)/corpora/(\d+)/chart/?$', corpora.chart),
 
     # corpus by journals

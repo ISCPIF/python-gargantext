@@ -63,19 +63,43 @@
         <div class="container theme-showcase">
             <div class="jumbotron" style="margin-bottom:0">
                 <div id="corpusbar" class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="btn-group btn-group-justified">
                             <center>
-                                <a type="button" class="btn btn-default {% if view == "documents" %}active{%endif%}" href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Documents</a>
-                                <a type="button" class="btn btn-default {% if view == "journals" %}active{%endif%}" href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals</a>
-                                <a type="button" class="btn btn-default {% if view == "terms" %}active{%endif%}" href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "titles" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">By titles</a>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "journals" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">By journals</a>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "terms" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">By terms</a>
+                                
+                                <!-- FIXME put a separator here --!>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "charts" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Advanced Charts</a>
+                                
+                                <!-- FIXME a pop up for advanced mode of graphs --!>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "conditional" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs (Conditional)</a>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "distributional" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs (Distributional)</a>
+                                <a type="button" class="btn btn-default 
+                                    {% if view == "journalTerms" %}active{%endif%}" 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs Journal/Terms</a>
                             </center>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         {% endif %}
+        
         {% endblock %}
 
 

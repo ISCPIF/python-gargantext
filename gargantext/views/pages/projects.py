@@ -97,7 +97,6 @@ def project(request, project_id):
         
         # parse_extract: fileparsing -> ngram extraction -> lists
         scheduled(parse_extract_indexhyperdata)(corpus.id)
-        #scheduled(parse_extract)(corpus.id)
 
     # corpora within this project
     corpora = project.children('CORPUS').all()

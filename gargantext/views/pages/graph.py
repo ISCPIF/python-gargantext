@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 @requires_auth
-def graph(request, project_id, corpus_id):
+def explorer(request, project_id, corpus_id):
     '''
     Graph explorer, also known as TinaWebJS, using SigmaJS.
     Nodes are ngrams (from title or abstract or journal name.
@@ -18,14 +18,9 @@ def graph(request, project_id, corpus_id):
 
     # we pass our corpus
     corpus = cache.Node[corpus_id]
-    
-    # we pass our user_id
-    #user_id         = corpus.user_id
 
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
-    
-    #miamlist_type_id = cache.NodeType['MiamList'].id
 
     graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "/node_link.json"
     
@@ -35,7 +30,8 @@ def graph(request, project_id, corpus_id):
         request = request,
         context = {
             'debug'     : settings.DEBUG,
-            # 'user' : user_id,
+            'request'   : request,
+            'user'      : request.user,
             'date'      : datetime.now(),
             'project'   : project,
             'corpus'    : corpus,
@@ -44,7 +40,4 @@ def graph(request, project_id, corpus_id):
             'view'      : 'graph'
         },
     )
-
-
-
 

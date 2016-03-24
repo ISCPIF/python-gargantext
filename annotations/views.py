@@ -42,12 +42,14 @@ class NgramList(APIView):
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
         lists = {}
-        for list_type in ['MiamList', 'StopList']:
-            list_id = listIds(user_id=request.user.id, corpus_id=int(corpus_id), typeList=list_type)
-            lists["%s" % list_id[0][0]] = list_type
+        for list_type in ['MAINLIST']:
+            corpus_nod = cache.Node[corpus_id]
+            list_nod = corpus_nod.children(typename=list_type).first()
+            list_id = list_nod.id
+            lists["%s" % list_id] = list_type
 
         # ngrams for the corpus_id (ignoring doc_id for the moment):
-        doc_ngram_list = listNgramIds(corpus_id=corpus_id, doc_id=doc_id, user_id=request.user.id)
+        doc_ngram_list = [(obj.id, obj.terms, w) for (w,obj) in list_nod.ngrams.all()]
         data = { '%s' % corpus_id : {
             '%s' % doc_id : [
                 {
@@ -56,7 +58,7 @@ class NgramList(APIView):
                     'occurrences': ngram_occurrences,
                     'list_id': list_id,
                 }
-                for ngram_id, ngram_text, ngram_occurrences, list_id in doc_ngram_list],
+                for ngram_id, ngram_text, ngram_occurrences in doc_ngram_list],
             'lists': lists
         }}
         return Response(data)

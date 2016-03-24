@@ -6,13 +6,13 @@
 */
 
 
-.MiamList {
+.MAINLIST {
   color: black;
   background-color: rgba(60, 118, 61, 0.5);
   cursor: pointer;
 }
 
-.StopList {
+.STOPLIST {
   color: black;
   background-color: rgba(169, 68, 66, 0.2);
   cursor: pointer;

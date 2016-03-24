@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'djcelery',
+    'annotations',
 ]
 
 MIDDLEWARE_CLASSES = [

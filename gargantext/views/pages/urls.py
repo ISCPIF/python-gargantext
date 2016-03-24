@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from . import main, auth
-from . import projects, corpora, terms, explorer
+from . import projects, corpora, terms, graph
 
 
 urlpatterns = [
@@ -30,6 +30,6 @@ urlpatterns = [
     url(r'^projects/(\d+)/corpora/(\d+)/terms/?$', terms.ngramtable),
     
     # graph explorer
-    url(r'^projects/(\d+)/corpora/(\d+)/graph/?$', explorer.graph),
+    url(r'^projects/(\d+)/corpora/(\d+)/graph/?$', graph.explorer),
 
 ]

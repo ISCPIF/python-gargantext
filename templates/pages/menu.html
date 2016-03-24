@@ -36,7 +36,7 @@
 
                     <ul class="nav pull-right">
                         <li class="dropdown">
-                            <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login">
+                            <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your username">
                                 <i class="icon-user"></i>
                                 {{ user.username }}
                                 <i class="caret"></i>
@@ -67,15 +67,22 @@
                         <div class="btn-group btn-group-justified">
                             <center>
                                 <a type="button" class="btn btn-default 
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
+                                                        
+                                <!-- <li class="divider"></li> --!>
+                                
+                                <a type="button" class="btn btn-default 
                                     {% if view == "titles" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">By titles</a>
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles</a>
                                 <a type="button" class="btn btn-default 
                                     {% if view == "journals" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">By journals</a>
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals</a>
                                 <a type="button" class="btn btn-default 
                                     {% if view == "terms" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">By terms</a>
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
                                 
+                                <!-- <li class="divider"></li> --!>
+                            
                                 <!-- FIXME put a separator here --!>
                                 <a type="button" class="btn btn-default 
                                     {% if view == "charts" %}active{%endif%}" 

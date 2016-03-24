@@ -37,7 +37,8 @@ def docs_by_titles(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'view': 'titles'
+            'view': 'titles',
+            'user': request.user
         },
     )
 

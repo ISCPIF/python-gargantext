@@ -1,0 +1,154 @@
+/* app css stylesheet */
+
+/*
+* Class names corresponding to server-side list names
+* To display another list name, add a new class under this
+*/
+
+
+.MAINLIST {
+  color: black;
+  background-color: rgba(60, 118, 61, 0.5);
+  cursor: pointer;
+}
+
+.STOPLIST {
+  color: black;
+  background-color: rgba(169, 68, 66, 0.2);
+  cursor: pointer;
+}
+
+.delete-keyword, .occurrences {
+    vertical-align: super;
+    font-size: 70%;
+}
+
+.delete-keyword {
+    cursor: pointer;
+}
+
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.keyword-inline {
+  display: inline;
+}
+
+.keyword-inline:hover {
+  text-decoration: none;
+}
+
+.nav-tabs {
+  border-bottom: none;
+}
+
+.main-panel, .text-panel, .words-panel {
+  margin: 10px 0;
+}
+
+#annotationsApp {
+  min-width: 780px;
+}
+
+.words-panel {
+  min-width: 220px;
+}
+
+.text-panel {
+  overflow-y: auto;
+  min-width: 400px;
+}
+
+.words-list {
+  margin-bottom: 5px;
+}
+
+.keyword-text {
+  word-break: break-all;
+}
+
+.keyword-group-item {
+  display: inline-block;
+  float: left;
+  padding: 5px;
+  margin: .25em;
+  box-shadow: .2em .2em .1em rgba(0, 0, 0, .125);
+}
+
+.words-pagination {
+  margin: 5px 0;
+}
+
+.text-panel p, .text-panel h3 {
+  -webkit-transition: all 0.25s linear;
+  -moz-transition: all 0.25s linear;
+  -ms-transition: all 0.25s linear;
+  -o-transition: all 0.25s linear;
+  transition: all 0.25s linear;
+}
+
+.selection {
+  color: #aaa;
+}
+::selection {
+  color: black;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.noselection {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.selection-menu {
+  display: none;
+  position: absolute;
+  color: #394141;
+  background: white;
+  font-size: 0.8em;
+  font-weight: 600;
+  -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/*.selection-menu:before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 0px;
+  border-right: solid white 10px;
+  border-top: solid transparent 8px;
+  border-bottom: solid transparent 8px;
+}*/
+
+.selection-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.selection-menu li {
+  border-bottom: solid thin #CCC;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.selection-menu [class*="glyphicon"] {
+  min-width: 25px;
+  display: inline-block;
+  text-align: center;
+  border-right: solid thin #CCC;
+  margin-right: 5px;
+}
+
+.float-right {
+  float: right;
+}

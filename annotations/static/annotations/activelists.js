@@ -28,13 +28,14 @@
         if (newValue === undefined) return;
         // reformat lists to allListsSelect
         var allListsSelect = [];
+        console.log($rootScope.lists)
         angular.forEach($rootScope.lists, function(value, key) {
           this.push({
             'id': key,
             'label': value
           });
           // initialize activeLists with the MiamList by default
-          if (value == 'MiamList') {
+          if (value == 'MAINLIST') {
             $rootScope.activeLists = {};
             $rootScope.activeLists[key] = value;
           }
@@ -44,7 +45,7 @@
 
         $timeout(function() {
           $('.selectpicker').selectpicker();
-          $('.selectpicker').selectpicker('val', ['MiamList']);
+          $('.selectpicker').selectpicker('val', ['MAINLIST']);
         });
       });
 

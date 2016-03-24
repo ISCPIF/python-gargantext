@@ -71,8 +71,8 @@
       function toggleMenu(context, annotation) {
         $timeout(function() {
           $scope.$apply(function() {
-            var miamlist_id = _.invert($rootScope.lists).MiamList;
-            var stoplist_id = _.invert($rootScope.lists).StopList;
+            var miamlist_id = _.invert($rootScope.lists).MAINLIST;
+            var stoplist_id = _.invert($rootScope.lists).STOPLIST;
             // variable used in onClick
             $scope.selection_text = angular.copy(annotation);
 
@@ -87,7 +87,7 @@
                   'listName': $rootScope.lists[annotation.list_id]
                 }
               ];
-              if ($rootScope.lists[annotation.list_id] == "MiamList") {
+              if ($rootScope.lists[annotation.list_id] == "MAPLIST") {
                 // Add to the alternative list
                 $scope.menuItems.push({
                     'action': 'post',
@@ -95,7 +95,7 @@
                     'verb': 'Move to',
                     'listName': $rootScope.lists[stoplist_id]
                   });
-              } else if ($rootScope.lists[annotation.list_id] == "StopList") {
+              } else if ($rootScope.lists[annotation.list_id] == "STOPLIST") {
                 // Add to the alternative list
                 $scope.menuItems.push({
                     'action': 'post',

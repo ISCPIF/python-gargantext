@@ -47,23 +47,23 @@
   /*
   * Create, modify or delete 1 Ngram
   */
-  // http.factory('NgramHttpService', function ($resource) {
-  //   return $resource(
-  //     window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
-  //   	{
-  //       listId: '@listId',
-  //       ngramId: '@id'
-  //     },
-  // 	{
-  //       post: {
-  //         method: 'POST',
-  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
-  //       },
-  //       delete: {
-  //         method: 'DELETE',
-  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
-  //       }
-  //     }
-  //   );
-  // });
+  http.factory('NgramHttpService', function ($resource) {
+    return $resource(
+      window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
+    	{
+        listId: '@listId',
+        ngramId: '@id'
+      },
+  	{
+        post: {
+          method: 'POST',
+          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+        },
+        delete: {
+          method: 'DELETE',
+          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+        }
+      }
+    );
+  });
 })(window);

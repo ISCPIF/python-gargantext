@@ -14,10 +14,18 @@ import gargantext.views.api.urls
 import gargantext.views.generated.urls
 import gargantext.views.pages.urls
 
+# tempo: unchanged doc-annotations --
+from annotations import urls as annotations_urls
+from annotations.views import main as annotations_main_view
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^generated/', include(gargantext.views.generated.urls)),
     url(r'^api/', include(gargantext.views.api.urls)),
     url(r'^', include(gargantext.views.pages.urls)),
+
+    # tempo: unchanged doc-annotations routes --
+    url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/$', annotations_main_view),
+    url(r'^annotations/', include(annotations_urls))
 ]

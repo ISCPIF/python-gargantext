@@ -1,5 +1,5 @@
 from gargantext.util.languages import languages
-from gargantext.constants import LANGUAGES
+from gargantext.constants import LANGUAGES, DEFAULT_MAX_NGRAM_LEN
 
 import nltk
 import re
@@ -17,7 +17,7 @@ class NgramsExtractor:
         """
         return re.sub(r'<[^>]{0,45}>', '', text)
 
-    def extract(self, text, rule='{<JJ.*>*<NN.*>+<JJ.*>*}', label='NP'):
+    def extract(self, text, rule='{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}', label='NP', max_n_words=DEFAULT_MAX_NGRAM_LEN):
         text = self.clean_text(text)
         grammar = nltk.RegexpParser(label + ': ' + rule)
         tagged_tokens = list(self._tagger.tag_text(text))
@@ -25,7 +25,9 @@ class NgramsExtractor:
             grammar_parsed = grammar.parse(tagged_tokens)
             for subtree in grammar_parsed.subtrees():
                 if subtree.label() == label:
-                    yield subtree.leaves()
+                    if len(subtree) < max_n_words:
+                        yield subtree.leaves()
+                            # ex: [('wild', 'JJ'), ('pollinators', 'NNS')]
 
 
 class NgramsExtractors(dict):

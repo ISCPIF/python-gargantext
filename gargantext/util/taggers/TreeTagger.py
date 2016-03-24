@@ -15,9 +15,9 @@ class identity_dict(dict):
 _tag_replacements = identity_dict({
     "NOM": "NN",
     "NAM": "NN",
-    "ADJ": "NN",
-    "VER": "JJ",
-    "PREP": "PRP",
+    "ADJ": "JJ",
+    "VER": "VB",
+    "PREP": "IN",
     "KON": "CC",
     "DET": "DT",
     "PRO": "DT",

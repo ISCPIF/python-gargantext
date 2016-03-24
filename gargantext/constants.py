@@ -172,13 +172,22 @@ DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
 DEFAULT_TFIDF_HARD_LIMIT        = 750        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD          = 5          # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
 DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
 
 DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
-                                             # (NB: used to be 0.005 !!)
+
+DEFAULT_MAX_NGRAM_LEN = 7                    # limit used after POStagging rule
+                                             # (initial ngrams number is a power law of this /!\)
+                                             # (and most longer ngrams have tiny freq anyway)
+
+DEFAULT_ALL_LOWERCASE_FLAG = True            # lowercase ngrams before recording
+                                             # them to their DB table
+                                             # (potentially bad for acronyms but
+                                             #  good for variants like same term
+                                             #  occurring at sentence beginning)
 
 # ------------------------------------------------------------------------------
 

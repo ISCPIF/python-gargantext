@@ -81,16 +81,20 @@ def do_maplist(corpus,
                 .limit(multigrams_limit)
                 .all()
                )
-
-    print("MAPLIST: top_monograms =", len(top_monograms))
-    print("MAPLIST: top_multigrams = ", len(top_multigrams))
+    obtained_mono = len(top_monograms)
+    obtained_multi = len(top_multigrams)
+    obtained_total = obtained_mono + obtained_multi
+    # print("MAPLIST: top_monograms =", obtained_mono)
+    # print("MAPLIST: top_multigrams = ", obtained_multi)
+    print("MAPLIST: kept %i ngrams in total " % obtained_total)
 
     # NEW MAPLIST NODE
     # -----------------
     # saving the parameters of the analysis in the Node JSON
     new_hyperdata = { 'corpus': corpus.id,
                       'limit' : limit,
-                      'monograms_part' : monograms_part
+                      'monograms_part' : monograms_part,
+                      'monograms_result' : obtained_mono/obtained_total
                     }
     if overwrite_id:
         # overwrite pre-existing node

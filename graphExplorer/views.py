@@ -26,7 +26,7 @@ def explorer(request, project_id, corpus_id):
     
     # rendered page : journals.html
     return render(
-        template_name = 'pages/graph.html',
+        template_name = 'graphExplorer/explorer.html',
         request = request,
         context = {
             'debug'     : settings.DEBUG,

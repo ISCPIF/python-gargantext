@@ -6,9 +6,9 @@ from gargantext.util.db_cache  import cache
 from gargantext.constants      import DEFAULT_COOC_THRESHOLD
 from datetime                  import datetime
 
-def compute_coocs(corpus,
-                    overwrite_id  = None,
-                    threshold     = DEFAULT_COOC_THRESHOLD,
+def compute_coocs(  corpus,
+                    overwrite_id    = None,
+                    threshold       = DEFAULT_COOC_THRESHOLD,
                     mainlist_id     = None,
                     stoplist_id     = None,
                     start           = None,
@@ -23,10 +23,10 @@ def compute_coocs(corpus,
 
     node_id | ngram_id | weight       ngram1_id | ngram2_id | score |
     --------+----------+--------      ----------+-----------+-------+
-     MYDOCA |      487 |      1   =>        487 |       294 |     2 |
-     MYDOCA |      294 |      3
-     MYDOCB |      487 |      1
-     MYDOCB |      294 |      4
+     MyDocA |      487 |      1   =>        487 |       294 |     2 |
+     MyDocA |      294 |      3
+     MyDocB |      487 |      1
+     MyDocB |      294 |      4
 
     Fill that info in DB:
       - a *new* COOCCURRENCES node
@@ -103,8 +103,8 @@ def compute_coocs(corpus,
     coocs_query = (
         session.query(x1.ngram_id, x2.ngram_id, ucooc)
 
-            .filter(x1.node_id == x2.node_id)      # <- by definition of cooc
-            .filter(x1.ngram_id != x2.ngram_id)     # <- b/c not with itself
+            .filter(x1.node_id  == x2.node_id)       # <- by definition of cooc
+            .filter(x1.ngram_id != x2.ngram_id)      # <- b/c not with itself
             .filter(x1.node_id.in_(docids_subquery)) # <- b/c within corpus
             .group_by(x1.ngram_id, x2.ngram_id)
            )
@@ -209,7 +209,7 @@ def compute_coocs(corpus,
     # 5) SAVE
     # --------
     # saving the parameters of the analysis in the Node JSON
-    new_hyperdata = { 'corpus': corpus.id,
+    new_hyperdata = { 'corpus'   : corpus.id,
                       'threshold': threshold }
     if overwrite_id:
         # overwrite pre-existing id

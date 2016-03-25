@@ -66,9 +66,10 @@
                     <div class="col-md-12">
                         <div class="btn-group btn-group-justified">
                             <center>
+                                <!--
                                 <a type="button" class="btn btn-default 
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
-                                                        
+                                --!>
                                 <!-- <li class="divider"></li> --!>
                                 
                                 <a type="button" class="btn btn-default 
@@ -84,9 +85,11 @@
                                 <!-- <li class="divider"></li> --!>
                             
                                 <!-- FIXME put a separator here --!>
+                                <!--
                                 <a type="button" class="btn btn-default 
                                     {% if view == "charts" %}active{%endif%}" 
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Advanced Charts</a>
+                                --!>
                                 
                                 <!-- FIXME a pop up for advanced mode of graphs --!>
                                 <a type="button" class="btn btn-default 
@@ -95,9 +98,11 @@
                                 <a type="button" class="btn btn-default 
                                     {% if view == "distributional" %}active{%endif%}" 
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs (Distributional)</a>
+                                <!--
                                 <a type="button" class="btn btn-default 
                                     {% if view == "journalTerms" %}active{%endif%}" 
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs Journal/Terms</a>
+                                --!>
                             </center>
                         </div>
                     </div>

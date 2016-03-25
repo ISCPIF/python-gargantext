@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djcelery',
     'annotations',
+    'graphExplorer',
 ]
 
 MIDDLEWARE_CLASSES = [

@@ -38,7 +38,9 @@ urlpatterns = [
     url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/$', annotations_main_view),
 
     # Module "Graph Explorer"
-    url(r'^projects/(\d+)/corpora/(\d+)/explorer$', explorer)
+    url(r'^projects/(\d+)/corpora/(\d+)/explorer$', explorer), 
+    url(r'^projects/(\d+)/corpora/(\d+)/graph$',    Graph.as_view()),
+    url(r'^projects/(\d+)/corpora/(\d+)/node_link.json$',    Graph.as_view())
     #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer.urls))
     #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer_urls))
 ]

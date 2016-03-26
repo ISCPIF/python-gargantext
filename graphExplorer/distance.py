@@ -1,23 +1,18 @@
-from gargantext.util.db import session
+from gargantext.models     import Node, NodeNgram, NodeNgramNgram, \
+                                  NodeHyperdata
+from gargantext.util.db    import session, aliased
 
+from graphExplorer.louvain import best_partition
+
+from copy        import copy
 from collections import defaultdict
-from operator import itemgetter
-from django.db import connection, transaction
+from math        import log,sqrt
+#from operator import itemgetter
 
 import math
-from math import log,sqrt
-
-import numpy as np
-import pandas as pd
-
-from copy import copy
+import numpy    as np
+import pandas   as pd
 import networkx as nx
-from networkx.readwrite import json_graph
-
-from graphExplorer.louvain import best_partition, generate_dendogram, partition_at_level
-
-from sqlalchemy.orm import aliased
-
 
 def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance='conditional'):
     '''
@@ -40,14 +35,14 @@ def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance=
     query = session.query(Cooc).filter(Cooc.node_id==cooc_id).all()
     
     for cooc in query:
-        matrix[cooc.ngramx_id][cooc.ngramy_id] = cooc.score
-        matrix[cooc.ngramy_id][cooc.ngramx_id] = cooc.score
+        matrix[cooc.ngram1_id][cooc.ngram2_id] = cooc.weight
+        matrix[cooc.ngram2_id][cooc.ngram1_id] = cooc.weight
 
-        ids[cooc.ngramx_id] = (field1, cooc.ngramx_id)
-        ids[cooc.ngramy_id] = (field2, cooc.ngramy_id)
+        ids[cooc.ngram1_id] = (field1, cooc.ngram1_id)
+        ids[cooc.ngram2_id] = (field2, cooc.ngram2_id)
 
-        weight[cooc.ngramx_id] = weight.get(cooc.ngramx_id, 0) + cooc.score
-        weight[cooc.ngramy_id] = weight.get(cooc.ngramy_id, 0) + cooc.score
+        weight[cooc.ngram1_id] = weight.get(cooc.ngram1_id, 0) + cooc.weight
+        weight[cooc.ngram2_id] = weight.get(cooc.ngram2_id, 0) + cooc.weight
 
     x = pd.DataFrame(matrix).fillna(0)
 

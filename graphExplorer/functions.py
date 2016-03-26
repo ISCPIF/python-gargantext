@@ -1,43 +1,62 @@
+# Gargantext lib
+from gargantext.util.db           import session
+from gargantext.util.http         import JsonHttpResponse
+from gargantext.models            import Node, NodeNgram, NodeNgramNgram
+
+#from gargantext.util.toolchain.ngram_coocs import compute_coocs
+from graphExplorer.distance       import do_distance
+from graphExplorer.cooccurrences  import do_cooc
+
 # Prelude lib
-from copy           import copy, deepcopy
-from collections    import defaultdict
-from sqlalchemy.orm import aliased
+from copy                         import copy, deepcopy
+from collections                  import defaultdict
+from sqlalchemy.orm               import aliased
 
 # Math/Graph lib
 import math
 import pandas   as pd
 import numpy    as np
+
 import networkx as nx
-
-from math               import log
-from networkx.readwrite import json_graph
-
-# Gargantext lib
-from gargantext.util.http                  import JsonHttpResponse
-from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graphExplorer.distance                import do_distance
+from networkx.readwrite           import json_graph
 
 
 def get_cooc( request=None, corpus=None
             , field1='ngrams', field2='ngrams'
             , cooc_id=None   , type='node_link'
             , start=None     , end=None
-            , hapax=1
+            , threshold=1
             , distance='conditional'
             , size=1000
             , bridgeness=5
+            , mainList_id = None , stopList_id = None
         ):
     '''
     get_ccoc : to compute the graph.
     '''
-    # implicit global session
 
     data = {}
     #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
     print("Cooccurrences do not exist yet, creating it.")
-    miam_id = 1
-    stop_id = 2
-    group_id = 3
+    
+    if stopList_id == None :
+        stopList_id  = (session.query(Node.id).filter(Node.typename  == "STOPLIST",
+                                Node.parent_id == corpus.id).first())
+        if stopList_id == None :
+            raise ValueError("STOPLIST node needed for mainlist creation")
+
+    if mainList_id == None :
+        stopList_id  = (session.query(Node.id).filter(
+                                Node.typename  == "STOPLIST",
+                                Node.parent_id == corpus.id
+                        ).first())
+        if not mainList_id == None :
+            raise ValueError("STOPLIST node needed for mainlist creation")
+
+
+
+    # compute_cooc needs group, fields etc.
+    # group_id = 3
     
     SamuelFlag = False
     # if field1 == field2 == 'ngrams' :
@@ -49,9 +68,17 @@ def get_cooc( request=None, corpus=None
     # data deleted each time
     #cooc_id = get_or_create_node(nodetype='Cooccurrence', corpus=corpus).id
     
-    cooc_id = compute_cooc(corpus, field1="ngrams", field2="ngrams"
-            , miam_id=miam_id, group_id=group_id, stop_id=stop_id, limit=size
-            , isMonopartite=True, start=start , end=end , hapax=hapax)
+    if corpus is None:
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+
+    cooc_id = do_cooc( corpus=corpus
+            #, field1="ngrams", field2="ngrams"
+            , mainList_id=mainList_id, stopList_id=stopList_id
+            #, group_id=group_id
+            #, isMonopartite=True
+            , start=start    , end =end
+            , threshold      = threshold #, limit=size
+            )
     
     G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams"
                                             , isMonopartite=True, distance=distance)
@@ -95,21 +122,19 @@ def get_cooc( request=None, corpus=None
             weight = G[ids[s][1]][ids[t][1]]["weight"]
             
             if bridgeness < 0:
-                info = { 
-                        "s": ids[s][1] ,
-                        "t": ids[t][1] ,
-                        "w": weight
-                    }
+                info = { "s": ids[s][1]
+                       , "t": ids[t][1]
+                       , "w": weight
+                       }
                 links.append(info)
             
             else:
                 if partition[s] == partition[t]:
 
-                    info = { 
-                        "s": ids[s][1] ,
-                        "t": ids[t][1] ,
-                        "w": weight
-                    }
+                    info = { "s": ids[s][1]
+                           , "t": ids[t][1]
+                           , "w": weight
+                           }
                     links.append(info)
                 
                 if bridgeness > 0:

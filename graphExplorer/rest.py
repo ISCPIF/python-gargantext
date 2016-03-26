@@ -2,13 +2,15 @@ from gargantext.util.http import APIView, APIException, JsonHttpResponse
 #from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from gargantext.util.db import session
+from gargantext.models.nodes import Node
 from graphExplorer.functions import get_cooc
 
+# TODO check authentication
 
 class Graph(APIView):
     #authentication_classes = (SessionAuthentication, BasicAuthentication)
     
-    def get(self, request, corpus_id):
+    def get(self, request, project_id, corpus_id):
         '''
         Graph.get :: Get graph data as REST api.
         Get all the parameters first
@@ -39,18 +41,18 @@ class Graph(APIView):
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
-                    data = compute_cooc( corpus
+                    data = get_cooc( corpus=corpus
                                    #, field1=field1     , field2=field2
-                                   , start=start       , end=end
-                                   , threshold=threshold
-                                   , distance=distance
+                                   , start=start        , end=end
+                                   , threshold =threshold   , distance=distance
                                    )
                 else:
-                    data = compute_cooc( corpus
+                    data = get_cooc( corpus = corpus
                                       #, field1=field1, field2=field2
                                       , threshold  = threshold
                                       , distance   = distance
-                                      , bridgeness = bridgeness)
+                                      , bridgeness = bridgeness
+                                      )
                 if format_ == 'json':
                     return JsonHttpResponse(data)
         else:

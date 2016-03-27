@@ -19,17 +19,17 @@ class Graph(APIView):
         '''
         # implicit global session
         
-        field1      = request.GET.get ('field1'    , 'ngrams'     )
-        field2      = request.GET.get ('field2'    , 'ngrams'     )
+        field1      = str(request.GET.get ('field1'    , 'ngrams'     ))
+        field2      = str(request.GET.get ('field2'    , 'ngrams'     ))
         
         start       = request.GET.get ('start'     , None         )
         end         = request.GET.get ('end'       , None         )
         
-        threshold   = request.GET.get ('threshold' , 1            )
-        bridgeness  = request.GET.get ('bridgeness', -1           )
-        format_     = request.GET.get ('format'    , 'json'       )
-        type_       = request.GET.get ('type'      , 'node_link'  )
-        distance    = request.GET.get ('distance'  , 'conditional')
+        threshold   = int(request.GET.get ('threshold' , 1            ))
+        bridgeness  = int(request.GET.get ('bridgeness', -1           ))
+        format_     = str(request.GET.get ('format'    , 'json'       ))
+        type_       = str(request.GET.get ('type'      , 'node_link'  ))
+        distance    = str(request.GET.get ('distance'  , 'conditional'))
         
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()

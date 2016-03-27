@@ -94,10 +94,10 @@
                                 <!-- FIXME a pop up for advanced mode of graphs --!>
                                 <a type="button" class="btn btn-default 
                                     {% if view == "conditional" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs (Conditional)</a>
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5">Graphs (Conditional)</a>
                                 <a type="button" class="btn btn-default 
                                     {% if view == "distributional" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs (Distributional)</a>
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5">Graphs (Distributional)</a>
                                 <!--
                                 <a type="button" class="btn btn-default 
                                     {% if view == "journalTerms" %}active{%endif%}" 

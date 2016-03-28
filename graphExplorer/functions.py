@@ -29,30 +29,36 @@ def get_cooc( request=None, corpus=None
             , distance='conditional'
             , size=1000
             , bridgeness=5
-            , mainList_id = None , stopList_id = None
+            , mainList_id = None , groupList_id = None
         ):
     '''
     get_ccoc : to compute the graph.
     '''
 
     data = {}
-    #if session.query(Node).filter(Node.type_id==type_cooc_id, Node.parent_id==corpus_id).first() is None:
-    print("Cooccurrences do not exist yet, creating it.")
-    
-    if stopList_id == None :
-        stopList_id  = (session.query(Node.id).filter(Node.typename  == "STOPLIST",
-                                Node.parent_id == corpus.id).first())
-        if stopList_id == None :
-            raise ValueError("STOPLIST node needed for mainlist creation")
+
 
     if mainList_id == None :
-        stopList_id  = (session.query(Node.id).filter(
-                                Node.typename  == "STOPLIST",
-                                Node.parent_id == corpus.id
-                        ).first())
-        if not mainList_id == None :
-            raise ValueError("STOPLIST node needed for mainlist creation")
+        mainList_id  = ( session.query ( Node.id )
+                                .filter( Node.typename  == "MAINLIST"
+                                       , Node.parent_id == corpus.id
+                                       )
+                                .first()
+                       )
+        if mainList_id == None :
+            raise ValueError("MAINLIST node needed for cooccurrences")
 
+
+    if groupList_id   == None :
+        groupList_id  = ( session.query ( Node.id )
+                                 .filter( Node.typename  == "GROUPLIST"
+                                        , Node.parent_id == corpus.id
+                                        )
+                                 .first()
+                        )
+        
+        if groupList_id == None :
+            raise ValueError("GROUPLIST node needed for cooccurrences")
 
 
     # compute_cooc needs group, fields etc.
@@ -72,16 +78,18 @@ def get_cooc( request=None, corpus=None
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
     cooc_id = do_cooc( corpus=corpus
-            #, field1="ngrams", field2="ngrams"
-            , mainList_id=mainList_id, stopList_id=stopList_id
-            #, group_id=group_id
-            #, isMonopartite=True
-            , start=start    , end =end
-            , threshold      = threshold #, limit=size
-            )
+                    #, field1="ngrams", field2="ngrams"
+                     , mainList_id=int(mainList_id[0]), groupList_id=int(groupList_id[0])
+                    #, isMonopartite=True
+                     , start=start    , end =end
+                     , threshold      = threshold #, limit=size
+                     )
     
-    G, partition, ids, weight = do_distance(cooc_id, field1="ngrams", field2="ngrams"
-                                            , isMonopartite=True, distance=distance)
+    G, partition, ids, weight = do_distance ( cooc_id
+                                            , field1="ngrams", field2="ngrams"
+                                            , isMonopartite=True
+                                            , distance=distance
+                                            )
     if type == "node_link":
         nodesB_dict = {}
         for node_id in G.nodes():

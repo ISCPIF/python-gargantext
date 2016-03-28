@@ -8,9 +8,9 @@ from graphExplorer.functions import get_cooc
 # TODO check authentication
 
 class Graph(APIView):
-    #authentication_classes = (SessionAuthentication, BasicAuthentication)
-    
-    #@requires_auth
+    '''
+    REST part for graphs.
+    '''
     def get(self, request, project_id, corpus_id):
         '''
         Graph.get :: Get graph data as REST api.
@@ -23,8 +23,8 @@ class Graph(APIView):
         field1      = str(request.GET.get ('field1'    , 'ngrams'     ))
         field2      = str(request.GET.get ('field2'    , 'ngrams'     ))
         
-        start       = request.GET.get ('start'     , None         )
-        end         = request.GET.get ('end'       , None         )
+        start       = request.GET.get     ('start'     , None         )
+        end         = request.GET.get     ('end'       , None         )
         
         threshold   = int(request.GET.get ('threshold' , 1            ))
         bridgeness  = int(request.GET.get ('bridgeness', -1           ))
@@ -43,17 +43,17 @@ class Graph(APIView):
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
                     data = get_cooc( corpus=corpus
-                                   #, field1=field1     , field2=field2
+                                  #, field1=field1     , field2=field2
                                    , start=start        , end=end
                                    , threshold =threshold   , distance=distance
                                    )
                 else:
                     data = get_cooc( corpus = corpus
-                                      #, field1=field1, field2=field2
-                                      , threshold  = threshold
-                                      , distance   = distance
-                                      , bridgeness = bridgeness
-                                      )
+                                  #, field1=field1, field2=field2
+                                   , threshold  = threshold
+                                   , distance   = distance
+                                   , bridgeness = bridgeness
+                                   )
                 if format_ == 'json':
                     return JsonHttpResponse(data)
         else:

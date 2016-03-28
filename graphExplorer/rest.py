@@ -1,4 +1,4 @@
-from gargantext.util.http import APIView, APIException, JsonHttpResponse
+from gargantext.util.http import APIView, APIException, JsonHttpResponse, requires_auth
 #from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from gargantext.util.db import session
@@ -10,6 +10,7 @@ from graphExplorer.functions import get_cooc
 class Graph(APIView):
     #authentication_classes = (SessionAuthentication, BasicAuthentication)
     
+    #@requires_auth
     def get(self, request, project_id, corpus_id):
         '''
         Graph.get :: Get graph data as REST api.

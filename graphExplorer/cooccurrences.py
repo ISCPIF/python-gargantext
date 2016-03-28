@@ -11,12 +11,10 @@ import datetime
 
 def do_cooc(corpus=None
          , field1='ngrams', field2='ngrams'
-         , mainList_id=None, stopList_id=None, groupList_id=None
+         , mainList_id=None, groupList_id=None
          , coocNode_id=None
-         , cvalue_id=None
-         , n_min=1, n_max=None
          , start=None, end=None
-         , limit=1000
+         , n_min=1, n_max=None , limit=1000
          , isMonopartite=True
          , threshold = 3):
     '''
@@ -24,9 +22,8 @@ def do_cooc(corpus=None
     For the moment list of paramters are not supported because, lists need to
     be merged before.
     corpus           :: Corpus
-    cvalue_id        :: Int
+    
     mainList_id      :: Int
-    stopList_id      :: Int
     groupList_id     :: Int
 
     For the moment, start and end are simple, only year is implemented yet
@@ -42,10 +39,13 @@ def do_cooc(corpus=None
     
     # Get node
     if not coocNode_id:
-        coocNode_id0  = (session.query(Node.id).filter(Node.typename  == "COOCCURRENCES"
-                                        , Node.name      == "GRAPH EXPLORER"
-                                        , Node.parent_id == corpus.id
-                                      ).first())
+        coocNode_id0  = ( session.query( Node.id )
+                                .filter( Node.typename  == "COOCCURRENCES"
+                                       , Node.name      == "GRAPH EXPLORER"
+                                       , Node.parent_id == corpus.id
+                                       )
+                                .first()
+                        )
         if not coocNode_id:
             coocNode = corpus.add_child(
             typename  = "COOCCURRENCES",
@@ -76,8 +76,8 @@ def do_cooc(corpus=None
 #    
 #    node_cooc.hyperdata = hyperdata
 #
-    # For tests only
-    session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==coocNode_id).delete()
+    # For tests only : delete previous cooccurrences
+    session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
     session.commit()
 
     
@@ -85,37 +85,57 @@ def do_cooc(corpus=None
     cooc_score = func.count(NodeNgramX.node_id).label('cooc_score')
     #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
    
-    #print([n for n in test_query])
     if isMonopartite :
         NodeNgramY = aliased(NodeNgram)
 
-        cooc_query = (session.query(NodeNgramX.ngram_id, NodeNgramY.ngram_id, cooc_score)
-                 .join(Node, Node.id == NodeNgramX.node_id)
-                 .join(NodeNgramY, NodeNgramY.node_id == Node.id)
-                 .filter(Node.parent_id==corpus.id, Node.typename=="DOCUMENT")
-                    )
+        cooc_query = (session.query( NodeNgramX.ngram_id
+                                   , NodeNgramY.ngram_id
+                                   , cooc_score
+                                   )
+                             .join( Node
+                                  , Node.id == NodeNgramX.node_id
+                                  )
+                             .join( NodeNgramY
+                                  , NodeNgramY.node_id == Node.id
+                                  )
+                             .filter( Node.parent_id==corpus.id
+                                    , Node.typename=="DOCUMENT"
+                                    )
+                     )
     else :
         NodeNgramY = aliased(NodeNgram)
         
-        cooc_query = (session.query(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id, cooc_score)
-                 .join(Node, Node.id == NodeHyperdataNgram.node_id)
-                 .join(NodeNgramY, NodeNgramY.node_id == Node.id)
-                 .join(Hyperdata, Hyperdata.id == NodeHyperdataNgram.hyperdata_id)
-                 .filter(Node.parent_id == corpus.id, Node.typename == "DOCUMENT")
-                 .filter(Hyperdata.name == field1)
-                    )
-    #print(cooc_query)
+        cooc_query = (session.query( NodeHyperdataNgram.ngram_id
+                                   , NodeNgramY.ngram_id
+                                   , cooc_score
+                                   )
+                             .join( Node
+                                  , Node.id == NodeHyperdataNgram.node_id
+                                  )
+                             .join( NodeNgramY
+                                  , NodeNgramY.node_id == Node.id
+                                  )
+                             .join( Hyperdata
+                                  , Hyperdata.id == NodeHyperdataNgram.hyperdata_id
+                                  )
+                             .filter( Node.parent_id == corpus.id
+                                    , Node.typename == "DOCUMENT"
+                                    )
+                             .filter( Hyperdata.name == field1 )
+                     )
 
     # Size of the ngrams between n_min and n_max
     if n_min is not None or n_max is not None:
         if isMonopartite:
             NgramX = aliased(Ngram)
-            cooc_query = cooc_query.join(NgramX, NgramX.id == NodeNgramX.ngram_id)
+            cooc_query = cooc_query.join ( NgramX
+                                         , NgramX.id == NodeNgramX.ngram_id
+                                         )
         
         NgramY = aliased(Ngram)
-        cooc_query = (cooc_query
-             .join(NgramY, NgramY.id == NodeNgramY.ngram_id)
-            )
+        cooc_query = cooc_query.join ( NgramY
+                                     , NgramY.id == NodeNgramY.ngram_id
+                                     )
 
     if n_min is not None:
         cooc_query = (cooc_query
@@ -173,42 +193,14 @@ def do_cooc(corpus=None
         cooc_query = cooc_query.group_by(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id)
 
     cooc_query = cooc_query.order_by(desc('cooc_score'))
-    # END of the query
 
     matrix = WeightedMatrix(cooc_query)
-    #print(matrix)
     
     # Select according some scores
-    if cvalue_id is not None :
-        #miam = get_or_create_node(nodetype='Cvalue', corpus=corpus)
-        cvalue_list = UnweightedList(session.query(NodeNodeNgram.ngram_id)
-                                   .filter(NodeNodeNgram.nodex_id == cvalue_id).all()
-                                   )
     
-    if isMonopartite:
-        if mainList_id is not None :
-            miam_list = UnweightedList(mainList_id)
-        
-        if stopList_id is not None :
-            stop_list = UnweightedList(stopList_id)
-
-        if groupList_id is not None :
-            group_list = Translations(groupList_id)
-
-        if mainList_id is not None and stopList_id is None and groupList_id is None :
-            cooc = matrix & miam_list
-        elif mainList_id is not None and stopList_id is not None and groupList_id is None :
-            cooc = matrix & (miam_list - stop_list)
-        
-        elif mainList_id is not None and stopList_id is not None and groupList_id is not None :
-            print("mainList_id is not None and stopList_id is not None and groupList_id is not None") 
-            cooc = matrix & (miam_list * group_list - stop_list)
-            #cooc = matrix & (miam_list - stop_list)
-        elif mainList_id is not None and stopList_id is None and groupList_id is not None :
-            cooc = matrix & (miam_list * group_list)
-        else :
-            cooc = matrix
-    else:
-        cooc = matrix
+    mainList   = UnweightedList( mainList_id  )
+    group_list = Translations  ( groupList_id )
+    cooc       = matrix & (mainList * group_list)
+    
     cooc.save(coocNode_id)
     return(coocNode_id)

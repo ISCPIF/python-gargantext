@@ -18,6 +18,8 @@ from math                import log
 
 def compute_occs(corpus, overwrite_id = None):
     """
+    # TODO check if cumulated occs correspond to app's use cases and intention
+
     Calculates sum of occs per ngram within corpus
     (used as info in the ngrams table view)
 
@@ -78,9 +80,11 @@ def compute_occs(corpus, overwrite_id = None):
     return the_id
 
 
-def compute_tfidf(corpus, scope="local", overwrite_id=None):
+def compute_cumulated_tfidf(corpus, scope="local", overwrite_id=None):
     """
-    Calculates tfidf within the current corpus
+    # TODO check if cumulated tfs correspond to app's use cases and intention
+
+    Calculates tfidf ranking (cumulated tfidf) within the given scope
 
     Parameters:
       - the corpus itself
@@ -150,12 +154,12 @@ def compute_tfidf(corpus, scope="local", overwrite_id=None):
     else:
         # create the new TFIDF-XXXX node
         tfidf_nd = corpus.add_child()
-        if scope == "local":
+        if scope == "local":            # TODO discuss use and find new typename
             tfidf_nd.typename  = "TFIDF-CORPUS"
-            tfidf_nd.name      = "tfidf-c (in:%s)" % corpus.id
+            tfidf_nd.name      = "tfidf-cumul-corpus (in:%s)" % corpus.id
         elif scope == "global":
             tfidf_nd.typename  = "TFIDF-GLOBAL"
-            tfidf_nd.name      = "tfidf-g (in type:%s)" % this_source_type
+            tfidf_nd.name      = "tfidf-cumul-global (in type:%s)" % this_source_type
         session.add(tfidf_nd)
         session.commit()
         the_id = tfidf_nd.id
@@ -166,6 +170,85 @@ def compute_tfidf(corpus, scope="local", overwrite_id=None):
         NodeNodeNgram,
         ('node1_id', 'node2_id','ngram_id', 'score'),
         ((the_id,    corpus.id,    ng,   tfidfs[ng]) for ng in tfidfs)
+    )
+
+    return the_id
+
+
+
+def compute_tfidf_local(corpus, overwrite_id=None):
+    """
+    Calculates tfidf similarity of each (doc, ngram) couple, within the current corpus
+
+    Parameters:
+      - the corpus itself
+      - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
+                   (the Node and its previous NodeNodeNgram rows will be replaced)
+    """
+
+    # All docs of this corpus
+    docids_subquery = (session
+                        .query(Node.id)
+                        .filter(Node.parent_id == corpus.id)
+                        .filter(Node.typename == "DOCUMENT")
+                        .subquery()
+                       )
+
+    # N
+    total_docs = session.query(docids_subquery).count()
+
+    # number of docs with given term (number of rows = M ngrams)
+    n_docswith_ng = (session
+                    .query(
+                        NodeNgram.ngram_id,
+                        func.count(NodeNgram.node_id).label("nd")  # nd: n docs with term
+                     )
+                    .filter(NodeNgram.node_id.in_(docids_subquery))
+                    .group_by(NodeNgram.ngram_id)
+                    .all()
+                   )
+
+    # { ngram_id => log(nd) }
+    log_nd_lookup = {row.ngram_id : log(row.nd) for row in n_docswith_ng}
+
+    # tf for each couple (number of rows = N docs X M ngrams)
+    tf_doc_ng = (session
+                    .query(
+                        NodeNgram.ngram_id,
+                        NodeNgram.node_id,
+                        func.sum(NodeNgram.weight).label("tf"),    # tf: occurrences
+                     )
+                    .filter(NodeNgram.node_id.in_(docids_subquery))
+                    .group_by(NodeNgram.node_id, NodeNgram.ngram_id)
+                    .all()
+                   )
+
+    # ---------------------------------------------------------
+    tfidfs = {}
+    log_tot_docs = log(total_docs)
+    for (ngram_id, node_id, tf) in tf_doc_ng:
+        log_nd = log_nd_lookup[ngram_id]
+        # tfidfs[ngram_id] = tf * log(total_docs/nd)
+        tfidfs[node_id, ngram_id] = tf * (log_tot_docs-log_nd)
+    # ---------------------------------------------------------
+
+    if overwrite_id:
+        the_id = overwrite_id
+    else:
+        # create the new TFIDF-CORPUS node
+        tfidf_node = corpus.add_child()
+        tfidf_node.typename  = "TFIDF-CORPUS"
+        tfidf_node.name      = "tfidf-sims-corpus (in:%s)" % corpus.id
+        session.add(tfidf_node)
+        session.commit()
+        the_id = tfidf_node.id
+
+    # reflect that in NodeNodeNgrams
+    # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
+    bulk_insert(
+        NodeNodeNgram,
+        ('node1_id', 'node2_id','ngram_id', 'score'),
+        ((the_id,    node_id,    ngram_id,   tfidfs[node_id,ngram_id]) for (node_id, ngram_id) in tfidfs)
     )
 
     return the_id

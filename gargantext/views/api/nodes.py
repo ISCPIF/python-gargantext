@@ -1,8 +1,8 @@
 
-from gargantext.models          import Node
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram
 from gargantext.constants       import NODETYPES
-from gargantext.util.db         import session, delete
-from gargantext.util.db_cache   import cache
+from gargantext.util.db         import session, delete, func
+from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
 from gargantext.util.http       import ValidationException, APIView \
                                      , get_parameters, JsonHttpResponse
@@ -98,6 +98,84 @@ class NodeListResource(APIView):
 
         return JsonHttpResponse({'deleted': result.rowcount})
 
+class NodeListHaving(APIView):
+    '''
+    Gives a list of nodes according to its score which is related
+    to some specific ngrams.
+    TODO: implement other options (offset)
+
+    Simple implementation:
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+
+
+    '''
+    def get(self, request, corpus_id):
+        parameters = get_parameters(request)
+        parameters = validate(parameters, {'score': str, 'ngram_ids' : list} )
+        
+        try :
+            ngram_ids = [int(n) for n in parameters['ngram_ids'].split(',')]
+        except :
+            raise ValidationException('"ngram_ids" needs integers separated by comma.')
+
+        limit=5
+        nodes_list = []
+        
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        
+        tfidf_id  = ( session.query( Node.id )
+                        .filter( Node.typename  == "TFIDF-CORPUS"
+                               , Node.parent_id == corpus.id
+                               )
+                        .first()
+                )
+
+        
+        tfidf_id = tfidf_id[0]
+        print(tfidf_id)
+        # request data
+        nodes_query = (session
+            .query(Node, func.sum(NodeNodeNgram.score))
+            .join(NodeNodeNgram, NodeNodeNgram.node2_id == Node.id)
+            .filter(NodeNodeNgram.node1_id == tfidf_id)
+            .filter(Node.typename == 'DOCUMENT', Node.parent_id== corpus.id)
+            .filter(or_(*[NodeNodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+            .group_by(Node)
+            .order_by(func.sum(NodeNodeNgram.score).desc())
+            .limit(limit)
+        )
+        # print("\n")
+        # print("in TFIDF:")
+        # print("\tcorpus_id:",corpus_id)
+        # convert query result to a list of dicts
+#         if nodes_query is None:
+#             print("TFIDF error, juste take sums")
+#             nodes_query = (session
+#                 .query(Node, func.sum(NodeNgram.weight))
+#                 .join(NodeNgram, NodeNgram.node_id == Node.id)
+#                 .filter(Node.parent_id == corpus_id)
+#                 .filter(Node.typename == 'DOCUMENT')
+#                 .filter(or_(*[NodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+#                 .group_by(Node)
+#                 .order_by(func.sum(NodeNgram.weight).desc())
+#                 .limit(limit)
+#             )
+        for node, score in nodes_query:
+            print(node,score)
+            print("\t corpus:",corpus_id,"\t",node.name)
+            node_dict = {
+                'id': node.id,
+                'score': score,
+            }
+            for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
+                if key in node.hyperdata:
+                    node_dict[key] = node.hyperdata[key]
+            nodes_list.append(node_dict)
+
+        return JsonHttpResponse(nodes_list)
+
+
 
 class NodeResource(APIView):
 
@@ -187,45 +265,5 @@ class CorpusFacet(APIView):
         #  //     corpus.aggs[subfield] = xcounts
         return (xcounts, total)
 
-
-class CorpusGraph(APIView):
-    '''
-    Generate a graph
-    '''
-    def get(self, request, node_id):
-        # check that the node is a corpus
-        #   ? faster from cache than: corpus = session.query(Node)...
-        corpus = cache.Node[node_id]
-        if corpus.typename != 'CORPUS':
-            raise ValidationException(
-                "Only nodes of type CORPUS can accept facet queries" +
-                " (but this node has type %s)..." % corpus.typename
-            )
-        else:
-            self.corpus = corpus
-
-
-        # check that the hyperfield parameter makes sense
-        _facet_available_subfields = [
-            'journal', 'publication_year', 'rubrique',
-            'language_iso2', 'language_iso3', 'language_name'
-        ]
-        parameters = get_parameters(request)
-
-        # validate() triggers an info message if subfield not in range
-        parameters = validate(parameters, {'type': dict, 'items': {
-            'hyperfield': {'type': str, 'range': _facet_available_subfields}
-            }})
-
-        subfield = parameters['hyperfield']
-
-        # do_cooc
-        # do_distance
-
-        # response
-        return JsonHttpResponse({
-            'doc_count' : total,
-            'by': { subfield: xcounts }
-        })
 
 

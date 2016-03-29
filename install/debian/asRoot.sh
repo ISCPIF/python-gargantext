@@ -18,7 +18,7 @@ echo "Europe/Paris" > /etc/timezone && \
 
 
 ## PROD VERSION OF GARGANTEXt
-apt-get install uwsgi nginx 
+apt-get install -y uwsgi nginx 
 
 
 ### CREATE USER and adding it to sudo

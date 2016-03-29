@@ -1,11 +1,11 @@
-from gargantext import settings
+from gargantext           import settings
+from gargantext.util.json import json_dumps
 
 
 # get engine, session, etc.
-
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from gargantext.util.json import json_dumps
+from sqlalchemy import delete
 
 def get_engine():
     from sqlalchemy import create_engine

@@ -1,11 +1,12 @@
-from gargantext.util.http import *
-from gargantext.util.db import *
-from gargantext.util.db_cache import *
-from gargantext.models import *
-from gargantext.constants import *
 
-from sqlalchemy import delete
+from gargantext.models          import Node
+from gargantext.constants       import NODETYPES
+from gargantext.util.db         import session, delete
+from gargantext.util.db_cache   import cache
 from gargantext.util.validation import validate
+from gargantext.util.http       import ValidationException, APIView \
+                                     , get_parameters, JsonHttpResponse
+
 
 from collections import defaultdict
 
@@ -72,6 +73,12 @@ class NodeListResource(APIView):
             ]
         })
 
+    
+    def post(self, request):
+        """Create a new node.
+        NOT IMPLEMENTED
+        """
+
 
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
@@ -79,7 +86,10 @@ class NodeListResource(APIView):
         """
         parameters = get_parameters(request)
         parameters = validate(parameters, {'ids': list} )
-        node_ids = [int(n) for n in parameters['ids'].split(',')]
+        try :
+            node_ids = [int(n) for n in parameters['ids'].split(',')]
+        except :
+            raise ValidationException('"ids" needs integers separated by comma.')
 
         result = session.execute(
             delete(Node).where(Node.id.in_(node_ids))

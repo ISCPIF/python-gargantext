@@ -107,6 +107,36 @@
                         </div>
                     </div>
                 </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            {% if project %}
+                                <h3><a href="/projects/{{project.id}}">Project: {{ project.name }}</a>
+                                <br> Corpus: {{ corpus.name }} 
+                                <br> ({{ corpus.date }})
+                                </h3>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                        </div>
+                        <div class="col-md-4">
+                            <br>
+                            <!-- <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a> -->
+                            <!--
+                            <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
+
+                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+                                data-content='
+                                        <ul>
+                                            <li> Rename </li>
+                                            <li> Add new documents </li>
+                                            <li><a href="/delete/{{corpus.id}}">Delete</a></li>
+                                        </ul>
+                                        '>Manage</a>
+                            -->
+                            <!-- <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

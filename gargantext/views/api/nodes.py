@@ -4,6 +4,7 @@ from gargantext.util.db_cache import *
 from gargantext.models import *
 from gargantext.constants import *
 
+from sqlalchemy import delete
 from gargantext.util.validation import validate
 
 from collections import defaultdict
@@ -71,22 +72,21 @@ class NodeListResource(APIView):
             ]
         })
 
-    def post(self, request):
-        """Create a new node.
-        NOT IMPLEMENTED
-        """
 
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
-        WARNING! THIS IS TOTALLY UNTESTED!!!!!
+        TODO : Should be a delete method!
         """
-        parameters, query, count = _query_nodes(request)
-        query.delete()
+        parameters = get_parameters(request)
+        parameters = validate(parameters, {'ids': list} )
+        node_ids = [int(n) for n in parameters['ids'].split(',')]
+
+        result = session.execute(
+            delete(Node).where(Node.id.in_(node_ids))
+        )
         session.commit()
-        return JsonHttpResponse({
-            'parameters': parameters,
-            'count': count,
-        }, 200)
+
+        return JsonHttpResponse({'deleted': result.rowcount})
 
 
 class NodeResource(APIView):
@@ -104,7 +104,6 @@ class NodeResource(APIView):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
-        from sqlalchemy import delete
         result = session.execute(
             delete(Node).where(Node.id == node_id)
         )

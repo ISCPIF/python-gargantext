@@ -230,9 +230,9 @@ $("#move2trash")
     console.log(ids2trash)
 
     $.ajax({
-      url: "/tests/move2trash/",
-      data: "nodeids="+JSON.stringify(ids2trash),
-      type: 'POST',
+      url : window.location.origin + "/api/nodes?ids="+ids2trash,
+      //data: 'ids:'+JSON.stringify(ids2trash),
+      type: 'DELETE',
       beforeSend: function(xhr) {
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
       },

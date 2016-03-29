@@ -73,31 +73,3 @@ def docs_by_journals(request, project_id, corpus_id):
         },
     )
 
-@requires_auth
-def graph(request, project_id, corpus_id):
-    '''
-    Graph
-    '''
-
-    # we pass our corpus
-    corpus = cache.Node[corpus_id]
-
-    # and the project just for project.id in corpusBannerTop
-    project = cache.Node[project_id]
-
-    # rendered page : journals.html
-    return render(
-        template_name = 'pages/corpora/journals.html',
-        request = request,
-        context = {
-            'debug': settings.DEBUG,
-            'date': datetime.now(),
-            'project': project,
-            'corpus' : corpus,
-            'view': 'journals'
-        },
-    )
-
-
-
-

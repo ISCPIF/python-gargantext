@@ -40,6 +40,7 @@ urlpatterns = [
     # Module "Graph Explorer"
     url(r'^projects/(\d+)/corpora/(\d+)/explorer$', explorer), 
     url(r'^projects/(\d+)/corpora/(\d+)/graph$',    Graph.as_view()),
+    # to be removed:
     url(r'^projects/(\d+)/corpora/(\d+)/node_link.json$',    Graph.as_view())
     #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer.urls))
     #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer_urls))

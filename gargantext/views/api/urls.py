@@ -8,7 +8,7 @@ urlpatterns = [
     url(r'^nodes$'              , nodes.NodeListResource.as_view()),
     url(r'^nodes/(\d+)$'        , nodes.NodeResource.as_view()),
 
-    url(r'^nodes/(\d+)/facets$', nodes.CorpusFacet.as_view()),
+    url(r'^nodes/(\d+)/facets$' , nodes.CorpusFacet.as_view()),
 
     # get a list of ngram_ids or ngram_infos by list_id
     #
@@ -21,7 +21,6 @@ urlpatterns = [
     #   - an optional maplist
     #   - an optional grouplist
     # aka lexical model
-    url(r'^ngramlists/family$', ngramlists.ListFamily.as_view()),
-    
-    url(r'^nodes/(\d+)/graph$'  , nodes.CorpusGraph.as_view()),
+    url(r'^ngramlists/family$'  , ngramlists.ListFamily.as_view()),
+
 ]

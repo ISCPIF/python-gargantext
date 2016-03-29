@@ -16,7 +16,8 @@ def do_cooc(corpus=None
          , start=None, end=None
          , n_min=1, n_max=None , limit=1000
          , isMonopartite=True
-         , threshold = 3):
+         , threshold = 3
+         , reset=True):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -57,32 +58,18 @@ def do_cooc(corpus=None
             coocNode_id = coocNode.id
         else :
             coocNode_id = coocNode_id[0]
-
-#    node_cooc = get_or_create_node(nodetype='Cooccurrence', corpus=corpus
-#                                   , name_str="Cooccurrences corpus " \
-#                                    + str(corpus.id) + "list_id: " + str(mainList_id)
-#                                    #, hyperdata={'field1': field1, 'field2':field2}
-#                                   , session=session)
-
     
-    # BEGIN
-    # Saving the parameters of the analysis in the Node JSONB hyperdata field
-    # ok args, _, _, parameters = inspect.getargvalues(inspect.currentframe())
-#    hyperdata = dict()
-#    
-#    for parameter in parameters.keys():
-#        if parameter != 'corpus' and parameter != 'node_cooc':
-#            hyperdata[parameter] = parameters[parameter]
-#    
-#    node_cooc.hyperdata = hyperdata
-#
-    # For tests only : delete previous cooccurrences
-    session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
-    session.commit()
+    if reset == True :
+        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
+        session.commit()
 
     
     NodeNgramX = aliased(NodeNgram)
+    
+    # Simple Cooccurrences
     cooc_score = func.count(NodeNgramX.node_id).label('cooc_score')
+    
+    # A kind of Euclidean distance cooccurrences
     #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
    
     if isMonopartite :
@@ -131,7 +118,7 @@ def do_cooc(corpus=None
             cooc_query = cooc_query.join ( NgramX
                                          , NgramX.id == NodeNgramX.ngram_id
                                          )
-        
+
         NgramY = aliased(Ngram)
         cooc_query = cooc_query.join ( NgramY
                                      , NgramY.id == NodeNgramY.ngram_id
@@ -160,10 +147,14 @@ def do_cooc(corpus=None
         
         Start=aliased(NodeHyperdata)
         StartFormat = aliased(Hyperdata)
-        cooc_query = (cooc_query.join(Start, Start.node_id == Node.id)
-                                .join(StartFormat, StartFormat.id == Start.hyperdata_id)
-                                .filter(StartFormat.name == 'publication_date')
-                                .filter(Start.value_datetime >= date_start_utc)
+        cooc_query = (cooc_query.join( Start
+                                     , Start.node_id == Node.id
+                                     )
+                                .join( StartFormat
+                                     , StartFormat.id == Start.hyperdata_id
+                                     )
+                                .filter( StartFormat.name == 'publication_date')
+                                .filter( Start.value_datetime >= date_start_utc)
                       )
 
 
@@ -174,10 +165,14 @@ def do_cooc(corpus=None
         
         End=aliased(NodeHyperdata)
         EndFormat = aliased(Hyperdata)
-        cooc_query = (cooc_query.join(End, End.node_id == Node.id)
-                                .join(EndFormat, EndFormat.id == End.hyperdata_id)
-                                .filter(EndFormat.name == 'publication_date')
-                                .filter(End.value_datetime <= date_end_utc)
+        cooc_query = (cooc_query.join( End
+                                     , End.node_id == Node.id
+                                     )
+                                .join( EndFormat
+                                     , EndFormat.id == End.hyperdata_id
+                                     )
+                                .filter( EndFormat.name == 'publication_date' )
+                                .filter( End.value_datetime <= date_end_utc )
                       )
 
 
@@ -192,12 +187,10 @@ def do_cooc(corpus=None
     else:
         cooc_query = cooc_query.group_by(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id)
 
+    # Order according some scores
     cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
-    
-    # Select according some scores
-    
     mainList   = UnweightedList( mainList_id  )
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mainList * group_list)

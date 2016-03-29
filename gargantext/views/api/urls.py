@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^nodes/(\d+)$'        , nodes.NodeResource.as_view()),
 
     url(r'^nodes/(\d+)/facets$' , nodes.CorpusFacet.as_view()),
+    url(r'^nodes/(\d+)/having$' , nodes.NodeListHaving.as_view()),
 
     # get a list of ngram_ids or ngram_infos by list_id
     #

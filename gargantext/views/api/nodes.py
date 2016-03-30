@@ -5,7 +5,7 @@ from gargantext.util.db         import session, delete, func
 from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
 from gargantext.util.http       import ValidationException, APIView \
-                                     , get_parameters, JsonHttpResponse
+                                     , get_parameters, JsonHttpResponse, Http404
 
 
 from collections import defaultdict

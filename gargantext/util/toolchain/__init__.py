@@ -4,7 +4,7 @@ from .hyperdata_indexing  import index_hyperdata
 
 # in usual run order
 from .list_stop           import do_stoplist
-from .metric_tfidf        import compute_occs, compute_tfidf
+from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_cumulated_tfidf
 from .list_main           import do_mainlist
 from .ngram_coocs         import compute_coocs
 from .metric_specificity  import compute_specificity
@@ -75,12 +75,12 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new occs node #%i' % (corpus.id, t(), occ_id))
 
     # ------------
-    # -> write local tfidf to Node and NodeNodeNgram
-    ltfidf_id = compute_tfidf(corpus, scope="local")
+    # -> write local tfidf similarities to Node and NodeNodeNgram
+    ltfidf_id = compute_tfidf_local(corpus)
     print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
 
-    # -> write global tfidf to Node and NodeNodeNgram
-    gtfidf_id = compute_tfidf(corpus, scope="global")
+    # -> write global and cumulated tfidf to Node and NodeNodeNgram
+    gtfidf_id = compute_cumulated_tfidf(corpus, scope="global")
     print('CORPUS #%d: [%s] new globaltfidf node #%i' % (corpus.id, t(), gtfidf_id))
 
     # -> mainlist: filter + write (to Node and NodeNgram)

@@ -5,7 +5,7 @@
 apt-get update && \
 apt-get install -y \
 apt-utils ca-certificates locales \
-sudo aptitude gcc wget git postgresql-9.5 vim
+sudo aptitude gcc g++ wget git postgresql-9.5 vim
 
 ### Configure timezone and locale
 echo "Europe/Paris" > /etc/timezone && \
@@ -37,7 +37,9 @@ apt-get update && apt-get install -y \
    virtualenv python3-virtualenv \
    python3.4 python3.4-dev \
    python3.5 python3.5-dev \
-   python3-six python3-numpy
+   python3-six python3-numpy python3-setuptools \ # for numpy, pandas
+   python3-numexpr \                              # for numpy performance
+   libxml2-dev libxslt-dev                        # for lxml
 
 
 #if [[ -e "/srv/gargantext" ]]

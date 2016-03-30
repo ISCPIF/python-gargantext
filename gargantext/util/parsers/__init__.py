@@ -8,4 +8,4 @@ from .Pubmed import PubmedParser
 from .Europress import EuropressParser
 
 # from .ISTex import ISTexParser
-# from .CSV import CSVParser
+from .CSV import CSVParser

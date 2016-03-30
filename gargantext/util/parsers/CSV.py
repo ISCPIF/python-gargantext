@@ -8,34 +8,32 @@ import os
 
 class CSVParser(Parser):
 
-    def CSVsample( self, filename , delim) :
-        ifile  = open( filename, "r" )
-        reader = csv.reader(ifile, delimiter=delim)
+    def CSVsample( self, small_contents , delim) :
+        reader = csv.reader(small_contents, delimiter=delim)
 
         Freqs = []
         for row in reader:
             Freqs.append(len(row))
 
-
-        ifile.close()
         return Freqs
 
-    
+
     def parse(self, filename):
 
+        print("CSV: parsing (assuming UTF-8 and LF line endings)")
+
+        contents = filename.read().decode("UTF-8").split("\n")
+
         sample_size = 10
-        sample_file = filename.replace(".csv","_sample.csv")
+        sample_contents = contents[0:sample_size]
 
         hyperdata_list = []
-
-        command_for_sample = "cat '"+filename+"' | head -n "+str(sample_size)+" > '"+sample_file+"'"
-        os.system(command_for_sample) # you just created a  *_sample.csv
 
         # # = = = = [ Getting delimiters frequency ] = = = = #
         PossibleDelimiters = [ ',',' ','\t', ';', '|', ':' ]
         AllDelimiters = {}
         for delim in PossibleDelimiters:
-            AllDelimiters[delim] = self.CSVsample( sample_file , delim ) 
+            AllDelimiters[delim] = self.CSVsample( sample_contents , delim )
         # # = = = = [ / Getting delimiters frequency ] = = = = #
         # # OUTPUT example:
         # #  AllDelimiters = {
@@ -59,8 +57,8 @@ class CSVParser(Parser):
         # # = = = = [ / Stand.Dev=0 & Sum of delimiters ] = = = = #
         # # OUTPUT example:
         # #  Delimiters = [
-        # #     ['\t', 5, 5, 0.0], 
-        # #     [',', 75, 5, 0.0], 
+        # #     ['\t', 5, 5, 0.0],
+        # #     [',', 75, 5, 0.0],
         # #     ['|', 5, 5, 0.0]
         # #  ]
 
@@ -68,11 +66,9 @@ class CSVParser(Parser):
         # # = = = = [ Delimiter selection ] = = = = #
         Sorted_Delims = sorted(Delimiters, key=lambda x: x[1], reverse=True)
         HighestDelim = Sorted_Delims[0][0]
-        # print("selected delimiter:",[HighestDelim]
-        # print
+        # HighestDelim = ","
+        print("CSV selected delimiter:",[HighestDelim])
         # # = = = = [ / Delimiter selection ] = = = = #
-
-
 
 
         # # = = = = [ First data coordinate ] = = = = #
@@ -81,10 +77,11 @@ class CSVParser(Parser):
             "column": -1
         }
 
-        ifile  = open( sample_file, "r" )
-        reader = csv.reader(ifile, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=HighestDelim)
 
         for rownum, tokens in enumerate(reader):
+            if rownum % 250 == 0:
+                print("CSV row: ", rownum)
             joined_tokens = "".join (tokens)
             if Coords["row"]<0 and len( joined_tokens )>0 :
                 Coords["row"] = rownum
@@ -93,22 +90,21 @@ class CSVParser(Parser):
                     if len(t)>0:
                         Coords["column"] = columnum
                         break
-        ifile.close()
         # # = = = = [ / First data coordinate ] = = = = #
 
 
 
         # # = = = = [ Setting Headers ] = = = = #
         Headers_Int2Str = {}
-        ifile  = open( sample_file, "r" )
-        reader = csv.reader(ifile, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=HighestDelim)
         for rownum, tokens in enumerate(reader):
             if rownum>=Coords["row"]:
                 for columnum in range( Coords["column"],len(tokens) ):
                     t = tokens[columnum]
                     Headers_Int2Str[columnum] = t
                 break
-        ifile.close()
+        # print("Headers_Int2Str")
+        # print(Headers_Int2Str)
         # # = = = = [ / Setting Headers ] = = = = #
         # # OUTPUT example:
         # #  Headers_Int2Str = {
@@ -119,11 +115,9 @@ class CSVParser(Parser):
         # #  }
 
 
-
         # # = = = = [ Reading the whole CSV and saving ] = = = = #
         hyperdata_list = []
-        ifile  = open( filename, "r" )
-        reader = csv.reader(ifile, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=HighestDelim)
         for rownum, tokens in enumerate(reader):
             if rownum>Coords["row"]:
                 RecordDict = {}
@@ -131,7 +125,6 @@ class CSVParser(Parser):
                     data = tokens[columnum]
                     RecordDict[ Headers_Int2Str[columnum] ] = data
                 hyperdata_list.append( RecordDict )
-        ifile.close()
         # # = = = = [ / Reading the whole CSV and saving ] = = = = #
 
         return hyperdata_list

@@ -29,7 +29,7 @@ def get_cooc( request=None, corpus=None
             , distance='conditional'
             , size=1000
             , bridgeness=5
-            , mainList_id = None , groupList_id = None
+            , mapList_id = None , groupList_id = None
         ):
     '''
     get_ccoc : to compute the graph.
@@ -38,15 +38,15 @@ def get_cooc( request=None, corpus=None
     data = {}
 
 
-    if mainList_id == None :
-        mainList_id  = ( session.query ( Node.id )
-                                .filter( Node.typename  == "MAINLIST"
+    if mapList_id == None :
+        mapList_id  = ( session.query ( Node.id )
+                                .filter( Node.typename  == "MAPLIST"
                                        , Node.parent_id == corpus.id
                                        )
                                 .first()
                        )
-        if mainList_id == None :
-            raise ValueError("MAINLIST node needed for cooccurrences")
+        if mapList_id == None :
+            raise ValueError("MAPLIST node needed for cooccurrences")
 
 
     if groupList_id   == None :
@@ -79,7 +79,7 @@ def get_cooc( request=None, corpus=None
 
     cooc_id = do_cooc( corpus=corpus
                     #, field1="ngrams", field2="ngrams"
-                     , mainList_id=int(mainList_id[0]), groupList_id=int(groupList_id[0])
+                     , mapList_id=int(mapList_id[0]), groupList_id=int(groupList_id[0])
                     #, isMonopartite=True
                      , start=start    , end =end
                      , threshold      = threshold #, limit=size

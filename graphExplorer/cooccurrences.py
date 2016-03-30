@@ -9,22 +9,20 @@ from sqlalchemy            import desc, asc, or_, and_
 #import inspect
 import datetime
 
-def do_cooc(corpus=None
-         , field1='ngrams', field2='ngrams'
-         , mainList_id=None, groupList_id=None
-         , coocNode_id=None
-         , start=None, end=None
-         , n_min=1, n_max=None , limit=1000
-         , isMonopartite=True
-         , threshold = 3
-         , reset=True):
+def do_cooc( corpus=None
+           , field1='ngrams'     , field2='ngrams'
+           , start=None          , end=None
+           , mapList_id=None     , groupList_id=None
+           , n_min=1, n_max=None , limit=1000
+           , coocNode_id=None    , reset=True
+           , isMonopartite=True  , threshold = 3):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
     be merged before.
     corpus           :: Corpus
     
-    mainList_id      :: Int
+    mapList_id       :: Int
     groupList_id     :: Int
 
     For the moment, start and end are simple, only year is implemented yet
@@ -191,9 +189,9 @@ def do_cooc(corpus=None
     cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
-    mainList   = UnweightedList( mainList_id  )
+    mapList   = UnweightedList( mapList_id  )
     group_list = Translations  ( groupList_id )
-    cooc       = matrix & (mainList * group_list)
+    cooc       = matrix & (mapList * group_list)
     
     cooc.save(coocNode_id)
     return(coocNode_id)

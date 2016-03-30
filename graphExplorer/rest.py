@@ -44,8 +44,8 @@ class Graph(APIView):
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
                     data = get_cooc( corpus=corpus
-                                  #, field1=field1     , field2=field2
-                                   , start=start        , end=end
+                                  #, field1=field1          , field2=field2
+                                   , start=start            , end=end
                                    , threshold =threshold   , distance=distance
                                    )
                 else:

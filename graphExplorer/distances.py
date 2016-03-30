@@ -14,7 +14,9 @@ import numpy    as np
 import pandas   as pd
 import networkx as nx
 
-def do_distance(cooc_id, field1=None, field2=None, isMonopartite=True, distance='conditional'):
+def do_distance( cooc_id
+               , field1=None, field2=None
+               , isMonopartite=True, distance='conditional'):
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''

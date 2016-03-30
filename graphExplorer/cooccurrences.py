@@ -9,13 +9,13 @@ from sqlalchemy            import desc, asc, or_, and_
 #import inspect
 import datetime
 
-def do_cooc( corpus=None
-           , field1='ngrams'     , field2='ngrams'
-           , start=None          , end=None
-           , mapList_id=None     , groupList_id=None
-           , n_min=1, n_max=None , limit=1000
-           , coocNode_id=None    , reset=True
-           , isMonopartite=True  , threshold = 3):
+def countCooccurrences( corpus=None
+                      , field1='ngrams'     , field2='ngrams'
+                      , start=None          , end=None
+                      , mapList_id=None     , groupList_id=None
+                      , n_min=1, n_max=None , limit=1000
+                      , coocNode_id=None    , reset=True
+                      , isMonopartite=True  , threshold = 3):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to

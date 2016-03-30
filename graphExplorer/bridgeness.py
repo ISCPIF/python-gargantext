@@ -1,105 +1,32 @@
-# Gargantext lib
-from gargantext.util.db           import session
-from gargantext.util.http         import JsonHttpResponse
-from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram
+# Article coming soon
 
-#from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graphExplorer.distances      import do_distance
-from graphExplorer.cooccurrences  import do_cooc
+from gargantext.util.db       import session
+from gargantext.models.ngrams import Ngram
+from collections              import defaultdict
 
-# Prelude lib
-from copy                         import copy, deepcopy
-from collections                  import defaultdict
-from sqlalchemy.orm               import aliased
-
-# Math/Graph lib
-import math
-import pandas                     as pd
-import numpy                      as np
-
-import networkx                   as nx
 from networkx.readwrite           import json_graph
 
-
-def get_cooc( request=None, corpus=None
-            , field1='ngrams', field2='ngrams'
-            , cooc_id=None   , type='node_link'
-            , start=None     , end=None
-            , threshold=1
-            , distance='conditional'
-            , isMonopartite=True                # By default, we compute terms/terms graph
-            , size=1000
-            , bridgeness=5
-            , mapList_id = None , groupList_id = None
-        ):
-    '''
-    get_ccoc : to compute the graph.
-    '''
-
-
-    if mapList_id == None :
-        mapList_id  = ( session.query ( Node.id )
-                                .filter( Node.typename  == "MAPLIST"
-                                       , Node.parent_id == corpus.id
-                                       )
-                                .first()
-                       )
-        if mapList_id == None :
-            raise ValueError("MAPLIST node needed for cooccurrences")
-
-
-    if groupList_id   == None :
-        groupList_id  = ( session.query ( Node.id )
-                                 .filter( Node.typename  == "GROUPLIST"
-                                        , Node.parent_id == corpus.id
-                                        )
-                                 .first()
-                        )
-
-        if groupList_id == None :
-            raise ValueError("GROUPLIST node needed for cooccurrences")
-
-
-    if corpus is None:
-        corpus = session.query(Node).filter(Node.id==corpus_id).first()
-
-    cooc_id = do_cooc( corpus=corpus
-                    #, field1="ngrams", field2="ngrams"
-                     , mapList_id=int(mapList_id[0]), groupList_id=int(groupList_id[0])
-                    #, isMonopartite=True
-                     , start=start    , end =end
-                     , threshold      = threshold #, limit=size
-                     )
-    
-    G, partition, ids, weight = do_distance ( cooc_id
-                                            , field1="ngrams", field2="ngrams"
-                                            , isMonopartite=True
-                                            , distance=distance
-                                            )
+def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
     # Data are stored in a dict(), (== hashmap by default for Python)
     data = dict()
-    
     if type == "node_link":
         nodesB_dict = {}
         for node_id in G.nodes():
             #node,type(labels[node])
-            G.node[node_id]['pk'] = ids[node_id][1]
+            G.node[node_id]['pk']           = ids[node_id][1]
             nodesB_dict [ ids[node_id][1] ] = True
             # TODO the query below is not optimized (do it do_distance).
             the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
             the_label = ", ".join(the_label)
-            G.node[node_id]['label']   = the_label
+            G.node[node_id]['label']        = the_label
             
-            G.node[node_id]['size']    = weight[node_id]
-            G.node[node_id]['type']    = ids[node_id][0].replace("ngrams","terms")
-            G.node[node_id]['attributes'] = { "clust_default": partition[node_id]} # new format
+            G.node[node_id]['size']         = weight[node_id]
+            G.node[node_id]['type']         = ids[node_id][0].replace("ngrams","terms")
+            G.node[node_id]['attributes']   = { "clust_default": partition[node_id]} # new format
             # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
-
-        
 
         links = []
         i=1
-        
 
         if bridgeness > 0:
             com_link = defaultdict(lambda: defaultdict(list))
@@ -107,7 +34,6 @@ def get_cooc( request=None, corpus=None
             
             for k, v in partition.items():
                 com_ids[v].append(k)
-        
 
         for e in G.edges_iter():
             s = e[0]
@@ -180,5 +106,3 @@ def get_cooc( request=None, corpus=None
         return(partition)
 
     return(data)
-
-

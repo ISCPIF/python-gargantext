@@ -114,9 +114,9 @@ from gargantext.util.taggers import *
 
 LANGUAGES = {
     'en': {
-        'tagger': TurboTagger,
-        # 'tagger': EnglishMeltTagger,
-        # 'tagger': NltkTagger,
+        #'tagger': TurboTagger,
+        'tagger': EnglishMeltTagger,
+        #'tagger': NltkTagger,
     },
     'fr': {
         'tagger': FrenchMeltTagger,

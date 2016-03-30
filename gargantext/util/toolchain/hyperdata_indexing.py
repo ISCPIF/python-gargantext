@@ -57,10 +57,10 @@ def _nodes_hyperdata_generator(corpus):
                                 None,
                                 None,
                                 None,
-                                value[:255],
+                                value,
                                 None,
                             )
-                        else :
+                        elif len(value) < 2712 :
                              yield (
                                 document.id,
                                 key['id'],
@@ -70,6 +70,29 @@ def _nodes_hyperdata_generator(corpus):
                                 None,
                                 value,
                             )
+                        else :
+                            print("La taille de la ligne index,   \
+                            dépasse le maximum, 2712, pour l'index \
+                            « ix_nodes_hyperdata_value_txt » HINT:  \
+                            Les valeurs plus larges qu'un tiers d'une\
+                            page de tampon ne peuvent pas être        \
+                            indexées (sur postgres 9.5). TODO :        \
+                            Utilisez un index sur le hachage MD5 de la  \
+                            valeur et/ou passez à l'indexation de la     \
+                            recherche plein texte.")
+
+                            yield (
+                                document.id,
+                                key['id'],
+                                None,
+                                None,
+                                None,
+                                None,
+                                value[:2712],
+                            )
+
+
+
 
                     else:
                         print("WARNING: Couldn't insert an INDEXED_HYPERDATA value because of unknown type:", type(value))

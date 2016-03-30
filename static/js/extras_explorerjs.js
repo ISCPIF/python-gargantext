@@ -499,7 +499,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
                 for(var i in arraydata) {
                     var pub = arraydata[i]
-                    var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+                    var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
                     var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
 
                     var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
@@ -521,7 +521,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                     jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                     output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                    output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                    output += '<a href="'+gquery+'" target=_blank><img title="Query the anonymous web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                     output +="</li>\n";
                     // for(var j in pub) {
                     //  if(j!="abstract")
@@ -584,7 +584,7 @@ function getTopPapers(type){
                 for(var i in data) {
                     var pub = data[i]
                     if(pub["title"]) {
-                        var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+                        var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
 
                         var url_elems = window.location.href.split("/")
                         var url_mainIDs = {}
@@ -615,7 +615,7 @@ function getTopPapers(type){
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                         output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                         output +="</li>\n";
                         // for(var j in pub) {
                         //  if(j!="abstract")

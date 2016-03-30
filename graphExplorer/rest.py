@@ -1,9 +1,10 @@
-from gargantext.util.http import APIView, APIException, JsonHttpResponse, requires_auth
 #from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-from gargantext.util.db import session
+from gargantext.util.db      import session
 from gargantext.models.nodes import Node
 from graphExplorer.functions import get_cooc
+from gargantext.util.http    import APIView, APIException\
+                                  , JsonHttpResponse, requires_auth
 
 # TODO check authentication
 

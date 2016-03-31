@@ -22,7 +22,7 @@
         <div class="row">
             <div id="monthly-move-chart">
                 <center>
-                        Select a time range in the chart with blue bars to zoom in
+                        Select a score/frequency range in the chart with blue bars to zoom in
                 <p align="center">
                 <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
                 <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
@@ -41,7 +41,12 @@
           <br>
         </div>
 
-        <input type="hidden" id="list_id" value="{{ list_id }}"></input>
+        <!-- (values set by js) caching our DB ids (handy for list update commands) -->
+        <input type="hidden" id="mainlist_id" value=""></input>
+        <input type="hidden" id="maplist_id" value=""></input>
+        <input type="hidden" id="stoplist_id" value=""></input>
+        <input type="hidden" id="groups_id" value=""></input>
+        <input type="hidden" id="scores_id" value=""></input>
 
         <div class="row">
             <div class="panel panel-default">

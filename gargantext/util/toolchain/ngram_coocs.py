@@ -66,6 +66,7 @@ def compute_coocs(corpus,
 
     """
 
+        #   - TODO add grouped element's values in grouping 'chief ngram'
         #   - TODO cvalue_id: allow a metric as additional  input filter
         #   - TODO n_min, n_max : filter on Ngram.n (aka length of ngram)
         #   - TODO start, end : filter on document date
@@ -159,9 +160,9 @@ def compute_coocs(corpus,
     matrix = WeightedMatrix(coocs_query.all())
 
     # fyi
-    # shape_0 = len({pair[0] for pair in matrix.items})
-    # shape_1 = len({pair[1] for pair in matrix.items})
-    # print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
+    shape_0 = len({pair[0] for pair in matrix.items})
+    shape_1 = len({pair[1] for pair in matrix.items})
+    print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
 
     # 5) SAVE
     # --------

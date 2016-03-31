@@ -318,8 +318,8 @@ function Final_UpdateTable( action ) {
     // debug
     console.log("\nFUN Final_UpdateTable()")
 
-    console.log("AjaxRecords")
-    console.log(AjaxRecords)
+    // console.log("AjaxRecords")
+    // console.log(AjaxRecords)
 
     // (1) Identifying if the button is collapsed:
     var isCollapsed=false;
@@ -346,9 +346,8 @@ function Final_UpdateTable( action ) {
 
     var dataini = (TheBuffer[0])?TheBuffer[0]:oldest;
     var datafin = (TheBuffer[1])?TheBuffer[1]:latest;
-    pr("show me the pubs of the selected period")
+    pr("show me the pubs of the selected score range")
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
-    pr("\tfrom ["+oldest+"] to ["+latest+"]")
 
     TimeRange = []
     for (var i in AjaxRecords) {
@@ -557,7 +556,7 @@ function transformContent(rec_id) {
     result["ngramId"] = ngram_info["id"] ;
 
     // uncomment if column state (here and in Main_test)
-    result["state"] = AjaxRecords[rec_id].state
+    // result["state"] = AjaxRecords[rec_id].state
 
     // -------------------------------------------
     // check box state columns 'will_be_map' and 'will_be_stop'
@@ -870,16 +869,16 @@ function SaveLocalChanges() {
   }
   // [ = = = = / For deleting subforms = = = = ]
 
-  console.log(" = = = = = = = = = == ")
-  console.log("FlagsBuffer:")
-  console.log(JSON.stringify(FlagsBuffer))
+  // console.log(" = = = = = = = = = == ")
+  // console.log("FlagsBuffer:")
+  // console.log(JSON.stringify(FlagsBuffer))
 
 
-  var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)
-  var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)
+  var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)  // main => stop
+  var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)   // ??? stop => main ???
   var nodes_2group = $.extend({}, FlagsBuffer["group"])
-  var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])
-  var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])
+  var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])     //  add to map
+  var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])   //  remove from map
 
    // console.log("")
    // console.log("")
@@ -896,8 +895,12 @@ function SaveLocalChanges() {
    // console.log("")
    // console.log("")
 
-  var list_id = $("#list_id").val()
-  var corpus_id = getIDFromURL( "corpora" )
+  // retrieve node_ids from hidden input
+  var mainlist_id = $("#mainlist_id").val()
+  var maplist_id  = $("#maplist_id" ).val()
+  var stoplist_id = $("#stoplist_id" ).val()
+
+  // var corpus_id = getIDFromURL( "corpora" )
 
   $("#stoplist_content").html()
 
@@ -906,15 +909,59 @@ function SaveLocalChanges() {
   // });
 
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
-  CRUD( corpus_id , "/group" , [] , nodes_2group , "PUT" , function(result) {
-   CRUD( corpus_id , "/keep" , [] , nodes_2inmap , "PUT" , function(result) {
-     CRUD( corpus_id , "/keep" , [] , nodes_2outmap , "DELETE" , function(result) {
-         CRUD( list_id , "" , nodes_2del , [] , "DELETE", function(result) {
-          window.location.reload()
-         });
-     });
-   });
-  });
+
+  // chained CRUD calls
+  CRUD_1_AddMap()
+
+  // add some ngrams to maplist
+  function CRUD_1_AddMap() {
+    CRUD( maplist_id , Object.keys(nodes_2inmap), "PUT" , function(success) {
+      if (success) {
+        CRUD_2_RmMap()             // chained AJAX  1 -> 2
+      }
+      else {
+        console.warn('CRUD error on ngrams add to maplist ('+maplist_id+')')
+      }
+    });
+  }
+  // remove some ngrams from maplist
+  function CRUD_2_RmMap() {
+    CRUD( maplist_id , Object.keys(nodes_2outmap), "DELETE" , function(success) {
+      if (success) {
+        CRUD_3_AddStopRmMain()    // chained AJAX  2 -> 3
+      }
+      else {
+        console.warn('CRUD error on ngrams remove from maplist ('+maplist_id+')')
+      }
+    });
+  }
+
+  // 2 operations going together: add ngrams to stoplist and remove them from mainlist
+  function CRUD_3_AddStopRmMain() {
+    CRUD( stoplist_id , nodes_2del, "PUT" , function(success) {
+      if (success) {
+        // console.log("OK CRUD 3a add stop")
+        CRUD( mainlist_id , nodes_2del, "DELETE" , function(success) {
+          if (success) {
+            // console.log("OK CRUD 3b rm main")
+            CRUD_4()              // chained AJAX  3 -> 4
+          }
+          else {
+            console.warn('CRUD error on ngrams remove from mainlist ('+mainlist_id+')')
+          }
+        });
+      }
+      else {
+        console.warn('CRUD error on ngrams add to stoplist ('+stoplist_id+')')
+      }
+    });
+  }
+
+
+  // TODO add to groups
+  function CRUD_4() {
+      window.location.reload() // refresh whole page if all OK
+  }
 }
 
 
@@ -938,37 +985,40 @@ $("#Save_All").click(function(){
   SaveLocalChanges()
 });
 
-// For lists, all http-requests
-function CRUD( parent_id , action , nodes , args , http_method , callback) {
-	var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
-	the_url = the_url.replace(/\/$/, ""); //remove trailing slash
+// For list modifications (add/delete), all http-requests
+function CRUD( list_id , ngram_ids , http_method , callback) {
+    // ngramlists/change?node_id=42&ngram_ids=1,2
+    var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id+"&ngrams="+ngram_ids.join(",");
 
     // debug
-    // console.log("CRUD AJAX => URL: " + the_url + " (" + http_method + ")")
+    // console.log("starting CRUD AJAX => URL: " + the_url + " (" + http_method + ")")
 
-    if(nodes.length>0 || Object.keys(args).length>0) {
-		$.ajax({
-		  method: http_method,
-		  url: the_url,
-		  data: args,
-		  beforeSend: function(xhr) {
-		    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-		  },
-		  success: function(data){
-		  		console.log(http_method + " ok!!")
-		        console.log(nodes)
-		        console.log(data)
-		        callback(true);
-		  },
-		  error: function(result) {
-		      console.log("Data not found in #Save_All");
-		      console.log(result)
-		      callback(false);
-		  }
-		});
+    if(ngram_ids.length>0) {
+        $.ajax({
+          method: http_method,
+          url: the_url,
+            //    data: args,   // currently all data explicitly in the url (like a GET)
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function(data){
+                console.log("-- CRUD ----------")
+                console.log(http_method + " ok!!")
+                console.log(JSON.stringify(data))
+                console.log("------------------")
+                callback(true);
+          },
+          error: function(result) {
+              console.log("-- CRUD ----------")
+              console.log("Data not found in #Save_All");
+              console.log(result)
+              console.log("------------------")
+              callback(false);
+          }
+        });
 
-	} else callback(false);
-}
+    } else callback(true);
+    }
 
 
 
@@ -1003,6 +1053,13 @@ function Main_test( data , initial , search_filter) {
 	console.log(" = = = = / MAIN_TEST: = = = = ")
 	console.log("")
 
+    // Expected infos in "data.ngrams" should have the form:
+    // { "1": { id: "1", name: "réalité",        score: 36  },
+    //   "9": { id: "9", name: "pdg",            score: 116 },
+    //  "10": { id:"10", name: "infrastructure", score:  12 }  etc. }
+
+    // (see filling of rec_info below)
+    // console.log(data.ngrams)
 
     var DistributionDict = {}
     for(var i in DistributionDict)
@@ -1032,7 +1089,7 @@ function Main_test( data , initial , search_filter) {
       div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
 
       // uncomment for column stateId (here and in transformContent)
-      div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
 
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
       div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n";
@@ -1089,15 +1146,14 @@ function Main_test( data , initial , search_filter) {
     $("#stats").html(div_stats)
 
     AjaxRecords = {}
-    console.log("data.ngrams")
-    console.log(data.ngrams)
+
     for(var id in data.ngrams) {
 
       // console.log(i)
       // console.log(data.ngrams[i])
       var le_ngram = data.ngrams[id] ;
 
-      var node_info = {
+      var rec_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
         "score": le_ngram.score,
@@ -1112,14 +1168,14 @@ function Main_test( data , initial , search_filter) {
         "will_be_map": null,
         "will_be_stop": null
       }
-      // AjaxRecords.push(node_info)
-      AjaxRecords[id] = node_info
+      // AjaxRecords.push(rec_info)
+      AjaxRecords[id] = rec_info
 
-      if ( ! DistributionDict[node_info.score] ) DistributionDict[node_info.score] = 0;
-      DistributionDict[node_info.score]++;
+      if ( ! DistributionDict[rec_info.score] ) DistributionDict[rec_info.score] = 0;
+      DistributionDict[rec_info.score]++;
     }
 
-    console.log(FirstScore)
+    // console.log(FirstScore)
 
     // console.log("The Distribution!:")
     // console.log(Distribution)
@@ -1418,8 +1474,17 @@ GET_(new_url, function(res) {
     	        "nb_ngrams":Object.keys(main_ngrams_objects).length,
     	    }
         } ;
-        NGrams["map"] = res.listmembers.maplist ;
-        NGrams["stop"] = res.listmembers.stoplist ;  // TODO use simpler struct
+        // map & stop: 2x(array of ids) ==> 2x(lookup hash)
+        NGrams["map"] = {} ;
+        for (var i in res.listmembers.maplist) {
+            var map_ng_id = res.listmembers.maplist[i] ;
+            NGrams["map"][map_ng_id] = true ;
+        }
+        NGrams["stop"] = {} ;
+        for (var i in res.listmembers.stoplist) {
+            var stop_ng_id = res.listmembers.stoplist[i] ;
+            NGrams["stop"][stop_ng_id] = true ;
+        }
         NGrams["group"] = {"links" : res.links , "nodes" : {}};
         for (var parent_ng_id in res.links) {
             NGrams["group"]["nodes"][parent_ng_id] = false ;
@@ -1429,8 +1494,15 @@ GET_(new_url, function(res) {
             }
         }
     }
-    console.log('after init NGrams["main"].ngrams')
-    console.log(NGrams["main"].ngrams)
+    // console.log('after init NGrams["main"].ngrams')
+    // console.log(NGrams["main"].ngrams)
+
+    // cache all DB node_ids
+    $("input#mainlist_id").val(res.nodeids['mainlist'])
+    $("input#maplist_id" ).val(res.nodeids['maplist'])
+    $("input#stoplist_id").val(res.nodeids['stoplist'])
+    $("input#groups_id").val(res.nodeids['groups'])
+    $("input#scores_id").val(res.nodeids['scores'])
     AfterAjax() ;
 });
 
@@ -1537,8 +1609,8 @@ function AfterAjax() {
     // console.log('NGrams["group"]["nodes"]')
     // console.log( NGrams["group"]["nodes"] )
 
-    console.log('after subforms deletion NGrams["main"].ngrams')
-    console.log(NGrams["main"].ngrams)
+    // console.log('after subforms deletion NGrams["main"].ngrams')
+    // console.log(NGrams["main"].ngrams)
 
     // initialize state of maplist items
     if( Object.keys(NGrams["map"]).length>0 ) {

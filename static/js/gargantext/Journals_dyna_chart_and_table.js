@@ -113,7 +113,7 @@ function Final_UpdateTable( action ) {
     if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
         UpdateTable = true;
         $("#corpusdisplayer").html("Close Folder")
-    } else $("#corpusdisplayer").html("Open Folder")
+    } else $("#corpusdisplayer").html("View by journals")
 
     pr("update table??: "+UpdateTable)
 

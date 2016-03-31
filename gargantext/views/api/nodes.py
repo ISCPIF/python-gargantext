@@ -1,10 +1,12 @@
-from gargantext.util.http import *
-from gargantext.util.db import *
-from gargantext.util.db_cache import *
-from gargantext.models import *
-from gargantext.constants import *
 
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram
+from gargantext.constants       import NODETYPES
+from gargantext.util.db         import session, delete, func
+from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
+from gargantext.util.http       import ValidationException, APIView \
+                                     , get_parameters, JsonHttpResponse, Http404
+
 
 from collections import defaultdict
 
@@ -71,22 +73,108 @@ class NodeListResource(APIView):
             ]
         })
 
+    
     def post(self, request):
         """Create a new node.
         NOT IMPLEMENTED
         """
 
+
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
-        WARNING! THIS IS TOTALLY UNTESTED!!!!!
+        TODO : Should be a delete method!
         """
-        parameters, query, count = _query_nodes(request)
-        query.delete()
+        parameters = get_parameters(request)
+        parameters = validate(parameters, {'ids': list} )
+        try :
+            node_ids = [int(n) for n in parameters['ids'].split(',')]
+        except :
+            raise ValidationException('"ids" needs integers separated by comma.')
+
+        result = session.execute(
+            delete(Node).where(Node.id.in_(node_ids))
+        )
         session.commit()
-        return JsonHttpResponse({
-            'parameters': parameters,
-            'count': count,
-        }, 200)
+
+        return JsonHttpResponse({'deleted': result.rowcount})
+
+class NodeListHaving(APIView):
+    '''
+    Gives a list of nodes according to its score which is related
+    to some specific ngrams.
+    TODO: implement other options (offset)
+
+    Simple implementation:
+    Takes IDs of corpus and ngram and returns list of relevent documents in json format
+    according to TFIDF score (order is decreasing).
+
+
+    '''
+    def get(self, request, corpus_id):
+        parameters = get_parameters(request)
+        parameters = validate(parameters, {'score': str, 'ngram_ids' : list} )
+        
+        try :
+            ngram_ids = [int(n) for n in parameters['ngram_ids'].split(',')]
+        except :
+            raise ValidationException('"ngram_ids" needs integers separated by comma.')
+
+        limit=5
+        nodes_list = []
+        
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        
+        tfidf_id  = ( session.query( Node.id )
+                        .filter( Node.typename  == "TFIDF-CORPUS"
+                               , Node.parent_id == corpus.id
+                               )
+                        .first()
+                )
+
+        
+        tfidf_id = tfidf_id[0]
+        print(tfidf_id)
+        # request data
+        nodes_query = (session
+            .query(Node, func.sum(NodeNodeNgram.score))
+            .join(NodeNodeNgram, NodeNodeNgram.node2_id == Node.id)
+            .filter(NodeNodeNgram.node1_id == tfidf_id)
+            .filter(Node.typename == 'DOCUMENT', Node.parent_id== corpus.id)
+            .filter(or_(*[NodeNodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+            .group_by(Node)
+            .order_by(func.sum(NodeNodeNgram.score).desc())
+            .limit(limit)
+        )
+        # print("\n")
+        # print("in TFIDF:")
+        # print("\tcorpus_id:",corpus_id)
+        # convert query result to a list of dicts
+#         if nodes_query is None:
+#             print("TFIDF error, juste take sums")
+#             nodes_query = (session
+#                 .query(Node, func.sum(NodeNgram.weight))
+#                 .join(NodeNgram, NodeNgram.node_id == Node.id)
+#                 .filter(Node.parent_id == corpus_id)
+#                 .filter(Node.typename == 'DOCUMENT')
+#                 .filter(or_(*[NodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+#                 .group_by(Node)
+#                 .order_by(func.sum(NodeNgram.weight).desc())
+#                 .limit(limit)
+#             )
+        for node, score in nodes_query:
+            print(node,score)
+            print("\t corpus:",corpus_id,"\t",node.name)
+            node_dict = {
+                'id': node.id,
+                'score': score,
+            }
+            for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
+                if key in node.hyperdata:
+                    node_dict[key] = node.hyperdata[key]
+            nodes_list.append(node_dict)
+
+        return JsonHttpResponse(nodes_list)
+
 
 
 class NodeResource(APIView):
@@ -104,7 +192,6 @@ class NodeResource(APIView):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
-        from sqlalchemy import delete
         result = session.execute(
             delete(Node).where(Node.id == node_id)
         )
@@ -177,3 +264,6 @@ class CorpusFacet(APIView):
         #  // if subfield not in corpus.aggs:
         #  //     corpus.aggs[subfield] = xcounts
         return (xcounts, total)
+
+
+

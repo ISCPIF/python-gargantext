@@ -334,7 +334,7 @@ function Final_UpdateTable( action ) {
     if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
         UpdateTable = true;
         $("#corpusdisplayer").html("Close Term List")
-    } else $("#corpusdisplayer").html("Show Term List")
+    } else $("#corpusdisplayer").html("View by terms")
 
     pr("update table??: "+UpdateTable)
 

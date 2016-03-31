@@ -5,10 +5,11 @@ from . import ngramlists
 
 
 urlpatterns = [
-    url(r'^nodes$', nodes.NodeListResource.as_view()),
-    url(r'^nodes/(\d+)$', nodes.NodeResource.as_view()),
+    url(r'^nodes$'              , nodes.NodeListResource.as_view()),
+    url(r'^nodes/(\d+)$'        , nodes.NodeResource.as_view()),
 
-    url(r'^nodes/(\d+)/facets$', nodes.CorpusFacet.as_view()),
+    url(r'^nodes/(\d+)/facets$' , nodes.CorpusFacet.as_view()),
+    url(r'^nodes/(\d+)/having$' , nodes.NodeListHaving.as_view()),
 
     # add or remove ngram from a list
     #  ex: add <=> PUT ngramlists/change?list=42&ngrams=1,2
@@ -22,6 +23,5 @@ urlpatterns = [
     #   - an optional maplist
     #   - an optional grouplist)
     url(r'^ngramlists/family$', ngramlists.ListFamily.as_view()),
-
 
 ]

@@ -1,11 +1,11 @@
-from gargantext import settings
+from gargantext           import settings
+from gargantext.util.json import json_dumps
 
 
 # get engine, session, etc.
-
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from gargantext.util.json import json_dumps
+from sqlalchemy import delete
 
 def get_engine():
     from sqlalchemy import create_engine
@@ -28,9 +28,9 @@ session = scoped_session(sessionmaker(bind=engine))
 
 from sqlalchemy.types import *
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-
+Double = DOUBLE_PRECISION
 
 # useful for queries
 
@@ -76,7 +76,7 @@ class bulk_insert:
         try:
             return '\t'.join(
                 value.replace('\\', '\\\\').replace('\n', '\\\n').replace('\r', '\\\r').replace('\t', '\\\t')
-                if isinstance(value, str) else str(value)
+                if isinstance(value, str) else str(value) if value is not None else '\\N'
                 for value in next(self.iter)
             ) + '\n'
         except StopIteration:

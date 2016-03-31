@@ -1,5 +1,6 @@
-from .parsing           import parse
-from .ngrams_extraction import extract_ngrams
+from .parsing             import parse
+from .ngrams_extraction   import extract_ngrams
+from .hyperdata_indexing  import index_hyperdata
 
 # in usual run order
 from .list_stop           import do_stoplist
@@ -10,11 +11,13 @@ from .metric_specificity  import compute_specificity
 from .list_map            import do_maplist     # TEST
 from .ngram_groups        import compute_groups
 
-from gargantext.util.db import session
-from gargantext.models  import Node
+from gargantext.util.db   import session
+from gargantext.models    import Node
 
-from datetime           import datetime
+from datetime             import datetime
+from celery               import shared_task
 
+@shared_task
 def parse_extract(corpus):
     # retrieve corpus from database from id
     if isinstance(corpus, int):
@@ -36,6 +39,24 @@ def parse_extract(corpus):
     extract_ngrams(corpus)
     print('CORPUS #%d: extracted ngrams' % (corpus.id))
 
+@shared_task
+def parse_extract_indexhyperdata(corpus):
+    # retrieve corpus from database from id
+    if isinstance(corpus, int):
+        corpus_id = corpus
+        corpus = session.query(Node).filter(Node.id == corpus_id).first()
+        if corpus is None:
+            print('NO SUCH CORPUS: #%d' % corpus_id)
+            return
+    # apply actions
+    print('CORPUS #%d' % (corpus.id))
+    parse(corpus)
+    print('CORPUS #%d: parsed' % (corpus.id))
+    extract_ngrams(corpus)
+    print('CORPUS #%d: extracted ngrams' % (corpus.id))
+    index_hyperdata(corpus)
+    print('CORPUS #%d: indexed hyperdata' % (corpus.id))
+    
     # -------------------------------
     # temporary ngram lists workflow
     # -------------------------------

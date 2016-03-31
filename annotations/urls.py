@@ -4,8 +4,9 @@ from annotations import views
 
 # /!\ urls patterns here are *without* the trailing slash
 
-urlpatterns = patterns('',
-    # json:title,id,authors,journal,
+urlpatterns = [
+    
+        # json:title,id,authors,journal,
     #      publication_date
     #      abstract_text,full_text
     url(r'^documents/(?P<doc_id>[0-9]+)$', views.Document.as_view()), # document view
@@ -16,4 +17,4 @@ urlpatterns = patterns('',
     # url(r'^lists/(?P<list_id>[0-9]+)/ngrams/(?P<ngram_ids>[0-9,\+]+)+$', views.NgramEdit.as_view()),
     # POST (fixed 2015-12-16)
     # url(r'^lists/(?P<list_id>[0-9]+)/ngrams/create$', views.NgramCreate.as_view()), #
-)
+]

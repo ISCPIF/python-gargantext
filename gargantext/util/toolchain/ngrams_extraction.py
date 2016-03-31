@@ -6,6 +6,7 @@ from gargantext.util.ngramsextractors import ngramsextractors
 from collections import defaultdict
 from re          import sub
 
+from gargantext.util.scheduling import scheduled
 
 def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
     print('INTEGRATE')

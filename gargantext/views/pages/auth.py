@@ -7,21 +7,9 @@ def login(request):
     """Performs user login
     """
     auth.logout(request)
-    # if the user wants to access the login form
-    if request.method == 'GET':
-        additional_context = {}
-        # if for exemple: auth/?next=/project/5/corpus/554/document/556/
-        #   => we'll forward ?next="..." into template with form
-        if 'next' in request.GET:
-            additional_context = {'next_page':request.GET['next']}
 
-        return render(
-            template_name = 'pages/auth/login.html',
-            request = request,
-            context = additional_context,
-        )
     # if the user send her authentication data to the page
-    elif request.method == "POST":
+    if request.method == "POST":
         # /!\ pass is sent clear in POST data: use SSL
         user = auth.authenticate(
             username = request.POST['username'],
@@ -34,6 +22,19 @@ def login(request):
                 return redirect(request.POST['the_next_page'])
             else:
                 return redirect('/projects/')
+
+    # if the user wants to access the login form
+    additional_context = {}
+    # if for exemple: auth/?next=/project/5/corpus/554/document/556/
+    #   => we'll forward ?next="..." into template with form
+    if 'next' in request.GET:
+        additional_context = {'next_page':request.GET['next']}
+
+    return render(
+        template_name = 'pages/auth/login.html',
+        request = request,
+        context = additional_context,
+    )
 
 
 def logout(request):

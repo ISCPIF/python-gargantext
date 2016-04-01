@@ -35,8 +35,7 @@ Double = DOUBLE_PRECISION
 # useful for queries
 
 from sqlalchemy.orm import aliased
-from sqlalchemy import func
-
+from sqlalchemy import func, desc
 
 # bulk insertions
 

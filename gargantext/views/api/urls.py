@@ -11,17 +11,18 @@ urlpatterns = [
     url(r'^nodes/(\d+)/facets$' , nodes.CorpusFacet.as_view()),
     url(r'^nodes/(\d+)/having$' , nodes.NodeListHaving.as_view()),
 
-    # get a list of ngram_ids or ngram_infos by list_id
-    #
-    # url(r'^ngramlists/(\d+)$', ngramlists.List.as_view()),
+    # add or remove ngram from a list
+    #  ex: add <=> PUT ngramlists/change?list=42&ngrams=1,2
+    #       rm <=> DEL ngramlists/change?list=42&ngrams=1,2
+    url(r'^ngramlists/change$', ngramlists.ListChange.as_view()),
 
-    # entire combination of lists from a corpus
+    # get entire combination of lists from a corpus
     # (or any combination of lists that go together :
     #   - a mainlist
     #   - an optional stoplist
     #   - an optional maplist
-    #   - an optional grouplist
-    # aka lexical model
-    url(r'^ngramlists/family$'  , ngramlists.ListFamily.as_view()),
+    #   - an optional grouplist)
+    url(r'^ngramlists/family$', ngramlists.ListFamily.as_view()),
+
 
 ]

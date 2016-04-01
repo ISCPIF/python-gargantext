@@ -350,10 +350,10 @@ function Final_UpdateTable( action ) {
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
     TimeRange = []
-    for (var i in AjaxRecords) {
-        if(AjaxRecords[i].score>=dataini && AjaxRecords[i].score<=datafin){
-            // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id )
-            TimeRange.push(AjaxRecords[i])
+    for (var id in AjaxRecords) {
+        if(AjaxRecords[id].score>=dataini && AjaxRecords[id].score<=datafin){
+            // pr( AjaxRecords[id].date+" : "+id )
+            TimeRange.push(AjaxRecords[id])
         }
     }
 
@@ -393,7 +393,7 @@ function save_groups() {
 	var mainform = -1
 	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
 	$(gcontent).children('span').each(function () {
-		var nid = $(this).data("id");
+		var nid = $(this).attr("ngram-id");
 		if (count==0) {
 			if(writeflag) {
 				// AjaxRecords[nid].name += "*"
@@ -426,7 +426,7 @@ function cancel_groups() {
 	var groupdiv = "#group_box"
 	var gcontent = groupdiv+"_content"
 	$(gcontent).children('span').each(function () {
-	    var nid = $(this).data("id");
+	    var nid = $(this).attr("ngram-id");
 	    AjaxRecords[nid].state = 0
 		var label = AjaxRecords[nid].name
 		AjaxRecords[nid].name = (label[0] == '*') ? label.slice(1) : label;
@@ -438,9 +438,8 @@ function cancel_groups() {
 }
 
 function add2groupdiv( elem_id ) {
-	$('<span/>', {
-		"data-id":AjaxRecords[elem_id].id,
-		"data-stuff": elem_id,
+    $('<span/>', {
+		"ngram-id": elem_id,
 	    title: 'Click to remove',
 	    text: AjaxRecords[elem_id].name,
 	    css: {
@@ -451,7 +450,7 @@ function add2groupdiv( elem_id ) {
 	    }
 	})
 	.click(function() {
-    	AjaxRecords[$(this).data("stuff")].state=0;
+    	AjaxRecords[$(this).attr("ngram-id")].state=0;
     	$(this).remove()
     	// if nothing in group div, then remove it
     	if( $("#group_box_content").children().length==0 ) {
@@ -465,6 +464,7 @@ function add2groupdiv( elem_id ) {
 }
 // new
 function add2group ( elem ) {
+    var elem_id = $( elem ).attr("ngram-id")
 	if( $("#group_box").length==0 ) {
 		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
 		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
@@ -477,16 +477,15 @@ function add2group ( elem ) {
 	}
 	GState=1
 
-	var elem_id = $( elem ).data("stuff")
 	add2groupdiv( elem_id )
-	if( FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
-		for(var i in FlagsBuffer["group"][ AjaxRecords[elem_id].id ] ) {
-			var nodeid = FlagsBuffer["group"][ AjaxRecords[elem_id].id ][i]
+	if( FlagsBuffer["group"][ elem_id ] ) {
+		for(var i in FlagsBuffer["group"][ elem_id ] ) {
+			var nodeid = FlagsBuffer["group"][ elem_id ][i]
 			add2groupdiv (  nodeid  )
 		}
 	}
 
-	delete FlagsBuffer["group"][ AjaxRecords[elem_id].id ]
+	delete FlagsBuffer["group"][ elem_id ]
 
 	MyTable.data('dynatable').dom.update();
 }
@@ -499,7 +498,7 @@ function add2group ( elem ) {
  */
 function clickngram_action ( elem ) {
     // local id
-	var elem_id = $( elem ).data("stuff") ;
+	var elem_id = $( elem ).attr("ngram-id") ;
     // console.log("click: state before: "+ AjaxRecords[elem_id].state) ;
 
     // cycle the statuses (omitting status 3 = group)
@@ -509,7 +508,7 @@ function clickngram_action ( elem ) {
 
     // console.log("\n\nRECORD visible on click --- " + JSON.stringify(AjaxRecords[elem_id])) ;
 
-    var ngramId = AjaxRecords[elem_id].id ;
+    var ngramId = elem_id ;
 
     // console.log("click: state after: "+ AjaxRecords[elem_id].state) ;
 	MyTable.data('dynatable').dom.update();
@@ -587,17 +586,15 @@ function transformContent(rec_id) {
  * Click on a checkbox in a row
  *
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
- * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ * @elem : entire element row with attribute 'ngram-id' (= rec_id)
  */
 
 function checkBox(boxType, elem) {
     console.log ('CLICK on check box') ;
 
-    var elemId = elem.getAttribute("data-stuff") ;
-    var ngramId = AjaxRecords[elemId].id ;
+    var elemId = elem.getAttribute("ngram-id") ;
     var currentState = AjaxRecords[elemId].state ;
-    // alert('ELEMENT: ' + elemId + '\n'
-    //        + 'NGRAM: ' + ngramId + '\n'
+    // alert('NGRAM: ' + elemId + '\n'
     //        + 'CURRENT STATE: ' + currentState) ;
 
     // find out which box
@@ -670,14 +667,14 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
     tr += cellWriter(columns[i], cp_rec);
   }
 
-  return '<tr data-stuff='+record.id+'>' + tr + '</tr>';
+  return '<tr ngram-id='+record.id+'>' + tr + '</tr>';
 }
 
 /**
  * SelectAll: toggle all checkboxes in a column by changing their list in System
  *
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
- * @elem : entire element row with attribute 'data-stuff' (= rec_id)
+ * @elem : entire element row with attribute 'ngram-id' (= rec_id)
  *
  * 2016-01-12: new version without the old Delete|Keep radio choice
  * 2016-01-26: new version with 3-state boxes:
@@ -790,22 +787,21 @@ function SelectAll(boxType, boxElem) {
     // console.log("data became:" + newColumnSelection)
 
   $("tbody tr").each(function (i, row) {
-      var rec_id = $(row).data('stuff');     // ids for old state system
-      //var ngramId = AjaxRecords[rec_id].id; // for future by ngramId
+      var ngramId = $(row).attr("ngram-id") ;
 
       // a buffer to restore previous states if unchecked
       if (!columnBufferExists) {
-          AjaxRecords[rec_id]["state_buff"] = AjaxRecords[rec_id]["state"] ;
+          AjaxRecords[ngramId]["state_buff"] = AjaxRecords[ngramId]["state"] ;
       }
 
       if (stateId != null) {
           // check all with the requested change
-          AjaxRecords[rec_id]["state"] = stateId ;
+          AjaxRecords[ngramId]["state"] = stateId ;
       }
       else {
           // restore previous states, remove buffer
-          AjaxRecords[rec_id]["state"] = AjaxRecords[rec_id]["state_buff"] ;
-          AjaxRecords[rec_id]["state_buff"] = null ;
+          AjaxRecords[ngramId]["state"] = AjaxRecords[ngramId]["state_buff"] ;
+          AjaxRecords[ngramId]["state_buff"] = null ;
       }
   });
 
@@ -830,22 +826,22 @@ function SaveLocalChanges() {
   FlagsBuffer["inmap"] = {}
 
   for(var id in AjaxRecords) {
-    if( NGrams["map"][ AjaxRecords[id]["id"] ] ) {
+    if( NGrams["map"][ id ] ) {
       if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"] || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["outmap"][ AjaxRecords[id].id ] = true
+        FlagsBuffer["outmap"][ id ] = true
         if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-          FlagsBuffer["delete"][AjaxRecords[id].id] = true
+          FlagsBuffer["delete"][id] = true
         }
       }
-      if(FlagsBuffer["group"][AjaxRecords[id].id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
-        FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+      if(FlagsBuffer["group"][id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
+        FlagsBuffer["inmap"][ id ] = true
       }
     } else {
       if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
-        FlagsBuffer["inmap"][ AjaxRecords[id].id ] = true
+        FlagsBuffer["inmap"][ id ] = true
       }
       if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["delete"][AjaxRecords[id].id] = true
+        FlagsBuffer["delete"][id] = true
       }
     }
   }
@@ -1018,7 +1014,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
         });
 
     } else callback(true);
-    }
+}
 
 
 

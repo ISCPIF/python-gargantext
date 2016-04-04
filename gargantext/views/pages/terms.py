@@ -11,7 +11,7 @@ def ngramtable(request, project_id, corpus_id):
        => maplist and mainlist terms in a table
           with groupings as '+' nodes
        => uses API GET batch of lists
-       => uses API PUT/DEL for list modifications (TODO)
+       => uses API PUT/DEL for list modifications
        => uses frontend AJAX through Ngrams_dyna_charts_and_table.js
     # TODO refactor Ngrams_dyna_charts_and_table.js
     '''
@@ -21,7 +21,7 @@ def ngramtable(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
-    # rendered page : journals.html
+    # rendered page : terms.html
     return render(
         template_name = 'pages/corpora/terms.html',
         request = request,

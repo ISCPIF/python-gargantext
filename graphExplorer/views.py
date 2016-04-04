@@ -19,12 +19,15 @@ def explorer(request, project_id, corpus_id):
     # we pass our corpus
     corpus = cache.Node[corpus_id]
 
+    # get the maplist_id for modifications
+    maplist_id = corpus.children(typename="MAPLIST").first().id
+
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
     graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "/node_link.json"
-    
-    # rendered page : journals.html
+
+    # rendered page : explorer.html
     return render(
         template_name = 'graphExplorer/explorer.html',
         request = request,
@@ -35,9 +38,8 @@ def explorer(request, project_id, corpus_id):
             'date'      : datetime.now(),
             'project'   : project,
             'corpus'    : corpus,
-            #'list_id'   : maplist.id,\
-            'graphfile' : graphurl,\
+            'maplist_id': maplist_id,
+            'graphfile' : graphurl,
             'view'      : 'graph'
         },
     )
-

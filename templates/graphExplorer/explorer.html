@@ -18,7 +18,7 @@
       }
 
       #ctlzoom {
-        width:7%;        
+        width:7%;
       }
 
       #topPapers{
@@ -36,7 +36,7 @@
       #category0 ul li { margin: 0 12px 12px 0; }
       #category1 ul li { margin: 0 12px 12px 0; }
     </style>
-    <!-- 
+    <!--
     <link rel="stylesheet" href="{% static "js/libs/bootswatch/css/bootswatch.css" %}">
     <link rel="stylesheet" href="{% static "js/libs/css2/font.css" %}" type="text/css">
     -->
@@ -101,10 +101,10 @@
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <div id="left" style="margin:0em 2em;">
                   <ul class="nav navbar-nav">
-                      <!-- 
+                      <!--
 
                       <li>
-                         <a>                            
+                         <a>
                           <select id="aselector" onchange="console.log('salut monde')" class="selectpicker"  data-style="btn btn-success btn-sm"  data-width="auto">
                             <option value="Document" selected>Scholars</option>
                             <option value="NGram">Keywords</option>
@@ -136,7 +136,7 @@
                         <li>
                           <a>
                               <div id="graphid" style="visibility: hidden;">{{graphfile}}</div>
-                              <input type="hidden" id="list_id" value="{{ list_id }}"></input>
+                              <input type="hidden" id="maplist_id" value="{{ maplist_id }}"></input>
                               <div id="jquerytemplatenb" style="visibility: hidden;">{{user.id}}</div>
                           </a>
                         </li>
@@ -148,10 +148,10 @@
                          </a>
                       </li>
                       -->
-                      
+
 
                   </ul>
-                  
+
 
                   <ul id="category0" class="nav navbar-nav navbar-right">
                     <li>
@@ -192,7 +192,7 @@
                               <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
                      </a></li>
                   </ul>
-                  
+
                   <ul class="nav navbar-nav navbar-right">
                      <li>
                         <a>
@@ -226,7 +226,7 @@
                     </li>
                   </ul>
                   -->
-            
+
         </div><!-- /.nav-collapse -->
     </div><!-- /.navbar -->
 
@@ -235,7 +235,7 @@
 
 
       <div id="zonecentre">
-          
+
 
           <!-- Page content -->
           <div id="sigma-example"></div>
@@ -255,7 +255,7 @@
                         <img title="World Map Distribution" width="34px" src="{% static "js/libs/img2/world.png" %}" ></img>
                       </a>
                   </li>
-                  --> 
+                  -->
 
 
                    <li>
@@ -263,13 +263,13 @@
                         <img title="Take a photo!" width="34px" src="{% static "js/libs/img2/camera.png" %}" ></img>
                       </a>
                   </li>
-                  
+
                    <li>
                       <a href="#" id="saveAs">
                         <img width="30px" title="Save As..." src="{% static "js/libs/img2/save.png" %}" ></img>
                       </a>
-                  </li> 
-                  
+                  </li>
+
                   <li>
                       <a href="#" id="zoomPlusButton" title="S'approcher"> </a>
                   </li>
@@ -294,12 +294,12 @@
       </div>
 
       <!-- Sidebar -->
-      <div id="leftcolumn">      
+      <div id="leftcolumn">
         <div id="tips"></div>
         <div id="names"></div>
         <div id="ngrams_actions"></div>
 
-        
+
         <br>
         <div id="tab-container" class='tab-container' style="display: none;">
 
@@ -320,7 +320,7 @@
         </div>
 
         <!-- <div id="topPapers"></div> -->
-               
+
         <div id="tab-container-top" class='tab-container' style="display: none;">
 
            <ul class='etabs'>
@@ -337,7 +337,7 @@
               </div>
            </div>
         </div>
-        
+
 
 
 
@@ -407,7 +407,7 @@
 
         </div>
       </div>
-    </div> 
+    </div>
 
 
 
@@ -440,7 +440,7 @@
 
         </div>
       </div>
-    </div> 
+    </div>
 
 
     <div id="modalloader" class="modal fade">
@@ -457,15 +457,15 @@
     <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
 
-    <script type="text/javascript" src="{% static "js/libs/freshslider.1.0.js" %}"></script>    
+    <script type="text/javascript" src="{% static "js/libs/freshslider.1.0.js" %}"></script>
     <script type="text/javascript" src="{% static "js/libs/readmore.js" %}"></script>
     <script type="text/javascript" src="{% static "js/libs/jquery/jquery.easytabs.min.js" %}"></script>
-    
-    
+
+
     <script src="{% static "js/libs/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
-    
+
 
     <script src="{% static "js/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
     <script src="{% static "js/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>

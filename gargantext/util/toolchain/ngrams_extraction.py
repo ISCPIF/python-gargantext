@@ -64,8 +64,9 @@ def extract_ngrams(corpus, keys=('title', 'abstract', )):
                 for ngram in ngramsextractor.extract(value):
                     tokens = tuple(token[0] for token in ngram)
                     terms = normalize_terms(' '.join(tokens))
-                    nodes_ngrams_count[(document.id, terms)] += 1
-                    ngrams_data.add((terms[:255], len(tokens), ))
+                    if len(terms) > 1:
+                        nodes_ngrams_count[(document.id, terms)] += 1
+                        ngrams_data.add((terms[:255], len(tokens), ))
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)

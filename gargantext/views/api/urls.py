@@ -24,5 +24,4 @@ urlpatterns = [
     #   - an optional grouplist)
     url(r'^ngramlists/family$', ngramlists.ListFamily.as_view()),
 
-
 ]

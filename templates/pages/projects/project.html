@@ -3,15 +3,16 @@
 {% block css %}
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 
-<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
 <link rel="stylesheet" href="{% static "css/morris.css" %}">
 
 <script src="{% static "js/raphael-min.js"%}"></script>
+<script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+
 <style type="text/css">
     .ui-autocomplete {
         z-index: 5000;
@@ -203,7 +204,7 @@
                                                         <div id="pubmedcrawl" style="visibility: hidden;">
                                                             Do you have a file already? &nbsp;
                                                             <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked>Yes </input>
-                                                            <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false">No </input>
+                                                            <input type="radio" id="file_no"  name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false">No </input>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -329,10 +330,10 @@
 
                                 var theType = $("#id_type option:selected").html();
 
-                                if(theType=="Pubmed (xml format)") {
+                                if( theType=="Pubmed (xml format)") {
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/tests/pubmedquery",
+                                        url: window.location.origin+"/scrappers/pubmed/query",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {

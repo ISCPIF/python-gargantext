@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'djcelery',
     'annotations',
     'graphExplorer',
+    'scrappers',
 ]
 
 MIDDLEWARE_CLASSES = [

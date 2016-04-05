@@ -316,7 +316,9 @@
 
                                 }
                             }
-
+                             //                    //
+                            // Scraping functions //
+                           //                    //
                             function getGlobalResults(value){
                                 console.log("in getGlobalResults()")
                                 // AJAX to django
@@ -330,10 +332,10 @@
 
                                 var theType = $("#id_type option:selected").html();
 
-                                if( theType=="Pubmed (xml format)") {
+                                if ( theType == "Pubmed (xml format)" ) {
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/scrappers/pubmed/query",
+                                        url: window.location.origin+"/api/scraping?source=pubmed",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {
@@ -371,10 +373,10 @@
                                 }
 
                                 if(theType=="ISTex") {
-                                    console.log(window.location.origin+"tests/istextquery")
+                                    console.log(window.location.origin+"api/scraping?source=istex")
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/tests/istextquery",
+                                        url: window.location.origin+"/api/scraping?source=istex",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {

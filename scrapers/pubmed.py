@@ -33,7 +33,7 @@ from gargantext.util.toolchain import parse_extract_indexhyperdata
 #with open(path.join(BASE_DIR, 'gargantext.ini')) as inifile:
 #    CONF.read_file(inifile)
 
-QUERY_SIZE_N_MAX = 100 # int(CONF['scrappers']['QUERY_SIZE_N_MAX'])
+QUERY_SIZE_N_MAX = 1000 # int(CONF['scrappers']['QUERY_SIZE_N_MAX'])
 
 # QUERY_SIZE_N_DEFAULT   = int(CONF['scrappers']['QUERY_SIZE_N_DEFAULT'])
 # --------------------------------------------------------------------

@@ -22,7 +22,7 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
                 # aka lexical model
 
 
-              , url(r'^scraping$'              , scraping.Target.as_view()      )
+              #, url(r'^scraping$'              , scraping.Target.as_view()      )
                 # Scraping : getting data from external database
                 # Available databases : Pubmed, IsTex, (next: CERN)
               ]

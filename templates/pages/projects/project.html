@@ -290,7 +290,7 @@
                                     var theType = $("#id_type option:selected").html();
                                     console.log("consoling the typeeee: ")
                                     console.log(theType)
-                                    if(theType=="Pubmed (xml format)") doTheQuery();
+                                    if(theType=="Pubmed (XML format)") doTheQuery();
                                     if(theType=="ISTex") {
                                         var origQuery = $("#id_name").val()
                                         console.log("printing the results:")
@@ -329,10 +329,10 @@
 
                                 var theType = $("#id_type option:selected").html();
 
-                                if(theType=="Pubmed (xml format)") {
+                                if(theType=="Pubmed (XML format)") {
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/tests/pubmedquery",
+                                        url: window.location.origin+"/pubmed/query",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {
@@ -436,7 +436,7 @@
 
                                     $( "#id_name" ).on('input',function(e){
                                         console.log($(this).val())
-                                        if(theType=="Pubmed (xml format)")
+                                        if(theType=="Pubmed (XML format)")
                                         testPUBMED( $(this).val() )
                                     });
                                 }

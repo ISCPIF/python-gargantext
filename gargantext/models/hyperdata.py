@@ -71,7 +71,7 @@ class NodeHyperdata(Base):
     value_flt = Column( Double()                , index=True )
     value_utc = Column( DateTime(timezone=True) , index=True )
     value_str = Column( String(255)             , index=True )
-    value_txt = Column( Text                    , index=True )
+    value_txt = Column( Text                    , index=False )
 
 
     def __init__(self, node=None, key=None, value=None):

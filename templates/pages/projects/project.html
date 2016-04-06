@@ -332,7 +332,7 @@
                                 if(theType=="Pubmed (XML format)") {
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/pubmed/query",
+                                        url: window.location.origin+"/scrapers/pubmed/query",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {

@@ -1,5 +1,5 @@
 
-from scrappers.MedlineFetcher import MedlineFetcher
+from scrapers.MedlineFetcher import MedlineFetcher
 
 
 # from datetime import datetime
@@ -24,7 +24,7 @@ from gargantext.util.toolchain import parse_extract_indexhyperdata
 
 
 
-# pour lire la section [scrappers] de gargantext.ini
+# pour lire la section [scrapers] de gargantext.ini
 #from configparser import ConfigParser
 
 # --------------------------------------------------------------------

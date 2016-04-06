@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from . import nodes
 from . import ngramlists
-from . import scraping
 
 urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view())
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()    )
@@ -22,7 +21,4 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
                 # aka lexical model
 
 
-              #, url(r'^scraping$'              , scraping.Target.as_view()      )
-                # Scraping : getting data from external database
-                # Available databases : Pubmed, IsTex, (next: CERN)
               ]

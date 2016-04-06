@@ -26,7 +26,7 @@ from annotations.views import main as annotations_main_view
 from graphExplorer.rest import Graph
 from graphExplorer.views import explorer
 
-from scrappers          import urls as scrappers_urls
+from scrapers          import urls as scrapers_urls
 
 urlpatterns = [ url(r'^admin/', admin.site.urls)
               , url(r'^generated/', include(gargantext.views.generated.urls))
@@ -45,5 +45,5 @@ urlpatterns = [ url(r'^admin/', admin.site.urls)
               , url(r'^projects/(\d+)/corpora/(\d+)/node_link.json$',    Graph.as_view())
               #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer.urls))
               #url(r'^projects/(\d+)/corpora/(\d+)/explorer$', include(graphExplorer_urls))
-              , url(r'^scrappers/', include(scrappers_urls))
+              , url(r'^scrapers/', include(scrapers_urls))
               ]

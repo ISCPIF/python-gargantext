@@ -5,21 +5,22 @@
  *   - the ngrams groupings
  *   - the score chart
  *
- * Main_test() is the entry point. A dynatable is the main UI element.
+ * MainTableAndCharts() is the entry point. A dynatable is the main UI element.
  *
  * Dynatable uses <thead> for columns and ulWriter() for row formatting.
  *
  * Here, the user can modify DB lists by toggling Ngrams states and
  * save to DB via the API in the functions SaveLocalChanges() and CRUD()
  *
- * Local persistence of states is in AjaxRecord[tableId].state
- *   (access by table ids, *not* ngram ids)
+ * Local persistence of states is in AjaxRecord[ngramId].state
+ *   (access by ngram ids)
+ *
+ * Local persistence of groups is in GroupsBuffer (result of modification)
  *
  * Their values are initialized in the functions AfterAjax() and Refresh().
  *
  * The stateIds are described by the System object.
  *   - columns use stateId [0..2]  (miam aka normal, map aka keep, stop aka delete)
- *   - stateId 3 is for grouped items (TODO clarify use)
  *
  * @author
  *   Samuel Castillo (original 2015 work)
@@ -34,109 +35,113 @@
  */
 
 
-function pr(msg) {
-    console.log(msg)
-}
+// =============================================================================
+//                      GLOBALS  <=> INTERACTIVE STATUS etc
+// =============================================================================
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+
+// ngram infos (<-> row data)
+// --------------------------
+// from /api/ngramlists/lexmodel?corpus=312
+// with some expanding in AfterAjax
+var AjaxRecords = [] ;
+
+
+// table element (+config +events)
+// -------------------------------
+var MyTable ;
+
+
+//  definition of switching statuses for the 3 lists
+// --------------------------------------------------
+//  mainlist (+ maplist)
+//         vs
+//      stoplist
+var GState = 0      // do we have an open group
+var System = {
+    // 1: {
+    // },
+    0: {
+        "states" : [ "normal" , "keep" , "delete"] ,
+        "statesD" : {} , // will be inverted map of states
+        "dict" : {
+            "normal": {
+              "id":"normal",
+              "name": "Normal",
+              "color":"black"
+            },
+            "delete": {
+              "id":"delete",
+              "name": "Delete",
+              "color":"red"
+            },
+            "keep": {
+              "id":"keep",
+              "name": "Keep",
+              "color":"green"
             }
         }
     }
-    return cookieValue;
-}
-
-
-var latest,oldest;
-
-var TheBuffer = false
-
-var PossibleActions = [
-	{
-	  "id":"delete",
-	  "name": "Delete",
-	  "color":"red"
-	},
-	{
-	  "id":"keep",
-	  "name": "Keep",
-	  "color":"green"
-	},
-	// {
-	//   "id":"to_group",
-	//   "name": "Group",
-	//   "color":"blue"
-	// }
-]
-
-var GState = 0
-var System = {
-	// 1: {
-	// },
-	0: {
-		"states" : [ "normal" , "keep" , "delete" , "group"] ,
-		"statesD" : {} , // will be inverted map of states
-		"dict" : {
-			"normal": {
-			  "id":"normal",
-			  "name": "Normal",
-			  "color":"black"
-			},
-			"delete": {
-			  "id":"delete",
-			  "name": "Delete",
-			  "color":"red"
-			},
-			"keep": {
-			  "id":"keep",
-			  "name": "Keep",
-			  "color":"green"
-			},
-			"group": {
-			  "id":"group",
-			  "name": "MainForm",
-			  "color":"white"
-			}
-		}
-	}
 
 }
-
-
-// States : [ "normal" , "keep" , "delete"]
-
 
 /**
- * inverted mapping useful for state_id lookup
- *
- * System[GState]["statesD"] = {'normal':0,'keep':1,'delete':2,'group':3}
- */
+* inverted mapping useful for state_id lookup
+*
+* System[GState]["statesD"] = {'normal':0,'keep':1,'delete':2}
+*/
 for(var i in System[GState]["states"] ) {
-	System[GState]["statesD"][ System[GState]["states"][i] ] = Number(i)
+    System[GState]["statesD"][ System[GState]["states"][i] ] = Number(i)
 }
 
+
+// System[0]["statesD"]
+//          { "normal" , "keep" , "delete" }
+//              0          1         2
+
+
+// DICT BUFFERS FOR MAP/MAIN//STOP SAVING LOGIC
+// ----------------------------------------------
 var FlagsBuffer = {}
+// 3 main buffers per state (and later additional per target)
 for(var i in System[GState]["states"]) {
   FlagsBuffer[System[GState]["states"][i]] = {}
 }
 
-var corpusesList = {}
-var MyTable;
-var AjaxRecords = []
+// + 1 for groups
+GroupsBuffer = {}
 
-//      D3.js: Interactive timerange variables.
+
+// GROUP "WINDOWS"
+// ----------------
+// keeps track of seeGroup() opened frames
+var vizopenGroup = {} ;
+
+// (if currently this group is under modification)
+// ngramId of mainform + oldSubNgramIds + newSubNgramIds
+var activeGroup = {'now_mainform_id':undefined, 'were_mainforms':{}} ;
+
+
+// CHARTS ELEMENTS
+// -----------------
+//  D3.js: Interactive timerange variables.
 var LineChart = dc.lineChart("#monthly-move-chart");
 var volumeChart = dc.barChart("#monthly-volume-chart");
 
+// volumeChart chart limits actualized on dc "filtered" event
+var latest,oldest;
+var TheBuffer = false
 
+// width of the table in columns, updated after main
+var tableSpan ;
+
+// if "print portfolio"  (TODO clarify use)
+var corpusesList = {}
+
+
+// =============================================================================
+//                  ELEMENT CONTROLLERS AND ROW PROCESSORS
+// =============================================================================
 // Get all projects and corpuses of the user
 function GetUserPortfolio() {
     //http://localhost:8000/api/corpusintersection/1a50317a50145
@@ -227,12 +232,12 @@ function printCorpuses() {
 
     // EXTERNAL CORPUS TO COMPARE:
     var whichlist = $('input[name=whichlist]:checked').val()
-  	var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist//+"?custom"
-  	console.log( url )
+      var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist//+"?custom"
+      console.log( url )
 
 
-  	GET_( url , function(results) {
-  		if(Object.keys( results ).length>0) {
+      GET_( url , function(results) {
+          if(Object.keys( results ).length>0) {
          var sub_ngrams_data = {
            "ngrams":[],
            "scores": $.extend({}, NGrams["main"].scores)
@@ -250,31 +255,9 @@ function printCorpuses() {
           //   }
           // }
         }
-        var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
-  	// 		var sub_ngrams_data = {
-  	// 			"ngrams":[],
-  	// 			"scores": $.extend({}, NGrams["main"].scores)
-  	// 		}
-
-  	// 		if(whichlist=="stop") {
-  	// 			for(var r in results) {
-  	// 				var a_ngram = results[r]
-  	// 				a_ngram["state"] = System[0]["statesD"]["delete"]
-  	// 				sub_ngrams_data["ngrams"].push( a_ngram )
-  	// 			}
-  	// 			var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_stop-list")
-  	// 		}
-
-  	// 		if(whichlist=="miam") {
-  	// 			for(var i in NGrams["main"].ngrams) {
-  	// 				var local_ngram = NGrams["main"].ngrams[i]
-  	// 				console.log( local_ngram )
-  	// 			}
-  	// 			var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
-  	// 		}
-
-  		}
-  	});
+        var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+          }
+      });
 }
 
 
@@ -350,10 +333,10 @@ function Final_UpdateTable( action ) {
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
     TimeRange = []
-    for (var id in AjaxRecords) {
-        if(AjaxRecords[id].score>=dataini && AjaxRecords[id].score<=datafin){
-            // pr( AjaxRecords[id].date+" : "+id )
-            TimeRange.push(AjaxRecords[id])
+    for (var ngramId in AjaxRecords) {
+        if(AjaxRecords[ngramId].score>=dataini && AjaxRecords[ngramId].score<=datafin){
+            // pr( AjaxRecords[ngramId].date+" : "+ngramId )
+            TimeRange.push(AjaxRecords[ngramId])
         }
     }
 
@@ -377,208 +360,370 @@ function Final_UpdateTable( action ) {
     MyTable.data('dynatable').process();
 }
 
-function getRecord(rec_id) {
-  return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
-  // return AjaxRecords[rec_id]
+function getRecord(ngramId) {
+  return MyTable.data('dynatable').settings.dataset.originalRecords[ngramId];
+  // return AjaxRecords[ngramId]
 }
 
 function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
 }
 
-function save_groups() {
-	var groupdiv = "#group_box"
-	var gcontent = groupdiv+"_content"
-	var count = 0
-	var mainform = -1
-	var writeflag = ($("#group_box_content").children('span').length>1)?true:false
-	$(gcontent).children('span').each(function () {
-		var nid = $(this).attr("ngram-id");
-		if (count==0) {
-			if(writeflag) {
-				// AjaxRecords[nid].name += "*"
-				FlagsBuffer["group"][ nid ] = []
-				mainform = nid
-	    		AjaxRecords[nid].state = 1
-	    		var label = AjaxRecords[nid].name
-	    		AjaxRecords[nid].name = (label[0]=="*") ? label : ("*"+label)
 
-	    	} else {
-	    		AjaxRecords[nid].state = 0;
-	    		// var label = AjaxRecords[nid].name
-	    		// AjaxRecords[nid].name = (label[0] == '*') ? label.slice(1) : label.name;
-	    	}
-	    } else {
-			if(writeflag) {
-				FlagsBuffer["group"][ mainform ].push( nid )
-	    		AjaxRecords[nid].state = -1
-			}
-	    }
-	    count++
-	});
-	$("#group_box").remove()
-	$("#group_flag").remove()
-	GState=0
-	MyTable.data('dynatable').dom.update();
+// GROUPS CONTROLLERS
+// ------------------
+function saveActiveGroup() {
+    var mainform = activeGroup.now_mainform_id
+    // pr("saving mainform to GroupsBuffer: " + mainform)
+
+    // the new array to save is in now_links -------------
+    GroupsBuffer[mainform] = activeGroup.now_links
+    // ---------------------------------------------------
+
+    // also we prefix "*" to the name
+    AjaxRecords[mainform].name = "*" + AjaxRecords[mainform].name
+
+    // TODO check if necessary to update
+
+    // the previous mainforms that became subforms can't stay in the main records
+    for (downgradedNgramId in activeGroup.were_mainforms) {
+        if (downgradedNgramId != mainform) {
+
+            AjaxRecords[downgradedNgramId].state = -1
+
+            // they go to nodesmemory
+            // NGrams.group.nodesmemory = AjaxRecords[downgradedNgramId]
+            // delete AjaxRecords[downgradedNgramId]
+        }
+    }
+
+    // TODO posttest
+    // the previous "old" links are now in GroupsBuffer so from now on
+    // they'll be searched in AjaxRecords by updateActiveGroupInfo()
+    delete NGrams.group.links[mainform]
+    for (i in activeGroup.now_links) {
+        newLink = activeGroup.now_links[i] ;
+        if (activeGroup.ngraminfo[newLink].origin == 'old' || activeGroup.ngraminfo[newLink].origin == 'oldnew') {
+            // new AjaxRecords entry from nodesmemory
+            AjaxRecords[newLink] = NGrams.group.nodesmemory[newLink]
+            delete NGrams.group.nodesmemory[newLink]
+            // console.log('oldLinkThatBecameNew: '+AjaxRecords[newLink].name)
+        }
+    }
+
+    // clean group modification zone and buffer
+    removeActiveGroup()
 }
 
-function cancel_groups() {
-	var groupdiv = "#group_box"
-	var gcontent = groupdiv+"_content"
-	$(gcontent).children('span').each(function () {
-	    var nid = $(this).attr("ngram-id");
-	    AjaxRecords[nid].state = 0
-		var label = AjaxRecords[nid].name
-		AjaxRecords[nid].name = (label[0] == '*') ? label.slice(1) : label;
-	});
-	$("#group_box").remove()
-	$("#group_flag").remove()
-	GState=0
-	MyTable.data('dynatable').dom.update();
+function removeActiveGroup() {
+    // erases now_links and restores empty activeGroup global cache
+    activeGroup = {'now_mainform_id':undefined, 'were_mainforms':{}} ;
+
+    // remove the entire top row that was used as group modification zone
+    $("#group_box").remove()
+    GState=0
+
+    // we also close the open sublists in case some of them don't exist any more
+    vizopenGroup = {}
+
+    MyTable.data('dynatable').dom.update();
 }
 
-function add2groupdiv( elem_id ) {
-    $('<span/>', {
-		"ngram-id": elem_id,
-	    title: 'Click to remove',
-	    text: AjaxRecords[elem_id].name,
-	    css: {
-	    	"cursor":"pointer",
-	    	"border": "1px solid blue",
-	    	"margin": "3px",
-	    	"padding": "3px",
-	    }
-	})
-	.click(function() {
-    	AjaxRecords[$(this).attr("ngram-id")].state=0;
-    	$(this).remove()
-    	// if nothing in group div, then remove it
-    	if( $("#group_box_content").children().length==0 ) {
-    		$("#group_box").remove()
-    		GState=0
-    	}
-    	MyTable.data('dynatable').dom.update();
-	})
-	.appendTo('#group_box_content')
-	AjaxRecords[elem_id].state=3;// 3: "group" state
-}
-// new
-function add2group ( elem ) {
-    var elem_id = $( elem ).attr("ngram-id")
-	if( $("#group_box").length==0 ) {
-		var div_name = "#my-ajax-table > thead > tr > th:nth-child(1)"
-		var prctg = $(div_name).width()// / $(div_name).parent().width() * 100;
-		var group_html =  '      <span class="group_box" style="max-width:'+prctg+'px;" id="group_box">'+'\n';
-			group_html += '        <span class="group_box content" id="group_box_content"></span>'+'\n';
-			group_html += '      </span>'+'\n';
-			group_html += '      <span id="group_flag"></span>'+'\n';
-			$(group_html).insertAfter( "#my-ajax-table > thead" )
-			$("#group_flag").append  ('<span onclick="save_groups()"> [ Ok</span> - <span onclick="cancel_groups()">No ] </span>')
-	}
-	GState=1
+// for click open/close
+function toggleSeeGroup(plusicon, ngramId) {
+    // when already open => we close
+    if (ngramId in vizopenGroup) {
+        $("#subforms-"+ngramId).remove() ;
+        delete vizopenGroup[ngramId] ;
+        plusicon.classList.remove('glyphicon-triangle-bottom') ;
+        plusicon.classList.add('glyphicon-triangle-right') ;
+    }
+    else {
+        var subNgramHtml = seeGroup(ngramId) ;
+        // we target the html in the mainform term's box
+        $( "#box-"+ngramId).append(subNgramHtml) ;
 
-	add2groupdiv( elem_id )
-	if( FlagsBuffer["group"][ elem_id ] ) {
-		for(var i in FlagsBuffer["group"][ elem_id ] ) {
-			var nodeid = FlagsBuffer["group"][ elem_id ][i]
-			add2groupdiv (  nodeid  )
-		}
-	}
-
-	delete FlagsBuffer["group"][ elem_id ]
-
-	MyTable.data('dynatable').dom.update();
+        // change icon
+        plusicon.classList.remove('glyphicon-triangle-right') ;
+        plusicon.classList.add('glyphicon-triangle-bottom') ;
+    }
 }
 
+/**
+ * shows the ngrams grouped under this ngram
+ *
+ * called at 'plusicon click' via toggleSeeGroup()
+ *     or at table rows rewriting via transformContent()
+ *
+ * @param ngramId (of the mainform)
+ */
+function seeGroup ( ngramId ) {
+    // 1/7 create new element container
+    var subNgramHtml = $('<p class="note">') ;
+    subNgramHtml.attr("id", "subforms-"+ngramId) ;
+    subNgramHtml.css("line-height", 1.2) ;
+    subNgramHtml.css('margin-left','.3em') ;
+    subNgramHtml.css("margin-top", '.5em') ;
+
+
+    // 2/7 attach flag open to global state register
+    vizopenGroup[ngramId] = true ;
+
+    // 3/7   retrieve names of the original (from DB) grouped ngrams
+    var oldlinksNames = [] ;
+    if( ngramId in NGrams.group.links ) {
+        for (var i in NGrams.group.links[ngramId]) {
+            var subNgramId = NGrams.group.links[ngramId][i] ;
+            oldlinksNames[i] = NGrams.group.nodesmemory[subNgramId].name
+        }
+    }
+
+    // 4/7   retrieve names of the newly created grouped ngrams
+    var newlinksNames = [] ;
+    if( ngramId in GroupsBuffer ) {
+        for(var i in GroupsBuffer[ ngramId ] ) {
+            var subNgramId = GroupsBuffer[ ngramId ][i] ;
+            newlinksNames[i] = AjaxRecords[subNgramId].name
+        }
+    }
+
+    // 5/7 create the "tree" from the names, as html lines
+    var htmlMiniTree = drawSublist(oldlinksNames.concat(newlinksNames))
+    subNgramHtml.append(htmlMiniTree)
+
+    // 6/7 add a "modify group" button
+    var changeGroupsButton  = '<button style="float:right"' ;
+        changeGroupsButton +=         'onclick="modifyGroup('+ngramId+')">' ;
+        changeGroupsButton +=   'modify group' ;
+        changeGroupsButton += '</button>' ;
+    subNgramHtml.append(changeGroupsButton) ;
+
+    // 7/7  return html snippet (ready for rendering)
+    return(subNgramHtml)
+}
+
+/*
+ * Creates an "ASCIIart" tree from subforms names
+ * Exemple:
+ *             BEES
+ *              ├── bee
+ *              ├── honey bee
+ *              └── honey bees
+ */
+function drawSublist (linkNamesArray) {
+    var sublistHtml = "" ;
+    var last_i = linkNamesArray.length - 1 ;
+    for(var i in linkNamesArray) {
+        var subNgramName = linkNamesArray[i] ;
+        if (i != last_i) {
+            sublistHtml += ' ├─── ' + subNgramName + '<br>' ;
+        }
+        else {
+            sublistHtml += ' └─── ' + subNgramName ;
+        }
+    }
+    return sublistHtml
+}
+
+function drawActiveSublist (tgtElementId, linkIdsArray, ngInfos) {
+    var sublistHtml = "" ;
+    var last_i = linkIdsArray.length - 1 ;
+    for(var i in linkIdsArray) {
+        var subNgramId = linkIdsArray[i] ;
+        if (i != last_i) {
+            sublistHtml += ' ├── ' + subformSpan(ngInfos[subNgramId]) + '<br>' ;
+        }
+        else {
+            sublistHtml += ' └── ' + subformSpan(ngInfos[subNgramId]) ;
+        }
+    }
+
+    // write html
+    $(tgtElementId).html(sublistHtml)
+}
+
+// makes each subform's html
+function subformSpan( subNgramInfo ) {
+    // each item is a new ngram under the group
+    span = $('<span/>', {
+        text: subNgramInfo.name,
+        title: subNgramInfo.id,
+        id: 'active-subform-' + subNgramInfo.id
+    })
+
+    if (subNgramInfo.origin == 'old') {
+        span.addClass("oldsubform")
+    }
+    else if (subNgramInfo.origin == 'new' || subNgramInfo.origin == 'oldnew'){
+        span.addClass("usersubform")
+    }
+
+
+    // £TODO remove Button has a bug when mainform doesn't reappear in its row
+    // var removeButton  = '&nbsp;<span class="note glyphicon glyphicon-minus-sign"'
+    //     removeButton +=   ' onclick="removeSubform('+ subNgramInfo.id +')"></span>'
+    // span.append(removeButton)
+    return(span[0].outerHTML)
+}
+
+function removeSubform(ngramId) {
+    $('#active-subform-'+ngramId).remove()
+    if (activeGroup.now_links.length == 1) {
+        removeActiveGroup()
+    }
+    else {
+        var i = activeGroup.now_links.indexOf(ngramId)
+        activeGroup.now_links.splice(i,1)
+        // if (activeGroup.ngraminfo[ngramId].origin == 'new') {
+        //     AjaxRecords[ngramId].state = 0 ;
+        // }
+
+        // redraw active group_box_content
+        drawActiveSublist(
+            '#group_box_content',
+            activeGroup.now_links,
+            activeGroup.ngraminfo
+         )
+         // and update
+         MyTable.data('dynatable').dom.update();
+    }
+}
+
+function modifyGroup ( mainFormNgramId ) {
+    // create modification dialog
+    //
+    var group_html =  '      <tr class="group_box" id="group_box">\n';
+        group_html += '        <td colspan='+tableSpan+'>\n';
+                                 // mainform
+        group_html += '          <p id="group_box_mainform">\n';
+        group_html += '         '+subformSpan(AjaxRecords[mainFormNgramId])+'\n'
+        group_html += '          <br> │<br>';
+        group_html += '          </p>\n';
+                                 // sublist
+        group_html += '          <p id="group_box_content"></p>\n';
+                                 // save/cancel buttons
+        group_html += '          <p id="activeGroupButtons"></p>\n';
+        group_html += '        </td>\n';
+        group_html += '      </tr>\n';
+    $( "#my-ajax-table > thead" ).append(group_html)
+
+    // Ok - No
+    var cancelGroupButton  = '<button onclick="removeActiveGroup()">' ;
+        cancelGroupButton +=   'cancel' ;
+        cancelGroupButton += '</button>' ;
+
+    var tempoSaveGroupButton  = '<button onclick="saveActiveGroup()">' ;
+        tempoSaveGroupButton +=   'finish' ;
+        tempoSaveGroupButton += '</button>' ;
+
+    $("#activeGroupButtons").append(cancelGroupButton)
+                            .append(tempoSaveGroupButton)
+
+    // set global 'grouping in progress' states
+    GState = 1 ;
+    activeGroup.now_mainform_id = mainFormNgramId ;
+    activeGroup.were_mainforms[mainFormNgramId] = true ;
+    activeGroup.now_links = [] ;
+    activeGroup.ngraminfo = {} ;  // standard rec info + 'origin' property
+
+    // add relevant information from old & new links to activeGroup.now_links
+    updateActiveGroupInfo (mainFormNgramId, false)
+
+    // groupBox rendering
+    drawActiveSublist(
+        '#group_box_content',
+        activeGroup.now_links,
+        activeGroup.ngraminfo
+     )
+
+     MyTable.data('dynatable').dom.update();
+}
+
+
+// add new ngramid (and any present subforms) to currently modified group
+function add2group ( ngramId ) {
+
+    console.log("FUN add2group(" + AjaxRecords[ngramId].name + ")")
+
+    var toOther = true ;
+    activeGroup.were_mainforms[ngramId] = true ;
+
+    if (GState == 1) {
+
+        // add this mainform as a new subform
+        activeGroup.now_links.push(ngramId)
+        activeGroup.ngraminfo[ngramId] = AjaxRecords[ngramId]
+        activeGroup.ngraminfo[ngramId].origin = 'new'
+
+        // also add all its subforms as new subforms
+        updateActiveGroupInfo (ngramId, toOther)
+
+        // redraw active group_box_content
+        drawActiveSublist(
+            '#group_box_content',
+            activeGroup.now_links,
+            activeGroup.ngraminfo
+         )
+
+         MyTable.data('dynatable').dom.update();
+     }
+     else {
+         console.warn("ADD2GROUP but no active group")
+     }
+
+}
+
+/**
+ * subforms from DB have their info in a separate NGrams.group.nodesmemory
+ *  so here and in saveActiveGroup we need to take it into account
+ *
+ * TODO: remove this mecanism
+ *
+ * @param ngramId
+ * @param toOtherMainform = flag if ngram was a subform of another mainform
+ * @param (global) activeGroup = current state struct of modify group dialog
+ */
+function updateActiveGroupInfo (ngramId, toOtherMainform) {
+    // console.log("FUN updateActiveGroupInfo(" + AjaxRecords[ngramId].name + ")")
+    // console.log(activeGroup)
+
+    // fill active link info
+    if( ngramId in NGrams.group.links ) {
+        for (var i in NGrams.group.links[ngramId]) {
+            var subId = NGrams.group.links[ngramId][i] ;
+            // ----------- old links (already in DB)
+            activeGroup.now_links.push(subId)
+            activeGroup.ngraminfo[subId] = NGrams.group.nodesmemory[subId]
+            activeGroup.ngraminfo[subId].origin = toOtherMainform ? 'oldnew' : 'old'
+        }
+    }
+    if( ngramId in GroupsBuffer ) {
+        for(var i in GroupsBuffer[ ngramId ] ) {
+            var subId = GroupsBuffer[ ngramId ][i] ;
+            // ----------- new links (not in DB)
+            activeGroup.now_links.push(subId)
+            activeGroup.ngraminfo[subId] = AjaxRecords[subId]
+            activeGroup.ngraminfo[subId].origin = 'new'
+        }
+    }
+}
+
+// LIST MEMBERSHIP CONTROLLERS
+// ----------------------------
 
 /**
  * click red, click keep, click normal...
  *
- * @param elem - the table row that contains the term cell
+ * @param ngramId - the record's id
  */
-function clickngram_action ( elem ) {
-    // local id
-	var elem_id = $( elem ).attr("ngram-id") ;
-    // console.log("click: state before: "+ AjaxRecords[elem_id].state) ;
-
-    // cycle the statuses (omitting status 3 = group)
-	AjaxRecords[elem_id].state = (AjaxRecords[elem_id].state==(System[0]["states"].length-2))?0:(AjaxRecords[elem_id].state+1);
+function clickngram_action ( ngramId ) {
+    // cycle the statuses (0 => 1 => 2 => 0 => etc) (we are omitting status 3 = group)
+    AjaxRecords[ngramId].state = (AjaxRecords[ngramId].state==(System[0]["states"].length-2))?0:(AjaxRecords[ngramId].state+1);
 
     // State <=> term color <=> checked colums
 
-    // console.log("\n\nRECORD visible on click --- " + JSON.stringify(AjaxRecords[elem_id])) ;
-
-    var ngramId = elem_id ;
-
-    // console.log("click: state after: "+ AjaxRecords[elem_id].state) ;
-	MyTable.data('dynatable').dom.update();
-}
-
-/**
- * Works for ulWriter. Connects a record's state with table UI outcome.
- *
- * @param rec_id - the local id for this ngram record in AjaxRecords
- */
-function transformContent(rec_id) {
-  // debug
-  // console.log("\nFUN transformContent() !!!!")
-	var ngram_info = AjaxRecords[rec_id];
-
-  // ex: ngram_info = {
-  //             "id":2349,"name":"failure","score":1,"flag":false,
-  //             "group_plus":true,"group_blocked":false,"state":0
-  //            }
-
-  // console.log(
-  //   "transformContent got ngram_info no " + rec_id + ": "
-  //   + JSON.stringify(ngram_info)
-  // )
-
-    // result {} contains instanciated column html for dynatables
-	var result = {}
-	var atts = System[0]["dict"][ System[0]["states"][ngram_info.state] ]
-    // avec System[0]["dict"] contenant {"normal":{"id":"normal","name":"Normal","color":"black"},"delete":{"id":"delete","name":"Delete","color":"red"}...}
-	var plus_event = ""
-
-
-    // GState = 1 if previously had add_group
-    // it influences state lookup
-	if(GState==0 && ngram_info.state!=System[0]["statesD"]["delete"] ) // if deleted, no + button
-		plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(+)</a>"
-	if(GState==1 ) {
-		if(ngram_info.state!=System[0]["statesD"]["delete"] && ngram_info.state!=System[0]["statesD"]["group"]) { // if deleted and already group, no Up button
-			plus_event = " <a class=\"plusclass\" onclick=\"add2group(this.parentNode.parentNode)\">(▲)</a>"
-		}
-	}
-
-    // uncomment if column ngramId (here and in Main_test)
-    result["ngramId"] = ngram_info["id"] ;
-
-    // uncomment if column state (here and in Main_test)
-    // result["state"] = AjaxRecords[rec_id].state
-
-    // -------------------------------------------
-    // check box state columns 'will_be_map' and 'will_be_stop'
-
-    map_flag = (AjaxRecords[rec_id].state == 1) ;    // 1 = System[0]["statesD"]["keep"]
-    stop_flag = (AjaxRecords[rec_id].state == 2) ;   // 2 = System[0]["statesD"]["delete"]
-
-    result["will_be_map"] = '<input type="checkbox" onclick="checkBox(\'keep\',this.parentNode.parentNode)" '
-                           +(map_flag?'checked':'')
-                           +'></input>'
-    result["will_be_stop"] = '<input type="checkbox" onclick="checkBox(\'delete\', this.parentNode.parentNode)" '
-                           +(stop_flag?'checked':'')
-                           +'></input>'
-    // possible todo: 3 way switch ??
-    // par exemple http://codepen.io/pamgriffith/pen/zcntm
-    // -------------------------------------------
-
-    // atts.id (ex: "normal" or "delete" etc)
-    result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>'
-	result["name"] = "<span class=\""+atts.id+
-					 "\" onclick=\"clickngram_action(this.parentNode.parentNode)\">"+ngram_info["name"]+"</span>"+
-					 plus_event
-	return result;
+    // console.log("click: state after: "+ AjaxRecords[ngramId].state) ;
+    MyTable.data('dynatable').dom.update();
 }
 
 
@@ -586,15 +731,13 @@ function transformContent(rec_id) {
  * Click on a checkbox in a row
  *
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
- * @elem : entire element row with attribute 'ngram-id' (= rec_id)
+ * @ngramId : corresponding record's id for record.state modifications
  */
 
-function checkBox(boxType, elem) {
-    console.log ('CLICK on check box') ;
-
-    var elemId = elem.getAttribute("ngram-id") ;
-    var currentState = AjaxRecords[elemId].state ;
-    // alert('NGRAM: ' + elemId + '\n'
+function checkBox(boxType, ngramId) {
+    // console.log ('CLICK on check box (ngramId = '+ngramId+')') ;
+    var currentState = AjaxRecords[ngramId].state ;
+    // alert('NGRAM: ' + ngramId + '\n'
     //        + 'CURRENT STATE: ' + currentState) ;
 
     // find out which box
@@ -611,9 +754,131 @@ function checkBox(boxType, elem) {
         targetState = 0 ;
     }
 
-    // set old state and color
-    AjaxRecords[elemId].state = targetState ;
+    // replace old state and color
+    AjaxRecords[ngramId].state = targetState ;
     MyTable.data('dynatable').dom.update();
+}
+
+
+// TABLE WRITERS PROCESSORS
+// ------------------------
+
+/**
+ * Works for ulWriter. Connects a record's state with table UI outcome.
+ *
+ * @param ngramId - the id for this ngram record in AjaxRecords
+ *
+ * Returns <tr> contents:  an array of html contents to be each injected (by
+ *                         dynatable) into respective <td> cells of the row
+ */
+function transformContent(ngramId) {
+    var ngram_info = AjaxRecords[ngramId];
+
+    // ex: ngram_info = {
+    //             "id":2349,"name":"failure","score":1,"flag":false,
+    //             "group_exists":false,"state":0
+    //            }
+
+    // result will contain instanciated cell html for each column in dynatable
+    var result = {}
+
+    // debug
+    // ------
+    // console.log(
+    //   "transformContent got ngram_info no " + ngramId + ": "
+    //   + JSON.stringify(ngram_info)
+    // )
+
+    var atts = System[0]["dict"][ System[0]["states"][ngram_info.state] ]
+    // avec System[0]["dict"] contenant {"normal":{"id":"normal","name":"Normal","color":"black"},"delete":{"id":"delete","name":"Delete","color":"red"}...}
+
+    // -------------------------------------------
+    // prerequisite
+
+    var plus_event = ""
+    // define "plus_event" symbol depending on "grouping" status
+
+    // normal situation: button allows to see group contents
+    if(GState==0) {
+        var plusicon = '' ;
+        if (ngram_info["id"] in vizopenGroup) {
+            plusicon = "glyphicon-triangle-bottom"
+        } else {
+            plusicon = "glyphicon-triangle-right"
+        }
+        if (ngram_info.group_exists) {
+            plus_event  = '<span class="note glyphicon '+plusicon+'"'
+        } else {
+            plus_event  = '<span class="note glyphicon '+plusicon+' greyed"'
+        }
+        plus_event +=      ' onclick="toggleSeeGroup(this, '+ ngramId +')"></span>'
+    }
+
+    // GState = 1 situation: button allows to add to active group
+    // (if previously had add2group button clicked)
+    if(GState==1 ) {
+        if(ngram_info.state!=System[0]["statesD"]["delete"] && ! GroupsBuffer[ngramId]) { // if deleted and already group, no Up button
+            plus_event  = '<span class="note glyphicon glyphicon-plus"'
+            plus_event +=      ' color="#FF530D"'
+            plus_event +=      ' onclick="add2group('+ ngramId +')"></span>'
+        }
+    }
+
+    // -------------------------------------------
+    //         score and name column cells
+    // -------------------------------------------
+
+    // <td> score </td>              atts.id (ex: "normal" or "delete" etc)
+    result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>\n'
+
+    // <td> name  </td>     aka   "ngrambox"
+    result["name"]  = '<div class="ngrambox" id="box-'+ngram_info["id"]+'">\n'
+    if (ngram_info["id"] != activeGroup.now_mainform_id && !(ngram_info["id"] in activeGroup.were_mainforms)) {
+
+        result["name"] +=   plus_event + '\n'
+        result["name"] +=   '<span title="'+ngram_info["id"]+'" class="'+atts.id+'" '
+        result["name"] +=         'onclick="clickngram_action('+ngram_info["id"]+')">'
+        result["name"] +=      ngram_info["name"] + '\n'
+        result["name"] +=   '</span>\n'
+        // if curently open we also add #subforms p with the sublist
+        if (ngram_info["id"] in vizopenGroup) {
+            result["name"] += seeGroup(ngram_info["id"])[0].outerHTML ;
+        }
+    }
+    result["name"] += '</div>\n'
+
+
+    // -------------------------------------------
+    // other optional column cells
+
+    // uncomment if column ngramId (here and in MainTableAndCharts)
+    // result["ngramId"] = ngram_info["id"] ;
+
+    // uncomment if column state (here and in MainTableAndCharts)
+    // result["state"] = AjaxRecords[ngramId].state
+
+    // -------------------------------------------
+    // 2 cells for check box state columns
+    // ('will_be_map' and 'will_be_stop')
+
+    map_flag = (AjaxRecords[ngramId].state == 1) ;    // 1 = System[0]["statesD"]["keep"]
+    stop_flag = (AjaxRecords[ngramId].state == 2) ;   // 2 = System[0]["statesD"]["delete"]
+
+    // <td> checkbox 1 </td>
+    result["will_be_map"]  = '<input type="checkbox" '+(map_flag?'checked ':'')
+    result["will_be_map"] +=        'onclick=\'checkBox("keep",this.parentNode.parentNode.getAttribute("ngram-id"))\'>'
+    result["will_be_map"] += '</input>'
+    // <td> checkbox 2 </td>
+    result["will_be_stop"]  = '<input type="checkbox" '+(stop_flag?'checked ':'')
+    result["will_be_stop"] +=        'onclick=\'checkBox("delete",this.parentNode.parentNode.getAttribute("ngram-id"))\'>'
+    result["will_be_stop"] += '</input>'
+
+    // possible todo: 3 way switch ??
+    // par exemple http://codepen.io/pamgriffith/pen/zcntm
+
+    // --------------------------------------------
+    // {"name":tdcontent1, "score":tdcontent2, ...}
+    return result;
 }
 
 /**
@@ -625,8 +890,7 @@ function checkBox(boxType, elem) {
  *
  * @param rowIndex: int i++
  * @param record: { "id":1793,"name":"planet","score":1,"flag":false,
- *                   "group_plus":true,"group_blocked":false,
- *                   "state":0}
+ *                   "group_exists":false, "state":0}
  * @param columns: constant array
  *                 (with column template for cellWriter)
  *                 (auto-built from html <thead> elements)
@@ -659,9 +923,6 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   cp_rec = transformContent(record.id)
   // -----------------------------------------------------
 
-  // console.log("cp_rec" + JSON.stringify(cp_rec))
-  // console.log("\n----\nrecord" + JSON.stringify(record))
-
   // grab the record's attribute for each column
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
@@ -670,14 +931,15 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   return '<tr ngram-id='+record.id+'>' + tr + '</tr>';
 }
 
+// PAGE SELECTION CONTROLLER
+// --------------------------
 /**
- * SelectAll: toggle all checkboxes in a column by changing their list in System
+ * Toggle all checkboxes in a column by changing their list in System
  *
  * @boxType : 'keep' or 'delete' (resp. maplist and stoplist)
- * @elem : entire element row with attribute 'ngram-id' (= rec_id)
+ * @elem : entire element row with attribute 'ngram-id' (= ngramId)
  *
- * 2016-01-12: new version without the old Delete|Keep radio choice
- * 2016-01-26: new version with 3-state boxes:
+ * 3-state boxes:
  *  - indeterminate (SOME del SOME map SOME normal) = original state
  *  - check         (ALL del or map)
  *  - uncheck       (NONE --- " ---)
@@ -687,9 +949,9 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
  *          of each commanded ngrams (map, stop, miam)
  */
 
-function SelectAll(boxType, boxElem) {
+function SelectPage(boxType, boxElem) {
   // debug
-  // console.log("\nFUN SelectAll()")
+  // console.log("\nFUN SelectPage()")
 
     // real checkAll flags : SOME|ALL|NONE
     var previousColumnSelection = $(boxElem).data("columnSelection") ;
@@ -697,13 +959,13 @@ function SelectAll(boxType, boxElem) {
 
     // we will also need the other "checkall box"
     // - to uncheck "delete" when we check "map" & vice-versa
-    // - to make them both "indeterminate" when we restore buffered original state
-    // - to prevent buffering if the second column is already buffered
+    // - to make them both "indeterminate" when we restore cached original state
+    // - to prevent cacheing if the second column is already cached
     if (boxType == 'keep') { otherBoxId = "delAll" ; }
     else                  { otherBoxId = "mapAll" ; }
 
-    // did we already buffer original states ?
-    var columnBufferExists = null ;
+    // did we already cache original states ?
+    var columnCacheExists = null ;
 
     // console.log("-------------INCOMING----------------")
     // console.log(boxElem.id)
@@ -716,16 +978,16 @@ function SelectAll(boxType, boxElem) {
     switch (previousColumnSelection) {
         case 'ALL':
             newColumnSelection = "NONE" ;
-            columnBufferExists = true ;
+            columnCacheExists = true ;
             break ;
         case 'NONE':
             newColumnSelection = "SOME" ;
-            columnBufferExists = true ;
+            columnCacheExists = true ;
             break ;
         case 'SOME':
             newColumnSelection = "ALL"  ;
-            // probably no buffer, except if other column was set
-            columnBufferExists = ($("input#"+otherBoxId).data('columnSelection') != 'SOME') ;
+            // probably no cache, except if other column was set
+            columnCacheExists = ($("input#"+otherBoxId).data('columnSelection') != 'SOME') ;
             break ;
 
         default: alert('invalid flag for columnSelection');
@@ -789,8 +1051,8 @@ function SelectAll(boxType, boxElem) {
   $("tbody tr").each(function (i, row) {
       var ngramId = $(row).attr("ngram-id") ;
 
-      // a buffer to restore previous states if unchecked
-      if (!columnBufferExists) {
+      // a cache to restore previous states if unchecked
+      if (!columnCacheExists) {
           AjaxRecords[ngramId]["state_buff"] = AjaxRecords[ngramId]["state"] ;
       }
 
@@ -799,7 +1061,7 @@ function SelectAll(boxType, boxElem) {
           AjaxRecords[ngramId]["state"] = stateId ;
       }
       else {
-          // restore previous states, remove buffer
+          // restore previous states, remove cache
           AjaxRecords[ngramId]["state"] = AjaxRecords[ngramId]["state_buff"] ;
           AjaxRecords[ngramId]["state_buff"] = null ;
       }
@@ -812,6 +1074,37 @@ function SelectAll(boxType, boxElem) {
   $(boxElem).data('columnSelection', newColumnSelection);
 }
 
+
+// =============================================================================
+//                                  MAIN
+// =============================================================================
+
+// MAIN TABLE STATUS CONTROLLERS
+// -----------------------------
+
+$("#Clean_All").click(function(){
+
+    for(var id in AjaxRecords)
+    AjaxRecords[id]["state"] = 0;
+
+    $("#group_box").remove()
+    GState=0
+
+    MyTable.data('dynatable').dom.update();
+
+    for(var i in FlagsBuffer)
+    for(var j in FlagsBuffer[i])
+    delete FlagsBuffer[i][j];
+    // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
+});
+
+$("#Save_All").click(function(){
+    SaveLocalChanges()
+});
+
+
+// MAIN SAVE + MAIN CREATE TABLE
+// -----------------------------
 
 // Save changes to all corpusA-lists
 function SaveLocalChanges() {
@@ -833,7 +1126,7 @@ function SaveLocalChanges() {
           FlagsBuffer["delete"][id] = true
         }
       }
-      if(FlagsBuffer["group"][id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
+      if(GroupsBuffer[id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
         FlagsBuffer["inmap"][ id ] = true
       }
     } else {
@@ -858,8 +1151,8 @@ function SaveLocalChanges() {
       }
     }
     if(FlagsBuffer["inmap"][i]) {
-      for(var j in FlagsBuffer["group"][i] ) {
-        FlagsBuffer["outmap"][FlagsBuffer["group"][i][j]] = true
+      for(var j in GroupsBuffer[i] ) {
+        FlagsBuffer["outmap"][GroupsBuffer[i][j]] = true
       }
     }
   }
@@ -872,7 +1165,7 @@ function SaveLocalChanges() {
 
   var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)  // main => stop
   var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)   // ??? stop => main ???
-  var nodes_2group = $.extend({}, FlagsBuffer["group"])
+  var nodes_2group = $.extend({}, GroupsBuffer)
   var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])     //  add to map
   var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])   //  remove from map
 
@@ -895,14 +1188,13 @@ function SaveLocalChanges() {
   var mainlist_id = $("#mainlist_id").val()
   var maplist_id  = $("#maplist_id" ).val()
   var stoplist_id = $("#stoplist_id" ).val()
+  var groupnode_id = $("#groups_id" ).val()
 
   // var corpus_id = getIDFromURL( "corpora" )
 
   $("#stoplist_content").html()
 
-  // CRUD( list_id , "" , Object.keys(FlagsBuffer["inmap"]).map(Number) , [] , "PUT", function(result) {
-  //   console.log( result )
-  // });
+  // The AJAX CRUDs in cascade:
 
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 
@@ -911,6 +1203,7 @@ function SaveLocalChanges() {
 
   // add some ngrams to maplist
   function CRUD_1_AddMap() {
+    console.log("===> AJAX CRUD1 AddMap <===\n") ;
     CRUD( maplist_id , Object.keys(nodes_2inmap), "PUT" , function(success) {
       if (success) {
         CRUD_2_RmMap()             // chained AJAX  1 -> 2
@@ -922,6 +1215,7 @@ function SaveLocalChanges() {
   }
   // remove some ngrams from maplist
   function CRUD_2_RmMap() {
+    console.log("===> AJAX CRUD2 RmMap <===\n") ;
     CRUD( maplist_id , Object.keys(nodes_2outmap), "DELETE" , function(success) {
       if (success) {
         CRUD_3_AddStopRmMain()    // chained AJAX  2 -> 3
@@ -934,6 +1228,7 @@ function SaveLocalChanges() {
 
   // 2 operations going together: add ngrams to stoplist and remove them from mainlist
   function CRUD_3_AddStopRmMain() {
+    console.log("===> AJAX CRUD3a+b AddStopRmMain <===\n") ;
     CRUD( stoplist_id , nodes_2del, "PUT" , function(success) {
       if (success) {
         // console.log("OK CRUD 3a add stop")
@@ -953,33 +1248,20 @@ function SaveLocalChanges() {
     });
   }
 
-
-  // TODO add to groups
+  // add to groups reading data from GroupsBuffer
   function CRUD_4() {
-      window.location.reload() // refresh whole page if all OK
+      console.log("===> AJAX CRUD4 RewriteGroups <===\n") ;
+      GROUPCRUD(groupnode_id, GroupsBuffer, function(success) {
+          if (success) {
+              window.location.reload() // all 4 CRUDs OK => refresh whole page
+          }
+          else {
+              console.warn('CRUD error on ngrams add to group node ('+groupings_id+')')
+          }
+      }) ;
   }
-}
+}    // end of SaveLocalChanges
 
-
-$("#Clean_All").click(function(){
-
-	for(var id in AjaxRecords)
-		AjaxRecords[id]["state"] = 0;
-
-	$("#group_box").remove()
-	GState=0
-
-	MyTable.data('dynatable').dom.update();
-
-	for(var i in FlagsBuffer)
-		for(var j in FlagsBuffer[i])
-			delete FlagsBuffer[i][j];
-  // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
-});
-
-$("#Save_All").click(function(){
-  SaveLocalChanges()
-});
 
 // For list modifications (add/delete), all http-requests
 function CRUD( list_id , ngram_ids , http_method , callback) {
@@ -987,7 +1269,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id+"&ngrams="+ngram_ids.join(",");
 
     // debug
-    // console.log("starting CRUD AJAX => URL: " + the_url + " (" + http_method + ")")
+    // console.log("  ajax target: " + the_url + " (" + http_method + ")")
 
     if(ngram_ids.length>0) {
         $.ajax({
@@ -1006,7 +1288,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
           },
           error: function(result) {
               console.log("-- CRUD ----------")
-              console.log("Data not found in #Save_All");
+              console.log("AJAX Error on " + http_method + " " + the_url);
               console.log(result)
               console.log("------------------")
               callback(false);
@@ -1014,6 +1296,40 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
         });
 
     } else callback(true);
+}
+
+
+// For group modifications (POST: {mainformA: [subformsA1,A2,A3], mainformB:..})
+function GROUPCRUD( groupnode_id , post_data , callback) {
+    // ngramlists/change?node_id=42&ngram_ids=1,2
+    var the_url = window.location.origin+"/api/ngramlists/groups?node="+groupnode_id;
+
+    // debug
+    // console.log("  ajax target: " + the_url + " (" + http_method + ")")
+
+    $.ajax({
+      method: 'POST',
+      url: the_url,
+      data: post_data,  // currently all data explicitly in the url (like a GET)
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+      success: function(data){
+            console.log("-- GROUPCRUD ----------")
+            console.log("POST ok!!")
+            console.log(JSON.stringify(data))
+            console.log("-----------------------")
+            callback(true);
+      },
+      error: function(result) {
+          console.log("-- GROUPCRUD ----------")
+          console.log("AJAX Error on POST " + the_url);
+          console.log(result)
+          console.log("-----------------------")
+          callback(false);
+      }
+    });
+
 }
 
 
@@ -1033,21 +1349,21 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
  * @param initial: initial score type "occs" or "tfidf"
  * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
  */
-function Main_test( data , initial , search_filter) {
+function MainTableAndCharts( data , initial , search_filter) {
 
     // debug
     // alert("refresh main")
 
-	console.log("")
-	console.log(" = = = = MAIN_TEST: = = = = ")
-	console.log("data:")
-	console.log(data)
-	console.log("initial:")   //
-	console.log(initial)
-	console.log("search_filter:")	    // eg 'filter_all'
-	console.log(search_filter)
-	console.log(" = = = = / MAIN_TEST: = = = = ")
-	console.log("")
+    console.log("")
+    console.log(" = = = = MainTableAndCharts: = = = = ")
+    console.log("data:")
+    console.log(data)
+    console.log("initial:")   //
+    console.log(initial)
+    console.log("search_filter:")        // eg 'filter_all'
+    console.log(search_filter)
+    console.log(" = = = = / MainTableAndCharts: = = = = ")
+    console.log("")
 
     // Expected infos in "data.ngrams" should have the form:
     // { "1": { id: "1", name: "réalité",        score: 36  },
@@ -1067,7 +1383,7 @@ function Main_test( data , initial , search_filter) {
 
     var arrayd3 = []
 
-    //  div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectAll(this);" /> Select'+"\n"
+    //  div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="multiple_selection" onclick="SelectPage(this);" /> Select'+"\n"
     $("#div-table").html("")
     $("#div-table").empty();
 
@@ -1081,10 +1397,10 @@ function Main_test( data , initial , search_filter) {
       // Any <th> defined here will end up in the 'columns' arg of ulWriter
       // ------------------------------------------------------------------
 
-      // uncomment for column ngramId (here and in transformContent - l553)
-      div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
+      // uncomment for column ngramId (here and in transformContent - l.577)
+      // div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
 
-      // uncomment for column stateId (here and in transformContent)
+      // uncomment for column stateId (here and in transformContent - l.580)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
 
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
@@ -1099,7 +1415,7 @@ function Main_test( data , initial , search_filter) {
                             + 'Map'
                             + '<p class="note">'
                             + '<input type="checkbox" id="mapAll"'
-                            + ' onclick="SelectAll(\'keep\',this)" title="Check to select all currently visible terms"></input>'
+                            + ' onclick="SelectPage(\'keep\',this)" title="Check to select all currently visible terms"></input>'
                             + '<label>All</label>'
                             + '</p>'
                             + '</th>'+"\n" ;
@@ -1111,7 +1427,7 @@ function Main_test( data , initial , search_filter) {
                             + 'Del'
                             + '<p class="note">'
                             + '<input type="checkbox" id="delAll"'
-                            + ' onclick="SelectAll(\'delete\',this)" title="Check to select all currently visible terms"></input>'
+                            + ' onclick="SelectPage(\'delete\',this)" title="Check to select all currently visible terms"></input>'
                             + '<label>All</label>'
                             + '</p>'
                             + '</th>'+"\n" ;
@@ -1124,6 +1440,8 @@ function Main_test( data , initial , search_filter) {
       div_table += '</p>';
     $("#div-table").html(div_table)
 
+    // width of the table in columns
+    tableSpan = $("#div-table th").length ;
 
     // indeterminate: only visual
     $('#delAll').prop("indeterminate", true)
@@ -1149,20 +1467,18 @@ function Main_test( data , initial , search_filter) {
       // console.log(data.ngrams[i])
       var le_ngram = data.ngrams[id] ;
 
+      // INIT records
+      // one record <=> one line in the table + ngram states
       var rec_info = {
         "id" : le_ngram.id,
         "name": le_ngram.name,
         "score": le_ngram.score,
         "flag":false,
-        "group_plus": true,
-        "group_blocked": false,
-        // "state": 0,
+        // "state": 0
         "state": (le_ngram.state)?le_ngram.state:0,
 
-
-        // rl: 2 new columns showing 'state == map' and 'state == del'
-        "will_be_map": null,
-        "will_be_stop": null
+        // properties enabling to see old and new groups
+        "group_exists": (le_ngram.id in NGrams.group.links || le_ngram.id in GroupsBuffer),
       }
       // AjaxRecords.push(rec_info)
       AjaxRecords[id] = rec_info
@@ -1190,13 +1506,13 @@ function Main_test( data , initial , search_filter) {
     }
 
  //    console.clear()
-	// for(var i in DistributionList) {
-	// 	// DistributionList[i].x_occ = Math.log( DistributionList[i].x_occ )
-	// 	// DistributionList[i].y_frec = Math.log( DistributionList[i].y_frec )+1
-	// 	console.log( DistributionList[i] )
-	// }
+    // for(var i in DistributionList) {
+    //     // DistributionList[i].x_occ = Math.log( DistributionList[i].x_occ )
+    //     // DistributionList[i].y_frec = Math.log( DistributionList[i].y_frec )+1
+    //     console.log( DistributionList[i] )
+    // }
 
-	// return;
+    // return;
     oldest = Number(min_occ);
     latest = Number(max_occ);
 
@@ -1301,7 +1617,7 @@ function Main_test( data , initial , search_filter) {
                   _rowWriter: ulWriter
                   // _cellWriter: customCellWriter
                 }
-              })
+            })
 
     // MyTable.data('dynatable').settings.dataset.records = []
     // MyTable.data('dynatable').settings.dataset.originalRecords = []
@@ -1317,11 +1633,10 @@ function Main_test( data , initial , search_filter) {
     MyTable.data('dynatable').process();
 
     // hook on page change
-    MyTable.bind('dynatable:page:set', function(){
-        // we visually uncheck both 'all' boxes
-        $('input#mapAll').attr('checked', false);
-        $('input#delAll').attr('checked', false);
-    })
+    MyTable.bind('dynatable:page:set', tidyAfterPageSetUpdate)
+
+    // hook on any type of update
+    MyTable.bind('dynatable:afterUpdate', tidyAfterUpdate)
 
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();
@@ -1333,10 +1648,10 @@ function Main_test( data , initial , search_filter) {
 
 
     // Search
-	// TODO : $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
-	$("#"+search_filter).attr( "selected" , "selected" )
-	var the_content = $("#filter_search").html();
-	$(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
+    // TODO : $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
+    $("#"+search_filter).attr( "selected" , "selected" )
+    var the_content = $("#filter_search").html();
+    $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
 }
 
@@ -1345,31 +1660,31 @@ function SearchFilters( elem ) {
   var MODE = elem.value;
 
   if( MODE == "filter_all") {
-    var result = Main_test( NGrams["main"] , NGrams["main"].scores.initial , MODE)
+    var result = MainTableAndCharts( NGrams["main"] , NGrams["main"].scores.initial , MODE)
     console.log( result )
 
-	MyTable.data('dynatable').sorts.clear();
-	MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
-	MyTable.data('dynatable').process();
+    MyTable.data('dynatable').sorts.clear();
+    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
+    MyTable.data('dynatable').process();
   }
 
   if( MODE == "filter_map-list") {
-  	console.log("ngrams_map:")
-  	console.log(NGrams["map"])
+      console.log("ngrams_map:")
+      console.log(NGrams["map"])
 
-  	var sub_ngrams_data = {
-  		"ngrams":[],
-  		"scores": $.extend({}, NGrams["main"].scores)
-  	}
+      var sub_ngrams_data = {
+          "ngrams":[],
+          "scores": $.extend({}, NGrams["main"].scores)
+      }
     for(var r in NGrams["main"].ngrams) {
-    	if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
-    		var a_ngram = NGrams["main"].ngrams[r]
-			a_ngram["state"] = System[0]["statesD"]["keep"]
-    		sub_ngrams_data["ngrams"].push( a_ngram )
-    	}
+        if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
+            var a_ngram = NGrams["main"].ngrams[r]
+            a_ngram["state"] = System[0]["statesD"]["keep"]
+            sub_ngrams_data["ngrams"].push( a_ngram )
+        }
     }
 
-    var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
+    var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
     console.log( result )
     // MyTable.data('dynatable').sorts.clear();
     // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
@@ -1378,38 +1693,112 @@ function SearchFilters( elem ) {
 
 
   if( MODE == "filter_stop-list") {
-  	console.log( NGrams["stop"] )
-  	if(Object.keys(NGrams["stop"]).length>0) {
-		var sub_ngrams_data = {
-			"ngrams":[],
-			"scores": $.extend({}, NGrams["main"].scores)
-		}
-		for(var r in NGrams["stop"]) {
-			var a_ngram = NGrams["stop"][r] ;
+      console.log( NGrams["stop"] )
+      if(Object.keys(NGrams["stop"]).length>0) {
+        var sub_ngrams_data = {
+            "ngrams":[],
+            "scores": $.extend({}, NGrams["main"].scores)
+        }
+        for(var r in NGrams["stop"]) {
+            var a_ngram = NGrams["stop"][r] ;
             // deletestateId = 2
             var deletestateId = System[0]["statesD"]["delete"] ;
-			a_ngram["state"] = deletestateId ;
+            a_ngram["state"] = deletestateId ;
 
-			sub_ngrams_data["ngrams"].push( a_ngram )
+            sub_ngrams_data["ngrams"].push( a_ngram )
 
-		}
-		var result = Main_test(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
-		console.log( result )
-  	}
+        }
+        var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
+        console.log( result )
+      }
   }
 
 }
 
+
+// =============================================================================
+//                               SUBROUTINES
+// =============================================================================
+
+
+/**
+ * tidyAfterUpdate:
+ *     -----------
+ *    Here we clean all our vars that become obsolete when any update occurs
+ *    (this function is bound to the dynatable event "dynatable:afterUpdate")
+ */
+function tidyAfterUpdate(event) {
+    // debug:
+    // console.log("event") ;
+    // console.log(event) ;
+
+    // CLEAR ALL FLAGS AND GLOBAL VARS HERE
+    // currently nothing to do
+}
+
+
+/**
+ * tidyAfterPageSet:
+ *     -------------
+ *    Here we clean vars that become obsolete not at all updates, but only
+ *    when page changes (bound to the dynatable event "dynatable:page:set")
+ */
+
+function tidyAfterPageSetUpdate() {
+
+    // (1)
+    // SelectPage keeps cache of column states but
+    // a new page is new ngrams in their own lists
+
+    // we visually uncheck both 'all' boxes
+    $('input#delAll').attr('checked', false);
+    $('input#mapAll').attr('checked', false);
+
+    // indeterminate: only visual
+    $('#delAll').prop("indeterminate", true)
+    $('#mapAll').prop("indeterminate", true)
+
+    // real checkAll states : SOME|ALL|NONE
+    $('#delAll').data("columnSelection", 'SOME')
+    $('#mapAll').data("columnSelection", 'SOME')
+
+    // (2)
+    // page change must've closed all group's minilists so we blank open states
+    vizopenGroup = {}
+}
+
+
+function pr(msg) {
+    console.log(msg)
+}
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 function getIDFromURL( item ) {
-	var pageurl = window.location.href.split("/")
-	var cid;
-	for(var i in pageurl) {
-	    if(pageurl[i]==item) {
-	        cid=parseInt(i);
-	        break;
-	    }
-	}
-	return pageurl[cid+1];
+    var pageurl = window.location.href.split("/")
+    var cid;
+    for(var i in pageurl) {
+        if(pageurl[i]==item) {
+            cid=parseInt(i);
+            break;
+        }
+    }
+    return pageurl[cid+1];
 }
 
 // For lists, only GET requests
@@ -1419,7 +1808,7 @@ function GET_( url , callback ) {
         url: url,
         dataType: "json",
         success : function(data, textStatus, jqXHR) {
-        	callback(data);
+            callback(data);
         },
         error: function(exception) {
             callback(false);
@@ -1427,15 +1816,18 @@ function GET_( url , callback ) {
     })
 }
 
+// ######################### AJAX && INIT #########################
+
+
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpora" )
 var NGrams = {
-	"group" : {},
-	"stop" : {},
-	"main" : {},
-	"map" : {},
-	"scores" : {}
+    "group" : {},
+    "stop" : {},
+    "main" : {},
+    "map" : {},
+    "scores" : {}
 }
 
 $("#corpusdisplayer").hide()
@@ -1454,7 +1846,6 @@ GET_(new_url, function(res) {
         main_ngrams_objects = {}
         for (var ngram_id in res.ngraminfos) {
             var ngram_tuple = res.ngraminfos[ngram_id]
-            // TODO remove k
             main_ngrams_objects[ngram_id] = {
                 'id' : ngram_id,         // redundant but for backwards compat
                 'name' : ngram_tuple[0],
@@ -1463,32 +1854,37 @@ GET_(new_url, function(res) {
         }
 
         console.log("===> AJAX INIT <===\n" + "source: " + new_url)
+
+        // = = = = MIAM = = = = //
         NGrams["main"] = {
             "ngrams": main_ngrams_objects,
-      		"scores": {
-    	        "initial":"occs",
-    	        "nb_ngrams":Object.keys(main_ngrams_objects).length,
-    	    }
+              "scores": {
+                "initial":"occs",
+                "nb_ngrams":Object.keys(main_ngrams_objects).length,
+            }
         } ;
-        // map & stop: 2x(array of ids) ==> 2x(lookup hash)
+
+        // = = MAP ALSO STOP = = //
+        // 2x(array of ids) ==> 2x(lookup hash)
         NGrams["map"] = {} ;
         for (var i in res.listmembers.maplist) {
             var map_ng_id = res.listmembers.maplist[i] ;
             NGrams["map"][map_ng_id] = true ;
         }
+
         NGrams["stop"] = {} ;
         for (var i in res.listmembers.stoplist) {
             var stop_ng_id = res.listmembers.stoplist[i] ;
             NGrams["stop"][stop_ng_id] = true ;
         }
-        NGrams["group"] = {"links" : res.links , "nodes" : {}};
-        for (var parent_ng_id in res.links) {
-            NGrams["group"]["nodes"][parent_ng_id] = false ;
-            for (var i in res.links[parent_ng_id]) {
-                child_ng_id = res.links[parent_ng_id][i]
-                NGrams["group"]["nodes"][child_ng_id] = false
-            }
-        }
+
+        // = = = = GROUP = = = = //
+        NGrams["group"] = {
+            "links" : res.links ,
+            // "nodesmemory" will be filled from "links" in AfterAjax()
+            "nodesmemory" : {}
+        };
+
     }
     // console.log('after init NGrams["main"].ngrams')
     // console.log(NGrams["main"].ngrams)
@@ -1502,94 +1898,45 @@ GET_(new_url, function(res) {
     AfterAjax() ;
 });
 
-// The AJAX's in cascade:
-// GET_( url[0] , function(result) {
-//
-//     // = = = = MIAM = = = = //
-// 	if(result!=false) {
-//   	NGrams["main"] = {
-//   		"ngrams": [],
-//   		"scores": {
-// 	        "initial":"occs",
-// 	        "nb_docs":result.length,
-// 	        "orig_nb_ngrams":1,
-// 	        "nb_ngrams":result.length,
-// 	    }
-//   	}
-//
-//     var occs_sum = 0
-// 		for(var i in result) {
-// 			NGrams["main"].ngrams.push(result[i])
-//       occs_sum += result[i].scores.occs
-//     }
-//     if(occs_sum==0)
-//       NGrams["main"]["scores"]["initial"] = "tfidf";
-//
-// 	}
-// 	// = = = = /MIAM = = = = //
-//
-// 	GET_( url[1] , function(result) {
-// 		// = = = = MAP = = = = //
-// 		if(result!=false) {
-// 			NGrams["map"] = result
-// 		}
-// 		// = = = = /MAP = = = = //
-//
-// 		GET_( url[2] , function(result) {
-// 			// = = = = GROUP = = = = //
-// 			if(result!=false) {
-// 				NGrams["group"] = result
-// 			}
-// 			// = = = = /GROUP = = = = //
-//
-// 	    	AfterAjax()
-// 			GET_( url[3] , function(result) {
-// 				// = = = = STOP = = = = //
-// 				for(var i in result) {
-// 		    		NGrams["stop"][result[i].id] = result[i]
-// 		    	}
-// 				// = = = = /STOP = = = = //
-// 			});
-// 		});
-// 	});
-// });
-
-
 
 function AfterAjax() {
   // -------------------------------------------------------------------
-  // dbg: Ngrams structure is too large
-
   // console.log(JSON.stringify(NGrams))
   // -------------------------------------------------------------------
 
-	// Deleting subforms from the ngrams-table, clean start baby!
+    // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
-    	var _forms = {  "main":{} , "sub":{}  }
-        // subforms inventory
-    	for(var i in NGrams["group"].links) {
-    		_forms["main"][i] = true
-    		for(var j in NGrams["group"].links[i]) {
-                // for each subform {subform_ngramid : true}
-    			_forms["sub"][ NGrams["group"].links[i][j] ] = true
-    		}
-    	}
+        // subforms inventory {  "main":{ all mainform ids } , "sub":{ all subform ids}  }
+        var _forms = {  "main":{} , "sub":{}  }
+        for(var ngramId in NGrams["group"].links) {
+            _forms["main"][ngramId] = true
+            for(var i in NGrams["group"].links[ngramId]) {
+                var subformId = NGrams["group"].links[ngramId][i]
+                // for each subform: true
+                _forms["sub"][ subformId ] = true
+            }
+        }
 
-        // console.log('_forms["sub"]')
-        // console.log( _forms["sub"] )
+        // debug:
+        // console.log('~~~~~~~~~~~~~> (sub) _forms')
+        // console.log( _forms )
 
-        // ngrams_data_ will update NGrams.main (with subforms removed)
-    	var ngrams_data_ = {}
-    	for(var ngram_id in NGrams["main"].ngrams) {
+        // ------------------------------------------- MAINLIST
+        // ngrams_data_ will update NGrams.main.ngrams (with subforms removed)
+        var ngrams_data_ = {}
+        for(var ngram_id in NGrams["main"].ngrams) {
 
             // if ngram is subform of another
             if(_forms["sub"][ngram_id]) {
-                // subform info storage into NGrams.group.nodes
-                // ---------------------------------------------
+                // move subform info into NGrams.group.nodesmemory
+                // ------------------------------------------
                 // (subform goes away from new list but info preserved)
                 // (useful if we want to see/revive subforms in future)
-                NGrams["group"]["nodes"][ngram_id] = NGrams["main"].ngrams[i]
+                NGrams.group.nodesmemory[ngram_id] = NGrams["main"].ngrams[ngram_id]
+
+                // debug:
+                // console.log(ngram_id + " ("+NGrams["main"].ngrams[ngram_id].name+") is a subform")
             }
             // normal case
             else {
@@ -1602,30 +1949,29 @@ function AfterAjax() {
         NGrams["main"].ngrams = ngrams_data_;
     }
 
-    // console.log('NGrams["group"]["nodes"]')
-    // console.log( NGrams["group"]["nodes"] )
-
-    // console.log('after subforms deletion NGrams["main"].ngrams')
-    // console.log(NGrams["main"].ngrams)
-
-    // initialize state of maplist items
-    if( Object.keys(NGrams["map"]).length>0 ) {
-    	for(var ngram_id in NGrams["main"].ngrams) {
-            myMiamNgram = NGrams["main"].ngrams[ngram_id]
-    		if(NGrams["map"][ngram_id]) {
-                // keepstateId = 1
-                keepstateId = System[0]["statesD"]["keep"]
-                myMiamNgram["state"] = keepstateId ;
-    		}
-    	}
-    }
-
+    // NB: this miamlist will eventually become AjaxRecords
+    // debug:
     // console.log('NGrams["main"]')
     // console.log( NGrams["main"] )
 
+
+    // ----------------------------------------- MAPLIST
+    if( Object.keys(NGrams["map"]).length>0 ) {
+        for(var ngram_id in NGrams["main"].ngrams) {
+            myMiamNgram = NGrams["main"].ngrams[ngram_id]
+            if(NGrams["map"][ngram_id]) {
+                // keepstateId = 1
+                keepstateId = System[0]["statesD"]["keep"]
+
+                // initialize state of maplist items
+                myMiamNgram["state"] = keepstateId ;
+            }
+        }
+    }
+
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial
-    // £TODO scores_div
+    // TODO scores_div
     //       Recreate possible_scores from some constants (tfidf, occs)
     //       and not from ngrams[0], to keep each ngram's info smaller
 
@@ -1638,9 +1984,10 @@ function AfterAjax() {
     //   }
     // }
 
-    // Initializing the Charts and Table
-    var result = Main_test( NGrams["main"] , FirstScore , "filter_all")
+    // Initializing the Charts and Table ---------------------------------------
+    var result = MainTableAndCharts( NGrams["main"] , FirstScore , "filter_all")
     console.log( result ) // OK
+    // -------------------------------------------------------------------------
 
     // see TODO scores_div
     // Listener for onchange Score-Selector
@@ -1648,7 +1995,7 @@ function AfterAjax() {
     // $("#ScoresBox").html(scores_div)
     // $("#scores_selector").on('change', function() {
     //   console.log( this.value )
-    //   var result = Main_test( NGrams["main"] , this.value , "filter_all")
+    //   var result = MainTableAndCharts( NGrams["main"] , this.value , "filter_all")
     //   console.log( result )
     //
     // });

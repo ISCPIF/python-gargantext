@@ -4,13 +4,14 @@ API views for advanced operations on ngrams and ngramlists
     - retrieve several lists together ("family")
     - retrieve detailed list infos (ngram_id, term strings, scores...)
     - modify NodeNgram lists (PUT/DEL an ngram to a MAINLIST OR MAPLIST...)
+    - modify NodeNgramNgram groups (POST a list of groupings like {"767":[209,640],"779":[436,265,385]}")
 """
 
 from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
                                      ValidationException, Http404
-from gargantext.util.db       import session, aliased, desc
-from gargantext.util.db_cache import cache
-from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram
+from gargantext.util.db       import session, aliased, desc, bulk_insert
+from gargantext.util.db_cache import cache, or_
+from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.lists    import UnweightedList, Translations
 
 
@@ -62,11 +63,136 @@ def _query_list(list_id,
 
 
 
+
+def _query_grouped_ngrams(groupings_id, details=False, scoring_metric_id=None):
+    """
+    Listing of "hidden" ngram_ids from the groups
+
+    Works only for grouplists
+
+    Parameter:
+      - details: if False, send just the array of ngram_ids
+                 if True, send triples with (ngram_id, term, scoring)
+                                                             ^^^^^^^
+      - scoring_metric_id: id of a scoring metric node   (TFIDF or OCCS)
+                           (for details and sorting)
+    """
+    if not details:
+        # simple contents
+        query = session.query(NodeNgramNgram.ngram2_id)
+    else:
+        # detailed contents (terms and some NodeNodeNgram for score)
+        query = (session
+                    .query(
+                        NodeNgramNgram.ngram2_id,
+                        Ngram.terms,
+                        NodeNodeNgram.score
+                     )
+                    .join(Ngram, NodeNgramNgram.ngram2_id == Ngram.id)
+                    .join(NodeNodeNgram, NodeNgramNgram.ngram2_id == NodeNodeNgram.ngram_id)
+                    .filter(NodeNodeNgram.node1_id == scoring_metric_id)
+                    .order_by(desc(NodeNodeNgram.score))
+                )
+
+    # main filter
+    # -----------
+    query = query.filter(NodeNgramNgram.node_id == groupings_id)
+
+    return query
+
 class List(APIView):
     """
     see already available API query api/nodes/<list_id>?fields[]=ngrams
     """
     pass
+
+
+class GroupChange(APIView):
+    """
+    Modification of some groups
+    (typically new subform nodes under a mainform)
+
+    USAGE EXEMPLE:
+    HOST/api/ngramlists/groups?node=43
+                                vvvvvv
+                               group node
+                               to modify
+
+    We use POST HTTP method to send group data with structure like:
+     {
+        mainform_A: [subform_A1],
+        mainformB:  [subform_B1,subform_B2,subform_B3]
+        ...
+     }
+
+    Chained effect:
+
+    NB: request.user is also checked for current authentication status
+    """
+
+    def initial(self, request):
+        """
+        Before dispatching to post()
+
+        Checks current user authentication to prevent remote DB manipulation
+        """
+        if not request.user.is_authenticated():
+            raise Http404()
+            # can't use return in initial() (although 401 maybe better than 404)
+            # can't use @requires_auth because of positional 'self' within class
+
+    def post(self, request):
+        """
+        Rewrites the group node **selectively**
+
+          => removes couples where newly reconnected ngrams where involved
+          => adds new couples from GroupsBuffer of terms view
+
+        TODO see use of util.lists.Translations
+        TODO benchmark selective delete compared to entire list rewrite
+        """
+        group_node = get_parameters(request)['node']
+        all_nodes_involved = []
+        links = []
+
+        print([i for i in request.POST.lists()])
+        pass
+
+
+        for (mainform_key, subforms_ids) in request.POST.lists():
+            mainform_id = mainform_key[:-2]   # remove brackets '543[]' -> '543'
+            all_nodes_involved.append(mainform_id)
+            for subform_id in subforms_ids:
+                links.append((mainform_id,subform_id))
+                all_nodes_involved.append(subform_id)
+
+        # remove selectively all groupings with these nodes involved
+        # TODO benchmark
+        old_links = (session.query(NodeNgramNgram)
+                    .filter(NodeNgramNgram.node_id == group_node)
+                    .filter(or_(
+                            NodeNgramNgram.ngram1_id.in_(all_nodes_involved),
+                            NodeNgramNgram.ngram2_id.in_(all_nodes_involved)))
+                )
+        n_removed = old_links.count()
+        old_links.delete(synchronize_session='fetch')
+        print('n_removed', n_removed)
+        print("links", links)
+        print(
+            [i for i in ((group_node, mainform, subform, 1.0) for (mainform,subform) in links)]
+            )
+        bulk_insert(
+            NodeNgramNgram,
+            ('node_id', 'ngram1_id', 'ngram2_id', 'weight'),
+            ((group_node, mainform, subform, 1.0) for (mainform,subform) in links)
+        )
+
+        return JsonHttpResponse({
+            'count_removed': n_removed,
+            'count_added': len(links),
+            }, 200)
+
+
 
 
 class ListChange(APIView):
@@ -270,10 +396,17 @@ class ListFamily(APIView):
                                           pagination_limit = glance_limit,
                                           scoring_metric_id= scores_id)
         else:
-            # infos for all ngrams
+            # infos for all ngrams from mainlist
             mainlist_query = _query_list(mainlist_id, details=True,
                                           scoring_metric_id= scores_id)
+            # infos for grouped ngrams, absent from mainlist
+            hidden_ngrams_query = _query_grouped_ngrams(groups_id, details=True,
+                                          scoring_metric_id= scores_id)
+
             # and for the other lists (stop and map)
+            # no details needed here, just the member ids
+            #   - maplist ngrams will already be in ngraminfos b/c of mainlist
+            #   - stoplist ngrams will not be shown in detail
             for li in other_list_ids:
                 li_elts = _query_list(other_list_ids[li], details=False
                                       ).all()
@@ -286,10 +419,13 @@ class ListFamily(APIView):
                 linkinfo = links.groups
 
         # the output form
-        for ng in mainlist_query.all():
+        for ng in mainlist_query.all() + hidden_ngrams_query.all():
             ng_id   = ng[0]
             # id => [term, weight]
             ngraminfo[ng_id] = ng[1:]
+
+            # NB the client js will sort mainlist ngs from hidden ngs after ajax
+            #    using linkinfo (otherwise needs redundant listmembers for main)
 
         return JsonHttpResponse({
             'ngraminfos' : ngraminfo,

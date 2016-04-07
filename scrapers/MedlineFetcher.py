@@ -142,6 +142,13 @@ class MedlineFetcher:
             self.firstResults.append(result)
             self.q.task_done()
 
+
+    def chunks(self , l , n):
+        print("chunks:")
+        for i in range(0, len(l), n):
+            yield l[i:i+n]
+
+
     # GLOBALLIMIT:
     # I will retrieve this exact amount of publications.
     # The publications per year i'll retrieve per year will be :

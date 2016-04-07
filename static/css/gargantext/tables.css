@@ -30,19 +30,35 @@ th a {
 
 
 /* notes under table titles */
-th p.note {
-  color: #ccc;
+th .note {
+    color: #ccc;
+}
+
+td .note {
+    color: #444;
+}
+
+span.note {
+  font-size: 10px;
+  color: #333;
+}
+
+p.note {
   font-size: 0.6em;
   margin: 1em 0 0 0 ;
 }
 
-th p.note > input {
+p.note > input {
   float: left;
   margin: 0 .2em 0 0 ;
 }
 
-th p.note > label {
+p.note > label {
   float: left;
+}
+
+.note.greyed {
+  opacity: 0.2;
 }
 
 tr:hover {
@@ -69,19 +85,34 @@ tr:hover {
   cursor: default;
 }
 
-/* group box with + */
-.group_box {
+/* group box row on top of table with + */
+#group_box {
   font-size: 90%;
-  border: 1px solid blue;
-}
-.group_box .header {
-  font-size: 120%;
-}
-.group_box .content {
-  border: 1px solid yellow;
 }
 
 #group_flag {
+  font-size: 0.7em;
+  margin-top: 3em;
+  margin-bottom: 1em;
+}
+
+#group_box_mainform {
+    margin-bottom: 0;
+    line-height: 1 ;
+    margin-left: .05em ;
+}
+
+#group_box_content {
+    line-height: 1 ;
+    margin-bottom: 1em;
+}
+
+.oldsubform {
+    color: #777 ;
+}
+
+.usersubform {
+    color: blue ;
 }
 
 .dynatable-record-count {

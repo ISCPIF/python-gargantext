@@ -160,10 +160,10 @@ RESOURCETYPES = [
         'parser': CSVParser,
         'default_language': 'en',
     },
-    # {   'name': 'ISTex',
-    #     # 'parser': ISTexParser,
-    #     'default_language': 'en',
-    # },
+    {   'name': 'ISTex',
+        'parser': ISTexParser,
+        'default_language': 'en',
+    },
 ]
 
 # linguistic extraction parameters ---------------------------------------------

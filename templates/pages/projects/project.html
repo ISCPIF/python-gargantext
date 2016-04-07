@@ -370,10 +370,10 @@
                                 }
 
                                 if(theType=="ISTex") {
-                                    console.log(window.location.origin+"tests/istextquery")
+                                    console.log(window.location.origin+"scrapers/istex/query")
                                     $.ajax({
                                         // contentType: "application/json",
-                                        url: window.location.origin+"/tests/istextquery",
+                                        url: window.location.origin+"/scrapers/istex/query",
                                         data: formData,
                                         type: 'POST',
                                         beforeSend: function(xhr) {
@@ -504,7 +504,7 @@
 
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/tests/project/"+projectid+"/ISTEXquery/go",
+                                    url: window.location.origin+"/scrapers/istex/search/"+projectid,
                                     data: postQuery,
                                     type: 'POST',
                                     beforeSend: function(xhr) {

@@ -10,7 +10,11 @@ import scrapers.pubmed as pubmed
 # Available databases : Pubmed, IsTex, (next: CERN)
 
 # /!\ urls patterns here are *without* the trailing slash
-urlpatterns = [ url(r'^pubmed/query$', pubmed.getGlobalStats)
+urlpatterns = [ url(r'^pubmed/query$'       , pubmed.getGlobalStats            )
+              , url(r'^pubmed/search/(\d+)' , pubmed.doTheQuery                )
+
+#              , url(r'^istex/query$'        , pubmed.getGlobalStatsISTEXT      )
+#              , url(r'^istex/search/(\d+)'  , pubmed.testISTEX                 )
             #, url(r'^scraping$'              , scraping.Target.as_view()      )
               ,
               ]

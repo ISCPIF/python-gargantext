@@ -260,7 +260,7 @@
 
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/tests/project/"+projectid+"/pubmedquery/go",
+                                    url: window.location.origin+"/scrapers/pubmed/search/"+projectid,
                                     data: pubmedifiedQuery,
                                     type: 'POST',
                                     beforeSend: function(xhr) {

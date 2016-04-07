@@ -29,7 +29,7 @@ import urllib.request
 
 def get(url):
     response = urllib.request.urlopen(url)
-    html = response.read()
+    return response.read()
 
 
 # retrieve GET parameters from a request

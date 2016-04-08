@@ -260,7 +260,7 @@
 
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/pubmed/search/"+projectid,
+                                    url: window.location.origin+"/scrapers/pubmed/save/"+projectid,
                                     data: pubmedifiedQuery,
                                     type: 'POST',
                                     beforeSend: function(xhr) {
@@ -504,7 +504,7 @@
 
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/istex/search/"+projectid,
+                                    url: window.location.origin+"/scrapers/istex/save/"+projectid,
                                     data: postQuery,
                                     type: 'POST',
                                     beforeSend: function(xhr) {

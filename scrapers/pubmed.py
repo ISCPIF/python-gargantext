@@ -1,5 +1,9 @@
+# ****************************
+# *****  Medline Scraper *****
+# ****************************
 
-from scrapers.MedlineFetcher import MedlineFetcher
+# MEDLINE USER REQUIREMENT : Run retrieval scripts on weekends or
+# between 9 pm and 5 am Eastern Time weekdays
 
 
 # from datetime import datetime
@@ -13,7 +17,7 @@ import threading
 from django.shortcuts import redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
-from gargantext.constants       import RESOURCETYPES
+from gargantext.constants       import RESOURCETYPES, QUERY_SIZE_N_MAX
 from gargantext.models.nodes    import Node
 from gargantext.util.db         import session
 from gargantext.util.http       import JsonHttpResponse
@@ -21,22 +25,11 @@ from gargantext.util.tools      import ensure_dir
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain  import parse_extract_indexhyperdata
 
+from scrapers.util              import Scraper
 
 
-# pour lire la section [scrapers] de gargantext.ini
-#from configparser import ConfigParser
 
-# --------------------------------------------------------------------
-# importing constants from config file
-#CONF = ConfigParser()
-#with open(path.join(BASE_DIR, 'gargantext.ini')) as inifile:
-#    CONF.read_file(inifile)
-
-QUERY_SIZE_N_MAX = 1000 # int(CONF['scrappers']['QUERY_SIZE_N_MAX'])
-
-# QUERY_SIZE_N_DEFAULT   = int(CONF['scrappers']['QUERY_SIZE_N_DEFAULT'])
-# --------------------------------------------------------------------
-def getGlobalStats( request ):
+def query( request ):
     """
     Pubmed year by year results
 
@@ -47,7 +40,7 @@ def getGlobalStats( request ):
     #  'webEnv': 'NCID_1_14..._F_1', 'count': 345, 'retmax': 4},
     #  ... ]
 
-    (reused as thequeries in doTheQuery)
+    (reused as thequeries in query_save)
     """
     print(request.method)
     alist = []
@@ -63,7 +56,7 @@ def getGlobalStats( request ):
 
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
-        instancia = MedlineFetcher()
+        instancia = Scraper()
 
         # serialFetcher (n_last_years, query, query_size)
         alist = instancia.serialFetcher( 5, query , N )
@@ -72,7 +65,7 @@ def getGlobalStats( request ):
     return JsonHttpResponse(data)
 
 
-def doTheQuery( request , project_id ) :
+def save( request , project_id ) :
     # implicit global session
     # do we have a valid project id?
     try:
@@ -103,7 +96,7 @@ def doTheQuery( request , project_id ) :
         # here we just realize queries already prepared by getGlobalStats
         #    ===> no need to repeat N parameter like in testISTEX <===
 
-        instancia = MedlineFetcher()
+        instancia  = Scraper()
         thequeries = json.loads(queries)
 
         # fyi the sum of our prepared yearly proportional quotas
@@ -138,7 +131,7 @@ def doTheQuery( request , project_id ) :
 
 
         ensure_dir(request.user)
-        tasks = MedlineFetcher()
+        tasks = Scraper()
 
         for i in range(8):
             t = threading.Thread(target=tasks.worker2) #thing to do
@@ -171,146 +164,5 @@ def doTheQuery( request , project_id ) :
 
     data = alist
     return JsonHttpResponse(data)
-
-
-def getGlobalStatsISTEXT(request ):
-    """
-    ISTEX simply the total of hits for a query
-
-    (not reused in testISTEX)
-    """
-    print(request.method)
-    alist = ["bar","foo"]
-
-    if request.method == "POST":
-        query = request.POST["query"]
-        N = int(request.POST["N"])
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
-        query_string = query.replace(" ","+")
-        url = "http://api.istex.fr/document/?q="+query_string+"&output=id,title,abstract,pubdate,corpusName,authors,language"
-
-        tasks = MedlineFetcher()
-
-        try:
-            thedata_path = tasks.download( url )
-            thedata = open(thedata_path, "rb")
-            alist = thedata.read().decode('utf-8')
-        except Exception as error:
-            alist = [str(error)]
-    data = alist
-    return JsonHttpResponse(data)
-
-
-def testISTEX(request , project_id):
-    print("testISTEX:")
-    print(request.method)
-    alist = ["bar","foo"]
-    # implicit global session
-    # do we have a valid project id?
-    try:
-        project_id = int(project_id)
-    except ValueError:
-        raise Http404()
-
-    # do we have a valid project?
-    project = (session
-        .query(Node)
-        .filter(Node.id == project_id)
-        .filter(Node.typename == 'PROJECT')
-    ).first()
-
-    if project is None:
-        raise Http404()
-
-    # do we have a valid user?
-    user = request.user
-    if not user.is_authenticated():
-        return redirect('/auth/?next=%s' % request.path)
-    if project.user_id != user.id:
-        return HttpResponseForbidden()
-
-
-    if request.method == "POST":
-        query = "-"
-        query_string = "-"
-        N = 0
-
-        if "query" in request.POST:
-            query = request.POST["query"]
-            query_string = query.replace(" ","+")   # url encoded q
-
-        if "N" in request.POST:
-            N = int(request.POST["N"])     # query_size from views_opti
-            if N > QUERY_SIZE_N_MAX:
-                msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
-                print("ERROR (scrap: istex d/l ): ",msg)
-                raise ValueError(msg)
-
-        print("Scrapping Istex: '%s' (%i)" % (query_string , N))
-
-        urlreqs = []
-        pagesize = 50
-        tasks = MedlineFetcher()
-        chunks = list(tasks.chunks(range(N), pagesize))
-        for k in chunks:
-            if (k[0]+pagesize)>N: pagesize = N-k[0]
-            urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
-
-        # corpus node instanciation as a Django model
-
-        corpus = Node(
-            name = query,
-            user_id = request.user.id,
-            parent_id = project_id,
-            typename = 'CORPUS',
-                        hyperdata    = { "action"        : "Scraping data"
-                                        , "language_id" : None
-                                        }
-        )
-
-
-        session.add(corpus)
-        session.commit()
-        corpus_id = corpus.id
-
-        print("NEW CORPUS", corpus_id)
-        ensure_dir(request.user)
-        tasks = MedlineFetcher()
-
-        for i in range(8):
-            t = threading.Thread(target=tasks.worker2) #thing to do
-            t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-            t.start()
-        for url in urlreqs:
-            tasks.q.put( url ) #put a task in th queue
-        tasks.q.join() # wait until everything is finished
-
-        dwnldsOK = 0
-        for filename in tasks.firstResults:
-            if filename!=False:
-                # add the uploaded resource to the corpus
-                # add the uploaded resource to the corpus
-                corpus.add_resource( type = 3
-                                   , path = filename
-                                   )
-                dwnldsOK+=1
-
-        if dwnldsOK == 0 :
-            return JsonHttpResponse(["fail"])
-        ###########################
-        ###########################
-        try:
-            scheduled(parse_extract_indexhyperdata(corpus_id,))
-        except Exception as error:
-            print('WORKFLOW ERROR')
-            print(error)
-        sleep(1)
-        return HttpResponseRedirect('/projects/' + str(project_id))
-
-
-    data = [query_string,query,N]
-    return JsonHttpResponse(data)
-
 
 

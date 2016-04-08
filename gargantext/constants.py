@@ -128,38 +128,47 @@ LANGUAGES = {
 from gargantext.util.parsers import *
 
 RESOURCETYPES = [
+    # type 0
     {   'name': 'Europress (English)',
         'parser': EuropressParser,
         'default_language': 'en',
     },
+    # type 1
     {   'name': 'Europress (French)',
         'parser': EuropressParser,
         'default_language': 'fr',
     },
+    # type 2
     {   'name': 'Jstor (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 3
     {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
     },
+    # type 4
     {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 5
     {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'fr',
     },
+    # type 6
     {   'name': 'Zotero (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 7
     {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
     },
+    # type 8
     {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',
@@ -213,4 +222,3 @@ BATCH_NGRAMSEXTRACTION_SIZE = 1024
 # Scrapers config
 QUERY_SIZE_N_MAX     = 1000
 QUERY_SIZE_N_DEFAULT = 1000
-

@@ -12,6 +12,7 @@ import json
 import datetime
 from os import path
 import threading
+from traceback                  import print_tb
 #from gargantext.settings import MEDIA_ROOT, BASE_DIR
 
 from django.shortcuts import redirect
@@ -159,10 +160,16 @@ def save( request , project_id ) :
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)
+            try:
+                print_tb(error.__traceback__)
+            except:
+                pass
+            # IMPORTANT ---------------------------------
+            # sanitize session after interrupted transact
+            session.rollback()
+            # --------------------------------------------
         sleep(1)
         return HttpResponseRedirect('/projects/' + str(project_id))
 
     data = alist
     return JsonHttpResponse(data)
-
-

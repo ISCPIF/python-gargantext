@@ -1,4 +1,3 @@
-from lxml import etree
 from ._Parser import Parser
 from datetime import datetime
 from io import BytesIO

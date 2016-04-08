@@ -5,10 +5,10 @@ import json
 
 class ISTexParser(Parser):
 
-    def parse(self, thefile):
-        json_data=open(thefile,"r")
-        data = json.load(json_data)
-        json_data.close()
+    def parse(self, filebuf):
+        contents = filebuf.read().decode("UTF-8")
+        data = json.loads(contents)
+        filebuf.close()
         json_docs = data["hits"]
         hyperdata_list = []
         hyperdata_path = {

@@ -1,6 +1,6 @@
-from gargantext.constants import *
+from gargantext.constants   import *
 from gargantext.util.digest import str_digest
-from gargantext.util import http
+from gargantext.util        import http
 
 
 def save(contents, name='', basedir=''):

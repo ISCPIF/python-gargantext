@@ -47,59 +47,59 @@ def convert_to_date(date):
         return dateutil.parser.parse(date)
 
 INDEXED_HYPERDATA = {
-    # TODO use properties during toolchain.hyperdata_indexing 
+    # TODO use properties during toolchain.hyperdata_indexing
     # (type, convert_to_db, convert_from_db)
-    
+
     'count':
         { 'id'             : 1
         , 'type'           : int
         , 'convert_to_db'  : int
         , 'convert_from_db': int
         },
- 
+
     'publication_date':
         { 'id'             : 2
         , 'type'           : datetime.datetime
         , 'convert_to_db'  : convert_to_date
         , 'convert_from_db': datetime.datetime.fromtimestamp
         },
-    
+
     'title':
         { 'id'             : 3
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
-    
-   
+
+
     'authors':
         { 'id'             : 4
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
-    
+
     'journal':
         { 'id'             : 5
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
-    
+
     'abstract':
         { 'id'             : 6
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
-     
+
     'text':
         { 'id'             : 7
         , 'type'           : str
         , 'convert_to_db'  : str
         , 'convert_from_db': str
         },
-    
+
     'page':
         { 'id'             : 8
         , 'type'           : int
@@ -160,10 +160,10 @@ RESOURCETYPES = [
         'parser': CSVParser,
         'default_language': 'en',
     },
-    # {   'name': 'ISTex',
-    #     # 'parser': ISTexParser,
-    #     'default_language': 'en',
-    # },
+    {   'name': 'ISTex',
+        'parser': ISTexParser,
+        'default_language': 'en',
+    },
 ]
 
 # linguistic extraction parameters ---------------------------------------------
@@ -179,11 +179,11 @@ DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
 
 DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
 
-DEFAULT_MAX_NGRAM_LEN = 7                    # limit used after POStagging rule
+DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)
                                              # (and most longer ngrams have tiny freq anyway)
 
-DEFAULT_ALL_LOWERCASE_FLAG = True            # lowercase ngrams before recording
+DEFAULT_ALL_LOWERCASE_FLAG      = True       # lowercase ngrams before recording
                                              # them to their DB table
                                              # (potentially bad for acronyms but
                                              #  good for variants like same term
@@ -198,7 +198,9 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 import os
 from .settings import BASE_DIR
-UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads')
+# uploads/.gitignore prevents corpora indexing
+# copora can be either a folder or symlink towards specific partition
+UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
 UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
@@ -206,3 +208,9 @@ DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 # about batch processing...
 BATCH_PARSING_SIZE          = 256
 BATCH_NGRAMSEXTRACTION_SIZE = 1024
+
+
+# Scrapers config
+QUERY_SIZE_N_MAX     = 1000
+QUERY_SIZE_N_DEFAULT = 1000
+

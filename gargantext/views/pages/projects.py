@@ -94,7 +94,7 @@ def project(request, project_id):
         )
         session.add(corpus)
         session.commit()
-        
+
         # parse_extract: fileparsing -> ngram extraction -> lists
         scheduled(parse_extract_indexhyperdata)(corpus.id)
 

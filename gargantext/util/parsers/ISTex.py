@@ -4,7 +4,7 @@ from datetime import datetime
 from io import BytesIO
 import json
 
-class ISTex(Parser):
+class ISTexParser(Parser):
 
     def parse(self, thefile):
         json_data=open(thefile,"r")
@@ -84,16 +84,16 @@ class ISTex(Parser):
                 # ---------------------------------------------------
                 if len(hyperdata["language_iso3"])>0 and hyperdata["language_iso3"][0] != "unknown" :
                     hyperdata["language_iso3"] = hyperdata["language_iso3"][0]
-                
+
                 # default value = eng
                 # possible even better: langid.classify(abstract)
                 else:
                     # NB 97% des docs istex sont eng donc par défaut
                     # ----------------------------------------------
                     hyperdata["language_iso3"] = "eng"
-                    # (cf. api.istex.fr/document/?q=*&facet=language 
+                    # (cf. api.istex.fr/document/?q=*&facet=language
                     #  et  tests langid sur les language=["unknown"])
-                    
+
 
             if "publication_date" in hyperdata:
                 RealDate = hyperdata["publication_date"]

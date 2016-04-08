@@ -7,5 +7,5 @@ from .Pubmed import PubmedParser
 # # 2015-12-08: parser 2 en 1
 from .Europress import EuropressParser
 
-# from .ISTex import ISTexParser
+from .ISTex import ISTexParser
 from .CSV import CSVParser

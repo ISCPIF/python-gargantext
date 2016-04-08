@@ -93,19 +93,19 @@ INDEXED_HYPERDATA = {
         , 'convert_from_db': str
         },
 
-    'text':
-        { 'id'             : 7
-        , 'type'           : str
-        , 'convert_to_db'  : str
-        , 'convert_from_db': str
-        },
-
-    'page':
-        { 'id'             : 8
-        , 'type'           : int
-        , 'convert_to_db'  : int
-        , 'convert_from_db': int
-        },
+    # 'text':
+    #     { 'id'             : 7
+    #     , 'type'           : str
+    #     , 'convert_to_db'  : str
+    #     , 'convert_from_db': str
+    #     },
+    #
+    # 'page':
+    #     { 'id'             : 8
+    #     , 'type'           : int
+    #     , 'convert_to_db'  : int
+    #     , 'convert_from_db': int
+    #     },
 
 }
 
@@ -181,7 +181,7 @@ DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
 DEFAULT_TFIDF_HARD_LIMIT        = 750        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
 DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms

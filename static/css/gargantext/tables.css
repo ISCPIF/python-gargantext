@@ -40,7 +40,10 @@ td .note {
 
 span.note {
   font-size: 10px;
-  color: #333;
+}
+
+span.note.glyphicon {
+  color: #555;
 }
 
 p.note {
@@ -99,7 +102,7 @@ tr:hover {
 #group_box_mainform {
     margin-bottom: 0;
     line-height: 1 ;
-    margin-left: .05em ;
+    margin-left: .08em ;
 }
 
 #group_box_content {

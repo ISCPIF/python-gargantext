@@ -5,7 +5,7 @@ from .nodes import Node
 import datetime
 
 
-__all__ = ['NodeHyperdata']
+__all__ = ['NodeHyperdata', 'HyperdataKey']
 
 
 class classproperty(object):

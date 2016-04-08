@@ -1,5 +1,5 @@
 from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
-                                  NodeHyperdata
+                                  NodeHyperdata, HyperdataKey
 from gargantext.util.db    import session, aliased, bulk_insert, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
@@ -21,7 +21,7 @@ def countCooccurrences( corpus=None
     For the moment list of paramters are not supported because, lists need to
     be merged before.
     corpus           :: Corpus
-    
+
     mapList_id       :: Int
     groupList_id     :: Int
 
@@ -32,10 +32,10 @@ def countCooccurrences( corpus=None
 
     '''
     # TODO : add hyperdata here
-    
+
     # Security test
     field1,field2 = str(field1), str(field2)
-    
+
     # Get node
     if not coocNode_id:
         coocNode_id0  = ( session.query( Node.id )
@@ -56,20 +56,20 @@ def countCooccurrences( corpus=None
             coocNode_id = coocNode.id
         else :
             coocNode_id = coocNode_id[0]
-    
+
     if reset == True :
         session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
         session.commit()
 
-    
+
     NodeNgramX = aliased(NodeNgram)
-    
+
     # Simple Cooccurrences
     cooc_score = func.count(NodeNgramX.node_id).label('cooc_score')
-    
+
     # A kind of Euclidean distance cooccurrences
     #cooc_score = func.sqrt(func.sum(NodeNgramX.weight * NodeNgramY.weight)).label('cooc_score')
-   
+
     if isMonopartite :
         NodeNgramY = aliased(NodeNgram)
 
@@ -89,7 +89,7 @@ def countCooccurrences( corpus=None
                      )
     else :
         NodeNgramY = aliased(NodeNgram)
-        
+
         cooc_query = (session.query( NodeHyperdataNgram.ngram_id
                                    , NodeNgramY.ngram_id
                                    , cooc_score
@@ -142,17 +142,13 @@ def countCooccurrences( corpus=None
         # TODO : more complexe date format here.
         date_start = datetime.datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
-        
+
         Start=aliased(NodeHyperdata)
-        StartFormat = aliased(Hyperdata)
         cooc_query = (cooc_query.join( Start
                                      , Start.node_id == Node.id
                                      )
-                                .join( StartFormat
-                                     , StartFormat.id == Start.hyperdata_id
-                                     )
-                                .filter( StartFormat.name == 'publication_date')
-                                .filter( Start.value_datetime >= date_start_utc)
+                                .filter( Start.key == 'publication_date')
+                                .filter( Start.value_utc >= date_start_utc)
                       )
 
 
@@ -160,26 +156,23 @@ def countCooccurrences( corpus=None
         # TODO : more complexe date format here.
         date_end = datetime.datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
-        
+
         End=aliased(NodeHyperdata)
-        EndFormat = aliased(Hyperdata)
+
         cooc_query = (cooc_query.join( End
                                      , End.node_id == Node.id
                                      )
-                                .join( EndFormat
-                                     , EndFormat.id == End.hyperdata_id
-                                     )
-                                .filter( EndFormat.name == 'publication_date' )
-                                .filter( End.value_datetime <= date_end_utc )
+                                .filter( End.key == 'publication_date')
+                                .filter( End.value_utc <= date_end_utc )
                       )
 
 
     if isMonopartite:
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
         cooc_query = cooc_query.filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
-    
+
     cooc_query = cooc_query.having(cooc_score > threshold)
-             
+
     if isMonopartite:
         cooc_query = cooc_query.group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)
     else:
@@ -192,6 +185,6 @@ def countCooccurrences( corpus=None
     mapList   = UnweightedList( mapList_id  )
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
-    
+
     cooc.save(coocNode_id)
     return(coocNode_id)

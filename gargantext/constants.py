@@ -179,11 +179,11 @@ DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
 
 DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
 
-DEFAULT_MAX_NGRAM_LEN = 7                    # limit used after POStagging rule
+DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)
                                              # (and most longer ngrams have tiny freq anyway)
 
-DEFAULT_ALL_LOWERCASE_FLAG = True            # lowercase ngrams before recording
+DEFAULT_ALL_LOWERCASE_FLAG      = True       # lowercase ngrams before recording
                                              # them to their DB table
                                              # (potentially bad for acronyms but
                                              #  good for variants like same term
@@ -198,7 +198,9 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 import os
 from .settings import BASE_DIR
-UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads')
+# uploads/.gitignore prevents corpora indexing
+# copora can be either a folder or symlink towards specific partition
+UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
 UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 

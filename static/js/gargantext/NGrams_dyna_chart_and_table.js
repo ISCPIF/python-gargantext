@@ -441,7 +441,7 @@ function toggleSeeGroup(plusicon, ngramId) {
         plusicon.classList.add('glyphicon-triangle-right') ;
     }
     else {
-        var subNgramHtml = seeGroup(ngramId) ;
+        var subNgramHtml = seeGroup(ngramId, true) ;
         // we target the html in the mainform term's box
         $( "#box-"+ngramId).append(subNgramHtml) ;
 
@@ -459,7 +459,7 @@ function toggleSeeGroup(plusicon, ngramId) {
  *
  * @param ngramId (of the mainform)
  */
-function seeGroup ( ngramId ) {
+function seeGroup ( ngramId , allowChangeFlag) {
     // 1/7 create new element container
     var subNgramHtml = $('<p class="note">') ;
     subNgramHtml.attr("id", "subforms-"+ngramId) ;
@@ -494,12 +494,14 @@ function seeGroup ( ngramId ) {
     subNgramHtml.append(htmlMiniTree)
 
     // 6/7 add a "modify group" button
-    var changeGroupsButton  = '<button style="float:right"' ;
-        changeGroupsButton +=        ' title="add/remove contents of groups"' ;
-        changeGroupsButton +=        ' onclick="modifyGroup('+ngramId+')">' ;
-        changeGroupsButton +=   'modify group' ;
-        changeGroupsButton += '</button>' ;
-    subNgramHtml.append(changeGroupsButton) ;
+    if (allowChangeFlag) {
+        var changeGroupsButton  = '<button style="float:right"' ;
+            changeGroupsButton +=        ' title="add/remove contents of groups"' ;
+            changeGroupsButton +=        ' onclick="modifyGroup('+ngramId+')">' ;
+            changeGroupsButton +=   'modify group' ;
+            changeGroupsButton += '</button>' ;
+        subNgramHtml.append(changeGroupsButton) ;
+    }
 
     // 7/7  return html snippet (ready for rendering)
     return(subNgramHtml)
@@ -919,7 +921,11 @@ function transformContent(ngramId) {
         result["name"] +=   '</span>\n'
         // if curently open we also add #subforms p with the sublist
         if (ngram_info["id"] in vizopenGroup) {
-            result["name"] += seeGroup(ngram_info["id"])[0].outerHTML ;
+            allowChange = (GState != 1)
+            result["name"] += seeGroup(
+                                    ngram_info["id"],
+                                    allowChange
+                                )[0].outerHTML ;
         }
     }
     result["name"] += '</div>\n'

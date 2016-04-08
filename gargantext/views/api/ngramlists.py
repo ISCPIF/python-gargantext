@@ -148,16 +148,13 @@ class GroupChange(APIView):
           => removes couples where newly reconnected ngrams where involved
           => adds new couples from GroupsBuffer of terms view
 
+        TODO recalculate scores after new groups
         TODO see use of util.lists.Translations
         TODO benchmark selective delete compared to entire list rewrite
         """
         group_node = get_parameters(request)['node']
         all_nodes_involved = []
         links = []
-
-        print([i for i in request.POST.lists()])
-        pass
-
 
         for (mainform_key, subforms_ids) in request.POST.lists():
             mainform_id = mainform_key[:-2]   # remove brackets '543[]' -> '543'

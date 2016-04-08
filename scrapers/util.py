@@ -1,29 +1,19 @@
-# ****************************
-# *****  Medline Fetcher *****
-# ****************************
-
-# MEDLINE USER REQUIREMENT : Run retrieval scripts on weekends or
-# between 9 pm and 5 am Eastern Time weekdays
 
 from gargantext.util.files import download
 
 import sys
-if sys.version_info >= (3, 0): from urllib.request import urlopen
-else: from urllib import urlopen
-
-import os
 import time
-# import libxml2
-from lxml import etree
-import datetime
-from django.core.files import File
-import codecs
-
 import threading
 from queue import Queue
-# import time
 
-class MedlineFetcher:
+from lxml import etree
+if sys.version_info >= (3, 0):
+    from urllib.request import urlopen
+else:
+    from urllib import urlopen
+
+
+class Scraper :
 
     def __init__(self):
         self.queue_size      = 8

@@ -2,6 +2,7 @@
 #   initial order (ie., new elements should be appended at the end of the lists)
 
 from gargantext.util.lists import *
+from gargantext.util.tools import datetime, convert_to_date
 
 LISTTYPES = {
     'DOCUMENT'     : WeightedList,
@@ -101,7 +102,7 @@ INDEXED_HYPERDATA = {
 }
 
 
-from gargantext.util.taggers import *
+from gargantext.util.taggers import EnglishMeltTagger, FrenchMeltTagger
 
 LANGUAGES = {
     'en': {
@@ -116,7 +117,8 @@ LANGUAGES = {
 }
 
 
-from gargantext.util.parsers import *
+from gargantext.util.parsers import \
+    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser
 
 RESOURCETYPES = [
     {   'name': 'Europress (English)',

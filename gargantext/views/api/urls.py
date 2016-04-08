@@ -16,6 +16,11 @@ urlpatterns = [
     #       rm <=> DEL ngramlists/change?list=42&ngrams=1,2
     url(r'^ngramlists/change$', ngramlists.ListChange.as_view()),
 
+    # modify grouping couples of a group node
+    #  ex: POST ngramlists/groups?node=43
+    #           post data looks like : {"767":[209,640],"779":[436,265,385]}"
+    url(r'^ngramlists/groups$', ngramlists.GroupChange.as_view()),
+
     # get entire combination of lists from a corpus
     # (or any combination of lists that go together :
     #   - a mainlist

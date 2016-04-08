@@ -25,8 +25,9 @@ def prepare_stemmers(corpus):
         '__unknown__' : SnowballStemmer("english")
     }
     for lgiso2 in corpus.hyperdata['languages'].keys():
-        lgname = languages[lgiso2].name.lower()
-        stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
+        if (lgiso2 != '__skipped__'):
+            lgname = languages[lgiso2].name.lower()
+            stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
     return stemmers_by_lg
 
 def compute_groups(corpus, stoplist_id = None, overwrite_id = None):

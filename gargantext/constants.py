@@ -37,15 +37,6 @@ NODETYPES = [
     'TFIDF-GLOBAL',          # 14
 ]
 
-# TODO find somewhere else than constants.py for function
-import datetime
-import dateutil
-def convert_to_date(date):
-    if isinstance(date, (int, float)):
-        return datetime.datetime.timestamp(date)
-    else:
-        return dateutil.parser.parse(date)
-
 INDEXED_HYPERDATA = {
     # TODO use properties during toolchain.hyperdata_indexing
     # (type, convert_to_db, convert_from_db)

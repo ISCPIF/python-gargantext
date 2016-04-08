@@ -380,16 +380,18 @@ function saveActiveGroup() {
     GroupsBuffer[mainform] = activeGroup.now_links
     // ---------------------------------------------------
 
-    // also we prefix "*" to the name
-    AjaxRecords[mainform].name = "*" + AjaxRecords[mainform].name
+    console.log(AjaxRecords[mainform])
 
-    // TODO check if necessary to update
+    // also we prefix "*" to the name if not already there
+    if (AjaxRecords[mainform].name[0] != '*') {
+        AjaxRecords[mainform].name = "*" + AjaxRecords[mainform].name
+    }
 
     // the previous mainforms that became subforms can't stay in the main records
     for (downgradedNgramId in activeGroup.were_mainforms) {
         if (downgradedNgramId != mainform) {
 
-            AjaxRecords[downgradedNgramId].state = -1
+            // AjaxRecords[downgradedNgramId].state = -1
 
             // they go to nodesmemory
             // NGrams.group.nodesmemory = AjaxRecords[downgradedNgramId]
@@ -493,7 +495,8 @@ function seeGroup ( ngramId ) {
 
     // 6/7 add a "modify group" button
     var changeGroupsButton  = '<button style="float:right"' ;
-        changeGroupsButton +=         'onclick="modifyGroup('+ngramId+')">' ;
+        changeGroupsButton +=        ' title="add/remove contents of groups"' ;
+        changeGroupsButton +=        ' onclick="modifyGroup('+ngramId+')">' ;
         changeGroupsButton +=   'modify group' ;
         changeGroupsButton += '</button>' ;
     subNgramHtml.append(changeGroupsButton) ;
@@ -525,21 +528,43 @@ function drawSublist (linkNamesArray) {
     return sublistHtml
 }
 
-function drawActiveSublist (tgtElementId, linkIdsArray, ngInfos) {
-    var sublistHtml = "" ;
+function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
+    var groupHtml  = '<p id="group_box_mainform">';
+        groupHtml +=    mainformSpan(ngInfos[mainformId])
+        groupHtml += '  <br> │<br>';
+        groupHtml += '</p>';
+        // sublist
+        groupHtml += '<p id="group_box_content">';
+
     var last_i = linkIdsArray.length - 1 ;
     for(var i in linkIdsArray) {
         var subNgramId = linkIdsArray[i] ;
         if (i != last_i) {
-            sublistHtml += ' ├── ' + subformSpan(ngInfos[subNgramId]) + '<br>' ;
+            groupHtml += ' ├── ' + subformSpan(ngInfos[subNgramId]) + '<br>' ;
         }
         else {
-            sublistHtml += ' └── ' + subformSpan(ngInfos[subNgramId]) ;
+            groupHtml += ' └── ' + subformSpan(ngInfos[subNgramId]) ;
         }
     }
 
-    // write html
-    $(tgtElementId).html(sublistHtml)
+    // save/cancel buttons
+    groupHtml += '\n          <p id="activeGroupButtons">';
+
+    // Ok - No
+    var cancelGroupButton  = '<button onclick="removeActiveGroup()">' ;
+        cancelGroupButton +=   'cancel' ;
+        cancelGroupButton += '</button>' ;
+
+    var tempoSaveGroupButton  = '<button onclick="saveActiveGroup()">' ;
+        tempoSaveGroupButton +=   'finish' ;
+        tempoSaveGroupButton += '</button>' ;
+
+    groupHtml += cancelGroupButton
+    groupHtml += tempoSaveGroupButton
+    groupHtml += '</p>\n'
+
+    // write html to current DOM
+    $(tgtElementId).html(groupHtml)
 }
 
 // makes each subform's html
@@ -558,13 +583,72 @@ function subformSpan( subNgramInfo ) {
         span.addClass("usersubform")
     }
 
-
-    // £TODO remove Button has a bug when mainform doesn't reappear in its row
+    // remove button
     // var removeButton  = '&nbsp;<span class="note glyphicon glyphicon-minus-sign"'
+    //     removeButton +=   ' title="remove from group (/!\\ bug: will be unattached if was previously a subform)"' ;
     //     removeButton +=   ' onclick="removeSubform('+ subNgramInfo.id +')"></span>'
     // span.append(removeButton)
+
+    // makes this subform become the mainform
+    // var mainformButton  = '&nbsp;<span class="note glyphicon glyphicon-circle-arrow-up"'
+    //     mainformButton +=   ' title="upgrade to mainform of this group"'
+    //     mainformButton +=   ' onclick="makeMainform('+ subNgramInfo.id +')"></span>'
+    // span.append(mainformButton)
     return(span[0].outerHTML)
 }
+
+
+// makes mainform's span
+function mainformSpan( ngramInfo ) {
+    // each item is a new ngram under the group
+    span = $('<span/>', {
+        text: ngramInfo.name,
+        title: ngramInfo.id,
+        id: 'active-mainform-' + ngramInfo.id
+    })
+    return(span[0].outerHTML)
+}
+
+function makeMainform(ngramId) {
+    $('#active-subform-'+ngramId).remove()
+
+    // replace now_mainform_id property
+    previousMainformId = activeGroup.now_mainform_id
+    activeGroup.now_mainform_id = ngramId
+
+    // replace old subform by old mainform in now_links array
+    var i = activeGroup.now_links.indexOf(ngramId)
+    activeGroup.now_links[i] = previousMainformId
+
+    // if it was previously a subform then:
+    //   -> it had no entry in AjaxRecords
+    //   -> it was not in any of the lists
+    if (! (mainform in activeGroup.were_mainforms)) {
+        // update records
+        delete activeGroup.ngraminfo[mainform].origin
+        AjaxRecords[mainform] = activeGroup.ngraminfo[mainform]
+        AjaxRecords[mainform].state = 0
+
+        // update lists (inherits status of previous mainform)
+
+    }
+
+
+    // NB  if it was previously a subform
+    //     then absent from AjaxRecords
+    //     => is solved in saveActiveGroup()
+
+    // redraw active group_box_content
+    drawActiveGroup(
+        '#group_box',
+        activeGroup.now_mainform_id,
+        activeGroup.now_links,
+        activeGroup.ngraminfo
+     )
+     // and update
+     MyTable.data('dynatable').dom.update();
+}
+
 
 function removeSubform(ngramId) {
     $('#active-subform-'+ngramId).remove()
@@ -572,15 +656,21 @@ function removeSubform(ngramId) {
         removeActiveGroup()
     }
     else {
+        // clean were_mainforms dict
+        delete activeGroup.were_mainforms[ngramId]
+
+        // clean now_links array
         var i = activeGroup.now_links.indexOf(ngramId)
         activeGroup.now_links.splice(i,1)
+
         // if (activeGroup.ngraminfo[ngramId].origin == 'new') {
         //     AjaxRecords[ngramId].state = 0 ;
         // }
 
         // redraw active group_box_content
-        drawActiveSublist(
-            '#group_box_content',
+        drawActiveGroup(
+            '#group_box',
+            activeGroup.now_mainform_id,
             activeGroup.now_links,
             activeGroup.ngraminfo
          )
@@ -590,48 +680,34 @@ function removeSubform(ngramId) {
 }
 
 function modifyGroup ( mainFormNgramId ) {
-    // create modification dialog
+    // create modification container
     //
-    var group_html =  '      <tr class="group_box" id="group_box">\n';
-        group_html += '        <td colspan='+tableSpan+'>\n';
-                                 // mainform
-        group_html += '          <p id="group_box_mainform">\n';
-        group_html += '         '+subformSpan(AjaxRecords[mainFormNgramId])+'\n'
-        group_html += '          <br> │<br>';
-        group_html += '          </p>\n';
-                                 // sublist
-        group_html += '          <p id="group_box_content"></p>\n';
-                                 // save/cancel buttons
-        group_html += '          <p id="activeGroupButtons"></p>\n';
+    var group_html =  '      <tr>\n';
+        group_html += '        <td id="group_box" colspan='+tableSpan+'>\n';
+     // -------------------------------------------------------------------
+     // mainform + sublist + buttons will be added here by drawActiveGroup
+     // -------------------------------------------------------------------
         group_html += '        </td>\n';
         group_html += '      </tr>\n';
     $( "#my-ajax-table > thead" ).append(group_html)
-
-    // Ok - No
-    var cancelGroupButton  = '<button onclick="removeActiveGroup()">' ;
-        cancelGroupButton +=   'cancel' ;
-        cancelGroupButton += '</button>' ;
-
-    var tempoSaveGroupButton  = '<button onclick="saveActiveGroup()">' ;
-        tempoSaveGroupButton +=   'finish' ;
-        tempoSaveGroupButton += '</button>' ;
-
-    $("#activeGroupButtons").append(cancelGroupButton)
-                            .append(tempoSaveGroupButton)
 
     // set global 'grouping in progress' states
     GState = 1 ;
     activeGroup.now_mainform_id = mainFormNgramId ;
     activeGroup.were_mainforms[mainFormNgramId] = true ;
     activeGroup.now_links = [] ;
-    activeGroup.ngraminfo = {} ;  // standard rec info + 'origin' property
+    // ngraminfo = standard info of records + 'origin' property
+    activeGroup.ngraminfo = {}
+    activeGroup.ngraminfo[mainFormNgramId] = AjaxRecords[mainFormNgramId] ;
+    activeGroup.ngraminfo[mainFormNgramId]['origin'] = 'new' ;
 
     // add relevant information from old & new links to activeGroup.now_links
     updateActiveGroupInfo (mainFormNgramId, false)
 
     // groupBox rendering
-    drawActiveSublist(
-        '#group_box_content',
+    drawActiveGroup(
+        '#group_box',
+        activeGroup.now_mainform_id,
         activeGroup.now_links,
         activeGroup.ngraminfo
      )
@@ -643,7 +719,7 @@ function modifyGroup ( mainFormNgramId ) {
 // add new ngramid (and any present subforms) to currently modified group
 function add2group ( ngramId ) {
 
-    console.log("FUN add2group(" + AjaxRecords[ngramId].name + ")")
+    // console.log("FUN add2group(" + AjaxRecords[ngramId].name + ")")
 
     var toOther = true ;
     activeGroup.were_mainforms[ngramId] = true ;
@@ -659,8 +735,9 @@ function add2group ( ngramId ) {
         updateActiveGroupInfo (ngramId, toOther)
 
         // redraw active group_box_content
-        drawActiveSublist(
-            '#group_box_content',
+        drawActiveGroup(
+            '#group_box',
+            activeGroup.now_mainform_id,
             activeGroup.now_links,
             activeGroup.ngraminfo
          )
@@ -717,8 +794,8 @@ function updateActiveGroupInfo (ngramId, toOtherMainform) {
  * @param ngramId - the record's id
  */
 function clickngram_action ( ngramId ) {
-    // cycle the statuses (0 => 1 => 2 => 0 => etc) (we are omitting status 3 = group)
-    AjaxRecords[ngramId].state = (AjaxRecords[ngramId].state==(System[0]["states"].length-2))?0:(AjaxRecords[ngramId].state+1);
+    // cycle the statuses (0 => 1 => 2 => 0 => etc)
+    AjaxRecords[ngramId].state = (AjaxRecords[ngramId].state==(System[0]["states"].length-1))?0:(AjaxRecords[ngramId].state+1);
 
     // State <=> term color <=> checked colums
 
@@ -801,7 +878,7 @@ function transformContent(ngramId) {
     // normal situation: button allows to see group contents
     if(GState==0) {
         var plusicon = '' ;
-        if (ngram_info["id"] in vizopenGroup) {
+        if (ngramId in vizopenGroup) {
             plusicon = "glyphicon-triangle-bottom"
         } else {
             plusicon = "glyphicon-triangle-right"
@@ -832,8 +909,8 @@ function transformContent(ngramId) {
     result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>\n'
 
     // <td> name  </td>     aka   "ngrambox"
-    result["name"]  = '<div class="ngrambox" id="box-'+ngram_info["id"]+'">\n'
-    if (ngram_info["id"] != activeGroup.now_mainform_id && !(ngram_info["id"] in activeGroup.were_mainforms)) {
+    result["name"]  = '<div class="ngrambox" id="box-'+ngramId+'">\n'
+    if (ngramId != activeGroup.now_mainform_id && !(ngramId in activeGroup.were_mainforms)) {
 
         result["name"] +=   plus_event + '\n'
         result["name"] +=   '<span title="'+ngram_info["id"]+'" class="'+atts.id+'" '
@@ -914,7 +991,9 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   //debug
   if( typeof AjaxRecords[record.id] == "undefined") {
       console.log('/!\\ nothing for ' + record.id)
+      return false;
   } else if( AjaxRecords[record.id].state < 0 ) {
+      // therefore state -1 ngrams will not be drawn
       return false;
   }
 

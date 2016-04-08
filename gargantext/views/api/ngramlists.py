@@ -174,13 +174,10 @@ class GroupChange(APIView):
                             NodeNgramNgram.ngram1_id.in_(all_nodes_involved),
                             NodeNgramNgram.ngram2_id.in_(all_nodes_involved)))
                 )
-        n_removed = old_links.count()
-        old_links.delete(synchronize_session='fetch')
-        print('n_removed', n_removed)
-        print("links", links)
-        print(
-            [i for i in ((group_node, mainform, subform, 1.0) for (mainform,subform) in links)]
-            )
+        n_removed = old_links.delete(synchronize_session=False)
+        session.commit()
+
+        # add new groupings
         bulk_insert(
             NodeNgramNgram,
             ('node_id', 'ngram1_id', 'ngram2_id', 'weight'),
@@ -191,7 +188,6 @@ class GroupChange(APIView):
             'count_removed': n_removed,
             'count_added': len(links),
             }, 200)
-
 
 
 

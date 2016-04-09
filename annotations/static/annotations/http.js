@@ -10,10 +10,10 @@
   /*
   * DocumentHttpService: Read Document
   * ===================
-  * 
+  *
   * route: annotations/documents/@d_id
   * ------
-  * 
+  *
   * exemple:
   * --------
   * {
@@ -29,7 +29,7 @@
   *   "journal": "Vistas in Astronomy",
   *   "authors": "A. Thom"
   * }
-  * 
+  *
   */
   http.factory('DocumentHttpService', function($resource) {
     return $resource(
@@ -49,17 +49,17 @@
   /*
   * NgramListHttpService: Read all Ngrams
   * =====================
-  * 
+  *
   * route: annotations/corpora/@c_id/documents/@d_id
   * ------
-  * 
+  *
   * json return format:
   * -------------------
   *   corpus_id : {
   *                lists:   {(list_id:name)+}
-  *                doc_id : [ngrams_objects]+, 
+  *                doc_id : [ngrams_objects]+,
   *               }
-  * 
+  *
   * exemple:
   * --------
   * "554": {
@@ -89,19 +89,19 @@
   /*
   * NgramHttpService: Create, modify or delete 1 Ngram
   * =================
-  * 
-  * £TODO REACTIVATE IN urls.py
-  * 
-  * if new ngram: 
+  *
+  * TODO REACTIVATE IN urls.py
+  *
+  * if new ngram:
   *   -> ngram_id will be "create"
   *   -> route: annotations/lists/@node_id/ngrams/create
   *   -> will land on views.NgramCreate
-  * 
+  *
   * else:
   *   -> ngram_id is a real ngram id
   *   -> route: annotations/lists/@node_id/ngrams/@ngram_id
   *   -> will land on views.NgramCreate
-  * 
+  *
   */
   http.factory('NgramHttpService', function ($resource) {
     return $resource(

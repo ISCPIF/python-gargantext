@@ -6,14 +6,23 @@
 */
 
 
+.MAPLIST {
+  color: black;
+  /* green */
+  background-color: rgba(60, 118, 61, .7);
+  cursor: pointer;
+}
+
 .MAINLIST {
   color: black;
-  background-color: rgba(60, 118, 61, 0.5);
+  /* background-color: rgba(60, 118, 61, 0.5); */
+  background-color: orange;
   cursor: pointer;
 }
 
 .STOPLIST {
   color: black;
+  /* grey */
   background-color: rgba(169, 68, 66, 0.2);
   cursor: pointer;
 }

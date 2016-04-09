@@ -55,10 +55,14 @@
                 </div>
               </div>
             </div>
-            <div>
+            <div class="list-selector">
               <h5>Select lists</h5>
               <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
-                  <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}" ng-disabled="{[{ item.label == 'MAINLIST' }]}">{[{item.label}]}</option>
+                  
+                  <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}">{[{item.label}]}</option>
+                  
+                  <!-- to disallow unchecking MapList add this into <option> element:  ng-disabled="{[{ item.label == 'MapList' }]}" -->
+
               </select>
             </div>
           </div>

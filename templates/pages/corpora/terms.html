@@ -58,9 +58,24 @@
                         <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg">
                           Close term list
                         </p>
+                        <!-- <button title='run test function' onclick="doATest()">
+                            TEST
+                        </button> -->
                     </a>
+
+                    <!-- see in javascript function queries.functions['my_state_filter'] -->
+                    <div class="pull-left" style="margin-top:1.85em;">
+                        Filter:
+                        <select id="picklistmenu" name="my_state_filter">
+                          <option value='reset' selected="selected" >All terms</option>
+                          <option value='0'>Mainlist only</option>
+                          <option value='1'>Maplist only</option>
+                          <option value='2'>Stoplist only</option>
+                        </select>
+                    </div>
                   </h4>
                 </div>
+
 
                 <div id="terms_table" class="panel-collapse collapse in no-transition" role="tabpanel">
                     <div class="panel-body">
@@ -78,9 +93,9 @@
             </div> <!-- /div panel -->
         </div> <!-- /row with the dynatable panels -->
 
-    </div> 
-    
-    <!-- /jumbotron 
+    </div>
+
+    <!-- /jumbotron
     <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
         Import a Corpus-List
     </button>
@@ -89,6 +104,11 @@
 </div> <!-- /container -->
 
 
+
+    <!--
+    # stub to import a list (aka orange button)
+    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
+    -->
 
 
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>

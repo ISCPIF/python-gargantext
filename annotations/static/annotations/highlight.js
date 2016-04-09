@@ -107,9 +107,9 @@
             // console.log("toggleMenu with \$scope.selection_text: '" + JSON.stringify($scope.selection_text) +"'") ;
             if (angular.isObject(annotation) && !$element.hasClass('menu-is-opened')) {
               // existing ngram
-              
+
               console.log("toggleMenu.annotation: '" + JSON.stringify(annotation) +"'")
-              
+
               // Delete from the current list
               $scope.menuItems = [
                 {
@@ -374,32 +374,36 @@
   annotationsAppHighlight.controller('NGramHighlightController',
     ['$scope', '$rootScope', '$compile',
     function ($scope, $rootScope, $compile) {
-      /*
-      * Replace the text by an html template for ngram keywords
-      */
-      function replaceTextByTemplate(text, ngram, template, pattern) {
 
-        // TODO prevent matching inside XML tags
-        //      (now if term=='class' it highlights XML class attrs ><)
-        //       other interfering terms: ng, span, click, keyword, inline...
-        // suggestion by mrodic: take the original text and replace for all act
-        // but problem: it's not multiple lists it's previous replacements in t
-        // solution: use a tag ersatz here like <xmlspan> </xmlspan>
-        //           then replace all afterwards with real xml <span ...> tags
+      /*
+      * Replace the any ad hoc anchor by an html template
+      */
+      function replaceAnchorByTemplate(text, ngram, template, pattern) {
+
+        // exemple args:
+        // =============
+        // text ------- "Background Few previous studies have examined
+        //               non-wealth-based inequalities etc etc etc"
+        // ngram  ----- {uuid: 1846, occurrences: 1, list_id: 3689,
+        //               text: "previous studies", listName: "MAINLIST"}
+        // template --- "<span ng-controller='TextSelectionController'
+        //                     ng-click='onClick($event)'
+        //                     class='keyword-inline'></span>"
+        // pattern ---- RegExp(/#\(#MAINLIST-10007#\)#/gm)
 
         return text.replace(pattern, function(matched) {
           var tpl = angular.element(template);
-          tpl.append(matched);
+          tpl.append(ngram.text);
           tpl.attr('title', "Click to add/remove");
           tpl.attr('uuid', ngram.uuid);
           /*
           * Add CSS class depending on the list the ngram is into
-          * FIXME Lists names and css classes are fixed, can do better
           */
           tpl.addClass(ngram.listName);
           return tpl.get(0).outerHTML;
         });
       }
+
 
       /* Escape text before it's inserted in regexp (aka quotemeta)
        * ex: "c++"  => "c\+\+"
@@ -428,13 +432,13 @@
         if ($rootScope.activeLists === undefined) return;
         if (_.keys($rootScope.activeLists).length === 0) return;
         var templateBegin = "<span ng-controller='TextSelectionController' ng-click='onClick($event)' class='keyword-inline'>";
-        var templateBeginRegexp = "<span ng-controller='TextSelectionController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
-
         var templateEnd = "</span>";
         var template = templateBegin + templateEnd;
+        var templateBeginRegexp = "<span ng-controller='TextSelectionController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
 
         var startPattern = "\\b((?:"+templateBeginRegexp+")*";
         var middlePattern = "(?:<\/span>)*\\s(?:"+templateBeginRegexp+")*";
+        var middlePattern = " ";
         var endPattern = "(?:<\/span>)*)\\b";
 
         console.log("highlight annotations length: " + annotations.length)
@@ -451,8 +455,13 @@
         var i = 0 ;
         var j = 0 ;
         var k = 0 ;
-        angular.forEach(sortedSizeAnnotations, function (annotation) {
+        var l = 0 ;
 
+        // first pass for anchors
+        // ======================
+        angular.forEach(sortedSizeAnnotations, function (annotation) {
+          // ex annotation  --- {uuid: 1846, occurrences: 1, list_id: 3689,
+          //                     text: "previous studies", listName: "MAINLIST"}
           i ++ ;
           // console.log('----------------\n')
           // console.log('sortedSizeAnnotations n° ' + i + ': \n  ' + JSON.stringify(annotation) +'\n')
@@ -460,30 +469,94 @@
           // exclude ngrams that are into inactive lists
           if ($rootScope.activeLists[annotation.list_id] === undefined) return;
 
+          // count within activ list
           j ++ ;
-          // used to setup css class
-          annotation.listName = $rootScope.lists[annotation.list_id];
-          // regexps (with escaped content)
-          var words = annotation.text.split(" ").map(escapeRegExp);
-          var pattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
-          var textRegexp = new RegExp("\\b"+escapeRegExp(annotation.text)+"\\b", 'igm');
 
-          // highlight text as html
-          // -----------------------
+          // used to setup anchor
+          annotation.listName = $rootScope.lists[annotation.list_id];
+
+          // used as unique placeholder for str.replace
+          //        (anchor avoids side effects of multiple replacements
+          //         like new results inside old replacement's result)
+          var myAnchor = '#(#'+annotation.listName+'-'+annotation.uuid+'#)#' ;
+
+          // £WIP simpler text regexp
+          // regexps (with escaped content)
+          //  var myPattern = new RegExp("\\b"+escapeRegExp(annotation.text)+"\\b", 'igm');
+          // previously:
+              var words = annotation.text.split(" ").map(escapeRegExp);
+              var myPattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
+
+
+          // -------------------------------------------
+          // replace in text: matched annots by anchors
+          // -------------------------------------------
           // text content taken in argument textMapping:
+          //     eltID           eltLongtext
+          //       |                  |
           //  {'#title':         'some text',
           //   '#abstract-text': 'some text',
           //   '#full-text':     'some text' }
+          //
+          angular.forEach(textMapping, function(eltLongtext, eltId) {
+              if(eltLongtext) {
+                  // ------------------------------------------------------------
+                  // £dbgcount here unnecessary nbMatches (can go straight to ICI)
+                  var matches = eltLongtext.match(myPattern)
+                  var nbMatches = matches ? eltLongtext.match(myPattern).length : 0
+                  if (nbMatches > 0) {
+                      k += nbMatches ;
+                      l ++ ;
+                  // ------------------------------------------------------------
+                      // ICI we update each time
+                      textMapping[eltId] = eltLongtext.replace(myPattern, myAnchor);
+
+                      // ex longtext -- "Background Few previous studies have
+                      //                 examined non-wealth-based inequalities etc"
+
+                      // ex result ---- "Background Few #(#MAINLIST-1846#)# have
+                      //                 examined non-wealth-based inequalities etc"
+                  }
+              }
+          });
+        });
+        // rl: £dbgcount
+        console.log('---- compileNgramsHtml created '
+                     + k + ' anchors ('
+                     + l + ' distinct ngrams) from '
+                     + j + ' ngrams in activeLists (of ' + i + ' ngrams total) ----\n')
+
+
+
+        // 2nd pass for result html
+        // =========================
+
+        // first pass for anchors
+        // ======================
+        angular.forEach(sortedSizeAnnotations, function (annotation) {
+          // again exclude ngrams that are into inactive lists
+          if ($rootScope.activeLists[annotation.list_id] === undefined) return;
+
+          // now used to setup css class
+          annotation.listName = $rootScope.lists[annotation.list_id];
+
+          // used as unique placeholder for str.replace
+          //        (anchor avoids side effects of multiple replacements
+          //         like new results inside old replacement's result)
+          var myAnchor = '#(#'+annotation.listName+'-'+annotation.uuid+'#)#' ;
+
+          var anchorPattern = new RegExp(escapeRegExp(myAnchor), 'gm');
+
+          // highlight anchors as html spans
+          // -------------------------------
           angular.forEach(textMapping, function(text, eltId) {
-            // console.log('textMapping for "' + eltId + '" : ' + JSON.stringify(text))
-            // £TODO pas besoin de pattern.test avant pattern.sub !
-            if (pattern.test(text) === true) {
-              k ++ ;
-              textMapping[eltId] = replaceTextByTemplate(
+            //   console.log(anchorPattern)
+            if(text) {
+              textMapping[eltId] = replaceAnchorByTemplate(
                   text,
                   annotation,
                   template,
-                  pattern);
+                  anchorPattern);
             }
           });
 
@@ -492,10 +565,41 @@
           extraNgramList[annotation.list_id] = extraNgramList[annotation.list_id].concat(annotation);
         });
 
-        // rl: £dbg
-        console.log('---- compileNgramsHtml created '
-                     + k + ' series of highlighted spans from '
-                     + j + ' annotations in activeLists (of ' + i + ' annotations total) ----\n')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // update extraNgramList
         $rootScope.extraNgramList = angular.forEach(extraNgramList, function(name, id) {

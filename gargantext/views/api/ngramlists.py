@@ -411,10 +411,19 @@ class ListFamily(APIView):
                 links = Translations(groups_id)
                 linkinfo = links.groups
 
-        # the output form
-        for ng in mainlist_query.all() + hidden_ngrams_query.all():
+        # list of
+        ngrams_which_need_detailed_info = []
+        if "head" in parameters:
+            # head triggered simplified form: just the top of the mainlist
+            # TODO add maplist membership
+            ngrams_which_need_detailed_info = mainlist_query.all()
+        else:
+            ngrams_which_need_detailed_info = mainlist_query.all() + hidden_ngrams_query.all()
+
+        # the output form of details is:
+        # ngraminfo[id] => [term, weight]
+        for ng in ngrams_which_need_detailed_info:
             ng_id   = ng[0]
-            # id => [term, weight]
             ngraminfo[ng_id] = ng[1:]
 
             # NB the client js will sort mainlist ngs from hidden ngs after ajax

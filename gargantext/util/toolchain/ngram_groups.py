@@ -3,6 +3,8 @@ For initial ngram groups via stemming
  Exemple:
    - groups['copper engrav'] = {'copper engraving':3, 'coppers engraver':1...}
    - groups['post']          = {'poste':3, 'poster':5, 'postés':2...}
+
+   TODO use groups for aggregated occurrences/coocs counts !
 """
 
 from gargantext.models        import Node, NodeNgramNgram

@@ -2,6 +2,7 @@
 from time import sleep
 import datetime
 import threading
+from traceback                  import print_tb
 #from gargantext.settings import MEDIA_ROOT, BASE_DIR
 
 from django.shortcuts import redirect
@@ -111,7 +112,7 @@ def save(request , project_id):
             user_id = request.user.id,
             parent_id = project_id,
             typename = 'CORPUS',
-                        hyperdata    = { "action"        : "Scraping data"
+                        hyperdata    = { "action"        : "Scrapping data"
                                         , "language_id" : None
                                         }
         )
@@ -137,9 +138,9 @@ def save(request , project_id):
         for filename in tasks.firstResults:
             if filename!=False:
                 # add the uploaded resource to the corpus
-                # add the uploaded resource to the corpus
-                corpus.add_resource( type = 3
-                                   , path = filename
+                corpus.add_resource(
+                  type = 8     # cf. constants.RESOURCETYPES
+                , path = filename
                                    )
                 dwnldsOK+=1
 
@@ -152,14 +153,17 @@ def save(request , project_id):
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)
+            try:
+                print_tb(error.__traceback__)
+            except:
+                pass
+            # IMPORTANT ---------------------------------
+            # sanitize session after interrupted transact
+            session.rollback()
+            # --------------------------------------------
         sleep(1)
         return HttpResponseRedirect('/projects/' + str(project_id))
 
 
     data = [query_string,query,N]
     return JsonHttpResponse(data)
-
-
-
-
-

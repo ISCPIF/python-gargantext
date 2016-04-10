@@ -8,6 +8,8 @@
 
       // dataLoading = signal pour afficher wait
       $scope.dataLoading = true ;
+      
+      console.log("annotations.document.DocController.DocumentHttpService.get():before")
 
       $rootScope.documentResource = DocumentHttpService.get(
         {'docId': $rootScope.docId},
@@ -21,6 +23,7 @@
           $rootScope.docId = data.id;
           $rootScope.full_text = data.full_text;
           $rootScope.abstract_text = data.abstract_text;
+          console.log("annotations.document.DocController.getannotations")
           // GET the annotationss
           NgramListHttpService.get(
             {

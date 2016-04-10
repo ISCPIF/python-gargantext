@@ -145,5 +145,6 @@ class Parser:
             try:
                 file.seek(0)
             except:pass
+            # debug: print(self.parse)  # do we have correct parser ?
             for hyperdata in self.parse(file):
                 yield self.format_hyperdata(hyperdata)

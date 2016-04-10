@@ -22,6 +22,19 @@ th a {
   font-size: 0.7em;
 }
 
+#dynatable-query-search-my-ajax-table {
+    min-width: 20em;
+}
+
+.dynatable-search {
+    margin-left: 2em;
+    font-size: 16px;
+}
+.dynatable-per-page-label {
+    margin-left: 2em;
+    font-size: 16px;
+}
+
 #corpusdisplayer {
     width:200px;
     margin:0 auto;
@@ -60,8 +73,8 @@ p.note > label {
   float: left;
 }
 
-.note.greyed {
-  opacity: 0.2;
+.greyed {
+  opacity: 0.3;
 }
 
 tr:hover {
@@ -77,9 +90,11 @@ tr:hover {
 .delete {
   color:red;
   opacity: 0.8;
+  text-decoration: line-through;
 }
 .keep {
   color:green;
+  font-style: italic;
 }
 
 .group {

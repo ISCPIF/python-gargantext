@@ -45,15 +45,27 @@ def extract_ngrams(corpus, keys=('title', 'abstract', )):
         ngrams_data = set()
         # extract ngrams
         resource_type_index = corpus.resources()[0]['type']
+
         resource_type = RESOURCETYPES[resource_type_index]
         default_language_iso2 = resource_type['default_language']
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
             # get ngrams extractor for the current document
             language_iso2 = document.hyperdata.get('language_iso2', default_language_iso2)
             try:
+                # this looks for a parser in constants.LANGUAGES
                 ngramsextractor = ngramsextractors[language_iso2]
             except KeyError:
-                print('Unrecognized language: `%s`' % (language_iso2, ))
+                # skip document
+                print('Unsupported language: `%s`' % (language_iso2, ))
+                # and remember that for later processes (eg stemming)
+                document.hyperdata['__skipped__'] = 'ngrams_extraction'
+                document.save_hyperdata()
+                session.commit()
+                if language_iso2 in corpus.hyperdata['languages']:
+                    skipped_lg_infos = corpus.hyperdata['languages'].pop(language_iso2)
+                    corpus.hyperdata['languages']['__skipped__'][language_iso2] = skipped_lg_infos
+                    corpus.save_hyperdata()
+                    session.commit()
                 continue
             # extract ngrams on each of the considered keys
             for key in keys:

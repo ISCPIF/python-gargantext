@@ -18,11 +18,11 @@ class CSVParser(Parser):
         return Freqs
 
 
-    def parse(self, filename):
+    def parse(self, filebuf):
 
         print("CSV: parsing (assuming UTF-8 and LF line endings)")
 
-        contents = filename.read().decode("UTF-8").split("\n")
+        contents = filebuf.read().decode("UTF-8").split("\n")
 
         sample_size = 10
         sample_contents = contents[0:sample_size]

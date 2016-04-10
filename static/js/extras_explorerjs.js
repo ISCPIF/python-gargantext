@@ -591,6 +591,7 @@ function getTopPapers(type){
                     if(pub["title"]) {
                         var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
 
+                        // ex url_elems = ["http:", "", "localhost:8000", "projects", "1", "corpora", "2690", "explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5"]
                         var url_elems = window.location.href.split("/")
                         var url_mainIDs = {}
                         for(var i=0; i<url_elems.length; i++) {
@@ -598,7 +599,10 @@ function getTopPapers(type){
                             url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
                           }
                         }
-                        var getpubAPI = window.location.origin+'/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+pub["id"]
+                        // ex url_mainIDs = {projects: 1, corpora: 2690}
+
+                        // link to matching document
+                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]
 
 
                         var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";

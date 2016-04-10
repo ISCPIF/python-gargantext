@@ -148,16 +148,13 @@ class GroupChange(APIView):
           => removes couples where newly reconnected ngrams where involved
           => adds new couples from GroupsBuffer of terms view
 
+        TODO recalculate scores after new groups
         TODO see use of util.lists.Translations
         TODO benchmark selective delete compared to entire list rewrite
         """
         group_node = get_parameters(request)['node']
         all_nodes_involved = []
         links = []
-
-        print([i for i in request.POST.lists()])
-        pass
-
 
         for (mainform_key, subforms_ids) in request.POST.lists():
             mainform_id = mainform_key[:-2]   # remove brackets '543[]' -> '543'
@@ -414,10 +411,19 @@ class ListFamily(APIView):
                 links = Translations(groups_id)
                 linkinfo = links.groups
 
-        # the output form
-        for ng in mainlist_query.all() + hidden_ngrams_query.all():
+        # list of
+        ngrams_which_need_detailed_info = []
+        if "head" in parameters:
+            # head triggered simplified form: just the top of the mainlist
+            # TODO add maplist membership
+            ngrams_which_need_detailed_info = mainlist_query.all()
+        else:
+            ngrams_which_need_detailed_info = mainlist_query.all() + hidden_ngrams_query.all()
+
+        # the output form of details is:
+        # ngraminfo[id] => [term, weight]
+        for ng in ngrams_which_need_detailed_info:
             ng_id   = ng[0]
-            # id => [term, weight]
             ngraminfo[ng_id] = ng[1:]
 
             # NB the client js will sort mainlist ngs from hidden ngs after ajax

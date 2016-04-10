@@ -49,8 +49,10 @@ def parse(corpus):
                 documents_count += 1
             # update info about the resource
             resource['extracted'] = True
-        # add a corpus-level info about languages
+        # add a corpus-level info about languages...
         corpus.hyperdata['languages'] = observed_languages
+        # ...with a special key inside for skipped languages at ngrams_extraction
+        corpus.hyperdata['languages']['__skipped__'] = {}
         # commit all changes
         corpus.status('parsing', progress=documents_count, complete=True)
         corpus.save_hyperdata()

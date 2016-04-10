@@ -34,33 +34,51 @@ def main(request, project_id, corpus_id, document_id):
     }, context_instance=RequestContext(request))
 
 class NgramList(APIView):
-    """Read and Write Annotations"""
+    """Read the lists of ngrams (terms) that will become annotations"""
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, corpus_id, doc_id):
         """Get All for a doc id"""
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
+
+        # our results: ngrams for the corpus_id (ignoring doc_id for the moment)
+        doc_ngram_list = []
         lists = {}
-        for list_type in ['MAINLIST']:
+
+        for list_type in ['MAINLIST', 'MAPLIST', 'STOPLIST']:
             corpus_nod = cache.Node[corpus_id]
             list_nod = corpus_nod.children(typename=list_type).first()
             list_id = list_nod.id
             lists["%s" % list_id] = list_type
 
-        # ngrams for the corpus_id (ignoring doc_id for the moment):
-        doc_ngram_list = [(obj.id, obj.terms, w) for (w,obj) in list_nod.ngrams.all()]
+            # add to results
+            doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in list_nod.ngrams.all()]
+
+        print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
         data = { '%s' % corpus_id : {
-            '%s' % doc_id : [
-                {
-                    'uuid': ngram_id,
-                    'text': ngram_text,
-                    'occurrences': ngram_occurrences,
-                    'list_id': list_id,
-                }
-                for ngram_id, ngram_text, ngram_occurrences in doc_ngram_list],
+            '%s' % doc_id :
+                [
+                    {'uuid': ngram_id,
+                     'text': ngram_text,
+                     'occurrences': ngram_occurrences,
+                     'list_id': list_id,}
+                for (ngram_id,ngram_text,ngram_occurrences,list_id) in doc_ngram_list
+                ],
             'lists': lists
         }}
+
+        # format alternatif de transmission des "annotations", classé par listes puis ngram_id
+        # { 'corpus_id' : {
+        #    list_id_stop: {term_stop1: {term_data}, term_stop2: {term_data}..},
+        #    list_id_miam: {term_miam1: {term_data}, term_miam2: {term_data}..},
+        #    list_id_map:  {term_map1:  {term_data}, term_map2:  {term_data}..},
+        #   }
+        #   'lists' : {"list_id" : "list_type" ... }
+        # }
+
+        # NB 3rd possibility: unicity of ngram_text could also allow us to use it
+        #    as key and could enhance lookup later (frequent checks if term exists)
         return Response(data)
 
 

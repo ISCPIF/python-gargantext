@@ -3,6 +3,8 @@ For initial ngram groups via stemming
  Exemple:
    - groups['copper engrav'] = {'copper engraving':3, 'coppers engraver':1...}
    - groups['post']          = {'poste':3, 'poster':5, 'postés':2...}
+
+   TODO use groups for aggregated occurrences/coocs counts !
 """
 
 from gargantext.models        import Node, NodeNgramNgram
@@ -25,8 +27,9 @@ def prepare_stemmers(corpus):
         '__unknown__' : SnowballStemmer("english")
     }
     for lgiso2 in corpus.hyperdata['languages'].keys():
-        lgname = languages[lgiso2].name.lower()
-        stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
+        if (lgiso2 != '__skipped__'):
+            lgname = languages[lgiso2].name.lower()
+            stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
     return stemmers_by_lg
 
 def compute_groups(corpus, stoplist_id = None, overwrite_id = None):

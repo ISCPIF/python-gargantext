@@ -391,7 +391,7 @@ function saveActiveGroup() {
     for (downgradedNgramId in activeGroup.were_mainforms) {
         if (downgradedNgramId != mainform) {
 
-            // AjaxRecords[downgradedNgramId].state = -1
+            AjaxRecords[downgradedNgramId].state = -1
 
             // they go to nodesmemory
             // NGrams.group.nodesmemory = AjaxRecords[downgradedNgramId]
@@ -413,11 +413,11 @@ function saveActiveGroup() {
         }
     }
 
-    // clean group modification zone and buffer
-    removeActiveGroup()
+    // clean group modification zone and buffer and update table
+    removeActiveGroupFrame()
 }
 
-function removeActiveGroup() {
+function removeActiveGroupFrame() {
     // erases now_links and restores empty activeGroup global cache
     activeGroup = {'now_mainform_id':undefined, 'were_mainforms':{}} ;
 
@@ -428,6 +428,7 @@ function removeActiveGroup() {
     // we also close the open sublists in case some of them don't exist any more
     vizopenGroup = {}
 
+    // reprocess from current record states
     MyTable.data('dynatable').dom.update();
 }
 
@@ -441,7 +442,7 @@ function toggleSeeGroup(plusicon, ngramId) {
         plusicon.classList.add('glyphicon-triangle-right') ;
     }
     else {
-        var subNgramHtml = seeGroup(ngramId) ;
+        var subNgramHtml = seeGroup(ngramId, true) ;
         // we target the html in the mainform term's box
         $( "#box-"+ngramId).append(subNgramHtml) ;
 
@@ -459,7 +460,7 @@ function toggleSeeGroup(plusicon, ngramId) {
  *
  * @param ngramId (of the mainform)
  */
-function seeGroup ( ngramId ) {
+function seeGroup ( ngramId , allowChangeFlag) {
     // 1/7 create new element container
     var subNgramHtml = $('<p class="note">') ;
     subNgramHtml.attr("id", "subforms-"+ngramId) ;
@@ -494,12 +495,14 @@ function seeGroup ( ngramId ) {
     subNgramHtml.append(htmlMiniTree)
 
     // 6/7 add a "modify group" button
-    var changeGroupsButton  = '<button style="float:right"' ;
-        changeGroupsButton +=        ' title="add/remove contents of groups"' ;
-        changeGroupsButton +=        ' onclick="modifyGroup('+ngramId+')">' ;
-        changeGroupsButton +=   'modify group' ;
-        changeGroupsButton += '</button>' ;
-    subNgramHtml.append(changeGroupsButton) ;
+    if (allowChangeFlag) {
+        var changeGroupsButton  = '<button style="float:right"' ;
+            changeGroupsButton +=        ' title="add/remove contents of groups"' ;
+            changeGroupsButton +=        ' onclick="modifyGroup('+ngramId+')">' ;
+            changeGroupsButton +=   'modify group' ;
+            changeGroupsButton += '</button>' ;
+        subNgramHtml.append(changeGroupsButton) ;
+    }
 
     // 7/7  return html snippet (ready for rendering)
     return(subNgramHtml)
@@ -551,7 +554,7 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
     groupHtml += '\n          <p id="activeGroupButtons">';
 
     // Ok - No
-    var cancelGroupButton  = '<button onclick="removeActiveGroup()">' ;
+    var cancelGroupButton  = '<button onclick="removeActiveGroupFrame()">' ;
         cancelGroupButton +=   'cancel' ;
         cancelGroupButton += '</button>' ;
 
@@ -653,7 +656,7 @@ function makeMainform(ngramId) {
 function removeSubform(ngramId) {
     $('#active-subform-'+ngramId).remove()
     if (activeGroup.now_links.length == 1) {
-        removeActiveGroup()
+        removeActiveGroupFrame()
     }
     else {
         // clean were_mainforms dict
@@ -919,7 +922,11 @@ function transformContent(ngramId) {
         result["name"] +=   '</span>\n'
         // if curently open we also add #subforms p with the sublist
         if (ngram_info["id"] in vizopenGroup) {
-            result["name"] += seeGroup(ngram_info["id"])[0].outerHTML ;
+            allowChange = (GState != 1)
+            result["name"] += seeGroup(
+                                    ngram_info["id"],
+                                    allowChange
+                                )[0].outerHTML ;
         }
     }
     result["name"] += '</div>\n'
@@ -992,7 +999,9 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
   if( typeof AjaxRecords[record.id] == "undefined") {
       console.log('/!\\ nothing for ' + record.id)
       return false;
-  } else if( AjaxRecords[record.id].state < 0 ) {
+  }
+  // erase state <= 0
+  else if( AjaxRecords[record.id].state < 0 ) {
       // therefore state -1 ngrams will not be drawn
       return false;
   }
@@ -1482,9 +1491,6 @@ function MainTableAndCharts( data , initial , search_filter) {
       // uncomment for column stateId (here and in transformContent - l.580)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
 
-      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
-      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n";
-      div_table += "\t"+"\t"+'</th>'+"\n";
       // selector columns... not sortable to allow 'click => check all'
       div_table += "\t"+"\t"+'<th data-dynatable-column="will_be_map"'
                             + ' data-dynatable-no-sort="true"'
@@ -1510,6 +1516,10 @@ function MainTableAndCharts( data , initial , search_filter) {
                             + '<label>All</label>'
                             + '</p>'
                             + '</th>'+"\n" ;
+      // main name and score columns
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
+      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n";
+      div_table += "\t"+"\t"+'</th>'+"\n";
       div_table += "\t"+'</tr>'+"\n";
       div_table += "\t"+'</thead>'+"\n";
       div_table += "\t"+'<tbody>'+"\n";
@@ -1683,10 +1693,20 @@ function MainTableAndCharts( data , initial , search_filter) {
     volumeChart.filterAll();
     dc.redrawAll();
 
+    // test if array is enough to restore proper page range
+    var ArrayAjaxRecords = [] ;
+    var i = 0 ;
+    var idmap = {}
+    for (ngid in AjaxRecords) {
+        ArrayAjaxRecords.push(AjaxRecords[ngid]) ;
+        i ++ ;
+        idmap[ngid] = i
+    }
+
     MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
-                  records: AjaxRecords
+                  records: ArrayAjaxRecords
                 },
                 features: {
                   pushState: false,
@@ -1695,6 +1715,10 @@ function MainTableAndCharts( data , initial , search_filter) {
                 writers: {
                   _rowWriter: ulWriter
                   // _cellWriter: customCellWriter
+                },
+                inputs: {
+                    queries: $('select#testquery'),
+                    queries: $('select#picklistmenu'),
                 }
             })
 
@@ -1707,8 +1731,6 @@ function MainTableAndCharts( data , initial , search_filter) {
     MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
     MyTable.data('dynatable').paginationPerPage.set(20);  // default:10
-    // MyTable.data('dynatable').process();
-    // MyTable.data('dynatable').sorts.clear();
     MyTable.data('dynatable').process();
 
     // hook on page change
@@ -1720,78 +1742,27 @@ function MainTableAndCharts( data , initial , search_filter) {
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();
 
+    // bind a filter named 'my_state_filter' to dynatable.queries.functions
+    MyTable.data('dynatable').queries
+        // selects on current state <=> shows only elements of specific list
+        // nb: possible value are in {0,1,2} (see terms.html > #picklistmenu)
+        .functions['my_state_filter'] = function(record,selectedValue) {
+            if (selectedValue == 'reset') {
+                return (AjaxRecords[record.id].state >= 0)
+            }
+            else {
+                // return true or false
+                return (AjaxRecords[record.id].state == selectedValue)
+            }
+        }
+
+    // moves pagination over table
     if ( $(".imadiv").length>0 ) return 1;
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
 
-
-    // Search
-    // TODO : $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
-    $("#"+search_filter).attr( "selected" , "selected" )
-    var the_content = $("#filter_search").html();
-    $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
     return "OK"
-}
-
-
-function SearchFilters( elem ) {
-  var MODE = elem.value;
-
-  if( MODE == "filter_all") {
-    var result = MainTableAndCharts( NGrams["main"] , NGrams["main"].scores.initial , MODE)
-    console.log( result )
-
-    MyTable.data('dynatable').sorts.clear();
-    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
-    MyTable.data('dynatable').process();
-  }
-
-  if( MODE == "filter_map-list") {
-      console.log("ngrams_map:")
-      console.log(NGrams["map"])
-
-      var sub_ngrams_data = {
-          "ngrams":[],
-          "scores": $.extend({}, NGrams["main"].scores)
-      }
-    for(var r in NGrams["main"].ngrams) {
-        if ( NGrams["map"][NGrams["main"].ngrams[r].id] ) {
-            var a_ngram = NGrams["main"].ngrams[r]
-            a_ngram["state"] = System[0]["statesD"]["keep"]
-            sub_ngrams_data["ngrams"].push( a_ngram )
-        }
-    }
-
-    var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
-    console.log( result )
-    // MyTable.data('dynatable').sorts.clear();
-    // MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
-    // MyTable.data('dynatable').process();
-  }
-
-
-  if( MODE == "filter_stop-list") {
-      console.log( NGrams["stop"] )
-      if(Object.keys(NGrams["stop"]).length>0) {
-        var sub_ngrams_data = {
-            "ngrams":[],
-            "scores": $.extend({}, NGrams["main"].scores)
-        }
-        for(var r in NGrams["stop"]) {
-            var a_ngram = NGrams["stop"][r] ;
-            // deletestateId = 2
-            var deletestateId = System[0]["statesD"]["delete"] ;
-            a_ngram["state"] = deletestateId ;
-
-            sub_ngrams_data["ngrams"].push( a_ngram )
-
-        }
-        var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , MODE)
-        console.log( result )
-      }
-  }
-
 }
 
 
@@ -1799,6 +1770,15 @@ function SearchFilters( elem ) {
 //                               SUBROUTINES
 // =============================================================================
 
+
+// This function is connected to a "Test" button in the html
+// place here anything you want to test
+function doATest() {
+    console.log("v----------- TEST -----------v")
+    MyTable.data('dynatable').queries.add('group_exists',true);
+    MyTable.data('dynatable').process();
+    console.log("^---------- /TEST -----------^")
+}
 
 /**
  * tidyAfterUpdate:

@@ -24,18 +24,21 @@
         });
       });
 
+
+      // FIXME: est-ce qu'on ne pourrait pas directement utiliser lists
+      // au lieu  de recopier dans allListsSelect ?
       $rootScope.$watchCollection('lists', function (newValue, oldValue) {
         if (newValue === undefined) return;
         // reformat lists to allListsSelect
         var allListsSelect = [];
-        console.log($rootScope.lists)
+        // console.log($rootScope.lists)
         angular.forEach($rootScope.lists, function(value, key) {
           this.push({
             'id': key,
             'label': value
           });
-          // initialize activeLists with the MiamList by default
-          if (value == 'MAINLIST') {
+          // initialize activeLists with the MAPLIST by default
+          if (value == 'MAPLIST') {
             $rootScope.activeLists = {};
             $rootScope.activeLists[key] = value;
           }
@@ -45,7 +48,7 @@
 
         $timeout(function() {
           $('.selectpicker').selectpicker();
-          $('.selectpicker').selectpicker('val', ['MAINLIST']);
+          $('.selectpicker').selectpicker('val', ['MAPLIST']);
         });
       });
 

@@ -85,19 +85,19 @@ INDEXED_HYPERDATA = {
         , 'convert_from_db': str
         },
 
-    'text':
-        { 'id'             : 7
-        , 'type'           : str
-        , 'convert_to_db'  : str
-        , 'convert_from_db': str
-        },
-
-    'page':
-        { 'id'             : 8
-        , 'type'           : int
-        , 'convert_to_db'  : int
-        , 'convert_from_db': int
-        },
+    # 'text':
+    #     { 'id'             : 7
+    #     , 'type'           : str
+    #     , 'convert_to_db'  : str
+    #     , 'convert_from_db': str
+    #     },
+    #
+    # 'page':
+    #     { 'id'             : 8
+    #     , 'type'           : int
+    #     , 'convert_to_db'  : int
+    #     , 'convert_from_db': int
+    #     },
 
 }
 
@@ -121,38 +121,47 @@ from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser
 
 RESOURCETYPES = [
+    # type 0
     {   'name': 'Europress (English)',
         'parser': EuropressParser,
         'default_language': 'en',
     },
+    # type 1
     {   'name': 'Europress (French)',
         'parser': EuropressParser,
         'default_language': 'fr',
     },
+    # type 2
     {   'name': 'Jstor (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 3
     {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
     },
+    # type 4
     {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 5
     {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'fr',
     },
+    # type 6
     {   'name': 'Zotero (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
+    # type 7
     {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
     },
+    # type 8
     {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',
@@ -165,7 +174,7 @@ DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
 DEFAULT_TFIDF_HARD_LIMIT        = 750        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
 DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
@@ -206,4 +215,3 @@ BATCH_NGRAMSEXTRACTION_SIZE = 1024
 # Scrapers config
 QUERY_SIZE_N_MAX     = 1000
 QUERY_SIZE_N_DEFAULT = 1000
-

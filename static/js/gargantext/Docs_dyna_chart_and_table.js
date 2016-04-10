@@ -33,15 +33,9 @@ var latest,oldest;
 
 var TheBuffer = false
 function Push2Buffer( NewVal ) {
-    console.log( " = = = = = = = = " )
-    console.log( "Push2Buffer()" )
-    console.log( "\t"+NewVal )
     if ( TheBuffer == false) {
         if( ! NewVal ) {
-            // var limits = [ new Date( oldest[0],oldest[1],oldest[2] ) , new Date( latest[0],latest[1],latest[2] ) ];
-            var limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
-            limits[0] = new Date(limits[0].setDate(limits[0].getDate()-1) );
-            limits[1] = new Date(limits[1].setDate(limits[1].getDate()+1) );
+            var limits = [ oldest , latest ];
             NewVal = limits;
         }
         console.log( " - - - - - - " )
@@ -57,9 +51,7 @@ function Push2Buffer( NewVal ) {
         var past = TheBuffer[0]+"_"+TheBuffer[1]
 
         if( ! NewVal ) {
-            var limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
-            limits[0] = new Date(limits[0].setDate(limits[0].getDate()-1) );
-            limits[1] = new Date(limits[1].setDate(limits[1].getDate()+1) );
+            var limits = [ oldest , latest ];
             NewVal = limits;
         }
         var now = NewVal[0]+"_"+NewVal[1]
@@ -101,18 +93,19 @@ function Final_UpdateTable( action ) {
     var dataini = TheBuffer[0];
     var datafin = TheBuffer[1];
     pr("show me the pubs of the selected period")
-    console.log( TheBuffer )
+    // console.log( TheBuffer )
     pr("\tfrom ["+dataini+"] to ["+datafin+"]")
 
     TimeRange = []
-    console.log(dataini, datafin)
+    // console.log("dataini, datafin")
+    // console.log(dataini, datafin)
     $.each(AjaxRecords, function(i, node) {
         if (node.date >= dataini && node.date >= dataini) {
             // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id )
             TimeRange.push(node);
         }
     });
-    console.log(TimeRange)
+    // console.log(TimeRange)
 
     MyTable = $('#my-ajax-table').dynatable({
         dataset: {
@@ -307,6 +300,7 @@ function Main_test( Data , SearchFilter ) {
   var t1 = get_node_date(AjaxRecords.slice(-1)[0]);
   oldest = t0;
   latest = t1;
+  console.log('t0, t1')
   console.log(t0, t1)
 
   TheBuffer = [t0, t1];

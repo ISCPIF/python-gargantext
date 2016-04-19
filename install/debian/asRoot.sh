@@ -17,8 +17,8 @@ echo "Europe/Paris" > /etc/timezone && \
    update-locale LANG=fr_FR.UTF-8
 
 
-## PROD VERSION OF GARGANTEXt
-apt-get install -y uwsgi nginx 
+## PROD VERSION OF GARGANTEXT
+# apt-get install -y uwsgi nginx  uwsgi-plugin-python rabbitmq-server
 
 
 ### CREATE USER and adding it to sudo

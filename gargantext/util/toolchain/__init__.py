@@ -17,7 +17,7 @@ from gargantext.models    import Node
 from datetime             import datetime
 from celery               import shared_task
 
-@shared_task
+#@shared_task
 def parse_extract(corpus):
     # retrieve corpus from database from id
     if isinstance(corpus, int):

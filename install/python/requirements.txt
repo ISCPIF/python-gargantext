@@ -13,7 +13,6 @@ djangorestframework==3.3.2
 html5lib==0.9999999
 jdatetime==1.7.2
 kombu==3.0.33                  # messaging
-lxml==3.5.0
 nltk==3.1
 numpy==1.10.4
 psycopg2==2.6.1
@@ -26,6 +25,7 @@ SQLAlchemy==1.1.0b1.dev0
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 wheel==0.29.0
-pandas==0.18.0
 networkx==1.11
+pandas==0.18.0
 six==1.10.0
+lxml==3.5.0

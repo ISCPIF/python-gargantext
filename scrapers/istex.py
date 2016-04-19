@@ -12,7 +12,6 @@ from gargantext.constants       import RESOURCETYPES, QUERY_SIZE_N_MAX
 from gargantext.models.nodes    import Node
 from gargantext.util.db         import session
 from gargantext.util.http       import JsonHttpResponse
-from gargantext.util.tools      import ensure_dir
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain  import parse_extract_indexhyperdata
 
@@ -123,7 +122,6 @@ def save(request , project_id):
         corpus_id = corpus.id
 
         print("NEW CORPUS", corpus_id)
-        ensure_dir(request.user)
         tasks = Scraper()
 
         for i in range(8):
@@ -144,12 +142,14 @@ def save(request , project_id):
                                    )
                 dwnldsOK+=1
 
+        session.commit()
+        
         if dwnldsOK == 0 :
             return JsonHttpResponse(["fail"])
         ###########################
         ###########################
         try:
-            scheduled(parse_extract_indexhyperdata(corpus_id,))
+            scheduled(parse_extract_indexhyperdata)(corpus_id)
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)

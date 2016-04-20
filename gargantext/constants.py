@@ -102,12 +102,12 @@ INDEXED_HYPERDATA = {
 }
 
 
-from gargantext.util.taggers import EnglishMeltTagger, FrenchMeltTagger
+from gargantext.util.taggers import EnglishMeltTagger, FrenchMeltTagger, TurboTagger
 
 LANGUAGES = {
     'en': {
-        'tagger': EnglishMeltTagger,
-        #'tagger': TurboTagger,
+        #'tagger': EnglishMeltTagger,
+        'tagger': TurboTagger,
         #'tagger': NltkTagger,
     },
     'fr': {

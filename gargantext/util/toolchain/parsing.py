@@ -26,7 +26,10 @@ def parse(corpus):
                 # uniformize the text values for easier POStagging and processing
                 for k in ['abstract', 'title']:
                     if k in hyperdata:
-                        hyperdata[k] = normalize_chars(hyperdata[k])
+                        try :
+                            hyperdata[k] = normalize_chars(hyperdata[k])
+                        except Exception as error :
+                            print("Error normalize_chars", error)
 
                 # save as DB child
                 # ----------------

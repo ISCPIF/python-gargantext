@@ -61,13 +61,13 @@ from django.utils.translation import ugettext_lazy
 class NewCorpusForm(forms.Form):
     type = forms.ChoiceField(
         choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
-        widget = forms.Select(attrs={'onchange':'CustomForSelect( $("option:selected", this).text() );'})
+        widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
     )
     name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
     file = forms.FileField()
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
-        if len(file_) > 1024 ** 3: # we don't accept more than 1GB
+        if len(file_) > 1024 ** 3 : # we don't accept more than 1GB
             raise forms.ValidationError(ugettext_lazy('File too heavy! (>1GB).'))
         return file_
 
@@ -132,9 +132,10 @@ def project(request, project_id):
     sourcename2documentscount = defaultdict(int)
     for sourcename, corpora in sourcename2corpora.items():
         sourcename = re.sub(' \(.*$', '', sourcename)
-        count = corpus.children('DOCUMENT').count()
-        sourcename2documentscount[sourcename] += count
-        total_documentscount += count
+        for corpus in corpora:
+            count = corpus.children('DOCUMENT').count()
+            sourcename2documentscount[sourcename] += count
+            total_documentscount += count
     donut = [
         {   'source': sourcename,
             'count': count,

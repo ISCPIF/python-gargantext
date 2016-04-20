@@ -74,12 +74,12 @@ def save( request , project_id ) :
     except ValueError:
         raise Http404()
     # do we have a valid project?
-    
+
     project = session.query( Node ).filter(Node.id == project_id).first()
 
     if project is None:
         raise Http404()
-    
+
 
     user = cache.User[request.user.id]
     if not user.owns(project):
@@ -132,12 +132,12 @@ def save( request , project_id ) :
         tasks.q.join() # wait until everything is finished
 
         dwnldsOK = 0
-        
+
         for filename in tasks.firstResults :
             print(filename)
             if filename != False:
                 # add the uploaded resource to the corpus
-                corpus.add_resource( 
+                corpus.add_resource(
                                     type = 3
                                    , path = filename
                                    )
@@ -146,7 +146,7 @@ def save( request , project_id ) :
         if dwnldsOK == 0 :
             return JsonHttpResponse(["fail"])
         try:
-            scheduled(parse_extract_indexhyperdata)(corpus_id)
+            scheduled(parse_extract_indexhyperdata(corpus_id))
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)

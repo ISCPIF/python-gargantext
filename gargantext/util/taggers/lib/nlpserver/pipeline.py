@@ -7,25 +7,30 @@ def print(text):
 print('PREPARING TURBOPARSER')
 import turboparser
 turbo_interface = turboparser.PTurboParser()
+print('TURBOPARSER PREPARED')
 
 print('LOADING TOKENIZERS')
 import nltk
 sentence_tokenizer = nltk.data.load(tokenizer_model)
 word_tokenizer = nltk.TreebankWordTokenizer()
+print('TOKENIZERS LOADED')
 
 if 'TAG' in implemented_methods or 'LEMMATIZE' in implemented_methods:
     print('LOADING TAGGER')
     tagger = turbo_interface.create_tagger()
     tagger.load_tagger_model(b_tagger_model)
+    print('TAGGER LOADED')
 
 if 'LEMMATIZE' in implemented_methods or 'TAG' in implemented_methods or 'PARSE' in implemented_methods:
     print('LOADING LEMMATIZER')
     from lemmatizer import lemmatize
+    print('LEMMATIZER LOADED')
 
 if 'PARSE' in implemented_methods:
     print('LOADING PARSER')
     parser = turbo_interface.create_parser()
     parser.load_parser_model(b_parser_model)
+    print('PARSER LOADED')
 
 
 def split_sentences(text):

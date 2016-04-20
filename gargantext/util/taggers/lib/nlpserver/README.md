@@ -15,13 +15,14 @@ CONFIGURATION
 The settings for the server can be found in `settings.py`.
 Please ensure the TCP port is not already in use on your machine, and that the path to the models are correct.
 
-START for tests
-===============
-python3 server.py
+START server in console
+=======================
+launchServeur.sh
+
 "CTRL + c" to shut down
 
-START/STOP THE SERVER
-=====================
+START/STOP THE DAEMON SERVER (DEPRECATED)
+=========================================
 
 Simply run the following command to start: `./nlpserver start`
 To stop: `./nlpserver stop`

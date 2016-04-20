@@ -40,6 +40,6 @@ urlpatterns = [ url(r'^pubmed/query$'     , pubmed.query    )
               , url(r'^istex/save/(\d+)'  , istex.save      )
 
               # TODO
-              #, url(r'^cern/query$'      , cern.query       )
-              #, url(r'^cern/save/(\d+)'  , cern.save        )
+              #, url(r'^scoap3/query$'      , cern.query       )
+              #, url(r'^scoap3/save/(\d+)'  , cern.save        )
               ]

@@ -8,8 +8,8 @@
 ###########################################################
 
 ######################################################################
-#FROM debian:stretch
-FROM gargantext
+FROM debian:stretch
+#FROM gargantext
 MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 ######################################################################
 
@@ -85,22 +85,22 @@ RUN /etc/init.d/postgresql start &&\
 ######################################################################
 ## INSTALL MAIN DEPENDENCIES
 ######################################################################
-USER gargantua
-
-
-# Installing pip version of python libs
-# Possible FIXME : if `pip install -r requirements.txt` fails
-#                  then: fixme >> maybe (split the list)
-#                  else: enjoy
-
-# TODO: user local file requirements with docker (and not wget)
-
-RUN wget http://dl.delanoe.org/requirements.txt -o /tmp/requirements.txt \
-      && /usr/bin/virtualenv --py=/usr/bin/python3.5 env_3-5 \
-      && /bin/bash -c 'source env_3-5/bin/activate' \
-      && /bin/bash -c 'env_3-5/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
-      && /bin/bash -c 'env_3-5/bin/pip install -r /tmp/requirements.txt'
-
+#USER gargantua
+#
+#
+## Installing pip version of python libs
+## Possible FIXME : if `pip install -r requirements.txt` fails
+##                  then: fixme >> maybe (split the list)
+##                  else: enjoy
+#
+## TODO: user local file requirements with docker (and not wget)
+#
+#RUN wget http://dl.delanoe.org/requirements.txt -o /tmp/requirements.txt \
+#      && /usr/bin/virtualenv --py=/usr/bin/python3.5 env_3-5 \
+#      && /bin/bash -c 'source env_3-5/bin/activate' \
+#      && /bin/bash -c 'env_3-5/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
+#      && /bin/bash -c 'env_3-5/bin/pip install -r /tmp/requirements.txt'
+#
 
 ## GET CONFIG FILES (need update)
 #WORKDIR /tmp

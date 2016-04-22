@@ -30,7 +30,6 @@ from graphExplorer.views import explorer
 from scrapers            import urls as scrapers_urls
 
 urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
-              , url(r'^generated/' , include( gargantext.views.generated.urls ))
               , url(r'^api/'       , include( gargantext.views.api.urls )      )
               , url(r'^'           , include( gargantext.views.pages.urls )    )
 

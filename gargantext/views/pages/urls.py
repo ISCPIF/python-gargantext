@@ -16,8 +16,8 @@ urlpatterns = [
     url(r'^auth/logout/?$', auth.logout),
 
     # projects
-    url(r'^projects/?$', projects.overview),
-    url(r'^projects/(\d+)/?$', projects.project),
+    url(r'^projects/?$'         , projects.overview),
+    url(r'^projects/(\d+)/?$'   , projects.project),
 
     # corpora
     url(r'^projects/(\d+)/corpora/(\d+)/?$', corpora.docs_by_titles),
@@ -28,5 +28,5 @@ urlpatterns = [
 
     # terms table for the corpus
     url(r'^projects/(\d+)/corpora/(\d+)/terms/?$', terms.ngramtable),
-    
+
 ]

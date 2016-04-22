@@ -98,6 +98,16 @@ def project(request, project_id):
         # parse_extract: fileparsing -> ngram extraction -> lists
         scheduled(parse_extract_indexhyperdata)(corpus.id)
 
+        return render(
+            template_name = 'pages/projects/wait.html',
+            request = request,
+            context = {
+                'user'   : request.user,
+                'project': project,
+            },
+        )
+
+
     # corpora within this project
     corpora = project.children('CORPUS').all()
     sourcename2corpora = defaultdict(list)
@@ -161,3 +171,5 @@ def project(request, project_id):
             'query_size': QUERY_SIZE_N_DEFAULT,
         },
     )
+
+

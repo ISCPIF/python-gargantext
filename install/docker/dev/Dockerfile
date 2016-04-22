@@ -59,16 +59,16 @@ VOLUME ["/srv","/var"]
 
 # Create directories in /srv
 # FIXME: not tested
-RUN     for dir in "/srv/gargantext"\
-               "/srv/gargantext_lib"\
-               "/srv/gargantext_static"\
-               "/srv/gargantext_media"\
-               "/srv/env_3-5"\
-               "/var/www/gargantext"; do \
-        mkdir -p $dir \
-        chown gargantua:gargantua $dir \
-    done \
-    echo "Root: END of the installation of Gargantext by Root."
+RUN for dir in "/srv/gargantext"\
+           "/srv/gargantext_lib"\
+           "/srv/gargantext_static"\
+           "/srv/gargantext_media"\
+           "/srv/env_3-5"\
+           "/var/www/gargantext"; do \
+    mkdir -p $dir ;\
+    chown gargantua:gargantua $dir ; \
+    done ;\
+    echo "Root: END of the installation of Gargantext by Root." ;
 
 
 ######################################################################
@@ -85,37 +85,39 @@ RUN /etc/init.d/postgresql start &&\
 ######################################################################
 ## INSTALL MAIN DEPENDENCIES
 ######################################################################
-USER gargantua
+#USER gargantua
+#
+#
+## Installing pip version of python libs
+## Possible FIXME : if `pip install -r requirements.txt` fails
+##                  then: fixme >> maybe (split the list)
+##                  else: enjoy
+#
+## TODO: user local file requirements with docker (and not wget)
+#
+#RUN wget http://dl.delanoe.org/requirements.txt -o /tmp/requirements.txt \
+#      && /usr/bin/virtualenv --py=/usr/bin/python3.5 env_3-5 \
+#      && /bin/bash -c 'source env_3-5/bin/activate' \
+#      && /bin/bash -c 'env_3-5/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
+#      && /bin/bash -c 'env_3-5/bin/pip install -r /tmp/requirements.txt'
+#
 
-# TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git
-RUN git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
-	&& cd /srv/gargantext \
-	&& git fetch origin refactoring \
-	&& git checkout refactoring
-
-
-# Possible FIXME : if `pip install -r requirements.txt` fails
-#                  then: fixme >> maybe (split the list)
-#                  else: enjoy
-
-# # Installing pip version of python libs
-# TODO: user local file requirements with docker (and not wget)
-
-RUN wget http://dl.delanoe.org/requirements.txt -o /tmp/requirements.txt \
-      && /usr/bin/virtualenv --py=/usr/bin/python3.5 env_3-5 \
-      && /bin/bash -c 'source env_3-5/bin/activate' \
-      && /bin/bash -c 'env_3-5/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
-      && /bin/bash -c 'env_3-5/bin/pip install -r /tmp/requirements.txt'
-
-
-# GET CONFIG FILES
-WORKDIR /tmp
-RUN wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
-     && tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
-     && chown -R gargantua:gargantua /srv/gargantext_lib \
-     && echo "Root: END of the installation of Gargantexts Database by postgres."
+## GET CONFIG FILES (need update)
+#WORKDIR /tmp
+#RUN wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
+#     && tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
+#     && chown -R gargantua:gargantua /srv/gargantext_lib \
+#     && echo "Root: END of the installation of Gargantexts Database by postgres."
 
 # TODO script pour peupler la base 
 
 ######################################################################
+# Last step as user:
+## TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git
+#RUN git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+#	&& cd /srv/gargantext \
+#	&& git fetch origin refactoring \
+#	&& git checkout refactoring
+
+
 ######################################################################

@@ -9,7 +9,7 @@ def logo(request):
         color = '#093558'
     else:
         # color of the css adapted to the logo
-        color = '#AE5C5C'
+        color = '#5A9AFF'
     svg_data = template.render({
         'color': color,
     })

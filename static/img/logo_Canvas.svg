@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48px"
+   height="48px"
+   id="svg3041"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo_Canvas.svg">
+  <defs
+     id="defs3043" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.60882715"
+     inkscape:cx="-389.51924"
+     inkscape:cy="-197.30647"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1360"
+     inkscape:window-height="762"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     showborder="false" />
+  <metadata
+     id="metadata3046">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-572.36218)">
+    <rect
+       inkscape:export-ydpi="11.7"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       y="371.55121"
+       x="-321.18948"
+       height="320.2265"
+       width="441.92203"
+       id="rect3019-6"
+       style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    <path
+       inkscape:export-ydpi="11.7"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       id="path3950"
+       d="m -210.86518,378.05439 0,260.45538 133.251499,0 0,-17.34693 c -19.39418,-0.95055 -36.525219,-5.29477 -50.253449,-12.63309 -36.68218,-19.59423 -58.73143,-56.84838 -58.73143,-98.9278 0,-63.79128 41.51751,-106.22337 108.984879,-110.99523 l 0,-20.55233 -133.251499,0 z m 133.251499,20.55233 0,17.09554 c 3.42443,-0.32923 6.95031,-0.56568 10.56673,-0.56568 13.586,0 26.13669,2.89852 38.70375,8.35922 l 4.73046,5.78231 5.09906,29.22581 19.04469958,0 0,-51.03518 C -21.885851,401.36563 -43.932381,398.10391 -64.651021,398.10391 c -4.41396,0 -8.74746,0.20467 -12.96266,0.50281 z m 0,17.09554 c -45.783259,4.40161 -74.028639,37.84171 -74.028639,91.63704 0,55.51026 28.40107,90.55691 74.028639,96.16235 l 0,-187.79939 z m 0,187.79939 0,17.66119 c 2.67804,0.13123 5.4097,0.18851 8.17077,0.18851 20.03933,0 43.51019,-3.79954 70.34253958,-11.18751 l 0,-76.80418 5.77486002,-4.46244 18.6761004,-1.63413 0,-13.19875 -84.96397,0 0,13.19875 24.14376,1.63413 5.77484,4.46244 0,66.81083 c -13.24635,2.89097 -24.79921,4.21104 -34.64906,4.21104 -4.56724,0 -8.99584,-0.35485 -13.26984,-0.87992 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:166.11251831px;line-height:125%;font-family:'Bitstream Charter';-inkscape-font-specification:'Bitstream Charter';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#005a9a;fill-opacity:1;stroke:none"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:export-ydpi="11.7"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       sodipodi:open="true"
+       sodipodi:end="6.1660663"
+       sodipodi:start="0"
+       d="m -29.009661,468.13983 a 17.722498,18.131174 0 0 1 -17.203661,18.1234 17.722498,18.131174 0 0 1 -18.210956,-17.06225 17.722498,18.131174 0 0 1 16.137389,-19.12242 17.722498,18.131174 0 0 1 19.155819,15.94262"
+       sodipodi:ry="18.131174"
+       sodipodi:rx="17.722498"
+       sodipodi:cy="468.13983"
+       sodipodi:cx="-46.732159"
+       id="path3952"
+       style="fill:#e5a400;fill-opacity:1;stroke:none"
+       sodipodi:type="arc" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3130"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#005a9a;fill-opacity:1;stroke:none"
+       transform="matrix(1.0213124,0,0,1.0448636,-645.14111,458.26579)"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-ydpi="11.7"><flowRegion
+         id="flowRegion3132"><rect
+           id="rect3134"
+           width="1090.0853"
+           height="476.31992"
+           x="327.0256"
+           y="148.23489"
+           style="fill:#005a9a;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara3136"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:64px;font-family:Sawasdee;-inkscape-font-specification:Sawasdee;fill:#005a9a;fill-opacity:1">Gargan<flowSpan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:72px;font-family:Courier;-inkscape-font-specification:Courier;fill:#005a9a;fill-opacity:1"
+   id="flowSpan3019">text</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3138"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-ydpi="11.7"
+       transform="matrix(1.0213124,0,0,1.0448636,-417.5642,-306.70539)"><flowRegion
+         id="flowRegion3140"><rect
+           id="rect3142"
+           width="127.96654"
+           height="37.916012"
+           x="338.87436"
+           y="77.142372" /></flowRegion><flowPara
+         id="flowPara3144" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3021"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-ydpi="11.7"
+       transform="matrix(1.0213124,0,0,1.0448636,-417.5642,-306.70539)"><flowRegion
+         id="flowRegion3023"><rect
+           id="rect3025"
+           width="3.9310031"
+           height="24.568769"
+           x="739.02856"
+           y="423.98322" /></flowRegion><flowPara
+         id="flowPara3027" /></flowRoot>    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="rect4149"
+       width="267.81677"
+       height="285.73395"
+       x="-234.13687"
+       y="717.76172"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="10"
+       inkscape:export-ydpi="10" />
+    <path
+       inkscape:connector-curvature="0"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:166.11251831px;line-height:125%;font-family:'Bitstream Charter';-inkscape-font-specification:'Bitstream Charter';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#005a9a;fill-opacity:1;stroke:none"
+       d="m -219.07769,730.83489 0,260.45538 133.251498,0 0,-17.34693 c -19.394178,-0.95055 -36.525218,-5.29477 -50.253448,-12.63309 -36.68218,-19.59423 -58.73143,-56.84838 -58.73143,-98.9278 0,-63.79128 41.51751,-106.22337 108.984878,-110.99523 l 0,-20.55233 -133.251498,0 z m 133.251498,20.55233 0,17.09554 c 3.42443,-0.32923 6.95031,-0.56568 10.56673,-0.56568 13.586,0 26.13669,2.89852 38.70375,8.35922 l 4.73046,5.78231 5.09906,29.22581 19.0446991,0 0,-51.03518 c -22.4168691,-6.10311 -44.4633991,-9.36483 -65.1820391,-9.36483 -4.41396,0 -8.74746,0.20467 -12.96266,0.50281 z m 0,17.09554 c -45.783258,4.40161 -74.028638,37.84171 -74.028638,91.63704 0,55.51026 28.40107,90.55691 74.028638,96.16235 l 0,-187.79939 z m 0,187.79939 0,17.66119 c 2.67804,0.13123 5.4097,0.18851 8.17077,0.18851 20.03933,0 43.51019,-3.79954 70.3425391,-11.18751 l 0,-76.80418 5.77486,-4.46244 18.6761009,-1.63413 0,-13.19875 -84.96397,0 0,13.19875 24.14376,1.63413 5.77484,4.46244 0,66.81083 c -13.24635,2.89097 -24.79921,4.21104 -34.64906,4.21104 -4.56724,0 -8.99584,-0.35485 -13.26984,-0.87992 z"
+       id="path4151"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="10"
+       inkscape:export-ydpi="10" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#e5a400;fill-opacity:1;stroke:none"
+       id="path4153"
+       sodipodi:cx="-54.944672"
+       sodipodi:cy="820.92035"
+       sodipodi:rx="17.722498"
+       sodipodi:ry="18.131174"
+       d="m -37.222174,820.92035 a 17.722498,18.131174 0 0 1 -17.203661,18.1234 17.722498,18.131174 0 0 1 -18.210956,-17.06226 17.722498,18.131174 0 0 1 16.137389,-19.12241 17.722498,18.131174 0 0 1 19.155819,15.94262"
+       sodipodi:start="0"
+       sodipodi:end="6.1660663"
+       sodipodi:open="true"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       inkscape:export-xdpi="10"
+       inkscape:export-ydpi="10" />
+    <flowRoot
+       transform="matrix(1.0213124,0,0,1.0448636,-425.77671,48.075106)"
+       inkscape:export-ydpi="11.7"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="flowRoot4165"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4167"><rect
+           y="77.142372"
+           x="338.87436"
+           height="37.916012"
+           width="127.96654"
+           id="rect4169" /></flowRegion><flowPara
+         id="flowPara4171" /></flowRoot>    <flowRoot
+       transform="matrix(1.0213124,0,0,1.0448636,-425.77671,48.075106)"
+       inkscape:export-ydpi="11.7"
+       inkscape:export-xdpi="11.7"
+       inkscape:export-filename="/srv/gargantext/static/img/logoSmall.png"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="flowRoot4173"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4175"><rect
+           y="423.98322"
+           x="739.02856"
+           height="24.568769"
+           width="3.9310031"
+           id="rect4177" /></flowRegion><flowPara
+         id="flowPara4179" /></flowRoot>    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:59.04375076px;line-height:125%;font-family:Courier;-inkscape-font-specification:Courier;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="-859.89105"
+       y="490.82907"
+       id="text4181"
+       sodipodi:linespacing="125%"
+       transform="scale(0.55800284,1.7921056)"><tspan
+         sodipodi:role="line"
+         id="tspan4183"
+         x="-859.89105"
+         y="490.82907">Logo Home</tspan></text>
+  </g>
+</svg>

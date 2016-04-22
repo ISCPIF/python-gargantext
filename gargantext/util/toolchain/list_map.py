@@ -94,7 +94,7 @@ def do_maplist(corpus,
     new_hyperdata = { 'corpus': corpus.id,
                       'limit' : limit,
                       'monograms_part' : monograms_part,
-                      'monograms_result' : obtained_mono/obtained_total
+                     'monograms_result' : obtained_mono/obtained_total if obtained_total != 0 else obtained_mono
                     }
     if overwrite_id:
         # overwrite pre-existing node

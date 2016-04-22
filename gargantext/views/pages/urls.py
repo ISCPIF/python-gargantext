@@ -17,7 +17,6 @@ urlpatterns = [
 
     # projects
     url(r'^projects/?$'         , projects.overview),
-    url(r'^projects/(\d+)/wait$', projects.wait),
     url(r'^projects/(\d+)/?$'   , projects.project),
 
     # corpora

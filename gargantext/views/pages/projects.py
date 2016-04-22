@@ -173,15 +173,3 @@ def project(request, project_id):
     )
 
 
-def wait(request, project_id):
-    '''Gargantext out of service
-    '''
-    return render(
-        template_name = 'pages/projects/wait.html',
-        request = request,
-        context = {
-            'user'   : request.user,
-            'project': project,
-        },
-    )
-

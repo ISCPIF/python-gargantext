@@ -149,7 +149,7 @@ RESOURCETYPES = [
     # type 5
     {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
-        'default_language': 'fr',
+        'default_language': 'en',
     },
     # type 6
     {   'name': 'Zotero (RIS format)',

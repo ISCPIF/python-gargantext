@@ -297,6 +297,85 @@ class ListChange(APIView):
         return(base_list, change_list)
 
 
+class MapListGlance(APIView):
+    """
+    Fast infos about the maplist only
+
+    HOST/api/ngramlists/glance?corpus=2
+    HOST/api/ngramlists/glance?maplist=92
+
+    REST Parameters:
+    "maplist=92"
+        the maplist to retrieve
+    "corpus=ID"
+        alternatively, the corpus to which the maplist belongs
+    """
+
+    def get(self, request):
+        parameters = get_parameters(request)
+
+        maplist_id = None
+        scores_id = None
+
+        if "corpus" in parameters:
+            corpus_id = parameters['corpus']
+            corpus = cache.Node[corpus_id]
+            maplist_id = corpus.children('MAPLIST').first().id
+            # with a corpus_id, the explicit scoring pointer is optional
+            if "scoring" in parameters:
+                scores_id = parameters['scoring']
+            else:
+                scores_id = corpus.children('OCCURRENCES').first().id
+
+        elif "maplist" in parameters and "scoring" in parameters:
+            maplist_id = int(parameters['mainlist'])
+            scores_id = int(parameters['scoring'])
+        else:
+            raise ValidationException("A 'corpus' id or 'maplist' id is required, and a 'scoring' for occurences counts")
+
+        ngraminfo = {}           # ngram details sorted per ngram id
+        listmembers = {'maplist':[]}         # ngram ids sorted per list name
+
+        # infos for all ngrams from maplist
+        map_ngrams = _query_list(maplist_id, details=True,
+                                      scoring_metric_id= scores_id).all()
+
+        # ex:  [(8805, 'mean age', 4.0),
+        #        (1632, 'activity', 4.0),
+        #        (8423, 'present', 2.0),
+        #        (2928, 'objective', 2.0)]
+
+
+        # shortcut to useful function during loop
+        add_to_members = listmembers['maplist'].append
+
+        for ng in map_ngrams:
+            ng_id   = ng[0]
+            ngraminfo[ng_id] = ng[1:]
+
+            # maplist ngrams will already be <=> ngraminfos
+            # but the client side expects a membership lookup
+            # as when there are multiple lists or some groupings
+            add_to_members(ng_id)
+
+
+        return JsonHttpResponse({
+            'ngraminfos' : ngraminfo,
+            'listmembers' : listmembers,
+            'links' : {},   # no grouping links sent during glance (for speed)
+            'nodeids' : {
+                'mainlist':  None,
+                'maplist' :  maplist_id,
+                'stoplist':  None,
+                'groups':  None,
+                'scores':  None,
+            }
+        })
+
+
+
+
+
 class ListFamily(APIView):
     """
     Compact combination of *multiple* list info
@@ -320,7 +399,7 @@ class ListFamily(APIView):
     REST Parameters:
     "head=20"
         use pagination to only load the k top ngrams of the mainlist
-        (useful for fast loading of terms view)
+        (useful for fast loading of terms view) [CURRENTLY NOT USED]
     "corpus=ID"
         the corpus id to retrieve all 4 lists
     "scoring=ID"

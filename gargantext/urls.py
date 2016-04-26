@@ -13,7 +13,6 @@ from django.conf.urls    import include, url
 from django.contrib      import admin
 
 import gargantext.views.api.urls
-import gargantext.views.generated.urls
 import gargantext.views.pages.urls
 
 # Module Annotation

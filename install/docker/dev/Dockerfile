@@ -8,8 +8,8 @@
 ###########################################################
 
 ######################################################################
-#FROM debian:stretch
-FROM gargantext
+FROM debian:stretch
+#jFROM gargantext
 MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 ######################################################################
 #

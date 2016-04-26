@@ -41,20 +41,20 @@ function do_cker {
 # Linux only
 function create_folders {
     for dir in "/srv/gargantext"\
-           "/srv/gargantext_lib"\
-           "/srv/gargantext_static"\
-           "/srv/gargantext_media"\
-           "/srv/gargantext_data"\
-           "/srv/env_3-5"; do \
+            "/srv/gargantext_lib"\
+            "/srv/gargantext_static"\
+            "/srv/gargantext_media"\
+            "/srv/gargantext_data"\
+            "/srv/env_3-5"; do \
     sudo mkdir -p $dir ;\
     sudo chown gargantua:gargantua $dir ; \
-done \
+done;\
 sudo chown -R postgres:postgres /srv/gargantext_data/ 
 }
 
 #do_cker "create_folders"
 
-
+#NOPE
 function git_config {
     ### TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git
     git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
@@ -63,7 +63,7 @@ function git_config {
         && git checkout refactoring
 }
 
-#su gargantua -c git_config
+#su gargantua -c git_config #NOPE
 
 #######################################################################
 ##    ____           _                      
@@ -73,7 +73,7 @@ function git_config {
 ##   |_|   \___/|___/\__\__, |_|  \___||___/
 ##                      |___/               
 #######################################################################
-
+#NOPE
 function postgres_config {
     /usr/lib/postgresql/9.5/bin/initdb -D /srv/gargantext_data/
 }

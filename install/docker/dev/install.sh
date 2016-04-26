@@ -12,7 +12,7 @@
 #                                   
 ######################################################################
 
-#sudo docker build -t gargantext .
+sudo docker build -t gargantext .
 # OR
 # cd /tmp
 # wget http://dl.gargantext.org/gargantext_docker_image.tar \
@@ -48,7 +48,8 @@ function create_folders {
            "/srv/env_3-5"; do \
     sudo mkdir -p $dir ;\
     sudo chown gargantua:gargantua $dir ; \
-done
+done \
+sudo chown -R postgres:postgres /srv/gargantext_data/ 
 }
 
 #do_cker "create_folders"
@@ -72,23 +73,20 @@ function git_config {
 ##   |_|   \___/|___/\__\__, |_|  \___||___/
 ##                      |___/               
 #######################################################################
-#
-#
-sudo chown -R postgres:postgres /srv/gargantext_data/ 
 
 function postgres_config {
     /usr/lib/postgresql/9.5/bin/initdb -D /srv/gargantext_data/
 }
+#do_cker "su postgres -c postgres_config"
 
-do_cker "su postgres -c postgres_config"
+function postgres_create_db {
+    sudo /etc/init.d/postgresql start \
+     && psql -c "CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'" \
+     && createdb -O gargantua gargandb \
+     && echo "Root: END of the installation of Gargantexts Database by postgres."
+} 
+#do_cker postgres_create_db 
 
-## sudo /etc/init.d/postgresql start \
-##     && psql -c "CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'" \
-##     && createdb -O gargantua gargandb \
-##     && echo "Root: END of the installation of Gargantexts Database by postgres."
-## 
-#
-#
 #######################################################################
 ##    _     _ _               _      _           
 ##   | |   (_) |__  _ __ __ _(_)_ __(_) ___  ___ 
@@ -98,35 +96,36 @@ do_cker "su postgres -c postgres_config"
 ##                                               
 #######################################################################
 #
-#
 #######################################################################
 ### INSTALL MAIN DEPENDENCIES
 #######################################################################
-##USER gargantua
-###
 ###
 #### Installing pip version of python libs
 #
-#function install_python_env {
-#    /usr/bin/virtualenv --py=/usr/bin/python3.5 /srv/env_3-52 \
-#    && /bin/bash -c 'source /srv/env_3-52/bin/activate' \
-#    && /bin/bash -c '/srv/env_3-52/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
-#    && /bin/bash -c '/srv/env_3-52/bin/pip install -r /srv/gargantext/install/python/requirements.txt'
-#}
-#
+function install_python_env {
+    /usr/bin/virtualenv --py=/usr/bin/python3.5 /srv/env_3-52 \
+    && /bin/bash -c 'source /srv/env_3-52/bin/activate' \
+    && /bin/bash -c '/srv/env_3-52/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1' \
+    && /bin/bash -c '/srv/env_3-52/bin/pip install -r /srv/gargantext/install/python/requirements.txt'
+}
+
 #do_cker "su gargantua -c install_python_env"
-#
+
 #######################################################################
-#function init_gargantext {
-#    echo "TODO script pour peupler la base"
-#}
-#
+function init_gargantext {
+    echo "TODO script pour peupler la base"
+}
+
 #do_cker "su gargantua -c init_gargantext"
 #######################################################################
-#
 ### GET CONFIG FILES
-##wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
-##     && tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
-##     && sudo chown -R gargantua:gargantua /srv/gargantext_lib \
-##     && echo "Libs installed"
-#
+
+function get_libs {
+    wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
+     && tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
+     && sudo chown -R gargantua:gargantua /srv/gargantext_lib \
+     && echo "Libs installed"
+    }
+
+#do_cker get_libs
+

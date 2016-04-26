@@ -40,12 +40,12 @@ function do_cker {
 ### Create directories in /srv
 # Linux only
 function create_folders {
-    for dir in "/srv2/gargantext"\
-           "/srv2/gargantext_lib"\
-           "/srv2/gargantext_static"\
-           "/srv2/gargantext_media"\
-           "/srv2/gargantext_data"\
-           "/srv2/env_3-5"; do \
+    for dir in "/srv/gargantext"\
+           "/srv/gargantext_lib"\
+           "/srv/gargantext_static"\
+           "/srv/gargantext_media"\
+           "/srv/gargantext_data"\
+           "/srv/env_3-5"; do \
     sudo mkdir -p $dir ;\
     sudo chown gargantua:gargantua $dir ; \
 done
@@ -56,8 +56,8 @@ done
 
 function git_config {
     ### TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git
-    git clone ssh://gitolite@delanoe.org:1979/gargantext /srv2/gargantext \
-        && cd /srv2/gargantext \
+    git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+        && cd /srv/gargantext \
         && git fetch origin refactoring \
         && git checkout refactoring
 }

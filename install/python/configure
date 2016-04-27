@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ENV="/srv/env_3-5"
+
+/usr/bin/virtualenv --py=/usr/bin/python3.5 $ENV \
+&& /bin/bash -c "source ${ENV}/bin/activate" \
+&& /bin/bash -c "${ENV}/bin/pip install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1" \
+&& /bin/bash -c "${ENV}/bin/pip install -r /srv/gargantext/install/python/requirements.txt"

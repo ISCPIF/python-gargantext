@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#######################################################################
+#    ____             _             
+#   |  _ \  ___   ___| | _____ _ __ 
+#   | | | |/ _ \ / __| |/ / _ \ '__|
+#   | |_| | (_) | (__|   <  __/ |   
+#   |____/ \___/ \___|_|\_\___|_|   
+#                                   
+######################################################################
+
+sudo docker build -t gargantext .
+# OR
+# cd /tmp
+# wget http://dl.gargantext.org/gargantext_docker_image.tar \
+# && sudo docker import - gargantext:latest < gargantext_docker_image.tar
+
+
+
+
+
+
+

@@ -71,7 +71,7 @@ wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
 && echo "Libs installed"
 ```
 
-## Launch Gargantext
+## Configure && Launch Gargantext
 
 ### Enter docker container
 ``` bash
@@ -87,7 +87,7 @@ python /srv/gargantext/dbmigrate.py
 /srv/gargantext/manage.py migrate
 python /srv/gargantext/dbmigrate.py
 python /srv/gargantext/dbmigrate.py
-echo "TODO: Init first user"
+python /srv/gargantext/init_accounts.py /srv/gargantext/install/init/account.csv
 ```
 
 FIXME: dbmigrate need to launched several times since tables are
@@ -99,7 +99,6 @@ service postgresql start
 su gargantua
 source /srv/env_3-5/bin/activate
 /srv/gargantext/manage.py runserver 0.0.0.0:8000
-python /srv/gargantext/init_accounts.py /srv/gargantext/install/init/account.csv
 ```
 
 ### Outside docker container launch browser

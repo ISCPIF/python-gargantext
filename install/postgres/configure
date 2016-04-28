@@ -10,7 +10,7 @@
 #######################################################################
 
 su postgres -c 'pg_dropcluster 9.4 main --stop'
-rm -rf /srv/gargantext_data && mkdir /srv/gargantext_data && chown postgres:postgres /srv/gargantext_data
+#rm -rf /srv/gargantext_data && mkdir /srv/gargantext_data && chown postgres:postgres /srv/gargantext_data
 su postgres -c '/usr/lib/postgresql/9.5/bin/initdb -D /srv/gargantext_data/'
 su postgres -c '/usr/lib/postgresql/9.5/bin/pg_ctl -D /srv/gargantext_data/ -l journal_applicatif start'
 

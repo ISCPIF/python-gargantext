@@ -12,9 +12,10 @@ def get_engine():
     url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
         **settings.DATABASES['default']
     )
-    return create_engine(url,
-        use_native_hstore = True,
-        json_serializer = json_dumps,
+    return create_engine( url
+                        , use_native_hstore = True
+                        , json_serializer = json_dumps
+                        , pool_size=20, max_overflow=0
     )
 
 engine = get_engine()

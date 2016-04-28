@@ -10,7 +10,7 @@ Install Instructions for Gargantext (CNRS):
 ## Help needed ?
 See http://gargantext.org/about and tools for the community
 
-## SETUP
+##SETUP
 Prepare your environnement
 
 Create user gargantua
@@ -212,9 +212,9 @@ for dir in "/srv/gargantext"
            "/srv/gargantext_lib"
            "/srv/gargantext_static"
            "/srv/gargantext_media"
-           "/srv/env_3-5"; do 
+           "/srv/env_3-5"; do
     sudo mkdir -p $dir ;
-    sudo chown gargantua:gargantua $dir ; 
+    sudo chown gargantua:gargantua $dir ;
 done
 ```
 

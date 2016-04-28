@@ -41,8 +41,10 @@ RUN apt-get update && apt-get install -y \
        # ^for numpy, pandas
        python3-numexpr \
        # ^ for numpy performance
-       libxml2-dev libxslt-dev
+       libxml2-dev libxslt-dev \
        # ^ for lxml
+       bzip2
+       # ^ for the Gargantext librairies
 
 ### PROD VERSION OF GARGANTEXT ONLY
 #RUN apt-get install -y uwsgi nginx  uwsgi-plugin-python rabbitmq-server

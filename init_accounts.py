@@ -73,7 +73,6 @@ def create_user(username, email, user=None, password=None, active=False, notify=
     if user is None:
         user = User()
     user.username    = username
-    user.first_name  = username
     user.email       = email
     user.is_active = True
     if password is None or password == "":
@@ -83,7 +82,8 @@ def create_user(username, email, user=None, password=None, active=False, notify=
     session.commit()
 
     if notify == True:
-        notify_user(username, email, password)
+        pass
+        #notify_user(username, email, password)
 
     return user
 

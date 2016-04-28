@@ -1,26 +1,26 @@
 from django.contrib.auth import models
 from gargantext.util.db import *
 
+from datetime import datetime
 
 __all__ = ['User']
 
 
 class User(Base):
 
-    # Do not change!
     # The properties below are a reflection of Django's auth module's models.
     __tablename__ = models.User._meta.db_table
-    id = Column(Integer, primary_key=True)
-    password = Column(String(128))
-    last_login = DateTime(timezone=False)
+    id           = Column(Integer, primary_key=True)
+    password     = Column(String(128))
     is_superuser = Column(Boolean(), default=False)
-    username = Column(String(30))
-    first_name = Column(String(30))
-    last_name = Column(String(30))
-    email = Column(String(75))
-    is_staff = Column(Boolean())
-    is_active = Column(Boolean())
-    date_joined = DateTime(timezone=False)
+    is_staff     = Column(Boolean(), default=False)
+    username     = Column(String(30))
+    first_name   = Column(String(30), default="")
+    last_name    = Column(String(30), default="")
+    email        = Column(String(75))
+    is_active    = Column(Boolean(), default=True)
+    last_login   = Column(DateTime(timezone=False))
+    date_joined  = Column(DateTime(timezone=False), default=datetime.now)
 
     def contacts(self):
         """get all contacts in relation with the user"""

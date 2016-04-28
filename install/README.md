@@ -99,6 +99,7 @@ service postgresql start
 su gargantua
 source /srv/env_3-5/bin/activate
 /srv/gargantext/manage.py runserver 0.0.0.0:8000
+python /srv/gargantext/init_accounts.py /srv/gargantext/install/init/account.csv
 ```
 
 ### Outside docker container launch browser

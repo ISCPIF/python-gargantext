@@ -1756,6 +1756,10 @@ function MainTableAndCharts( data , initial , search_filter) {
             }
         }
 
+    // and set this filter's initial status to 'maplist' (aka state == 1)
+    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    MyTable.data('dynatable').process();
+
     // moves pagination over table
     if ( $(".imadiv").length>0 ) return 1;
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
@@ -1897,9 +1901,18 @@ $("#corpusdisplayer").hide()
 
 
 
-// NEW AJAX
+// NEW AJAX x 2
+
+var prefetch_url = window.location.origin+"/api/ngramlists/maplist?corpus="+corpus_id ;
 var new_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_id ;
-GET_(new_url, function(res) {
+
+// faster call: just the maplist, will return first
+GET_(prefetch_url, HandleAjax);
+
+// longer call (full list of terms) to return when ready and refresh all data
+GET_(new_url, HandleAjax)
+
+function HandleAjax(res) {
     if (res && res.ngraminfos) {
 
         main_ngrams_objects = {}
@@ -1955,8 +1968,7 @@ GET_(new_url, function(res) {
     $("input#groups_id").val(res.nodeids['groups'])
     $("input#scores_id").val(res.nodeids['scores'])
     AfterAjax() ;
-});
-
+}
 
 function AfterAjax() {
   // -------------------------------------------------------------------

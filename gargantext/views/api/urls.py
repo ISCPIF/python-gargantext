@@ -21,10 +21,13 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
                 # post data looks like : {"767":[209,640],"779":[436,265,385]}"
 
               , url(r'^ngramlists/family$'     , ngramlists.ListFamily.as_view())
-                # entire combination of lists from a corpus
+                # entire combination of lists from a corpus, dedicated to termtable
                 # (or any combination of lists that go together :
                 #   - a mainlist
                 #   - an optional stoplist
                 #   - an optional maplist
                 #   - an optional grouplist
+
+              , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view())
+                # fast access to maplist, similarly formatted for termtable
               ]

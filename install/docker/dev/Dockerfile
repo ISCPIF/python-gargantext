@@ -6,18 +6,18 @@
 #    \____|\__,_|_|   \____|\__,_|_| |_|_|\___/_/\_\\__|  #
 #                                                         #
 ###########################################################
-
+# https://docs.docker.com/compose/django/
 ######################################################################
 FROM debian:stretch
-#jFROM gargantext
+#FROM gargantext
 MAINTAINER ISCPIF <alexandre.delanoe@iscpif.fr>
 ######################################################################
-#
+
 USER root
 
 RUN apt-get update && \
     apt-get install -y \
-    apt-utils ca-certificates locales \
+    apt-utils ca-certificates locales man dialog\
     sudo aptitude gcc g++ wget git postgresql-9.5 vim
 
 ### Configure timezone and locale
@@ -55,10 +55,10 @@ RUN apt-get install -y sudo && adduser gargantua sudo \
      && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 
-#######################################################################
-### CONFIGURE POSTGRESQL
-#######################################################################
+#####################################################################
+# CONFIGURE POSTGRESQL
+#####################################################################
 
-RUN sed -iP 's%^data_directory.*%data_directory = '\/srv\/gargantext_data'%' /etc/postgresql/9.5/main/postgresql.conf
+RUN sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargantext_data\'%" /etc/postgresql/9.5/main/postgresql.conf
 
-######################################################################
+#####################################################################

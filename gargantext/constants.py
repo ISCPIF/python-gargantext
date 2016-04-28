@@ -106,8 +106,8 @@ from gargantext.util.taggers import EnglishMeltTagger, FrenchMeltTagger, TurboTa
 
 LANGUAGES = {
     'en': {
-        #'tagger': EnglishMeltTagger,
-        'tagger': TurboTagger,
+        'tagger': EnglishMeltTagger,
+        #'tagger': TurboTagger,
         #'tagger': NltkTagger,
     },
     'fr': {

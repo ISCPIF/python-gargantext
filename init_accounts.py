@@ -72,8 +72,9 @@ def notify_user(username, email, password):
 def create_user(username, email, user=None, password=None, active=False, notify=True):
     if user is None:
         user = User()
-    user.username  = username
-    user.email     = email
+    user.username    = username
+    user.first_name  = username
+    user.email       = email
     user.is_active = True
     if password is None or password == "":
         password = make_random_password()

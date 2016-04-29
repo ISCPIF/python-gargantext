@@ -2,6 +2,6 @@ site_name: Gargantext
   - "Welcome":"index.md"
   - "Installation Guide":"install.md"
   - "User Guide":"tuto.md"
-  - "Contribution Guide":"dev.md"
+  - "Contribution Guide":"contribution.md"
   - "Next steps":"todo.md"
 theme: readthedocs

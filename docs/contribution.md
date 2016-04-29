@@ -17,7 +17,6 @@
 * Architecture Overview
 
 
-
 * Database Schema Overview
 
 * Interface design Overview

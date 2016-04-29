@@ -3,7 +3,7 @@
 1. Login
 
 run the gargantex box following the install procedure
-open a webrwoser at http://127.0.0.1:8000/
+open a webrowser at http://127.0.0.1:8000/
 click on Test Gargantext
 login with:
 ```
@@ -14,8 +14,16 @@ Password : autnagrag
 2. Create a project
 
 3. Import an existing corpus
-4. create corpus
-5. Explore
-6. Query
-7. Refine
-8. Export
+
+4. Create corpus from search
+
+5. Explore stats
+
+6. Explore graphs
+
+7. Query
+
+8. Refine
+* Time periods
+* Nodes
+9. Export

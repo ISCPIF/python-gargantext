@@ -18,8 +18,7 @@
 {% block content %}
 
 <div class="container">
-    <div>
-        <div class="row">
+    <div class="col-md-3 col-md-offset-2">
             <div id="monthly-move-chart">
                 <center>
                         Select a score/frequency range in the chart with blue bars to zoom in
@@ -29,10 +28,11 @@
                 <div class="clearfix"></div>
                 </center>
             </div>
-        </div>
+        
         <div class="row">
             <div id="monthly-volume-chart"></div>
         </div>
+        
         <div id="content_loader">
           <br>
           <center>
@@ -40,7 +40,10 @@
           </center>
           <br>
         </div>
+    </div>
+</div>
 
+<div class="container">
         <!-- (values set by js) caching our DB ids (handy for list update commands) -->
         <input type="hidden" id="mainlist_id" value=""></input>
         <input type="hidden" id="maplist_id" value=""></input>

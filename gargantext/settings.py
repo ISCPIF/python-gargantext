@@ -26,7 +26,7 @@ SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 DEBUG = True
 MAINTENANCE = False
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost','dev.gargantext.org', 'garg-dev.iscpif.fr']
 
 
 # Asynchronous tasks
@@ -87,8 +87,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gargantext.wsgi.application'
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+
 STATIC_ROOT = '/srv/gargantext_static/'
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+)
 
 MEDIA_ROOT = '/srv/gargantext_media'
 #MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
@@ -143,17 +155,4 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-#STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
-
-
-
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-)

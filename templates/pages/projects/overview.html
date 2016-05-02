@@ -30,8 +30,10 @@
 
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
-        <h1>My projects</h1>
-        <p>Template showing my working space</p>
+        <h1>
+            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+            Projects
+        </h1>
         <p>
             <button
             type="button"
@@ -64,7 +66,12 @@
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
         <div id="project_{{project.id}}" class="col-md-3 content">
-            <h3><a  href="/projects/{{ project.id }}">{{ project.name }}
+            <h3>
+                
+                <a  
+                href="/projects/{{ project.id }}">
+                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                    {{ project.name }}
                 </a>
                 <a href="/projects/{{project.id}}" >
                 <button type="button" class="btn btn-default" aria-label="Left Align">

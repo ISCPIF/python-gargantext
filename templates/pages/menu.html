@@ -92,37 +92,32 @@
                                 --!>
                                 <!-- <li class="divider"></li> --!>
                                 
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "titles" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles</a>
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "journals" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals</a>
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "terms" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
+                                <a type="button" class="btn btn-default {% if view == "titles" %} active {% endif %}"
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles
+                                </a>
                                 
-                                <!-- <li class="divider"></li> --!>
-                            
-                                <!-- FIXME put a separator here --!>
-                                <!--
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "charts" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Advanced Charts</a>
-                                --!>
+                                <a type="button" class="btn btn-default {% if view == "journals" %} active {% endif %}"
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals
+                                </a>
                                 
-                                <!-- FIXME a pop up for advanced mode of graphs --!>
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "conditional" %}active{%endif%}" 
-                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "distributional" %}active{%endif%}" 
-                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
-                                <!--
-                                <a type="button" class="btn btn-default 
-                                    {% if view == "journalTerms" %}active{%endif%}" 
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/graph">Graphs Journal/Terms</a>
-                                --!>
+                                {% for state in corpus.hyperdata.statuses %}
+                                    {% if state.action == "ngrams_extraction" %}
+                                        {% if state.complete %}
+
+                                        <a type="button" class="btn btn-default 
+                                                {% if view == "terms" %} active {% endif %}"
+                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
+                                        
+                                        <!-- <li class="divider"></li> --!>
+                                    
+                                        <!-- FIXME a pop up for advanced mode of graphs --!>
+                                        <a type="button" class="btn btn-default "
+                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
+                                        <a type="button" class="btn btn-default "
+                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
+                                            {% endif %}
+                                        {% endif %}
+                                {% endfor %}
                             </center>
                         </div>
                     </div>
@@ -130,9 +125,16 @@
                     <div class="row">
                         <div class="col-md-4">
                             {% if project %}
-                                <h3><a href="/projects/{{project.id}}">Project: {{ project.name }}</a>
-                                <br> Corpus: {{ corpus.name }} 
-                                <br> ({{ corpus.date }})
+                                <h3><a href="/projects/{{project.id}}">
+                                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                        {{ project.name }}
+                                    </a>
+                                <br> 
+                                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                        {{ corpus.name }}
+                                <br> 
+                                        <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                                        {{ corpus.date }}
                                 </h3>
                             {% endif %}
                         </div>

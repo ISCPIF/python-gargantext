@@ -71,6 +71,7 @@ class NewCorpusForm(forms.Form):
             raise forms.ValidationError(ugettext_lazy('File too heavy! (>1GB).'))
         return file_
 
+
 @requires_auth
 def project(request, project_id):
     # current user

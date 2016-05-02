@@ -30,7 +30,9 @@
         <div class="row">
             <div class="col-md-6">
                 {% if project %}
-                <h1>{{ project.name }}</h1>
+                <h1>
+                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                    {{ project.name }}</h1>
                 <!--<h3> {{number}} corpora </h3>-->
                 {% endif %}
             </div>
@@ -69,11 +71,11 @@
 <div class="container">
 
     {% if list_corpora  %}
-    <h1>Resources</h1>
     <h2>Corpora</h2>
     <ul>
         {% for key, corpora in list_corpora.items %}
         <li>
+            <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
             {{ key }}
             <ul>
                 {% for corpus in corpora %}
@@ -84,6 +86,7 @@
                     Processing, drink a cup of tea, and refresh the page :)
                     {% else %}
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                         {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
                     </a>
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
@@ -92,7 +95,7 @@
                     </button>
 
                     </a>
-
+                    
                     {% endifequal %}
                     <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                     data-content="
@@ -112,6 +115,57 @@
                     ">
                     <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                     </button>
+
+                    <p>
+                    <div class="progress">
+                    {% for state in corpus.hyperdata.statuses %}
+                        {% ifequal state.action "parsing" %}
+                          <div class=" progress-bar progress-bar-striped
+                                        {% if state.complete %}
+                                            progress-bar-success
+                                            {% else %}
+                                            active
+                                        {% endif %}
+                                     "
+                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                              <span>
+                                Parsing
+                                        {% if state.complete %}
+                                            Complete
+                                            {% else %}
+                                            Processing
+                                        {% endif %}
+
+                              </span>
+                          </div>
+                        {% endifequal %}
+                        
+                        {% ifequal state.action "ngrams_extraction" %}
+                           <div class="progress-bar progress-bar-striped 
+                                        {% if state.complete %}
+                                            progress-bar-success
+                                            {% else %}
+                                            active
+                                        {% endif %}
+                                      "
+                                 role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                              <span>
+                              Ngrams extraction
+                                        {% if state.complete %}
+                                            Complete
+                                            {% else %}
+                                            Processing
+                                        {% endif %}
+                              </span>
+                          </div>
+                        {% endifequal %}
+                      
+                    {% endfor %}
+                    </div>
+
+                    </p>
+
+    
                 </li>
                 {% endfor %}
             </ul>

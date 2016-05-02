@@ -11,11 +11,6 @@
         <div id="dafixedtop" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container">
                 <div class="navbar-inner">
-                    <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
                     <a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="{% static "img/logoSmall.png"%}" title="Back to home."></a>
                 </div>
 
@@ -30,19 +25,22 @@
                         <li><a href="/projects/" title="All your projects are here.">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                                 Projects
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                         {% if project %}
                         <li><a href="/projects/{{project.id}}">
                                 <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                 {{project.name}}
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                         {% if corpus %}
                         <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                 {{corpus.name}}
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                     </ul>
 
@@ -74,6 +72,55 @@
                     </ul>
                 </div>
             </div>
+            {% if corpus %}
+            <div class="container">
+                    <ul class="nav nav-tabs navbar-static-top nav-justified">
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == "titles" %} active {% endif %}"
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles
+                                </a>
+                        </li>
+                                
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == "journals" %} active {% endif %}"
+                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals
+                                </a>
+                        </li>
+
+
+                        {% for state in corpus.hyperdata.statuses %}
+                            {% if state.action == "ngrams_extraction" %}
+                                {% if state.complete %}
+
+                                    <li>
+                                        <a type="button" class="btn btn-default 
+                                                {% if view == "terms" %} active {% endif %}"
+                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
+                                    </li>
+                                        
+                                    
+                                    <li class="dropdown">
+                                        <a type="button" class="btn btn-default ">
+                                        Graphs
+                                        </a>
+                                    </li>
+                    <ul class="dropdown-menu">
+                                    <li>
+                                        <a tabindex="-1" type="button" class="btn btn-default "
+                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
+                                    </li>
+                                    <li>
+                                        <a tabindex="-1" type="button" class="btn btn-default "
+                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
+                                    </li>
+                    </ul>
+                                    {% endif %}
+                                {% endif %}
+                        {% endfor %}
+
+                    </ul>
+            </div>
+            {% endif %}
         </div>
         <!--/.nav-collapse -->
 
@@ -82,46 +129,14 @@
         {% if corpus %}
         <div class="container theme-showcase">
             <div class="jumbotron" style="margin-bottom:0">
-                <div id="corpusbar" class="row">
-                    <div class="col-md-12">
-                        <div class="btn-group btn-group-justified">
-                            <center>
+                <br>
+                <br>
                                 <!--
                                 <a type="button" class="btn btn-default 
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
                                 --!>
                                 <!-- <li class="divider"></li> --!>
-                                
-                                <a type="button" class="btn btn-default {% if view == "titles" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles
-                                </a>
-                                
-                                <a type="button" class="btn btn-default {% if view == "journals" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals
-                                </a>
-                                
-                                {% for state in corpus.hyperdata.statuses %}
-                                    {% if state.action == "ngrams_extraction" %}
-                                        {% if state.complete %}
-
-                                        <a type="button" class="btn btn-default 
-                                                {% if view == "terms" %} active {% endif %}"
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
-                                        
-                                        <!-- <li class="divider"></li> --!>
-                                    
-                                        <!-- FIXME a pop up for advanced mode of graphs --!>
-                                        <a type="button" class="btn btn-default "
-                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
-                                        <a type="button" class="btn btn-default "
-                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
-                                            {% endif %}
-                                        {% endif %}
-                                {% endfor %}
-                            </center>
-                        </div>
-                    </div>
-                </div>
+                           
                     <div class="row">
                         <div class="col-md-4">
                             {% if project %}

@@ -30,32 +30,40 @@
 
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
-        <h1>
-            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
-            Projects
-        </h1>
-        <p>
-            <button
-            type="button"
-            class="btn btn-primary btn-lg"
-            data-container="body"
-            data-toggle="popover"
-            data-placement="bottom"
-            >
-                      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add a project
-            </button>
-            <div id="popover-content" class="hide">
-                <form enctype='multipart/form-data' action='/projects/' method='post'>
-                    {% csrf_token %}
-                    <p>
-                        <label for="id_name">Name:</label>
-                        <input id="id_name" maxlength="255" name="name" type="text" />
-                    </p>
-                    <input type='submit' class="btn" value='Add this project !'/>
-                </form>
-            </div>
-        </p>
+        <div class="row">
+        <div class="col-md-4">
+            <h1>
+                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                Projects
+            </h1>
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <p>
+            <br>
+                <button
+                type="button"
+                class="btn btn-primary btn-lg"
+                data-container="body"
+                data-toggle="popover"
+                data-placement="bottom"
+                >
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                Add a new project
+                </button>
+                <div id="popover-content" class="hide">
+                    <form enctype='multipart/form-data' action='/projects/' method='post'>
+                        {% csrf_token %}
+                        <p>
+                            <label for="id_name">Name:</label>
+                            <input id="id_name" maxlength="255" name="name" type="text" />
+                        </p>
+                        <input type='submit' class="btn" value='Add this project !'/>
+                    </form>
+                </div>
+            </p>
+        </div>
+        </div>
     </div>
 </div>
 

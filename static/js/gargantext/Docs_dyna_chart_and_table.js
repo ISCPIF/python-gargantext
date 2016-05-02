@@ -435,11 +435,14 @@ function Main_test( Data , SearchFilter ) {
               },
               features: {
                 pushState: false,
+                // prevent default title search which can't do title vs abstract
+                search: false,
                 // sort: false //i need to fix the sorting function... the current one just sucks
               },
-              // inputs: {
-              //   queries: $('#searchAB')
-              // },
+              inputs: {
+                // our own search which differentiates title vs abstract queries
+                queries: $('#doubleSearch')
+              },
               writers: {
                 _rowWriter: ulWriter
                 // _cellWriter: customCellWriter
@@ -454,26 +457,53 @@ function Main_test( Data , SearchFilter ) {
   $(".dynatable-record-count").insertAfter(".imadiv")
   $(".dynatable-pagination-links").insertAfter(".imadiv")
 
+  // make filter checkboxes appear in the right place (ie after search box)
   $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
   $("#"+SearchFilter).attr( "selected" , "selected" )
 
   var the_content = $("#filter_search").html();
-  $(""+the_content).insertAfter("#dynatable-query-search-my-ajax-table")
+  $(""+the_content).insertAfter("#doubleSearch")
 
+  // binds a custom filter to our 'doubleSearch' via dynatable.queries.functions
+  MyTable.data('dynatable').queries
+      .functions['doubleSearch'] = function(record,searchString) {
+          // NB searchString == $("#doubleSearch").val()
 
-  // $('#searchAB').click( function() {
-  //   if($(this).is(':checked')) {
-  //       console.log( "Do stuff")
-  //       $("#dynatable-query-search-my-ajax-table").keyup(function (e) {
-  //         if (e.keyCode == 13) {
-  //           console.log("Do stuff: Just pressed ENTER")
-  //         }
-  //       })
-  //   }
-  // });
-    // MyTable.data('dynatable').settings.inputs.queries = { $('#searchAB') }
+          // by default we always decide to search in the title
+          matchInTexts = [record.title]
 
-  // .insertAfter("#dynatable-query-search-my-ajax-table")
+          // if box is checked we'll also search in the abstracts
+          if ($("#searchAB").is(':checked')) {
+              matchInTexts.push(record.hyperdata.abstract)
+          }
+
+          // inspired from the default cf. dynatable.queries.functions['search']
+          var contains = false;
+          for (i in matchInTexts) {
+              matchInText = matchInTexts[i]
+              contains = (
+                  matchInText.toLowerCase().indexOf(
+                      searchString.toLowerCase()
+                  ) !== -1
+              )
+              if (contains) { break; } else { continue; }
+          }
+          return contains;
+        }
+
+  MyTable.data('dynatable').process
+
+  // re-apply search function on click
+  $('#searchAB').click( function() {
+    MyTable.data('dynatable').process();
+  });
+
+  // re-apply search function on ENTER
+  $("#doubleSearch").keyup(function (e) {
+    if (e.keyCode == 13) {
+      MyTable.data('dynatable').process();
+    }
+  })
 
   return "OK"
 }

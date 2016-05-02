@@ -26,6 +26,10 @@ th a {
     min-width: 20em;
 }
 
+#doubleSearch {
+    min-width: 25em;
+}
+
 .dynatable-search {
     margin-left: 2em;
     font-size: 16px;

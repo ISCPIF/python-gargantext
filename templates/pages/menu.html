@@ -21,16 +21,28 @@
 
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">About</a>
+                        <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">
+                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                About
+                            </a>
                         </li>
                         {% if user.is_authenticated %}
-                        <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
+                        <li><a href="/projects/" title="All your projects are here.">
+                                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                                Projects
+                            </a></li>
                         {% endif %}
                         {% if project %}
-                        <li><a href="/projects/{{project.id}}">{{project.name}}</a></li>
+                        <li><a href="/projects/{{project.id}}">
+                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                {{project.name}}
+                            </a></li>
                         {% endif %}
                         {% if corpus %}
-                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">{{corpus.name}}</a></li>
+                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                {{corpus.name}}
+                            </a></li>
                         {% endif %}
                     </ul>
 
@@ -38,14 +50,22 @@
                         <li class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your username">
                                 <i class="icon-user"></i>
+                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
                                 {{ user.username }}
                                 <i class="caret"></i>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">Report Feedback</a></li>
+                                <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">
+                                        <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+                                        Report Feedback</a></li>
                                 <li class="divider"></li>
                                 {% if user.is_authenticated %}
-                                <li><a tabindex="-1" href="/auth/logout" title="Click here to logout especially on public devices">Logout</a></li>
+                                <li>
+                                    <a tabindex="-1" href="/auth/logout" 
+                                        title="Click here to logout especially on public devices">
+                                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
+                                        Logout
+                                    </a></li>
                                 {% else %}
                                 <li><a tabindex="-1" href="/auth/login">Login</a></li>
                                 {% endif %}

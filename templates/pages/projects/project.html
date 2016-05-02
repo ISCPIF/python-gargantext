@@ -49,7 +49,8 @@
                             data-toggle="popover"
                             data-placement="bottom"
                             >
-                                Add a corpus
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>
+                            Add a corpus
                             </button>
                         </a>
                     </center>
@@ -85,18 +86,32 @@
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                         {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
                     </a>
+                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                    <button type="button" class="btn btn-default" aria-label="Left Align">
+                          <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                    </button>
+
+                    </a>
+
                     {% endifequal %}
-                    <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                     data-content="
                     <ul>
+                        <!--
                         <li>Rename</li>
                         <li>Add new documents</li>
-                        <li onclick=&quot;
-                            garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
-                            $(this).parent().parent().remove();
-                        &quot;><a href=&quot;#&quot;>Delete</a></li>
+                        --!>
+                        <li 
+                        onclick=&quot;
+                                garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                                $(this).parent().parent().remove();
+                            &quot;>
+                            <a href=&quot;#&quot;>I want to delete this</a>
+                        </li>
                     </ul>
-                    ">Manage</button>
+                    ">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    </button>
                 </li>
                 {% endfor %}
             </ul>
@@ -211,8 +226,14 @@
                                         </form>
                                         <div class="modal-footer">
                                             <!-- <div id="pubmedcrawl" align="right" style="visibility: hidden;"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div> -->
-                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                            <button onclick='bringDaNoise();' id="submit_thing" disabled class="btn btn-primary" >Process this!</button><span id="simpleloader"></span>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">
+                                                <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
+                                                Close
+                                            </button>
+                                            <button onclick='bringDaNoise();' id="submit_thing" disabled class="btn btn-primary" >
+                                                <span class="glyphicon glyphicon-ok" aria-hidden="true" ></span>
+                                                Process this!
+                                            </button><span id="simpleloader"></span>
                                         </div>
                                     </div>
                                 </div><!-- /.modal-content -->

@@ -474,7 +474,9 @@ function Main_test( Data , SearchFilter ) {
 
           // if box is checked we'll also search in the abstracts
           if ($("#searchAB").is(':checked')) {
-              matchInTexts.push(record.hyperdata.abstract)
+              if (typeof record.hyperdata.abstract !== 'undefined') {
+                  matchInTexts.push(record.hyperdata.abstract)
+              }
           }
 
           // inspired from the default cf. dynatable.queries.functions['search']

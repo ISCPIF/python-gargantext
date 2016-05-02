@@ -64,10 +64,9 @@
         {% for project in projects %}
         <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
         <div id="project_{{project.id}}" class="col-md-3 content">
-            <h3><a  href="/projects/{{ project.id }}">{{ project.name }}</a>
-
+            <h3><a  href="/projects/{{ project.id }}">{{ project.name }}
                 </a>
-                <a href="/projects/{{project.id}}">
+                <a href="/projects/{{project.id}}" >
                 <button type="button" class="btn btn-default" aria-label="Left Align">
                       <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                 </button>

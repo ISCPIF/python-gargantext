@@ -71,12 +71,13 @@
 <div class="container">
 
     {% if list_corpora  %}
-    <h2>Corpora</h2>
     <ul>
         {% for key, corpora in list_corpora.items %}
         <li>
-            <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
-            {{ key }}
+            <h2>
+                <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
+                {{ key }}
+            </h2>
             <ul>
                 {% for corpus in corpora %}
                 <li id="corpus_{{corpus.id}}">
@@ -85,6 +86,7 @@
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
                     Processing, drink a cup of tea, and refresh the page :)
                     {% else %}
+                    <h4>
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                         {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
@@ -115,6 +117,7 @@
                     ">
                     <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                     </button>
+                    </h4>
 
                     <p>
                     <div class="progress">

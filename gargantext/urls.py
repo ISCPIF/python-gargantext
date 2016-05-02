@@ -13,7 +13,6 @@ from django.conf.urls    import include, url
 from django.contrib      import admin
 
 import gargantext.views.api.urls
-import gargantext.views.generated.urls
 import gargantext.views.pages.urls
 
 # Module Annotation
@@ -30,7 +29,6 @@ from graphExplorer.views import explorer
 from scrapers            import urls as scrapers_urls
 
 urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
-              , url(r'^generated/' , include( gargantext.views.generated.urls ))
               , url(r'^api/'       , include( gargantext.views.api.urls )      )
               , url(r'^'           , include( gargantext.views.pages.urls )    )
 

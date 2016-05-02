@@ -11,7 +11,7 @@ class RISParser(Parser):
 #        #super(Parser, self).__init__()
 #        #super(Parser, self).__init__()
 #        self._languages_cache = LanguagesCache() if language_cache is None else language_cache
-    
+
 
     _begin = 6
     _parameters = {
@@ -29,13 +29,13 @@ class RISParser(Parser):
     }
 
     def parse(self, file):
-        
+
         hyperdata = {}
         last_key = None
         last_values = []
         # browse every line of the file
         for line in file:
-            if len(line) > 2:
+            if len(line) > 2 :
                 # extract the parameter key
                 parameter_key = line[:2]
                 if parameter_key != b'  ' and parameter_key != last_key:
@@ -60,11 +60,4 @@ class RISParser(Parser):
                     print(error)
         # if a hyperdata object is left in memory, yield it as well
         if hyperdata:
-#            try:
-#                if hyperdata['date_to_parse']:
-#                    print(hyperdata['date_to_parse'])
-#            except:
-#                pass
-#
-            #print(hyperdata['title'])
             yield hyperdata

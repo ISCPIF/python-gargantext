@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+sudo docker run -i -p 8000:8000 \
+                   -v /srv:/srv \
+                   -t gargantext:latest \
+                   /bin/bash
+

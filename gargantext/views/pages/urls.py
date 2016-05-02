@@ -1,8 +1,9 @@
 from django.conf.urls import url
 
-from . import main, auth
+from . import main
 from . import projects, corpora, terms
 
+from .auth import LoginView, out
 
 urlpatterns = [
 
@@ -12,8 +13,8 @@ urlpatterns = [
     # maintenance mode
     url(r'^maintenance/?$', main.maintenance),
     # authentication
-    url(r'^auth/login/?$', auth.login),
-    url(r'^auth/logout/?$', auth.logout),
+    url(r'^auth/login/?$' , LoginView.as_view()),
+    url(r'^auth/logout/?$', out),
 
     # projects
     url(r'^projects/?$'         , projects.overview),

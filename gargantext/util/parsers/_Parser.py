@@ -3,6 +3,7 @@ import dateutil.parser
 import zipfile
 import re
 
+import dateparser as date_parser
 from gargantext.util.languages import languages
 
 
@@ -50,7 +51,7 @@ class Parser:
                     default=DEFAULT_DATE
                 ).strftime("%Y-%m-%d %H:%M:%S")
             except Exception as error:
-                print(error, 'Parser Zotero, Date not parsed for:', date_string)
+                print(error, 'Date not parsed for:', date_string)
                 hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -75,8 +76,21 @@ class Parser:
                                     date_string += ":" + hyperdata[key]
                 try:
                     hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
-                except:
-                    pass
+                except Exception as error:
+                    try:
+                        print(error, date_string)
+                        # Date format:  1994 NOV-DEC
+                        hyperdata[prefix + "_date"] = date_parser.parse(str(date_string)[:8]).strftime("%Y-%m-%d %H:%M:%S")
+
+                    except Exception as error:
+                        try:
+                            print(error)
+                            # FIXME Date format:  1994 SPR
+                            # By default, we take the year only
+                            hyperdata[prefix + "_date"] = date_parser.parse(str(date_string)[:4]).strftime("%Y-%m-%d %H:%M:%S")
+
+                        except Exception as error:
+                            print(error)
         else:
             print("WARNING: Date unknown at _Parser level, using now()")
             hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

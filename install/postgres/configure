@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#######################################################################
+##    ____           _                      
+##   |  _ \ ___  ___| |_ __ _ _ __ ___  ___ 
+##   | |_) / _ \/ __| __/ _` | '__/ _ \/ __|
+##   |  __/ (_) \__ \ || (_| | | |  __/\__ \
+##   |_|   \___/|___/\__\__, |_|  \___||___/
+##                      |___/               
+#######################################################################
+
+su postgres -c 'pg_dropcluster 9.4 main --stop'
+#rm -rf /srv/gargantext_data && mkdir /srv/gargantext_data && chown postgres:postgres /srv/gargantext_data
+su postgres -c '/usr/lib/postgresql/9.5/bin/initdb -D /srv/gargantext_data/'
+su postgres -c '/usr/lib/postgresql/9.5/bin/pg_ctl -D /srv/gargantext_data/ -l journal_applicatif start'
+
+#su postgres -c 'pg_createcluster -D /srv/gargantext_data 9.5 main '
+#su postgres -c 'pg_ctlcluster -D /srv/gargantext_data 9.5 main start '
+#su postgres -c 'pg_ctlcluster 9.5 main start'
+
+service postgresql start
+
+su postgres -c "psql -c \"CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'\""
+su postgres -c "createdb -O gargantua gargandb"
+
+echo "Postgres configured"
+
+

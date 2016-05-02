@@ -10,6 +10,7 @@ from gargantext.util.toolchain import parse_extract_indexhyperdata
 
 from datetime import datetime
 from collections import defaultdict
+from django.utils.translation import ugettext_lazy
 import re
 
 
@@ -57,7 +58,6 @@ def overview(request):
     )
 
 
-from django.utils.translation import ugettext_lazy
 class NewCorpusForm(forms.Form):
     type = forms.ChoiceField(
         choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),

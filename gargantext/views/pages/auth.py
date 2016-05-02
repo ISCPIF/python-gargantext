@@ -1,44 +1,33 @@
-from gargantext.util.http import *
+from django.contrib.auth import authenticate, login, logout
+from django.core.urlresolvers import reverse_lazy
+from django.views.generic import FormView
+from django.shortcuts import redirect
+from gargantext.models.users import User
+from django import forms
 
-from django.contrib import auth
+from gargantext.views.pages.projects import overview
 
+from gargantext.views.pages.forms import AuthenticationForm
 
-def login(request):
-    """Performs user login
-    """
-    auth.logout(request)
+class LoginView(FormView):
+    form_class = AuthenticationForm
+    success_url = reverse_lazy(overview)	#A la place de profile_view, choisir n'importe quelle vue
+    template_name = 'pages/main/login.html'
 
-    # if the user send her authentication data to the page
-    if request.method == "POST":
-        # /!\ pass is sent clear in POST data: use SSL
-        user = auth.authenticate(
-            username = request.POST['username'],
-            password = request.POST['password']
-        )
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user = authenticate(username=username, password=password)
+
         if user is not None and user.is_active:
-            auth.login(request, user)
-            # if "next" forwarded from the GET via the template form
-            if 'the_next_page' in request.POST:
-                return redirect(request.POST['the_next_page'])
-            else:
-                return redirect('/projects/')
-
-    # if the user wants to access the login form
-    additional_context = {}
-    # if for exemple: auth/?next=/project/5/corpus/554/document/556/
-    #   => we'll forward ?next="..." into template with form
-    if 'next' in request.GET:
-        additional_context = {'next_page':request.GET['next']}
-
-    return render(
-        template_name = 'pages/auth/login.html',
-        request = request,
-        context = additional_context,
-    )
+            login(self.request, user)
+            return super(LoginView, self).form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
-def logout(request):
+def out(request):
     """Logout the user, and redirect to main page
     """
-    auth.logout(request)
+    logout(request)
     return redirect('/')

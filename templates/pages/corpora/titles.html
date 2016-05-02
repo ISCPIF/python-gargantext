@@ -19,31 +19,33 @@
 {% block content %}
 
 <div class="container">
-        <div class="jumbotron">
-            <div class="row">
-                <div id="monthly-move-chart">
-                    <center>
-                        Select a time range in the chart with blue bars to zoom in
-                    <p align="center">
-                    <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
-                    <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+    <div class="col-md-3 col-md-offset-2">
+        <div id="monthly-move-chart">
+            <center>
+                    Select a time range in the chart with blue bars to zoom in
+                <p align="center">
+                <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
 
-                    <div class="clearfix"></div>
-                    </center>
-                </div>
-            </div>
-
-        <div class="row">
-            <div id="monthly-volume-chart"></div>
+                <div class="clearfix"></div>
+            </center>
         </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="col-md-3 col-md-offset-2">
+        <div id="monthly-volume-chart"></div>
 
         <div id="content_loader">
-          <br>
-          <center>
-            <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
-          </center>
-          <br>
+              <br>
+              <center>
+                <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+              </center>
+              <br>
         </div>
+    </div>
+</div>
 
 
 

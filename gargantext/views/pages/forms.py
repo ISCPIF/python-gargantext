@@ -51,7 +51,7 @@ class AuthenticationForm(forms.Form):
                                            password=password)
             if self.user_cache is None:
                 raise forms.ValidationError(
-                    'Invalid data'
+                    'Invalid username or password'
                 )
             else:
                 self.confirm_login_allowed(self.user_cache)

@@ -61,6 +61,14 @@
                         <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Titles</h2></p>
                         </a>
                     </h4>
+
+                    <!-- search box with custom function in Docs_dyna_chart_and_tables.js -->
+                    <div class="pull-left" style="margin-top:1.85em; font-size: 16px;">
+                        Search:
+                        <input type="search" id="doubleSearch"/>
+                    </div>
+
+
                 </div>
                 <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
                   <div class="panel-body">
@@ -78,6 +86,7 @@
 
 <div id="filter_search" style="visibility:hidden">
     <span style="font-size:70%;">
+      <!-- Used by the #doubleSearch associated function -->
       <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
       <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
     </span>&nbsp;&nbsp;
@@ -90,7 +99,10 @@
         <!-- </optgroup> -->
         <!-- <optgroup label="Duplicates"> -->
             <!-- <option value="filter_doi">By DOI</option> -->
-            <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option>
+
+            <!-- TODO
+            <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option> -->
+
         <!-- </optgroup> -->
     </select>
 

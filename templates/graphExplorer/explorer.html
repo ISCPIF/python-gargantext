@@ -59,22 +59,36 @@
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">About</a>
+                <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                        About
+                    </a>
                 </li>
                 {% if user.is_authenticated %}
-                <li><a href="/projects/" title="All your projects are here.">Projects</a></li>
+                <li><a href="/projects/" title="All your projects are here.">
+                        <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        Projects
+                    </a></li>
                 {% endif %}
                 {% if project %}
-                <li><a href="/projects/{{project.id}}">{{project.name}}</a></li>
+                <li><a href="/projects/{{project.id}}">
+                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                        {{project.name}}</a></li>
                 {% endif %}
                 {% if corpus %}
-                <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">{{corpus.name}}</a></li>
+                <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                        {{corpus.name}}
+                    </a></li>
                 {% endif %}
               </ul>
 
               <ul class="nav pull-right">
                   <li class="dropdown">
-                      <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i> {{ user }}<i class="caret"></i>
+                      <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i>
+                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                            {{ user.username }}
+                          <i class="caret"></i>
 
                       </a>
                       <ul class="dropdown-menu">

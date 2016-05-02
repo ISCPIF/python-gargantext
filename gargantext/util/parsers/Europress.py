@@ -228,22 +228,22 @@ class EuropressParser(Parser):
 
                 # 2) we parse the retrieved datestring into a formal date
                 try:
-                    hyperdata['publication_date'] = dateparser.parse(
+                    the_date = dateparser.parse(
                      date_str.strip(),
                      languages=[doc_language],
                      date_formats=['%d %B %Y','%B %d, %Y']
                      )
-                    # print("RES POSTPROC:",hyperdata['publication_date'])
 
                 except:
-                    hyperdata['publication_date'] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                    the_date = timezone.now()
 
-
+                hyperdata['publication_date'] = the_date.strftime("%Y-%m-%d %H:%M:%S")
+                # print("RES POSTPROC:",hyperdata['publication_date'])
 
                 # infos dérivées
-                hyperdata['publication_year']  = hyperdata['publication_date'].strftime('%Y')
-                hyperdata['publication_month'] = hyperdata['publication_date'].strftime('%m')
-                hyperdata['publication_day']  = hyperdata['publication_date'].strftime('%d')
+                hyperdata['publication_year']  = the_date.strftime('%Y')
+                hyperdata['publication_month'] = the_date.strftime('%m')
+                hyperdata['publication_day']  = the_date.strftime('%d')
 
 
                 # RUBRIQUE

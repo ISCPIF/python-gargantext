@@ -2,6 +2,7 @@
     {% load staticfiles %}
     <head>
         <link rel="shortcut icon" href="{% static "/favicon.ico" %}">
+        <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
         {% block css %}
         {% endblock %}
     </head>
@@ -59,7 +60,7 @@
                                 <li class="divider"></li>
                                 {% if user.is_authenticated %}
                                 <li>
-                                    <a tabindex="-1" href="/auth/logout" 
+                                    <a tabindex="-1" href="/auth/logout"
                                         title="Click here to logout especially on public devices">
                                         <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
                                         Logout
@@ -76,14 +77,16 @@
             <div class="container">
                     <ul class="nav nav-tabs navbar-static-top nav-justified">
                         <li>
-                                <a type="button" class="btn btn-default {% if view == "titles" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles
+                                <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
+                                    onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
+                                    data-target='#' href='#'>Titles
                                 </a>
                         </li>
-                                
+
                         <li>
-                                <a type="button" class="btn btn-default {% if view == "journals" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals
+                                <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
+                                        data-target='#' href='#'>Journals
                                 </a>
                         </li>
 
@@ -93,17 +96,18 @@
                                 {% if state.complete %}
 
                                     <li>
-                                        <a type="button" class="btn btn-default 
-                                                {% if view == "terms" %} active {% endif %}"
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
-                                    </li>
-                                        
-                                    
-                                    <li class="dropdown">
-                                        <a type="button" class="btn btn-default ">
-                                        Graphs
+                                        <a type="button" class="btn btn-default {% if view == 'terms' %} active {% endif %}"
+                                            onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/terms'"
+                                            data-target='#' href='#'>Terms
                                         </a>
                                     </li>
+
+
+                                    <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle btn btn-default" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        Graphs
+                                        </a>
+                                    <span class="caret"></span>
                     <ul class="dropdown-menu">
                                     <li>
                                         <a tabindex="-1" type="button" class="btn btn-default "
@@ -132,11 +136,11 @@
                 <br>
                 <br>
                                 <!--
-                                <a type="button" class="btn btn-default 
+                                <a type="button" class="btn btn-default
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
                                 --!>
                                 <!-- <li class="divider"></li> --!>
-                           
+
                     <div class="row">
                         <div class="col-md-4">
                             {% if project %}
@@ -144,10 +148,10 @@
                                         <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                         {{ project.name }}
                                     </a>
-                                <br> 
+                                <br>
                                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                         {{ corpus.name }}
-                                <br> 
+                                <br>
                                         <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                                         {{ corpus.date }}
                                 </h3>
@@ -161,7 +165,7 @@
                             <!--
                             <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
 
-                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                 data-content='
                                         <ul>
                                             <li> Rename </li>
@@ -178,7 +182,7 @@
         </div>
 
         {% endif %}
-        
+
         {% endblock %}
 
 
@@ -196,7 +200,7 @@
                 <span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>
                 , version 3.0.0,
                 <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">
-                    Copyrights 
+                    Copyrights
                     <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span>
                     CNRS {{ date.year }}
                 </a>
@@ -222,7 +226,6 @@
                 });
             });
         </script>
-        <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
         -->
 
         <script type="text/javascript" src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
@@ -294,7 +297,3 @@
 
     </body>
 </html>
-
-
-
-

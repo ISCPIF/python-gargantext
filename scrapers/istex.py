@@ -118,7 +118,6 @@ def save(request , project_id):
 
 
 
-        print("NEW CORPUS", corpus_id)
         tasks = Scraper()
 
         for i in range(8):

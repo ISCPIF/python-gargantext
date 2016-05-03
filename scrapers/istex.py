@@ -5,7 +5,7 @@ import threading
 from traceback                  import print_tb
 #from gargantext.settings import MEDIA_ROOT, BASE_DIR
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
 from gargantext.constants       import RESOURCETYPES, QUERY_SIZE_N_MAX
@@ -159,8 +159,15 @@ def save(request , project_id):
             # sanitize session after interrupted transact
             session.rollback()
             # --------------------------------------------
-        sleep(1)
-        return HttpResponseRedirect('/projects/' + str(project_id))
+
+        return render(
+            template_name = 'pages/projects/wait.html',
+            request = request,
+            context = {
+                'user'   : request.user,
+                'project': project,
+            },
+        )
 
 
     data = [query_string,query,N]

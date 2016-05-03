@@ -1,8 +1,9 @@
 {% extends "pages/menu.html" %}
 
-{% block css %}
 {% load staticfiles %}
 
+
+{% block css %}
 <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
@@ -11,7 +12,6 @@
 <script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
 <script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
-
 {% endblock %}
 
 
@@ -28,11 +28,11 @@
                 <div class="clearfix"></div>
                 </center>
             </div>
-        
+
         <div class="row">
             <div id="monthly-volume-chart"></div>
         </div>
-        
+
         <div id="content_loader">
           <br>
           <center>
@@ -104,7 +104,7 @@
     <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
         Import a Corpus-List
     </button>
-</div> container 
+</div> container
 --!>
 
 
@@ -115,10 +115,9 @@
     -->
 
 
-<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
-
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "js/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
+
 
 {% endblock %}

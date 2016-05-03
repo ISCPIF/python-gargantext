@@ -86,8 +86,6 @@ function Final_UpdateTable( action ) {
 
     if ( ! UpdateTable ) return false; //stop whatever you wanted to do.
 
-
-
     var TimeRange = AjaxRecords;
 
     var dataini = TheBuffer[0];
@@ -128,10 +126,7 @@ function Final_UpdateTable( action ) {
 }
 
 //          STEP 01:
-//      Get all the duplicates using the Django-Garg API
-var current_docs = {}
-var BIS_dict = {}
-
+//      remember url elements
 
 var id_from_url = function(name) {
     var regex = new RegExp(name + '/(\\d+)');
@@ -140,8 +135,6 @@ var id_from_url = function(name) {
 };
 var project_id = id_from_url('projects');
 var corpus_id = id_from_url('corpora');
-
-
 
 
 
@@ -315,10 +308,10 @@ function Main_test(Data) {
   $.each(Data, function(i, node) {
       if (node.date) {
           arrayd3.push({
-              date: get_node_date(node),
-              dd: node.date,
+            //   date: get_node_date(node),
+            //   dd: node.date,
               month: d3.time.month(node.date),
-              volume: justdates[date],
+              dailyvolume: justdates[date],
           });
       }
   });
@@ -337,33 +330,36 @@ function Main_test(Data) {
       return d.month;
   });
 
+  console.warn(moveMonths)
+
   //moveChart:(3)
   var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-      return d.volume;
+      return d.dailyvolume;
       //return Math.abs(+d.close - +d.open);
   });
 
   //volumeChart:(2)
   var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
-      return d.volume / 500000;
+      return d.dailyvolume / 500000;
   });
 
-  //moveChart:(2)
+  //moveChart:(2) (cf. https://dc-js.github.io/dc.js/docs/stock.html#section-14)
   var indexAvgByMonthGroup = moveMonths.group().reduce(
           function (p, v) {
-              ++p.days;
-              p.total += (+v.open + +v.close) / 2;
-              p.avg = Math.round(p.total / p.days);
+            //   console.log("dc:dimension:reduce:filter_add")
+              ++p.nb;
+              p.total += v.dailyvolume
               return p;
           },
           function (p, v) {
-              --p.days;
-              p.total -= (+v.open + +v.close) / 2;
-              p.avg = p.days == 0 ? 0 : Math.round(p.total / p.days);
+            //   console.log("dc:dimension:reduce:filter_remove")
+              --p.nb;
+              p.total -= v.dailyvolume
               return p;
           },
           function () {
-              return {days: 0, total: 0, avg: 0};
+            //   console.log("dc:dimension:reduce:init")
+              return {total: 0, nb: 0};
           }
   );
 
@@ -375,7 +371,7 @@ function Main_test(Data) {
           .dimension(moveMonths)
           .group(indexAvgByMonthGroup)
           .valueAccessor(function (d) {
-              return d.value.avg;
+              return d.value.total;
           })
           .x(d3.time.scale().domain([t0, t1]))
           .round(d3.time.month.round)
@@ -386,15 +382,19 @@ function Main_test(Data) {
           .compose([
               dc.lineChart(moveChart)
                       .group(indexAvgByMonthGroup)
+                      // here d are already data grouped by month
                       .valueAccessor(function (d) {
-                          return d.value.avg;
+                        //   console.log(d)
+                          return d.value.total;
                       })
                       .renderArea(true)
+                      // orange
                       .stack(monthlyMoveGroup, function (d) {
+                        //   console.log(d)
                           return d.value;
                       })
                       .title(function (d) {
-                          var value = d.data.value.avg ? d.data.value.avg : d.data.value;
+                          var value = d.data.value.total ? d.data.value.total : d.data.value;
                           if (isNaN(value)) value = 0;
                           return dateFormat(d.data.key) + "\n" + numberFormat(value);
                       })

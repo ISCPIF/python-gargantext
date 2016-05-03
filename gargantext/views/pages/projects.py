@@ -110,7 +110,7 @@ def project(request, project_id):
 
 
     # corpora within this project
-    corpora = project.children('CORPUS').all()
+    corpora = project.children('CORPUS', order=True).all()
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type

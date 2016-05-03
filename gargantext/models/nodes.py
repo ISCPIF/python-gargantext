@@ -101,13 +101,16 @@ class Node(Base):
         # session.add(self)
         # session.commit()
 
-    def children(self, typename=None):
+    def children(self, typename=None, order=None):
         """Return a query to all the direct children of the current node.
         Allows filtering by typename (see `constants.py`)
         """
         query = session.query(Node).filter(Node.parent_id == self.id)
         if typename is not None:
             query = query.filter(Node.typename == typename)
+
+        if order is not None:
+            query = query.order_by(Node.name)
         return query
 
     def add_child(self, **kwargs):

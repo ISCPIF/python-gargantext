@@ -104,20 +104,21 @@
 
 
                                     <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle btn btn-default" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
                                         Graphs
                                         </a>
-                                    <span class="caret"></span>
-                    <ul class="dropdown-menu">
-                                    <li>
-                                        <a tabindex="-1" type="button" class="btn btn-default "
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
+                                        <i class="caret"></i>
+                                    <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a tabindex="-1"
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a tabindex="-1"
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                                    </li>
+                                    </ul>
                                     </li>
-                                    <li>
-                                        <a tabindex="-1" type="button" class="btn btn-default "
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
-                                    </li>
-                    </ul>
                                     {% endif %}
                                 {% endif %}
                         {% endfor %}

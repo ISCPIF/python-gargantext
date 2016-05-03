@@ -33,13 +33,13 @@ _members = [
 
     { 'first_name' : 'Maziyar', 'last_name' : 'Panahi',
      'mail' : '',
-     'website'  : '',
+     'website'  : 'http://iscpif.fr',
      'picture' : 'maziyar.jpg',
      'role' : 'developer'},
 
     { 'first_name' : 'Romain', 'last_name' : 'Loth',
      'mail' : '',
-     'website'  : '',
+     'website'  : 'http://iscpif.fr',
      'picture' : 'romain.jpg',
      'role' : 'developer'},
 

@@ -153,7 +153,7 @@
                         <div class="row">
                             <div class="thumbnails">
                                 {% for member in team %}
-                                <div class="col-md-3 ">
+                                <div class="col-md-5 ">
                                     <div class="thumbnail">
                                         {% if member.picture %}
                                         <img src="{% static "img/credits/"%}{{ member.picture }}" style="100px; height:150px">
@@ -161,6 +161,7 @@
                                         <img src="{% static "img/logo.png" %}" style="100px; height:150px">
                                         {% endif %}
                                         <div class="caption">
+                                            <center>
                                             <h3>{{ member.first_name }} {{member.last_name }}</h3>
                                             {% if member.role %}
                                             <p class="description">{{ member.role }}</p>
@@ -171,6 +172,7 @@
                                             {% if member.website %}
                                             <a href="{{ member.website }}" class="btn btn-primary btn-xs">Website</a>
                                             {% endif %}
+                                            </center>
                                         </div>
                                     </div>
                                 </div>

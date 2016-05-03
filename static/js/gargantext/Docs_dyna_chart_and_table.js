@@ -278,13 +278,9 @@ function Main_test(Data) {
   var div_table = '<p align="right">'+"\n"
     div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
     div_table += "\t"+'<thead>'+"\n"
-    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="date">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> Date</th>'+"\n"
-    div_table += "\t"+"\t"+'<th data-dynatable-column="name">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size" aria-hidden="true"></span> Title</th>'+"\n"
-    div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>'+"\n"
-    div_table += "\t"+"\t"+'</th>'+"\n"
+    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="date">Date</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">Trash</th>'+"\n"
     div_table += "\t"+"\t"+'</th>'+"\n"
     div_table += "\t"+'</thead>'+"\n"
     div_table += "\t"+'<tbody>'+"\n"
@@ -395,9 +391,9 @@ function Main_test(Data) {
                           return d.value;
                       })
                       .title(function (d) {
-                          var value = d.value.avg ? d.value.avg : d.value;
+                          var value = d.data.value.avg ? d.data.value.avg : d.data.value;
                           if (isNaN(value)) value = 0;
-                          return dateFormat(d.key) + "\n" + numberFormat(value);
+                          return dateFormat(d.data.key) + "\n" + numberFormat(value);
                       })
           ])
           .xAxis();

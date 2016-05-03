@@ -66,6 +66,15 @@
                     <div class="pull-left" style="margin-top:1.85em; font-size: 16px;">
                         Search:
                         <input type="search" id="doubleSearch"/>
+                        <span style="font-size:70%;">
+                          <!-- Used by the #doubleSearch associated function -->
+                          <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
+                          <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
+                        </span>&nbsp;&nbsp;
+                        <select id="dupFilter" name="dupFilter">
+                            <option value="filter_all">All</option>
+                            <option value="filter_dupl">Duplicates by Title</option>
+                        </select>
                     </div>
 
 
@@ -82,31 +91,6 @@
             </div>
         </div>
 
-
-<div id="filter_search" style="visibility:hidden">
-    <span style="font-size:70%;">
-      <!-- Used by the #doubleSearch associated function -->
-      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
-      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
-    </span>&nbsp;&nbsp;
-
-    <select id="example-single-optgroups" onchange="SearchFilters(this);">
-        <!-- <optgroup label=""> -->
-            <option id="filter_all" value="filter_all">All</option>
-            <!-- <option id="filter_title" value="filter_title">Title</option> -->
-            <!-- <option id="filter_date" value="filter_date">Date</option> -->
-        <!-- </optgroup> -->
-        <!-- <optgroup label="Duplicates"> -->
-            <!-- <option value="filter_doi">By DOI</option> -->
-
-            <!-- TODO
-            <option id="filter_dupl-titles" value="filter_dupl-titles">Duplicates by Title</option> -->
-
-        <!-- </optgroup> -->
-    </select>
-
-</div>
-
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
@@ -114,7 +98,5 @@
 
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "js/gargantext/Docs_dyna_chart_and_table.js" %}"></script>
-
-
 
 {% endblock %}

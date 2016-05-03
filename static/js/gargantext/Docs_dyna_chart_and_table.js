@@ -157,6 +157,7 @@ var MyTable;
 var RecDict={};
 var AjaxRecords = []
 var Garbage = {}
+var countByTitles = {}  // useful for title duplicates
 
 function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
@@ -263,7 +264,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 }
 
 
-function Main_test( Data , SearchFilter ) {
+function Main_test(Data) {
 
   var DistributionDict = {}
   for(var i in DistributionDict)
@@ -441,7 +442,7 @@ function Main_test( Data , SearchFilter ) {
               },
               inputs: {
                 // our own search which differentiates title vs abstract queries
-                queries: $('#doubleSearch')
+                queries: $('#doubleSearch, #dupFilter')
               },
               writers: {
                 _rowWriter: ulWriter
@@ -457,23 +458,20 @@ function Main_test( Data , SearchFilter ) {
   $(".dynatable-record-count").insertAfter(".imadiv")
   $(".dynatable-pagination-links").insertAfter(".imadiv")
 
-  // make filter checkboxes appear in the right place (ie after search box)
-  $("#filter_search").html( $("#filter_search").html().replace('selected="selected"') );
-  $("#"+SearchFilter).attr( "selected" , "selected" )
-
-  var the_content = $("#filter_search").html();
-  $(""+the_content).insertAfter("#doubleSearch")
-
-  // binds a custom filter to our 'doubleSearch' via dynatable.queries.functions
+    // binds a custom filter to our 'doubleSearch' via dynatable.queries.functions
   MyTable.data('dynatable').queries
       .functions['doubleSearch'] = function(record,searchString) {
+
+          // global context
+          doAbstractsSearch = $("#searchAB").is(':checked')
+
           // NB searchString == $("#doubleSearch").val()
 
           // by default we always decide to search in the title
           matchInTexts = [record.title]
 
           // if box is checked we'll also search in the abstracts
-          if ($("#searchAB").is(':checked')) {
+          if (doAbstractsSearch) {
               if (typeof record.hyperdata.abstract !== 'undefined') {
                   matchInTexts.push(record.hyperdata.abstract)
               }
@@ -492,6 +490,18 @@ function Main_test( Data , SearchFilter ) {
           }
           return contains;
         }
+    MyTable.data('dynatable').process();
+
+    // also append another bound filter for duplicates
+    MyTable.data('dynatable').queries
+        .functions['dupFilter'] = function(record,selected) {
+            return (selected == 'filter_all')||(countByTitles[record.title] > 1)
+        }
+
+    // and set this filter's initial status to 'filter_all'
+    MyTable.data('dynatable').settings.dataset.queries['dupFilter'] = 'filter_all'
+    MyTable.data('dynatable').process();
+
 
   MyTable.data('dynatable').process
 
@@ -509,50 +519,6 @@ function Main_test( Data , SearchFilter ) {
 
   return "OK"
 }
-
-
-
-
-function SearchFilters( elem ) {
-  var MODE = elem.value;
-
-  if( MODE == "filter_all") {
-    var result = Main_test(AjaxRecords , MODE)
-    console.log( result )
-  }
-
-  if( MODE == "filter_dupl-titles") {
-
-    var getDupl_API = "/api/nodes/" + corpus_id + "/children/duplicates?keys=title&limit=9999"
-    $.ajax({
-      url: getDupl_API,
-      success: function(data) {
-        bisarray = data.data
-        for(var i in bisarray) {
-            titlebis = bisarray[i].values
-            BIS_dict[titlebis[0]] = true;
-        }
-        var Duplicates = []
-        for(var r in AjaxRecords) {
-          if ( BIS_dict[AjaxRecords[r].title] )
-            Duplicates.push( AjaxRecords[r] )
-        }
-        var result = Main_test(Duplicates , MODE)
-        console.log( result )
-
-        MyTable.data('dynatable').sorts.clear();
-        MyTable.data('dynatable').sorts.add('title', 1) // 1=ASCENDING,
-        MyTable.data('dynatable').process();
-      }
-    });
-
-  }
-
-}
-
-
-
-
 
 $("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
@@ -572,11 +538,20 @@ $.ajax({
       record.date = get_node_date(record);
       record.del = false;
     });
+
+    // initialize CountByTitle census
     for (var i in data.records) {
+        ourTitle = data.records[i]['title'] ;
+        if (countByTitles.hasOwnProperty(ourTitle)) {
+            countByTitles[ourTitle] ++ ;
+        }
+        else {
+            countByTitles[ourTitle] = 1 ;
+        }
     }
     AjaxRecords = data.records; // backup-ing in global variable!
 
-    var result = Main_test(data.records , "filter_all")
+    var result = Main_test(data.records)
 
     $("#corpusdisplayer").show()
     $("#content_loader").remove()

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}">
 
 <script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
@@ -71,16 +71,13 @@
 <div class="container">
 
     {% if list_corpora  %}
-    <ul>
         {% for key, corpora in list_corpora.items %}
-        <li>
             <h2>
                 <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
                 {{ key }}
             </h2>
-            <ul>
                 {% for corpus in corpora %}
-                <li id="corpus_{{corpus.id}}">
+                <div id="corpus_{{corpus.id}}">
                     {% ifequal corpus.processing 1 %}
                     {{corpus.name}}:
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
@@ -165,16 +162,10 @@
                       
                     {% endfor %}
                     </div>
-
                     </p>
-
-    
-                </li>
+                </div>
                 {% endfor %}
-            </ul>
-        </li>
         {% endfor %}
-    </ul>
     {% endif %}
 
     {% if list_corporax  %}
@@ -296,7 +287,7 @@
                                 </div><!-- /.modal-content -->
                             </div><!-- /.modal-dialog -->
                         </div><!-- /.modal -->
-                        <script type="text/javascript" src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+                        <script type="text/javascript" src="{% static "js/jquery/1.11.2/jquery-ui.js" %}"></script>
                         <script type="text/javascript">
                             function getCookie(name) {
                                 var cookieValue = null;

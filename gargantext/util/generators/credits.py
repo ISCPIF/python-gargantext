@@ -33,13 +33,13 @@ _members = [
 
     { 'first_name' : 'Maziyar', 'last_name' : 'Panahi',
      'mail' : '',
-     'website'  : '',
+     'website'  : 'http://iscpif.fr',
      'picture' : 'maziyar.jpg',
      'role' : 'developer'},
 
     { 'first_name' : 'Romain', 'last_name' : 'Loth',
      'mail' : '',
-     'website'  : '',
+     'website'  : 'http://iscpif.fr',
      'picture' : 'romain.jpg',
      'role' : 'developer'},
 
@@ -47,7 +47,7 @@ _members = [
      'mail' : 'alexandre+gargantextATdelanoe.org',
      'website' : 'http://alexandre.delanoe.org',
      'picture' : 'alexandre.jpg',
-     'role' : 'principal investigator, developer'},
+     'role' : 'project manager'},
 
     #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
     # copy-paste the line above and write your informations please

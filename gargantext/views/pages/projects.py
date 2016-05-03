@@ -36,7 +36,7 @@ def overview(request):
             session.commit()
 
     # list of projects created by the logged user
-    user_projects = user.nodes(typename='PROJECT')
+    user_projects = user.nodes(typename='PROJECT', order=True)
 
     # list of contacts of the logged user
     contacts_projects = list(user.contacts_nodes(typename='PROJECT'))

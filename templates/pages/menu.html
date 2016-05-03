@@ -100,20 +100,21 @@
                                         
                                     
                                     <li class="dropdown">
-                                        <a type="button" class="btn btn-default ">
+                                        <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
                                         Graphs
                                         </a>
+                                        <i class="caret"></i>
+                                    <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a tabindex="-1" 
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a tabindex="-1" 
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                                    </li>
+                                    </ul>
                                     </li>
-                    <ul class="dropdown-menu">
-                                    <li>
-                                        <a tabindex="-1" type="button" class="btn btn-default "
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
-                                    </li>
-                                    <li>
-                                        <a tabindex="-1" type="button" class="btn btn-default "
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
-                                    </li>
-                    </ul>
                                     {% endif %}
                                 {% endif %}
                         {% endfor %}

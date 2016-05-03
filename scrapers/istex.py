@@ -117,9 +117,6 @@ def save(request , project_id):
         )
 
 
-        session.add(corpus)
-        session.commit()
-        corpus_id = corpus.id
 
         print("NEW CORPUS", corpus_id)
         tasks = Scraper()
@@ -137,13 +134,15 @@ def save(request , project_id):
             if filename!=False:
                 # add the uploaded resource to the corpus
                 corpus.add_resource(
-                  type = 8     # cf. constants.RESOURCETYPES
+                  type = int(8)     # cf. constants.RESOURCETYPES
                 , path = filename
                                    )
                 dwnldsOK+=1
 
+        session.add(corpus)
         session.commit()
-        
+        corpus_id = corpus.id
+
         if dwnldsOK == 0 :
             return JsonHttpResponse(["fail"])
         ###########################

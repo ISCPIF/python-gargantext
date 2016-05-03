@@ -111,9 +111,6 @@ def save( request , project_id ) :
                                   , typename = "CORPUS"
                                   )
 
-        session.add(corpus)
-        session.commit()
-        corpus_id = corpus.id
         # """
         # urlreqs: List of urls to query.
         # - Then, to each url in urlreqs you do:
@@ -137,16 +134,21 @@ def save( request , project_id ) :
             print(filename)
             if filename != False:
                 # add the uploaded resource to the corpus
-                corpus.add_resource(
-                                    type = 3
+                corpus.add_resource( type = int(3)
                                    , path = filename
+                                   , url  = None
                                    )
+                print("Adding the resource")
                 dwnldsOK+=1
-        #session.commit()
+
+        session.add(corpus)
+        session.commit()
+        corpus_id = corpus.id
+
         if dwnldsOK == 0 :
             return JsonHttpResponse(["fail"])
         try:
-            scheduled(parse_extract_indexhyperdata(corpus_id))
+            scheduled(parse_extract_indexhyperdata)(corpus_id)
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)

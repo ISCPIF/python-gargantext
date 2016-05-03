@@ -71,16 +71,13 @@
 <div class="container">
 
     {% if list_corpora  %}
-    <ul>
         {% for key, corpora in list_corpora.items %}
-        <li>
             <h2>
                 <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
                 {{ key }}
             </h2>
-            <ul>
                 {% for corpus in corpora %}
-                <li id="corpus_{{corpus.id}}">
+                <div id="corpus_{{corpus.id}}">
                     {% ifequal corpus.processing 1 %}
                     {{corpus.name}}:
                     <img width="20px" src="{% static "js/libs/img2/loading-bar.gif" %}">
@@ -169,12 +166,9 @@
                     </p>
 
     
-                </li>
+                </div>
                 {% endfor %}
-            </ul>
-        </li>
         {% endfor %}
-    </ul>
     {% endif %}
 
     {% if list_corporax  %}

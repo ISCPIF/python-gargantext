@@ -1,10 +1,8 @@
 from gargantext.util.languages import languages
-from gargantext.constants import LANGUAGES, DEFAULT_MAX_NGRAM_LEN
+from gargantext.constants import LANGUAGES, DEFAULT_MAX_NGRAM_LEN, RULE_JJNN, RULE_JJDTNN
 
 import nltk
 import re
-
-
 class NgramsExtractor:
 
     def __init__(self, tagger):
@@ -17,7 +15,7 @@ class NgramsExtractor:
         """
         return re.sub(r'<[^>]{0,45}>', '', text)
 
-    def extract(self, text, rule='{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}', label='NP', max_n_words=DEFAULT_MAX_NGRAM_LEN):
+    def extract(self, text, rule=RULE_JJNN, label='NP', max_n_words=DEFAULT_MAX_NGRAM_LEN):
         text = self.clean_text(text)
         grammar = nltk.RegexpParser(label + ': ' + rule)
         tagged_tokens = list(self._tagger.tag_text(text))

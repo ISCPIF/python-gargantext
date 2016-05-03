@@ -47,7 +47,7 @@ _members = [
      'mail' : 'alexandre+gargantextATdelanoe.org',
      'website' : 'http://alexandre.delanoe.org',
      'picture' : 'alexandre.jpg',
-     'role' : 'project manager, developer'},
+     'role' : 'project manager'},
 
     #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
     # copy-paste the line above and write your informations please

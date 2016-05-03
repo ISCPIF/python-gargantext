@@ -36,7 +36,7 @@ def overview(request):
             session.commit()
 
     # list of projects created by the logged user
-    user_projects = user.nodes(typename='PROJECT')
+    user_projects = user.nodes(typename='PROJECT', order=True)
 
     # list of contacts of the logged user
     contacts_projects = list(user.contacts_nodes(typename='PROJECT'))
@@ -110,7 +110,7 @@ def project(request, project_id):
 
 
     # corpora within this project
-    corpora = project.children('CORPUS').all()
+    corpora = project.children('CORPUS', order=True).all()
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type

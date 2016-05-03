@@ -32,7 +32,7 @@ class User(Base):
         )
         return query.all()
 
-    def nodes(self, typename=None):
+    def nodes(self, typename=None, order=None):
         """get all nodes belonging to the user"""
         from .nodes import Node
         query = (session
@@ -41,6 +41,10 @@ class User(Base):
         )
         if typename is not None:
             query = query.filter(Node.typename == typename)
+
+        if order is not None:
+            query = query.order_by(Node.name)
+
         return query
 
     def contacts_nodes(self, typename=None):

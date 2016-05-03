@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
 <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}">
 
 <script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/morris.min.js" %}"></script>
@@ -69,71 +69,77 @@
 
 <div class="container">
     <div class="row">
+        <div class="container">
+            <div class="container">
+                <div class="container">
 
-        {% if projects %}
-        {% for project in projects %}
-        <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-        <div id="project_{{project.id}}" class="col-md-3 content">
-            <h3>
-                
-                <a  
-                href="/projects/{{ project.id }}">
-                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                    {{ project.name }}
-                </a>
-                <a href="/projects/{{project.id}}" >
-                <button type="button" class="btn btn-default" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                </button>
+                    {% if projects %}
+                    {% for project in projects %}
+                    <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
+                    <div id="project_{{project.id}}" class="row">
+                        <h3>
+                            
+                            <a  
+                            href="/projects/{{ project.id }}">
+                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                {{ project.name }}
+                            </a>
+                            <a href="/projects/{{project.id}}" >
+                            <button type="button" class="btn btn-default" aria-label="Left Align">
+                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                            </button>
 
-                </a>
+                            </a>
 
-                <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                data-content="  <ul>
-                                <!--
-                                <li>Rename</li>
-                                --!>
-                                <li onclick=&quot;
-                                        garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
-                                        $(this).parent().parent().remove();
-                                    &quot;><a href=&quot;#&quot;>Delete</a></li>
-                                </ul>
-                ">
-                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                </button>
-                </li>
-                {% if common_users %}
-                <!-- <a style="cursor:pointer;"><img class="share_button" data-id="{{ project.id }}" title="Share it!" width="20px" src="{% static "img/share.png" %}"></img></a> --!>
-                {% endif %}
+                            <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                            data-content="  <ul>
+                                            <!--
+                                            <li>Rename</li>
+                                            --!>
+                                            <li onclick=&quot;
+                                                    garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
+                                                    $(this).parent().parent().remove();
+                                                &quot;><a href=&quot;#&quot;>Delete</a></li>
+                                            </ul>
+                            ">
+                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </button>
+                            </li>
+                            {% if common_users %}
+                            <!-- <a style="cursor:pointer;"><img class="share_button" data-id="{{ project.id }}" title="Share it!" width="20px" src="{% static "img/share.png" %}"></img></a> --!>
+                            {% endif %}
 
-            </h3>
+                        </h3>
 
-            <h4>{{ project.subtitle }}<h4>
+                        <h4>{{ project.subtitle }}<h4>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    {% if common_projects %}
+                    <br><br><br><br><br><br>
+                    <h3><i> - - Shared projects - -</i></h3>
+                    {% for project in common_projects %}
+                    <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
+                    <div class="col-md-3 content">
+                        <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
+                            <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                            data-content='
+                            <ul>
+                                <li> Rename </li>
+                                <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
+                                <li><a href="/delete/{{ project.id }}">Delete</a></li>
+                            </ul>
+                            '>Manage</button>
+                        </h3>
+                        <h4>{{ project.subtitle }}<h4>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                </div>
+            </div>
         </div>
-        {% endfor %}
-        {% endif %}
-
-        {% if common_projects %}
-        <br><br><br><br><br><br>
-        <h3><i> - - Shared projects - -</i></h3>
-        {% for project in common_projects %}
-        <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-        <div class="col-md-3 content">
-            <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
-                <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                data-content='
-                <ul>
-                    <li> Rename </li>
-                    <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
-                    <li><a href="/delete/{{ project.id }}">Delete</a></li>
-                </ul>
-                '>Manage</button>
-            </h3>
-            <h4>{{ project.subtitle }}<h4>
-        </div>
-        {% endfor %}
-        {% endif %}
-
     </div>
 
 

@@ -120,48 +120,56 @@ LANGUAGES = {
 from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser
 
+def resourcetype(name):
+    return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
+
 RESOURCETYPES = [
     # type 0
+    {   'name': 'Select database below',
+        'parser': None,
+        'default_language': None,
+    },
+    # type 1
     {   'name': 'Europress (English)',
         'parser': EuropressParser,
         'default_language': 'en',
     },
-    # type 1
+    # type 2
     {   'name': 'Europress (French)',
         'parser': EuropressParser,
         'default_language': 'fr',
     },
-    # type 2
+    # type 3
     {   'name': 'Jstor (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
-    # type 3
+    # type 4
     {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
     },
-    # type 4
+    # type 5
     {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
-    # type 5
+    # type 6
     {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'en',
     },
-    # type 6
+    # type 7
     {   'name': 'Zotero (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
     },
-    # type 7
+    # type 8
     {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
     },
-    # type 8
+    # type 9
     {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',

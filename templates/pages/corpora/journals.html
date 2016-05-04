@@ -3,10 +3,10 @@
 {% block css %}
 {% load staticfiles %}
 
-<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
-<link rel="stylesheet" type="text/css" href="{% static "css/gargantext/tables.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "js/d3/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/jquery/dynatable/jquery.dynatable.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/tables.css"%}"/>
 
 <script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
@@ -23,7 +23,7 @@
             <center>
                 Select a frequency group in the chart with blue bars to zoom in
             <p align="center">
-            <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+            <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>--!>
             <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
             <!-- <p style="font-size:70%">
                 <b>x</b>: amount of documents for the journal
@@ -77,7 +77,7 @@
 
 
 
-<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/dynatable/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "js/gargantext/Journals_dyna_chart_and_table.js" %}"></script>

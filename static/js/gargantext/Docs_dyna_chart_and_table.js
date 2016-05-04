@@ -69,18 +69,10 @@ function Push2Buffer( NewVal ) {
 }
 
 function Final_UpdateTable( action ) {
-    // (1) Identifying if the button is collapsed:
-    var isCollapsed=false;
-    var accordiontext = $("#collapseOne").attr("class")
-    if(accordiontext.indexOf("collapse in")>-1)
-        isCollapsed=true;
-
-
     var UpdateTable = false
-    if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
+    if (action=="changerange") {
         UpdateTable = true;
-        $("#corpusdisplayer").html("View by titles")
-    } else $("#corpusdisplayer").html("View by titles")
+    }
 
     pr("update table??: "+UpdateTable)
 
@@ -522,8 +514,6 @@ function Main_test(Data) {
 
   return "OK"
 }
-
-$("#corpusdisplayer").hide()
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
@@ -556,9 +546,7 @@ $.ajax({
 
     var result = Main_test(data.records)
 
-    $("#corpusdisplayer").show()
     $("#content_loader").remove()
-    $("#corpusdisplayer").click()
 
     console.log( result )
   },

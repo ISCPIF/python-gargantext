@@ -100,26 +100,14 @@ function Push2Buffer( NewVal ) {
 }
 
 function Final_UpdateTable( action ) {
-    // (1) Identifying if the button is collapsed:
-    var isCollapsed=false;
-    var tableClass = $("#journal_table").attr("class")
-
-    //\bcollapse\b
-    if(tableClass.indexOf(" collapse ")>-1) {
-        isCollapsed=true;
-    }
-
     var UpdateTable = false
-    if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
+    if (action=="changerange") {
         UpdateTable = true;
-        $("#corpusdisplayer").html("Close Folder")
-    } else $("#corpusdisplayer").html("View by journals")
+    }
 
     pr("update table??: "+UpdateTable)
 
     if ( ! UpdateTable ) return false; //stop whatever you wanted to do.
-
-
 
     var TimeRange = AjaxRecords;
 
@@ -502,8 +490,6 @@ function Main_test( data , initial) {
 
 
 
-$("#corpusdisplayer").hide()
-
 console.log(window.location.href)
 
 // match corpus_id in the url
@@ -525,13 +511,8 @@ if (rematch) {
         var result = Main_test( data.by.journal , "FirstScore" )
         console.log( result )
 
-        $("#corpusdisplayer").show()
         $("#content_loader").remove()
-        $("#corpusdisplayer").click()
 
       }
     });
-}
-else {
-
 }

@@ -51,50 +51,42 @@
 
 <div class="container">
     <div class="jumbotron">
-        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-            <div class="panel panel-body">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                        <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg" style="width:200px; margin:0 auto; display:block;">Titles</h2></p>
-                        </a>
-                    </h4>
-
-                    <!-- search box with custom function in Docs_dyna_chart_and_tables.js -->
-                    <div class="pull-left" style="margin-top:1.85em; font-size: 16px;">
-                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-                        Search:
-                        <input type="search" id="doubleSearch"/>
-                        <span style="font-size:70%;">
-                        <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                          <!-- Used by the #doubleSearch associated function -->
-                          <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
-                        <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                          <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
-                        </span>&nbsp;&nbsp;
-                        <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                        <select id="dupFilter" name="dupFilter">
-                            <option value="filter_all">All</option>
-                            <option value="filter_dupl">Duplicates by Title</option>
-                        </select>
-                    </div>
-
-
-                </div>
-                <div id="collapseOne" class="panel-collapse collapse no-transition" role="tabpanel">
-                  <div class="panel-body">
-                    <div id="div-table"></div>
-                            <p align="right">
-                                <button id="move2trash" class="btn btn-primary btn-lg" >
-                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                                    Trash It!
-                                </button>
-                            </p>
-                    </div>
-                  </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    Publications by title
+                </h4>
+                <!-- search box with custom function in Docs_dyna_chart_and_tables.js -->
+                <div class="pull-left" style="margin-top:1.85em; font-size: 16px;">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    Search:
+                    <input type="search" id="doubleSearch"/>
+                    <span style="font-size:70%;">
+                    <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
+                      <!-- Used by the #doubleSearch associated function -->
+                      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
+                    <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
+                      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
+                    </span>&nbsp;&nbsp;
+                    <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
+                    <select id="dupFilter" name="dupFilter">
+                        <option value="filter_all">All</option>
+                        <option value="filter_dupl">Duplicates by Title</option>
+                    </select>
                 </div>
             </div>
+            <div class="panel-body">
+                <div id="div-table"></div>
+                <p align="right">
+                    <button id="move2trash" class="btn btn-primary btn-lg" >
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                        Trash It!
+                    </button>
+                </p>
+            </div>
         </div>
+    </div>
+</div>
 
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>

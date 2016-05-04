@@ -1,0 +1,12 @@
+/* styles for menu.html template (navbar etc) */
+
+#dafixedtop .navbar-text {
+    margin: 0 ;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+
+#corporatop.nav-tabs > li > a {
+    line-height: .85;
+}

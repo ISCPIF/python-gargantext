@@ -1,12 +1,9 @@
 <html>
   <head>
     {% load staticfiles %}
-    <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
-
-    <!-- TODO rationaliser les chemins sous libs -->
-    <link rel="stylesheet" href="{% static "js/libs/jquery/jquery-ui.css" %}" media="screen">
-    <!-- <link rel="stylesheet" href="{% static "js/libs/bootstrap/css/bootstrap.css" %}" media="screen"> -->
+    <link rel="stylesheet" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+    <link rel="stylesheet" href="{% static "js/bootstrap/3.1.1/bootstrap-theme.min.css" %}">
+    <link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/freshslider.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %}" media="screen">
@@ -76,22 +73,28 @@
                 {% if project %}
                 <li><a href="/projects/{{project.id}}">
                         <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                        {{project.name}}</a></li>
+                        {{project.name | truncatechars:15}}</a></li>
                 {% endif %}
                 {% if corpus %}
                 <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                        {{corpus.name}}
+                        {{corpus.name | truncatechars:15}}
                     </a></li>
                 {% endif %}
               </ul>
 
               <ul class="nav pull-right">
                   <li class="dropdown">
+<<<<<<< HEAD
                       <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
                           <i class="icon-user"></i>
                           <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
                           {{ user.username | truncatechars:15}}
+=======
+                      <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i>
+                            <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
+                            {{ user.username | truncatechars:15}}
+>>>>>>> refactoring
                           <i class="caret"></i>
                       </a>
                       <ul class="dropdown-menu">
@@ -475,8 +478,8 @@
     </div>
 
 
-    <script src="{% static "js/jquery/jquery.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "js/libs/jquery/jquery-ui.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/jquery/1.11.2/jquery-ui.js" %}" type="text/javascript"></script>
 
     <script src="{% static "js/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
@@ -493,11 +496,11 @@
 
     <script src="{% static "js/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
     <script src="{% static "js/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>
-    <script src="{% static "js/tinawebJS/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/graphExplorer/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "js/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/graphExplorer/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/sigma.parseCustom.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "js/extras_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "js/graphExplorer/extras_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/sigmaUtils.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/methods.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "js/tinawebJS/minimap.js" %}" type="text/javascript" language="javascript"></script>

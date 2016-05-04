@@ -2,10 +2,10 @@
 {% load staticfiles %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/d3/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/jquery/dynatable/jquery.dynatable.css"%}"/>
 
-<link rel="stylesheet" type="text/css" href="{% static "css/gargantext/tables.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/tables.css"%}"/>
 
 <script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
@@ -20,9 +20,9 @@
     <div class="col-md-3 col-md-offset-2">
         <div id="monthly-move-chart">
             <center>
-                    Select a time range in the chart with blue bars to zoom in
+                   Select a time range in the chart with blue bars to zoom in
                 <p align="center">
-                <a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>
+                <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>--!>
                 <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
 
                 <div class="clearfix"></div>
@@ -89,7 +89,7 @@
 </div>
 
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
-<script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery/dynatable/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "js/gargantext/Docs_dyna_chart_and_table.js" %}"></script>

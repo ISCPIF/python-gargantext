@@ -49,16 +49,11 @@
         <input type="hidden" id="scores_id" value=""></input>
 
         <div class="jumbotron">
-            <div class="row">
                 <div class="panel panel-default">
 
                     <div class="panel-heading">
                       <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                            <!-- Final_UpdateTable redraws the dynatable if necessary -->
-                            <p id="corpusdisplayer" onclick='Final_UpdateTable("click")' class="btn btn-primary btn-lg">
-                              Close term list
-                            </p>
+                          Extracted terms
                             <!-- <button title='run test function' onclick="doATest()">
                                 TEST
                             </button> -->
@@ -79,30 +74,28 @@
                     </div>
 
 
-                    <div id="terms_table" class="panel-collapse collapse in no-transition" role="tabpanel">
-                        <div class="panel-body">
-                          <div id="div-table">
-                              <!-- (table id="my-ajax-table") dynamically set by Ngrams_dyna_chart_and_table -->
-                          </div>
 
-                          <!-- under the table -->
-                          <p align="right">
-                              <button id="Save_All" class="btn btn-primary">Save changes permanently</button>
-                          </p>
-                        </div>
-                    </div> <!-- /div panel-collapse -->
+                    <div id="terms_table" class="panel-body">
+                      <div id="div-table">
+                          <!-- (table id="my-ajax-table") dynamically set by Ngrams_dyna_chart_and_table -->
+                      </div>
+
+                      <!-- under the table -->
+                      <p align="right">
+                          <button id="Save_All" class="btn btn-primary">Save changes permanently</button>
+                      </p>
+                    </div>
 
                 </div> <!-- /div panel -->
-            </div> <!-- /row with the dynatable panels -->
 
         </div> <!-- /jumbotron -->
-    <!--  Divs closed by the menu
-    </div>  Alignment
+    <!--
     <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
         Import a Corpus-List
     </button>
-</div> container
---!>
+-->
+</div>
+
 
 
 

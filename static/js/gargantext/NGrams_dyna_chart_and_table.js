@@ -27,8 +27,10 @@
  *   Romain Loth
  *           - minor 2016 modifications + doc
  *           - unify table ids with ngram ids
+ *           - new api routes + prefetch maplist terms
+ *           - simplify UpdateTable
  *
- * @version 1.0 beta
+ * @version 1.1
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -304,26 +306,13 @@ function Final_UpdateTable( action ) {
     // console.log("AjaxRecords")
     // console.log(AjaxRecords)
 
-    // (1) Identifying if the button is collapsed:
-    var isCollapsed=false;
-    var tableClass = $("#terms_table").attr("class")
-
-    //\bcollapse\b
-    if(tableClass.indexOf(" collapse ")>-1) {
-        isCollapsed=true;
-    }
-
     var UpdateTable = false
-    if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
+    if (action=="changerange") {
         UpdateTable = true;
-        $("#corpusdisplayer").html("Close Term List")
-    } else $("#corpusdisplayer").html("View by terms")
-
+    }
     pr("update table??: "+UpdateTable)
 
     if ( ! UpdateTable ) return false; //stop whatever you wanted to do.
-
-
 
     var TimeRange = AjaxRecords;
 
@@ -1893,13 +1882,6 @@ var NGrams = {
     "scores" : {}
 }
 
-$("#corpusdisplayer").hide()
-// if( $("#share_button").length==0 ) {
-//   $("#ImportList").remove()
-// }
-
-
-
 
 // NEW AJAX x 2
 
@@ -2071,10 +2053,7 @@ function AfterAjax() {
     //
     // });
 
-    $("#corpusdisplayer").show()
     $("#content_loader").remove()
-    $("#corpusdisplayer").click()
-
 
     $(".nav-tabs a").click(function(e){
       e.preventDefault();

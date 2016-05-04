@@ -79,32 +79,37 @@
                     <div id="project_{{project.id}}" class="row">
                         <h3>
                             
-                            <a  
-                            href="/projects/{{ project.id }}">
-                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                                {{ project.name }}
-                            </a>
-                            <a href="/projects/{{project.id}}" >
-                            <button type="button" class="btn btn-default" aria-label="Left Align">
-                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                            </button>
+                            <div class="col-md-5 content">
+                                <a  
+                                href="/projects/{{ project.id }}">
+                                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                    {{ project.name }}
+                                </a>
+                            </div>
+                            
+                            <div class="col-md-3 content">
+                                <a href="/projects/{{project.id}}" >
+                                    <button type="button" class="btn btn-default" aria-label="Left Align">
+                                          <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                    </button>
 
-                            </a>
+                                </a>
 
-                            <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                            data-content="  <ul>
-                                            <!--
-                                            <li>Rename</li>
-                                            --!>
-                                            <li onclick=&quot;
-                                                    garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
-                                                    $(this).parent().parent().remove();
-                                                &quot;><a href=&quot;#&quot;>Delete</a></li>
-                                            </ul>
-                            ">
-                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                            </button>
-                            </li>
+                                <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                    data-content="  <ul>
+                                                    <!--
+                                                    <li>Rename</li>
+                                                    --!>
+                                                    <li onclick=&quot;
+                                                            garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
+                                                            $(this).parent().parent().remove();
+                                                        &quot;><a href=&quot;#&quot;>Delete</a>
+                                                    </li>
+                                                    </ul>
+                                    ">
+                                    <span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
+                                </button>
+                            </div>
                             {% if common_users %}
                             <!-- <a style="cursor:pointer;"><img class="share_button" data-id="{{ project.id }}" title="Share it!" width="20px" src="{% static "img/share.png" %}"></img></a> --!>
                             {% endif %}

@@ -389,10 +389,10 @@ function Main_test(Data) {
                       })
                       .renderArea(true)
                       // orange
-                      .stack(monthlyMoveGroup, function (d) {
-                        //   console.log(d)
-                          return d.value;
-                      })
+                    //   .stack(monthlyMoveGroup, function (d) {
+                    //     //   console.log(d)
+                    //       return d.value;
+                    //   })
                       .title(function (d) {
                           var value = d.data.value.total ? d.data.value.total : d.data.value;
                           if (isNaN(value)) value = 0;

@@ -120,8 +120,8 @@ function Final_UpdateTable( action ) {
 //          STEP 01:
 //      remember url elements
 
-var id_from_url = function(name) {
-    var regex = new RegExp(name + '/(\\d+)');
+var id_from_url = function(nodename) {
+    var regex = new RegExp(nodename + '/(\\d+)');
     var result = regex.exec(location.href);
     return result ? result[1] : null;
 };
@@ -156,17 +156,19 @@ function getRecords() {
 function transformContent2(rec_id) {
   // pr("\t\ttransformContent2: "+rec_id)
   var elem = AjaxRecords[rec_id];
-  // pr("\t"+elem.title)
+  // pr("\t"+elem.rawtitle)
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
     result["date"] = '<strike>'+elem["date"]+'</strike>'
-    result["name"] = '<strike>'+elem["name"]+'</strike>'
+    result["docurl"] = '<strike>'+elem["docurl"]+'</strike>'
+    result["rawtitle"] = elem["rawtitle"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
     result["date"] = elem["date"]
-    result["name"] = elem["name"]
+    result["docurl"] = elem["docurl"]
+    result["rawtitle"] = elem["rawtitle"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   }
   return result;
@@ -264,11 +266,11 @@ function Main_test(Data) {
     div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
     div_table += "\t"+'<thead>'+"\n"
     div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="date">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> Date</th>'+"\n"
-    div_table += "\t"+"\t"+'<th data-dynatable-column="name">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size" aria-hidden="true"></span> Title</th>'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar"></span> Date</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="docurl">'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size"></span> Title</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash"></span>'+"\n"
     div_table += "\t"+"\t"+'</th>'+"\n"
     div_table += "\t"+'</thead>'+"\n"
     div_table += "\t"+'<tbody>'+"\n"
@@ -282,7 +284,7 @@ function Main_test(Data) {
     var date = Data[i]["date"];
     if ( ! justdates[date] ) justdates[date] = 0;
     justdates[date]++;
-    // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["name"])
+    // console.log(Data[i]["date"]+"  :  originalRecords["+arr_id+"] <- "+orig_id+" | "+Data[i]["docurl"])
   }
 
   var t0 = get_node_date(AjaxRecords[0]);
@@ -427,13 +429,17 @@ function Main_test(Data) {
   MyTable = []
   MyTable = $('#my-ajax-table').dynatable({
               dataset: {
-                records: Data
+                records: Data,
+                sorts : {"date": 1},
+                sortTypes: {
+                    docurl: 'rawtitleSort'
+                }
               },
               features: {
                 pushState: false,
                 // prevent default title search which can't do title vs abstract
                 search: false,
-                // sort: false //i need to fix the sorting function... the current one just sucks
+                sort: true
               },
               inputs: {
                 // our own search which differentiates title vs abstract queries
@@ -446,7 +452,7 @@ function Main_test(Data) {
             });
 
   MyTable.data('dynatable').paginationPage.set(1);
-  MyTable.data('dynatable').process();
+  // MyTable.data('dynatable').process();
 
   if ( $(".imadiv").length>0 ) return 1;
   $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
@@ -463,7 +469,7 @@ function Main_test(Data) {
           // NB searchString == $("#doubleSearch").val()
 
           // by default we always decide to search in the title
-          matchInTexts = [record.title]
+          matchInTexts = [record.rawtitle]
 
           // if box is checked we'll also search in the abstracts
           if (doAbstractsSearch) {
@@ -485,20 +491,25 @@ function Main_test(Data) {
           }
           return contains;
         }
-    MyTable.data('dynatable').process();
+    // MyTable.data('dynatable').process();
 
     // also append another bound filter for duplicates
     MyTable.data('dynatable').queries
         .functions['dupFilter'] = function(record,selected) {
-            return (selected == 'filter_all')||(countByTitles[record.title] > 1)
+            return (selected == 'filter_all')||(countByTitles[record.rawtitle] > 1)
         }
 
     // and set this filter's initial status to 'filter_all'
     MyTable.data('dynatable').settings.dataset.queries['dupFilter'] = 'filter_all'
+
+
+    MyTable.data('dynatable').sorts.functions["rawtitleSort"] = function testSort (rec1,rec2) {
+        // sorts on rawtitle instead of derived docurl
+        // and sorts with locale-aware order
+        return rec1.rawtitle.localeCompare(rec2.rawtitle)
+    }
+
     MyTable.data('dynatable').process();
-
-
-  MyTable.data('dynatable').process
 
   // re-apply search function on click
   $('#searchAB').click( function() {
@@ -514,6 +525,29 @@ function Main_test(Data) {
 
   return "OK"
 }
+
+var dupFlag = false ;
+
+$("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
+    if (!dupFlag && qname == 'dupFilter' && qval == "filter_dupl") {
+        MyTable.data('dynatable').queries.remove('dupFilter')
+        // to avoid recursion when we'll call this filter again in 4 lines
+        dupFlag = true ;
+        // sort alphabetically **before** duplicates filter
+        MyTable.data('dynatable').sorts.clear();
+        MyTable.data('dynatable').sorts.add('rawtitle', -1) // -1 <==> DESC (ASC doesn't work well ?)
+        MyTable.data('dynatable').queries.add('dupFilter', 'filter_dupl')
+        MyTable.data('dynatable').process();
+    }
+});
+
+$("#div-table").on("dynatable:queries:removed", function(e, qname) {
+    if (qname == 'dupFilter') {
+        dupFlag = false ;
+    }
+});
+
+
 // FIRST portion of code to be EXECUTED:
 // (3) Get records and hyperdata for paginator
 $.ajax({
@@ -526,15 +560,17 @@ $.ajax({
       var orig_id = parseInt(record.id);
       var arr_id = parseInt(i)
       RecDict[orig_id] = arr_id;
-      record.title = record.name;
-      record.name = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
+      record.rawtitle = record.name;
+
+      // trick to have a clickable title in docurl slot, but could be done in transformContent2
+      record.docurl = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
       record.date = get_node_date(record);
       record.del = false;
     });
 
     // initialize CountByTitle census
     for (var i in data.records) {
-        ourTitle = data.records[i]['title'] ;
+        ourTitle = data.records[i]['rawtitle'] ;
         if (countByTitles.hasOwnProperty(ourTitle)) {
             countByTitles[ourTitle] ++ ;
         }

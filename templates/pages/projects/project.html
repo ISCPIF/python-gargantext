@@ -32,7 +32,7 @@
                 {% if project %}
                 <h1>
                     <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                    {{ project.name }}</h1>
+                    {{ project.name | truncatechars:25 }}</h1>
                 <!--<h3> {{number}} corpora </h3>-->
                 {% endif %}
             </div>

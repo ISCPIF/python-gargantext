@@ -2,9 +2,9 @@
     {% load staticfiles %}
     <head>
         <link rel="shortcut icon" href="{% static "/favicon.ico" %}">
-        <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
-        <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
-        <link rel="stylesheet" type="text/css" href="{% static "css/gargantext/menu.css"%}"/>
+        <script type="text/javascript" src="{% static "js/jquery/1.11.1/jquery.min.js" %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "js/gargantext/menu.css"%}"/>
         {% block css %}
         {% endblock %}
     </head>
@@ -220,7 +220,7 @@
 
 
         <!--
-        <script type="text/javascript" src="{% static "js/easy/jquery.easypiechart.js"%}"></script>
+        <script type="text/javascript" src="{% static "js/jquery/pie-chart/jquery.easypiechart.js"%}"></script>
         <script type="text/javascript">
             $(function() {
                 $('.chart').easyPieChart({
@@ -231,7 +231,7 @@
         </script>
         -->
 
-        <script type="text/javascript" src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
 
         <script type="text/javascript">
             $(function () { $("[data-toggle='popover']").popover({

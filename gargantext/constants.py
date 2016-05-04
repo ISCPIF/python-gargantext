@@ -121,6 +121,11 @@ from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser
 
 def resourcetype(name):
+    '''
+    resourcetype :: String -> Int
+    Usage : resourcetype("Europress (English)") == 1
+    Examples in scrapers scripts (Pubmed or ISTex for instance).
+    '''
     return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
 
 RESOURCETYPES = [

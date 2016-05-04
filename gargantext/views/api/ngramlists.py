@@ -475,10 +475,12 @@ class ListFamily(APIView):
             hidden_ngrams_query = _query_grouped_ngrams(groups_id, details=True,
                                           scoring_metric_id= scores_id)
 
+            # infos for stoplist terms, absent from mainlist
+            stop_ngrams_query = _query_list(other_list_ids['stoplist'], details=True,
+                                            scoring_metric_id=scores_id)
+
             # and for the other lists (stop and map)
             # no details needed here, just the member ids
-            #   - maplist ngrams will already be in ngraminfos b/c of mainlist
-            #   - stoplist ngrams will not be shown in detail
             for li in other_list_ids:
                 li_elts = _query_list(other_list_ids[li], details=False
                                       ).all()
@@ -497,7 +499,7 @@ class ListFamily(APIView):
             # TODO add maplist membership
             ngrams_which_need_detailed_info = mainlist_query.all()
         else:
-            ngrams_which_need_detailed_info = mainlist_query.all() + hidden_ngrams_query.all()
+            ngrams_which_need_detailed_info = mainlist_query.all() + hidden_ngrams_query.all() + stop_ngrams_query.all()
 
         # the output form of details is:
         # ngraminfo[id] => [term, weight]

@@ -1,9 +1,7 @@
 {% extends "pages/menu.html" %}
-
-{% block css %}
 {% load staticfiles %}
 
-<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+{% block css %}
 <link rel="stylesheet" type="text/css" href="{% static "css/d3/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery/jquery.dynatable.css"%}"/>
 
@@ -98,8 +96,6 @@
             </div>
         </div>
 
-<script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
-<script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
 <script type="text/javascript" src="{% static "js/jquery/jquery.dynatable.js" %}"></script>
 

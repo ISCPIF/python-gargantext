@@ -27,6 +27,7 @@ def ngramtable(request, project_id, corpus_id):
         request = request,
         context = {
             'debug': settings.DEBUG,
+            'user': request.user,
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,

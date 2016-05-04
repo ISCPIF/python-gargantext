@@ -1645,7 +1645,7 @@ function MainTableAndCharts( data , initial , search_filter) {
       // .renderDataPoints({radius: 2, fillOpacity: 0.8, strokeOpacity: 0.8})
       .brushOn(false)
       .title(function (d) {
-                  var value = d.value.avg ? d.value.avg : d.value;
+                  var value = d.data.value.avg ? d.data.value.avg : d.data.value;
                   if (isNaN(value)) value = 0;
                   return value+" ngrams with "+FirstScore+"="+Number(d.key);
               })

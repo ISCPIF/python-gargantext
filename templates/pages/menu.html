@@ -2,6 +2,9 @@
     {% load staticfiles %}
     <head>
         <link rel="shortcut icon" href="{% static "/favicon.ico" %}">
+        <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "css/gargantext/menu.css"%}"/>
         {% block css %}
         {% endblock %}
     </head>
@@ -11,11 +14,6 @@
         <div id="dafixedtop" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container">
                 <div class="navbar-inner">
-                    <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
                     <a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="{% static "img/logoSmall.png"%}" title="Back to home."></a>
                 </div>
 
@@ -30,25 +28,28 @@
                         <li><a href="/projects/" title="All your projects are here.">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                                 Projects
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                         {% if project %}
                         <li><a href="/projects/{{project.id}}">
                                 <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                 {{project.name | truncatechars:15}}
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                         {% if corpus %}
                         <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                 {{corpus.name | truncatechars:15}}
-                            </a></li>
+                            </a>
+                        </li>
                         {% endif %}
                     </ul>
 
                     <ul class="nav pull-right">
                         <li class="dropdown">
-                            <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your username">
+                            <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
                                 <i class="icon-user"></i>
                                 <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
                                 {{ user.username | truncatechars:15}}
@@ -61,7 +62,7 @@
                                 <li class="divider"></li>
                                 {% if user.is_authenticated %}
                                 <li>
-                                    <a tabindex="-1" href="/auth/logout" 
+                                    <a tabindex="-1" href="/auth/logout"
                                         title="Click here to logout especially on public devices">
                                         <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
                                         Logout
@@ -74,6 +75,59 @@
                     </ul>
                 </div>
             </div>
+            {% if corpus %}
+            <div class="container">
+                    <ul id="corporatop" class="nav nav-tabs navbar-static-top nav-justified">
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
+                                    onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
+                                    data-target='#' href='#'>Titles
+                                </a>
+                        </li>
+
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
+                                        data-target='#' href='#'>Journals
+                                </a>
+                        </li>
+
+
+                        {% for state in corpus.hyperdata.statuses %}
+                            {% if state.action == "ngrams_extraction" %}
+                                {% if state.complete %}
+
+                                    <li>
+                                        <a type="button" class="btn btn-default {% if view == 'terms' %} active {% endif %}"
+                                            onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/terms'"
+                                            data-target='#' href='#'>Terms
+                                        </a>
+                                    </li>
+
+
+                                    <li class="dropdown">
+                                        <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
+                                        Graphs
+                                        </a>
+                                        <i class="caret"></i>
+                                    <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a tabindex="-1"
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a tabindex="-1"
+                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                                    </li>
+                                    </ul>
+                                    </li>
+                                    {% endif %}
+                                {% endif %}
+                        {% endfor %}
+
+                    </ul>
+            </div>
+            {% endif %}
         </div>
         <!--/.nav-collapse -->
 
@@ -82,46 +136,14 @@
         {% if corpus %}
         <div class="container theme-showcase">
             <div class="jumbotron" style="margin-bottom:0">
-                <div id="corpusbar" class="row">
-                    <div class="col-md-12">
-                        <div class="btn-group btn-group-justified">
-                            <center>
+                <br>
+                <br>
                                 <!--
-                                <a type="button" class="btn btn-default 
+                                <a type="button" class="btn btn-default
                                         href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
                                 --!>
                                 <!-- <li class="divider"></li> --!>
-                                
-                                <a type="button" class="btn btn-default {% if view == "titles" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Titles
-                                </a>
-                                
-                                <a type="button" class="btn btn-default {% if view == "journals" %} active {% endif %}"
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/journals">Journals
-                                </a>
-                                
-                                {% for state in corpus.hyperdata.statuses %}
-                                    {% if state.action == "ngrams_extraction" %}
-                                        {% if state.complete %}
 
-                                        <a type="button" class="btn btn-default 
-                                                {% if view == "terms" %} active {% endif %}"
-                                                href="/projects/{{project.id}}/corpora/{{ corpus.id }}/terms">Terms</a>
-                                        
-                                        <!-- <li class="divider"></li> --!>
-                                    
-                                        <!-- FIXME a pop up for advanced mode of graphs --!>
-                                        <a type="button" class="btn btn-default "
-                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Conditional)</a>
-                                        <a type="button" class="btn btn-default "
-                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >Graphs (Distributional)</a>
-                                            {% endif %}
-                                        {% endif %}
-                                {% endfor %}
-                            </center>
-                        </div>
-                    </div>
-                </div>
                     <div class="row">
                         <div class="col-md-4">
                             {% if project %}
@@ -129,10 +151,10 @@
                                         <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                         {{ project.name }}
                                     </a>
-                                <br> 
+                                <br>
                                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                         {{ corpus.name }}
-                                <br> 
+                                <br>
                                         <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                                         {{ corpus.date }}
                                 </h3>
@@ -146,7 +168,7 @@
                             <!--
                             <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
 
-                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom" 
+                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                 data-content='
                                         <ul>
                                             <li> Rename </li>
@@ -163,7 +185,7 @@
         </div>
 
         {% endif %}
-        
+
         {% endblock %}
 
 
@@ -181,7 +203,7 @@
                 <span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>
                 , version 3.0.0,
                 <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">
-                    Copyrights 
+                    Copyrights
                     <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span>
                     CNRS {{ date.year }}
                 </a>
@@ -207,7 +229,6 @@
                 });
             });
         </script>
-        <script type="text/javascript" src="{% static "js/jquery/jquery.min.js" %}"></script>
         -->
 
         <script type="text/javascript" src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
@@ -279,7 +300,3 @@
 
     </body>
 </html>
-
-
-
-

@@ -882,7 +882,11 @@ function GetUserPortfolio() {
                $("#add_corpus_tab").prop("disabled",false)
                var selected = $('input[name=optradio]:checked')[0].id.split("_")
                var sel_p_id = selected[0], sel_c_id =selected[1]
-               $("#selected_corpus").html( "<center>"+portfolio[sel_p_id] + " , " + portfolio[sel_c_id]+"</center><br>" )
+               
+               var html_selection  = ""
+               html_selection     += '<center>You are comparing:</center>'
+               html_selection     += "<center> ("+portfolio[sel_p_id] + ") <=> (" + portfolio[sel_c_id]+")</center><br>"
+               $("#selected_corpus").html( html_selection )
 
             });
 

@@ -671,7 +671,7 @@ function getCookie(name) {
 // Just for Garg
 function printCorpuses() {
     console.clear()
-    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
+    console.log( "!!!!!!!! Corpus chosen, going to make the diff !!!!!!!! " )
     pr(corpusesList)
 
     var selected = $('input[name=optradio]:checked')[0].id.split("_")
@@ -680,18 +680,18 @@ function printCorpuses() {
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
-        if(pageurl[i]=="corpus") {
+        if(pageurl[i]=="corpora") {
             cid=parseInt(i);
             break;
         }
     }
     var current_corpus = pageurl[cid+1];
 
-    pr("corpus id, selected: "+corpusesList[sel_p]["corpuses"][sel_c]["id"])
+    pr("corpus id, selected: "+sel_c)
     pr("current corpus: "+current_corpus)
     var the_ids = []
     the_ids.push( current_corpus )
-    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
+    the_ids.push( sel_c )
 
     $("#closecorpuses").click();
 
@@ -702,7 +702,7 @@ function printCorpuses() {
     console.log( thenodes )
     $.ajax({
         type: 'GET',
-        url: window.location.origin+'/api/corpusintersection/'+the_ids.join("a"),
+        url: window.location.origin+'/explorer/intersection/'+the_ids.join("a"),
         data: "nodeids="+JSON.stringify(thenodes),
         type: 'POST',
         beforeSend: function(xhr) {
@@ -720,7 +720,7 @@ function printCorpuses() {
             cancelSelection(false)
             ChangeGraphAppearanceByAtt(true)
 
-            console.log("YOLOYOLYOLYOYKOYYKYOY")
+            console.log("Getting the clusters")
             clustersBy("inter" , "color")
             clustersBy("inter" , "size")
 
@@ -814,43 +814,64 @@ function GetUserPortfolio() {
     if( Object.keys( corpusesList ).length > 0 )
         return true;
 
-    var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
+    var query_url = window.location.origin+'/api/nodes?types[]=PROJECT&types[]=CORPUS&pagination_limit=100'
     $.ajax({
         type: 'GET',
+        dataType : 'JSON',
         url: query_url,
         success : function(data) {
 
             var html_ = ""
+            var portfolio = {}
+
             html_ += '<div class="panel-group" id="accordion">'+"\n"
             html_ += ' <form id="corpuses_form" role="form">'+"\n"
-            corpusesList = data;
-            for (var k1 in data) {
-                var v1 = data[k1]
-                html_ += '  <div class="panel panel-default">'+"\n"
-                html_ += '   <div class="panel-heading">'+"\n"
-                html_ += '    <h4 class="panel-title">'+"\n"
-                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
-                html_ += '    </h4>'+"\n"
-                html_ += '   </div>'+"\n"
-                html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
-                html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
-                html_ += '     <ul>'+"\n"
-                for(var c in v1["corpuses"]) {
-                    var Ci = v1["corpuses"][c]
-                    if( Ci["id"]!= corpus_id) {
-                        html_ += '      <li>'+"\n"
-                        html_ += '       <div class="radio">'+"\n"
-                        html_ += '        <label><input type="radio" id="'+k1+"_"+c+'" name="optradio">'+"\n"
-                        html_ += '         <a target="_blank" href="/project/'+k1+'/corpus/'+Ci["id"]+'/">'+Ci["name"] +' ('+Ci["c"]+' docs.)</a>'+"\n"
-                        html_ += '        </label>'+"\n"
-                        html_ += '       </div>'+"\n"
-                        html_ += '     </li>'+"\n"
+            for (var record in data["records"]) {
+                console.log( " ici le record " + record )
+                if ( data["records"][record]["typename"] === 'PROJECT' ) {
+
+                    var project_id   = data["records"][record]["id"]
+                    var project_name = data["records"][record]["name"]
+                    
+                    portfolio[project_id] = project_name
+                    
+                    html_ += '  <div class="panel panel-default">'+"\n"
+                    html_ += '   <div class="panel-heading">'+"\n"
+                    html_ += '    <h4 class="panel-title">'+"\n"
+                    html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+project_id+'">'+project_name+'</a>'+"\n"
+                    html_ += '    </h4>'+"\n"
+                    html_ += '   </div>'+"\n"
+                    html_ += '   <div id="collapse_'+project_id+'" class="panel-collapse collapse">'+"\n"
+                    html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
+                    html_ += '     <ul>'+"\n"
+                    
+                    for (var record2 in data["records"]) {
+                        if ( data["records"][record2]["typename"] == 'CORPUS' ) {
+                            var corpus_parent_id = data["records"][record2]["parent_id"]
+                            if (corpus_parent_id !== null) {
+                                if ( corpus_parent_id == project_id) {
+                                        var corpus_id   = data["records"][record2]["id"]
+                                        var corpus_name = data["records"][record2]["name"]
+                                        
+                                        portfolio[corpus_id] = corpus_name
+                                        
+                                        html_ += '      <li>'+"\n"
+                                        html_ += '       <div class="radio">'+"\n"
+                                        html_ += '        <label><input type="radio" id="'+project_id+"_"+corpus_id+'" name="optradio">'+"\n"
+                                        html_ += '         <a target="_blank" href="/projects/'+project_id+'/corpora/'+corpus_id+'/">'+corpus_name +'</a>'+"\n"
+                                        html_ += '        </label>'+"\n"
+                                        html_ += '       </div>'+"\n"
+                                        html_ += '     </li>'+"\n"
+                                }
+                            }
+                        }
                     }
+                    
+                    html_ += '     </ul>'+"\n"
+                    html_ += '    </div>'+"\n"
+                    html_ += '   </div>'+"\n"
+                    html_ += '  </div>'+"\n"
                 }
-                html_ += '     </ul>'+"\n"
-                html_ += '    </div>'+"\n"
-                html_ += '   </div>'+"\n"
-                html_ += '  </div>'+"\n"
             }
 
             html_ += ' </form>'+"\n"
@@ -860,8 +881,8 @@ function GetUserPortfolio() {
             $('#corpuses_form input:radio').change(function() {
                $("#add_corpus_tab").prop("disabled",false)
                var selected = $('input[name=optradio]:checked')[0].id.split("_")
-               var sel_p = selected[0], sel_c=selected[1]
-               $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
+               var sel_p_id = selected[0], sel_c_id =selected[1]
+               $("#selected_corpus").html( "<center>"+portfolio[sel_p_id] + " , " + portfolio[sel_c_id]+"</center><br>" )
 
             });
 

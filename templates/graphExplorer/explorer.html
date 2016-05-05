@@ -433,13 +433,19 @@
 
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 class="modal-title">Corpus Comparison Tool</h3>
+            <h3 class="modal-title">
+                <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+                Corpus Comparison Tool
+            </h3>
           </div>
 
 
 
           <div class="modal-body form-horizontal">
-            <h4>Choose one corpus among your projects:</h4>
+            <h4>
+                <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
+                Choose one corpus among your projects:
+            </h4>
             <div style="color:red;" id="selected_corpus"></div>
             <div id="user_portfolio">
 
@@ -447,8 +453,16 @@
 
 
           <div class="modal-footer">
-            <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'>Add Tab</button>
+            
+              <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
+                 Close
+            </button>
+            
+            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'> 
+                <span class="glyphicon glyphicon-ok" aria-hidden="true" ></span>
+                Compare
+            </button>
           </div>
 
         </div>

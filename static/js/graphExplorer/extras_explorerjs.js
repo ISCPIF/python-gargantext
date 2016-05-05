@@ -838,7 +838,9 @@ function GetUserPortfolio() {
                     html_ += '  <div class="panel panel-default">'+"\n"
                     html_ += '   <div class="panel-heading">'+"\n"
                     html_ += '    <h4 class="panel-title">'+"\n"
-                    html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+project_id+'">'+project_name+'</a>'+"\n"
+                    html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + project_id+'">'
+                    html_ += '       <span class="glyphicon glyphicon-book" aria-hidden="true"></span> ' + project_name
+                    html_ += '     </a>'+"\n"
                     html_ += '    </h4>'+"\n"
                     html_ += '   </div>'+"\n"
                     html_ += '   <div id="collapse_'+project_id+'" class="panel-collapse collapse">'+"\n"
@@ -855,13 +857,14 @@ function GetUserPortfolio() {
                                         
                                         portfolio[corpus_id] = corpus_name
                                         
-                                        html_ += '      <li>'+"\n"
+                                        html_ += '      <div class="row">'+"\n"
                                         html_ += '       <div class="radio">'+"\n"
                                         html_ += '        <label><input type="radio" id="'+project_id+"_"+corpus_id+'" name="optradio">'+"\n"
-                                        html_ += '         <a target="_blank" href="/projects/'+project_id+'/corpora/'+corpus_id+'/">'+corpus_name +'</a>'+"\n"
+                                        html_ += '         <a target="_blank" href="/projects/'+project_id+'/corpora/'+corpus_id+'/">'
+                                        html_ += '       <span class="glyphicon glyphicon-file" aria-hidden="true"></span> ' + corpus_name +'</a>'+"\n"
                                         html_ += '        </label>'+"\n"
                                         html_ += '       </div>'+"\n"
-                                        html_ += '     </li>'+"\n"
+                                        html_ += '     </div>'+"\n"
                                 }
                             }
                         }
@@ -884,7 +887,7 @@ function GetUserPortfolio() {
                var sel_p_id = selected[0], sel_c_id =selected[1]
                
                var html_selection  = ""
-               html_selection     += '<center>You are comparing:</center>'+"\n"
+               html_selection     += '<center>You are comparing<br><span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></center>'+"\n"
                html_selection     += '<center>'
                html_selection     += '(' + portfolio[sel_p_id] + ') '
                html_selection     += '<span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span>'

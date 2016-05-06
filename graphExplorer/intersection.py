@@ -1,15 +1,15 @@
 from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
-                                  NodeHyperdata, HyperdataKey
+                                  HyperdataKey
 
 from gargantext.util.db    import session, aliased, bulk_insert, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
-from gargantext.util.http       import JsonHttpResponse
+from gargantext.util.http  import JsonHttpResponse
 from sqlalchemy            import desc, asc, or_, and_
 
 import datetime
 
-def getCorpusIntersection(request , corpuses_ids):
+def intersection(request , corpuses_ids, measure='cooc'):
     FinalDict = False
     if request.method == 'POST' and "nodeids" in request.POST and len(request.POST["nodeids"])>0 :
 
@@ -48,11 +48,10 @@ def getCorpusIntersection(request , corpuses_ids):
 
             ngrams_data = ( session.query(NodeNgramNgram)
                                    .filter( NodeNgramNgram.node_id==cooc_ids[0]
-                                          , or_(
-                                                NodeNgramNgram.ngram1_id.in_( node_ids )
-                                              , NodeNgramNgram.ngram2_id.in_( node_ids )
-                                              )
-                                              )
+                                          , or_( NodeNgramNgram.ngram1_id.in_( node_ids )
+                                               , NodeNgramNgram.ngram2_id.in_( node_ids )
+                                               )
+                                          )
                                    .group_by(NodeNgramNgram)
                                    .all()
                                    )
@@ -66,10 +65,13 @@ def getCorpusIntersection(request , corpuses_ids):
                 n1 = e[0]
                 n2 = e[1]
                 # print( G[n1][n2]["weight"] , "\t", n1,",",n2 )
+
                 if n1 not in Coocs :
                     Coocs[n1] = 0
+
                 if n2 not in Coocs :
                     Coocs[n2] = 0
+
                 Coocs[n1] += G[n1][n2]["weight"]
                 Coocs[n2] += G[n1][n2]["weight"]
 
@@ -79,7 +81,6 @@ def getCorpusIntersection(request , corpuses_ids):
         Coocs_1,G_1 = get_score( corpuses_ids[1] )
 
         FinalDict = {}
-        measure = 'cooc'
 
         if measure == 'jacquard':
             for node in node_ids :
@@ -95,7 +96,7 @@ def getCorpusIntersection(request , corpuses_ids):
                 else:
                     FinalDict[node] = 0
 
-        elif measure == 'cooc':
+        elif measure == 'degree':
             for node in node_ids :
                 if node in G_1.nodes() and node in G_0.nodes():
                     score_0 = Coocs_0[node] / G_0.degree(node)
@@ -107,6 +108,20 @@ def getCorpusIntersection(request , corpuses_ids):
                     FinalDict[node] = 0.2
                 else:
                     FinalDict[node] = 0
+
+        elif measure == 'cooc':
+            for node in node_ids :
+                if node in G_1.nodes() and node in G_0.nodes():
+                    #FinalDict[node] = Coocs_1[node] / Coocs_0[node]
+                    FinalDict[node] = Coocs_0[node] / Coocs_1[node]
+                elif node in G_0.nodes() and node not in G_1.nodes() :
+                    FinalDict[node] = 0.0
+                elif node not in G_0.nodes() and node in G_1.nodes() :
+                    FinalDict[node] = 0.0
+                else:
+                    FinalDict[node] = 0
+
+
 
         print(FinalDict)
                 #print(node,score)

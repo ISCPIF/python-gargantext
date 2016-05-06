@@ -132,60 +132,64 @@
         <!--/.nav-collapse -->
 
         {% block corpusBannerTop %}
-
-        {% if corpus %}
-        <div class="container theme-showcase">
-            <div class="jumbotron" style="margin-bottom:0">
-                <br>
-                <br>
-                                <!--
-                                <a type="button" class="btn btn-default
-                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
-                                --!>
-                                <!-- <li class="divider"></li> --!>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            {% if project %}
-                                <h3><a href="/projects/{{project.id}}">
-                                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                                        {{ project.name }}
-                                    </a>
-                                <br>
-                                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                                        {{ corpus.name }}
-                                <br>
-                                        <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                                        {{ corpus.date }}
-                                </h3>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-4">
-                        </div>
-                        <div class="col-md-4">
+            {% if corpus %}
+                {% if view != "graph" %}
+                    <div class="container theme-showcase">
+                        <div class="jumbotron" style="margin-bottom:0">
                             <br>
-                            <!-- <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a> -->
-                            <!--
-                            <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
+                            <br>
+                                            <!--
+                                            <a type="button" class="btn btn-default
+                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
+                                            --!>
+                                            <!-- <li class="divider"></li> --!>
 
-                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                data-content='
-                                        <ul>
-                                            <li> Rename </li>
-                                            <li> Add new documents </li>
-                                            <li><a href="/delete/{{corpus.id}}">Delete</a></li>
-                                        </ul>
-                                        '>Manage</a>
-                            -->
-                            <!-- <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> -->
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {% if project %}
+                                            <h3><a href="/projects/{{project.id}}">
+                                                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                                    {{ project.name }}
+                                                </a>
+                                            <br>
+                                                    <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                                    {{ corpus.name }}
+                                            <br>
+                                                    <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                                                    {{ corpus.date }}
+                                            </h3>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <br>
+                                        <!-- <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a> -->
+                                        <!--
+                                        <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
+
+                                        <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                            data-content='
+                                                    <ul>
+                                                        <li> Rename </li>
+                                                        <li> Add new documents </li>
+                                                        <li><a href="/delete/{{corpus.id}}">Delete</a></li>
+                                                    </ul>
+                                                    '>Manage</a>
+                                        -->
+                                        <!-- <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> -->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        {% endif %}
-
+                {% else %}
+                    <div class="container theme-showcase">
+                        <div class="jumbotron" style="margin-bottom:0">
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
         {% endblock %}
 
 

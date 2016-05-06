@@ -56,7 +56,15 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: extracted ngrams' % (corpus.id))
     index_hyperdata(corpus)
     print('CORPUS #%d: indexed hyperdata' % (corpus.id))
-    
+
+    # -> 'favorites' node
+    favs = corpus.add_child(
+            typename='FAVORITES', name='favorite docs in "%s"' % corpus.name
+            )
+    session.add(favs)
+    session.commit()
+    print('CORPUS #%d: [%s] new favorites node #%i' % (corpus.id, t(), favs.id))
+
     # -------------------------------
     # temporary ngram lists workflow
     # -------------------------------

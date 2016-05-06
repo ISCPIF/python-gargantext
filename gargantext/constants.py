@@ -36,6 +36,8 @@ NODETYPES = [
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
+    # docs subset
+    'FAVORITES'              # 15
 ]
 
 INDEXED_HYPERDATA = {

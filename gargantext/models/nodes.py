@@ -124,6 +124,12 @@ class Node(Base):
     def resources(self):
         """Return all the resources attached to a given node.
         Mainly used for corpora.
+
+        example:
+        [{'extracted': True,
+          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
+          'type': 1,
+          'url': None}]
         """
         if 'resources' not in self.hyperdata:
             self['resources'] = MutableList()
@@ -132,6 +138,14 @@ class Node(Base):
     def add_resource(self, type, path=None, url=None):
         """Attach a resource to a given node.
         Mainly used for corpora.
+
+        this just adds metadata to the CORPUS node (NOT for adding documents)
+
+        example:
+        {'extracted': True,
+          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
+          'type': 1,
+          'url': None}
         """
         self.resources().append(MutableDict(
             {'type': type, 'path':path, 'url':url, 'extracted': False}
@@ -173,10 +187,9 @@ class Node(Base):
             {'action':action, 'progress':progress, 'complete':complete, 'error':error, 'date':date}
         ))
         return self['statuses'][-1]
+
 class NodeNode(Base):
     __tablename__ = 'nodes_nodes'
-    id       = Column(Integer, primary_key=True)
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     score    = Column(Float(precision=24))
-

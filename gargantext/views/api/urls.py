@@ -5,10 +5,13 @@ from . import ngramlists
 
 urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view())
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()    )
-              , url(r'^nodes/(\d+)/facets$'   , nodes.CorpusFacet.as_view()     )
               , url(r'^nodes/(\d+)/having$'   , nodes.NodeListHaving.as_view()  )
                 # get a list of ngram_ids or ngram_infos by list_id
                 # url(r'^ngramlists/(\d+)$', ngramlists.List.as_view()),
+
+              , url(r'^nodes/(\d+)/facets$'   , nodes.CorpusFacet.as_view()     )
+              , url(r'^nodes/(\d+)/favorites$', nodes.CorpusFavorites.as_view()  )
+              # in these two routes the node is supposed to be a *corpus* node
 
               , url(r'^ngramlists/change$', ngramlists.ListChange.as_view()     )
                 # add or remove ngram from a list

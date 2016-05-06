@@ -1,6 +1,6 @@
 /* styles for menu.html template (navbar etc) */
 
-#dafixedtop .navbar-text {
+#dafixedtop .navbar-text, #graphsfixedtop .navbar-text {
     margin: 0 ;
     padding-top: 15px;
     padding-bottom: 15px;

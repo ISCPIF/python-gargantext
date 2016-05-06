@@ -27,8 +27,10 @@
  *   Romain Loth
  *           - minor 2016 modifications + doc
  *           - unify table ids with ngram ids
+ *           - new api routes + prefetch maplist terms
+ *           - simplify UpdateTable
  *
- * @version 1.0 beta
+ * @version 1.1
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -304,26 +306,13 @@ function Final_UpdateTable( action ) {
     // console.log("AjaxRecords")
     // console.log(AjaxRecords)
 
-    // (1) Identifying if the button is collapsed:
-    var isCollapsed=false;
-    var tableClass = $("#terms_table").attr("class")
-
-    //\bcollapse\b
-    if(tableClass.indexOf(" collapse ")>-1) {
-        isCollapsed=true;
-    }
-
     var UpdateTable = false
-    if ( (action == "click" && !isCollapsed) || (action=="changerange" && isCollapsed) ) {
+    if (action=="changerange") {
         UpdateTable = true;
-        $("#corpusdisplayer").html("Close Term List")
-    } else $("#corpusdisplayer").html("View by terms")
-
+    }
     pr("update table??: "+UpdateTable)
 
     if ( ! UpdateTable ) return false; //stop whatever you wanted to do.
-
-
 
     var TimeRange = AjaxRecords;
 
@@ -1433,19 +1422,19 @@ function GROUPCRUD( groupnode_id , post_data , callback) {
  * 3. Creates the scores distribution chart over table
  * 4. Set up Search div
  *
- * @param data: a response from the api/node/CID/ngrams/list/ routes
+ * @param ngdata: a response from the api/node/CID/ngrams/list/ routes
  * @param initial: initial score type "occs" or "tfidf"
  * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
  */
-function MainTableAndCharts( data , initial , search_filter) {
+function MainTableAndCharts( ngdata , initial , search_filter) {
 
     // debug
     // alert("refresh main")
 
     console.log("")
     console.log(" = = = = MainTableAndCharts: = = = = ")
-    console.log("data:")
-    console.log(data)
+    console.log("ngdata:")
+    console.log(ngdata)
     console.log("initial:")   //
     console.log(initial)
     console.log("search_filter:")        // eg 'filter_all'
@@ -1453,13 +1442,13 @@ function MainTableAndCharts( data , initial , search_filter) {
     console.log(" = = = = / MainTableAndCharts: = = = = ")
     console.log("")
 
-    // Expected infos in "data.ngrams" should have the form:
+    // Expected infos in "ngdata.ngrams" should have the form:
     // { "1": { id: "1", name: "réalité",        score: 36  },
     //   "9": { id: "9", name: "pdg",            score: 116 },
     //  "10": { id:"10", name: "infrastructure", score:  12 }  etc. }
 
     // (see filling of rec_info below)
-    // console.log(data.ngrams)
+    // console.log(ngdata.ngrams)
 
     var DistributionDict = {}
     for(var i in DistributionDict)
@@ -1541,8 +1530,8 @@ function MainTableAndCharts( data , initial , search_filter) {
     $('#mapAll').data("columnSelection", 'SOME')
 
     var div_stats = "<p>";
-    for(var i in data.scores) {
-      var value = (!isNaN(Number(data.scores[i])))? Number(data.scores[i]).toFixed(1) : data.scores[i];
+    for(var i in ngdata.scores) {
+      var value = (!isNaN(Number(ngdata.scores[i])))? Number(ngdata.scores[i]).toFixed(1) : ngdata.scores[i];
       div_stats += i+": "+value+" | "
     }
     div_stats += "</p>"
@@ -1550,11 +1539,11 @@ function MainTableAndCharts( data , initial , search_filter) {
 
     AjaxRecords = {}
 
-    for(var id in data.ngrams) {
+    for(var id in ngdata.ngrams) {
 
       // console.log(i)
-      // console.log(data.ngrams[i])
-      var le_ngram = data.ngrams[id] ;
+      // console.log(ngdata.ngrams[i])
+      var le_ngram = ngdata.ngrams[id] ;
 
       // INIT records
       // one record <=> one line in the table + ngram states
@@ -1893,13 +1882,6 @@ var NGrams = {
     "scores" : {}
 }
 
-$("#corpusdisplayer").hide()
-// if( $("#share_button").length==0 ) {
-//   $("#ImportList").remove()
-// }
-
-
-
 
 // NEW AJAX x 2
 
@@ -2029,13 +2011,20 @@ function AfterAjax() {
     // ----------------------------------------- MAPLIST
     if( Object.keys(NGrams["map"]).length>0 ) {
         for(var ngram_id in NGrams["main"].ngrams) {
-            myMiamNgram = NGrams["main"].ngrams[ngram_id]
+            myNgram = NGrams["main"].ngrams[ngram_id]
             if(NGrams["map"][ngram_id]) {
                 // keepstateId = 1
                 keepstateId = System[0]["statesD"]["keep"]
 
                 // initialize state of maplist items
-                myMiamNgram["state"] = keepstateId ;
+                myNgram["state"] = keepstateId ;
+            }
+            else if (NGrams["stop"][ngram_id]) {
+                // delstateId = 2
+                delstateId = System[0]["statesD"]["delete"]
+
+                // initialize state of stoplist items
+                myNgram["state"] = delstateId ;
             }
         }
     }
@@ -2071,10 +2060,7 @@ function AfterAjax() {
     //
     // });
 
-    $("#corpusdisplayer").show()
     $("#content_loader").remove()
-    $("#corpusdisplayer").click()
-
 
     $(".nav-tabs a").click(function(e){
       e.preventDefault();

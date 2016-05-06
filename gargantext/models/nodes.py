@@ -7,8 +7,7 @@ from datetime import datetime
 from .users import User
 
 
-__all__ = ['Node']
-
+__all__ = ['Node', 'NodeNode']
 
 class NodeType(TypeDecorator):
     """Define a new type of column to describe a Node's type.
@@ -174,3 +173,10 @@ class Node(Base):
             {'action':action, 'progress':progress, 'complete':complete, 'error':error, 'date':date}
         ))
         return self['statuses'][-1]
+class NodeNode(Base):
+    __tablename__ = 'nodes_nodes'
+    id       = Column(Integer, primary_key=True)
+    node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    score    = Column(Float(precision=24))
+

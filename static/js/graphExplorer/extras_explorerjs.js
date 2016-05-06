@@ -887,11 +887,12 @@ function GetUserPortfolio() {
                var sel_p_id = selected[0], sel_c_id =selected[1]
                
                var html_selection  = ""
-               html_selection     += '<center>You are comparing<br><span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></center>'+"\n"
+               html_selection     += '<center>You are comparing :<br><span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></center>'+"\n"
                html_selection     += '<center>'
-               html_selection     += '(' + portfolio[sel_p_id] + ') '
+               html_selection     += '( current graph ) '
                html_selection     += '<span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span>'
-               html_selection     += ' (' + portfolio[sel_c_id] + ')'
+               html_selection     += ' (' + portfolio[sel_p_id] + ' / ' + portfolio[sel_c_id] + ')'
+               // html_selection     += ' (' + portfolio[sel_p_id] + '/' + sel_c_id + portfolio[sel_c_id] + ')'
                html_selection     += '</center><br>'+"\n"
                $("#selected_corpus").html( html_selection )
 

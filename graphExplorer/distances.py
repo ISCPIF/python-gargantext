@@ -20,7 +20,7 @@ def clusterByDistances( cooc_id
     '''
     do_distance :: Int -> (Graph, Partition, {ids}, {weight})
     '''
-    
+
     # implicit global session
 
     authorized = ['conditional', 'distributional', 'cosine']
@@ -35,7 +35,7 @@ def clusterByDistances( cooc_id
     Cooc = aliased(NodeNgramNgram)
 
     query = session.query(Cooc).filter(Cooc.node_id==cooc_id).all()
-    
+
     for cooc in query:
         matrix[cooc.ngram1_id][cooc.ngram2_id] = cooc.weight
         matrix[cooc.ngram2_id][cooc.ngram1_id] = cooc.weight
@@ -60,8 +60,8 @@ def clusterByDistances( cooc_id
         # top generic or specific
         m = ( xs - ys) / (2 * (x.shape[0] - 1))
 
-        n = n.sort(inplace=False)
-        m = m.sort(inplace=False)
+        n = n.sort_index(inplace=False)
+        m = m.sort_index(inplace=False)
 
         nodes_included = 500 #int(round(size/20,0))
         #nodes_excluded = int(round(size/10,0))
@@ -88,7 +88,7 @@ def clusterByDistances( cooc_id
 
         G = nx.from_numpy_matrix(np.matrix(matrix_filtered))
         G = nx.relabel_nodes(G, dict(enumerate([ ids[id_][1] for id_ in list(xx.columns)])))
-    
+
     elif distance == 'cosine':
         scd = defaultdict(lambda : defaultdict(int))
 
@@ -101,16 +101,16 @@ def clusterByDistances( cooc_id
                                     if i != j and k != i and k != j
                                 ]
                             )
-                
+
                 denominator  = sqrt(
                                     sum([
-                                    matrix[i][k] 
+                                    matrix[i][k]
                                         for k in matrix.keys()
                                         if k != i and k != j #and matrix[i][k] > 0
                                        ])
                                     *
                                     sum([
-                                    matrix[i][k] 
+                                    matrix[i][k]
                                         for k in matrix.keys()
                                         if k != i and k != j #and matrix[i][k] > 0
                                        ])
@@ -127,7 +127,7 @@ def clusterByDistances( cooc_id
         G = nx.DiGraph()
         G.add_edges_from(
                           [
-                            (i, j, {'weight': scd[i][j]}) 
+                            (i, j, {'weight': scd[i][j]})
                                 for i in scd.keys() for j in scd.keys()
                                 if i != j and scd[i][j] > minmax and scd[i][j] > scd[j][i]
                           ]
@@ -138,16 +138,16 @@ def clusterByDistances( cooc_id
     elif distance == 'distributional':
         mi = defaultdict(lambda : defaultdict(int))
         total_cooc = x.sum().sum()
-        
+
         for i in matrix.keys():
             si = sum([matrix[i][j] for j in matrix[i].keys() if i != j])
             for j in matrix[i].keys():
                 sj = sum([matrix[j][k] for k in matrix[j].keys() if j != k])
                 if i!=j :
                     mi[i][j] = log( matrix[i][j] / ((si * sj) / total_cooc) )
-        
+
         r = defaultdict(lambda : defaultdict(int))
-        
+
         for i in matrix.keys():
             for j in matrix.keys():
                 sumMin = sum(
@@ -157,10 +157,10 @@ def clusterByDistances( cooc_id
                                     if i != j and k != i and k != j and mi[i][k] > 0
                                 ]
                             )
-                
+
                 sumMi  = sum(
                                 [
-                                mi[i][k] 
+                                mi[i][k]
                                     for k in matrix.keys()
                                     if k != i and k != j and mi[i][k] > 0
                                 ]
@@ -170,19 +170,19 @@ def clusterByDistances( cooc_id
                     r[i][j] = sumMin / sumMi
                 except Exception as error:
                     r[i][j] = 0
-        
+
         # Need to filter the weak links, automatic threshold here
         minmax = min([ max([ r[i][j] for i in r.keys()]) for j in r.keys()])
 
         G = nx.DiGraph()
         G.add_edges_from(
                           [
-                            (i, j, {'weight': r[i][j]}) 
+                            (i, j, {'weight': r[i][j]})
                                 for i in r.keys() for j in r.keys()
                                 if i != j and r[i][j] > minmax and r[i][j] > r[j][i]
                           ]
                         )
-        
+
 #        degree_max = max([(n, d) for n,d in G.degree().items()], key=itemgetter(1))[1]
 #        nodes_to_remove = [n for (n,d) in G.degree().items() if d <= round(degree_max/2)]
 #        G.remove_nodes_from(nodes_to_remove)
@@ -197,7 +197,7 @@ def clusterByDistances( cooc_id
 
     def getWeight(item):
         return item[1]
-#    
+#
 #    node_degree = sorted(G.degree().items(), key=getWeight, reverse=True)
 #    #print(node_degree)
 #    nodes_too_connected = [n[0] for n in node_degree[0:(round(len(node_degree)/5))]]

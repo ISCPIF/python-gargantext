@@ -1,14 +1,15 @@
-<html>
-  <head>
-    {% load staticfiles %}
-    <link rel="stylesheet" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
-    <link rel="stylesheet" href="{% static "js/bootstrap/3.1.1/bootstrap-theme.min.css" %}">
+{% extends "pages/menu.html" %}
+
+{% load staticfiles %}
+
+
+{% block css %}
+
     <link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/freshslider.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %}" media="screen">
 
-    <link rel="stylesheet" type="text/css" href="{% static "js/gargantext/menu.css"%}"/>
     <style>
 
       #leftcolumn {
@@ -42,80 +43,11 @@
     -->
   </head>
 
-
-  <body>
-
-    <div id="graphsfixedtop" class="navbar navbar-inverse" role="navigation">
-        <div class="container">
-            <div class="navbar-inner">
-              <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="{% static "img/logoSmall.png"%}" title="Back to home."></a>
-            </div>
+{% endblock %}
 
 
-            <div class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">
-                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                        About
-                    </a>
-                </li>
-                {% if user.is_authenticated %}
-                <li><a href="/projects/" title="All your projects are here.">
-                        <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
-                        Projects
-                    </a></li>
-                {% endif %}
-                {% if project %}
-                <li><a href="/projects/{{project.id}}">
-                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                        {{project.name | truncatechars:15}}</a></li>
-                {% endif %}
-                {% if corpus %}
-                <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
-                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                        {{corpus.name | truncatechars:15}}
-                    </a></li>
-                {% endif %}
-              </ul>
 
-              <ul class="nav pull-right">
-                  <li class="dropdown">
-                      <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
-                          <i class="icon-user"></i>
-                          <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
-                          {{ user.username | truncatechars:15}}
-                          <i class="caret"></i>
-                      </a>
-                      <ul class="dropdown-menu">
-                          <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">
-                                  <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
-                                  Report Feedback</a></li>
-                          <li class="divider"></li>
-                          {% if user.is_authenticated %}
-                          <li>
-                              <a tabindex="-1" href="/auth/logout"
-                                  title="Click here to logout especially on public devices">
-                                  <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
-                                  Logout
-                              </a></li>
-                          {% else %}
-                          <li><a tabindex="-1" href="/auth/login">Login</a></li>
-                          {% endif %}
-                      </ul>
-                  </li>
-              </ul>
-
-            </div>
-
-
-        </div>
-    </div>
-
+{% block content %}
 
     <!-- this is the tweakbar -->
     <div id="defaultop" class="navbar navbar-default">
@@ -441,13 +373,19 @@
 
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 class="modal-title">Corpus Comparison Tool</h3>
+            <h3 class="modal-title">
+                <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+                Corpus Comparison Tool
+            </h3>
           </div>
 
 
 
           <div class="modal-body form-horizontal">
-            <h4>Choose one corpus:</h4>
+            <h4>
+                <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
+                Choose one corpus among your projects:
+            </h4>
             <div style="color:red;" id="selected_corpus"></div>
             <div id="user_portfolio">
 
@@ -455,8 +393,16 @@
 
 
           <div class="modal-footer">
-            <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'>Add Tab</button>
+            
+              <button id="closecorpuses" type="button" class="btn btn-default" data-dismiss="modal">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
+                 Close
+            </button>
+            
+            <button id="add_corpus_tab" type="button" class="btn btn-primary" disabled onclick='printCorpuses();'> 
+                <span class="glyphicon glyphicon-ok" aria-hidden="true" ></span>
+                Compare
+            </button>
           </div>
 
         </div>
@@ -483,7 +429,6 @@
     <script type="text/javascript" src="{% static "js/libs/jquery/jquery.easytabs.min.js" %}"></script>
 
 
-    <script src="{% static "js/libs/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
     <script src="{% static "js/libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
 
@@ -512,12 +457,8 @@
       // $('#tab-container-top').easytabs({updateHash:false});
     </script>
 
-  </body>
 
 
+{% endblock %}
 
 
-
-
-
-</html>

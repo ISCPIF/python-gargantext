@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static "js/libs/css2/custom.css" %}" media="screen">
     <link rel="stylesheet" href="{% static "js/libs/css2/sidebar.css" %}" media="screen">
 
+    <link rel="stylesheet" type="text/css" href="{% static "js/gargantext/menu.css"%}"/>
     <style>
 
       #leftcolumn {
@@ -44,7 +45,7 @@
 
   <body>
 
-    <div class="navbar navbar-inverse" role="navigation">
+    <div id="graphsfixedtop" class="navbar navbar-inverse" role="navigation">
         <div class="container">
             <div class="navbar-inner">
               <button  class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -84,20 +85,27 @@
 
               <ul class="nav pull-right">
                   <li class="dropdown">
-                      <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown" title="That is your login"><i class="icon-user"></i>
-                            <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
-                            {{ user.username | truncatechars:15}}
+                      <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
+                          <i class="icon-user"></i>
+                          <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
+                          {{ user.username | truncatechars:15}}
                           <i class="caret"></i>
-
                       </a>
                       <ul class="dropdown-menu">
-                          <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">Report Feedback</a></li>
+                          <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">
+                                  <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+                                  Report Feedback</a></li>
                           <li class="divider"></li>
-                      {% if user.is_authenticated %}
-                          <li><a tabindex="-1" href="/auth/logout" title="Click here to logout especially on public devices">Logout</a></li>
+                          {% if user.is_authenticated %}
+                          <li>
+                              <a tabindex="-1" href="/auth/logout"
+                                  title="Click here to logout especially on public devices">
+                                  <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
+                                  Logout
+                              </a></li>
                           {% else %}
-                          <li><a tabindex="-1" href="/auth/">Login</a></li>
-                      {% endif %}
+                          <li><a tabindex="-1" href="/auth/login">Login</a></li>
+                          {% endif %}
                       </ul>
                   </li>
               </ul>

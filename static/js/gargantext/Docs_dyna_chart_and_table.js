@@ -90,7 +90,7 @@ function Final_UpdateTable( action ) {
     // console.log("dataini, datafin")
     // console.log(dataini, datafin)
     $.each(AjaxRecords, function(i, node) {
-        if (node.date >= dataini && node.date >= dataini) {
+        if (node.date >= dataini && node.date <= datafin) {
             // pr( AjaxRecords[i].date+" : "+AjaxRecords[i].id )
             TimeRange.push(node);
         }
@@ -414,6 +414,8 @@ function Main_test(Data) {
                   var chartfilt = chart.filter()
                   // tricky part: identifying when the moveChart changes.
                   if(chartfilt) {
+                      console.log("chart.filter()")
+                      console.log(chart.filter())
                       Push2Buffer ( chart.filter() )
                   } else {
                       if(TheBuffer) {

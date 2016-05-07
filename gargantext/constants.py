@@ -4,6 +4,8 @@
 from gargantext.util.lists import *
 from gargantext.util.tools import datetime, convert_to_date
 
+import re
+
 LISTTYPES = {
     'DOCUMENT'     : WeightedList,
     'GROUPLIST'    : Translations,
@@ -136,8 +138,8 @@ def resourcename(corpus):
     Usage : resourcename(corpus) == "ISTex"
     '''
     resource = corpus.resources()[0]
-    return RESOURCETYPES[resource['type']]['name']
-
+    resourcename = RESOURCETYPES[resource['type']]['name']
+    return re.sub(r'\(.*', '', resourcename)
 
 RESOURCETYPES = [
     # type 0

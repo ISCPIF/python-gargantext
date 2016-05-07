@@ -6,9 +6,9 @@
 
 /* Base styles (regardless of theme) */
 .bs-callout {
-  margin: 20px 0;
+  margin: 20px -25px;
   padding: 15px 30px 15px 15px;
-  border-left: 10px solid #A1C2D8;
+  border-left: 3px solid #A1C2D8;
 }
 .bs-callout h4 {
   margin-top: 0;

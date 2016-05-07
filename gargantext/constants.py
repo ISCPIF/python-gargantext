@@ -130,6 +130,15 @@ def resourcetype(name):
     '''
     return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
 
+def resourcename(corpus):
+    '''
+    resourcetype :: Corpus -> String
+    Usage : resourcename(corpus) == "ISTex"
+    '''
+    resource = corpus.resources()[0]
+    return RESOURCETYPES[resource['type']]['name']
+
+
 RESOURCETYPES = [
     # type 0
     {   'name': 'Select database below',

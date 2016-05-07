@@ -37,10 +37,12 @@ def docs_by_titles(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
+            'resourcename' : resourcename(corpus),
             'view': 'titles',
             'user': request.user
         },
     )
+
 
 @requires_auth
 def chart(request, project_id, corpus_id):
@@ -69,6 +71,7 @@ def docs_by_journals(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
+            'resourcename' : resourcename(corpus),
             'view': 'journals'
         },
     )

@@ -2,6 +2,7 @@ from gargantext.util.http     import requires_auth, render, settings
 from gargantext.util.db       import session
 from gargantext.util.db_cache import cache
 from gargantext.models        import Node
+from gargantext.constants     import resourcename
 from datetime                 import datetime
 
 @requires_auth
@@ -31,6 +32,7 @@ def ngramtable(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
+            'resourcename' : resourcename(corpus),
             'view': 'terms'
         },
     )

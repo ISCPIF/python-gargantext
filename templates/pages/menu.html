@@ -111,14 +111,26 @@
                                         </a>
                                         <i class="caret"></i>
                                     <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a tabindex="-1"
-                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a tabindex="-1"
-                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
-                                                    </li>
+                                        {% if view != "graph" %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                            </li>
+                                        {% else %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5">With distributional distance</a>
+                                            </li>
+
+                                        {% endif %}
                                     </ul>
                                     </li>
                                     {% endif %}

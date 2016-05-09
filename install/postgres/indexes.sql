@@ -24,6 +24,9 @@
 -- create INDEX on ngrams (id, n) ;
 -- create INDEX on nodes_ngrams (node_id, ngram_id) ;
 -- create INDEX on nodes_ngrams_ngrams (node_id, ngram1_id, ngram2_id) ;
+create INDEX on nodes_ngrams_ngrams (node_id) ;
+create INDEX on nodes_ngrams_ngrams (ngram1_id) ;
+create INDEX on nodes_ngrams_ngrams (ngram2_id) ;
 
 ----------------------------------------------------------------------
 -- DELETE optimization of Nodes -- todo on dev

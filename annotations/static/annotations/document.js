@@ -8,7 +8,7 @@
 
       // dataLoading = signal pour afficher wait
       $scope.dataLoading = true ;
-      
+
       console.log("annotations.document.DocController.DocumentHttpService.get():before")
 
       $rootScope.documentResource = DocumentHttpService.get(
@@ -52,12 +52,64 @@
   }]);
 
   annotationsAppDocument.controller('DocFavoriteController',
-    ['$scope', '$rootScope', 'DocumentHttpService',
-    function ($scope, $rootScope, DocumentHttpService) {
-      $scope.onStarClick = function($event) {
-        console.log("TODO");
-      };
+    ['$scope', '$rootScope', 'MainApiFavoritesHttpService',
+    function ($scope, $rootScope, MainApiFavoritesHttpService) {
       $scope.isFavorite = false;
+
+      MainApiFavoritesHttpService.get(
+        {
+          'corpusId': $rootScope.corpusId,
+          'docId': $rootScope.docId
+        },
+        function(data) {
+          if (data['favdocs'].length > 0
+                && data['favdocs'][0] == $scope.docId) {
+              $scope.isFavorite = true ;
+          }
+          else {
+              $scope.isFavorite = false ;
+          }
+        },
+        function(data) {
+          console.error("unable to check if document belongs to favorites");
+          $scope.isFavorite = false ;
+        }
+      ) ;
+
+
+      $scope.onStarClick = function($event) {
+          console.log($scope.isFavorite)
+          // console.log($scope)
+        console.log("TODO");
+        var myAction ;
+        if (! $scope.isFavorite) {
+            // PUT api/nodes/574/favorites?docs=576
+            myAction = MainApiFavoritesHttpService.put
+        }
+        else {
+            // DELETE api/nodes/574/favorites?docs=576
+            myAction = MainApiFavoritesHttpService.delete
+        }
+
+        // (1) do the action
+        myAction(
+          {
+            'corpusId': $rootScope.corpusId,
+            'docId': $rootScope.docId
+          },
+          // success
+          function(data) {
+            // (2) toggle status and refresh
+            $scope.isFavorite = ! $scope.isFavorite
+            $rootScope.refreshDisplay();
+          },
+          // failure
+          function(data) {
+            console.error("unable to change favorite status");
+          }
+        );
+
+      };
   }]);
 
 })(window);

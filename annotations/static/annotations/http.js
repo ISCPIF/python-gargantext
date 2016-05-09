@@ -122,4 +122,49 @@
       }
     );
   });
+
+  /*
+  * MainApiFavoritesHttpService: Check/Add/Del Document in favorites
+  * ============================
+  * route: api/nodes/574/favorites?docs=576
+  * /!\ for this route we reach out of this annotation module
+  *     and send directly to the gargantext api route for favs
+  *     (cross origin request with http protocol scheme)
+  * ------
+  *
+  * exemple:
+  * --------
+  * {
+  *  "favdocs": [576]        // <== if doc is among favs
+  *  "missing": []           // <== if doc is not in favs
+  * }
+  *
+  */
+  http.factory('MainApiFavoritesHttpService', function($resource) {
+    return $resource(
+       // adding explicit "http://" b/c this a cross origin request
+      'http://' + window.GARG_ROOT_URL  + "/api/nodes/:corpusId/favorites?docs=:docId",
+      {
+        corpusId: '@corpusId',
+        docId: '@docId'
+      },
+      {
+        get: {
+          method: 'GET',
+          params: {corpusId: '@corpusId', docId: '@docId'}
+        },
+        put: {
+          method: 'PUT',
+          params: {corpusId: '@corpusId', docId: '@docId'}
+        },
+        delete: {
+          method: 'DELETE',
+          params: {corpusId: '@corpusId', docId: '@docId'}
+        }
+      }
+    );
+  });
+
+
+
 })(window);

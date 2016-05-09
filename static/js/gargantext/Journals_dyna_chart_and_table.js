@@ -290,7 +290,7 @@ function Main_test( data , initial) {
     var div_table = '<p align="right">'+"\n"
       div_table += '<table id="my-ajax-table" class="table table-bordered table-hover">'+"\n"
       div_table += "\t"+'<thead>'+"\n"
-      div_table += "\t"+"\t"+'<th data-dynatable-column="name">Title</th>'+"\n"
+      div_table += "\t"+"\t"+'<th data-dynatable-column="name"><span class="glyphicon glyphicon-text-size"></span> Title</th>'+"\n"
       div_table += "\t"+"\t"+'<th data-dynatable-column="score" data-dynatable-sorts="score">No. Pubs</th>'+"\n"
       // div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n"
       div_table += "\t"+"\t"+'</th>'+"\n"

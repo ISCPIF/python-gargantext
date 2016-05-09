@@ -11,8 +11,11 @@ from gargantext.util.http       import ValidationException, APIView \
 
 from collections import defaultdict
 
+import csv
+
 _node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams']
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
+_node_available_formats = ['json', 'csv', 'bibex']
 _node_available_types = NODETYPES
 
 
@@ -21,6 +24,7 @@ def _query_nodes(request, node_id=None):
     # parameters validation
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {
+        'formated': {'type': str, 'required' : False, 'default': 'json'},
         'pagination_limit': {'type': int, 'default': 10},
         'pagination_offset': {'type': int, 'default': 0},
         'fields': {'type': list, 'default': _node_default_fields, 'items': {
@@ -65,14 +69,39 @@ class NodeListResource(APIView):
         """Displays the list of nodes corresponding to the query.
         """
         parameters, query, count = _query_nodes(request)
-        return JsonHttpResponse({
-            'parameters': parameters,
-            'count': count,
-            'records': [
-                {field: getattr(node, field) for field in parameters['fields']}
-                for node in query
-            ]
-        })
+
+        if parameters['formated'] == 'json':
+            return JsonHttpResponse({
+                'parameters': parameters,
+                'count': count,
+                'records': [
+                    {field: getattr(node, field) for field in parameters['fields']}
+                    for node in query
+                ]
+            })
+
+        elif parameters['formated'] == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="Gargantext_Corpus.csv"'
+
+            writer = csv.writer(response)
+
+            keys =  [ 'title'   , 'journal', 'publication_date'
+                    , 'abstract', 'authors']
+
+            writer.writerow(keys)
+
+            for node in query:
+                data = list()
+                for key in keys:
+                    try:
+                        data.append(node.hyperdata[key])
+                    except:
+                        data.append("")
+                writer.writerow(data)
+
+            return response
+
 
 
     def post(self, request):

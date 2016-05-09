@@ -145,7 +145,7 @@
                                             <!-- <li class="divider"></li> --!>
 
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         {% if project %}
                                             <h3><a href="/projects/{{project.id}}">
                                                     <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
@@ -163,27 +163,39 @@
                                             </h3>
                                         {% endif %}
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
+                                        <h3>
+                                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                            Author(s): 
+                                        </h3>
+                                        <h4>
+                                            <div class="row"> 
+                                                <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
+                                                {{ user.username | truncatechars:15}} 
+                                            </div>
+                                        </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                        <br>
-                                        <!-- <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a> -->
-                                        <!--
-                                        <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
+                                    <div class="col-md-1">
+                                        <div class="row"><br>
+                                        
+                                            <a class="btn btn-default" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">Download</a>
+                                            <!--<a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a>--!>
 
-                                        <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                            data-content='
-                                                    <ul>
-                                                        <li> Rename </li>
-                                                        <li> Add new documents </li>
-                                                        <li><a href="/delete/{{corpus.id}}">Delete</a></li>
-                                                    </ul>
-                                                    '>Manage</a>
-                                        -->
-                                        <!-- <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> -->
+                                            <!--
+                                            <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                data-content='
+                                                        <ul>
+                                                            <li> Rename </li>
+                                                            <li> Add new documents </li>
+                                                            <li><a href="/delete/{{corpus.id}}">Delete</a></li>
+                                                        </ul>
+                                                        '>Manage</a>
+                                            
+                                                <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> 
+                                            --!>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 {% else %}

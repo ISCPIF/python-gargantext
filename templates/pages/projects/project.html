@@ -293,7 +293,7 @@
 
                             $.ajax({
                                 // contentType: "application/json",
-                                url: window.location.origin+"/scrapers/pubmed/save/"+projectid,
+                                url: window.location.origin+"/moissonneurs/pubmed/save/"+projectid,
                                 data: pubmedifiedQuery,
                                 type: 'POST',
                                 beforeSend: function(xhr) {
@@ -365,7 +365,7 @@
                             if(theType=="Pubmed (XML format)") {
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/pubmed/query",
+                                    url: window.location.origin+"/moissonneurs/pubmed/query",
                                     data: formData,
                                     type: 'POST',
                                     beforeSend: function(xhr) {
@@ -403,10 +403,10 @@
                             }
 
                             if(theType=="ISTex") {
-                                console.log(window.location.origin+"scrapers/istex/query")
+                                console.log(window.location.origin+"moissonneurs/istex/query")
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/istex/query",
+                                    url: window.location.origin+"/moissonneurs/istex/query",
                                     data: formData,
                                     type: 'POST',
                                     beforeSend: function(xhr) {
@@ -537,7 +537,7 @@
 
                             $.ajax({
                                 // contentType: "application/json",
-                                url: window.location.origin+"/scrapers/istex/save/"+projectid,
+                                url: window.location.origin+"/moissonneurs/istex/save/"+projectid,
                                 data: postQuery,
                                 type: 'POST',
                                 beforeSend: function(xhr) {

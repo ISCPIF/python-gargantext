@@ -26,7 +26,7 @@ from annotations.views   import main as annotations_main_view
 import graphExplorer.urls
 
 # Module Scrapers
-import scrapers.urls
+import moissonneurs.urls
 
 
 urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
@@ -43,6 +43,6 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
               , url(r'^annotations/', include( annotations_urls )              )
               , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/$', annotations_main_view)
 
-              # Module Scrapers
-              , url(r'^scrapers/'   , include( scrapers.urls )                 )
+              # Module Scrapers (Moissonneurs in French)
+              , url(r'^moissonneurs/'   , include( moissonneurs.urls )                 )
               ]

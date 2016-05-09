@@ -52,7 +52,7 @@ def do_maplist(corpus,
 
     primary_groupterms_subquery = (session
                             # we want only primary terms (ngram1)
-                            .query(NodeNgramNgram.ngram1_id)
+                            .query(NodeNgramNgram.ngram2_id)
                             .filter(NodeNgramNgram.node_id == grouplist_id)
                             .subquery()
                          )
@@ -64,7 +64,7 @@ def do_maplist(corpus,
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
                 .filter(ScoreSpec.node_id == specificity_id)
                 .filter(ScoreSpec.ngram_id.in_(mainterms_subquery))
-                .filter(ScoreSpec.ngram_id.in_(primary_groupterms_subquery))
+                .filter(ScoreSpec.ngram_id.notin_(primary_groupterms_subquery))
             )
 
     # TODO: move these 2 pools up to mainlist selection
@@ -81,7 +81,7 @@ def do_maplist(corpus,
                 .limit(multigrams_limit)
                 .all()
                )
-    obtained_mono = len(top_monograms)
+    obtained_mono  = len(top_monograms)
     obtained_multi = len(top_multigrams)
     obtained_total = obtained_mono + obtained_multi
     # print("MAPLIST: top_monograms =", obtained_mono)

@@ -8,7 +8,7 @@ FIXME: "having the same source" means we need to select inside hyperdata
        with a (perhaps costly) JSON query: WHERE hyperdata->'resources' @> ...
 """
 
-from gargantext.models   import Node, NodeNgram, NodeNodeNgram
+from gargantext.models   import Node, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.db  import session, bulk_insert, func # = sqlalchemy.func like sum() or count()
 from sqlalchemy          import text  # for query from raw SQL statement
 from math                import log
@@ -29,6 +29,13 @@ def compute_occs(corpus, overwrite_id = None):
         - overwrite_id: optional id of a pre-existing OCCURRENCES node for this corpus
                      (the Node and its previous NodeNodeNgram rows will be replaced)
     """
+    # 0) Get the groups
+    group_id = (session.query(Node.id)
+                       .filter(Node.parent_id == corpus.id)
+                       .filter(Node.typename  == "GROUPLIST")
+                       .first()
+                )
+
 
     # 1) all the doc_ids of our corpus (scope of counts for filter)
     # slower alternative: [doc.id for doc in corpus.children('DOCUMENT').all()]
@@ -45,6 +52,7 @@ def compute_occs(corpus, overwrite_id = None):
                     NodeNgram.ngram_id,
                     func.sum(NodeNgram.weight)
                  )
+                #.join(NodeNgramNgram, NodeNgramNgram.node_id == group_id)
                 .filter(NodeNgram.node_id.in_(docids_subquery))
                 .group_by(NodeNgram.ngram_id)
                 .all()

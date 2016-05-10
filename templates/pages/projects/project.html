@@ -110,8 +110,7 @@
                                             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                         </button>
                                     </div>
-
-                                    <div class="col-md-4 content">
+                                    <div class="col-md-3 content">
                                         {% for state in corpus.hyperdata.statuses %}
                                                 {% ifequal state.action "ngrams_extraction" %}
                                                     {% if state.complete %}
@@ -171,6 +170,7 @@
                                                 {% endifequal %}
                                         {% endfor %}
                                     </div>
+                                    <div class="col-md-1 content"></div>
                                 </h4>
                             </div>
                         </div>

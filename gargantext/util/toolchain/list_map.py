@@ -7,7 +7,7 @@ from gargantext.models.ngrams import Node, Ngram, NodeNgram, \
 from gargantext.util.db       import session, aliased, func
 from gargantext.util.db_cache import cache
 from gargantext.util.lists    import UnweightedList
-from sqlalchemy               import desc
+from sqlalchemy               import desc, asc
 from gargantext.constants     import DEFAULT_MAPLIST_MAX,\
                                      DEFAULT_MAPLIST_MONOGRAMS_RATIO
 
@@ -70,7 +70,7 @@ def do_maplist(corpus,
     # TODO: move these 2 pools up to mainlist selection
     top_monograms = (query
                 .filter(Ngram.n == 1)
-                .order_by(desc(ScoreSpec.weight))
+                .order_by(asc(ScoreSpec.weight))
                 .limit(monograms_limit)
                 .all()
                )

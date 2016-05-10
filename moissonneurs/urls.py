@@ -22,7 +22,7 @@ import moissonneurs.pubmed as pubmed
 import moissonneurs.istex  as istex
 
 # TODO
-#import moissonneurs.cern  as cern
+import moissonneurs.cern  as cern
 
 # TODO
 #import moissonneurs.hal         as hal

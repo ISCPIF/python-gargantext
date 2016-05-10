@@ -56,7 +56,8 @@ class NgramList(APIView):
             # add to results
             doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in list_nod.ngrams.all()]
 
-        print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
+        # debug
+        # print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
         data = { '%s' % corpus_id : {
             '%s' % doc_id :
                 [

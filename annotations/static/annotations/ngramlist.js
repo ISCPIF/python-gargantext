@@ -30,7 +30,7 @@
               // (then used for left-side flatlist AND inline annots)
               $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
               // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
-              // $rootScope.lookup = 
+              // $rootScope.lookup =
               $rootScope.refreshDisplay();
             },
             function(data) {
@@ -49,7 +49,7 @@
   annotationsAppNgramList.controller('NgramListPaginationController',
     ['$scope', '$rootScope', function ($scope, $rootScope) {
 
-    $rootScope.$watchCollection('extraNgramList', function (newValue, oldValue) {
+    $rootScope.$watchCollection('ngramsInPanel', function (newValue, oldValue) {
       $scope.currentListPage = 0;
       $scope.pageSize = 15;
 
@@ -62,8 +62,8 @@
       };
 
       $scope.totalListPages = function(listId) {
-        if ($rootScope.extraNgramList[listId] === undefined) return 0;
-        return Math.ceil($rootScope.extraNgramList[listId].length / $scope.pageSize);
+        if ($rootScope.ngramsInPanel[listId] === undefined) return 0;
+        return Math.ceil($rootScope.ngramsInPanel[listId].length / $scope.pageSize);
       };
     });
   }]);
@@ -93,12 +93,12 @@
 
       var value = angular.element(inputEltId).val().trim();
       if (value === "") return;
-      
+
       // £TEST locally check if already in annotations NodeNgrams ------
-      
+
       // $rootScope.annotations = array of ngram objects like:
       // {"list_id":805,"occurrences":2,"uuid":9386,"text":"petit échantillon"}
-      
+
       console.log('looking for "' + value + '" in list:' + listId)
       var already_in_list = false ;
       angular.forEach($rootScope.annotations, function(annot,i) {
@@ -112,7 +112,7 @@
       );
       if (already_in_list) { return ; }
       // ---------------------------------------------------------------
-      
+
       // will check if there's a preexisting ngramId for this value
       // TODO: if maplist => also add to miam
       NgramHttpService.post(
@@ -136,11 +136,11 @@
               },
               function(data) {
                 $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-              
+
                 // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
-                // $rootScope.lookup = 
-                
-                
+                // $rootScope.lookup =
+
+
                 $rootScope.refreshDisplay();
               },
               function(data) {

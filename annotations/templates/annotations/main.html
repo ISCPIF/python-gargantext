@@ -32,12 +32,12 @@
             </ul>
             <div class="tab-content">
               <div ng-controller="NgramListPaginationController" ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
-                <div ng-if="extraNgramList[listId].length == 0" class="alert alert-info" role="alert">
+                <div ng-if="ngramsInPanel[listId].length == 0" class="alert alert-info" role="alert">
                   Input any keyword you want to link to this article and the list named '{[{listName}]}'
                 </div>
 
                 <ul class="list-group words-list clearfix">
-                  <li ng-repeat="keyword in extraNgramList[listId] | startFrom:currentListPage * pageSize | limitTo:pageSize" class="keyword-group-item">
+                  <li ng-repeat="keyword in ngramsInPanel[listId] | startFrom:currentListPage * pageSize | limitTo:pageSize" class="keyword-group-item">
                     <div ng-controller="NgramController" keyword-template class="keyword-container"></div>
                   </li>
                 </ul>

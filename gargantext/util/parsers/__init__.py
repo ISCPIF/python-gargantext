@@ -9,4 +9,4 @@ from .Europress import EuropressParser
 
 from .ISTex import ISTexParser
 from .CSV import CSVParser
-from .CERN  import CernParser
+from .Cern  import CernParser

@@ -142,7 +142,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 API_TOKENS = [
-    { "CERN": {"key":"XXXX", "token": "XXXX"}
+    { "CERN": {
+                "APIKEY":'b8514451-82d1-408e-a855-56d342a0b5f8',
+                "APISECRET":'6680b13e-2b5a-4fba-8c0e-408884d5b904',
+                },
 ]
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/

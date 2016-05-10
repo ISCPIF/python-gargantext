@@ -14,7 +14,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 
 # 2016-03-24: refactoring, new paths
 from gargantext.models.ngrams import Node, NodeNgram, Ngram
-from gargantext.util.db       import session
+from gargantext.util.db       import session, aliased
 from gargantext.util.db_cache import cache
 from gargantext.util.http     import requires_auth
 
@@ -47,14 +47,22 @@ class NgramList(APIView):
         doc_ngram_list = []
         lists = {}
 
+        corpus_nod = cache.Node[corpus_id]
+        doc_nod = cache.Node[doc_id]
+        scores_nod = corpus_nod.children(typename="OCCURRENCES").first()
+
         for list_type in ['MAINLIST', 'MAPLIST', 'STOPLIST']:
-            corpus_nod = cache.Node[corpus_id]
             list_nod = corpus_nod.children(typename=list_type).first()
             list_id = list_nod.id
             lists["%s" % list_id] = list_type
 
+            ListsTable = aliased(NodeNgram)
+
+            # doc_nod.ngrams iff we just need the occurrences in the doc (otherwise do manually)
+            q = doc_nod.ngrams.join(ListsTable).filter(ListsTable.node_id == list_id)
+
             # add to results
-            doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in list_nod.ngrams.all()]
+            doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in q.all()]
 
         # debug
         # print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)

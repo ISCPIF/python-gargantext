@@ -161,3 +161,9 @@
 .float-right {
   float: right;
 }
+
+.favactive {
+  /* yellow */
+  color: #FFF50D;
+  text-shadow: -1px 0 #777777, 0 1px #777777, 1px 0 #777777, 0 -1px #777777;
+}

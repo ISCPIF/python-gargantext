@@ -111,14 +111,26 @@
                                         </a>
                                         <i class="caret"></i>
                                     <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a tabindex="-1"
-                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a tabindex="-1"
-                                                                data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
-                                                    </li>
+                                        {% if view != "graph" %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                            </li>
+                                        {% else %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5">With distributional distance</a>
+                                            </li>
+
+                                        {% endif %}
                                     </ul>
                                     </li>
                                     {% endif %}
@@ -138,52 +150,42 @@
                         <div class="jumbotron" style="margin-bottom:0">
                             <br>
                             <br>
-                                            <!--
-                                            <a type="button" class="btn btn-default
-                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/">Export corpus</a>
-                                            --!>
-                                            <!-- <li class="divider"></li> --!>
-
                                 <div class="row">
-                                    <div class="col-md-4">
-                                        {% if project %}
-                                            <h3><a href="/projects/{{project.id}}">
+                                    <div class="col-md-3">
+                                            <h3>
+                                                <a href="/projects/{{project.id}}">
                                                     <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                                                    {{ project.name }}
+                                                    {{ project.name | truncatechars:15}}
                                                 </a>
-                                            <br>
-                                                    <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
-                                                    {{ resourcename | truncatechars:20 }}
-                                            <br>
-                                                    <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                                                    {{ corpus.name }}
-                                            <br>
-                                                    <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                                                    {{ corpus.date }}
                                             </h3>
-                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-5">
+                                            <h3>
+                                                <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
+                                                {{ resourcename | truncatechars:20 }}
+                                            </h3>
+                                            <h3>
+                                                <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                                {{ corpus.name | truncatechars:20 }}
+                                                <a class="btn btn-default" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">
+                                                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                                                </a>
+                                            </h3>
+                                    
                                     </div>
                                     <div class="col-md-4">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <br>
-                                        <!-- <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a> -->
-                                        <!--
-                                        <a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{ corpus.id }}/corpus.csv">Download</a>
-
-                                        <a type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                            data-content='
-                                                    <ul>
-                                                        <li> Rename </li>
-                                                        <li> Add new documents </li>
-                                                        <li><a href="/delete/{{corpus.id}}">Delete</a></li>
-                                                    </ul>
-                                                    '>Manage</a>
-                                        -->
-                                        <!-- <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> -->
+                                            <h3>
+                                                <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{ corpus.date }}
+                                            </h3>
+                                            <h3>
+                                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                                Author(s): 
+                                            </h3>
+                                            <h4>
+                                                {{ user.username | truncatechars:15}} 
+                                            </h4>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 {% else %}

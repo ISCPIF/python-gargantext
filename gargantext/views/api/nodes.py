@@ -11,8 +11,11 @@ from gargantext.util.http       import ValidationException, APIView \
 
 from collections import defaultdict
 
+import csv
+
 _node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams']
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
+_node_available_formats = ['json', 'csv', 'bibex']
 _node_available_types = NODETYPES
 
 
@@ -21,6 +24,7 @@ def _query_nodes(request, node_id=None):
     # parameters validation
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {
+        'formated': {'type': str, 'required' : False, 'default': 'json'},
         'pagination_limit': {'type': int, 'default': 10},
         'pagination_offset': {'type': int, 'default': 0},
         'fields': {'type': list, 'default': _node_default_fields, 'items': {
@@ -65,14 +69,39 @@ class NodeListResource(APIView):
         """Displays the list of nodes corresponding to the query.
         """
         parameters, query, count = _query_nodes(request)
-        return JsonHttpResponse({
-            'parameters': parameters,
-            'count': count,
-            'records': [
-                {field: getattr(node, field) for field in parameters['fields']}
-                for node in query
-            ]
-        })
+
+        if parameters['formated'] == 'json':
+            return JsonHttpResponse({
+                'parameters': parameters,
+                'count': count,
+                'records': [
+                    {field: getattr(node, field) for field in parameters['fields']}
+                    for node in query
+                ]
+            })
+
+        elif parameters['formated'] == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="Gargantext_Corpus.csv"'
+
+            writer = csv.writer(response)
+
+            keys =  [ 'title'   , 'journal', 'publication_date'
+                    , 'abstract', 'authors']
+
+            writer.writerow(keys)
+
+            for node in query:
+                data = list()
+                for key in keys:
+                    try:
+                        data.append(node.hyperdata[key])
+                    except:
+                        data.append("")
+                writer.writerow(data)
+
+            return response
+
 
 
     def post(self, request):
@@ -200,11 +229,17 @@ class NodeResource(APIView):
         return JsonHttpResponse({'deleted': result.rowcount})
 
 
+
 class CorpusFavorites(APIView):
-    """Retrieve/update/delete a corpus node's associated favorite docs
+    """Retrieve/update/delete one or several docs from a corpus associated favs
         (url: GET  /api/nodes/<corpus_id>/favorites)
+        => lists all favorites
+        (url: GET  /api/nodes/<corpus_id>/favorites?docs[]=doc1,doc2)
+        => checks for each doc if it is in favorites
         (url: DEL  /api/nodes/<corpus_id>/favorites?docs[]=doc1,doc2)
+        => removes each doc from favorites
         (url: PUT /api/nodes/<corpus_id>/favorites?docs[]=doc1,doc2)
+        => add each doc to favorites
     """
 
     def _get_fav_node(self, corpus_id):
@@ -224,25 +259,57 @@ class CorpusFavorites(APIView):
         else:
             self.corpus = corpus
         fav_node = self.corpus.children('FAVORITES').first()
+
         return fav_node
 
     def get(self, request, corpus_id):
-        response = {}
+        """
+        2 possibilities with/without param
+
+        1) GET http://localhost:8000/api/nodes/2/favorites
+        (returns the full list of fav docs within corpus 2)
+
+        2) GET http://localhost:8000/api/nodes/2/favorites?docs=53,54
+        (will test if docs 53 and 54 are among the favorites of corpus 2)
+        (returns the intersection of fav docs with [53,54])
+        """
         fav_node = self._get_fav_node(corpus_id)
+
+        req_params = validate(
+            get_parameters(request),
+            {'docs': list, 'default': ""}
+        )
+
+        response = {}
+
         if fav_node == None:
             response = {
                 'warning':'No favorites node is defined for this corpus (\'%s\')'
                         % self.corpus.name ,
-                'doc_ids':[]
+                'favdocs':[]
                 }
-        else:
+        elif 'docs' not in req_params:
             # each docnode associated to the favnode of this corpusnode
             q = (session
                     .query(NodeNode.node2_id)
                     .filter(NodeNode.node1_id==fav_node.id))
-            doc_ids = [row.node2_id for row in q.all()]
+            all_doc_ids = [row.node2_id for row in q.all()]
             response = {
-                'doc_ids': doc_ids
+                'favdocs': all_doc_ids
+            }
+        else:
+            nodeids_to_check = [int(did) for did in req_params['docs'].split(',')]
+
+            # each docnode from the input list, if it is associated to the favnode
+            q = (session
+                    .query(NodeNode.node2_id)
+                    .filter(NodeNode.node1_id==fav_node.id)
+                    .filter(NodeNode.node2_id.in_(nodeids_to_check)))
+            present_doc_ids = [row.node2_id for row in q.all()]
+            absent_doc_ids = [did for did in nodeids_to_check if did not in present_doc_ids]
+            response = {
+                'favdocs': present_doc_ids,
+                'missing': absent_doc_ids
             }
 
         return JsonHttpResponse(response)
@@ -252,66 +319,95 @@ class CorpusFavorites(APIView):
         DELETE http://localhost:8000/api/nodes/2/favorites?docs=53,54
         (will delete docs 53 and 54 from the favorites of corpus 2)
         """
-        # if not request.user.is_authenticated():
-        #     # can't use @requires_auth because of positional 'self' within class
-        #     return HttpResponse('Unauthorized', status=401)
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
 
         # user is ok
         fav_node = self._get_fav_node(corpus_id)
-        req_params = validate(
-            get_parameters(request),
-            {'docs': list, 'default': ""}
-        )
-        nodeids_to_delete = req_params['docs'].split(',')
 
-        # it deletes from favourites but not from DB
-        result = session.execute(
-            delete(NodeNode)
-                .where(NodeNode.node1_id == fav_node.id)
-                .where(NodeNode.node2_id.in_(nodeids_to_delete))
-        )
-        session.commit()
-        return JsonHttpResponse({'count_removed': result.rowcount})
+        response = {}
+
+        if fav_node == None:
+            response = {
+                'warning':'No favorites node is defined for this corpus (\'%s\')'
+                        % self.corpus.name ,
+                'count_removed': 0
+                }
+        else:
+            req_params = validate(
+                get_parameters(request),
+                {'docs': list, 'default': ""}
+            )
+            nodeids_to_delete = [int(did) for did in req_params['docs'].split(',')]
+
+            # it deletes from favourites but not from DB
+            result = session.execute(
+                delete(NodeNode)
+                    .where(NodeNode.node1_id == fav_node.id)
+                    .where(NodeNode.node2_id.in_(nodeids_to_delete))
+            )
+            session.commit()
+            response = {'count_removed': result.rowcount}
+
+        return JsonHttpResponse(response)
 
     def put(self, request, corpus_id, check_each_doc=True):
-        # if not request.user.is_authenticated():
-        #     # can't use @requires_auth because of positional 'self' within class
-        #     return HttpResponse('Unauthorized', status=401)
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
 
         # user is ok
         fav_node = self._get_fav_node(corpus_id)
-        req_params = validate(
-            get_parameters(request),
-            {'docs': list, 'default': ""}
-        )
-        nodeids_to_add = req_params['docs'].split(',')
 
-        if check_each_doc:
-            # verification que ce sont bien des documents du bon corpus
-            # un peu long => désactiver par défaut ?
-            known_docs_q = (session
-                            .query(Node.id)
-                            .filter(Node.parent_id==corpus_id)
-                            .filter(Node.typename=='DOCUMENT')
-                        )
-            lookup = {known_doc.id:True for known_doc in known_docs_q.all()}
-            rejected_list = []
-            for doc_node_id in nodeids_to_add:
-                if (doc_node_id not in lookup):
-                    rejected_list.append(doc_node_id)
-            if len(rejected_list):
-                raise ValidationException(
-                    "Error on some requested docs: %s (Only nodes of type 'doc' AND belonging to corpus %i can be added to favorites.)"
-                        % (str(rejected_list), int(corpus_id)))
+        response = {}
 
-        # add them
-        bulk_insert(
-            NodeNode,
-            ('node1_id', 'node2_id', 'score'),
-            ((fav_node.id, doc_node_id, 1.0 ) for doc_node_id in nodeids_to_add)
-        )
+        if fav_node == None:
+            response = {
+                'warning':'No favorites node is defined for this corpus (\'%s\')'
+                        % self.corpus.name ,
+                'count_added':0
+                }
+        else:
+            req_params = validate(
+                get_parameters(request),
+                {'docs': list, 'default': ""}
+            )
+            nodeids_to_add = [int(did) for did in req_params['docs'].split(',')]
 
-        return JsonHttpResponse({'count_added': len(nodeids_to_add)})
+            if check_each_doc:
+                # verification que ce sont bien des documents du bon corpus
+                # un peu long => désactiver par défaut ?
+                known_docs_q = (session
+                                .query(Node.id)
+                                .filter(Node.parent_id==corpus_id)
+                                .filter(Node.typename=='DOCUMENT')
+                            )
+                lookup = {known_doc.id:True for known_doc in known_docs_q.all()}
+                # debug
+                # print("lookup hash", lookup)
+                rejected_list = []
+                for doc_node_id in nodeids_to_add:
+                    if (doc_node_id not in lookup):
+                        rejected_list.append(doc_node_id)
+                if len(rejected_list):
+                    raise ValidationException(
+                        "Error on some requested docs: %s (Only nodes of type 'doc' AND belonging to corpus %i can be added to favorites.)"
+                            % (str(rejected_list), int(corpus_id)))
+
+            # add them
+            bulk_insert(
+                NodeNode,
+                ('node1_id', 'node2_id', 'score'),
+                ((fav_node.id, doc_node_id, 1.0 ) for doc_node_id in nodeids_to_add)
+            )
+
+            # todo count really added (here: counts input param not result)
+            response = {'count_added': len(nodeids_to_add)}
+
+        return JsonHttpResponse(response)
+
+
 
 class CorpusFacet(APIView):
     """Loop through a corpus node's docs => do counts by a hyperdata field

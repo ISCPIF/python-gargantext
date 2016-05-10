@@ -73,6 +73,7 @@
         {% for key, corpora in list_corpora.items %}
             <h2>
                 <div class="row">
+                <div class="col-md-1 content"></div>
                     <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
                     {{ key }}
             </h2>
@@ -80,6 +81,7 @@
                         <div id="corpus_{{corpus.id}}">
                             <div class="row">
                                 <h4>
+                                    <div class="col-md-1 content"></div>
                                     <div class="col-md-5 content">
                                         <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                                             <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
@@ -109,7 +111,7 @@
                                         </button>
                                     </div>
 
-                                    <div class="col-md-5 content">
+                                    <div class="col-md-4 content">
                                         {% for state in corpus.hyperdata.statuses %}
                                                 {% ifequal state.action "ngrams_extraction" %}
                                                     {% if state.complete %}
@@ -293,7 +295,7 @@
 
                             $.ajax({
                                 // contentType: "application/json",
-                                url: window.location.origin+"/scrapers/pubmed/save/"+projectid,
+                                url: window.location.origin+"/moissonneurs/pubmed/save/"+projectid,
                                 data: pubmedifiedQuery,
                                 type: 'POST',
                                 beforeSend: function(xhr) {
@@ -365,7 +367,7 @@
                             if(theType=="Pubmed (XML format)") {
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/pubmed/query",
+                                    url: window.location.origin+"/moissonneurs/pubmed/query",
                                     data: formData,
                                     type: 'POST',
                                     beforeSend: function(xhr) {
@@ -403,10 +405,10 @@
                             }
 
                             if(theType=="ISTex") {
-                                console.log(window.location.origin+"scrapers/istex/query")
+                                console.log(window.location.origin+"moissonneurs/istex/query")
                                 $.ajax({
                                     // contentType: "application/json",
-                                    url: window.location.origin+"/scrapers/istex/query",
+                                    url: window.location.origin+"/moissonneurs/istex/query",
                                     data: formData,
                                     type: 'POST',
                                     beforeSend: function(xhr) {
@@ -537,7 +539,7 @@
 
                             $.ajax({
                                 // contentType: "application/json",
-                                url: window.location.origin+"/scrapers/istex/save/"+projectid,
+                                url: window.location.origin+"/moissonneurs/istex/save/"+projectid,
                                 data: postQuery,
                                 type: 'POST',
                                 beforeSend: function(xhr) {

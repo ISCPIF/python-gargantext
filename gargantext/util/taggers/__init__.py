@@ -1,4 +1,4 @@
-from .TurboTagger import TurboTagger
+#from .TurboTagger import TurboTagger
 from .NltkTagger import NltkTagger
-from .TreeTagger import TreeTagger
-from .MeltTagger import EnglishMeltTagger, FrenchMeltTagger
+#from .TreeTagger import TreeTagger
+#from .MeltTagger import EnglishMeltTagger, FrenchMeltTagger

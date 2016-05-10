@@ -441,15 +441,12 @@
         var middlePattern = " ";
         var endPattern = "(?:<\/span>)*)\\b";
 
+        // hash of flags filled in first pass loop : (== did annotation i match ?)
+        var isDisplayedIntraText = {};
+
         console.log("highlight annotations length: " + annotations.length)
 
-        var sortedSizeAnnotations = lengthSort(annotations, "text"),
-            extraNgramList = angular.copy($rootScope.extraNgramList);
-
-        // reinitialize an empty list
-        extraNgramList = angular.forEach(extraNgramList, function(name, id) {
-          extraNgramList[id] = [];
-        });
+        var sortedSizeAnnotations = lengthSort(annotations, "text")
 
         // rl: £dbg counters
         var i = 0 ;
@@ -506,6 +503,9 @@
                   var nbMatches = matches ? eltLongtext.match(myPattern).length : 0
                   if (nbMatches > 0) {
                       k += nbMatches ;
+
+                      // remember that this annotation.text matched
+                      isDisplayedIntraText[annotation.uuid] = annotation
                       l ++ ;
                   // ------------------------------------------------------------
                       // ICI we update each time
@@ -549,81 +549,72 @@
 
           // highlight anchors as html spans
           // -------------------------------
-          angular.forEach(textMapping, function(text, eltId) {
+          angular.forEach(textMapping, function(textContent, eltId) {
             //   console.log(anchorPattern)
-            if(text) {
+            if(textContent) {
               textMapping[eltId] = replaceAnchorByTemplate(
-                  text,
+                  textContent,
                   annotation,
                   template,
                   anchorPattern);
             }
           });
-
-          // rloth: for now let's show *all* ngrams of the active list
-          //        in the left side
-          extraNgramList[annotation.list_id] = extraNgramList[annotation.list_id].concat(annotation);
         });
 
+        // let's show just the ngrams that matched
+        //        in the left side
+        var sortedDisplayedKeys = Object.keys(isDisplayedIntraText).sort()
+                                                        // sorts on ngram_id
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // update extraNgramList
-        $rootScope.extraNgramList = angular.forEach(extraNgramList, function(name, id) {
-          extraNgramList[id] = lengthSort(extraNgramList[id], 'text');
+        // new update ngramsInPanel
+        angular.forEach(sortedDisplayedKeys, function(id) {
+          var the_annot = isDisplayedIntraText[id] ;
+          var the_list_id = the_annot.list_id ;
+          $rootScope.ngramsInPanel[the_list_id].push(the_annot)
         });
+
+        // debug
+        //console.warn("$rootScope.ngramsInPanel :")
+        //console.warn($rootScope.ngramsInPanel)
+
         // return the object of element ID with the corresponding HTML
         return textMapping;
       }
 
+
+      /*
+      * main refresh
+      */
       $rootScope.refreshDisplay = function() {
         console.log("annotations.highlight.refreshDisplay()")
         if ($rootScope.annotations === undefined) return;
         if ($rootScope.activeLists === undefined) return;
         if (_.keys($rootScope.activeLists).length === 0) return;
 
-        // initialize extraNgramList
-        var extraNgramList = {};
-        $rootScope.extraNgramList = angular.forEach($rootScope.activeLists, function(name, id) {
-          this[id] = [];
-        }, extraNgramList);
-        $rootScope.extraNgramList = extraNgramList;
+        // initialize ngramsInPanel
+        // ------------------------
+        //  $rootScope.ngramsInPanel = {
+        //    activelist1_id : [
+        //            annotation_a,
+        //            annotation_b,
+        //            annotation_c
+        //    ] ,
+        //    activelist2_id : [
+        //            annotation_x,
+        //            annotation_y,
+        //            annotation_z
+        //    ] ,
+        //      ....
+        //    }
+        //
+        var ngramsInPanel = {};
+        $rootScope.ngramsInPanel = angular.forEach($rootScope.activeLists, function(name, list_id) {
+          this[list_id] = [];
+        }, ngramsInPanel);
+        $rootScope.ngramsInPanel = ngramsInPanel;
 
         /*
-        * Transform text into HTML with higlighted ngrams
+        * Transform text into HTML with higlighted ngrams via compileNgramsHtml
         */
         var result = compileNgramsHtml(
           $rootScope.annotations,
@@ -643,6 +634,8 @@
           angular.element(elt).replaceWith($compile(elt)($rootScope.$new(true)));
         });
       }
+
+
       /*
       * Listen changes on the ngram data
       */

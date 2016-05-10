@@ -143,6 +143,7 @@ var RecDict={};
 var AjaxRecords = []
 var Garbage = {}
 var countByTitles = {}  // useful for title duplicates
+var favorites = {}
 
 function getRecord(rec_id) {
   return MyTable.data('dynatable').settings.dataset.originalRecords[rec_id];
@@ -151,6 +152,39 @@ function getRecord(rec_id) {
 
 function getRecords() {
   return MyTable.data('dynatable').settings.dataset.originalRecords;
+}
+
+function favstatusToStar (rec_id, boolFavstatus, boolStrike=false){
+    var starStr = boolFavstatus ? "glyphicon-star" : "glyphicon-star-empty";
+    var styleStr = boolStrike ? "style='text-decoration:line-through'" : "";
+    var htmlStr  = "<span class='glyphicon "+starStr+"' "+styleStr ;
+        htmlStr += " onclick='toggleFavstatus("+rec_id+")'" ;
+        htmlStr += ">" ;
+        htmlStr += "</span>" ;
+    return htmlStr
+}
+
+function toggleFavstatus (rec_id) {
+    var doc_id = AjaxRecords[rec_id]["id"]
+    var statusBefore = AjaxRecords[rec_id]["isFavorite"]
+    var myHttpAction = statusBefore ? 'DELETE' : 'PUT'
+
+    $.ajax({
+      url: 'http://localhost:8000/api/nodes/'+corpus_id+'/favorites?docs='+doc_id,
+      type: myHttpAction,
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+      success: function(favdata) {
+          // it's been toggled in the DB so we toggle locally
+          if (statusBefore) delete favorites[doc_id]
+          else favorites[doc_id] = true
+          AjaxRecords[rec_id]["isFavorite"] = ! statusBefore ;
+
+          // and we reprocess table directly (no need for new ajax of other recs)
+          MyTable.data('dynatable').process();
+      },
+    });
 }
 
 function transformContent2(rec_id) {
@@ -162,12 +196,14 @@ function transformContent2(rec_id) {
     result["id"] = elem["id"]
     result["date"] = '<strike>'+elem["date"]+'</strike>'
     result["docurl"] = '<strike>'+elem["docurl"]+'</strike>'
+    result["isFavorite"] = favstatusToStar(rec_id, elem["isFavorite"], boolStrike=true)
     result["rawtitle"] = elem["rawtitle"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
     result["date"] = elem["date"]
     result["docurl"] = elem["docurl"]
+    result["isFavorite"] =  favstatusToStar(rec_id, elem["isFavorite"])
     result["rawtitle"] = elem["rawtitle"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
   }
@@ -269,6 +305,9 @@ function Main_test(Data) {
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar"></span> Date</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="docurl">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size"></span> Title</th>'+"\n"
+    div_table += "\t"+"\t"+'<th data-dynatable-column="isFavorite">'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-star"></span>'+"\n"
+    div_table += "\t"+"\t"+'</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash"></span>'+"\n"
     div_table += "\t"+"\t"+'</th>'+"\n"
@@ -445,7 +484,7 @@ function Main_test(Data) {
               },
               inputs: {
                 // our own search which differentiates title vs abstract queries
-                queries: $('#doubleSearch, #dupFilter')
+                queries: $('#doubleSearch, #docFilter')
               },
               writers: {
                 _rowWriter: ulWriter
@@ -495,14 +534,16 @@ function Main_test(Data) {
         }
     // MyTable.data('dynatable').process();
 
-    // also append another bound filter for duplicates
+    // also append another bound filter for duplicates/favorites
     MyTable.data('dynatable').queries
-        .functions['dupFilter'] = function(record,selected) {
-            return (selected == 'filter_all')||(countByTitles[record.rawtitle] > 1)
+        .functions['docFilter'] = function(record,opt) {
+            if      (opt == 'filter_all')  return true
+            else if (opt == 'filter_favs') return favorites[record.id]
+            else if (opt == 'filter_dupl') return (countByTitles[record.rawtitle] > 1)
         }
 
     // and set this filter's initial status to 'filter_all'
-    MyTable.data('dynatable').settings.dataset.queries['dupFilter'] = 'filter_all'
+    MyTable.data('dynatable').settings.dataset.queries['docFilter'] = 'filter_all'
 
 
     MyTable.data('dynatable').sorts.functions["rawtitleSort"] = function testSort (rec1,rec2) {
@@ -531,20 +572,20 @@ function Main_test(Data) {
 var dupFlag = false ;
 
 $("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
-    if (!dupFlag && qname == 'dupFilter' && qval == "filter_dupl") {
-        MyTable.data('dynatable').queries.remove('dupFilter')
+    if (!dupFlag && qname == 'docFilter' && qval == "filter_dupl") {
+        MyTable.data('dynatable').queries.remove('docFilter')
         // to avoid recursion when we'll call this filter again in 4 lines
         dupFlag = true ;
         // sort alphabetically **before** duplicates filter
         MyTable.data('dynatable').sorts.clear();
         MyTable.data('dynatable').sorts.add('rawtitle', -1) // -1 <==> DESC (ASC doesn't work well ?)
-        MyTable.data('dynatable').queries.add('dupFilter', 'filter_dupl')
+        MyTable.data('dynatable').queries.add('docFilter', 'filter_dupl')
         MyTable.data('dynatable').process();
     }
 });
 
 $("#div-table").on("dynatable:queries:removed", function(e, qname) {
-    if (qname == 'dupFilter') {
+    if (qname == 'docFilter') {
         dupFlag = false ;
     }
 });
@@ -556,36 +597,53 @@ $.ajax({
   url: '/api/nodes?types[]=DOCUMENT&pagination_limit=-1&parent_id='
         + corpus_id
         +'&fields[]=parent_id&fields[]=id&fields[]=name&fields[]=typename&fields[]=hyperdata',
-  success: function(data){
-    $("#content_loader").remove();
-    $.each(data.records, function(i, record){
-      var orig_id = parseInt(record.id);
-      var arr_id = parseInt(i)
-      RecDict[orig_id] = arr_id;
-      record.rawtitle = record.name;
+  success: function(maindata){
+      // unfortunately favorites info is in a separate request (other nodes)
+      $.ajax({
+        url: 'http://localhost:8000/api/nodes/'+corpus_id+'/favorites',
+        success: function(favdata){
+          // initialize favs lookup
+          for (var i in favdata['favdocs']) {
+              doc_id = favdata['favdocs'][i]
+              favorites[doc_id] = true ;
+          }
 
-      // trick to have a clickable title in docurl slot, but could be done in transformContent2
-      record.docurl = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
-      record.date = get_node_date(record);
-      record.del = false;
-    });
+          // now process the nodes data from 1st request
+          $.each(maindata.records, function(i, record){
+            var orig_id = parseInt(record.id);
+            var arr_id = parseInt(i)
+            RecDict[orig_id] = arr_id;
+            record.rawtitle = record.name;
 
-    // initialize CountByTitle census
-    for (var i in data.records) {
-        ourTitle = data.records[i]['rawtitle'] ;
-        if (countByTitles.hasOwnProperty(ourTitle)) {
-            countByTitles[ourTitle] ++ ;
-        }
-        else {
-            countByTitles[ourTitle] = 1 ;
-        }
-    }
-    AjaxRecords = data.records; // backup-ing in global variable!
+            record.isFavorite = false ;
+            if (favorites[orig_id]) {
+                record.isFavorite = true ;
+            }
 
-    var result = Main_test(data.records)
+            // trick to have a clickable title in docurl slot, but could be done in transformContent2
+            record.docurl = '<a target="_blank" href="/projects/' + project_id + '/corpora/'+ corpus_id + '/documents/' + record.id + '">' + record.name + '</a>';
+            record.date = get_node_date(record);
+            record.del = false;
+          });
 
-    $("#content_loader").remove()
+          // initialize CountByTitle census
+          for (var i in maindata.records) {
+              ourTitle = maindata.records[i]['rawtitle'] ;
+              if (countByTitles.hasOwnProperty(ourTitle)) {
+                  countByTitles[ourTitle] ++ ;
+              }
+              else {
+                  countByTitles[ourTitle] = 1 ;
+              }
+          }
+          AjaxRecords = maindata.records; // backup-ing in global variable!
 
-    console.log( result )
+          $("#content_loader").remove();
+
+          var result = Main_test(maindata.records)
+
+          console.log( result )
+        },
+      });
   },
 });

@@ -30,6 +30,7 @@ def main(request, project_id, corpus_id, document_id):
     return render_to_response('annotations/main.html', {
         # TODO use reverse()
         'api_url': urljoin(request.get_host(), '/annotations/'),
+        'garg_url': request.get_host(),
         'nodes_api_url': urljoin(request.get_host(), '/api/'),
     }, context_instance=RequestContext(request))
 

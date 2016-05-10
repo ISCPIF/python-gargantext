@@ -123,7 +123,7 @@ LANGUAGES = {
 
 
 from gargantext.util.parsers import \
-    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser
+    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser
 
 def resourcetype(name):
     '''
@@ -195,8 +195,8 @@ RESOURCETYPES = [
     },
     # type 10
    {    "name": 'CERN',
-	"parser": CERNParser,
-	"default_language": "en",
+        "parser": CERNParser,
+        "default_language": "en",
    },
 ]
 

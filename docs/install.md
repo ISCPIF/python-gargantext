@@ -1,88 +1,49 @@
-Gargantext
-===========
-
 Install Instructions for Gargantext (CNRS):
 
-=> Help needed ?
+Help needed ?
 See [http://gargantext.org/about](http://gargantext.org/about) and [tools]() for the community
 
-1. [SETUP](##SETUP)
-2. [INSTALL](##INSTALL)
-*.1 with [docker](####DOCKER) [EASY]
-*.2 with [debian](####DEBIAN) [EXPERT]
 
-3. [RUN](##RUN)
+Prepare your environnement and make the initial installation.
+Once you setup and install the Gargantext box. You can use ./install/run.sh utility
+to load gargantext web plateform and access it throught your web browser
 
+______________________________
 
-##SETUP
-Prepare your environnement
+1. [Prerequisites](##Prerequisites)
 
-* Create user gargantua
-Main user of Gargantext is Gargantua (role of Pantagruel soon)!
+2. [SETUP](##Setup)
 
-``` bash
-sudo adduser --disabled-password --gecos "" gargantua
-```
+3. [INSTALL](##Install)
 
-* Create the directories you need
+4. [RUN](##RUN)
+______________________________
+##Prerequisites
 
-``` bash
-for dir in "/srv/gargantext"
-           "/srv/gargantext_lib"
-           "/srv/gargantext_static"
-           "/srv/gargantext_media"
-           "/srv/env_3-5"; do
-    sudo mkdir -p $dir ;
-    sudo chown gargantua:gargantua $dir ;
-done
-```
+* A Debian based OS >= [FIXME]
 
-You should see:
+* At least 35GO in the desired location of Gargantua [FIXME]
+    todo: reduce the size of gargantext lib
+    todo: remove lib once docker is configure
 
-```bash
-$tree /srv
-/srv
-├── gargantext
-├── gargantext_lib
-├── gargantext_media
-│   └── srv
-│       └── env_3-5
-├── gargantext_static
-└── lost+found [error opening dir]
+    tip: if you have enought space for the full package you can:
+        * resize your partition
+        * make a simlink on gargantext_lib
 
-```
-* Get the main libraries
+* A [docker engine installation](https://docs.docker.com/engine/installation/linux/)
 
-``` bash
-wget http://dl.gargantext.org/gargantext_lib.tar.bz2 \
-&& tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
-&& sudo chown -R gargantua:gargantua /srv/gargantext_lib \
-&& echo "Libs installed"
-```
+##Setup
+Prepare your environnement and make the initial setup.
 
-* Get the source code of Gargantext
+Setup can be done in 2 ways:
+    * [automatic setup](setup.sh) can be done by using the setup script provided [here](setup.sh)
+    * [manual setup](manual_setup.md) if you want to change some parameters [here](manual_setup.md)
 
-by cloning the repository of gargantext
-``` bash
-git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
-        && cd /srv/gargantext \
-        && git fetch origin refactoring \
-        && git checkout refactoring \
-```
+##Install
 
-    TODO(soon): git clone https://gogs.iscpif.fr/gargantext.git
-    TODO(soon): install/setup.sh
-
-* **Optionnal**: if you want to contribute clone the repo into your own branch
-
-``` bash
-git checkout -b username-refactoring refactoring
-```
-
-
-##INSTALL
-Build your OS dependencies
-2 ways, for each you need to install Debian GNU/Linux dependencies.
+Two installation procedure are actually proposed:
+* the docker way [easy]
+* the debian way [advanced]
 
 ####DOCKER WAY [EASY]
 
@@ -94,6 +55,7 @@ See [installation instruction for your distribution](https://docs.docker.com/eng
 ``` bash
 cd /srv/gargantext/install/docker/dev
 ./build
+ID=$(docker build .) && docker run -i -t $ID
 ```
 
 You should see
@@ -126,12 +88,6 @@ exit (or Ctrl+D)
 ```
 
 
-####DEBIAN way [EXPERT]
-
-[EXPERTS] Debian way (directory install/debian)
-
-
-
 Install Gargantext server
 
 * Enter docker container
@@ -159,10 +115,15 @@ python /srv/gargantext/dbmigrate.py
 
     FIXME: dbmigrate need to launched several times since tables are
     ordered with alphabetical order (and not dependencies order)
+####Debian way [advanced]
 
-##RUN
+##Run Gargantext
 * Launch Gargantext
 
+Enter the docker container:
+``` bash
+/srv/gargantext/install/docker/enterGargantextImage
+```
 Inside the docker container:
 ``` bash
 #start postgresql
@@ -190,6 +151,6 @@ Login : gargantua
 Password : autnagrag
 ```
 Enjoy :)
-See [User Guide](./tuto.md) for quick usage example
+See [User Guide](/demo/tuto.md) for quick usage example
 
 

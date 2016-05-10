@@ -86,7 +86,8 @@ class NodeListResource(APIView):
 
             writer = csv.writer(response)
 
-            keys =  [ 'title'   , 'journal', 'publication_date'
+            keys =  [ 'title'   , 'journal'
+                    , 'publication_year', 'publication_month', 'publication_day'
                     , 'abstract', 'authors']
 
             writer.writerow(keys)

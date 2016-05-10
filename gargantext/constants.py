@@ -106,17 +106,18 @@ INDEXED_HYPERDATA = {
 }
 
 
-from gargantext.util.taggers import FrenchMeltTagger, TurboTagger
-
+#from gargantext.util.taggers import FrenchMeltTagger, TurboTagger
+from gargantext.util.taggers import NltkTagger
 LANGUAGES = {
     'en': {
         #'tagger': EnglishMeltTagger,
-        'tagger': TurboTagger,
-        #'tagger': NltkTagger,
+        #'tagger': TurboTagger,
+        'tagger': NltkTagger,
     },
     'fr': {
-        'tagger': FrenchMeltTagger,
+        #'tagger': FrenchMeltTagger,
         # 'tagger': TreeTagger,
+        'tagger': NltkTagger,
     },
 }
 
@@ -192,6 +193,11 @@ RESOURCETYPES = [
         'parser': ISTexParser,
         'default_language': 'en',
     },
+    # type 10
+   {    "name": 'CERN',
+	"parser": CERNParser,
+	"default_language": "en",
+   },
 ]
 
 # linguistic extraction parameters ---------------------------------------------

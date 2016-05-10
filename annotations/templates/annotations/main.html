@@ -58,9 +58,9 @@
             <div class="list-selector">
               <h5>Select lists</h5>
               <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
-                  
+
                   <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}">{[{item.label}]}</option>
-                  
+
                   <!-- to disallow unchecking MapList add this into <option> element:  ng-disabled="{[{ item.label == 'MapList' }]}" -->
 
               </select>
@@ -73,7 +73,7 @@
             </div>
             <div class="col-md-2 col-xs-2 clearfix">
                 <button ng-controller="DocFavoriteController" type="button" class="btn btn-default float-right" ng-click="onStarClick($event)">
-                  <span class="glyphicon" ng-class="{'glyphicon-star-empty': isFavorite == false, 'glyphicon-star': isFavorite == true}"></span>
+                  <span class="glyphicon" ng-class="{'glyphicon-star-empty': isFavorite == false, 'glyphicon-star favactive': isFavorite == true}"></span>
                 </button>
               <!--<nav>
                 <ul class="pager">
@@ -129,6 +129,7 @@
     /* Constants required for annotations app JS to work */
     window.STATIC_URL = "{% static '' %}";
     window.ANNOTATION_API_URL = "{{ api_url }}";
+    window.GARG_ROOT_URL = "{{ garg_url }}";
     window.NODES_API_URL = "{{ nodes_api_url }}";
   </script>
   <script src="{% static 'annotations/main.js' %}"></script>

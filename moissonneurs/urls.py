@@ -7,7 +7,7 @@
 #
 
 
-# Scrapers == getting data from external databases
+# moissonneurs == getting data from external databases
 
 
 # Available databases :
@@ -18,19 +18,19 @@
 
 from django.conf.urls import url
 
-import scrapers.pubmed as pubmed
-import scrapers.istex  as istex
+import moissonneurs.pubmed as pubmed
+import moissonneurs.istex  as istex
 
 # TODO
-#import scrapers.cern  as cern
+#import moissonneurs.cern  as cern
 
 # TODO
-#import scrapers.hal         as hal
-#import scrapers.revuesOrg   as revuesOrg
+#import moissonneurs.hal         as hal
+#import moissonneurs.revuesOrg   as revuesOrg
 
 
 # TODO ?
-# REST API for the scrapers
+# REST API for the moissonneurs
 
 # /!\ urls patterns here are *without* the trailing slash
 urlpatterns = [ url(r'^pubmed/query$'     , pubmed.query    )

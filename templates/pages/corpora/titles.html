@@ -54,9 +54,12 @@
     <div class="jumbotron">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4 class="panel-title">
-                    Publications by title
-                </h4>
+                <h2 class="panel-title">
+                    <center>
+                        <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span>
+                        Publications by title
+                    </center>
+                </h2>
                 <!-- search box with custom function in Docs_dyna_chart_and_tables.js -->
                 <div class="pull-left" style="margin-top:1.85em; font-size: 16px;">
                     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
@@ -70,9 +73,10 @@
                       <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
                     </span>&nbsp;&nbsp;
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                    <select id="dupFilter" name="dupFilter">
+                    <select id="docFilter" name="docFilter">
                         <option value="filter_all">All</option>
-                        <option value="filter_dupl">Duplicates by Title</option>
+                        <option value="filter_favs">Favorite documents</option>
+                        <option value="filter_dupl">Duplicates by title</option>
                     </select>
                 </div>
             </div>

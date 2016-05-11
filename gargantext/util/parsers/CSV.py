@@ -124,7 +124,8 @@ class CSVParser(Parser):
                 for columnum in range( Coords["column"],len(tokens) ):
                     data = tokens[columnum]
                     RecordDict[ Headers_Int2Str[columnum] ] = data
-                hyperdata_list.append( RecordDict )
+                if len(RecordDict.keys())>0:
+                    hyperdata_list.append( RecordDict )
         # # = = = = [ / Reading the whole CSV and saving ] = = = = #
 
         return hyperdata_list

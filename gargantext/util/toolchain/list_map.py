@@ -7,7 +7,7 @@ from gargantext.models.ngrams import Node, Ngram, NodeNgram, \
 from gargantext.util.db       import session, aliased, func
 from gargantext.util.db_cache import cache
 from gargantext.util.lists    import UnweightedList
-from sqlalchemy               import desc
+from sqlalchemy               import desc, asc
 from gargantext.constants     import DEFAULT_MAPLIST_MAX,\
                                      DEFAULT_MAPLIST_MONOGRAMS_RATIO
 
@@ -52,7 +52,7 @@ def do_maplist(corpus,
 
     primary_groupterms_subquery = (session
                             # we want only primary terms (ngram1)
-                            .query(NodeNgramNgram.ngram1_id)
+                            .query(NodeNgramNgram.ngram2_id)
                             .filter(NodeNgramNgram.node_id == grouplist_id)
                             .subquery()
                          )
@@ -64,13 +64,13 @@ def do_maplist(corpus,
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
                 .filter(ScoreSpec.node_id == specificity_id)
                 .filter(ScoreSpec.ngram_id.in_(mainterms_subquery))
-                .filter(ScoreSpec.ngram_id.in_(primary_groupterms_subquery))
+                .filter(ScoreSpec.ngram_id.notin_(primary_groupterms_subquery))
             )
 
     # TODO: move these 2 pools up to mainlist selection
     top_monograms = (query
                 .filter(Ngram.n == 1)
-                .order_by(desc(ScoreSpec.weight))
+                .order_by(asc(ScoreSpec.weight))
                 .limit(monograms_limit)
                 .all()
                )
@@ -81,7 +81,7 @@ def do_maplist(corpus,
                 .limit(multigrams_limit)
                 .all()
                )
-    obtained_mono = len(top_monograms)
+    obtained_mono  = len(top_monograms)
     obtained_multi = len(top_multigrams)
     obtained_total = obtained_mono + obtained_multi
     # print("MAPLIST: top_monograms =", obtained_mono)

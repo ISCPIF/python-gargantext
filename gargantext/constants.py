@@ -194,7 +194,7 @@ RESOURCETYPES = [
     {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
-        'accepted_formats':["zip","csv"],
+        'accepted_formats':["csv"],
     },
     # type 9
     {   'name': 'ISTex',

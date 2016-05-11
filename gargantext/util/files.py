@@ -25,11 +25,13 @@ def download(url, name=''):
 
 
 def upload(uploaded):
+    print(repr(uploaded))
     if uploaded.size > UPLOAD_LIMIT:
         raise IOError('Uploaded file is bigger than allowed: %d > %d' % (
             uploaded.size,
             UPLOAD_LIMIT,
         ))
+
     return save(
         contents = uploaded.file.read(),
         name = uploaded.name,

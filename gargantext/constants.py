@@ -200,12 +200,13 @@ RESOURCETYPES = [
     {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',
-        'accepted_formats':["zip","xml"],
+        'accepted_formats':["zip",],
     },
     # type 10
    {    "name": 'Cern (MARC21 XML)',
         "parser": CernParser,
         "default_language": "en",
+        'accepted_formats':["zip","xml"],
    },
 ]
 

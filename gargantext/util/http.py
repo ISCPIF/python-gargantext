@@ -16,6 +16,7 @@ def requires_auth(func):
     Also passes the URL to redirect towards as a GET parameter.
     """
     def _requires_auth(request, *args, **kwargs):
+        #print(request.user.is_authenticated())
         if not request.user.is_authenticated():
             url = '/auth/login/?next=%s' % urlencode(request.path)
             return redirect(url)

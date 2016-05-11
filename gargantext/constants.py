@@ -195,7 +195,7 @@ RESOURCETYPES = [
     },
     # type 10
    {    "name": 'CERN',
-        "parser": CERNParser,
+        "parser": CernParser,
         "default_language": "en",
    },
 ]

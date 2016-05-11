@@ -95,10 +95,22 @@ def project(request, project_id):
             name = request.POST['name'],
             typename = 'CORPUS',
         )
-        corpus.add_resource(
-            type = int(request.POST['type']),
-            path = upload(request.FILES['file']),
+        try:
+            corpus.add_resource(
+                type = int(request.POST['type']),
+                path = upload(request.FILES['file']),
+            )
+        except OSError:
+            #file upload limit in files.py
+            return render(
+            template_name = 'pages/projects/wait.html',
+            request = request,
+            context = {
+                'user'   : request.user,
+                'project': project,
+            },
         )
+
         session.add(corpus)
         session.commit()
 

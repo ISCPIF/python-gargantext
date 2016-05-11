@@ -5,7 +5,7 @@ import json
 
 
 class CernParser(Parser):
-    self.MARC21 = {
+    MARC21 = {
             "100":{"a": "author_name",
                         "v": "author_affiliation",
                         "w": "author_country",
@@ -32,12 +32,13 @@ class CernParser(Parser):
             "653": {"a":"keywords"},
             "856": {"u":"pdf_source"},
             }
+
     def parse(self, filebuf):
         tree = etree.tostring(filebuf)
         #root = tree.getroot()
-
+        hyperdata_list =[]
         soup = BeautifulSoup(tree, "lxml")
-        for record in soupr.find_all("record"):
+        for record in soup.find_all("record"):
 
             r = {v:[] for v in self.MARC21["700"].values()}
             r["uid"]  = soup.find("controlfield").text

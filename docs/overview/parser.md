@@ -50,35 +50,38 @@ exposé dans `/templates/pages/projects/project.html`
 
 ## reference your parser script
 
-## add your script into gargantext/util/
-here filename is Cern.py
+## add your parser script into folder gargantext/util/parser/
+here my filename was Cern.py
 
 ##declare it into gargantext/util/parser/__init__.py
 from .Cern  import CernParser
 
-
-## add your parser script into gargantext/util/parser/
-
 At this step, you will be able to see your parser and add a file with the form
-it will send the job to toolchain
-##
-parse_extract_indexhyperdata(corpus)
+but nothing will occur
 
+## the good way to write the scrapper script
+
+Three main and only requirements:
+* your parser class should inherit from the base class _Parser()
+* your parser class must have a parse method that take a **filename** as input
+* you parser must structure and store data into **hyperdata_list** variable name
+to be properly indexed by toolchain
+
+# Adding a scrapper API to offer search option:
 * Add pop up question Do you have a corpus
 option search in /templates/pages/projects/project.html line 181
 
 
-adding
+
 
 # Some changes
 * adding accepted_formats in constants
-* adding check_file routine in Form check
+* adding check_file routine in Form check ==> but should inherit from utils/files.py
+that also have implmented the size upload limit check
 
 # Suggestion next step:
 
-
 * XML parser MARC21 UNIMARC ...
-
 * A project type is qualified by the first element add i.e:
 the first element determine the type of corpus of all the corpora within the project
 

@@ -246,7 +246,8 @@ from .settings import BASE_DIR
 # uploads/.gitignore prevents corpora indexing
 # copora can be either a folder or symlink towards specific partition
 UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
-UPLOAD_LIMIT       = 1024 * 1024 * 1024
+UPLOAD_LIMIT       = 1024
+#* 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 

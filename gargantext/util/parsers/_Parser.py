@@ -23,6 +23,9 @@ class Parser:
     def __del__(self):
         self._file.close()
 
+    def detect_format(self, accepted_format):
+        print(self._file[:1000])
+
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
         """

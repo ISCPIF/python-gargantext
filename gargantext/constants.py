@@ -205,7 +205,7 @@ DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
 
 DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
 
-DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .05         # part of monograms in MAPLIST
 
 DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)

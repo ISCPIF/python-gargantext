@@ -1,65 +1,47 @@
 # Gargantext Annotations web application
 
-We also use a number of node.js tools to initialize and test. You must have node.js and
-its package manager (npm) installed.  You can get them from [http://nodejs.org/](http://nodejs.org/).
+## Install dependencies
 
-## Preview only
+(2016-05-11) Instead of the previously "npm-installable" structure, all the libraries are now permanently installed outside of the app 'annotations', directly in the 'static' dir of the entire gargantext project.
 
-Activate your virtualenv and run a simple http server
+Initial version specifications of the dependencies are:
+  - "angular": "~1.2.x",
+  - "angular-cookies": "~1.2.x",
+  - "angular-loader": "~1.2.x",
+  - "angular-resource": "~1.2.x",
+  - "bootstrap": "~3.x",
+  - "angular-cookies": "1.2",
+  - "bootstrap-select": "silviomoreto/bootstrap-select#~1.7.3"
+  - "underscore": "1.5.2"
 
-```
-workon gargantext
-python3 -m http.server
-```
-or :
-
-```
-npm start
-```
-
-Now browse to the app at `http://localhost:8000/app/index.html`.
-
-## Install development tools and dependencies
-
-
-We have two kinds of dependencies in this project: tools and angular framework code.  The tools help
-us manage and test the application.
-
-* We get the tools we depend upon via `npm`, the [node package manager][npm].
-* We get the angular code via `bower`, a [client-side code package manager][bower].
-
-We have preconfigured `npm` to automatically run `bower` so we can simply do:
-
-```
-npm install
-```
-
-Behind the scenes this will also call `bower install`.  You should find that you have two new
-folders in your project.
-
-* `node_modules` - contains the npm packages for the tools we need
-* `app/bower_components` - contains the angular framework files
-
-*Note that the `bower_components` folder would normally be installed in the root folder but
-angular-seed changes this location through the `.bowerrc` file.  Putting it in the app folder makes
-it easier to serve the files by a webserver.*
-
+These dependencies are imported via annotations/main.js (js) and main.html (css).
 
 ## Directory Layout
 
 
-This will be adapted to fit the django API code as well. For now, the generic layout is :
+The layout is :
 
 ```
-app/                    --> all of the source files for the application
-  app.css               --> default stylesheet
-  components/           --> all app specific modules
-  view1/                --> the view1 view template and logic
-    view1.html            --> the partial template
-    view1.js              --> the controller logic
-    view1_test.js         --> tests of the controller
-  app.js                --> main application module
-  index.html            --> app layout file (the main html template file of the app)
+├── __init__.py
+├── README.md
+├── static
+│   └── annotations
+│       ├── activelists.js
+│       ├── app.css
+│       ├── app.js
+│       ├── document.js
+│       ├── highlight.js
+│       ├── http.js
+│       ├── keyword_tpl.html
+│       ├── main.js
+│       ├── ngramlist.js
+│       └── utils.js
+├── templates
+│   └── annotations
+│       └── main.html
+├── urls.py
+└── views.py
+
 ```
 
 
@@ -163,55 +145,3 @@ There are two kinds of tests possible : Unit tests and End to End tests.
 - définir le processus de déploiement
 - prévoir un système de monitoring des erreurs du serveur une fois en ligne
     - Sentry ?
-
-
-## Updating the web application
-
-Previously we recommended that you merge in changes to angular-seed into your own fork of the project.
-Now that the angular framework library code and tools are acquired through package managers (npm and
-bower) you can use these tools instead to update the dependencies.
-
-You can update the tool dependencies by running:
-
-```
-npm update
-```
-
-This will find the latest versions that match the version ranges specified in the `package.json` file.
-
-You can update the Angular dependencies by running:
-
-```
-bower update
-```
-
-This will find the latest versions that match the version ranges specified in the `bower.json` file.
-
-
-
-### Running the App in Production
-
-This really depends on how complex your app is and the overall infrastructure of your system, but
-the general rule is that all you need in production are all the files under the `app/` directory.
-Everything else should be omitted.
-
-Angular apps are really just a bunch of static html, css and js files that just need to be hosted
-somewhere they can be accessed by browsers.
-
-If your Angular app is talking to the backend server via xhr or other means, you need to figure
-out what is the best way to host the static files to comply with the same origin policy if
-applicable. Usually this is done by hosting the files by the backend server or through
-reverse-proxying the backend server(s) and webserver(s).
-
-
-##
-
-[AngularJS]: http://angularjs.org/
-[git]: http://git-scm.com/
-[bower]: http://bower.io
-[npm]: https://www.npmjs.org/
-[node]: http://nodejs.org
-[protractor]: https://github.com/angular/protractor
-[jasmine]: http://jasmine.github.io
-[karma]: http://karma-runner.github.io
-[http-server]: https://github.com/nodeapps/http-server

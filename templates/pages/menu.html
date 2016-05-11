@@ -2,9 +2,9 @@
     {% load staticfiles %}
     <head>
         <link rel="shortcut icon" href="{% static "/favicon.ico" %}">
-        <script type="text/javascript" src="{% static "js/jquery/1.11.1/jquery.min.js" %}"></script>
-        <link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
-        <link rel="stylesheet" type="text/css" href="{% static "js/gargantext/menu.css"%}"/>
+        <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
         {% block css %}
         {% endblock %}
     </head>
@@ -166,18 +166,18 @@
                                     <div class="col-md-5">
                                         <h3>
                                             <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-                                            Author(s): 
+                                            Author(s):
                                         </h3>
                                         <h4>
-                                            <div class="row"> 
+                                            <div class="row">
                                                 <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
-                                                {{ user.username | truncatechars:15}} 
+                                                {{ user.username | truncatechars:15}}
                                             </div>
                                         </h4>
                                     </div>
                                     <div class="col-md-1">
                                         <div class="row"><br>
-                                        
+
                                             <a class="btn btn-default" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">Download</a>
                                             <!--<a class="btn btn-default" role="button" href="/project/{{project.id}}/corpus/{{corpus.id}}/{{view}}/update">Update</a>--!>
 
@@ -190,8 +190,8 @@
                                                             <li><a href="/delete/{{corpus.id}}">Delete</a></li>
                                                         </ul>
                                                         '>Manage</a>
-                                            
-                                                <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p> 
+
+                                                <a class="btn btn-primary btn-lg" role="button" href="/admin/documents/corpus/{{ corpus.id }}/">Add documents</a></p>
                                             --!>
                                         </div>
                                     </div>
@@ -239,7 +239,7 @@
 
 
         <!--
-        <script type="text/javascript" src="{% static "js/jquery/pie-chart/jquery.easypiechart.js"%}"></script>
+        <script type="text/javascript" src="{% static "lib/jquery/pie-chart/jquery.easypiechart.js"%}"></script>
         <script type="text/javascript">
             $(function() {
                 $('.chart').easyPieChart({
@@ -250,7 +250,7 @@
         </script>
         -->
 
-        <script type="text/javascript" src="{% static "js/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "lib/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
 
         <script type="text/javascript">
             $(function () { $("[data-toggle='popover']").popover({

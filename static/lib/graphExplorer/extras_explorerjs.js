@@ -149,7 +149,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Colors" src="/static/js/libs/img2/colors.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Colors" src="/static/img/colors.png" width="20px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 
@@ -186,7 +186,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Sizes" src="/static/js/libs/img2/NodeSize.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Sizes" src="/static/img/NodeSize.png" width="20px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 
@@ -832,9 +832,9 @@ function GetUserPortfolio() {
 
                     var project_id   = data["records"][record]["id"]
                     var project_name = data["records"][record]["name"]
-                    
+
                     portfolio[project_id] = project_name
-                    
+
                     html_ += '  <div class="panel panel-default">'+"\n"
                     html_ += '   <div class="panel-heading">'+"\n"
                     html_ += '    <h4 class="panel-title">'+"\n"
@@ -846,7 +846,7 @@ function GetUserPortfolio() {
                     html_ += '   <div id="collapse_'+project_id+'" class="panel-collapse collapse">'+"\n"
                     html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
                     html_ += '     <ul>'+"\n"
-                    
+
                     for (var record2 in data["records"]) {
                         if ( data["records"][record2]["typename"] == 'CORPUS' ) {
                             var corpus_parent_id = data["records"][record2]["parent_id"]
@@ -854,9 +854,9 @@ function GetUserPortfolio() {
                                 if ( corpus_parent_id == project_id) {
                                         var corpus_id   = data["records"][record2]["id"]
                                         var corpus_name = data["records"][record2]["name"]
-                                        
+
                                         portfolio[corpus_id] = corpus_name
-                                        
+
                                         html_ += '      <div class="row">'+"\n"
                                         html_ += '       <div class="radio">'+"\n"
                                         html_ += '        <label><input type="radio" id="'+project_id+"_"+corpus_id+'" name="optradio">'+"\n"
@@ -869,7 +869,7 @@ function GetUserPortfolio() {
                             }
                         }
                     }
-                    
+
                     html_ += '     </ul>'+"\n"
                     html_ += '    </div>'+"\n"
                     html_ += '   </div>'+"\n"
@@ -885,7 +885,7 @@ function GetUserPortfolio() {
                $("#add_corpus_tab").prop("disabled",false)
                var selected = $('input[name=optradio]:checked')[0].id.split("_")
                var sel_p_id = selected[0], sel_c_id =selected[1]
-               
+
                var html_selection  = ""
                html_selection     += '<center>You are comparing :<br><span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></center>'+"\n"
                html_selection     += '<center>'

@@ -1,0 +1,26 @@
+
+{% extends "pages/menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+
+<script src="{% static "js/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+	<div class="jumbotron">
+      <h2>Your file has been uploaded ! </h2>
+      <h2>Gargantext need some time to eat it.</h2>
+      <h2>Duration depends on the size of the dish.</h2>
+          
+    <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}" title="Click and test by yourself">Continue on Gargantext</a>
+	</div>
+</div>
+
+{% endblock %}

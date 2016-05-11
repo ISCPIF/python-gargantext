@@ -1,0 +1,118 @@
+{% extends "pages/menu.html" %}
+{% load staticfiles %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static "js/d3/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/jquery/dynatable/jquery.dynatable.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/tables.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/charts.css"%}"/>
+
+<script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
+<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="col-md-3 col-md-offset-2">
+        <div id="monthly-move-chart">
+            <center>
+                    Select a score/frequency range in the chart with blue bars to zoom in
+            <p align="center">
+            <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
+            <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+            <div class="clearfix"></div>
+            </center>
+        </div>
+
+        <div class="bs-callout">
+            <div class="row">
+                <div id="monthly-volume-chart"></div>
+            </div>
+
+            <div id="content_loader">
+                <br>
+                    <center>
+                        <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+                    </center>
+                <br>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+        <!-- (values set by js) caching our DB ids (handy for list update commands) -->
+        <input type="hidden" id="mainlist_id" value=""></input>
+        <input type="hidden" id="maplist_id" value=""></input>
+        <input type="hidden" id="stoplist_id" value=""></input>
+        <input type="hidden" id="groups_id" value=""></input>
+        <input type="hidden" id="scores_id" value=""></input>
+
+        <div class="jumbotron">
+                <div class="panel panel-default">
+
+                    <div class="panel-heading">
+                      <h2 class="panel-title">
+                        <center>
+                          <span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span>
+                          Extracted terms
+                            <!-- <button title='run test function' onclick="doATest()">
+                                TEST
+                            </button> -->
+                        </center>
+                      </h2>
+
+                        <!-- see in javascript function queries.functions['my_state_filter'] -->
+                        <div class="pull-left" style="margin-top:1.85em;">
+                            Filter:
+                            <select id="picklistmenu" name="my_state_filter">
+                              <option value='reset'>All terms</option>
+                              <option value='0'>Candidates only</option>
+                              <!-- <option value='1' selected="selected">Map terms only</option> -->
+                              <option value='1'>Map terms only</option>
+                              <option value='2'>Stopwords only</option>
+                            </select>
+                        </div>
+                      </h4>
+                    </div>
+
+
+                    <div id="terms_table" class="panel-body">
+                      <div id="div-table">
+                          <!-- (table id="my-ajax-table") dynamically set by Ngrams_dyna_chart_and_table -->
+                      </div>
+
+                      <!-- under the table -->
+                      <p align="right">
+                          <button id="Save_All" class="btn btn-primary">Save changes permanently</button>
+                      </p>
+                    </div>
+
+                </div> <!-- /div panel -->
+
+        </div> <!-- /jumbotron -->
+    <!--
+    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
+        Import a Corpus-List
+    </button>
+-->
+<!--</div> This div is closed in the menu !-->
+
+
+
+
+    <!--
+    # stub to import a list (aka orange button)
+    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
+    -->
+
+
+<script type="text/javascript" src="{% static "js/jquery/dynatable/jquery.dynatable.js" %}"></script>
+<!-- custom-lib for dynatable.js and dc.js -->
+<script type="text/javascript" src="{% static "js/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
+
+
+{% endblock %}

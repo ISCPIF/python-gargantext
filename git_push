@@ -1,8 +1,0 @@
-#!/bin/bash
-
-git checkout prod-dev
-git merge unstable
-git checkout prod
-git merge prod-dev
-git checkout unstable
-git push origin prod prod-dev unstable

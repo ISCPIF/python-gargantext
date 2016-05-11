@@ -1,1 +1,0 @@
-/srv/gargantext_lib/js/extras_explorerjs.js

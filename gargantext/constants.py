@@ -152,53 +152,63 @@ RESOURCETYPES = [
     {   'name': 'Europress (English)',
         'parser': EuropressParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 2
     {   'name': 'Europress (French)',
         'parser': EuropressParser,
         'default_language': 'fr',
+        'accepted_formats':["zip",],
     },
     # type 3
     {   'name': 'Jstor (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 4
     {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 5
     {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 6
     {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 7
     {   'name': 'Zotero (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
+        'accepted_formats':["zip",],
     },
     # type 8
     {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
+        'accepted_formats':["zip","csv"],
     },
     # type 9
     {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',
+        'accepted_formats':["zip","xml"],
     },
     # type 10
-   {    "name": 'Cern',
+   {    "name": 'Cern (MARC21 XML)',
         "parser": CernParser,
         "default_language": "en",
    },
 ]
+
 
 # linguistic extraction parameters ---------------------------------------------
 DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
@@ -224,8 +234,8 @@ DEFAULT_ALL_LOWERCASE_FLAG      = True       # lowercase ngrams before recording
                                              #  occurring at sentence beginning)
 
 # ------------------------------------------------------------------------------
-
 # other parameters
+
 # default number of docs POSTed to scrappers.views.py
 #  (at page  project > add a corpus > scan/process sample)
 QUERY_SIZE_N_DEFAULT = 1000

@@ -7,6 +7,7 @@ from gargantext.util.db       import session, aliased, func, bulk_insert
 from gargantext.util.lists    import WeightedList
 from collections              import defaultdict
 from pandas                   import DataFrame
+import pandas as pd
 
 def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
     '''
@@ -33,13 +34,23 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
 
     print("SPECIFICITY: computing on %i ngrams" % nb_ngrams)
 
-    d = DataFrame(matrix).fillna(0)
+    x = DataFrame(matrix).fillna(0)
 
-    # proba (x/y) ( <= on divise chaque colonne par son total)
-    d = d / d.sum(axis=0)
+    # proba (x/y) ( <= on divise chaque ligne par son total)
+    x = x / x.sum(axis=1)
 
+    # vectorisation
     # d:Matrix => v: Vector (len = nb_ngrams)
-    v = d.sum(axis=1)
+    # v = d.sum(axis=1) (- lui-même)
+    xs = x.sum(axis=1) - x
+    ys = x.sum(axis=0) - x
+    
+
+    # top inclus ou exclus
+    #n = ( xs + ys) / (2 * (x.shape[0] - 1))
+    
+    # top generic or specific (asc is spec, desc is generic)
+    v = ( xs - ys) / ( 2 * (x.shape[0] - 1))
 
     ## d ##
     #######
@@ -66,7 +77,7 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
     # pour l'instant on va utiliser les sommes en ligne comme ranking de spécificité
     # (**même** ordre qu'avec la formule d'avant le refactoring mais calcul + simple)
     # TODO analyser la cohérence math ET sem de cet indicateur
-    v.sort_values(inplace=True)
+    #v.sort_values(inplace=True)
 
     # [ ('biodiversité' , 0.333 ),
     #   ('Grenelle'     , 0.5   ),
@@ -92,10 +103,11 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
         the_id = specnode.id
 
     # print(v)
+    pd.options.display.float_format = '${:,.2f}'.format
 
     data = WeightedList(
             zip(  v.index.tolist()
-                , v.values.tolist()
+                , v.values.tolist()[0]
              )
            )
     data.save(the_id)

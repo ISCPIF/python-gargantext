@@ -195,17 +195,17 @@ RESOURCETYPES = [
 ]
 
 # linguistic extraction parameters ---------------------------------------------
-DEFAULT_TFIDF_CUTOFF_RATIO      = .45        # MAINLIST maximum terms in %
+DEFAULT_TFIDF_CUTOFF_RATIO      = .75        # MAINLIST maximum terms in %
 
-DEFAULT_TFIDF_HARD_LIMIT        = 750        # MAINLIST maximum terms abs
+DEFAULT_TFIDF_HARD_LIMIT        = 5000       # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
 DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
-DEFAULT_MAPLIST_MAX             = 300        # MAPLIST maximum terms
+DEFAULT_MAPLIST_MAX             = 350        # MAPLIST maximum terms
 
-DEFAULT_MAPLIST_MONOGRAMS_RATIO = .5         # part of monograms in MAPLIST
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .15         # part of monograms in MAPLIST
 
 DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)

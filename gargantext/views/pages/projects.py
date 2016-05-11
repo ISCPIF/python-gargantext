@@ -2,6 +2,7 @@ from gargantext.util.http import *
 from gargantext.util.db import *
 from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
+from gargantext.util.files import check_format
 from gargantext.models import *
 from gargantext.constants import *
 from gargantext.util.scheduling import scheduled
@@ -58,6 +59,7 @@ def overview(request):
 
 
 class NewCorpusForm(forms.Form):
+    '''c24b: je dirai que je ne sais pas quand il sert ce truc'''
     type = forms.ChoiceField(
         choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
         widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
@@ -89,28 +91,62 @@ def project(request, project_id):
     if not user.owns(project):
         raise HttpResponseForbidden()
 
-    # new corpus
+    # add a new corpus
     if request.method == 'POST':
         corpus = project.add_child(
             name = request.POST['name'],
             typename = 'CORPUS',
         )
+        #check type and name
+        print(request.POST)
+
+        type = int(request.POST['type'])
         try:
-            corpus.add_resource(
-                type = int(request.POST['type']),
-                path = upload(request.FILES['file']),
-            )
-        except OSError:
-            #file upload limit in files.py
+            format = check_format(type, str(request.FILES['file']))
+        except TypeError as e:
             return render(
-            template_name = 'pages/projects/wait.html',
-            request = request,
-            context = {
-                'user'   : request.user,
-                'project': project,
-            },
+                template_name = 'pages/projects/overview.html',
+                request = request,
+                context = {
+                'debug': True,
+                #'date': datetime.now(),
+                # projects owned by the user
+                #'number': user_projects.count(),
+                #'projects': user_projects,
+                # projects owned by the user's contacts
+                #'common_users': (contact for contact, projects in contacts_projects),
+                #'common_projects': sum((projects for contact, projects in contacts_projects), []),
+                'error_msg': str(e),
+                },
+            )
+
+        try:
+            path = upload(request.FILES['file'])
+        except OSError:
+            return render(
+                template_name = 'pages/projects/overview.html',
+                request = request,
+                context = {
+                'debug': True,
+                'date': datetime.now(),
+                # projects owned by the user
+                'number': user_projects.count(),
+                'projects': user_projects,
+                # projects owned by the user's contacts
+                'common_users': (contact for contact, projects in contacts_projects),
+                'common_projects': sum((projects for contact, projects in contacts_projects), []),
+                'error_msg':"File uploaded is two heavy > 1G ",
+                },
+            )
+
+
+
+        corpus.add_resource(
+            type,
+            path
         )
 
+        #except Exception as error:
         session.add(corpus)
         session.commit()
 
@@ -121,12 +157,12 @@ def project(request, project_id):
             template_name = 'pages/projects/wait.html',
             request = request,
             context = {
-                'user'   : request.user,
-                'project': project,
+            'user'   : request.user,
+            'project': project,
             },
         )
 
-    # corpora within this project
+    # list all the corpora within this project
     corpora = project.children('CORPUS', order=True).all()
     print(corpora)
     sourcename2corpora = defaultdict(list)
@@ -138,9 +174,8 @@ def project(request, project_id):
             resource_type_name = RESOURCETYPES[resource['type']]['name']
             resource_type_accepted_formats = RESOURCETYPES[resource['type']]['accepted_formats']
         else:
-            print("(WARNING) PROJECT view: no listed resource")
-            print("(DEBUG) PROJECT view: one of the corpus has an invalid type")
-            raise Http404("One of the corpus has an invalid type")
+            print("(WARNING) PROJECT view: no listed resource or one of the corpus has an invalid type")
+
         # add some data for the viewer
         corpus.count = corpus.children('DOCUMENT').count()
         status = corpus.status()

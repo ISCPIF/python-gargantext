@@ -178,7 +178,6 @@
         {% endfor %}
     {% endif %}
 
-
                     <!-- Modal -->
                     <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
@@ -200,7 +199,6 @@
                             </div><!-- /.modal-content -->
                         </div><!-- /.modal-dialog -->
                     </div><!-- /.modal -->
-
                     <!-- Modal -->
                     <div class="modal fade" id="addcorpus" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
                         <div class="modal-dialog">
@@ -472,6 +470,8 @@
                                 $( "#id_name" ).on('input',function(e){
                                     console.log($(this).val())
                                     if(theType=="Pubmed (XML format)")
+                                    testPUBMED( $(this).val() )
+                                    if(theType=="Cern (XML format)")
                                     testPUBMED( $(this).val() )
                                 });
                             }

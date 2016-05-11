@@ -98,7 +98,7 @@
                                         <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
                                             <ul>
-                                                <li 
+                                                <li
                                                 onclick=&quot;
                                                         garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
                                                         $(this).parent().parent().remove();
@@ -142,9 +142,9 @@
                                                                           </span>
                                                                       </div>
                                                                     {% endifequal %}
-                                                                    
+
                                                                     {% ifequal state.action "ngrams_extraction" %}
-                                                                       <div class="progress-bar progress-bar-striped 
+                                                                       <div class="progress-bar progress-bar-striped
                                                                                     {% if state.complete %}
                                                                                         progress-bar-success
                                                                                         {% else %}
@@ -162,7 +162,7 @@
                                                                           </span>
                                                                       </div>
                                                                     {% endifequal %}
-                                                                  
+
                                                                 {% endfor %}
                                                             </div>
                                                         {% endif %}
@@ -483,7 +483,8 @@
                             selected = selected.toLowerCase()
                             var is_pubmed = (selected.indexOf('pubmed') != -1);
                             var is_istex = (selected.indexOf('istex') != -1);
-                            if (is_pubmed || is_istex) {
+                            var is_cern = (selected.indexOf('istex') != -1);
+                            if (is_pubmed || is_istex || is_cern) {
                                 // if(selected=="pubmed") {
                                 console.log("show the button for: " + selected)
                                 $("#pubmedcrawl").css("visibility", "visible");

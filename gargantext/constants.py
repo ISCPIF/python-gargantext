@@ -203,7 +203,7 @@ RESOURCETYPES = [
         'accepted_formats':["zip",],
     },
     # type 10
-   {    "name": 'Cern (MARC21 XML)',
+   {    "name": 'SCOAP (XML MARC21 Format)',
         "parser": CernParser,
         "default_language": "en",
         'accepted_formats':["zip","xml"],

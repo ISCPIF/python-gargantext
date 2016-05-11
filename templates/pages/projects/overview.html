@@ -3,15 +3,15 @@
 
 {% block css %}
 {% load staticfiles %}
-<link rel="stylesheet" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
-<script type="text/javascript" src="{% static "js/jquery/1.11.1/jquery.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
-<link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}">
+<link rel="stylesheet" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
+<script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/gargantext/garganrest.js" %}"></script>
+<link rel="stylesheet" href="{% static "lib/jquery/1.11.2/jquery-ui.css" %}">
 
-<script type="text/javascript" src="{% static "js/morris/morris.min.js" %}"></script>
-<link rel="stylesheet" href="{% static "js/morris/morris.css" %}">
+<script type="text/javascript" src="{% static "lib/morris/morris.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "lib/morris/morris.css" %}">
 
-<script src="{% static "js/raphael/raphael-min.js"%}"></script>
+<script src="{% static "lib/raphael/raphael-min.js"%}"></script>
 <style type="text/css">
     .ui-autocomplete {
         z-index: 5000;
@@ -77,15 +77,15 @@
                     <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
                     <div id="project_{{project.id}}" class="row">
                         <h3>
-                            
+
                             <div class="col-md-5 content">
-                                <a  
+                                <a
                                 href="/projects/{{ project.id }}">
                                     <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                     {{ project.name }}
                                 </a>
                             </div>
-                            
+
                             <div class="col-md-3 content">
                                 <a href="/projects/{{project.id}}" >
                                     <button type="button" class="btn btn-default" aria-label="Left Align">
@@ -235,7 +235,7 @@
             $('input[name=groups]:checked').each(function () {
                 $("#send_share").attr("disabled","disabled")
                 console.log( $(this).data("id") );
-                $("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+                $("#simpleloader").html('<img width="30px" src="{% static "img/loading-bar.gif" %}"></img>')
                 $.ajax({
                     url: "/api/share/"+last_project+"/"+$(this).data("id"),
                     type: 'POST',

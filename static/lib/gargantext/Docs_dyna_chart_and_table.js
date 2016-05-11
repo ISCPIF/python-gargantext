@@ -572,6 +572,8 @@ function Main_test(Data) {
 var dupFlag = false ;
 
 $("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
+    // debug
+    // console.warn(e)
     if (!dupFlag && qname == 'docFilter' && qval == "filter_dupl") {
         MyTable.data('dynatable').queries.remove('docFilter')
         // to avoid recursion when we'll call this filter again in 4 lines

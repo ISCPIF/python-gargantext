@@ -1,0 +1,14 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: postgres
+  port: 5432
+  username: gargantex
+  password: gargantex
+
+development:
+  database: gargantex_dev
+
+test:
+  database: gargantext_test

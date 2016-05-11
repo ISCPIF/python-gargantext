@@ -1,0 +1,583 @@
+{% extends "pages/menu.html" %}
+
+{% block css %}
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+<script type="text/javascript" src="{% static "js/jquery/1.11.1/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/gargantext/garganrest.js" %}"></script>
+<link rel="stylesheet" href="{% static "js/jquery/1.11.2/jquery-ui.css" %}">
+
+<script type="text/javascript" src="{% static "js/morris/morris.min.js" %}"></script>
+<link rel="stylesheet" href="{% static "js/morris/morris.css" %}">
+
+<script src="{% static "js/raphael/raphael-min.js"%}"></script>
+<style type="text/css">
+    .ui-autocomplete {
+        z-index: 5000;
+    }
+    .ui-autocomplete .ui-menu-item {
+        font-size:x-small;
+    }
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col-md-6">
+                {% if project %}
+                <h1>
+                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                    {{ project.name | truncatechars:25 }}</h1>
+                <!--<h3> {{number}} corpora </h3>-->
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <p>
+                    {% if donut %}
+                    <div id="hero-donut" style="height: 200px;"></div>
+                    {% endif %}
+                    <center>
+
+                        <a data-toggle="modal" href="#addcorpus">
+                            <button
+                            type="button"
+                            class="btn btn-primary btn-lg"
+                            data-container="body"
+                            data-toggle="popover"
+                            data-placement="bottom"
+                            >
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>
+                            Add a corpus
+                            </button>
+                        </a>
+                    </center>
+                </p>
+            </div>
+    </div>
+</div>
+
+
+<!-- Add jumbotron container for each type of corpus (presse, science etc.) -->
+<div id="semLoader" style="position:absolute; top:50%; left:40%; width:80px; visibility: hidden;">
+    <img src="{% static "js/libs/img2/loading-bar.gif" %}"></img>
+</div>
+
+
+<div class="container">
+
+    {% if list_corpora  %}
+        {% for key, corpora in list_corpora.items %}
+            <h2>
+                <div class="row">
+                <div class="col-md-1 content"></div>
+                    <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
+                    {{ key }}
+            </h2>
+                    {% for corpus in corpora %}
+                        <div id="corpus_{{corpus.id}}">
+                            <div class="row">
+                                <h4>
+                                    <div class="col-md-1 content"></div>
+                                    <div class="col-md-5 content">
+                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                            {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-2 content">
+                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                        <button type="button" class="btn btn-default" aria-label="Left Align">
+                                              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        </button>
+
+                                        </a>
+                                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                            data-content="
+                                            <ul>
+                                                <li 
+                                                onclick=&quot;
+                                                        garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                                                        $(this).parent().parent().remove();
+                                                    &quot;>
+                                                    <a href=&quot;#&quot;>Delete this</a>
+                                                </li>
+                                            </ul>
+                                            ">
+                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 content">
+                                        {% for state in corpus.hyperdata.statuses %}
+                                                {% ifequal state.action "ngrams_extraction" %}
+                                                    {% if state.complete %}
+                                                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+
+                                                    {% else %}
+                                                        {% if state.error %}
+                                                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                                        {% else %}
+                                                            <div class="progress">
+                                                                {% for state in corpus.hyperdata.statuses %}
+                                                                    {% ifequal state.action "parsing" %}
+                                                                      <div class=" progress-bar progress-bar-striped
+                                                                                        {% if state.complete %}
+                                                                                            progress-bar-success
+                                                                                            {% else %}
+                                                                                            active
+                                                                                        {% endif %}
+                                                                                     "
+                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                                                              <span>
+                                                                                Parsing
+                                                                                        {% if state.complete %}
+                                                                                            Complete
+                                                                                            {% else %}
+                                                                                            Processing
+                                                                                        {% endif %}
+
+                                                                          </span>
+                                                                      </div>
+                                                                    {% endifequal %}
+                                                                    
+                                                                    {% ifequal state.action "ngrams_extraction" %}
+                                                                       <div class="progress-bar progress-bar-striped 
+                                                                                    {% if state.complete %}
+                                                                                        progress-bar-success
+                                                                                        {% else %}
+                                                                                        active
+                                                                                    {% endif %}
+                                                                                  "
+                                                                             role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                                                          <span>
+                                                                          Ngrams extraction
+                                                                                    {% if state.complete %}
+                                                                                        Complete
+                                                                                        {% else %}
+                                                                                        Processing
+                                                                                    {% endif %}
+                                                                          </span>
+                                                                      </div>
+                                                                    {% endifequal %}
+                                                                  
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endifequal %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-md-1 content"></div>
+                                </h4>
+                            </div>
+                        </div>
+                    {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h3>Query to PubMed</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <p>One fine body…</p>
+                                    <input id="daquery" type="text" class="input-lg" data-tabindex="2">
+                                    <a onclick="getGlobalResults();" class="btn">Scan</a>
+                                    <div id="results"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button onclick="doTheQuery();" disabled id="id_thebutton" type="button" class="btn btn-primary">Explore a sample!</button>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="addcorpus" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h3>Add a Corpus</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="id_form" enctype="multipart/form-data" action="/projects/{{project.id}}/" method="post">
+                                        {% csrf_token %}
+                                        <table cellpadding="5">
+                                            {% for field in form %}
+                                            <tr>
+                                                <th>{{field.label_tag}}</th>
+                                                <td>
+                                                    {{ field.errors }}
+                                                    {{ field }}
+                                                    {% if field.name == 'name' %}
+                                                    <span onclick="getGlobalResults(this);" id="scanpubmed"></span>
+                                                    <div id="theresults"></div>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <th></th>
+                                                <td>
+                                                    <div id="pubmedcrawl" style="visibility: hidden;">
+                                                        Do you have a file already? &nbsp;
+                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked>Yes </input>
+                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false">No </input>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </form>
+                                    <div class="modal-footer">
+                                        <!-- <div id="pubmedcrawl" align="right" style="visibility: hidden;"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div> -->
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
+                                            Close
+                                        </button>
+                                        <button onclick='bringDaNoise();' id="submit_thing" disabled class="btn btn-primary" >
+                                            <span class="glyphicon glyphicon-ok" aria-hidden="true" ></span>
+                                            Process this!
+                                        </button><span id="simpleloader"></span>
+                                    </div>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+                    <script type="text/javascript" src="{% static "js/jquery/1.11.2/jquery-ui.js" %}"></script>
+                    <script type="text/javascript">
+                        function getCookie(name) {
+                            var cookieValue = null;
+                            if (document.cookie && document.cookie != '') {
+                                var cookies = document.cookie.split(';');
+                                for (var i = 0; i < cookies.length; i++) {
+                                    var cookie = jQuery.trim(cookies[i]);
+                                    // Does this cookie string begin with the name we want?
+                                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                        break;
+                                    }
+                                }
+                            }
+                            return cookieValue;
+                        }
+
+                        var thequeries = [] ;
+
+                        // load the template's value for N scan size
+                        var querySize = parseInt({{query_size}}) ;
+
+                        // TODO if is_admin
+
+                        function doTheQuery() {
+                            if ( $('#submit_thing').prop('disabled') ) return;
+                            console.log("in doTheQuery:");
+                            var origQuery = $("#id_name").val()
+
+
+                            var pubmedifiedQuery = {
+                                query : JSON.stringify(thequeries) ,
+                                string: origQuery ,
+                                N : querySize
+                            } ;
+                            console.log(pubmedifiedQuery)
+
+                            var projectid = window.location.href.split("projects")[1].replace(/\//g, '')//replace all the slashes
+
+                            $.ajax({
+                                // contentType: "application/json",
+                                url: window.location.origin+"/moissonneurs/pubmed/save/"+projectid,
+                                data: pubmedifiedQuery,
+                                type: 'POST',
+                                beforeSend: function(xhr) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                },
+                                success: function(data) {
+                                    console.log("in doTheQuery() Ajax.Success:")
+                                    console.log(data)
+                                    setTimeout(
+                                        function() {
+                                            location.reload();
+                                        }, 3000);
+                                    },
+                                    error: function(result) {
+                                        console.log("in doTheQuery(). Data not found");
+                                    }
+                            });
+                        }
+
+                        function bringDaNoise() {
+                            var theresults = $("#theresults").html()
+                            if( theresults && theresults.search("No results")==-1 ) {
+                                console.log("we've in dynamic mode")
+                                $("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+                                $("#submit_thing").prop('onclick',null);
+
+                                var theType = $("#id_type option:selected").html();
+                                console.log("consoling the type: ")
+                                console.log(theType)
+                                if(theType=="Pubmed (XML format)") doTheQuery();
+                                if(theType=="ISTex") {
+                                    var origQuery = $("#id_name").val()
+                                    console.log("printing the results:")
+                                    console.log(origQuery)
+                                    testISTEX(origQuery.replace(" ","+"), querySize)
+                                }
+                            }
+                            else {
+                                console.log("we dont have nothing inside results div")
+                                if ( $("#id_file").is(':visible') ) {
+                                    console.log("we're in upload-file mode")
+
+                                    var namefield = $("#id_name").val()!=""
+                                    var typefield = $("#id_type").val()!=""
+                                    var filefield = $("#id_file").val()!=""
+                                    if( namefield && typefield && filefield ) {
+                                        $("#simpleloader").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+                                        $("#submit_thing").prop('onclick',null);
+                                        $( "#id_form" ).submit();
+                                    }
+                                }
+
+                            }
+                        }
+
+                        function getGlobalResults(value){
+                            console.log("in getGlobalResults()")
+                            // AJAX to django
+                            var pubmedquery = $("#id_name").val()
+                            // var Npubs = $("#id_N").val();
+                            if(pubmedquery=="") return;
+                            var formData = {query:pubmedquery , N:querySize}
+                            $("#theresults").html('<img width="30px" src="{% static "js/libs/img2/loading-bar.gif" %}"></img>')
+                            console.log("disabling "+"#"+value.id)
+                            $("#"+value.id).prop('onclick',null);
+
+                            var theType = $("#id_type option:selected").html();
+
+                            if(theType=="Pubmed (XML format)") {
+                                $.ajax({
+                                    // contentType: "application/json",
+                                    url: window.location.origin+"/moissonneurs/pubmed/query",
+                                    data: formData,
+                                    type: 'POST',
+                                    beforeSend: function(xhr) {
+                                        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                    },
+                                    success: function(data) {
+                                        console.log("SUCCESS")
+                                        console.log("in getGlobalResults")
+                                        console.log(data)
+                                        console.log("enabling "+"#"+value.id)
+                                        $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                        // $("#submit_thing").prop('disabled' , false)
+                                        $("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                        thequeries = data
+                                        var N=0,k=0;
+
+                                        for(var i in thequeries) N += thequeries[i].count
+                                        if( N>0) {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications in the last 5 years</i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                        } else {
+                                            $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                            if(data[0]==false)
+                                            $("#theresults").html("Pubmed connection error!</i><br>")
+                                            $('#submit_thing').prop('disabled', true);
+                                        }
+
+                                    },
+                                    error: function(result) {
+                                        $("#theresults").html("Pubmed connection error!</i><br>")
+                                        $('#submit_thing').prop('disabled', true);
+                                    }
+                                });
+                            }
+
+                            if(theType=="ISTex") {
+                                console.log(window.location.origin+"moissonneurs/istex/query")
+                                $.ajax({
+                                    // contentType: "application/json",
+                                    url: window.location.origin+"/moissonneurs/istex/query",
+                                    data: formData,
+                                    type: 'POST',
+                                    beforeSend: function(xhr) {
+                                        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                    },
+                                    success: function(data) {
+                                        console.log("in getGlobalResults: Ajax(ISTex)")
+                                        console.log("enabling "+"#"+value.id)
+                                        $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                        // $("#submit_thing").prop('disabled' , false)
+                                        $("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                        thequeries = data
+                                        var N=data.length,k=0;
+                                        // for(var i in thequeries) N += thequeries[i].count
+                                        if( N>1) {
+                                            var total = JSON.parse(data).total
+                                            console.log("N: "+total)
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+total+" publications.</i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                        } else {
+                                            $("#theresults").html("<i>  <b>"+data[0]+"</b></i><br>")
+                                            $('#submit_thing').prop('disabled', true);
+                                        }
+
+                                    },
+                                    error: function(result) {
+                                        console.log("Data not found");
+                                    }
+                                });
+                            }
+                        }
+
+                        // CSS events for selecting one Radio-Input
+                        function FileOrNotFile( value ) {
+                            var showfile = JSON.parse(value)
+                            var theType = $("#id_type option:selected").html();
+                            // @upload-file events
+                            if (showfile) {
+                                console.log("You've clicked the YES")
+                                $("#id_file").show()
+                                $('label[for=id_file]').show();
+                                $("#id_name").attr("placeholder", "");
+                                $("#scanpubmed").html("")
+                                $("#theresults").html("")
+                                $('#submit_thing').prop('disabled', false);
+                                $( "#id_name" ).on('input',null);
+                                $("#submit_thing").html('<span class="glyphicon glyphicon-ok" aria-hidden="true" ></span> Process this!')
+                            }
+                            // @dynamic-query events
+                            else {
+                                console.log("You've clicked the NO")
+                                $("#id_file").hide()
+                                $('label[for=id_file]').hide();
+                                $("#id_name").attr("placeholder", " [ Enter your query here ] ");
+                                $("#id_name").focus();
+                                $("#scanpubmed").html('<a class="btn btn-primary">Scan</a>')//+'Get: <input id="id_N" size="2" type="text"></input>')
+                                $("#theresults").html("")
+                                $("#submit_thing").prop('disabled' , true)
+
+                                $( "#id_name" ).on('input',function(e){
+                                    console.log($(this).val())
+                                    if(theType=="Pubmed (XML format)")
+                                    testPUBMED( $(this).val() )
+                                });
+                            }
+                        }
+
+                        //CSS events for changing the Select element
+                        function CustomForSelect( selected ) {
+                            // show Radio-Inputs and trigger FileOrNotFile>@upload-file events
+                            selected = selected.toLowerCase()
+                            var is_pubmed = (selected.indexOf('pubmed') != -1);
+                            var is_istex = (selected.indexOf('istex') != -1);
+                            if (is_pubmed || is_istex) {
+                                // if(selected=="pubmed") {
+                                console.log("show the button for: " + selected)
+                                $("#pubmedcrawl").css("visibility", "visible");
+                                $("#pubmedcrawl").show();
+                                $("#file_yes").click();
+                                $("#submit_thing").html("Process this!")
+                            }
+                            // hide Radio-Inputs and trigger @upload-file events
+                            else {
+                                console.log("hide the button")
+                                $("#pubmedcrawl").css("visibility", "hidden");
+                                $("#id_file").show()
+                                $('label[for=id_file]').show();
+                                FileOrNotFile( "true" )
+                            }
+                        }
+
+                        var LastData = []
+                        function NSuggest_CreateData(q, data) {
+                            console.log("in the new NSuggest_CreateData:")
+                            LastData = data;
+                            // console.log(LastData)
+                            console.log("adding class ui-widget")
+                            $("#id_name").removeClass( "ui-widget" ).addClass( "ui-widget" )
+                            $( "#id_name" ).autocomplete({
+                                source: LastData
+                            });
+                            return data;
+                        }
+
+                        function testPUBMED( query ) {
+                            LastData = []
+                            if(!query || query=="") return;
+                            var pubmedquery = encodeURIComponent(query)
+                            $.ajax({
+                                type: 'GET',
+                                url: "http://www.ncbi.nlm.nih.gov/portal/utils/autocomp.fcgi?dict=pm_related_queries_2&q="+pubmedquery,
+                                // data:"db="+db+"&query="+query,
+                                contentType: "application/json",
+                                dataType: 'jsonp'
+                            });
+                            return false;
+                        }
+
+                        function testISTEX(query,N) {
+                            console.log("in testISTEX:");
+                            if(!query || query=="") return;
+                            var origQuery = query
+
+                            var postQuery = { query : query , N: N }
+
+                            var projectid = window.location.href.split("projects")[1].replace(/\//g, '')//replace all the slashes
+
+                            $.ajax({
+                                // contentType: "application/json",
+                                url: window.location.origin+"/moissonneurs/istex/save/"+projectid,
+                                data: postQuery,
+                                type: 'POST',
+                                beforeSend: function(xhr) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                },
+                                success: function(data) {
+                                    console.log("ajax_success: in testISTEX()")
+                                    console.log(data)
+                                    setTimeout(
+                                        function() {
+                                            location.reload();
+                                        }, 5000);
+                                    },
+                                    error: function(result) {
+                                        console.log("in testISTEX(). Data not found");
+                                    }
+                                });
+                            }
+
+                            // Morris Donut Chart
+                            Morris.Donut({
+                                element: 'hero-donut',
+                                data: [
+                                    {% if donut %}
+                                    {% for part in donut %}
+                                    {label: '{{ part.source }}', value: {{ part.part }} },
+                                    {% endfor %}
+                                    {% endif %}
+
+                                ],
+                                colors: ["@white", "@white"],
+                                //colors: ["#30a1ec", "#76bdee"],
+                                formatter: function (y) { return y + "%" }
+                            });
+
+                    </script>
+
+
+
+
+                            {% endblock %}

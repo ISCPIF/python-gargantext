@@ -1,0 +1,313 @@
+<html>
+    {% load staticfiles %}
+    <head>
+        <link rel="shortcut icon" href="{% static "/favicon.ico" %}">
+        <script type="text/javascript" src="{% static "js/jquery/1.11.1/jquery.min.js" %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static "js/bootstrap/3.0.2/bootstrap.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "js/gargantext/menu.css"%}"/>
+        {% block css %}
+        {% endblock %}
+    </head>
+
+    <body>
+        <!-- Fixed navbar -->
+        <div id="dafixedtop" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-inner">
+                    <a class="navbar-brand" style="line-height:15px; height:10px; padding: 10px 10px;" href="/"><img src="{% static "img/logoSmall.png"%}" title="Back to home."></a>
+                </div>
+
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">
+                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                About
+                            </a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li><a href="/projects/" title="All your projects are here.">
+                                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                                Projects
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if project %}
+                        <li><a href="/projects/{{project.id}}">
+                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                {{project.name | truncatechars:15}}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if corpus %}
+                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                {{corpus.name | truncatechars:15}}
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                            <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
+                                <i class="icon-user"></i>
+                                <span class="glyphicon glyphicon-user" aria-hidden="true" style="color:white"></span>
+                                {{ user.username | truncatechars:15}}
+                                <i class="caret"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a tabindex="-1" href="http://www.iscpif.fr/tiki-index.php?page=gargantext_feedback" title="Send us a message (bug, thanks, congrats...)">
+                                        <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+                                        Report Feedback</a></li>
+                                <li class="divider"></li>
+                                {% if user.is_authenticated %}
+                                <li>
+                                    <a tabindex="-1" href="/auth/logout"
+                                        title="Click here to logout especially on public devices">
+                                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
+                                        Logout
+                                    </a></li>
+                                {% else %}
+                                <li><a tabindex="-1" href="/auth/login">Login</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% if corpus %}
+            <div class="container">
+                    <ul id="corporatop" class="nav nav-tabs navbar-static-top nav-justified">
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
+                                    onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
+                                    data-target='#' href='#'>Documents
+                                </a>
+                        </li>
+
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
+                                        data-target='#' href='#'>Journals
+                                </a>
+                        </li>
+
+
+                        {% for state in corpus.hyperdata.statuses %}
+                            {% if state.action == "ngrams_extraction" %}
+                                {% if state.complete %}
+
+                                    <li>
+                                        <a type="button" class="btn btn-default {% if view == 'terms' %} active {% endif %}"
+                                            onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/terms'"
+                                            data-target='#' href='#'>Terms
+                                        </a>
+                                    </li>
+
+
+                                    <li class="dropdown">
+                                        <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
+                                        Graphs
+                                        </a>
+                                        <i class="caret"></i>
+                                    <ul class="dropdown-menu">
+                                        {% if view != "graph" %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                            </li>
+                                        {% else %}
+                                            <li>
+                                                <a tabindex="-1"
+                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" >With conditional distance        </a>
+                                            </li>
+                                            <li>
+                                                <a tabindex="-1"
+                                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5">With distributional distance</a>
+                                            </li>
+
+                                        {% endif %}
+                                    </ul>
+                                    </li>
+                                    {% endif %}
+                                {% endif %}
+                        {% endfor %}
+
+                    </ul>
+            </div>
+            {% endif %}
+        </div>
+        <!--/.nav-collapse -->
+
+        {% block corpusBannerTop %}
+            {% if corpus %}
+                {% if view != "graph" %}
+                    <div class="container theme-showcase">
+                        <div class="jumbotron" style="margin-bottom:0">
+                            <br>
+                            <br>
+                                <div class="row">
+                                    <h3>
+                                        <a href="/projects/{{project.id}}">
+                                            <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                            {{ project.name | truncatechars:50}}
+                                        </a>
+                                    </h3>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-1">
+                                    </div>
+                                    <div class="col-md-6">
+                                            <h3>
+                                                <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
+                                                {{ resourcename | truncatechars:20 }}
+                                            </h3>
+                                            <h3>
+                                                <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                                {{ corpus.name | truncatechars:20 }}
+                                                <a class="btn btn-default" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">
+                                                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                                                </a>
+                                            </h3>
+                                    
+                                    </div>
+                                    <div class="col-md-5">
+                                            <h3>
+                                                <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{ corpus.date }}
+                                            </h3>
+                                            <h3>
+                                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                                Author(s): 
+                                            </h3>
+                                            <h4>
+                                                {{ user.username | truncatechars:15}} 
+                                            </h4>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="container theme-showcase">
+                        <div class="jumbotron" style="margin-bottom:0">
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+
+
+        {% block content %}
+        {% endblock %}
+
+        {% block corpusBannerBottom %}
+        {% endblock %}
+
+        <hr>
+
+        <footer>
+            <p>
+                Gargantext
+                <span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>
+                , version 3.0.0,
+                <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">
+                    Copyrights
+                    <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span>
+                    CNRS {{ date.year }}
+                </a>
+                <a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank" title="Legal instructions of the project.">
+                    , Licence aGPLV3
+                </a>
+                .
+            </p>
+        </footer>
+
+
+        <!-- Place at the end of the document so the pages load faster -->
+        {% load staticfiles %}
+
+
+        <!--
+        <script type="text/javascript" src="{% static "js/jquery/pie-chart/jquery.easypiechart.js"%}"></script>
+        <script type="text/javascript">
+            $(function() {
+                $('.chart').easyPieChart({
+                    //your configuration goes here
+                    size : 50
+                });
+            });
+        </script>
+        -->
+
+        <script type="text/javascript" src="{% static "js/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
+
+        <script type="text/javascript">
+            $(function () { $("[data-toggle='popover']").popover({
+                html: true,
+                title: function() {
+                    return $("#popover-head").html();
+                },
+                content: function() {
+                    return $("#popover-content").html();
+                }
+            });});
+        </script>
+
+
+
+        <script type="text/javascript">
+          function gotoexplorer(elem) {
+
+            var url_ = $(elem).data("url")
+            if (TheBuffer==false)
+              return window.open(url_,'_blank');
+
+                var current_timerange = TheBuffer
+            var time_limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
+            time_limits[0] = new Date(time_limits[0].setDate(time_limits[0].getDate()-1) );
+            time_limits[1] = new Date(time_limits[1].setDate(time_limits[1].getDate()+1) );
+            if( ( +current_timerange[0]===+time_limits[0] ) &&  ( +current_timerange[1]===+time_limits[1] ) ) {
+              url_ = url_ // rien
+            } else {
+              var start__ = new Date(current_timerange[0].setDate(current_timerange[0].getDate()+1) );
+              var end__ = new Date(current_timerange[1].setDate(current_timerange[1].getDate()-1) );
+              var start_ = start__.getFullYear()+"-"+(start__.getMonth()+1)+"-"+(start__.getDay()+1)
+              var end_ = end__.getFullYear()+"-"+(end__.getMonth()+1)+"-"+(end__.getDay()+1)
+              url_ += "&start=" + start_ + "&end="+end_;
+              // url_ += "&start=" + start__.getFullYear() + "&end="+end__.getFullYear();
+            }
+            return window.open(url_,'_blank');
+          }
+
+        </script>
+
+
+
+
+        {% if debug == False %}
+        <!-- Piwik -->
+        <script type="text/javascript">
+            var _paq = _paq || [];
+            _paq.push(['trackPageView']);
+            _paq.push(['enableLinkTracking']);
+            (function() {
+                var u="//piwik.iscpif.fr/";
+                _paq.push(['setTrackerUrl', u+'piwik.php']);
+                _paq.push(['setSiteId', 2]);
+                var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+            })();
+        </script>
+        <noscript>
+            <p>
+                <img src="//piwik.iscpif.fr/piwik.php?idsite=2" style="border:0;" alt="" />
+            </p>
+        </noscript>
+        <!-- End Piwik Code -->
+        {% endif %}
+
+    </body>
+</html>

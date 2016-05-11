@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="mastodons.svg"
+   inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+   inkscape:export-xdpi="61.073017"
+   inkscape:export-ydpi="61.073017">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3782">
+      <stop
+         style="stop-color:#09097e;stop-opacity:1;"
+         offset="0"
+         id="stop3784" />
+      <stop
+         id="stop3790"
+         offset="0.5"
+         style="stop-color:#09097e;stop-opacity:0.49803922;" />
+      <stop
+         style="stop-color:#09097e;stop-opacity:0;"
+         offset="1"
+         id="stop3786" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.0998446"
+     inkscape:cx="68.070083"
+     inkscape:cy="793.17743"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1360"
+     inkscape:window-height="762"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#04047e;fill-opacity:1;fill-rule:nonzero;stroke:#191559;stroke-width:2.37392211;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 67.957124,229.39485 c -21.951494,0 -40.977621,6.82314 -50.335489,16.79607 4.292013,2.97973 7.034932,7.49684 7.047344,12.55635 l 0,0.0311 c 0,5.67812 -3.440309,10.68036 -8.653863,13.59497 8.645806,10.98228 28.643543,18.67953 51.942008,18.67953 23.496654,0 43.642766,-7.82087 52.167926,-18.95081 -4.08915,-2.98628 -6.68337,-7.40599 -6.68337,-12.33159 0,-4.74462 2.40661,-9.01406 6.23781,-11.99055 -8.76845,-10.8289 -28.630779,-18.38499 -51.722366,-18.38499 z"
+       id="path2989"
+       inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+       inkscape:export-xdpi="150.35899"
+       inkscape:export-ydpi="150.35899"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:24.17494011px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#00ffff;fill-opacity:1;stroke:none;font-family:Courier;-inkscape-font-specification:Courier"
+       x="120.14117"
+       y="156.8829"
+       id="text2985"
+       sodipodi:linespacing="125%"
+       transform="scale(0.58099746,1.7211779)"
+       inkscape:export-filename="/srv/gargantext/static/img/sponsors/mastodons.png"
+       inkscape:export-xdpi="150.35899"
+       inkscape:export-ydpi="150.35899"><tspan
+         sodipodi:role="line"
+         id="tspan2987"
+         x="120.14117"
+         y="156.8829">M<tspan
+   style="fill:#ffffff"
+   id="tspan2985">a</tspan>stod<tspan
+   style="fill:#ffffff"
+   id="tspan2992">o</tspan>n<tspan
+   style="fill:#ffffff"
+   id="tspan2996">s</tspan></tspan></text>
+  </g>
+</svg>

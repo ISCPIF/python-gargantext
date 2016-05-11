@@ -1,0 +1,36 @@
+from django.conf.urls import url
+
+from . import nodes
+from . import ngramlists
+
+urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view())
+              , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()    )
+              , url(r'^nodes/(\d+)/having$'   , nodes.NodeListHaving.as_view()  )
+                # get a list of ngram_ids or ngram_infos by list_id
+                # url(r'^ngramlists/(\d+)$', ngramlists.List.as_view()),
+
+              , url(r'^nodes/(\d+)/facets$'   , nodes.CorpusFacet.as_view()     )
+              , url(r'^nodes/(\d+)/favorites$', nodes.CorpusFavorites.as_view()  )
+              # in these two routes the node is supposed to be a *corpus* node
+
+              , url(r'^ngramlists/change$', ngramlists.ListChange.as_view()     )
+                # add or remove ngram from a list
+                #  ex: add <=> PUT ngramlists/change?list=42&ngrams=1,2
+                #       rm <=> DEL ngramlists/change?list=42&ngrams=1,2
+
+              ,  url(r'^ngramlists/groups$', ngramlists.GroupChange.as_view())
+                # modify grouping couples of a group node
+                #  ex: POST ngramlists/groups?node=43
+                # post data looks like : {"767":[209,640],"779":[436,265,385]}"
+
+              , url(r'^ngramlists/family$'     , ngramlists.ListFamily.as_view())
+                # entire combination of lists from a corpus, dedicated to termtable
+                # (or any combination of lists that go together :
+                #   - a mainlist
+                #   - an optional stoplist
+                #   - an optional maplist
+                #   - an optional grouplist
+
+              , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view())
+                # fast access to maplist, similarly formatted for termtable
+              ]

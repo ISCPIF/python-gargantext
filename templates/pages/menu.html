@@ -169,7 +169,7 @@
                                             <h3>
                                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                                 {{ corpus.name | truncatechars:20 }}
-                                                <a class="btn btn-default" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">
+                                                <a class="btn btn-primary" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">
                                                     <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                                                 </a>
                                             </h3>
@@ -181,11 +181,8 @@
                                             </h3>
                                             <h3>
                                                 <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-                                                Author(s): 
+                                                Author(s): {{ user.username | truncatechars:15}} 
                                             </h3>
-                                            <h4>
-                                                {{ user.username | truncatechars:15}} 
-                                            </h4>
                                     </div>
                                 </div>
                         </div>

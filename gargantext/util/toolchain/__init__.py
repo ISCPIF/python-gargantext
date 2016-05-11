@@ -1,3 +1,5 @@
+
+from gargantext.settings  import DEBUG
 from .parsing             import parse
 from .ngrams_extraction   import extract_ngrams
 from .hyperdata_indexing  import index_hyperdata
@@ -10,7 +12,7 @@ from .ngram_coocs         import compute_coocs
 from .metric_specificity  import compute_specificity
 from .list_map            import do_maplist     # TEST
 from .ngram_groups        import compute_groups
-
+from .mail_notification   import notify_owner
 from gargantext.util.db   import session
 from gargantext.models    import Node
 
@@ -114,6 +116,10 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
 
     print('CORPUS #%d: [%s] FINISHED ngram lists computation' % (corpus.id, t()))
+
+    if DEBUG is False:
+        print('CORPUS #%d: [%s] FINISHED Sendind email notification' % (corpus.id, t()))
+        notify_owner(corpus)
 
 
 def t():

@@ -546,10 +546,11 @@ function Main_test(Data) {
     MyTable.data('dynatable').settings.dataset.queries['docFilter'] = 'filter_all'
 
 
-    MyTable.data('dynatable').sorts.functions["rawtitleSort"] = function testSort (rec1,rec2) {
+    MyTable.data('dynatable').sorts.functions["rawtitleSort"] = function rawtitleSort (rec1,rec2, attr, direction) {
         // sorts on rawtitle instead of derived docurl
         // and sorts with locale-aware order
-        return rec1.rawtitle.localeCompare(rec2.rawtitle)
+        if (direction == 1) return rec1.rawtitle.localeCompare(rec2.rawtitle)
+        else                return rec2.rawtitle.localeCompare(rec1.rawtitle)
     }
 
     MyTable.data('dynatable').process();

@@ -21,6 +21,7 @@ from collections import defaultdict
 from gargantext.settings import API_TOKENS as API
 #from private import API_PERMISSIONS
 API_TOKEN = API["CERN"]
+
 def query( request ):
     print(request.method)
     alist = []
@@ -195,6 +196,7 @@ class CERN_API(object):
                 if chunk: # filter out keep-alive new chunks
                     f.write(chunk)
         return filename
+
     def parse_xml(filename,MARCXML):
         parser = etree.XMLParser()
         with open(self.filename, 'r') as f:

@@ -954,7 +954,6 @@
 
       settings.dataset.sorts = {};
       settings.dataset.sortsKeys.length = 0;
-      settings.dataset.queries = {};
       obj.$element.trigger('dynatable:sorts:cleared');
     };
 
@@ -1102,12 +1101,21 @@
           }
           this.appendArrowDown($link);
         // If descending, remove sort
-        } else {
-          for (var i = 0, len = column.sorts.length; i < len; i++) {
-            obj.sorts.remove(column.sorts[i]);
-          }
-          this.removeArrow($link);
         }
+        else {
+        // [2016-05-11 rl: never remove sort...]
+        //   for (var i = 0, len = column.sorts.length; i < len; i++) {
+        //     obj.sorts.remove(column.sorts[i]);
+        //   }
+        //   this.removeArrow($link);
+        // [2016-05-11 rl: ...but instead set to ascending] ----8<----
+        for (var i = 0, len = column.sorts.length; i < len; i++) {
+          obj.sorts.add(column.sorts[i], 1);
+        }
+        this.appendArrowUp($link);
+        }
+        // -----------------------------------------------------8<----
+
       // Otherwise, if not already set, set to ascending
       } else {
         for (var i = 0, len = column.sorts.length; i < len; i++) {

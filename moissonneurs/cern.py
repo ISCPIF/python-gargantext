@@ -1,6 +1,38 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # ****************************
 # *****  CERN Scrapper    *****
 # ****************************
+
+import logging
+
+from logging.handlers import RotatingFileHandler
+
+# création de l'objet logger qui va nous servir à écrire dans les logs
+logger = logging.getLogger()
+# on met le niveau du logger à DEBUG, comme ça il écrit tout
+logger.setLevel(logging.DEBUG)
+
+# création d'un formateur qui va ajouter le temps, le niveau
+# de chaque message quand on écrira un message dans le log
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+
+# création d'un handler qui va rediriger une écriture du log vers
+# un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
+#>>> Permission denied entre en conflit avec les los django
+#file_handler = RotatingFileHandler('.activity.log', 'a', 1000000, 1)
+# on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
+# créé précédement et on ajoute ce handler au logger
+#~ file_handler.setLevel(logging.DEBUG)
+#~ file_handler.setFormatter(formatter)
+#~ logger.addHandler(file_handler)
+
+# création d'un second handler qui va rediriger chaque écriture de log
+# sur la console
+steam_handler = logging.StreamHandler()
+steam_handler.setLevel(logging.DEBUG)
+logger.addHandler(steam_handler)
+
 import json
 import datetime
 from os import path
@@ -20,11 +52,38 @@ from collections import defaultdict
 
 from gargantext.settings import API_TOKENS as API
 #from private import API_PERMISSIONS
-API_TOKEN = API["CERN"]
+
+def save( request , project_id ) :
+    try:
+        project_id = int(project_id)
+    except ValueError:
+        raise Http404()
+    # do we have a valid project?
+    project = session.query( Node ).filter(Node.id == project_id).first()
+    if project is None:
+        raise Http404()
+    user = cache.User[request.user.id]
+    if not user.owns(project):
+        raise HttpResponseForbidden()
+
+
+    if request.method == "POST":
+        query = request.POST["query"]
+
+        name    = request.POST["string"]
+        corpus = project.add_child( name=name
+                                , typename = "CORPUS"
+                                  )
+        corpus.add_resource( type = resourcetype('Cern (MARC21 XML)')
+                                   , path = filename
+                                   , url  = None
+                                   )
+        print("Adding the resource")
 
 def query( request ):
     print(request.method)
     alist = []
+
     if request.method == "POST":
         query = request.POST["query"]
         N = int(request.POST["N"])
@@ -36,129 +95,16 @@ def query( request ):
 
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
+        #Here Requests API
+        #
+        #API_TOKEN = API["CERN"]
 
-def save(request , project_id):
-    print("testCERN:")
-    print(request.method)
-    alist = ["bar","foo"]
-    # implicit global session
-    # do we have a valid project id?
-    try:
-        project_id = int(project_id)
-    except ValueError:
-        raise Http404()
+        #instancia = Scraper()
 
-    # do we have a valid project?
-    project = (session
-        .query(Node)
-        .filter(Node.id == project_id)
-        .filter(Node.typename == 'PROJECT')
-    ).first()
+        # serialFetcher (n_last_years, query, query_size)
+        #alist = instancia.serialFetcher( 5, query , N )
 
-    if project is None:
-        raise Http404()
-
-    # do we have a valid user?
-    user = request.user
-    if not user.is_authenticated():
-        return redirect('/auth/?next=%s' % request.path)
-    if project.user_id != user.id:
-        return HttpResponseForbidden()
-
-
-    if request.method == "POST":
-        query = "-"
-        query_string = "-"
-        N = 0
-
-        if "query" in request.POST:
-            query = request.POST["query"]
-            query_string = query.replace(" ","+")   # url encoded q
-
-        if "N" in request.POST:
-            N = int(request.POST["N"])     # query_size from views_opti
-            if N > QUERY_SIZE_N_MAX:
-                msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
-                print("ERROR (scrap: istex d/l ): ",msg)
-                raise ValueError(msg)
-
-        print("Scrapping Istex: '%s' (%i)" % (query_string , N))
-
-        urlreqs = []
-        pagesize = 50
-        tasks = Scraper()
-        chunks = list(tasks.chunks(range(N), pagesize))
-        for k in chunks:
-            if (k[0]+pagesize)>N: pagesize = N-k[0]
-            urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
-
-        # corpus node instanciation as a Django model
-
-        corpus = Node(
-            name = query,
-            user_id = request.user.id,
-            parent_id = project_id,
-            typename = 'CORPUS',
-                        hyperdata    = { "action"        : "Scrapping data"
-                                        , "language_id" : None
-                                        }
-        )
-
-
-
-        tasks = Scraper()
-
-        for i in range(8):
-            t = threading.Thread(target=tasks.worker2) #thing to do
-            t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-            t.start()
-        for url in urlreqs:
-            tasks.q.put( url ) #put a task in th queue
-        tasks.q.join() # wait until everything is finished
-
-        dwnldsOK = 0
-        for filename in tasks.firstResults:
-            if filename!=False:
-                # add the uploaded resource to the corpus
-                corpus.add_resource(
-                  type = resourcetype('ISTex')
-                , path = filename
-                                   )
-                dwnldsOK+=1
-
-        session.add(corpus)
-        session.commit()
-        corpus_id = corpus.id
-
-        if dwnldsOK == 0 :
-            return JsonHttpResponse(["fail"])
-        ###########################
-        ###########################
-        try:
-            scheduled(parse_extract_indexhyperdata)(corpus_id)
-        except Exception as error:
-            print('WORKFLOW ERROR')
-            print(error)
-            try:
-                print_tb(error.__traceback__)
-            except:
-                pass
-            # IMPORTANT ---------------------------------
-            # sanitize session after interrupted transact
-            session.rollback()
-            # --------------------------------------------
-
-        return render(
-            template_name = 'pages/projects/wait.html',
-            request = request,
-            context = {
-                'user'   : request.user,
-                'project': project,
-            },
-        )
-
-
-    data = [query_string,query,N]
+    data = alist
     return JsonHttpResponse(data)
 
 

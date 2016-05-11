@@ -1,8 +1,10 @@
 from ._Parser import Parser
 from datetime import datetime
-from io import BytesIO
+from bs4 import BeautifulSoup
+#from io import BytesIO
+from io import StringIO
 import json
-
+from lxml import etree
 
 class CernParser(Parser):
     MARC21 = {
@@ -34,8 +36,9 @@ class CernParser(Parser):
             }
 
     def parse(self, filebuf):
-        tree = etree.tostring(filebuf)
-        #root = tree.getroot()
+        doc = etree.parse(filebuf)
+        tree = etree.tostring(doc)
+        #parser = etree.XMLParser()
         hyperdata_list =[]
         soup = BeautifulSoup(tree, "lxml")
         for record in soup.find_all("record"):

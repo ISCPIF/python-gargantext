@@ -8,6 +8,7 @@ from re          import sub
 def parse(corpus):
     try:
         documents_count = 0
+        
         corpus.status('Docs', progress=0)
 
         # will gather info about languages

@@ -15,8 +15,10 @@ import csv
 
 _node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams']
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
-_node_available_formats = ['json', 'csv', 'bibex']
 _node_available_types = NODETYPES
+
+#_hyperdata_available_fields = ['title', 'resourcetype']
+#_node_available_formats = ['json', 'csv', 'bibex']
 
 
 def _query_nodes(request, node_id=None):
@@ -25,6 +27,9 @@ def _query_nodes(request, node_id=None):
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {
         'formated': {'type': str, 'required' : False, 'default': 'json'},
+#        'hyperdata': {'type': list, 'default' : _hyperdata_available_fields, 'items': {
+#            'type': str, 'range' : _node_available_fields,
+#        }},
         'pagination_limit': {'type': int, 'default': 10},
         'pagination_offset': {'type': int, 'default': 0},
         'fields': {'type': list, 'default': _node_default_fields, 'items': {
@@ -75,7 +80,7 @@ class NodeListResource(APIView):
                 'parameters': parameters,
                 'count': count,
                 'records': [
-                    {field: getattr(node, field) for field in parameters['fields']}
+                    { field: getattr(node, field) for field in parameters['fields'] }
                     for node in query
                 ]
             })

@@ -11,20 +11,16 @@
 
 ##Gargantex
 * Gargantex box install
-
-(S.I.R.= Setup Install & Run procedures)
+see [install procedure](install.md)
 
 * Architecture Overview
-
-
 * Database Schema Overview
-
 * Interface design Overview
 
 ##To do:
 * Docs
-* Interface deisgn
-* Parsers/scrapers
+* Interface design
+* [Parsers](./overview/parser.md) / scrappers(./overview/scraper.md)
 * Computing
 
 ## How to contribute:
@@ -35,22 +31,3 @@
     5.Test
     6. Commit
 
-### Exemple1: Adding a parser
-* create your new file cern.py into gargantex/scrapers/
-
-* reference into gargantex/scrapers/urls.py
-add this line:
-import scrapers.cern  as cern
-
-* reference into gargantext/constants
-```
-# type 9
-    {   'name': 'Cern',
-        'parser': CernParser,
-        'default_language': 'en',
-    },
-```
-* add an APIKEY in gargantex/settings
-
-
-### Exemple2: User Interface Design

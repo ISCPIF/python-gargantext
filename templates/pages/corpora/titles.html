@@ -2,15 +2,15 @@
 {% load staticfiles %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static "js/d3/dc.css"%}"/>
-<link rel="stylesheet" type="text/css" href="{% static "js/jquery/dynatable/jquery.dynatable.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "lib/d3/dc.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "lib/jquery/dynatable/jquery.dynatable.css"%}"/>
 
-<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/tables.css"%}"/>
-<link rel="stylesheet" type="text/css" href="{% static "js/gargantext/charts.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/tables.css"%}"/>
+<link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/charts.css"%}"/>
 
-<script type="text/javascript" src="{% static "js/d3/d3.js"%}"></script>
-<script type="text/javascript" src="{% static "js/d3/crossfilter.js"%}"></script>
-<script type="text/javascript" src="{% static "js/d3/dc.js"%}"></script>
+<script type="text/javascript" src="{% static "lib/d3/d3.js"%}"></script>
+<script type="text/javascript" src="{% static "lib/d3/crossfilter.js"%}"></script>
+<script type="text/javascript" src="{% static "lib/d3/dc.js"%}"></script>
 
 {% endblock %}
 
@@ -94,9 +94,9 @@
 <!--</div> This div is closed in the menu !-->
 
 <!-- here goes import script js/bootstrap/bootstrap-multiselect.js, mais ca marche pas-->
-<script type="text/javascript" src="{% static "js/jquery/dynatable/jquery.dynatable.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/jquery/dynatable/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
-<script type="text/javascript" src="{% static "js/gargantext/Docs_dyna_chart_and_table.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/gargantext/Docs_dyna_chart_and_table.js" %}"></script>
 
 {% endblock %}

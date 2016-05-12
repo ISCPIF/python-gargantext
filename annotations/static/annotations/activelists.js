@@ -10,10 +10,14 @@
       $scope.activeListsChange = function() {
         var selected = $('.selectpicker option:selected').val();
         var newActive = {};
-        $('.selectpicker option:selected').each(function(item, value) {
-          var id = value.id.split("---", 2)[1];
-          newActive[id] = value.value;
+        $('.selectpicker option:selected').each(function(item, opt) {
+          // ex opt:
+          // <option id="list---748" value="MAINLIST">MAINLIST</option>
+          var id = opt.id.split("---", 2)[1];
+          newActive[id] = opt.value;
         });
+
+        // ex: {745: "MAINLIST", 748: "MAPLIST"}
         $rootScope.activeLists = newActive;
       };
 

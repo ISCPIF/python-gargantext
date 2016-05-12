@@ -170,7 +170,7 @@ function toggleFavstatus (rec_id) {
     var myHttpAction = statusBefore ? 'DELETE' : 'PUT'
 
     $.ajax({
-      url: 'http://localhost:8000/api/nodes/'+corpus_id+'/favorites?docs='+doc_id,
+      url: window.location.origin + '/api/nodes/'+corpus_id+'/favorites?docs='+doc_id,
       type: myHttpAction,
       beforeSend: function(xhr) {
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
@@ -600,7 +600,7 @@ $.ajax({
   success: function(maindata){
       // unfortunately favorites info is in a separate request (other nodes)
       $.ajax({
-        url: 'http://localhost:8000/api/nodes/'+corpus_id+'/favorites',
+        url: window.location.origin + '/api/nodes/'+corpus_id+'/favorites',
         success: function(favdata){
           // initialize favs lookup
           for (var i in favdata['favdocs']) {

@@ -815,6 +815,7 @@ function GetUserPortfolio() {
         return true;
 
     var query_url = window.location.origin+'/api/nodes?types[]=PROJECT&types[]=CORPUS&pagination_limit=100'
+    // var query_url = window.location.origin+'/api/nodes?types[]=PROJECT&types[]=CORPUS&pagination_limit=100&fields[]=hyperdata'
     $.ajax({
         type: 'GET',
         dataType : 'JSON',

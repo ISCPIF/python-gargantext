@@ -85,16 +85,16 @@ def extract_ngrams(corpus, keys=('title', 'abstract', )):
                 nodes_ngrams_count.clear()
                 ngrams_data.clear()
             if documents_count % BATCH_NGRAMSEXTRACTION_SIZE == 0:
-                corpus.status('ngrams_extraction', progress=documents_count+1)
+                corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
                 session.commit()
         # integrate ngrams and nodes-ngrams
         _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
-        corpus.status('ngrams_extraction', progress=documents_count+1, complete=True)
+        corpus.status('Ngrams', progress=documents_count+1, complete=True)
         corpus.save_hyperdata()
         session.commit()
     except Exception as error:
-        corpus.status('ngrams_extraction', error=error)
+        corpus.status('Ngrams', error=error)
         corpus.save_hyperdata()
         session.commit()
         raise error

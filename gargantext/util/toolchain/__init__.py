@@ -50,11 +50,26 @@ def parse_extract_indexhyperdata(corpus):
         if corpus is None:
             print('NO SUCH CORPUS: #%d' % corpus_id)
             return
+    # Instantiate status
+    corpus.status('Workflow', progress=1)
+    corpus.save_hyperdata()
+    session.commit()
+
     # apply actions
     print('CORPUS #%d' % (corpus.id))
     parse(corpus)
     print('CORPUS #%d: parsed' % (corpus.id))
     extract_ngrams(corpus)
+
+    # Preparing Databse
+    # Indexing
+    #
+
+    corpus.status('Index', progress=0)
+    corpus.save_hyperdata()
+    session.commit()
+
+
     print('CORPUS #%d: extracted ngrams' % (corpus.id))
     index_hyperdata(corpus)
     print('CORPUS #%d: indexed hyperdata' % (corpus.id))
@@ -67,9 +82,21 @@ def parse_extract_indexhyperdata(corpus):
     session.commit()
     print('CORPUS #%d: [%s] new favorites node #%i' % (corpus.id, t(), favs.id))
 
+
+    corpus.status('Index', progress=1, complete=True)
+    corpus.save_hyperdata()
+    session.commit()
+
+
     # -------------------------------
     # temporary ngram lists workflow
     # -------------------------------
+
+    corpus.status('Lists', progress=0)
+    corpus.save_hyperdata()
+    session.commit()
+
+
     print('CORPUS #%d: [%s] starting ngram lists computation' % (corpus.id, t()))
 
     # -> stoplist: filter + write (to Node and NodeNgram)
@@ -116,10 +143,19 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
 
     print('CORPUS #%d: [%s] FINISHED ngram lists computation' % (corpus.id, t()))
+    
+    corpus.status('Lists', progress=0, complete=True)
+    corpus.save_hyperdata()
+    session.commit()
+
 
     if DEBUG is False:
         print('CORPUS #%d: [%s] FINISHED Sendind email notification' % (corpus.id, t()))
         notify_owner(corpus)
+
+    corpus.status('Workflow', progress=10, complete=True)
+    corpus.save_hyperdata()
+    session.commit()
 
 
 def t():

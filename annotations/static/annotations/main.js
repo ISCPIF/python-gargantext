@@ -17,16 +17,16 @@
 var S = window.STATIC_URL;
 
 $script([
-  S + 'bower_components/angular/angular.min.js',
-  S + 'bower_components/bootstrap/dist/js/bootstrap.min.js',
-  S + 'bower_components/bootstrap-select/dist/js/bootstrap-select.min.js',
-  S + 'bower_components/angular-loader/angular-loader.min.js',
-  S + 'bower_components/underscore/underscore-1.5.2.js',
+  S + 'lib/angular/1.2.29/angular.min.js',
+  S + 'lib/bootstrap/3.3.6/js/bootstrap.min.js',
+  S + 'lib/bootstrap-select/1.7.7/js/bootstrap-select.min.js',
+  S + 'lib/angular-loader/1.2.29/angular-loader.min.js',
+  S + 'lib/underscore/underscore-1.5.2.js',
   //'bower_components/angular-route/angular-route.js',
 ], function() {
   $script([
-    S + 'bower_components/angular-cookies/angular-cookies.min.js',
-    S + 'bower_components/angular-resource/angular-resource.min.js'], function() {
+    S + 'lib/angular-cookies/1.2.29/angular-cookies.min.js',
+    S + 'lib/angular-resource/1.2.29/angular-resource.min.js'], function() {
     $script([S + 'annotations/http.js', S + 'annotations/highlight.js',
       S + 'annotations/document.js', S + 'annotations/ngramlist.js',
       S + 'annotations/activelists.js', S + 'annotations/ngramlist.js',

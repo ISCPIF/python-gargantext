@@ -105,10 +105,6 @@ for(var i in System[GState]["states"] ) {
 // DICT BUFFERS FOR MAP/MAIN//STOP SAVING LOGIC
 // ----------------------------------------------
 var FlagsBuffer = {}
-// 3 main buffers per state (and later additional per target)
-for(var i in System[GState]["states"]) {
-  FlagsBuffer[System[GState]["states"][i]] = {}
-}
 
 // + 1 for groups
 GroupsBuffer = {}
@@ -1185,46 +1181,92 @@ $("#Save_All").click(function(){
 
 // Save changes to all corpusA-lists
 function SaveLocalChanges() {
-  console.log("\nFUN SaveLocalChanges()")
   // console.clear()
-  console.log("In SaveChanges()")
-  var sum__selected_elems = 0;
+  console.log("In SaveLocalChanges()")
 
-  FlagsBuffer["delete"] = {}
-  FlagsBuffer["keep"] = {}
-  FlagsBuffer["outmap"] = {}
-  FlagsBuffer["inmap"] = {}
+  // summary of the requested changes with consequences infered from MAP => MAIN
+  // ---------------------------------------------------------------------------
+  // (see forge.iscpif.fr/projects/garg/wiki/Ngram_Lists)
+  // (but before consequences on grouped items)
 
+  FlagsBuffer["outmain"] = {}         // remove from MAINLIST
+  FlagsBuffer["inmain"] = {}          //      add to MAINLIST
+
+  FlagsBuffer["outmap"] = {}          // remove from MAPLIST
+  FlagsBuffer["inmap"] = {}           //      add to MAPLIST
+
+  FlagsBuffer["outdel"] = {}          // remove from STOPLIST
+  FlagsBuffer["indel"] = {}           //      add to STOPLIST
+
+  // NB: (MAP => MAIN) also has the consequence that (MAIN || DEL)
+  // in other words:
+  //   inmain <==> outdel
+  //   indel  <==> outmain
+  // (but we'll keep them distinct in FlagsBuffer for coherence with
+  //  the distinct API CRUD commands that will be entailed)
+
+  // we use 2 globals to evaluate change-of-state
+  //   => NGrams for old states (as in DB)
+  //   => AjaxRecords for current (desired) states
   for(var id in AjaxRecords) {
+    // (if was previously in MAP)
     if( NGrams["map"][ id ] ) {
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"] || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+      // (... and if is now desired to be in MAIN or STOP)
+      if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"]
+         || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
         FlagsBuffer["outmap"][ id ] = true
+        // (... and some more actions only if is now desired to be in STOP)
         if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-          FlagsBuffer["delete"][id] = true
+          FlagsBuffer["indel"][id] = true
+          FlagsBuffer["outmain"][id] = true
         }
       }
+      // (if has new subforms and is now desired to stay in MAP)
       if(GroupsBuffer[id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
-        FlagsBuffer["inmap"][ id ] = true
+        FlagsBuffer["inmap"][ id ] = true  // will trigger subforms addition to MAP in a few lines
       }
-    } else {
+    }
+    // (if previously was in STOP)
+    else if (NGrams["stop"][ id ]) {
+        // (... and if is now desired to be in MAIN or MAP)
+        if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"]
+           || AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
+            FlagsBuffer["outdel"][id] = true
+            FlagsBuffer["inmain"][id] = true
+            // (... and one more action only if is now desired to be in MAP)
+            if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
+              FlagsBuffer["inmap"][ id ] = true
+            }
+        }
+        // £TODO check groups ?
+    }
+    // (if previously was in MAIN)
+    // "else" is here equivalent to (not NGrams["main"][id]['ngrams']['state'])
+    else  {
       if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
         FlagsBuffer["inmap"][ id ] = true
       }
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["delete"][id] = true
+      else if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
+        FlagsBuffer["indel"][id] = true
+        FlagsBuffer["outmain"][id] = true
       }
+     // £TODO check groups ?
     }
   }
-  // [ = = = = For deleting subforms = = = = ]
 
+
+  // [ = = = = propagating to subforms = = = = ]
+  // £TODO check groups ?
   for(var i in NGrams["group"].links) {
-    // i is ngram_id of a group mainNode
-    if(FlagsBuffer["delete"][i]) {
+    // i is ngram_id of a group mainform
+    // the rule is: if the mainform is of desired state s,
+    //              all its subforms should inherit that state
+    if(FlagsBuffer["indel"][i]) {
       for(var j in NGrams["group"].links[i] ) {
-        FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
+        FlagsBuffer["indel"][NGrams["group"].links[i][j]] = true
       }
-      for(var j in FlagsBuffer["delete"][i] ) {
-        FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
+      for(var j in FlagsBuffer["indel"][i] ) {
+        FlagsBuffer["indel"][FlagsBuffer["indel"][i][j]] = true
       }
     }
     if(FlagsBuffer["inmap"][i]) {
@@ -1233,34 +1275,18 @@ function SaveLocalChanges() {
       }
     }
   }
-  // [ = = = = / For deleting subforms = = = = ]
+  // [ = = = = / propagating to subforms = = = = ]
 
-  // console.log(" = = = = = = = = = == ")
-  // console.log("FlagsBuffer:")
-  // console.log(JSON.stringify(FlagsBuffer))
+  console.log(" = = = = = = = = = == ")
+  console.log("FlagsBuffer:")
+  console.log(JSON.stringify(FlagsBuffer))
+  console.log("GroupsBuffer:")
+  console.log(JSON.stringify(GroupsBuffer))
 
 
-  var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)  // main => stop
-  var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)   // ??? stop => main ???
-  var nodes_2group = $.extend({}, GroupsBuffer)
-  var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])     //  add to map
-  var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])   //  remove from map
 
-   // console.log("")
-   // console.log("")
-   // console.log(" nodes_2del: ")
-   // console.log(nodes_2del)
-   // console.log(" nodes_2keep: ")
-   // console.log(nodes_2keep)
-   // console.log(" nodes_2group: ")
-   // console.log(nodes_2group)
-   // console.log(" nodes_2inmap: ")
-   // console.log(nodes_2inmap)
-   // console.log(" nodes_2outmap: ")
-   // console.log(nodes_2outmap)
-   // console.log("")
-   // console.log("")
-
+  // transmit the requested changes to server
+  // ----------------------------------------
   // retrieve node_ids from hidden input
   var mainlist_id = $("#mainlist_id").val()
   var maplist_id  = $("#maplist_id" ).val()
@@ -1275,15 +1301,15 @@ function SaveLocalChanges() {
 
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 
-  // chained CRUD calls
+  // trigger chained CRUD calls
   CRUD_1_AddMap()
 
   // add some ngrams to maplist
   function CRUD_1_AddMap() {
     console.log("===> AJAX CRUD1 AddMap <===\n") ;
-    CRUD( maplist_id , Object.keys(nodes_2inmap), "PUT" , function(success) {
+    CRUD( maplist_id , Object.keys(FlagsBuffer["inmap"]), "PUT" , function(success) {
       if (success) {
-        CRUD_2_RmMap()             // chained AJAX  1 -> 2
+        CRUD_2_RmMap()      // trigger chained AJAX  1 -> 2
       }
       else {
         console.warn('CRUD error on ngrams add to maplist ('+maplist_id+')')
@@ -1293,44 +1319,69 @@ function SaveLocalChanges() {
   // remove some ngrams from maplist
   function CRUD_2_RmMap() {
     console.log("===> AJAX CRUD2 RmMap <===\n") ;
-    CRUD( maplist_id , Object.keys(nodes_2outmap), "DELETE" , function(success) {
+    CRUD( maplist_id , Object.keys(FlagsBuffer["outmap"]), "DELETE" , function(success) {
       if (success) {
-        CRUD_3_AddStopRmMain()    // chained AJAX  2 -> 3
+        CRUD_3_AddMain()    // chained AJAX  2 -> 3
       }
       else {
         console.warn('CRUD error on ngrams remove from maplist ('+maplist_id+')')
       }
     });
   }
-
-  // 2 operations going together: add ngrams to stoplist and remove them from mainlist
-  function CRUD_3_AddStopRmMain() {
-    console.log("===> AJAX CRUD3a+b AddStopRmMain <===\n") ;
-    CRUD( stoplist_id , nodes_2del, "PUT" , function(success) {
+  // add some ngrams to mainlist
+  function CRUD_3_AddMain() {
+    console.log("===> AJAX CRUD3 AddMain <===\n") ;
+    CRUD( mainlist_id , Object.keys(FlagsBuffer["inmain"]), "PUT" , function(success) {
       if (success) {
-        // console.log("OK CRUD 3a add stop")
-        CRUD( mainlist_id , nodes_2del, "DELETE" , function(success) {
-          if (success) {
-            // console.log("OK CRUD 3b rm main")
-            CRUD_4()              // chained AJAX  3 -> 4
-          }
-          else {
-            console.warn('CRUD error on ngrams remove from mainlist ('+mainlist_id+')')
-          }
-        });
+        CRUD_4_RmMain()    // chained AJAX  3 -> 4
+      }
+      else {
+        console.warn('CRUD error on ngrams add to mainlist ('+mainlist_id+')')
+      }
+    });
+  }
+  // remove some ngrams from mainlist
+  function CRUD_4_RmMain() {
+    console.log("===> AJAX CRUD4 RmMain <===\n") ;
+    CRUD( mainlist_id , Object.keys(FlagsBuffer["outmain"]), "DELETE" , function(success) {
+      if (success) {
+        CRUD_5_AddStop()    // chained AJAX  4 -> 5
+      }
+      else {
+        console.warn('CRUD error on ngrams remove from mainlist ('+mainlist_id+')')
+      }
+    });
+  }
+  // add some ngrams to stoplist
+  function CRUD_5_AddStop() {
+    console.log("===> AJAX CRUD5 AddStop <===\n") ;
+    CRUD( stoplist_id , Object.keys(FlagsBuffer["indel"]), "PUT" , function(success) {
+      if (success) {
+        CRUD_6_RmStop()    // chained AJAX  5 -> 6
       }
       else {
         console.warn('CRUD error on ngrams add to stoplist ('+stoplist_id+')')
       }
     });
   }
-
+  // remove some ngrams from stoplist
+  function CRUD_6_RmStop() {
+    console.log("===> AJAX CRUD6 RmStop <===\n") ;
+    CRUD( stoplist_id , Object.keys(FlagsBuffer["outdel"]), "DELETE" , function(success) {
+      if (success) {
+        CRUD_7_groups()    // chained AJAX  6 -> 7
+      }
+      else {
+        console.warn('CRUD error on ngrams remove from stoplist ('+stoplist_id+')')
+      }
+    });
+  }
   // add to groups reading data from GroupsBuffer
-  function CRUD_4() {
-      console.log("===> AJAX CRUD4 RewriteGroups <===\n") ;
+  function CRUD_7_groups() {
+      console.log("===> AJAX CRUD7 RewriteGroups <===\n") ;
       GROUPCRUD(groupnode_id, GroupsBuffer, function(success) {
           if (success) {
-              window.location.reload() // all 4 CRUDs OK => refresh whole page
+              window.location.reload() // all 7 CRUDs OK => refresh whole page
           }
           else {
               console.warn('CRUD error on ngrams add to group node ('+groupings_id+')')

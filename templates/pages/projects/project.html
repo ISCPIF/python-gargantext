@@ -110,19 +110,20 @@
                                             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                         </button>
                                     </div>
-                                    <div class="col-md-3 content">
+                                    <div class="col-md-4 content">
                                         {% for state in corpus.hyperdata.statuses %}
-                                                {% ifequal state.action "ngrams_extraction" %}
+                                                {% ifequal state.action "Workflow" %}
                                                     {% if state.complete %}
                                                         <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
 
                                                     {% else %}
                                                         {% if state.error %}
                                                             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                                            {{ state.error }}
                                                         {% else %}
                                                             <div class="progress">
                                                                 {% for state in corpus.hyperdata.statuses %}
-                                                                    {% ifequal state.action "parsing" %}
+                                                                    {% if state.action != "Workflow" %}
                                                                       <div class=" progress-bar progress-bar-striped
                                                                                         {% if state.complete %}
                                                                                             progress-bar-success
@@ -130,39 +131,18 @@
                                                                                             active
                                                                                         {% endif %}
                                                                                      "
-                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 25%">
                                                                               <span>
-                                                                                Parsing
+                                                                                  {{ state.action }}
                                                                                         {% if state.complete %}
-                                                                                            Complete
+                                                                                            Ok
                                                                                             {% else %}
                                                                                             Processing
                                                                                         {% endif %}
 
                                                                           </span>
                                                                       </div>
-                                                                    {% endifequal %}
-                                                                    
-                                                                    {% ifequal state.action "ngrams_extraction" %}
-                                                                       <div class="progress-bar progress-bar-striped 
-                                                                                    {% if state.complete %}
-                                                                                        progress-bar-success
-                                                                                        {% else %}
-                                                                                        active
-                                                                                    {% endif %}
-                                                                                  "
-                                                                             role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
-                                                                          <span>
-                                                                          Ngrams extraction
-                                                                                    {% if state.complete %}
-                                                                                        Complete
-                                                                                        {% else %}
-                                                                                        Processing
-                                                                                    {% endif %}
-                                                                          </span>
-                                                                      </div>
-                                                                    {% endifequal %}
-                                                                  
+                                                                    {% endif %}
                                                                 {% endfor %}
                                                             </div>
                                                         {% endif %}

@@ -8,7 +8,7 @@ from re          import sub
 def parse(corpus):
     try:
         documents_count = 0
-        corpus.status('parsing', progress=0)
+        corpus.status('Docs', progress=0)
 
         # will gather info about languages
         observed_languages = defaultdict(int)
@@ -46,7 +46,7 @@ def parse(corpus):
 
                 # logging
                 if documents_count % BATCH_PARSING_SIZE == 0:
-                    corpus.status('parsing', progress=documents_count)
+                    corpus.status('Docs', progress=documents_count)
                     corpus.save_hyperdata()
                     session.commit()
                 documents_count += 1
@@ -57,11 +57,11 @@ def parse(corpus):
         # ...with a special key inside for skipped languages at ngrams_extraction
         corpus.hyperdata['languages']['__skipped__'] = {}
         # commit all changes
-        corpus.status('parsing', progress=documents_count, complete=True)
+        corpus.status('Docs', progress=documents_count, complete=True)
         corpus.save_hyperdata()
         session.commit()
     except Exception as error:
-        corpus.status('parsing', error=error)
+        corpus.status('Docs', error=error)
         corpus.save_hyperdata()
         session.commit()
         raise error

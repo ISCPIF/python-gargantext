@@ -32,7 +32,7 @@ class CernParser(Parser):
             "245": {"a":"title"},
             "520": {"a":"abstract"},
             "260": {"b":"publisher","c":"publication_date"},
-            "024": {"t":"realdate_full_"}, #correspond to query date
+            #"024": {"t":"realdate_full_"}, #correspond to query date
             #"540": {"a":"licence"},
             #"653": {"a":"keywords"},
             "856": {"u":"pdf_source"},
@@ -42,13 +42,14 @@ class CernParser(Parser):
         '''formatting pubdate'''
         prefix = "publication"
         date = datetime.strptime(hyperdata[prefix + "_date"], "%Y-%m-%d")
-        hyperdata[prefix + "_year"]      = date.strftime('%Y')
+        #hyperdata[prefix + "_year"]      = date.strftime('%Y')
         hyperdata[prefix + "_month"]     = date.strftime("%m")
         hyperdata[prefix + "_day"]       = date.strftime("%d")
-        hyperdata[prefix + "_hour"]      = date.strftime("%h")
-        hyperdata[prefix + "_minute"]    = date.strftime("%m")
-        hyperdata[prefix + "_second"]    = date.strftime("%s")
+        hyperdata[prefix + "_hour"]      = date.strftime("%H")
+        hyperdata[prefix + "_minute"]    = date.strftime("%M")
+        hyperdata[prefix + "_second"]    = date.strftime("%S")
         hyperdata[prefix + "_date"]  = date.strftime("%Y-%m-%d %H:%M:%S")
+        print("Date", hyperdata["publication_date"])
         return hyperdata
 
     def parse(self, file):
@@ -89,5 +90,4 @@ class CernParser(Parser):
             hyperdata_list.append(hyperdata)
         return hyperdata_list
 
-if __name__ == "__main__":
-    pass
+

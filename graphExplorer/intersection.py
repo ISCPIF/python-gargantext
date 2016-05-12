@@ -73,7 +73,7 @@ def compare_corpora(Corpus_id_A, Corpus_id_B, node_ids):
             if k not in data_B.keys():
                 queue.append(k)
             else:
-                result[k] = data_A[k] / data_B[k]
+                result[k] = data_B[k] / data_A[k]
 
         maximum = max([ result[k] for k in result.keys()])
         minimum = min([ result[k] for k in result.keys()])

@@ -103,36 +103,42 @@ def compute_coocs(  corpus,
     # 1) MAIN DB QUERY
     coocs_query = (
         session.query(x1.ngram_id, x2.ngram_id, ucooc)
+               .join(Node, Node.id == x1.node_id)   # <- b/c within corpus
+               .join(x2, x1.node_id == Node.id )     # <- b/c within corpus
+               
+               .filter(Node.parent_id == corpus.id) # <- b/c within corpus
+               .filter(Node.typename == "DOCUMENT") # <- b/c within corpus
 
-            .filter(x1.node_id  == x2.node_id)       # <- by definition of cooc
-            .filter(x1.ngram_id != x2.ngram_id)      # <- b/c not with itself
-            .filter(x1.node_id.in_(docids_subquery)) # <- b/c within corpus
-            .group_by(x1.ngram_id, x2.ngram_id)
+            
+               .filter(x1.node_id  == x2.node_id)       # <- by definition of cooc
+               .filter(x1.ngram_id != x2.ngram_id)      # <- b/c not with itself
+               .group_by(x1.ngram_id, x2.ngram_id)
            )
 
     # 2) INPUT FILTERS (reduce N before O(N²))
     if mainlist_id:
-        main_subquery = (
-            session.query(NodeNgram.ngram_id)
-                .filter(NodeNgram.node_id == mainlist_id)
-                .subquery()
-                )
 
+        m1 = aliased(NodeNgram)
+        m2 = aliased(NodeNgram)
+        
         coocs_query = ( coocs_query
-            .filter( x1.ngram_id.in_(main_subquery) )
-            .filter( x2.ngram_id.in_(main_subquery) )
+            .join(m1, m1.ngram_id == x1.ngram_id)
+            .join(m2, m2.ngram_id == x2.ngram_id)
+
+            .filter( m1.node_id == mainlist_id )
+            .filter( m2.node_id == mainlist_id )
         )
 
     if stoplist_id:
-        stop_subquery = (
-            session.query(NodeNgram.ngram_id)
-                .filter(NodeNgram.node_id == stoplist_id)
-                .subquery()
-                )
+        s1 = aliased(NodeNgram)
+        s2 = aliased(NodeNgram)
 
         coocs_query = ( coocs_query
-            .filter( ~ x1.ngram_id.in_(stop_subquery) )
-            .filter( ~ x2.ngram_id.in_(stop_subquery) )
+            .join(m1, s1.ngram_id == x1.ngram_id)
+            .join(m2, s2.ngram_id == x2.ngram_id)
+
+            .filter( s1.node_id == mainlist_id )
+            .filter( s2.node_id == mainlist_id )
         )
 
     if start:
@@ -142,6 +148,7 @@ def compute_coocs(  corpus,
             start_str = str(start)
 
         # doc_ids matching this limit
+        # TODO s/subqueries/inner joins/ && thanks!
         starttime_subquery = (session
                                 .query(NodeHyperdata.node_id)
                                 .filter(NodeHyperdata.key=="publication_date")
@@ -160,6 +167,7 @@ def compute_coocs(  corpus,
         else:
             end_str = str(end)
 
+        # TODO s/subqueries/inner joins/ && thanks!
         endtime_subquery = (session
                                 .query(NodeHyperdata.node_id)
                                 .filter(NodeHyperdata.key=="publication_date")

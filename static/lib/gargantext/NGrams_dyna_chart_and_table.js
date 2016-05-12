@@ -365,7 +365,7 @@ function saveActiveGroup() {
     GroupsBuffer[mainform] = activeGroup.now_links
     // ---------------------------------------------------
 
-    console.log(AjaxRecords[mainform])
+    // console.log(AjaxRecords[mainform])
 
     // also we prefix "*" to the name if not already there
     if (AjaxRecords[mainform].name[0] != '*') {
@@ -457,7 +457,7 @@ function seeGroup ( ngramId , allowChangeFlag) {
     // 2/7 attach flag open to global state register
     vizopenGroup[ngramId] = true ;
 
-    // 3/7   retrieve names of the original (from DB) grouped ngrams
+    // 3/7   retrieve names of the untouched (from DB) grouped ngrams (aka "old")
     var oldlinksNames = [] ;
     if( ngramId in NGrams.group.links ) {
         for (var i in NGrams.group.links[ngramId]) {
@@ -466,7 +466,7 @@ function seeGroup ( ngramId , allowChangeFlag) {
         }
     }
 
-    // 4/7   retrieve names of the newly created grouped ngrams
+    // 4/7   retrieve names of the newly created grouped ngrams (aka "new" + "oldnew")
     var newlinksNames = [] ;
     if( ngramId in GroupsBuffer ) {
         for(var i in GroupsBuffer[ ngramId ] ) {
@@ -1176,6 +1176,64 @@ $("#Save_All").click(function(){
 });
 
 
+// find all the consequences of changes from MAP => MAIN
+// -----------------------------------------------------
+// (see forge.iscpif.fr/projects/garg/wiki/Ngram_Lists)
+
+// NB: (MAP => MAIN) also has the consequence that (MAIN || DEL)
+// in other words:
+//   inmain <==> outdel
+//   indel  <==> outmain
+// (but we'll keep them distinct in FlagsBuffer for coherence with
+//  the distinct API CRUD commands that will be entailed)
+function InferCRUDFlags(id, oldState, desiredState, registry) {
+
+    state_skip = -1                              // -1
+    state_main = System[0]["statesD"]["normal"]  //  0
+    state_map  = System[0]["statesD"]["keep"]    //  1
+    state_stop = System[0]["statesD"]["delete"]  //  2
+
+
+    // thus skips newly grouped items and returns unmodified registry
+    if (desiredState != state_skip) {
+        // (if was previously in MAP)
+        if (oldState === state_map) {
+            if (desiredState === state_main || desiredState === state_stop) {
+                registry["outmap"][ id ] = true
+                // (... and some more actions only if is now desired to be in STOP)
+                if(desiredState === state_stop) {
+                    registry["indel"][id] = true
+                    registry["outmain"][id] = true
+                }
+            }
+        }
+        // (if previously was in STOP)
+        else if (oldState === state_stop) {
+            if (desiredState === state_main || desiredState === state_map) {
+                registry["outdel"][id] = true
+                registry["inmain"][id] = true
+                // (... and one more action only if is now desired to be in MAP)
+                if(desiredState === state_map) {
+                  registry["inmap"][ id ] = true
+                }
+            }
+        }
+        // (if previously was in MAIN)
+        else  {
+            if(desiredState === state_map) {
+                registry["inmap"][ id ] = true
+            }
+            else if(desiredState === state_stop) {
+                registry["indel"][id] = true
+                registry["outmain"][id] = true
+            }
+        }
+    }
+    return registry
+}
+
+
+
 // MAIN SAVE + MAIN CREATE TABLE
 // -----------------------------
 
@@ -1184,10 +1242,9 @@ function SaveLocalChanges() {
   // console.clear()
   console.log("In SaveLocalChanges()")
 
-  // summary of the requested changes with consequences infered from MAP => MAIN
-  // ---------------------------------------------------------------------------
-  // (see forge.iscpif.fr/projects/garg/wiki/Ngram_Lists)
-  // (but before consequences on grouped items)
+  // registry with summary of the requested changes with consequences
+  // ------------------------------------------------------------------
+  // (see InferCRUDFlags)
 
   FlagsBuffer["outmain"] = {}         // remove from MAINLIST
   FlagsBuffer["inmain"] = {}          //      add to MAINLIST
@@ -1198,90 +1255,67 @@ function SaveLocalChanges() {
   FlagsBuffer["outdel"] = {}          // remove from STOPLIST
   FlagsBuffer["indel"] = {}           //      add to STOPLIST
 
-  // NB: (MAP => MAIN) also has the consequence that (MAIN || DEL)
-  // in other words:
-  //   inmain <==> outdel
-  //   indel  <==> outmain
-  // (but we'll keep them distinct in FlagsBuffer for coherence with
-  //  the distinct API CRUD commands that will be entailed)
 
+  // LOOP on all mainforms + subforms
+  // --------------------------------
   // we use 2 globals to evaluate change-of-state
   //   => NGrams for old states (as in DB)
   //   => AjaxRecords for current (desired) states
   for(var id in AjaxRecords) {
-    // (if was previously in MAP)
-    if( NGrams["map"][ id ] ) {
-      // (... and if is now desired to be in MAIN or STOP)
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"]
-         || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["outmap"][ id ] = true
-        // (... and some more actions only if is now desired to be in STOP)
-        if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-          FlagsBuffer["indel"][id] = true
-          FlagsBuffer["outmain"][id] = true
-        }
-      }
-      // (if has new subforms and is now desired to stay in MAP)
-      if(GroupsBuffer[id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
-        FlagsBuffer["inmap"][ id ] = true  // will trigger subforms addition to MAP in a few lines
-      }
+
+    var oldState = 0 ;
+    if      (NGrams["map"][ id ] ) oldState = 1
+    else if (NGrams["stop"][ id ]) oldState = 2
+
+    var mainNewState = AjaxRecords[id]["state"] ;
+
+    // update the crud flags buffer according to old/new states and what they entail
+    if(oldState != mainNewState) {
+        FlagsBuffer = InferCRUDFlags(id, oldState, mainNewState, FlagsBuffer)
     }
-    // (if previously was in STOP)
-    else if (NGrams["stop"][ id ]) {
-        // (... and if is now desired to be in MAIN or MAP)
-        if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"]
-           || AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
-            FlagsBuffer["outdel"][id] = true
-            FlagsBuffer["inmain"][id] = true
-            // (... and one more action only if is now desired to be in MAP)
-            if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
-              FlagsBuffer["inmap"][ id ] = true
+
+    // [ = = = = propagating to subforms = = = = ]
+
+    // if change in mainform list or change in groups
+    if(oldState != mainNewState || GroupsBuffer[id]) {
+        // linked nodes
+        var linkedNodes ;
+
+        // a) retrieve the untouched (from DB) grouped ngrams (aka "old")
+        if(NGrams.group.links[id]) linkedNodes = NGrams.group.links[id]
+
+        // b) or retrieve the new linked nodes (aka "new" + "oldnew")
+        else if( GroupsBuffer[id] )     linkedNodes = GroupsBuffer[id]
+
+        for (var i in linkedNodes) {
+            var subNgramId = linkedNodes[i] ;
+
+            // todo check (if undefined old state, should add to main too...)
+            var subOldState = undefined ;
+            if      (NGrams["map"][ subNgramId ] ) subOldState = System[0]["statesD"]["keep"]
+            else if (NGrams["stop"][ subNgramId ]) subOldState = System[0]["statesD"]["delete"]
+            else {
+                subOldState = System[0]["statesD"]["normal"] ;
+                // (special legacy case: subforms can have oldStates == undefined,
+                //  then iff target state is != delete, we should add to main too)
+                if (mainNewState == System[0]["statesD"]["normal"]
+                    || mainNewState == System[0]["statesD"]["map"]) {
+                    FlagsBuffer['inmain'][subNgramId] = true
+                }
             }
+
+            // update the crud flags buffer with mainNewState (goes to same target state as their mainform)
+            FlagsBuffer = InferCRUDFlags(subNgramId, subOldState, mainNewState, FlagsBuffer)
         }
-        // £TODO check groups ?
     }
-    // (if previously was in MAIN)
-    // "else" is here equivalent to (not NGrams["main"][id]['ngrams']['state'])
-    else  {
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
-        FlagsBuffer["inmap"][ id ] = true
-      }
-      else if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["indel"][id] = true
-        FlagsBuffer["outmain"][id] = true
-      }
-     // £TODO check groups ?
-    }
+    // [ = = = = / propagating to subforms = = = = ]
   }
 
-
-  // [ = = = = propagating to subforms = = = = ]
-  // £TODO check groups ?
-  for(var i in NGrams["group"].links) {
-    // i is ngram_id of a group mainform
-    // the rule is: if the mainform is of desired state s,
-    //              all its subforms should inherit that state
-    if(FlagsBuffer["indel"][i]) {
-      for(var j in NGrams["group"].links[i] ) {
-        FlagsBuffer["indel"][NGrams["group"].links[i][j]] = true
-      }
-      for(var j in FlagsBuffer["indel"][i] ) {
-        FlagsBuffer["indel"][FlagsBuffer["indel"][i][j]] = true
-      }
-    }
-    if(FlagsBuffer["inmap"][i]) {
-      for(var j in GroupsBuffer[i] ) {
-        FlagsBuffer["outmap"][GroupsBuffer[i][j]] = true
-      }
-    }
-  }
-  // [ = = = = / propagating to subforms = = = = ]
-
-  console.log(" = = = = = = = = = == ")
-  console.log("FlagsBuffer:")
-  console.log(JSON.stringify(FlagsBuffer))
-  console.log("GroupsBuffer:")
-  console.log(JSON.stringify(GroupsBuffer))
+  // console.log(" = = = = = = = = = == ")
+  // ("FlagsBuffer:")
+  // console.log(JSON.stringify(FlagsBuffer))
+  // console.warn("GroupsBuffer:")
+  // console.log(JSON.stringify(GroupsBuffer))
 
 
 
@@ -1299,6 +1333,7 @@ function SaveLocalChanges() {
 
   // The AJAX CRUDs in cascade:
 
+  // £TODO reactivate here and AddMap
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 
   // trigger chained CRUD calls

@@ -9,7 +9,8 @@
 .MAPLIST {
   color: black;
   /* green */
-  background-color: rgba(60, 118, 61, .7);
+  background-color: rgba(23, 255, 189, .7);
+  /* background-color: rgba(60, 118, 61, .7); */
   cursor: pointer;
 }
 

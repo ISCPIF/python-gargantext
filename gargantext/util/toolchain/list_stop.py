@@ -27,10 +27,10 @@ def is_stop_word(ngram, stop_words=None):
             # , "(.*)(\.)(.*)"         trop fort (enlève les sigles !)
             , "(.*)(\,)(.*)"
             , "(.*)(< ?/?p ?>)(.*)"       # marques de paragraphes
-            , "(.*)(study)(.*)"
+            , "(.*)(study|elsevier)(.*)"
             , "(.*)\b(xx|xi|xv)\b(.*)"
             , "(.*)(result)(.*)"
-            , "(.*)(année|nombre|moitié)(.*)"
+            , "(.*)(year|année|nombre|moitié)(.*)"
             , "(.*)(temps)(.*)"
             , "(.*)(%)(.*)"
             , "(.*)(\{)(.*)"

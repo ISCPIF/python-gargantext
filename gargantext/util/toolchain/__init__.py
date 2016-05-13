@@ -47,7 +47,7 @@ def add_corpus(request):
         corpus.add_resource(
                 type,
                 path,
-                type= corpus_type,
+                type = corpus_type,
                 format = corpus_format,
             )
     else:
@@ -57,7 +57,7 @@ def add_corpus(request):
                 type= corpus_type,
                 format = corpus_format,
                 status = corpus_status,
-                status_msg = corpus_status_msg,
+                status_message = corpus_status_msg,
             )
     print(session.add(corpus))
     print(session.commit())

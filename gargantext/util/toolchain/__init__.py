@@ -17,6 +17,52 @@ from gargantext.models    import Node
 from datetime             import datetime
 from celery               import shared_task
 
+def add_corpus(request):
+    '''adding a new corpus into project corpus:
+    verifying two prerequisites before upload:
+    - file size can exceed UPLOAD_LIMIT set in constants
+    - file extension must comply with ACCEPTED_EXTENSIONS in RESOURCES_TYPE[corpus.type]
+    '''
+    #add a new corpus
+    corpus_status = True
+    corpus_msg = None
+    #Corpus est du type Node
+    #print(corpus.__str__)
+    #get ressource type
+    corpus_type = int(request.POST['type'])
+    #corpus.type = int(request.POST['type'])
+    #check format
+    try:
+        corpus_format = check_format(type, str(request.FILES['file']))
+    except TypeError as e:
+        #Incorrect Extension Type
+        corpus_status = False
+        corpus_status_msg = str(e)
+    try:
+        path = upload(request.FILES['file'])
+    except OSError as e:
+        corpus_status = False
+        corpus_status_msg = str(e)
+    if corpus_status:
+        corpus.add_resource(
+                type,
+                path,
+                type= corpus_type,
+                format = corpus_format,
+            )
+    else:
+        corpus.add_resource(
+                type,
+                path,
+                type= corpus_type,
+                format = corpus_format,
+                status = corpus_status,
+                status_msg = corpus_status_msg,
+            )
+    print(session.add(corpus))
+    print(session.commit())
+    return session.query(Node).filter(Node.id == corpus_id).first()
+
 #@shared_task
 def parse_extract(corpus):
     # retrieve corpus from database from id

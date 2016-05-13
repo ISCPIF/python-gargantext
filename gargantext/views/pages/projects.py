@@ -7,6 +7,7 @@ from gargantext.models import *
 from gargantext.constants import *
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain import parse_extract_indexhyperdata
+from gargantext.util.toolchain import add_corpus
 
 from datetime import datetime
 from collections import defaultdict
@@ -59,7 +60,7 @@ def overview(request):
 
 
 class NewCorpusForm(forms.Form):
-    '''c24b: je dirai que je ne sais pas quand il sert ce truc'''
+    '''OK: add corpus Form (NIY)'''
     type = forms.ChoiceField(
         choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
         widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
@@ -91,86 +92,36 @@ def project(request, project_id):
     if not user.owns(project):
         raise HttpResponseForbidden()
 
-    # add a new corpus
+    # add a new corpus into Node Project > Node Corpus > Ressource
     if request.method == 'POST':
         corpus = project.add_child(
             name = request.POST['name'],
             typename = 'CORPUS',
         )
-        #check type and name
-        print(request.POST)
+        corpus = add_corpus(request)
 
-        type = int(request.POST['type'])
-        try:
-            format = check_format(type, str(request.FILES['file']))
-        except TypeError as e:
+        if corpus.status:
+            # parse_extract: fileparsing -> ngram extraction -> lists
+            scheduled(parse_extract_indexhyperdata)(corpus.id)
             return render(
-                template_name = 'pages/projects/overview.html',
+                template_name = 'pages/projects/wait.html',
                 request = request,
                 context = {
-                'debug': True,
-                #'date': datetime.now(),
-                # projects owned by the user
-                #'number': user_projects.count(),
-                #'projects': user_projects,
-                # projects owned by the user's contacts
-                #'common_users': (contact for contact, projects in contacts_projects),
-                #'common_projects': sum((projects for contact, projects in contacts_projects), []),
-                'error_msg': str(e),
+                'user'   : request.user,
+                'project': project,
                 },
             )
-
-        try:
-            path = upload(request.FILES['file'])
-        except OSError:
-            return render(
-                template_name = 'pages/projects/overview.html',
-                request = request,
-                context = {
-                'debug': True,
-                'date': datetime.now(),
-                # projects owned by the user
-                'number': user_projects.count(),
-                'projects': user_projects,
-                # projects owned by the user's contacts
-                'common_users': (contact for contact, projects in contacts_projects),
-                'common_projects': sum((projects for contact, projects in contacts_projects), []),
-                'error_msg':"File uploaded is two heavy > 1G ",
-                },
-            )
-
-
-
-        corpus.add_resource(
-            type,
-            path
-        )
-
-        #except Exception as error:
-        session.add(corpus)
-        session.commit()
-
-        # parse_extract: fileparsing -> ngram extraction -> lists
-        scheduled(parse_extract_indexhyperdata)(corpus.id)
-
-        return render(
-            template_name = 'pages/projects/wait.html',
-            request = request,
-            context = {
-            'user'   : request.user,
-            'project': project,
-            },
-        )
 
     # list all the corpora within this project
     corpora = project.children('CORPUS', order=True).all()
-    print(corpora)
+    #print(corpora)
     sourcename2corpora = defaultdict(list)
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type
         resources = corpus.resources()
         if len(resources):
             resource = resources[0]
+            ##here map from RESSOURCES_TYPES_ID and NOT NAME
             resource_type_name = RESOURCETYPES[resource['type']]['name']
             resource_type_accepted_formats = RESOURCETYPES[resource['type']]['accepted_formats']
         else:

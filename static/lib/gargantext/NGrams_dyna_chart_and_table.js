@@ -29,8 +29,10 @@
  *           - unify table ids with ngram ids
  *           - new api routes + prefetch maplist terms
  *           - simplify UpdateTable
+ *           - clarify cruds
+ *           - better "created groups" handling
  *
- * @version 1.1
+ * @version 1.2
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -47,7 +49,6 @@
 // from /api/ngramlists/lexmodel?corpus=312
 // with some expanding in AfterAjax
 var AjaxRecords = [] ;
-
 
 // table element (+config +events)
 // -------------------------------
@@ -234,7 +235,7 @@ function printCorpuses() {
       console.log( url )
 
 
-      GET_( url , function(results) {
+      GET_( url , function(results, url) {
           if(Object.keys( results ).length>0) {
          var sub_ngrams_data = {
            "ngrams":[],
@@ -1510,7 +1511,7 @@ function GROUPCRUD( groupnode_id , post_data , callback) {
  *
  * @param ngdata: a response from the api/node/CID/ngrams/list/ routes
  * @param initial: initial score type "occs" or "tfidf"
- * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
+ * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
  */
 function MainTableAndCharts( ngdata , initial , search_filter) {
 
@@ -1768,14 +1769,11 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     volumeChart.filterAll();
     dc.redrawAll();
 
-    // test if array is enough to restore proper page range
+    // AjaxRecords per ngramid => dense array to maintain proper page range
+    // see MyTable.data('dynatable').settings.dataset.originalRecords
     var ArrayAjaxRecords = [] ;
-    var i = 0 ;
-    var idmap = {}
     for (ngid in AjaxRecords) {
         ArrayAjaxRecords.push(AjaxRecords[ngid]) ;
-        i ++ ;
-        idmap[ngid] = i
     }
 
     MyTable = []
@@ -1823,7 +1821,8 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         // nb: possible value are in {0,1,2} (see terms.html > #picklistmenu)
         .functions['my_state_filter'] = function(record,selectedValue) {
             if (selectedValue == 'reset') {
-                return (AjaxRecords[record.id].state >= 0)
+                // return (AjaxRecords[record.id].state >= 0)
+                return true
             }
             else {
                 // return true or false
@@ -1832,7 +1831,8 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         }
 
     // and set this filter's initial status to 'maplist' (aka state == 1)
-    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    // MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
     MyTable.data('dynatable').process();
 
     // moves pagination over table
@@ -1946,10 +1946,10 @@ function GET_( url , callback ) {
         url: url,
         dataType: "json",
         success : function(data, textStatus, jqXHR) {
-            callback(data);
+            callback(data, url);
         },
         error: function(exception) {
-            callback(false);
+            callback(false, url);
         }
     })
 }
@@ -1969,18 +1969,19 @@ var NGrams = {
 }
 
 
-// NEW AJAX x 2
+// MAIN AJAX
 
 var prefetch_url = window.location.origin+"/api/ngramlists/maplist?corpus="+corpus_id ;
-var new_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_id ;
+var final_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_id ;
 
 // faster call: just the maplist, will return first
-GET_(prefetch_url, HandleAjax);
+// 2016-05-13: deactivated because it causes a lag before the table is updated
+// GET_(prefetch_url, HandleAjax);
 
 // longer call (full list of terms) to return when ready and refresh all data
-GET_(new_url, HandleAjax)
+GET_(final_url, HandleAjax)
 
-function HandleAjax(res) {
+function HandleAjax(res, sourceUrl) {
     if (res && res.ngraminfos) {
 
         main_ngrams_objects = {}
@@ -1992,8 +1993,6 @@ function HandleAjax(res) {
                 'score' : ngram_tuple[1]
             }
         }
-
-        console.log("===> AJAX INIT <===\n" + "source: " + new_url)
 
         // = = = = MIAM = = = = //
         NGrams["main"] = {
@@ -2035,10 +2034,10 @@ function HandleAjax(res) {
     $("input#stoplist_id").val(res.nodeids['stoplist'])
     $("input#groups_id").val(res.nodeids['groups'])
     $("input#scores_id").val(res.nodeids['scores'])
-    AfterAjax() ;
+    AfterAjax(sourceUrl) ;
 }
 
-function AfterAjax() {
+function AfterAjax(sourceUrl) {
   // -------------------------------------------------------------------
   // console.log(JSON.stringify(NGrams))
   // -------------------------------------------------------------------
@@ -2130,8 +2129,12 @@ function AfterAjax() {
     //   }
     // }
 
+    // show only map (option = 1) or all terms (option = "reset")
+    termsfilter = (sourceUrl == final_url) ? "reset" : "1"
+
     // Initializing the Charts and Table ---------------------------------------
-    var result = MainTableAndCharts( NGrams["main"] , FirstScore , "filter_all")
+    var result = MainTableAndCharts( NGrams["main"] , FirstScore , termsfilter) ;
+
     console.log( result ) // OK
     // -------------------------------------------------------------------------
 

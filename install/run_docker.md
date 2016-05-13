@@ -8,6 +8,4 @@ su gargantua
 #activate the virtualenv
 source /srv/env_3-5/bin/activate
 #go to gargantext srv
-cd /srv/gargantext/
-#run the server
-/manage.py runserver 0.0.0.0:8000
+cd /srv/gargantext/manage.py runserver 0.0.0.0:8000

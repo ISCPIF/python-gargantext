@@ -2,14 +2,14 @@ from gargantext.models     import Node, NodeNgram, NodeNodeNgram
 from gargantext.util.db    import session
 from gargantext.util.lists import UnweightedList
 from sqlalchemy            import desc
-from gargantext.constants  import DEFAULT_TFIDF_CUTOFF_RATIO, \
-                                  DEFAULT_TFIDF_HARD_LIMIT
+from gargantext.constants  import DEFAULT_RANK_CUTOFF_RATIO, \
+                                  DEFAULT_RANK_HARD_LIMIT
 
 def do_mainlist(corpus,
                     overwrite_id  = None,
-                    tfidf_id=None, stoplist_id=None,
-                    hard_limit=DEFAULT_TFIDF_HARD_LIMIT,
-                    ratio_limit=DEFAULT_TFIDF_CUTOFF_RATIO
+                    ranking_scores_id=None, stoplist_id=None,
+                    hard_limit=DEFAULT_RANK_HARD_LIMIT,
+                    ratio_limit=DEFAULT_RANK_CUTOFF_RATIO
                     ):
     """
     Select top n terms according to a global tfidf ranking and stoplist filter.
@@ -18,7 +18,7 @@ def do_mainlist(corpus,
         min(hard_limit, number_of_terms * ratio_limit)
 
     NB : We use a global tfidf node where the values are global but the ngrams
-         are already selected (== only within this corpus documents).
+         are already selected (termset_scope == only within this corpus docs).
          TO DISCUSS: allow influence of the local tfidf scores too
 
     Parameters:
@@ -37,12 +37,12 @@ def do_mainlist(corpus,
     """
 
     # retrieve helper nodes if not provided
-    if not tfidf_id:
-        tfidf_id  = session.query(Node.id).filter(
+    if not ranking_scores_id:
+        ranking_scores_id  = session.query(Node.id).filter(
                                 Node.typename  == "TFIDF-GLOBAL",
                                 Node.parent_id == corpus.id
                     ).first()
-        if not tfidf_id:
+        if not ranking_scores_id:
             raise ValueError("MAINLIST: TFIDF node needed for mainlist creation")
 
     if not stoplist_id:
@@ -64,7 +64,7 @@ def do_mainlist(corpus,
     # tfidf-ranked query
     ordered_filtered_tfidf = (session
         .query(NodeNodeNgram.ngram_id)
-        .filter(NodeNodeNgram.node1_id == tfidf_id)
+        .filter(NodeNodeNgram.node1_id == ranking_scores_id)
         .filter(~ NodeNodeNgram.ngram_id.in_(stopterms_subquery))
         .order_by(desc(NodeNodeNgram.score))
         )

@@ -336,7 +336,11 @@ gargantext.controller('DatasetController', function($scope, $http) {
         }
         // filter : corpora
         parameters.filter.corpora = [];
-        parameters.filter.corpora.push(getSelectedCorporaIdList().join(','));
+        corpus_ids = getSelectedCorporaIdList() ;
+        for (i in corpus_ids) {
+        console.log(corpus_ids);
+        parameters.filter.corpora.push(corpus_ids[i]);
+        }
         // filter: hyperdata
         parameters.filter.hyperdata = [];
         $.each($scope.hyperdataList, function(h, hyperdata) {

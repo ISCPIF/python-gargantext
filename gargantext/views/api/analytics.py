@@ -127,7 +127,7 @@ class NodeNgramsQueries(APIView):
             },
             # 'format': 'csv',
         }
-
+        print(input)
         # input validation
         input = validate(input, {'type': dict, 'default': {}, 'items': {
             'x': {'type': dict, 'default': {}, 'items': {
@@ -363,17 +363,17 @@ def get_metadata(corpus_id_list):
         values_count = None
         values_from  = None
         values_to    = None
-        if hyperdata != 'text':
-            node_hyperdata_query = (session
-                .query(NodeHyperdata.key)
-                .join(Node, Node.id == NodeHyperdata.node_id)
-                .filter(Node.parent_id.in_(corpus_id_list))
-                .filter(NodeHyperdata.key == hyperdata)
-                .group_by(NodeHyperdata.key)
-                .order_by(NodeHyperdata.key)
-            )
-            values_count = node_hyperdata_query.count()
-            # values_count, values_from, values_to = node_hyperdata_query.first()
+#        if hyperdata == 'text':
+#            node_hyperdata_query = (session
+#                .query(NodeHyperdata.key)
+#                .join(Node, Node.id == NodeHyperdata.node_id)
+#                .filter(Node.parent_id.in_(corpus_id_list))
+#                .filter(NodeHyperdata.key == hyperdata)
+#                .group_by(NodeHyperdata.key)
+#                .order_by(NodeHyperdata.key)
+#            )
+#            values_count = node_hyperdata_query.count()
+#            # values_count, values_from, values_to = node_hyperdata_query.first()
 
         # if there is less than 32 values, retrieve them
         values = None

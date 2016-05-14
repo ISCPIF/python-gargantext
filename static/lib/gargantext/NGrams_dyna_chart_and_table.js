@@ -29,8 +29,10 @@
  *           - unify table ids with ngram ids
  *           - new api routes + prefetch maplist terms
  *           - simplify UpdateTable
+ *           - clarify cruds
+ *           - better "created groups" handling
  *
- * @version 1.1
+ * @version 1.2
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -47,7 +49,6 @@
 // from /api/ngramlists/lexmodel?corpus=312
 // with some expanding in AfterAjax
 var AjaxRecords = [] ;
-
 
 // table element (+config +events)
 // -------------------------------
@@ -105,10 +106,6 @@ for(var i in System[GState]["states"] ) {
 // DICT BUFFERS FOR MAP/MAIN//STOP SAVING LOGIC
 // ----------------------------------------------
 var FlagsBuffer = {}
-// 3 main buffers per state (and later additional per target)
-for(var i in System[GState]["states"]) {
-  FlagsBuffer[System[GState]["states"][i]] = {}
-}
 
 // + 1 for groups
 GroupsBuffer = {}
@@ -238,7 +235,7 @@ function printCorpuses() {
       console.log( url )
 
 
-      GET_( url , function(results) {
+      GET_( url , function(results, url) {
           if(Object.keys( results ).length>0) {
          var sub_ngrams_data = {
            "ngrams":[],
@@ -369,7 +366,7 @@ function saveActiveGroup() {
     GroupsBuffer[mainform] = activeGroup.now_links
     // ---------------------------------------------------
 
-    console.log(AjaxRecords[mainform])
+    // console.log(AjaxRecords[mainform])
 
     // also we prefix "*" to the name if not already there
     if (AjaxRecords[mainform].name[0] != '*') {
@@ -461,7 +458,7 @@ function seeGroup ( ngramId , allowChangeFlag) {
     // 2/7 attach flag open to global state register
     vizopenGroup[ngramId] = true ;
 
-    // 3/7   retrieve names of the original (from DB) grouped ngrams
+    // 3/7   retrieve names of the untouched (from DB) grouped ngrams (aka "old")
     var oldlinksNames = [] ;
     if( ngramId in NGrams.group.links ) {
         for (var i in NGrams.group.links[ngramId]) {
@@ -470,7 +467,7 @@ function seeGroup ( ngramId , allowChangeFlag) {
         }
     }
 
-    // 4/7   retrieve names of the newly created grouped ngrams
+    // 4/7   retrieve names of the newly created grouped ngrams (aka "new" + "oldnew")
     var newlinksNames = [] ;
     if( ngramId in GroupsBuffer ) {
         for(var i in GroupsBuffer[ ngramId ] ) {
@@ -1180,87 +1177,151 @@ $("#Save_All").click(function(){
 });
 
 
+// find all the consequences of changes from MAP => MAIN
+// -----------------------------------------------------
+// (see forge.iscpif.fr/projects/garg/wiki/Ngram_Lists)
+
+// NB: (MAP => MAIN) also has the consequence that (MAIN || DEL)
+// in other words:
+//   inmain <==> outdel
+//   indel  <==> outmain
+// (but we'll keep them distinct in FlagsBuffer for coherence with
+//  the distinct API CRUD commands that will be entailed)
+function InferCRUDFlags(id, oldState, desiredState, registry) {
+
+    state_skip = -1                              // -1
+    state_main = System[0]["statesD"]["normal"]  //  0
+    state_map  = System[0]["statesD"]["keep"]    //  1
+    state_stop = System[0]["statesD"]["delete"]  //  2
+
+
+    // thus skips newly grouped items and returns unmodified registry
+    if (desiredState != state_skip) {
+        // (if was previously in MAP)
+        if (oldState === state_map) {
+            if (desiredState === state_main || desiredState === state_stop) {
+                registry["outmap"][ id ] = true
+                // (... and some more actions only if is now desired to be in STOP)
+                if(desiredState === state_stop) {
+                    registry["indel"][id] = true
+                    registry["outmain"][id] = true
+                }
+            }
+        }
+        // (if previously was in STOP)
+        else if (oldState === state_stop) {
+            if (desiredState === state_main || desiredState === state_map) {
+                registry["outdel"][id] = true
+                registry["inmain"][id] = true
+                // (... and one more action only if is now desired to be in MAP)
+                if(desiredState === state_map) {
+                  registry["inmap"][ id ] = true
+                }
+            }
+        }
+        // (if previously was in MAIN)
+        else  {
+            if(desiredState === state_map) {
+                registry["inmap"][ id ] = true
+            }
+            else if(desiredState === state_stop) {
+                registry["indel"][id] = true
+                registry["outmain"][id] = true
+            }
+        }
+    }
+    return registry
+}
+
+
+
 // MAIN SAVE + MAIN CREATE TABLE
 // -----------------------------
 
 // Save changes to all corpusA-lists
 function SaveLocalChanges() {
-  console.log("\nFUN SaveLocalChanges()")
   // console.clear()
-  console.log("In SaveChanges()")
-  var sum__selected_elems = 0;
+  console.log("In SaveLocalChanges()")
 
-  FlagsBuffer["delete"] = {}
-  FlagsBuffer["keep"] = {}
-  FlagsBuffer["outmap"] = {}
-  FlagsBuffer["inmap"] = {}
+  // registry with summary of the requested changes with consequences
+  // ------------------------------------------------------------------
+  // (see InferCRUDFlags)
 
+  FlagsBuffer["outmain"] = {}         // remove from MAINLIST
+  FlagsBuffer["inmain"] = {}          //      add to MAINLIST
+
+  FlagsBuffer["outmap"] = {}          // remove from MAPLIST
+  FlagsBuffer["inmap"] = {}           //      add to MAPLIST
+
+  FlagsBuffer["outdel"] = {}          // remove from STOPLIST
+  FlagsBuffer["indel"] = {}           //      add to STOPLIST
+
+
+  // LOOP on all mainforms + subforms
+  // --------------------------------
+  // we use 2 globals to evaluate change-of-state
+  //   => NGrams for old states (as in DB)
+  //   => AjaxRecords for current (desired) states
   for(var id in AjaxRecords) {
-    if( NGrams["map"][ id ] ) {
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["normal"] || AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["outmap"][ id ] = true
-        if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-          FlagsBuffer["delete"][id] = true
-        }
-      }
-      if(GroupsBuffer[id] && AjaxRecords[id]["state"]==System[0]["statesD"]["keep"])  {
-        FlagsBuffer["inmap"][ id ] = true
-      }
-    } else {
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["keep"]) {
-        FlagsBuffer["inmap"][ id ] = true
-      }
-      if(AjaxRecords[id]["state"]==System[0]["statesD"]["delete"]) {
-        FlagsBuffer["delete"][id] = true
-      }
-    }
-  }
-  // [ = = = = For deleting subforms = = = = ]
 
-  for(var i in NGrams["group"].links) {
-    // i is ngram_id of a group mainNode
-    if(FlagsBuffer["delete"][i]) {
-      for(var j in NGrams["group"].links[i] ) {
-        FlagsBuffer["delete"][NGrams["group"].links[i][j]] = true
-      }
-      for(var j in FlagsBuffer["delete"][i] ) {
-        FlagsBuffer["delete"][FlagsBuffer["delete"][i][j]] = true
-      }
+    var oldState = 0 ;
+    if      (NGrams["map"][ id ] ) oldState = 1
+    else if (NGrams["stop"][ id ]) oldState = 2
+
+    var mainNewState = AjaxRecords[id]["state"] ;
+
+    // update the crud flags buffer according to old/new states and what they entail
+    if(oldState != mainNewState) {
+        FlagsBuffer = InferCRUDFlags(id, oldState, mainNewState, FlagsBuffer)
     }
-    if(FlagsBuffer["inmap"][i]) {
-      for(var j in GroupsBuffer[i] ) {
-        FlagsBuffer["outmap"][GroupsBuffer[i][j]] = true
-      }
+
+    // [ = = = = propagating to subforms = = = = ]
+
+    // if change in mainform list or change in groups
+    if(oldState != mainNewState || GroupsBuffer[id]) {
+        // linked nodes
+        var linkedNodes ;
+
+        // a) retrieve the untouched (from DB) grouped ngrams (aka "old")
+        if(NGrams.group.links[id]) linkedNodes = NGrams.group.links[id]
+
+        // b) or retrieve the new linked nodes (aka "new" + "oldnew")
+        else if( GroupsBuffer[id] )     linkedNodes = GroupsBuffer[id]
+
+        for (var i in linkedNodes) {
+            var subNgramId = linkedNodes[i] ;
+
+            // todo check (if undefined old state, should add to main too...)
+            var subOldState = undefined ;
+            if      (NGrams["map"][ subNgramId ] ) subOldState = System[0]["statesD"]["keep"]
+            else if (NGrams["stop"][ subNgramId ]) subOldState = System[0]["statesD"]["delete"]
+            else {
+                subOldState = System[0]["statesD"]["normal"] ;
+                // (special legacy case: subforms can have oldStates == undefined,
+                //  then iff target state is != delete, we should add to main too)
+                if (mainNewState == System[0]["statesD"]["normal"]
+                    || mainNewState == System[0]["statesD"]["map"]) {
+                    FlagsBuffer['inmain'][subNgramId] = true
+                }
+            }
+
+            // update the crud flags buffer with mainNewState (goes to same target state as their mainform)
+            FlagsBuffer = InferCRUDFlags(subNgramId, subOldState, mainNewState, FlagsBuffer)
+        }
     }
+    // [ = = = = / propagating to subforms = = = = ]
   }
-  // [ = = = = / For deleting subforms = = = = ]
 
   // console.log(" = = = = = = = = = == ")
-  // console.log("FlagsBuffer:")
+  // ("FlagsBuffer:")
   // console.log(JSON.stringify(FlagsBuffer))
+  // console.warn("GroupsBuffer:")
+  // console.log(JSON.stringify(GroupsBuffer))
 
 
-  var nodes_2del = Object.keys(FlagsBuffer["delete"]).map(Number)  // main => stop
-  var nodes_2keep = Object.keys(FlagsBuffer["keep"]).map(Number)   // ??? stop => main ???
-  var nodes_2group = $.extend({}, GroupsBuffer)
-  var nodes_2inmap = $.extend({}, FlagsBuffer["inmap"])     //  add to map
-  var nodes_2outmap = $.extend({}, FlagsBuffer["outmap"])   //  remove from map
 
-   // console.log("")
-   // console.log("")
-   // console.log(" nodes_2del: ")
-   // console.log(nodes_2del)
-   // console.log(" nodes_2keep: ")
-   // console.log(nodes_2keep)
-   // console.log(" nodes_2group: ")
-   // console.log(nodes_2group)
-   // console.log(" nodes_2inmap: ")
-   // console.log(nodes_2inmap)
-   // console.log(" nodes_2outmap: ")
-   // console.log(nodes_2outmap)
-   // console.log("")
-   // console.log("")
-
+  // transmit the requested changes to server
+  // ----------------------------------------
   // retrieve node_ids from hidden input
   var mainlist_id = $("#mainlist_id").val()
   var maplist_id  = $("#maplist_id" ).val()
@@ -1273,17 +1334,18 @@ function SaveLocalChanges() {
 
   // The AJAX CRUDs in cascade:
 
+  // £TODO reactivate here and AddMap
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 
-  // chained CRUD calls
+  // trigger chained CRUD calls
   CRUD_1_AddMap()
 
   // add some ngrams to maplist
   function CRUD_1_AddMap() {
     console.log("===> AJAX CRUD1 AddMap <===\n") ;
-    CRUD( maplist_id , Object.keys(nodes_2inmap), "PUT" , function(success) {
+    CRUD( maplist_id , Object.keys(FlagsBuffer["inmap"]), "PUT" , function(success) {
       if (success) {
-        CRUD_2_RmMap()             // chained AJAX  1 -> 2
+        CRUD_2_RmMap()      // trigger chained AJAX  1 -> 2
       }
       else {
         console.warn('CRUD error on ngrams add to maplist ('+maplist_id+')')
@@ -1293,44 +1355,69 @@ function SaveLocalChanges() {
   // remove some ngrams from maplist
   function CRUD_2_RmMap() {
     console.log("===> AJAX CRUD2 RmMap <===\n") ;
-    CRUD( maplist_id , Object.keys(nodes_2outmap), "DELETE" , function(success) {
+    CRUD( maplist_id , Object.keys(FlagsBuffer["outmap"]), "DELETE" , function(success) {
       if (success) {
-        CRUD_3_AddStopRmMain()    // chained AJAX  2 -> 3
+        CRUD_3_AddMain()    // chained AJAX  2 -> 3
       }
       else {
         console.warn('CRUD error on ngrams remove from maplist ('+maplist_id+')')
       }
     });
   }
-
-  // 2 operations going together: add ngrams to stoplist and remove them from mainlist
-  function CRUD_3_AddStopRmMain() {
-    console.log("===> AJAX CRUD3a+b AddStopRmMain <===\n") ;
-    CRUD( stoplist_id , nodes_2del, "PUT" , function(success) {
+  // add some ngrams to mainlist
+  function CRUD_3_AddMain() {
+    console.log("===> AJAX CRUD3 AddMain <===\n") ;
+    CRUD( mainlist_id , Object.keys(FlagsBuffer["inmain"]), "PUT" , function(success) {
       if (success) {
-        // console.log("OK CRUD 3a add stop")
-        CRUD( mainlist_id , nodes_2del, "DELETE" , function(success) {
-          if (success) {
-            // console.log("OK CRUD 3b rm main")
-            CRUD_4()              // chained AJAX  3 -> 4
-          }
-          else {
-            console.warn('CRUD error on ngrams remove from mainlist ('+mainlist_id+')')
-          }
-        });
+        CRUD_4_RmMain()    // chained AJAX  3 -> 4
+      }
+      else {
+        console.warn('CRUD error on ngrams add to mainlist ('+mainlist_id+')')
+      }
+    });
+  }
+  // remove some ngrams from mainlist
+  function CRUD_4_RmMain() {
+    console.log("===> AJAX CRUD4 RmMain <===\n") ;
+    CRUD( mainlist_id , Object.keys(FlagsBuffer["outmain"]), "DELETE" , function(success) {
+      if (success) {
+        CRUD_5_AddStop()    // chained AJAX  4 -> 5
+      }
+      else {
+        console.warn('CRUD error on ngrams remove from mainlist ('+mainlist_id+')')
+      }
+    });
+  }
+  // add some ngrams to stoplist
+  function CRUD_5_AddStop() {
+    console.log("===> AJAX CRUD5 AddStop <===\n") ;
+    CRUD( stoplist_id , Object.keys(FlagsBuffer["indel"]), "PUT" , function(success) {
+      if (success) {
+        CRUD_6_RmStop()    // chained AJAX  5 -> 6
       }
       else {
         console.warn('CRUD error on ngrams add to stoplist ('+stoplist_id+')')
       }
     });
   }
-
+  // remove some ngrams from stoplist
+  function CRUD_6_RmStop() {
+    console.log("===> AJAX CRUD6 RmStop <===\n") ;
+    CRUD( stoplist_id , Object.keys(FlagsBuffer["outdel"]), "DELETE" , function(success) {
+      if (success) {
+        CRUD_7_groups()    // chained AJAX  6 -> 7
+      }
+      else {
+        console.warn('CRUD error on ngrams remove from stoplist ('+stoplist_id+')')
+      }
+    });
+  }
   // add to groups reading data from GroupsBuffer
-  function CRUD_4() {
-      console.log("===> AJAX CRUD4 RewriteGroups <===\n") ;
+  function CRUD_7_groups() {
+      console.log("===> AJAX CRUD7 RewriteGroups <===\n") ;
       GROUPCRUD(groupnode_id, GroupsBuffer, function(success) {
           if (success) {
-              window.location.reload() // all 4 CRUDs OK => refresh whole page
+              window.location.reload() // all 7 CRUDs OK => refresh whole page
           }
           else {
               console.warn('CRUD error on ngrams add to group node ('+groupings_id+')')
@@ -1424,7 +1511,7 @@ function GROUPCRUD( groupnode_id , post_data , callback) {
  *
  * @param ngdata: a response from the api/node/CID/ngrams/list/ routes
  * @param initial: initial score type "occs" or "tfidf"
- * @param search_filter: eg 'filter_all' (see SearchFilters.MODE)
+ * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
  */
 function MainTableAndCharts( ngdata , initial , search_filter) {
 
@@ -1682,14 +1769,11 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     volumeChart.filterAll();
     dc.redrawAll();
 
-    // test if array is enough to restore proper page range
+    // AjaxRecords per ngramid => dense array to maintain proper page range
+    // see MyTable.data('dynatable').settings.dataset.originalRecords
     var ArrayAjaxRecords = [] ;
-    var i = 0 ;
-    var idmap = {}
     for (ngid in AjaxRecords) {
         ArrayAjaxRecords.push(AjaxRecords[ngid]) ;
-        i ++ ;
-        idmap[ngid] = i
     }
 
     MyTable = []
@@ -1737,7 +1821,8 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         // nb: possible value are in {0,1,2} (see terms.html > #picklistmenu)
         .functions['my_state_filter'] = function(record,selectedValue) {
             if (selectedValue == 'reset') {
-                return (AjaxRecords[record.id].state >= 0)
+                // return (AjaxRecords[record.id].state >= 0)
+                return true
             }
             else {
                 // return true or false
@@ -1746,7 +1831,8 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         }
 
     // and set this filter's initial status to 'maplist' (aka state == 1)
-    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    // MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
     MyTable.data('dynatable').process();
 
     // moves pagination over table
@@ -1860,10 +1946,10 @@ function GET_( url , callback ) {
         url: url,
         dataType: "json",
         success : function(data, textStatus, jqXHR) {
-            callback(data);
+            callback(data, url);
         },
         error: function(exception) {
-            callback(false);
+            callback(false, url);
         }
     })
 }
@@ -1883,18 +1969,19 @@ var NGrams = {
 }
 
 
-// NEW AJAX x 2
+// MAIN AJAX
 
 var prefetch_url = window.location.origin+"/api/ngramlists/maplist?corpus="+corpus_id ;
-var new_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_id ;
+var final_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_id ;
 
 // faster call: just the maplist, will return first
-GET_(prefetch_url, HandleAjax);
+// 2016-05-13: deactivated because it causes a lag before the table is updated
+// GET_(prefetch_url, HandleAjax);
 
 // longer call (full list of terms) to return when ready and refresh all data
-GET_(new_url, HandleAjax)
+GET_(final_url, HandleAjax)
 
-function HandleAjax(res) {
+function HandleAjax(res, sourceUrl) {
     if (res && res.ngraminfos) {
 
         main_ngrams_objects = {}
@@ -1906,8 +1993,6 @@ function HandleAjax(res) {
                 'score' : ngram_tuple[1]
             }
         }
-
-        console.log("===> AJAX INIT <===\n" + "source: " + new_url)
 
         // = = = = MIAM = = = = //
         NGrams["main"] = {
@@ -1949,10 +2034,10 @@ function HandleAjax(res) {
     $("input#stoplist_id").val(res.nodeids['stoplist'])
     $("input#groups_id").val(res.nodeids['groups'])
     $("input#scores_id").val(res.nodeids['scores'])
-    AfterAjax() ;
+    AfterAjax(sourceUrl) ;
 }
 
-function AfterAjax() {
+function AfterAjax(sourceUrl) {
   // -------------------------------------------------------------------
   // console.log(JSON.stringify(NGrams))
   // -------------------------------------------------------------------
@@ -2044,8 +2129,12 @@ function AfterAjax() {
     //   }
     // }
 
+    // show only map (option = 1) or all terms (option = "reset")
+    termsfilter = (sourceUrl == final_url) ? "reset" : "1"
+
     // Initializing the Charts and Table ---------------------------------------
-    var result = MainTableAndCharts( NGrams["main"] , FirstScore , "filter_all")
+    var result = MainTableAndCharts( NGrams["main"] , FirstScore , termsfilter) ;
+
     console.log( result ) // OK
     // -------------------------------------------------------------------------
 

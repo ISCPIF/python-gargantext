@@ -44,11 +44,11 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
     # v = d.sum(axis=1) (- lui-même)
     xs = x.sum(axis=1) - x
     ys = x.sum(axis=0) - x
-    
+
 
     # top inclus ou exclus
     #n = ( xs + ys) / (2 * (x.shape[0] - 1))
-    
+
     # top generic or specific (asc is spec, desc is generic)
     v = ( xs - ys) / ( 2 * (x.shape[0] - 1))
 
@@ -105,11 +105,14 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
     # print(v)
     pd.options.display.float_format = '${:,.2f}'.format
 
-    data = WeightedList(
-            zip(  v.index.tolist()
-                , v.values.tolist()[0]
-             )
-           )
-    data.save(the_id)
+    if not v.empty:
+        data = WeightedList(
+                zip(  v.index.tolist()
+                    , v.values.tolist()[0]
+                 )
+               )
+        data.save(the_id)
+    else:
+        print("WARNING: had no terms in COOCS => empty SPECIFICITY node")
 
     return(the_id)

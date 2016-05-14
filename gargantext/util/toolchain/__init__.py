@@ -6,7 +6,7 @@ from .hyperdata_indexing  import index_hyperdata
 
 # in usual run order
 from .list_stop           import do_stoplist
-from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_cumulated_tfidf
+from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_ti_ranking
 from .list_main           import do_mainlist
 from .ngram_coocs         import compute_coocs
 from .metric_specificity  import compute_specificity
@@ -116,13 +116,15 @@ def parse_extract_indexhyperdata(corpus):
     ltfidf_id = compute_tfidf_local(corpus)
     print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
 
-    # -> write global and cumulated tfidf to Node and NodeNodeNgram
-    gtfidf_id = compute_cumulated_tfidf(corpus, scope="global")
-    print('CORPUS #%d: [%s] new globaltfidf node #%i' % (corpus.id, t(), gtfidf_id))
+    # -> write global and cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram
+    tirank_id = compute_ti_ranking(corpus,
+                                   count_scope="global",
+                                   termset_scope="local")
+    print('CORPUS #%d: [%s] new tfidf ranking node #%i' % (corpus.id, t(), tirank_id))
 
     # -> mainlist: filter + write (to Node and NodeNgram)
     mainlist_id = do_mainlist(corpus,
-                              tfidf_id = gtfidf_id,
+                              ranking_scores_id = tirank_id,
                               stoplist_id = stop_id)
     print('CORPUS #%d: [%s] new mainlist node #%i' % (corpus.id, t(), mainlist_id))
 
@@ -143,7 +145,7 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
 
     print('CORPUS #%d: [%s] FINISHED ngram lists computation' % (corpus.id, t()))
-    
+
     corpus.status('Lists', progress=0, complete=True)
     corpus.save_hyperdata()
     session.commit()

@@ -194,9 +194,9 @@ RESOURCETYPES = [
 ]
 
 # linguistic extraction parameters ---------------------------------------------
-DEFAULT_TFIDF_CUTOFF_RATIO      = .75        # MAINLIST maximum terms in %
+DEFAULT_RANK_CUTOFF_RATIO      = .75         # MAINLIST maximum terms in %
 
-DEFAULT_TFIDF_HARD_LIMIT        = 5000       # MAINLIST maximum terms abs
+DEFAULT_RANK_HARD_LIMIT        = 5000        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
 DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs

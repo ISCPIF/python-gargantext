@@ -133,17 +133,19 @@
                                         {% endif %}
                                     </ul>
                                     </li>
+
+
+                                    <li>
+                                            <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
+                                                onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
+                                                data-target='#' href='#'>Analytics
+                                            </a>
+                                    </li>
+
+
                                     {% endif %}
                                 {% endif %}
                         {% endfor %}
-
-
-                        <li>
-                                <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
-                                    onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
-                                    data-target='#' href='#'>Analytics
-                                </a>
-                        </li>
 
 
                     </ul>

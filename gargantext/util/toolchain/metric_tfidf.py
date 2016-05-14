@@ -88,7 +88,7 @@ def compute_occs(corpus, overwrite_id = None):
     return the_id
 
 
-def compute_cumulated_tfidf(corpus, scope="local", overwrite_id=None):
+def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overwrite_id=None):
     """
     # TODO check if cumulated tfs correspond to app's use cases and intention
 
@@ -96,55 +96,93 @@ def compute_cumulated_tfidf(corpus, scope="local", overwrite_id=None):
 
     Parameters:
       - the corpus itself
-      - scope: {"local" or "global"}
+      - count_scope: {"local" or "global"}
+         - local  <=> frequencies counted in the current corpus
+         - global <=> frequencies counted in all corpora of this type
+
+
+        when the count_scope is global, there is another parameter:
+          - termset_scope: {"local" or "global"}
+             - local <=> output list of terms limited to the current corpus
+               (SELECT ngram_id FROM nodes_ngrams WHERE node_id IN <docs>)
+             - global <=> output list of terms from all corpora of this type
+                                                    !!!! (more terms)
+
       - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
                    (the Node and its previous NodeNodeNgram rows will be replaced)
     """
 
+    corpus_docids_subquery = (session
+                    .query(Node.id)
+                    .filter(Node.parent_id == corpus.id)
+                    .filter(Node.typename == "DOCUMENT")
+                    .subquery()
+                   )
+
     # local <=> within this corpus
-    if scope == "local":
+    if count_scope == "local":
         # All docs of this corpus
-        docids_subquery = (session
-                            .query(Node.id)
-                            .filter(Node.parent_id == corpus.id)
-                            .filter(Node.typename == "DOCUMENT")
-                            .subquery()
-                           )
+        count_scope_subquery = corpus_docids_subquery
+
+        termset_scope_subquery = (session
+                        .query(NodeNgram.ngram_id)
+                        .filter(NodeNgram.node_id.in_(corpus_docids_subquery))
+                        .subquery()
+                       )
+
     # global <=> within all corpora of this source
-    elif scope == "global":
+    elif count_scope == "global":
         this_source_type = corpus.resources()[0]['type']
 
         # all corpora with the same source type
         # (we need raw SQL query for postgres JSON operators) (TODO test speed)
         same_source_corpora_query = (session
-                            .query(Node.id)
-                            .from_statement(text(
-                                """
-                                SELECT id FROM nodes
-                                WHERE hyperdata->'resources' @> '[{\"type\"\:%s}]'
-                                """ % this_source_type
-                                ))
-                            )
+                        .query(Node.id)
+                        .from_statement(text(
+                            """
+                            SELECT id FROM nodes
+                            WHERE hyperdata->'resources' @> '[{\"type\"\:%s}]'
+                            """ % this_source_type
+                            ))
+                        )
 
         # All docs **in all corpora of the same source**
-        docids_subquery = (session
-                            .query(Node.id)
-                            .filter(Node.parent_id.in_(same_source_corpora_query))
-                            .filter(Node.typename == "DOCUMENT")
+        ressource_docids_subquery = (session
+                        .query(Node.id)
+                        .filter(Node.parent_id.in_(same_source_corpora_query))
+                        .filter(Node.typename == "DOCUMENT")
+                        .subquery()
+                       )
+
+
+        count_scope_subquery = ressource_docids_subquery
+
+        if termset_scope == "global":
+            termset_scope_subquery = (session
+                            .query(NodeNgram.ngram_id)
+                            .filter(NodeNgram.node_id.in_(ressource_docids_subquery))
+                            .subquery()
+                           )
+        else:
+            termset_scope_subquery = (session
+                            .query(NodeNgram.ngram_id)
+                            .filter(NodeNgram.node_id.in_(corpus_docids_subquery))
                             .subquery()
                            )
 
-    # N
-    total_docs = session.query(docids_subquery).count()
 
-    # or perhaps at least do the occurrences right now at the same time
+    # N
+    total_docs = session.query(ressource_docids_subquery).count()
+
+    # nb: possible to do the occurrences right now at the same time
     tf_nd = (session
                     .query(
                         NodeNgram.ngram_id,
                         func.sum(NodeNgram.weight),    # tf: same as occnode
                         func.count(NodeNgram.node_id)  # nd: n docs with term
                      )
-                    .filter(NodeNgram.node_id.in_(docids_subquery))
+                    .filter(NodeNgram.node_id.in_(count_scope_subquery))
+                    .filter(NodeNgram.ngram_id.in_(termset_scope_subquery))
                     .group_by(NodeNgram.ngram_id)
                     .all()
                    )
@@ -162,10 +200,10 @@ def compute_cumulated_tfidf(corpus, scope="local", overwrite_id=None):
     else:
         # create the new TFIDF-XXXX node
         tfidf_nd = corpus.add_child()
-        if scope == "local":            # TODO discuss use and find new typename
+        if count_scope == "local":            # TODO discuss use and find new typename
             tfidf_nd.typename  = "TFIDF-CORPUS"
             tfidf_nd.name      = "tfidf-cumul-corpus (in:%s)" % corpus.id
-        elif scope == "global":
+        elif count_scope == "global":
             tfidf_nd.typename  = "TFIDF-GLOBAL"
             tfidf_nd.name      = "tfidf-cumul-global (in type:%s)" % this_source_type
         session.add(tfidf_nd)

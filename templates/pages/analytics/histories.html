@@ -1,0 +1,153 @@
+{% extends "pages/menu.html" %}
+
+
+
+{% block content %}
+
+{% load staticfiles %}
+    <div class="container">
+    <h3>
+    <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
+    Small tutorial here and links toward documentation.
+    </h3>
+    </div>
+    <!-- All the templates used by the Javascript framework -->
+    {% verbatim %}
+    {% endverbatim %}
+    <script type="text/javascript" src="{% static "lib/jquery/2.2.0/jquery.min.js" %}"></script>
+
+    {% verbatim %}
+    <style type="text/css">
+        div.controller div.autocomplete {margin: 0; padding: 0; }
+            div.controller div.autocomplete * {background: transparent; }
+            div.controller div.autocomplete ul.suggestion-list {background: rgba(255,255,255,.75); }
+                div.controller .tags li.tag-item {background: transparent; border: solid 1px rgba(0,0,0,.1); box-shadow: inset .05em .1em .4em rgba(0,0,0,.4); border-radius: 0; font-weight: bold; }
+                div.controller div.autocomplete li.suggestion-item:hover, div.controller div.autocomplete li.suggestion-item.selected {background: rgba(0,0,0,.5)}
+                    div.controller div.autocomplete li.suggestion-item em {background: transparent; }
+            div.controller div.tags>input {padding: 0; border: 0; outline: 0; box-shadow: none; background: transparent;}
+            div.controller div.tags>input::-webkit-input-placeholder,div.controller div.tags input::-webkit-input-placeholder {color: rgba(0,0,0,.25); }
+
+        div.controller, div.controller * {color: rgba(0,0,0,.75); }
+        div.controller button {background: none; border: solid 1px rgba(0,0,0,.25); box-shadow: .05em .1em .4em rgba(0,0,0,.5); opacity: .5; }
+        div.controller button:hover {opacity: .65; }
+        div.controller button:active {opacity: .8; }
+        div.controller>button {width: 100%; }
+        div.controller input[type=checkbox] {position: relative; top: .125em; }
+        div.controller input[type=text], div.controller select, div.controller div.tags {font-weight: bold; box-shadow: inset .05em .1em .4em rgba(0,0,0,.2); outline: solid 1px rgba(0,0,0,.125); border: 0; background: rgba(255,255,255,.5); }
+        div.controller input[type=text] {padding-left: 0.5em;}
+        ul.datasets {padding: 0; margin: 0; list-style: none; }
+            li.dataset {padding: 0.3em; border: solid 1px rgba(0,0,0,.125); margin-bottom: 0.5em; box-shadow: inset .1em .2em .8em rgba(0,0,0,.1) }
+                li.dataset * { }
+                li.dataset button {float: right; position: relative; top: -.15em; margin-left: .25em; }
+                li.dataset select {cursor: pointer; border: 0; padding: 0; }
+            ul.filters {list-style: none; margin: 0; padding: 0; margin-top: .25em;}
+                ul.filters>li {padding-top: .5em; margin-top: .5em; border-top: solid 1px rgba(0,0,0,.125);}
+                    ul.filters>li>ul {list-style: none; padding-left: 0; margin-top: .5em; }
+                    ul.filters>li>ul>li.inline {width: 30%; display: inline-block; }
+                        ul.filters>li>ul>li>label {font-weight: normal; cursor: pointer; }
+                    ul.filters>li input[type=checkbox] {opacity: .8;}
+    </style>
+
+    <div class="container">
+
+        <div ng-app="Gargantext" ng-controller="GraphController" class="controller">
+
+            <ul class="datasets">
+                <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets" style="background-color:{{ getColor($index, datasets.length) }}">
+                    <!-- main part -->
+                    <div class="main">
+                        <!-- buttons -->
+                        <button ng-click="show_filters = !show_filters">{{ show_filters ? 'Hide' : 'Show' }} filters</button>
+                        <button ng-click="removeDataset($index)">Remove dataset</button>
+                        <!-- description of Y values -->
+                        Evolution of the
+                        <select ng-model="query_y.value" ng-options="value as key for (key, value) in {'documents count': 'documents_count', 'expressions count': 'ngrams_count'}" ng-change="updateDataset()"></select>
+                        <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false, 'relative to the': true}" ng-change="updateDataset()"></select>
+                        <span ng-if="query_y.is_relative">
+                            <select ng-model="query_y.divided_by" ng-options="value as key for (key, value) in {'total expressions count': 'total_ngrams_count', 'total documents count': 'total_documents_count'}" ng-change="updateDataset()"></select>
+                        </span>
+                    </div>
+                    <!-- filters -->
+                    <ul class="filters" ng-show="show_filters">
+                        <!-- filter corpora -->
+                        <li>
+                            <button ng-click="corporaSelectAll()">select all</button>
+                            <button ng-click="corporaSelectNone()">select none</button>
+                            ...restrict to the following corpora:
+                            <ul>
+                                <li ng-repeat="corpus in corpora" class="inline">
+                                    <label>
+                                        <input type="checkbox" ng-model="corpus.is_selected" ng-change="updateHyperdataList();updateDataset()"/>
+                                        <span style="font-weight: {{ corpus.is_selected ? 'bold' : 'normal' }}">{{ corpus.name }}</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- filter ngrams -->
+                        <li class="ngrams">
+                            ...only consider documents containing the following expressions:
+                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an expression" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true">
+                                <auto-complete source="getNgrams($query)"></auto-complete>
+                            </tags-input ng-model="tags">
+                        </li>
+                        <!-- filter hyperdata -->
+                        <li>
+                            <ul>
+                                <li ng-repeat="hyperdata in hyperdataList">
+                                    ...where
+                                    <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.name }}"</span>
+                                    <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.name }}</strong>
+
+                                    <span ng-if="hyperdata.values">
+                                        is
+                                        <select ng-model="hyperdata.value" ng-options="value for value in hyperdata.values" ng-change="updateDataset()"></select>
+                                    </span>
+                                    <span ng-if="!hyperdata.values">
+                                        <select ng-model="hyperdata.operator" ng-options="operator.key as operator.label for operator in operators[hyperdata.type]"></select>
+                                        <input type="text" ng-if="hyperdata.operator" ng-model="hyperdata.value" ng-change="updateDataset()" placeholder="type a value here..." />
+                                    </span>
+
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- add a new dataset -->
+            <button ng-click="addDataset()">Add a dataset</button>
+
+            <!-- X-axis (time) resolution -->
+            <p>
+                (group results by
+                <select ng-model="query_x.resolution" ng-options="period as period for period in periods" ng-change="updateDatasets(true)"></select>)
+            </p>
+
+            <!-- data representation -->
+            Represent data with
+            <select ng-model="seriesOptions.type" ng-options="type for type in ['column', 'area', 'line']" ng-change="updateDatasets()"></select>
+
+            <span ng-show="seriesOptions.type == 'area' || seriesOptions.type == 'column'">
+                (<select ng-model="options.stacking" ng-options="value as key for (key, value) in {'with':true, 'without':false}" ng-change="updateDatasets()"></select> stacking)
+            </span>
+
+            <div class="graph">
+                <linechart data="graph.data" options="graph.options"></linechart>
+            </div>
+        </div>
+
+
+
+    {% endverbatim %}
+    <script type="text/javascript" src="{% static "lib/angular/1.2.26/angular.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "lib/angular-cookies/1.2.29/angular-cookies.min.js" %}"></script>
+    <!-- <script type="text/javascript" src="{% static "lib/d3/d3/d3.v2.min.js" %}"></script> -->
+    <script type="text/javascript" src="{% static "lib/d3/n3.line-chart.min.js" %}"></script>
+
+    <script type="text/javascript" src="{% static "lib/ng-tags//ng-tags-input.min.js" %}"></script>
+    <link rel="stylesheet" href="{% static "lib/ng-tags/ng-tags-input.min.css" %}">
+
+    <script type="text/javascript" src="{% static "lib/gargantext/gargantext.angular.js" %}"></script>
+
+
+{% endblock %}

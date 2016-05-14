@@ -67,7 +67,6 @@ INDEXED_HYPERDATA = {
         , 'convert_from_db': str
         },
 
-
     'authors':
         { 'id'             : 4
         , 'type'           : str

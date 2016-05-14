@@ -111,7 +111,7 @@
                                         </a>
                                         <i class="caret"></i>
                                     <ul class="dropdown-menu">
-                                        {% if view != "graph" %}
+                                        {% if view == "titles" %}
                                             <li>
                                                 <a tabindex="-1"
                                                     data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
@@ -136,6 +136,15 @@
                                     {% endif %}
                                 {% endif %}
                         {% endfor %}
+
+
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
+                                    onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
+                                    data-target='#' href='#'>Analytics
+                                </a>
+                        </li>
+
 
                     </ul>
             </div>

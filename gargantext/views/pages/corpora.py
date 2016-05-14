@@ -43,12 +43,6 @@ def docs_by_titles(request, project_id, corpus_id):
         },
     )
 
-
-@requires_auth
-def chart(request, project_id, corpus_id):
-    authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
-
-
 @requires_auth
 def docs_by_journals(request, project_id, corpus_id):
     '''
@@ -75,4 +69,26 @@ def docs_by_journals(request, project_id, corpus_id):
             'view': 'journals'
         },
     )
+
+@requires_auth
+def analytics(request, project_id, corpus_id):
+    authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
+    if not authorized:
+        return HttpResponseForbidden()
+    # response!
+    return render(
+        template_name = 'pages/analytics/histories.html',
+        request = request,
+        context = {
+            'debug': DEBUG,
+            'date': datetime.now(),
+            'project': project,
+            'corpus': corpus,
+            'resourcename' : resourcename(corpus),
+            'view': 'analytics',
+            'user': request.user
+        },
+    )
+
+
 

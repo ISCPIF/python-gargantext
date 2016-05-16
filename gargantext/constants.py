@@ -128,26 +128,10 @@ from gargantext.util.parsers import \
 from gargantext.util.scrappers import \
     CernScraper
 
-def resourcetype(corpus_name):
-    '''
-    resourcetype Name :: Int
-    Usage : resourcetype("Europress (English)") == 1
-    Examples in scrapers scripts (Pubmed or ISTex for instance).
-    '''
-    return [n["type"]  for n in RESOURCETYPES if n["name"]== corpus_name][0]
 
-def resourcename(corpus_type):
-    '''
-    resourcetype :: Corpus_type -> String
-    Usage : resourcename(corpus.type) == "ISTex"
-    '''
-    resource = corpus.resources()[0]
-    resourcename = RESOURCETYPES[resource['type']]['name']
-    return [n["name"]  for n in RESOURCETYPES if n["type"]== corpus_type][0]
-
-def get_resource(corpus):
-    print(corpus.items())
-    return
+def get_resource(corpus_type):
+    '''get ressources values for a given ressource_type id'''
+    return [n for n in RESOURCES_TYPE if n["type"] == corpus_type][0]
 
 RESOURCETYPES = [
     # type 0
@@ -226,6 +210,7 @@ RESOURCETYPES = [
         "default_language": "en",
         'accepted_formats':["zip","xml"],
         "scrapper": CernScrapper,
+        "base_url": "http://api.scoap3.org/search?",
    },
 ]
 

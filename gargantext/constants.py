@@ -125,22 +125,29 @@ LANGUAGES = {
 from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser
 
-def resourcetype(name):
+from gargantext.util.scrappers import \
+    CernScraper
+
+def resourcetype(corpus_name):
     '''
-    resourcetype :: String -> Int
+    resourcetype Name :: Int
     Usage : resourcetype("Europress (English)") == 1
     Examples in scrapers scripts (Pubmed or ISTex for instance).
     '''
-    return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
+    return [n["type"]  for n in RESOURCETYPES if n["name"]== corpus_name][0]
 
-def resourcename(corpus):
+def resourcename(corpus_type):
     '''
-    resourcetype :: Corpus -> String
-    Usage : resourcename(corpus) == "ISTex"
+    resourcetype :: Corpus_type -> String
+    Usage : resourcename(corpus.type) == "ISTex"
     '''
     resource = corpus.resources()[0]
     resourcename = RESOURCETYPES[resource['type']]['name']
-    return re.sub(r'\(.*', '', resourcename)
+    return [n["name"]  for n in RESOURCETYPES if n["type"]== corpus_type][0]
+
+def get_resource(corpus):
+    print(corpus.items())
+    return
 
 RESOURCETYPES = [
     # type 0

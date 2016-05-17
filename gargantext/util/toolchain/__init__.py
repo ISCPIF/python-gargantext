@@ -54,6 +54,10 @@ def parse_extract_indexhyperdata(corpus):
     corpus.status('Workflow', progress=1)
     corpus.save_hyperdata()
     session.commit()
+    # FIXME: 'Workflow' will still be uncomplete when 'Index' and 'Lists' will
+    #        get stacked into hyperdata['statuses'], but doing corpus.status()
+    #        will return only the 1st uncomplete action (corpus.status() doesn't
+    #        understand "subactions")
 
     # apply actions
     print('CORPUS #%d' % (corpus.id))

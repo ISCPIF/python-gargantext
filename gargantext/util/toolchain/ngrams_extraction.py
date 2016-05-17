@@ -56,7 +56,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', )):
                 ngramsextractor = ngramsextractors[language_iso2]
             except KeyError:
                 # skip document
-                print('Unsupported language: `%s`' % (language_iso2, ))
+                print('Unsupported language: `%s` (doc #%i)' % (language_iso2, document.id))
                 # and remember that for later processes (eg stemming)
                 document.hyperdata['__skipped__'] = 'ngrams_extraction'
                 document.save_hyperdata()

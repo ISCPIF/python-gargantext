@@ -11,57 +11,105 @@ FIXME: "having the same source" means we need to select inside hyperdata
 from gargantext.models   import Node, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.db  import session, bulk_insert, func # = sqlalchemy.func like sum() or count()
 from sqlalchemy          import text  # for query from raw SQL statement
+from sqlalchemy.sql.expression import case # for choice if ngram has mainform or not
 from math                import log
 # £TODO
 # from gargantext.util.lists import WeightedContextIndex
 
 
-def compute_occs(corpus, overwrite_id = None):
+def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     """
-    # TODO check if cumulated occs correspond to app's use cases and intention
-
-    Calculates sum of occs per ngram within corpus
-    (used as info in the ngrams table view)
+    Calculates sum of occs per ngram (or per mainform if groups) within corpus
+                 (used as info in the ngrams table view)
 
     ? optimize ?  OCCS here could be calculated simultaneously within TFIDF-CORPUS loop
+
+    ? use cases ?
+       => not the main score for users (their intuition for nb of docs having word)
+       => but is the main weighting value for any NLP task
 
     Parameters:
         - overwrite_id: optional id of a pre-existing OCCURRENCES node for this corpus
                      (the Node and its previous NodeNodeNgram rows will be replaced)
+        - groupings_id: optional id of a GROUPLIST node for this corpus
+                        IF absent the occurrences are the sums for each ngram
+                        IF present they're the sums for each ngram's mainform
     """
-    # 0) Get the groups
-    group_id = (session.query(Node.id)
-                       .filter(Node.parent_id == corpus.id)
-                       .filter(Node.typename  == "GROUPLIST")
-                       .first()
-                )
+    #  simple case : no groups
+    #                ---------
+    #    (the occurrences are the sums for each ngram)
+    if not groupings_id:
+
+        # NodeNgram index
+        occs_q = (session
+                    .query(
+                        NodeNgram.ngram_id,
+                        func.sum(NodeNgram.weight)   # <== OCCURRENCES
+                     )
+                     # filter docs within corpus
+                    .join(Node)
+                    .filter(Node.parent_id == corpus.id)
+                    .filter(Node.typename == "DOCUMENT")
+
+                    # for the sum
+                    .group_by(NodeNgram.ngram_id)
+                   )
 
 
-    # 1) all the doc_ids of our corpus (scope of counts for filter)
-    # slower alternative: [doc.id for doc in corpus.children('DOCUMENT').all()]
-    docids_subquery = (session
-                        .query(Node.id)
-                        .filter(Node.parent_id == corpus.id)
-                        .filter(Node.typename == "DOCUMENT")
-                        .subquery()
-                       )
-
-    # 2) our sums per ngram_id
-    occ_sums = (session
-                .query(
-                    NodeNgram.ngram_id,
-                    func.sum(NodeNgram.weight)
-                 )
-                #.join(NodeNgramNgram, NodeNgramNgram.node_id == group_id)
-                .filter(NodeNgram.node_id.in_(docids_subquery))
-                .group_by(NodeNgram.ngram_id)
-                .all()
+    #   difficult case: with groups
+    #                   ------------
+    # (the occurrences are the sums for each ngram's mainform)
+    else:
+        # sub-SELECT the synonyms of this GROUPLIST id (for OUTER JOIN later)
+        syn = (session.query(NodeNgramNgram.ngram1_id,
+                             NodeNgramNgram.ngram2_id)
+                .filter(NodeNgramNgram.node_id == groupings_id)
+                .subquery()
                )
 
+        # NodeNgram index with additional subform => mainform replacement
+        occs_q = (session
+                    .query(
+                        # intermediate columns for debug
+                        # -------------------------------
+                        # NodeNgram.node_id,        # document
+                        # NodeNgram.ngram_id,       # <= the occurring ngram
+                        # NodeNgram.weight,         # <= its frequency in doc
+                        # syn.c.ngram1_id           # mainform
+                        # syn.c.ngram2_id,          # subform
+
+                        # ngram to count aka counted_form
+                        # ----------------------------------
+                        #     either NodeNgram.ngram_id as before
+                        #         or mainform if it exists
+                        case([(syn.c.ngram1_id != None, syn.c.ngram1_id)],
+                             else_=NodeNgram.ngram_id)
+                        .label("counted_form"),
+
+                        # the sum itself
+                        # --------------
+                        func.sum(NodeNgram.weight)   # <== OCCURRENCES
+                    )
+                    # this brings the mainform if NodeNgram.ngram_id has one in syn
+                    .outerjoin(syn,
+                               syn.c.ngram2_id == NodeNgram.ngram_id)
+
+                    # filter docs within corpus
+                    .join(Node)
+                    .filter(Node.parent_id == corpus.id)
+                    .filter(Node.typename == "DOCUMENT")
+
+                    # for the sum
+                    .group_by("counted_form")
+                 )
+
+
+    occ_sums = occs_q.all()
     # example result = [(1970, 1.0), (2024, 2.0),  (259, 2.0), (302, 1.0), ... ]
     #                    ^^^^  ^^^
-    #                ngram_id  sum_wei
-
+    #                ngram_id   sum_wei
+    #                   OR
+    #              counted_form
 
     if overwrite_id:
         # overwrite pre-existing id

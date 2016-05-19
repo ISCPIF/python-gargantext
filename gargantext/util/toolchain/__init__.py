@@ -111,8 +111,8 @@ def parse_extract_indexhyperdata(corpus):
     group_id = compute_groups(corpus, stoplist_id = None)
     print('CORPUS #%d: [%s] new grouplist node #%i' % (corpus.id, t(), group_id))
 
-    # -> write occurrences to Node and NodeNodeNgram # possible: factorize with tfidf
-    occ_id = compute_occs(corpus)
+    # -> write occurrences to Node and NodeNodeNgram # (todo: NodeNgram)
+    occ_id = compute_occs(corpus, groupings_id = group_id)
     print('CORPUS #%d: [%s] new occs node #%i' % (corpus.id, t(), occ_id))
 
     # ------------
@@ -120,11 +120,11 @@ def parse_extract_indexhyperdata(corpus):
     ltfidf_id = compute_tfidf_local(corpus)
     print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
 
-    # -> write global and cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram
+    # -> write cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram (todo: NodeNgram)
     tirank_id = compute_ti_ranking(corpus,
-                                   count_scope="global",
-                                   termset_scope="local")
-    print('CORPUS #%d: [%s] new tfidf ranking node #%i' % (corpus.id, t(), tirank_id))
+                                   groupings_id = group_id,
+                                   count_scope="global")
+    print('CORPUS #%d: [%s] new ti ranking node #%i' % (corpus.id, t(), tirank_id))
 
     # -> mainlist: filter + write (to Node and NodeNgram)
     mainlist_id = do_mainlist(corpus,

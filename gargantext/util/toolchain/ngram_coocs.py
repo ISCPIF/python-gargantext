@@ -85,14 +85,6 @@ def compute_coocs(  corpus,
     #  1.859.408 lignes pour la requête cooc simple
     #     71.134 lignes en se limitant aux ngrammes qui ont une occ > 1 (weight)
 
-    # docs of our corpus
-    docids_subquery = (session
-                        .query(Node.id)
-                        .filter(Node.parent_id == corpus.id)
-                        .filter(Node.typename == "DOCUMENT")
-                        .subquery()
-                       )
-
     # 2 x the occurrence index table
     x1 = aliased(NodeNgram)
     x2 = aliased(NodeNgram)
@@ -105,11 +97,9 @@ def compute_coocs(  corpus,
         session.query(x1.ngram_id, x2.ngram_id, ucooc)
                .join(Node, Node.id == x1.node_id)   # <- b/c within corpus
                .join(x2, x1.node_id == Node.id )     # <- b/c within corpus
-               
                .filter(Node.parent_id == corpus.id) # <- b/c within corpus
                .filter(Node.typename == "DOCUMENT") # <- b/c within corpus
 
-            
                .filter(x1.node_id  == x2.node_id)       # <- by definition of cooc
                .filter(x1.ngram_id != x2.ngram_id)      # <- b/c not with itself
                .group_by(x1.ngram_id, x2.ngram_id)
@@ -120,7 +110,7 @@ def compute_coocs(  corpus,
 
         m1 = aliased(NodeNgram)
         m2 = aliased(NodeNgram)
-        
+
         coocs_query = ( coocs_query
             .join(m1, m1.ngram_id == x1.ngram_id)
             .join(m2, m2.ngram_id == x2.ngram_id)
@@ -211,9 +201,9 @@ def compute_coocs(  corpus,
     matrix = WeightedMatrix(coocs_query.all())
 
     # fyi
-    shape_0 = len({pair[0] for pair in matrix.items})
-    shape_1 = len({pair[1] for pair in matrix.items})
-    print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
+    #shape_0 = len({pair[0] for pair in matrix.items})
+    #shape_1 = len({pair[1] for pair in matrix.items})
+    #print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
 
     # 5) SAVE
     # --------

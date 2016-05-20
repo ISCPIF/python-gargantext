@@ -126,10 +126,27 @@ class Parser:
                         break
                 except KeyError:
                     language_keyerrors[key] = language_symbol
+
+        # languages can find Language objects from any code iso2 or iso3
+        # --------------------------------------------------------------
+        # > languages['fr']
+        # <Language iso3="fra" iso2="fr" implemented="True" name="French">
+        # > languages['fra']
+        # <Language iso3="fra" iso2="fr" implemented="True" name="French">
         if language is not None:
-            hyperdata['language_iso2'] = language.iso2
-            hyperdata['language_iso3'] = language.iso3
             hyperdata['language_name'] = language.name
+            hyperdata['language_iso3'] = language.iso3
+            if (language.iso2 is not None):
+                # NB: language can be recognized through iso3 but have no iso2!!
+                #     because there's *more* languages in iso3 codes (iso-639-3)
+                # exemple:
+                # > languages['dnj']
+                # <Language iso3="dnj" iso2="None" implemented="False" name="Dan">
+                #                            ----
+                hyperdata['language_iso2'] = language.iso2
+            else:
+                # 'None' would become json 'null'  ==> "__unknown__" more stable
+                hyperdata['language_iso2'] = "__unknown__"
         elif language_keyerrors:
             print('Unrecognized language: %s' % ', '.join(
                 '%s="%s"' % (key, value) for key, value in language_keyerrors.items()

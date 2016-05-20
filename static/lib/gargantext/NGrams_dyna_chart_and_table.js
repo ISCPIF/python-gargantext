@@ -2042,6 +2042,29 @@ function AfterAjax(sourceUrl) {
   // console.log(JSON.stringify(NGrams))
   // -------------------------------------------------------------------
 
+  // ----------------------------------------- MAPLIST
+  // keepstateId = 1
+  keepstateId = System[0]["statesD"]["keep"]
+  if( Object.keys(NGrams["map"]).length>0 ) {
+      for(var ngram_id in NGrams["map"]) {
+          myNgramInfo = NGrams["main"].ngrams[ngram_id]
+          // initialize state of maplist items
+          myNgramInfo["state"] = keepstateId ;
+      }
+  }
+
+  // ----------------------------------------- STOPLIST
+  // delstateId = 2
+  delstateId = System[0]["statesD"]["delete"]
+  if( Object.keys(NGrams["stop"]).length>0 ) {
+      for(var ngram_id in NGrams["stop"]) {
+          console.log('stopping ' + ngram_id)
+          myNgramInfo = NGrams["main"].ngrams[ngram_id]
+          // initialize state of stoplist items
+          myNgramInfo["state"] = delstateId ;
+      }
+  }
+
     // Deleting subforms from the ngrams-table, clean start baby!
     if( Object.keys(NGrams["group"].links).length>0 ) {
 
@@ -2055,10 +2078,6 @@ function AfterAjax(sourceUrl) {
                 _forms["sub"][ subformId ] = true
             }
         }
-
-        // debug:
-        // console.log('~~~~~~~~~~~~~> (sub) _forms')
-        // console.log( _forms )
 
         // ------------------------------------------- MAINLIST
         // ngrams_data_ will update NGrams.main.ngrams (with subforms removed)
@@ -2092,27 +2111,6 @@ function AfterAjax(sourceUrl) {
     // console.log('NGrams["main"]')
     // console.log( NGrams["main"] )
 
-
-    // ----------------------------------------- MAPLIST
-    if( Object.keys(NGrams["map"]).length>0 ) {
-        for(var ngram_id in NGrams["main"].ngrams) {
-            myNgram = NGrams["main"].ngrams[ngram_id]
-            if(NGrams["map"][ngram_id]) {
-                // keepstateId = 1
-                keepstateId = System[0]["statesD"]["keep"]
-
-                // initialize state of maplist items
-                myNgram["state"] = keepstateId ;
-            }
-            else if (NGrams["stop"][ngram_id]) {
-                // delstateId = 2
-                delstateId = System[0]["statesD"]["delete"]
-
-                // initialize state of stoplist items
-                myNgram["state"] = delstateId ;
-            }
-        }
-    }
 
     // Building the Score-Selector //NGrams["scores"]
     var FirstScore = NGrams["main"].scores.initial

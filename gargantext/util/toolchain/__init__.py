@@ -111,14 +111,10 @@ def parse_extract_indexhyperdata(corpus):
     group_id = compute_groups(corpus, stoplist_id = None)
     print('CORPUS #%d: [%s] new grouplist node #%i' % (corpus.id, t(), group_id))
 
+    # ------------
     # -> write occurrences to Node and NodeNodeNgram # (todo: NodeNgram)
     occ_id = compute_occs(corpus, groupings_id = group_id)
     print('CORPUS #%d: [%s] new occs node #%i' % (corpus.id, t(), occ_id))
-
-    # ------------
-    # -> write local tfidf similarities to Node and NodeNodeNgram
-    ltfidf_id = compute_tfidf_local(corpus)
-    print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
 
     # -> write cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram (todo: NodeNgram)
     tirank_id = compute_ti_ranking(corpus,
@@ -132,13 +128,21 @@ def parse_extract_indexhyperdata(corpus):
                               stoplist_id = stop_id)
     print('CORPUS #%d: [%s] new mainlist node #%i' % (corpus.id, t(), mainlist_id))
 
+    # -> write local tfidf similarities to Node and NodeNodeNgram
+    # TODO only on mainlist
+    ltfidf_id = compute_tfidf_local(corpus)
+    print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
+    # => used for doc <=> ngram association
+
     # ------------
     # -> cooccurrences: compute + write (=> Node and NodeNodeNgram)
-    cooc_id = compute_coocs(corpus, mainlist_id = mainlist_id)
+    cooc_id = compute_coocs(corpus, mainlist_id = mainlist_id, groupings_id = group_id)
     print('CORPUS #%d: [%s] new coocs node #%i' % (corpus.id, t(), cooc_id))
 
     # -> specificity: compute + write (=> NodeNodeNgram)
-    spec_id = compute_specificity(corpus, cooc_id=cooc_id)
+    spec_id = compute_specificity(corpus, cooc_id=cooc_id
+            #   ,groupings_id = group_id
+              )
     print('CORPUS #%d: [%s] new specificity node #%i' % (corpus.id, t(), spec_id))
 
     # ?? maplist: compute + write (to Node and NodeNgram)

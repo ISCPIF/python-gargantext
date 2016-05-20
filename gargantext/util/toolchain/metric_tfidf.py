@@ -9,59 +9,108 @@ FIXME: "having the same source" means we need to select inside hyperdata
 """
 
 from gargantext.models   import Node, NodeNgram, NodeNodeNgram, NodeNgramNgram
-from gargantext.util.db  import session, bulk_insert, func # = sqlalchemy.func like sum() or count()
-from sqlalchemy          import text  # for query from raw SQL statement
+from gargantext.util.db  import session, bulk_insert, aliased, \
+                                func # = sqlalchemy.func like sum() or count()
+from sqlalchemy.sql.expression import case # for choice if ngram has mainform or not
+from sqlalchemy import distinct   # for list of unique ngram_ids within a corpus
 from math                import log
 # £TODO
 # from gargantext.util.lists import WeightedContextIndex
 
 
-def compute_occs(corpus, overwrite_id = None):
+def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     """
-    # TODO check if cumulated occs correspond to app's use cases and intention
-
-    Calculates sum of occs per ngram within corpus
-    (used as info in the ngrams table view)
+    Calculates sum of occs per ngram (or per mainform if groups) within corpus
+                 (used as info in the ngrams table view)
 
     ? optimize ?  OCCS here could be calculated simultaneously within TFIDF-CORPUS loop
+
+    ? use cases ?
+       => not the main score for users (their intuition for nb of docs having word)
+       => but is the main weighting value for any NLP task
 
     Parameters:
         - overwrite_id: optional id of a pre-existing OCCURRENCES node for this corpus
                      (the Node and its previous NodeNodeNgram rows will be replaced)
+        - groupings_id: optional id of a GROUPLIST node for this corpus
+                        IF absent the occurrences are the sums for each ngram
+                        IF present they're the sums for each ngram's mainform
     """
-    # 0) Get the groups
-    group_id = (session.query(Node.id)
-                       .filter(Node.parent_id == corpus.id)
-                       .filter(Node.typename  == "GROUPLIST")
-                       .first()
-                )
+    #  simple case : no groups
+    #                ---------
+    #    (the occurrences are the sums for each ngram)
+    if not groupings_id:
+
+        # NodeNgram index
+        occs_q = (session
+                    .query(
+                        NodeNgram.ngram_id,
+                        func.sum(NodeNgram.weight)   # <== OCCURRENCES
+                     )
+                     # filter docs within corpus
+                    .join(Node)
+                    .filter(Node.parent_id == corpus.id)
+                    .filter(Node.typename == "DOCUMENT")
+
+                    # for the sum
+                    .group_by(NodeNgram.ngram_id)
+                   )
 
 
-    # 1) all the doc_ids of our corpus (scope of counts for filter)
-    # slower alternative: [doc.id for doc in corpus.children('DOCUMENT').all()]
-    docids_subquery = (session
-                        .query(Node.id)
-                        .filter(Node.parent_id == corpus.id)
-                        .filter(Node.typename == "DOCUMENT")
-                        .subquery()
-                       )
-
-    # 2) our sums per ngram_id
-    occ_sums = (session
-                .query(
-                    NodeNgram.ngram_id,
-                    func.sum(NodeNgram.weight)
-                 )
-                #.join(NodeNgramNgram, NodeNgramNgram.node_id == group_id)
-                .filter(NodeNgram.node_id.in_(docids_subquery))
-                .group_by(NodeNgram.ngram_id)
-                .all()
+    #   difficult case: with groups
+    #                   ------------
+    # (the occurrences are the sums for each ngram's mainform)
+    else:
+        # sub-SELECT the synonyms of this GROUPLIST id (for OUTER JOIN later)
+        syn = (session.query(NodeNgramNgram.ngram1_id,
+                             NodeNgramNgram.ngram2_id)
+                .filter(NodeNgramNgram.node_id == groupings_id)
+                .subquery()
                )
 
+        # NodeNgram index with additional subform => mainform replacement
+        occs_q = (session
+                    .query(
+                        # intermediate columns for debug
+                        # -------------------------------
+                        # NodeNgram.node_id,        # document
+                        # NodeNgram.ngram_id,       # <= the occurring ngram
+                        # NodeNgram.weight,         # <= its frequency in doc
+                        # syn.c.ngram1_id           # mainform
+                        # syn.c.ngram2_id,          # subform
+
+                        # ngram to count aka counted_form
+                        # ----------------------------------
+                        #     either NodeNgram.ngram_id as before
+                        #         or mainform if it exists
+                        case([(syn.c.ngram1_id != None, syn.c.ngram1_id)],
+                             else_=NodeNgram.ngram_id)
+                        .label("counted_form"),
+
+                        # the sum itself
+                        # --------------
+                        func.sum(NodeNgram.weight)   # <== OCCURRENCES
+                    )
+                    # this brings the mainform if NodeNgram.ngram_id has one in syn
+                    .outerjoin(syn,
+                               syn.c.ngram2_id == NodeNgram.ngram_id)
+
+                    # filter docs within corpus
+                    .join(Node)
+                    .filter(Node.parent_id == corpus.id)
+                    .filter(Node.typename == "DOCUMENT")
+
+                    # for the sum
+                    .group_by("counted_form")
+                 )
+
+
+    occ_sums = occs_q.all()
     # example result = [(1970, 1.0), (2024, 2.0),  (259, 2.0), (302, 1.0), ... ]
     #                    ^^^^  ^^^
-    #                ngram_id  sum_wei
-
+    #                ngram_id   sum_wei
+    #                   OR
+    #              counted_form
 
     if overwrite_id:
         # overwrite pre-existing id
@@ -92,7 +141,7 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
     """
     # TODO check if cumulated tfs correspond to app's use cases and intention
 
-    Calculates tfidf ranking (cumulated tfidf) within the given scope
+    Calculates tfidf ranking (cumulated tfidf for each ngram) within given scope
 
     Parameters:
       - the corpus itself
@@ -100,92 +149,110 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
          - local  <=> frequencies counted in the current corpus
          - global <=> frequencies counted in all corpora of this type
 
-
         when the count_scope is global, there is another parameter:
           - termset_scope: {"local" or "global"}
              - local <=> output list of terms limited to the current corpus
-               (SELECT ngram_id FROM nodes_ngrams WHERE node_id IN <docs>)
+               (SELECT DISTINCT ngram_id FROM nodes_ngrams WHERE node_id IN <docs>)
              - global <=> output list of terms from all corpora of this type
-                                                    !!!! (more terms)
+                                                    !!!! (many more terms)
 
       - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
                    (the Node and its previous NodeNodeNgram rows will be replaced)
     """
 
-    corpus_docids_subquery = (session
-                    .query(Node.id)
-                    .filter(Node.parent_id == corpus.id)
-                    .filter(Node.typename == "DOCUMENT")
-                    .subquery()
+    # MAIN QUERY SKELETON
+    tf_nd_query = (session
+                    .query(
+                        NodeNgram.ngram_id,
+                        func.sum(NodeNgram.weight),    # tf: same as occurrences
+                                                       # -----------------------
+
+                        func.count(NodeNgram.node_id)  # nd: n docs with term
+                                                       # --------------------
+                     )
+                    .group_by(NodeNgram.ngram_id)
+
+                    # optional *count_scope*: if we'll restrict the doc nodes
+                    #          -------------
+                    # .join(countdocs_subquery,
+                    #       countdocs_subquery.c.id == NodeNgram.node_id)
+
+                    # optional *termset_scope*: if we'll restrict the ngrams
+                    #          ---------------
+                    # .join(termset_subquery,
+                    #       termset_subquery.c.uniq_ngid == NodeNgram.ngram_id)
                    )
+
+    # validate string params
+    if count_scope not in ["local","global"]:
+        raise ValueError("compute_ti_ranking: count_scope param allowed values: 'local', 'global'")
+    if termset_scope not in ["local","global"]:
+        raise ValueError("compute_ti_ranking: termset_scope param allowed values: 'local', 'global'")
+    if count_scope == "local" and termset_scope == "global":
+        raise ValueError("compute_ti_ranking: the termset_scope param can be 'global' iff count_scope param is 'global' too.")
 
     # local <=> within this corpus
     if count_scope == "local":
         # All docs of this corpus
-        count_scope_subquery = corpus_docids_subquery
-
-        termset_scope_subquery = (session
-                        .query(NodeNgram.ngram_id)
-                        .filter(NodeNgram.node_id.in_(corpus_docids_subquery))
+        countdocs_subquery = (session
+                        .query(Node.id)
+                        .filter(Node.typename == "DOCUMENT")
+                        .filter(Node.parent_id == corpus.id)
                         .subquery()
                        )
+
+        # both scopes are the same: no need to independantly restrict the ngrams
+        tf_nd_query = tf_nd_query.join(countdocs_subquery,
+                                       countdocs_subquery.c.id == NodeNgram.node_id)
+
 
     # global <=> within all corpora of this source
     elif count_scope == "global":
         this_source_type = corpus.resources()[0]['type']
 
-        # all corpora with the same source type
-        # (we need raw SQL query for postgres JSON operators) (TODO test speed)
-        same_source_corpora_query = (session
-                        .query(Node.id)
-                        .from_statement(text(
-                            """
-                            SELECT id FROM nodes
-                            WHERE hyperdata->'resources' @> '[{\"type\"\:%s}]'
-                            """ % this_source_type
-                            ))
-                        )
+        CorpusNode = aliased(Node)
 
         # All docs **in all corpora of the same source**
-        ressource_docids_subquery = (session
+        countdocs_subquery = (session
                         .query(Node.id)
-                        .filter(Node.parent_id.in_(same_source_corpora_query))
                         .filter(Node.typename == "DOCUMENT")
+
+                        # join on parent_id with selected corpora nodes
+                        .join(CorpusNode, CorpusNode.id == Node.parent_id)
+                        .filter(CorpusNode.typename == "CORPUS")
+                        .filter(CorpusNode.hyperdata['resources'][0]['type'].astext == str(this_source_type))
                         .subquery()
                        )
 
-
-        count_scope_subquery = ressource_docids_subquery
-
         if termset_scope == "global":
-            termset_scope_subquery = (session
-                            .query(NodeNgram.ngram_id)
-                            .filter(NodeNgram.node_id.in_(ressource_docids_subquery))
-                            .subquery()
-                           )
-        else:
-            termset_scope_subquery = (session
-                            .query(NodeNgram.ngram_id)
-                            .filter(NodeNgram.node_id.in_(corpus_docids_subquery))
+            # both scopes are the same: no need to independantly restrict the ngrams
+            tf_nd_query = tf_nd_query.join(countdocs_subquery,
+                                           countdocs_subquery.c.id == NodeNgram.node_id)
+
+        elif termset_scope == "local":
+
+            # All unique terms in the original corpus
+            termset_subquery = (session
+                            .query(distinct(NodeNgram.ngram_id).label("uniq_ngid"))
+                            .join(Node)
+                            .filter(Node.typename == "DOCUMENT")
+                            .filter(Node.parent_id == corpus.id)
                             .subquery()
                            )
 
+            # only case of independant restrictions on docs and terms
+            tf_nd_query = (tf_nd_query
+                            .join(countdocs_subquery,
+                                  countdocs_subquery.c.id == NodeNgram.node_id)
+                            .join(termset_subquery,
+                                  termset_subquery.c.uniq_ngid == NodeNgram.ngram_id)
+                          )
 
     # N
-    total_docs = session.query(ressource_docids_subquery).count()
+    total_docs = session.query(countdocs_subquery).count()
 
-    # nb: possible to do the occurrences right now at the same time
-    tf_nd = (session
-                    .query(
-                        NodeNgram.ngram_id,
-                        func.sum(NodeNgram.weight),    # tf: same as occnode
-                        func.count(NodeNgram.node_id)  # nd: n docs with term
-                     )
-                    .filter(NodeNgram.node_id.in_(count_scope_subquery))
-                    .filter(NodeNgram.ngram_id.in_(termset_scope_subquery))
-                    .group_by(NodeNgram.ngram_id)
-                    .all()
-                   )
+    # result
+    tf_nd = tf_nd_query.all()
 
     # -------------------------------------------------
     tfidfs = {}

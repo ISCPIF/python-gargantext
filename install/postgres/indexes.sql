@@ -44,9 +44,8 @@
 ----------------------------------------------------------------------
 -- Analytics
 
--- create INDEX on nodes_hyperdata (node_id,value_utc);
-create INDEX on nodes_hyperdata (node_id,key,value_utc);
-
+-- create INDEX on nodes_hyperdata (node_id,value_utc);  -- remove ?
+-- create INDEX on nodes_hyperdata (node_id,key,value_utc);
 -- create INDEX on nodes_hyperdata (node_id,key,value_int);
 -- create INDEX on nodes_hyperdata (node_id,key,value_flt);
 -- create INDEX on nodes_hyperdata (node_id,key,value_str);

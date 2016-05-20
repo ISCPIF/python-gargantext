@@ -65,6 +65,9 @@ def do_mainlist(corpus,
     ordered_filtered_tfidf = (session
         .query(NodeNodeNgram.ngram_id)
         .filter(NodeNodeNgram.node1_id == ranking_scores_id)
+        # NOT IN but speed theoretically ok here
+        # see http://sqlperformance.com/2012/12/t-sql-queries/left-anti-semi-join
+        # but http://stackoverflow.com/questions/2246772/whats-the-difference-between-not-exists-vs-not-in-vs-left-join-where-is-null/2246793#2246793
         .filter(~ NodeNodeNgram.ngram_id.in_(stopterms_subquery))
         .order_by(desc(NodeNodeNgram.score))
         )

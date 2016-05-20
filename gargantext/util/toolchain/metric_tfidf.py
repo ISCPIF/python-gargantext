@@ -63,7 +63,6 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     #                   ------------
     # (the occurrences are the sums for each ngram's mainform)
     else:
-        print ("gtoup mode")
         # sub-SELECT the synonyms of this GROUPLIST id (for OUTER JOIN later)
         syn = (session.query(NodeNgramNgram.ngram1_id,
                              NodeNgramNgram.ngram2_id)

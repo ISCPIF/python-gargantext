@@ -9,13 +9,15 @@ FIXME: "having the same source" means we need to select inside hyperdata
 """
 
 from gargantext.models   import Node, NodeNgram, NodeNodeNgram, NodeNgramNgram
+from gargantext.util.db_cache  import cache
 from gargantext.util.db  import session, bulk_insert, aliased, \
                                 func # = sqlalchemy.func like sum() or count()
 from sqlalchemy.sql.expression import case # for choice if ngram has mainform or not
 from sqlalchemy import distinct   # for list of unique ngram_ids within a corpus
 from math                import log
+from re                  import match
 # £TODO
-# from gargantext.util.lists import WeightedContextIndex
+# from gargantext.util.lists import WeightedIndex
 
 
 def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
@@ -32,7 +34,7 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     Parameters:
         - overwrite_id: optional id of a pre-existing OCCURRENCES node for this corpus
                      (the Node and its previous NodeNodeNgram rows will be replaced)
-        - groupings_id: optional id of a GROUPLIST node for this corpus
+        - groupings_id: optional id of a GROUPLIST node for these ngrams
                         IF absent the occurrences are the sums for each ngram
                         IF present they're the sums for each ngram's mainform
     """
@@ -115,7 +117,8 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     if overwrite_id:
         # overwrite pre-existing id
         the_id = overwrite_id
-        # occnode = cache.Node[overwrite_id]
+        session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id == the_id).delete()
+        session.commit()
     else:
         # create the new OCCURRENCES node
         occnode = corpus.add_child(
@@ -126,8 +129,8 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
         session.commit()
         the_id = occnode.id
 
-    # reflect that in NodeNodeNgrams (could be NodeNgram but harmony with tfidf)
-    # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
+    # £TODO  make it NodeNgram instead NodeNodeNgram ! and rebase :/
+    #        (idem ti_ranking)
     bulk_insert(
         NodeNodeNgram,
         ('node1_id' , 'node2_id', 'ngram_id', 'score'),
@@ -137,14 +140,26 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     return the_id
 
 
-def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overwrite_id=None):
+def compute_ti_ranking(corpus,
+                       groupings_id = None,
+                       count_scope="local", termset_scope="local",
+                       overwrite_id=None):
     """
-    # TODO check if cumulated tfs correspond to app's use cases and intention
-
-    Calculates tfidf ranking (cumulated tfidf for each ngram) within given scope
+    Calculates tfidf ranking within given scope
+                ----------
+                   |
+            via weighting of
+            cumulated tfidf  --------- Sum{i}(tf_ij) * ln(N/|U{i}(docs{mot€d})|)
+             per ngram ng_i
+         (or per mainform ng_i' if groups)
+           across some docs d_j
 
     Parameters:
-      - the corpus itself
+      - the corpus itself (or corpus_id)
+      - groupings_id: optional id of a GROUPLIST node for these ngrams
+                        IF absent the ti weights are the sums for each ngram
+                        IF present they're the sums for each ngram's mainform
+
       - count_scope: {"local" or "global"}
          - local  <=> frequencies counted in the current corpus
          - global <=> frequencies counted in all corpora of this type
@@ -153,36 +168,12 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
           - termset_scope: {"local" or "global"}
              - local <=> output list of terms limited to the current corpus
                (SELECT DISTINCT ngram_id FROM nodes_ngrams WHERE node_id IN <docs>)
-             - global <=> output list of terms from all corpora of this type
+             - global <=> output list of terms found in global doc scope
                                                     !!!! (many more terms)
 
-      - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
-                   (the Node and its previous NodeNodeNgram rows will be replaced)
+      - overwrite_id: optional id of a pre-existing XXXX node for this corpus
+                   (the Node and its previous Node NodeNgram rows will be replaced)
     """
-
-    # MAIN QUERY SKELETON
-    tf_nd_query = (session
-                    .query(
-                        NodeNgram.ngram_id,
-                        func.sum(NodeNgram.weight),    # tf: same as occurrences
-                                                       # -----------------------
-
-                        func.count(NodeNgram.node_id)  # nd: n docs with term
-                                                       # --------------------
-                     )
-                    .group_by(NodeNgram.ngram_id)
-
-                    # optional *count_scope*: if we'll restrict the doc nodes
-                    #          -------------
-                    # .join(countdocs_subquery,
-                    #       countdocs_subquery.c.id == NodeNgram.node_id)
-
-                    # optional *termset_scope*: if we'll restrict the ngrams
-                    #          ---------------
-                    # .join(termset_subquery,
-                    #       termset_subquery.c.uniq_ngid == NodeNgram.ngram_id)
-                   )
-
     # validate string params
     if count_scope not in ["local","global"]:
         raise ValueError("compute_ti_ranking: count_scope param allowed values: 'local', 'global'")
@@ -191,20 +182,95 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
     if count_scope == "local" and termset_scope == "global":
         raise ValueError("compute_ti_ranking: the termset_scope param can be 'global' iff count_scope param is 'global' too.")
 
+    # get corpus
+    if type(corpus) == int:
+        corpus_id = corpus
+        corpus = cache.Node[corpus_id]
+    elif type(corpus) == str and match(r'\d+$', corpus):
+        corpus_id = int(corpus)
+        corpus = cache.Node[corpus_id]
+    else:
+        # assuming Node class
+        corpus_id = corpus.id
+
+    # prepare sqla mainform vs ngram selector
+    ngform_i = None
+
+    if not groupings_id:
+        ngform_i = NodeNgram.ngram_id
+
+    else:
+        # prepare translations
+        syno = (session.query(NodeNgramNgram.ngram1_id,
+                             NodeNgramNgram.ngram2_id)
+                .filter(NodeNgramNgram.node_id == groupings_id)
+                .subquery()
+               )
+        # cf commentaire détaillé dans compute_occs() + todo facto
+
+        ngform_i = case([
+                            (syno.c.ngram1_id != None, syno.c.ngram1_id),
+                            (syno.c.ngram1_id == None, NodeNgram.ngram_id)
+                            #     condition               value
+                        ])
+
+    # MAIN QUERY SKELETON
+    tf_nd_query = (session
+                    .query(
+                        # NodeNgram.ngram_id
+                        # or similar if grouping ngrams under their mainform
+                        ngform_i.label("counted_ngform"),
+
+                        # the tfidf elements
+                        # ------------------
+                        func.sum(NodeNgram.weight),    # tf: same as occurrences
+                                                       # -----------------------
+
+                        func.count(NodeNgram.node_id)  # nd: n docs with term
+                                                       # --------------------
+                     )
+                    .group_by("counted_ngform")
+
+                    # count_scope to specify in which doc nodes to count
+                    # -----------
+                    # .join(countdocs_subquery,
+                    #       countdocs_subquery.c.id == NodeNgram.node_id)
+
+                    # optional termset_scope: if we'll restrict the ngrams
+                    #          -------------
+                    # .join(termset_subquery,
+                    #       termset_subquery.c.uniq_ngid == NodeNgram.ngram_id)
+
+                    # optional translations to bring the subform's replacement
+                    #          ------------
+                    # .outerjoin(syno,
+                    #           syno.c.ngram2_id == NodeNgram.ngram_id)
+                   )
+
+
+
+    # TUNING THE QUERY
+
+    if groupings_id:
+        tf_nd_query = tf_nd_query.outerjoin(
+                                        syno,
+                                        syno.c.ngram2_id == NodeNgram.ngram_id
+                                        )
+
     # local <=> within this corpus
     if count_scope == "local":
         # All docs of this corpus
         countdocs_subquery = (session
                         .query(Node.id)
                         .filter(Node.typename == "DOCUMENT")
-                        .filter(Node.parent_id == corpus.id)
+                        .filter(Node.parent_id == corpus_id)
                         .subquery()
                        )
 
-        # both scopes are the same: no need to independantly restrict the ngrams
+        # no need to independantly restrict the ngrams
         tf_nd_query = tf_nd_query.join(countdocs_subquery,
                                        countdocs_subquery.c.id == NodeNgram.node_id)
-
+        # ---
 
     # global <=> within all corpora of this source
     elif count_scope == "global":
@@ -220,6 +286,7 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
                         # join on parent_id with selected corpora nodes
                         .join(CorpusNode, CorpusNode.id == Node.parent_id)
                         .filter(CorpusNode.typename == "CORPUS")
+                        # TODO index corpus_sourcetype in DB
                         .filter(CorpusNode.hyperdata['resources'][0]['type'].astext == str(this_source_type))
                         .subquery()
                        )
@@ -228,15 +295,19 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
             # both scopes are the same: no need to independantly restrict the ngrams
             tf_nd_query = tf_nd_query.join(countdocs_subquery,
                                            countdocs_subquery.c.id == NodeNgram.node_id)
+            # ---
 
         elif termset_scope == "local":
 
-            # All unique terms in the original corpus
+            # All unique terms...
             termset_subquery = (session
-                            .query(distinct(NodeNgram.ngram_id).label("uniq_ngid"))
+                            .query(
+                                distinct(NodeNgram.ngram_id).label("uniq_ngid")
+                              )
+                            # ... in the original corpus
                             .join(Node)
                             .filter(Node.typename == "DOCUMENT")
-                            .filter(Node.parent_id == corpus.id)
+                            .filter(Node.parent_id == corpus_id)
                             .subquery()
                            )
 
@@ -247,42 +318,59 @@ def compute_ti_ranking(corpus, count_scope="local", termset_scope="local", overw
                             .join(termset_subquery,
                                   termset_subquery.c.uniq_ngid == NodeNgram.ngram_id)
                           )
+            # ---
 
-    # N
+    # M
     total_docs = session.query(countdocs_subquery).count()
+    log_tot_docs = log(total_docs)
 
     # result
     tf_nd = tf_nd_query.all()
 
-    # -------------------------------------------------
-    tfidfs = {}
-    log_tot_docs = log(total_docs)
-    for (ngram_id, tf, nd) in tf_nd:
-        # tfidfs[ngram_id] = tf * log(total_docs/nd)
-        tfidfs[ngram_id] = tf * (log_tot_docs-log(nd))
-    # -------------------------------------------------
+    # -------------- "sommatoire" sur mot i ----------------
+    tfidfsum = {}
+    for (ngram_i, tf_i, nd_i) in tf_nd:
+        # tfidfsum[ngram_i] = tf_i * log(total_docs/nd_i)
+        tfidfsum[ngram_i] = tf_i * (log_tot_docs-log(nd_i))
+    # ------------------------------------------------------
+
+    # N pour info
+    total_ngramforms = len(tfidfsum)
 
     if overwrite_id:
         the_id = overwrite_id
-    else:
-        # create the new TFIDF-XXXX node
-        tfidf_nd = corpus.add_child()
-        if count_scope == "local":            # TODO discuss use and find new typename
-            tfidf_nd.typename  = "TFIDF-CORPUS"
-            tfidf_nd.name      = "tfidf-cumul-corpus (in:%s)" % corpus.id
-        elif count_scope == "global":
-            tfidf_nd.typename  = "TFIDF-GLOBAL"
-            tfidf_nd.name      = "tfidf-cumul-global (in type:%s)" % this_source_type
-        session.add(tfidf_nd)
+        session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id == the_id).delete()
         session.commit()
-        the_id = tfidf_nd.id
+    else:
+        # create the new TFIDF-XXXX node to get an id
+        tir_nd = corpus.add_child()
+        if count_scope == "local":
+            tir_nd.typename  = "TFIDF-CORPUS"
+            tir_nd.name      = "ti rank (%i ngforms in corpus:%s)" % (
+                                     total_ngramforms, corpus_id)
+        elif count_scope == "global":
+            tir_nd.typename  = "TFIDF-GLOBAL"
+            tir_nd.name      = "ti rank (%i ngforms %s in corpora of sourcetype:%s)" % (
+                                       total_ngramforms,
+                                       ("from corpus %i" % corpus_id) if (termset_scope == "local") else "" ,
+                                       this_source_type)
+
+        session.add(tir_nd)
+        session.commit()
+        the_id = tir_nd.id
+
+
+    # TODO 1 discuss use and find new typename
+    # TODO 2 release these 2 typenames TFIDF-CORPUS and TFIDF-GLOBAL
+    # TODO 3 recreate them elsewhere in their sims (WeightedIndex) version
+    # TODO 4 requalify this here as a NodeNgram
+    # then TODO 5 use WeightedList.save() !
 
     # reflect that in NodeNodeNgrams
-    # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
     bulk_insert(
         NodeNodeNgram,
         ('node1_id', 'node2_id','ngram_id', 'score'),
-        ((the_id,    corpus.id,    ng,   tfidfs[ng]) for ng in tfidfs)
+        ((the_id,  corpus_id,    ng,   tfidfsum[ng]) for ng in tfidfsum)
     )
 
     return the_id
@@ -347,6 +435,8 @@ def compute_tfidf_local(corpus, overwrite_id=None):
 
     if overwrite_id:
         the_id = overwrite_id
+        session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id == the_id).delete()
+        session.commit()
     else:
         # create the new TFIDF-CORPUS node
         tfidf_node = corpus.add_child()
@@ -357,7 +447,7 @@ def compute_tfidf_local(corpus, overwrite_id=None):
         the_id = tfidf_node.id
 
     # reflect that in NodeNodeNgrams
-    # £TODO replace bulk_insert by something like WeightedContextMatrix.save()
+    # £TODO replace bulk_insert by something like WeightedIndex.save()
     bulk_insert(
         NodeNodeNgram,
         ('node1_id', 'node2_id','ngram_id', 'score'),

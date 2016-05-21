@@ -8,18 +8,19 @@ import re
 
 LISTTYPES = {
     'DOCUMENT'     : WeightedList,
-    'GROUPLIST'    : Translations,
+    'GROUPLIST'    : Translations,   # todo remove "LIST" from name
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
     'SPECIFICITY'  : WeightedList,
-    'OCCURRENCES'  : WeightedContextIndex,
+    'OCCURRENCES'  : WeightedIndex,   # todo replace by WeightedList
     'COOCCURRENCES': WeightedMatrix,
-    'TFIDF-CORPUS' : WeightedContextIndex,
-    'TFIDF-GLOBAL' : WeightedContextIndex,
+    'TFIDF-CORPUS' : WeightedIndex,   # todo split -> WeightedList for ti_rank and WeightedIndex for tfidf
+    'TFIDF-GLOBAL' : WeightedIndex,   # todo split -> WeightedList for ti_rank and WeightedIndex for tfidf
 }
 
 NODETYPES = [
+    # TODO separate id not array index, read by models.node
     None,
     # documents hierarchy
     'USER',                  # 1
@@ -40,6 +41,7 @@ NODETYPES = [
     'TFIDF-GLOBAL',          # 14
     # docs subset
     'FAVORITES'              # 15
+    # TODO add ti RANK
 ]
 
 INDEXED_HYPERDATA = {

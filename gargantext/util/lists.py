@@ -2,7 +2,7 @@
 """
 
 
-__all__ = ['Translations', 'WeightedMatrix', 'UnweightedList', 'WeightedList', 'WeightedContextIndex']
+__all__ = ['Translations', 'WeightedMatrix', 'UnweightedList', 'WeightedList', 'WeightedIndex']
 
 
 from gargantext.util.db import session, bulk_insert
@@ -165,15 +165,18 @@ class Translations(_BaseClass):
         )
 
 
-class WeightedContextIndex(_BaseClass):
+class WeightedIndex(_BaseClass):
     """
     associated model   : NodeNodeNgram
     associated columns : node1_id  |  node2_id  |  ngram_id  |  score (float)
+                           ^^^^
+                    reserved for this
+                       object's id
 
-    Tensor representing a contextual index or registry
-    (matrix of weighted ngrams *per* doc *per* context)
+    Matrix representing a weighted word index across docs or small context nodes
+                   (matrix of weighted ngrams  *per*  doc)
 
-    Exemple : tfidf by corpus
+    Exemple : tfidf within a corpus
     """
     def __init__(self, source=None):
         self.items = defaultdict(float)
@@ -182,7 +185,7 @@ class WeightedContextIndex(_BaseClass):
 
 
 
-
+# ?TODO rename WeightedWordmatrix
 class WeightedMatrix(_BaseClass):
 
     def __init__(self, source=None):
@@ -294,7 +297,7 @@ class WeightedMatrix(_BaseClass):
                 result.items[key1, key2] = value / sqrt(other.items[key1] * other.items[key2])
         return result
 
-
+# ?TODO rename Wordlist
 class UnweightedList(_BaseClass):
 
     def __init__(self, source=None):
@@ -399,6 +402,7 @@ class UnweightedList(_BaseClass):
         )
 
 
+# ?TODO rename WeightedWordlist
 class WeightedList(_BaseClass):
 
     def __init__(self, source=None):

@@ -266,7 +266,7 @@ gargantext.controller('DatasetController', function($scope, $http) {
             }
         });
         // do not keep the ones we are not interested into
-        var rejectedHyperdata = ['doi', 'volume', 'page'];
+        var rejectedHyperdata = ['doi', 'volume', 'page', 'count'];
         $scope.hyperdataList = [];
         $.each(hyperdataList, function(h, hyperdata) {
             if (rejectedHyperdata.indexOf(hyperdata.key) == -1) {

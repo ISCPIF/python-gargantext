@@ -6,15 +6,19 @@ digraph ngramflow {
     labelloc="t" ;
 
     "extracted_ngrams" -> "grouplist" ;
-    "extracted_ngrams" -> "occs+tfidfs" ;
-    "main_user_stoplist" -> "stoplist" ;
+    "extracted_ngrams" -> "occs+ti_rank" ;
+    "project stoplist (todo)" -> "stoplist" ;
     "stoplist" -> "mainlist" ;
-    "occs+tfidfs" -> "mainlist" [label="  TFIDF_LIMIT"];
+    "occs+ti_rank" -> "mainlist" [label="  TI_RANK_LIMIT"];
     "mainlist" -> "coocs" [label="  COOCS_THRESHOLD"] ;
     "coocs" -> "specificity" ;
 
     "specificity" -> "maplist" [label="MAPLIST_LIMIT\nMONOGRAM_PART"];
 
+    "mainlist" -> "tfidf" ;
+    "tfidf" -> "explore" [label="doc relations with all map and candidates"];
     "maplist" -> "explore" ;
-    "grouplist" -> "maplist" ;
+    "grouplist" -> "occs+ti_rank" ;
+    "grouplist" -> "coocs" ;
+    "grouplist" -> "tfidf" ;
 }

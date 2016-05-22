@@ -136,21 +136,23 @@ def parse_extract_indexhyperdata(corpus):
 
     # ------------
     # -> cooccurrences on mainlist: compute + write (=> Node and NodeNgramNgram)
-    #                               todo: no need to write it ?
-    cooc_id = compute_coocs(corpus, on_list_id = mainlist_id, groupings_id = group_id)
-    print('CORPUS #%d: [%s] new coocs node #%i' % (corpus.id, t(), cooc_id))
+    coocs = compute_coocs(corpus,
+                            on_list_id = mainlist_id,
+                            groupings_id = group_id,
+                            just_pass_result = True)
+    print('CORPUS #%d: [%s] computed mainlist coocs for specif rank' % (corpus.id, t()))
 
     # -> specificity: compute + write (=> NodeNodeNgram)
-    spec_id = compute_specificity(corpus, cooc_id=cooc_id
-            #   ,groupings_id = group_id
-              )
+    spec_id = compute_specificity(corpus,cooc_matrix = coocs)
+    # no need here for subforms because cooc already counted them in mainform
     print('CORPUS #%d: [%s] new specificity node #%i' % (corpus.id, t(), spec_id))
 
-    # ?? maplist: compute + write (to Node and NodeNgram)
+    # maplist: compute + write (to Node and NodeNgram)
     map_id = do_maplist(corpus,
                         mainlist_id = mainlist_id,
                         specificity_id=spec_id,
-                        grouplist_id=group_id)
+                        grouplist_id=group_id
+                        )
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
 
     print('CORPUS #%d: [%s] FINISHED ngram lists computation' % (corpus.id, t()))
@@ -161,7 +163,7 @@ def parse_extract_indexhyperdata(corpus):
 
 
     if DEBUG is False:
-        print('CORPUS #%d: [%s] FINISHED Sendind email notification' % (corpus.id, t()))
+        print('CORPUS #%d: [%s] FINISHED Sending email notification' % (corpus.id, t()))
         notify_owner(corpus)
 
     corpus.status('Workflow', progress=10, complete=True)

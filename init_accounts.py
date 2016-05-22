@@ -82,8 +82,7 @@ def create_user(username, email, user=None, password=None, active=False, notify=
     session.commit()
 
     if notify == True:
-        pass
-        #notify_user(username, email, password)
+        notify_user(username, email, password)
 
     return user
 

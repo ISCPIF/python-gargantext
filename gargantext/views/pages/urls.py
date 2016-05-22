@@ -22,12 +22,13 @@ urlpatterns = [
 
     # corpora
     url(r'^projects/(\d+)/corpora/(\d+)/?$', corpora.docs_by_titles),
-    url(r'^projects/(\d+)/corpora/(\d+)/chart/?$', corpora.chart),
 
     # corpus by journals
     url(r'^projects/(\d+)/corpora/(\d+)/journals/?$', corpora.docs_by_journals),
 
     # terms table for the corpus
     url(r'^projects/(\d+)/corpora/(\d+)/terms/?$', terms.ngramtable),
-
+    
+    # Analytics
+    url(r'^projects/(\d+)/corpora/(\d+)/analytics/?$', corpora.analytics),
 ]

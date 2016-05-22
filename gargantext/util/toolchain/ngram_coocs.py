@@ -18,7 +18,7 @@ def compute_coocs(  corpus,
                     stoplist_id     = None,
                     start           = None,
                     end             = None,
-                    symmetry_filter = True):
+                    symmetry_filter = False):
     """
     Count how often some extracted terms appear
     together in a small context (document)

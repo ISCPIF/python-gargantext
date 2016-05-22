@@ -129,8 +129,9 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new mainlist node #%i' % (corpus.id, t(), mainlist_id))
 
     # -> write local tfidf similarities to Node and NodeNodeNgram
-    # TODO only on mainlist
-    ltfidf_id = compute_tfidf_local(corpus)
+    ltfidf_id = compute_tfidf_local(corpus,
+                                    on_list_id=mainlist_id,
+                                    groupings_id = group_id)
     print('CORPUS #%d: [%s] new localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
     # => used for doc <=> ngram association
 

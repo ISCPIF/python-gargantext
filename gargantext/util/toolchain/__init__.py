@@ -6,12 +6,12 @@ from .hyperdata_indexing  import index_hyperdata
 
 # in usual run order
 from .list_stop           import do_stoplist
+from .ngram_groups        import compute_groups
 from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_ti_ranking
 from .list_main           import do_mainlist
 from .ngram_coocs         import compute_coocs
 from .metric_specificity  import compute_specificity
 from .list_map            import do_maplist     # TEST
-from .ngram_groups        import compute_groups
 from .mail_notification   import notify_owner
 from gargantext.util.db   import session
 from gargantext.models    import Node
@@ -135,8 +135,9 @@ def parse_extract_indexhyperdata(corpus):
     # => used for doc <=> ngram association
 
     # ------------
-    # -> cooccurrences: compute + write (=> Node and NodeNodeNgram)
-    cooc_id = compute_coocs(corpus, mainlist_id = mainlist_id, groupings_id = group_id)
+    # -> cooccurrences on mainlist: compute + write (=> Node and NodeNgramNgram)
+    #                               todo: no need to write it ?
+    cooc_id = compute_coocs(corpus, on_list_id = mainlist_id, groupings_id = group_id)
     print('CORPUS #%d: [%s] new coocs node #%i' % (corpus.id, t(), cooc_id))
 
     # -> specificity: compute + write (=> NodeNodeNgram)

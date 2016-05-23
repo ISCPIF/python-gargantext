@@ -196,10 +196,10 @@ class WeightedMatrix(_BaseClass):
             self.id = source
             from gargantext.models import NodeNgramNgram
             query = (session
-                .query(NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id, NodeNgramNgram.score)
+                .query(NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id, NodeNgramNgram.weight)
                 .filter(NodeNgramNgram.node_id == source)
             )
-            for key1, key2, value in self.items.items():
+            for key1, key2, value in query.all():
                 self.items[key1, key2] = value
         elif isinstance(source, WeightedMatrix):
             for key1, key2, value in source:
@@ -225,11 +225,14 @@ class WeightedMatrix(_BaseClass):
         session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id == node_id).delete()
         session.commit()
         # insert new data
+        print("WeightedMatrix bulk_insert start")
         bulk_insert(
             NodeNgramNgram,
             ('node_id', 'ngram1_id', 'ngram2_id', 'weight'),
             ((node_id, key1, key2, value) for key1, key2, value in self)
         )
+        print("WeightedMatrix bulk_insert stop")
+
 
     def __radd__(self, other):
         result = NotImplemented

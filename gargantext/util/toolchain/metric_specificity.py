@@ -99,7 +99,7 @@ def compute_specificity(corpus, cooc_id=None, cooc_matrix=None, overwrite_id = N
     if overwrite_id:
         # overwrite pre-existing id
         the_id = overwrite_id
-        session.query(NodeNodeNgram).filter(NodeNodeNgram.node1_id==the_id).delete()
+        session.query(NodeNgram).filter(NodeNgram.node_id==the_id).delete()
         session.commit()
     else:
         specnode = corpus.add_child(

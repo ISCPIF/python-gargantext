@@ -173,5 +173,102 @@ def parse_extract_indexhyperdata(corpus):
 
 
 
+@shared_task
+def recount(corpus):
+    """
+    Recount essential metrics of the toolchain after group modifications.
+
+    ==> updates all scores in terms table
+    ==> updates tfidf relationship b/w term and doc
+
+    When groups change, the metrics need to be updated because subforms must be
+    added to their new mainform aggregate values:
+         - occurrences
+         - ndocs
+         - ti_rank
+         - coocs
+         - specificity
+         - tfidf
+
+    NB: no new extraction, no list change, just the metrics
+    """
+    # 1) we'll need the new groups and mainlist as basis
+    group_id = corpus.children("GROUPLIST").first().id
+    mainlist_id = corpus.children("MAINLIST").first().id
+
+    # 2) and we're going to overwrite the previous metric nodes
+    try:
+        old_occ_id    = corpus.children("OCCURRENCES").first().id
+    except:
+        old_occ_id    = None
+
+    try:
+        old_tirank_id = corpus.children("TIRANK-GLOBAL").first().id
+    except:
+        old_tirank_id = None
+
+    try:
+        old_spec_id   = corpus.children("SPECIFICITY").first().id
+    except:
+        old_spec_id   = None
+
+    try:
+        old_ltfidf_id = corpus.children("TFIDF-CORPUS").first().id
+    except:
+        old_ltfidf_id = None
+
+    # 3) we redo the required toolchain parts
+    # -------------------------------------------
+
+    # Instantiate status
+    corpus.status('Recounting mini-workflow', progress=1)
+    corpus.save_hyperdata()
+    session.commit()
+
+    # -> overwrite occurrences (=> NodeNodeNgram)
+    occ_id = compute_occs(corpus,
+                            groupings_id = group_id,
+                            overwrite_id=old_occ_id)
+    print('RECOUNT #%d: [%s] updated occs node #%i' % (corpus.id, t(), occ_id))
+
+    # -> write cumulated ti_ranking (tfidf ranking vector) (=> NodeNodeNgram)
+    tirank_id = compute_ti_ranking(corpus,
+                                   groupings_id = group_id,
+                                   count_scope="global",
+                                   overwrite_id=old_tirank_id)
+    print('RECOUNT #%d: [%s] updated ti ranking node #%i' % (corpus.id, t(), tirank_id))
+
+    # -> write local tfidf similarities to (=> NodeNodeNgram)
+    ltfidf_id = compute_tfidf_local(corpus,
+                                    on_list_id = mainlist_id,
+                                    groupings_id = group_id,
+                                    overwrite_id = old_ltfidf_id)
+    print('RECOUNT #%d: [%s] updated localtfidf node #%i' % (corpus.id, t(), ltfidf_id))
+    # => used for doc <=> ngram association
+
+    # ------------
+    # -> cooccurrences on mainlist: compute + write (=> NodeNgramNgram)
+    coocs = compute_coocs(corpus,
+                            on_list_id = mainlist_id,
+                            groupings_id = group_id,
+                            just_pass_result = True)
+    print('RECOUNT #%d: [%s] updated mainlist coocs for specif rank' % (corpus.id, t()))
+
+    # -> specificity: compute + write (=> NodeNgram)
+    spec_id = compute_specificity(corpus,cooc_matrix = coocs, overwrite_id = old_spec_id)
+
+
+    print('RECOUNT #%d: [%s] updated specificity node #%i' % (corpus.id, t(), spec_id))
+
+    print('RECOUNT #%d: [%s] FINISHED metric recounts' % (corpus.id, t()))
+
+    corpus.status('Recounting mini-workflow', progress=10, complete=True)
+    corpus.save_hyperdata()
+    session.commit()
+
+
+
+
+
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

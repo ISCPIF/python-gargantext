@@ -112,11 +112,11 @@ def parse_extract_indexhyperdata(corpus):
     print('CORPUS #%d: [%s] new grouplist node #%i' % (corpus.id, t(), group_id))
 
     # ------------
-    # -> write occurrences to Node and NodeNodeNgram # (todo: NodeNgram)
+    # -> write occurrences to Node and NodeNodeNgram
     occ_id = compute_occs(corpus, groupings_id = group_id)
     print('CORPUS #%d: [%s] new occs node #%i' % (corpus.id, t(), occ_id))
 
-    # -> write cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram (todo: NodeNgram)
+    # -> write cumulated ti_ranking (tfidf ranking vector) to Node and NodeNodeNgram
     tirank_id = compute_ti_ranking(corpus,
                                    groupings_id = group_id,
                                    count_scope="global")
@@ -170,6 +170,7 @@ def parse_extract_indexhyperdata(corpus):
     corpus.status('Workflow', progress=10, complete=True)
     corpus.save_hyperdata()
     session.commit()
+
 
 
 def t():

@@ -10,13 +10,15 @@ from sqlalchemy.sql.expression import case # for choice if ngram has mainform or
 
 def compute_coocs(  corpus,
                     overwrite_id    = None,
+                    just_pass_result= True,   # just return the WeightedMatrix,
+                                              #    (don't write to DB)
                     threshold       = DEFAULT_COOC_THRESHOLD,
                     groupings_id    = None,
-                    mainlist_id     = None,
+                    on_list_id      = None,
                     stoplist_id     = None,
                     start           = None,
                     end             = None,
-                    symmetry_filter = True):
+                    symmetry_filter = False):
     """
     Count how often some extracted terms appear
     together in a small context (document)
@@ -46,7 +48,7 @@ def compute_coocs(  corpus,
       - threshold: on output cooc count (previously called hapax)
       - groupings_id: optional synonym relations to add all subform counts
                       with their mainform's counts
-      - mainlist_id: mainlist to constrain the input ngrams
+      - on_list_id: mainlist or maplist type, to constrain the input ngrams
       - stoplist_id: stoplist for filtering input ngrams
                      (normally unnecessary if a mainlist is already provided)
       - start, end: provide one or both temporal limits to filter on doc date
@@ -62,9 +64,10 @@ def compute_coocs(  corpus,
     ======================
     each pair of ngrams sharing same doc (node_id)
         SELEC idxa.ngram_id, idxb.ngram_id
-        FROM nodes_ngrams AS idxa, nodes_ngrams AS idxb
+        FROM nodes_ngrams AS idxa
         ---------------------------------
-        WHERE idxa.node_id = idxb.node_id      <== that's cooc
+        JOIN nodes_ngrams AS idxb
+        ON idxa.node_id = idxb.node_id      <== that's cooc
         ---------------------------------
         AND idxa.ngram_id <> idxb.ngram_id
         AND idxa.node_id = MY_DOC ;
@@ -188,7 +191,7 @@ def compute_coocs(  corpus,
 
 
     # 4) INPUT FILTERS (reduce N before O(N²))
-    if mainlist_id:
+    if on_list_id:
 
         m1 = aliased(NodeNgram)
         m2 = aliased(NodeNgram)
@@ -197,8 +200,8 @@ def compute_coocs(  corpus,
             .join(m1, m1.ngram_id == Xindex_ngform_id)
             .join(m2, m2.ngram_id == Yindex_ngform_id)
 
-            .filter( m1.node_id == mainlist_id )
-            .filter( m2.node_id == mainlist_id )
+            .filter( m1.node_id == on_list_id )
+            .filter( m2.node_id == on_list_id )
         )
 
     if stoplist_id:
@@ -279,31 +282,36 @@ def compute_coocs(  corpus,
     shape_1 = len({pair[1] for pair in matrix.items})
     print("COOCS: NEW matrix shape [%ix%i]" % (shape_0, shape_1))
 
-    # 5) SAVE
-    # --------
-    # saving the parameters of the analysis in the Node JSON
-    new_hyperdata = { 'corpus'   : corpus.id,
-                      'threshold': threshold }
-    if overwrite_id:
-        # overwrite pre-existing id
-        the_cooc = cache.Node[overwrite_id]
-        the_cooc.hyperdata = new_hyperdata
-        the_cooc.save_hyperdata()
-        session.commit()
-        the_id = overwrite_id
+
+    if just_pass_result:
+        return matrix
     else:
-        # create the new cooc node
-        the_cooc = corpus.add_child(
-                        typename  = "COOCCURRENCES",
-                        name      = "Coocs (in:%s)" % corpus.name[0:10],
-                        hyperdata = new_hyperdata,
-                    )
-        session.add(the_cooc)
-        session.commit()
+        # 5) SAVE
+        # --------
+        # saving the parameters of the analysis in the Node JSON
+        new_hyperdata = { 'corpus'   : corpus.id,
+                          'threshold': threshold }
 
-        the_id = the_cooc.id
+        if overwrite_id:
+            # overwrite pre-existing id
+            the_cooc = cache.Node[overwrite_id]
+            the_cooc.hyperdata = new_hyperdata
+            the_cooc.save_hyperdata()
+            session.commit()
+            the_id = overwrite_id
+        else:
+            # create the new cooc node
+            the_cooc = corpus.add_child(
+                            typename  = "COOCCURRENCES",
+                            name      = "Coocs (in:%s)" % corpus.name[0:10],
+                            hyperdata = new_hyperdata,
+                        )
+            session.add(the_cooc)
+            session.commit()
 
-    # ==> save all NodeNgramNgram with link to new cooc node id
-    matrix.save(the_id)
+            the_id = the_cooc.id
 
-    return the_id
+        # ==> save all NodeNgramNgram with link to new cooc node id
+        matrix.save(the_id)
+
+        return the_id

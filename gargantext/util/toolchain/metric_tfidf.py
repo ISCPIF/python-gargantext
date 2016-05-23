@@ -377,12 +377,18 @@ def compute_ti_ranking(corpus,
 
 
 
-def compute_tfidf_local(corpus, overwrite_id=None):
+def compute_tfidf_local(corpus,
+                        on_list_id=None,
+                        groupings_id=None,
+                        overwrite_id=None):
     """
     Calculates tfidf similarity of each (doc, ngram) couple, within the current corpus
 
     Parameters:
       - the corpus itself
+      - groupings_id: optional synonym relations to add all subform counts
+                      with their mainform's counts
+      - on_list_id: mainlist or maplist type, to constrain the input ngrams
       - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
                    (the Node and its previous NodeNodeNgram rows will be replaced)
     """
@@ -398,36 +404,94 @@ def compute_tfidf_local(corpus, overwrite_id=None):
     # N
     total_docs = session.query(docids_subquery).count()
 
-    # number of docs with given term (number of rows = M ngrams)
-    n_docswith_ng = (session
-                    .query(
-                        NodeNgram.ngram_id,
-                        func.count(NodeNgram.node_id).label("nd")  # nd: n docs with term
-                     )
-                    .filter(NodeNgram.node_id.in_(docids_subquery))
-                    .group_by(NodeNgram.ngram_id)
-                    .all()
-                   )
 
-    # { ngram_id => log(nd) }
-    log_nd_lookup = {row.ngram_id : log(row.nd) for row in n_docswith_ng}
+    # define the counted form
+    if not groupings_id:
+        ngform_id = NodeNgram.ngram_id
+    else:
+        Syno = (session.query(NodeNgramNgram.ngram1_id,
+                             NodeNgramNgram.ngram2_id)
+                .filter(NodeNgramNgram.node_id == groupings_id)
+                .subquery()
+               )
+
+        ngform_id = case([
+                            (Syno.c.ngram1_id != None, Syno.c.ngram1_id),
+                            (Syno.c.ngram1_id == None, NodeNgram.ngram_id)
+                        ])
 
     # tf for each couple (number of rows = N docs X M ngrams)
-    tf_doc_ng = (session
+    tf_doc_query = (session
                     .query(
-                        NodeNgram.ngram_id,
+                        ngform_id,
                         NodeNgram.node_id,
                         func.sum(NodeNgram.weight).label("tf"),    # tf: occurrences
                      )
-                    .filter(NodeNgram.node_id.in_(docids_subquery))
-                    .group_by(NodeNgram.node_id, NodeNgram.ngram_id)
-                    .all()
+
+                     # select within docs of current corpus
+                    .join(docids_subquery,
+                          docids_subquery.c.id == NodeNgram.node_id)
                    )
+
+    if groupings_id:
+        tf_doc_query = ( tf_doc_query
+                .outerjoin(Syno, Syno.c.ngram2_id == NodeNgram.ngram_id)
+            )
+        # now when we'll group_by the ngram2 freqs will be added to ngram1
+
+    if on_list_id:
+        Miamlist = aliased(NodeNgram)
+        tf_doc_query = ( tf_doc_query
+                .join(Miamlist, Miamlist.ngram_id == ngform_id)
+                .filter( Miamlist.node_id == on_list_id )
+            )
+
+    # execute query to do our tf sum
+    tf_per_doc = tf_doc_query.group_by(NodeNgram.node_id, ngform_id).all()
+
+    # ex: [(128371, 9732, 1.0),
+    #      (128383, 9740, 1.0),
+    #      (128373, 9731, 1.0),
+    #      (128376, 9734, 1.0),
+    #      (128372, 9731, 1.0),
+    #      (128383, 9733, 1.0),
+    #      (128383, 9735, 1.0),
+    #      (128389, 9734, 1.0),
+    #      (8624, 9731, 1.0),
+    #      (128382, 9740, 1.0),
+    #      (128383, 9739, 1.0),
+    #      (128383, 9736, 1.0),
+    #      (128378, 9735, 1.0),
+    #      (128375, 9733, 4.0),
+    #      (128383, 9732, 1.0)]
+    #        ^ ^     ^^    ^^
+    #       ngram   doc   freq in this doc
+
+
+
+    # simultaneously count docs with given term (number of rows = M ngrams)
+
+    ndocswithngram = {}
+    for triple in tf_per_doc:
+        ng = triple[0]
+        doc = triple[1]
+        if ng in ndocswithngram:
+            ndocswithngram[ng] += 1
+        else:
+            ndocswithngram[ng] = 1
+
+    # print(ndocswithngram)
+
+    # store for use in formula
+    # { ngram_id => log(nd) }
+    log_nd_lookup = {ng : log(nd_count)
+                        for (ng, nd_count) in ndocswithngram.items()}
+
 
     # ---------------------------------------------------------
     tfidfs = {}
     log_tot_docs = log(total_docs)
-    for (ngram_id, node_id, tf) in tf_doc_ng:
+    for (ngram_id, node_id, tf) in tf_per_doc:
         log_nd = log_nd_lookup[ngram_id]
         # tfidfs[ngram_id] = tf * log(total_docs/nd)
         tfidfs[node_id, ngram_id] = tf * (log_tot_docs-log_nd)

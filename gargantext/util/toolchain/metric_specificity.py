@@ -9,7 +9,7 @@ from collections              import defaultdict
 from pandas                   import DataFrame
 import pandas as pd
 
-def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
+def compute_specificity(corpus, cooc_id=None, cooc_matrix=None, overwrite_id = None):
     '''
     Compute the specificity, simple calculus.
 
@@ -18,17 +18,25 @@ def compute_specificity(corpus, cooc_id=None, overwrite_id = None):
         - overwrite_id: optional preexisting specificity node to overwrite
     '''
 
-    cooccurrences = (session.query(NodeNgramNgram)
-                    .filter(NodeNgramNgram.node_id==cooc_id)
-                    )
-    # no filtering: new choice cooc already filtered on tfidf before creation
-
     matrix = defaultdict(lambda : defaultdict(float))
 
-    # £TODO re-rename weight => score
-    for cooccurrence in cooccurrences:
-        matrix[cooccurrence.ngram1_id][cooccurrence.ngram2_id] = cooccurrence.weight
-        matrix[cooccurrence.ngram2_id][cooccurrence.ngram1_id] = cooccurrence.weight
+    if cooc_id == None and cooc_matrix == None:
+        raise TypeError("compute_specificity: needs a cooc_id or cooc_matrix param")
+
+    elif cooc_id:
+        cooccurrences = (session.query(NodeNgramNgram)
+                        .filter(NodeNgramNgram.node_id==cooc_id)
+                        )
+        # no filtering: cooc already filtered on mainlist_id at creation
+        for cooccurrence in cooccurrences:
+            matrix[cooccurrence.ngram1_id][cooccurrence.ngram2_id] = cooccurrence.weight
+            matrix[cooccurrence.ngram2_id][cooccurrence.ngram1_id] = cooccurrence.weight
+
+    elif cooc_matrix:
+        # copy WeightedMatrix into local matrix structure
+        for (ngram1_id, ngram2_id) in cooc_matrix.items:
+            w = cooc_matrix.items[(ngram1_id, ngram2_id)]
+            matrix[ngram1_id][ngram2_id] = w
 
     nb_ngrams = len(matrix)
 

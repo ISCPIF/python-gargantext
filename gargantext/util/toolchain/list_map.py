@@ -43,15 +43,11 @@ def do_maplist(corpus,
 
     #dbg = DebugTime('Corpus #%d - computing Miam' % corpus.id)
 
-    mainterms_subquery = (session
-                            # we want only terms within mainlist
-                            .query(NodeNgram.ngram_id)
-                            .filter(NodeNgram.node_id == mainlist_id)
-                            .subquery()
-                         )
+    MainlistTable = aliased(NodeNgram)
 
-    primary_groupterms_subquery = (session
-                            # we want only primary terms (ngram1)
+    IsSubform = (session
+                            # we want only secondary terms (ngram2)
+                            # to be able to filter them out
                             .query(NodeNgramNgram.ngram2_id)
                             .filter(NodeNgramNgram.node_id == grouplist_id)
                             .subquery()
@@ -63,8 +59,15 @@ def do_maplist(corpus,
     query = (session.query(ScoreSpec.ngram_id)
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
                 .filter(ScoreSpec.node_id == specificity_id)
-                .filter(ScoreSpec.ngram_id.in_(mainterms_subquery))
-                .filter(ScoreSpec.ngram_id.notin_(primary_groupterms_subquery))
+
+                # we want only terms within mainlist
+                .join(MainlistTable, Ngram.id == MainlistTable.ngram_id)
+                .filter(MainlistTable.node_id == mainlist_id)
+
+                # we remove all ngrams matching an ngram2_id from the synonyms
+                .outerjoin(IsSubform,
+                           IsSubform.c.ngram2_id == ScoreSpec.ngram_id)
+                .filter(IsSubform.c.ngram2_id == None)
             )
 
     # TODO: move these 2 pools up to mainlist selection
@@ -94,7 +97,7 @@ def do_maplist(corpus,
     new_hyperdata = { 'corpus': corpus.id,
                       'limit' : limit,
                       'monograms_part' : monograms_part,
-                     'monograms_result' : obtained_mono/obtained_total if obtained_total != 0 else obtained_mono
+                     'monograms_result' : obtained_mono/obtained_total if obtained_total != 0 else 0
                     }
     if overwrite_id:
         # overwrite pre-existing node

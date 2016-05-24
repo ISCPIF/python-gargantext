@@ -11,7 +11,7 @@ def _nodes_hyperdata_generator(corpus):
     """
     for document in corpus.children(typename='DOCUMENT'):
         for keyname, key in INDEXED_HYPERDATA.items():
-            if keyname in document.hyperdata:
+            if keyname in document.hyperdata and keyname not in ['abstract', 'title']:
                 values = key['convert_to_db'](document.hyperdata[keyname])
                 if not isinstance(values, list):
                     values = [values]

@@ -62,12 +62,15 @@ class EuropressParser(Parser):
             except:
                 ValueError('Error while decoding from "latin1" to "%s"' % encoding)
 
-        html_parser = etree.HTMLParser(encoding=codif)
-        html = etree.fromstring(contents, html_parser)
+        try:
+            html_parser = etree.HTMLParser(encoding=codif)
+            html = etree.fromstring(contents, html_parser)
 
-        html_parser = html5parser.etree.HTMLParser(encoding=codif)
-        html = html5parser.etree.fromstring(contents, html_parser)
-        html_articles = html.xpath('//article')
+            html_parser = html5parser.etree.HTMLParser(encoding=codif)
+            html = html5parser.etree.fromstring(contents, html_parser)
+            html_articles = html.xpath('//article')
+        except Exception as error:
+            print ("Europresse lxml error:", error)
 
         # all except detail_header are mandatory to parse the article
         name_xpath  = "./header/div/span[@class = 'DocPublicationName']"
@@ -261,7 +264,7 @@ class EuropressParser(Parser):
                 yield hyperdata
 
         except:
-            raise Exception('Something bad happened.')
+            print('Something bad happened.')
 
 
 if __name__ == "__main__":

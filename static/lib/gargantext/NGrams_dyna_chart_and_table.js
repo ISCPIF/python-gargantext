@@ -22,6 +22,30 @@
  * The stateIds are described by the System object.
  *   - columns use stateId [0..2]  (miam aka normal, map aka keep, stop aka delete)
  *
+ *
+ * These states are stored in 3 places :
+ *          Original (in *OriginalNG*)
+ *          Current (in *AjaxRecords*)
+ *          Changes to make (in "FlagsBuffer")
+ *
+ *          (the crud operations create FlagsBuffer at the last moment by
+ *           inspecting the diff of original vs current and infering changes)
+ *
+ * For the groups it's a little different with only 2 main vars:
+ *          Current (in CurrentGroups)
+ *          Changes to make (in "GroupsBuffer")
+ *
+ *          (each user action is enacted in Current and at the same time carried
+ *           over to GroupsBuffer)
+ *
+ * NB for groups removal: there is a case when user clicks "cancel" in group modifs
+ *                        but some modifications will already be triggered:
+ *                        it happens when an entire group A is attached to a new
+ *                        group B, and then later an ex-element of A is removed
+ *                        from the new group
+ *                        => even if the new group B is canceled, it will mark
+ *                           the entire old group A for destruction
+ *
  * @author
  *   Samuel Castillo (original 2015 work)
  *   Romain Loth
@@ -44,11 +68,18 @@
 // =============================================================================
 
 
-// ngram infos (<-> row data)
-// --------------------------
+// current ngram infos (<-> row data)
+// ----------------------------------
 // from /api/ngramlists/lexmodel?corpus=312
 // with some expanding in AfterAjax
 var AjaxRecords = [] ;
+
+
+// current groups
+// --------------
+// links and subforms (reverse index)
+var CurrentGroups = {"links":{}, "subs":{}}
+
 
 // table element (+config +events)
 // -------------------------------
@@ -108,7 +139,15 @@ for(var i in System[GState]["states"] ) {
 var FlagsBuffer = {}
 
 // + 1 for groups
-GroupsBuffer = {}
+var GroupsBuffer = {'_to_add':{}, '_to_del':{}}
+
+// to_add will have structure like this  { mainformid1 : [array1 of subformids],
+//                                         mainformid2 : [array2 of subformids]}
+
+// to_del is simple array of mainforms : [mainform3, mainform4]
+// because deleting "the group of mainform3" is deleting all DB rows of
+// couples having mainform3 on the left-hand-side ( <=> no need to know the subform)
+
 
 
 // GROUP "WINDOWS"
@@ -239,22 +278,22 @@ function printCorpuses() {
           if(Object.keys( results ).length>0) {
          var sub_ngrams_data = {
            "ngrams":[],
-           "scores": $.extend({}, NGrams["main"].scores)
+           "scores": $.extend({}, OriginalNG.scores)
          }
-        for(var i in NGrams["main"].ngrams) {
-          if( results[ NGrams["main"].ngrams[i].id] ) {
-            var a_ngram = NGrams["main"].ngrams[i]
-            sub_ngrams_data["ngrams"].push( a_ngram )
+        for(var i in OriginalNG["records"].ngrams) {
+          if( results[ OriginalNG["records"].ngrams[i].id] ) {
+            var a_ngram = OriginalNG["records"].ngrams[i]
+            sub_ngrams_data["records"].push( a_ngram )
           }
-          // if( results[ NGrams["main"].ngrams[i].id] && NGrams["main"].ngrams[i].name.split(" ").length==1 ) {
-          //   if( NGrams["map"][ NGrams["main"].ngrams[i].id] ) {
-          //     var a_ngram = NGrams["main"].ngrams[i]
+          // if( results[ OriginalNG["records"][i].id] && OriginalNG["records"][i].name.split(" ").length==1 ) {
+          //   if( OriginalNG["map"][ i ] ) {
+          //     var a_ngram = OriginalNG["records"][i]
           //     // a_ngram["state"] = System[0]["statesD"]["delete"]
           //     sub_ngrams_data["ngrams"].push( a_ngram )
           //   }
           // }
         }
-        var result = MainTableAndCharts(sub_ngrams_data , NGrams["main"].scores.initial , "filter_all")
+        var result = MainTableAndCharts(sub_ngrams_data , OriginalNG.scores.initial , "filter_all")
           }
       });
 }
@@ -362,40 +401,30 @@ function saveActiveGroup() {
     var mainform = activeGroup.now_mainform_id
     // pr("saving mainform to GroupsBuffer: " + mainform)
 
-    // the new array to save is in now_links -------------
-    GroupsBuffer[mainform] = activeGroup.now_links
-    // ---------------------------------------------------
+    // the new array of tgt forms to save is in now_links
+    addInCurrentGroups(mainform, activeGroup.now_links)    // -> current status
+    GroupsBuffer._to_add[mainform] = activeGroup.now_links // -> changes to make
 
-    // console.log(AjaxRecords[mainform])
+    // -----------------------------------------------------
+    // various consequences
 
     // also we prefix "*" to the name if not already there
     if (AjaxRecords[mainform].name[0] != '*') {
         AjaxRecords[mainform].name = "*" + AjaxRecords[mainform].name
     }
 
-    // the previous mainforms that became subforms can't stay in the main records
-    for (downgradedNgramId in activeGroup.were_mainforms) {
-        if (downgradedNgramId != mainform) {
-
-            AjaxRecords[downgradedNgramId].state = -1
-
-            // they go to nodesmemory
-            // NGrams.group.nodesmemory = AjaxRecords[downgradedNgramId]
-            // delete AjaxRecords[downgradedNgramId]
-        }
+    // all subforms old and new become deactivated in AjaxRecords
+    for (var i in activeGroup.now_links) {
+        subformId = activeGroup.now_links[i]
+        AjaxRecords[subformId].state = -1
     }
 
-    // TODO posttest
-    // the previous "old" links are now in GroupsBuffer so from now on
-    // they'll be searched in AjaxRecords by updateActiveGroupInfo()
-    delete NGrams.group.links[mainform]
-    for (i in activeGroup.now_links) {
-        newLink = activeGroup.now_links[i] ;
-        if (activeGroup.ngraminfo[newLink].origin == 'old' || activeGroup.ngraminfo[newLink].origin == 'oldnew') {
-            // new AjaxRecords entry from nodesmemory
-            AjaxRecords[newLink] = NGrams.group.nodesmemory[newLink]
-            delete NGrams.group.nodesmemory[newLink]
-            // console.log('oldLinkThatBecameNew: '+AjaxRecords[newLink].name)
+    // the previous mainforms have old groupings to be marked for deletion
+    for (downgradedNgramId in activeGroup.were_mainforms) {
+        // (except the one we just saved)
+        if (downgradedNgramId != mainform) {
+            GroupsBuffer._to_del[downgradedNgramId] = true
+            deleteInCurrentGroups(downgradedNgramId, false)     // "false" <=> no need to change subform states
         }
     }
 
@@ -404,6 +433,9 @@ function saveActiveGroup() {
 }
 
 function removeActiveGroupFrame() {
+    // no need to restore records:  everything from the frame
+    // was in temporary var activeGroup
+
     // erases now_links and restores empty activeGroup global cache
     activeGroup = {'now_mainform_id':undefined, 'were_mainforms':{}} ;
 
@@ -447,7 +479,7 @@ function toggleSeeGroup(plusicon, ngramId) {
  * @param ngramId (of the mainform)
  */
 function seeGroup ( ngramId , allowChangeFlag) {
-    // 1/7 create new element container
+    // 1/6 create new element container
     var subNgramHtml = $('<p class="note">') ;
     subNgramHtml.attr("id", "subforms-"+ngramId) ;
     subNgramHtml.css("line-height", 1.2) ;
@@ -455,32 +487,24 @@ function seeGroup ( ngramId , allowChangeFlag) {
     subNgramHtml.css("margin-top", '.5em') ;
 
 
-    // 2/7 attach flag open to global state register
+    // 2/6 attach flag open to global state register
     vizopenGroup[ngramId] = true ;
 
-    // 3/7   retrieve names of the untouched (from DB) grouped ngrams (aka "old")
-    var oldlinksNames = [] ;
-    if( ngramId in NGrams.group.links ) {
-        for (var i in NGrams.group.links[ngramId]) {
-            var subNgramId = NGrams.group.links[ngramId][i] ;
-            oldlinksNames[i] = NGrams.group.nodesmemory[subNgramId].name
-        }
+    // 3/6   retrieve names of the grouped ngrams
+    var linksNames = [] ;
+    if( ngramId in CurrentGroups["links"] ) {
+            var thisGroup = CurrentGroups["links"][ngramId]
+            for (var i in thisGroup) {
+                var subNgramId = thisGroup[i] ;
+                linksNames[i] = AjaxRecords[subNgramId].name
+            }
     }
 
-    // 4/7   retrieve names of the newly created grouped ngrams (aka "new" + "oldnew")
-    var newlinksNames = [] ;
-    if( ngramId in GroupsBuffer ) {
-        for(var i in GroupsBuffer[ ngramId ] ) {
-            var subNgramId = GroupsBuffer[ ngramId ][i] ;
-            newlinksNames[i] = AjaxRecords[subNgramId].name
-        }
-    }
-
-    // 5/7 create the "tree" from the names, as html lines
-    var htmlMiniTree = drawSublist(oldlinksNames.concat(newlinksNames))
+    // 4/6 create the "tree" from the names, as html lines
+    var htmlMiniTree = drawSublist(linksNames)
     subNgramHtml.append(htmlMiniTree)
 
-    // 6/7 add a "modify group" button
+    // 5/6 add a "modify group" button
     if (allowChangeFlag) {
         var changeGroupsButton  = '<button style="float:right"' ;
             changeGroupsButton +=        ' title="add/remove contents of groups"' ;
@@ -490,7 +514,7 @@ function seeGroup ( ngramId , allowChangeFlag) {
         subNgramHtml.append(changeGroupsButton) ;
     }
 
-    // 7/7  return html snippet (ready for rendering)
+    // 6/6  return html snippet (ready for rendering)
     return(subNgramHtml)
 }
 
@@ -562,27 +586,21 @@ function subformSpan( subNgramInfo ) {
     span = $('<span/>', {
         text: subNgramInfo.name,
         title: subNgramInfo.id,
-        id: 'active-subform-' + subNgramInfo.id
+        id: 'active-subform-' + subNgramInfo.id,
+        class: 'subform'
     })
 
-    if (subNgramInfo.origin == 'old') {
-        span.addClass("oldsubform")
-    }
-    else if (subNgramInfo.origin == 'new' || subNgramInfo.origin == 'oldnew'){
-        span.addClass("usersubform")
-    }
-
     // remove button
-    // var removeButton  = '&nbsp;<span class="note glyphicon glyphicon-minus-sign"'
-    //     removeButton +=   ' title="remove from group (/!\\ bug: will be unattached if was previously a subform)"' ;
-    //     removeButton +=   ' onclick="removeSubform('+ subNgramInfo.id +')"></span>'
-    // span.append(removeButton)
+    var removeButton  = '<span class="note glyphicon glyphicon-minus-sign"'
+        removeButton +=   ' title="remove from group"' ;
+        removeButton +=   ' onclick="removeSubform('+ subNgramInfo.id +')"></span> &nbsp;'
+    span.prepend(removeButton)
 
     // makes this subform become the mainform
-    // var mainformButton  = '&nbsp;<span class="note glyphicon glyphicon-circle-arrow-up"'
+    // var mainformButton  = '<span class="note glyphicon glyphicon-circle-arrow-up"'
     //     mainformButton +=   ' title="upgrade to mainform of this group"'
-    //     mainformButton +=   ' onclick="makeMainform('+ subNgramInfo.id +')"></span>'
-    // span.append(mainformButton)
+    //     mainformButton +=   ' onclick="makeMainform('+ subNgramInfo.id +')"></span>&nbsp;'
+    // span.prepend(mainformButton)
     return(span[0].outerHTML)
 }
 
@@ -610,7 +628,6 @@ function makeMainform(ngramId) {
     activeGroup.now_links[i] = previousMainformId
 
     // if it was previously a subform then:
-    //   -> it had no entry in AjaxRecords
     //   -> it was not in any of the lists
     if (! (mainform in activeGroup.were_mainforms)) {
         // update records
@@ -640,21 +657,47 @@ function makeMainform(ngramId) {
 
 
 function removeSubform(ngramId) {
+    // no need to restore AjaxRecords[ngramId] because it's untouched
+
+
+    // NB removeSubform has a side effect for subforms that were previously
+    //    in another group see comment at the top of script
+
+
+
+    // special case: if removed form already was a subform it becomes independant
+    //
+    // (because the old mainform may be remaining in the new group, we set a
+    //  convention: entire previous group goes "to_delete" at 1st sub remove)
+    //
+    if (CurrentGroups["subs"][ngramId]) {
+        var oldMainFormId = CurrentGroups["subs"][ngramId]
+
+        // it must break the old group, mark for deletion
+        GroupsBuffer._to_del[oldMainFormId] = true
+
+        // consequences:
+        deleteInCurrentGroups(oldMainFormId, true)
+        //     => they are all removed from CurrentGroups
+        //     => the removed subform and all others from the old group
+        //        get a state (map/del/normal)
+    }
+
+    // ==========================================
+    // core of the function for any type of ngram
+    // ==========================================
     $('#active-subform-'+ngramId).remove()
     if (activeGroup.now_links.length == 1) {
+        // close the frame if last subform
         removeActiveGroupFrame()
     }
     else {
-        // clean were_mainforms dict
-        delete activeGroup.were_mainforms[ngramId]
-
         // clean now_links array
         var i = activeGroup.now_links.indexOf(ngramId)
         activeGroup.now_links.splice(i,1)
 
-        // if (activeGroup.ngraminfo[ngramId].origin == 'new') {
-        //     AjaxRecords[ngramId].state = 0 ;
-        // }
+        // clean were_mainforms dict (if key existed)
+        delete activeGroup.were_mainforms[ngramId]
 
         // redraw active group_box_content
         drawActiveGroup(
@@ -665,6 +708,59 @@ function removeSubform(ngramId) {
          )
          // and update
          MyTable.data('dynatable').dom.update();
+    }
+}
+
+
+/**
+ * Effects of deleting a mainform from the current groups
+ *
+ *  => updates the global var CurrentGroups
+ *
+ * @param ngramId of a mainform
+ * @param inheritState boolean  => updates the AjaxRecords[subformId].state
+ */
+function deleteInCurrentGroups(ngramId, inheritState) {
+    if (inheritState) {
+        // ex-subforms can inherit state from their previous mainform
+        var implicitState = AjaxRecords[ngramId].state
+    }
+
+    if (CurrentGroups.links[ngramId]) {
+        var oldGroup = CurrentGroups.links[ngramId]
+        // deleting in reverse index
+        for (var i in oldGroup) {
+            var subformId = oldGroup[i]
+            delete CurrentGroups.subs[subformId]
+
+            if (inheritState) {
+                AjaxRecords[subformId].state = implicitState
+                // consequence:
+                //   now OriginalNG.records[subformId].state
+                //        is != AjaxRecords[subformId].state
+                //   therefore the newly independant forms
+                //   will be added to their new wordlist
+            }
+        }
+        // deleting in "links"
+        delete CurrentGroups.links[ngramId]
+    }
+}
+
+/**
+ * Adding links to the current groups
+ *
+ *  => updates the global var CurrentGroups
+ *
+ * @param mainformId
+ * @param subforms array of subNgramIds
+ */
+function addInCurrentGroups(mainformId, subforms) {
+    console.log("addInCurrentGroups: "+mainformId+"("+JSON.stringify(subforms)+")")
+    CurrentGroups["links"][mainformId] = subforms
+    for (var i in subforms) {
+        var subformId = subforms[i]
+        CurrentGroups["subs"][subformId] = mainformId
     }
 }
 
@@ -706,9 +802,9 @@ function modifyGroup ( mainFormNgramId ) {
 
 
 // add new ngramid (and any present subforms) to currently modified group
-function add2group ( ngramId ) {
+function addToGroup ( ngramId ) {
 
-    // console.log("FUN add2group(" + AjaxRecords[ngramId].name + ")")
+    // console.log("FUN addToGroup(" + AjaxRecords[ngramId].name + ")")
 
     var toOther = true ;
     activeGroup.were_mainforms[ngramId] = true ;
@@ -718,7 +814,6 @@ function add2group ( ngramId ) {
         // add this mainform as a new subform
         activeGroup.now_links.push(ngramId)
         activeGroup.ngraminfo[ngramId] = AjaxRecords[ngramId]
-        activeGroup.ngraminfo[ngramId].origin = 'new'
 
         // also add all its subforms as new subforms
         updateActiveGroupInfo (ngramId, toOther)
@@ -736,14 +831,13 @@ function add2group ( ngramId ) {
      else {
          console.warn("ADD2GROUP but no active group")
      }
-
 }
 
 /**
- * subforms from DB have their info in a separate NGrams.group.nodesmemory
- *  so here and in saveActiveGroup we need to take it into account
+ * subforms from DB have their info in AjaxRecords like everyone, and state = -1
  *
- * TODO: remove this mecanism
+ * here all current infos are copied to activeGroup temporary var
+ * (copy will remain until user cancel/finishes group modif)
  *
  * @param ngramId
  * @param toOtherMainform = flag if ngram was a subform of another mainform
@@ -754,23 +848,11 @@ function updateActiveGroupInfo (ngramId, toOtherMainform) {
     // console.log(activeGroup)
 
     // fill active link info
-    if( ngramId in NGrams.group.links ) {
-        for (var i in NGrams.group.links[ngramId]) {
-            var subId = NGrams.group.links[ngramId][i] ;
-            // ----------- old links (already in DB)
-            activeGroup.now_links.push(subId)
-            activeGroup.ngraminfo[subId] = NGrams.group.nodesmemory[subId]
-            activeGroup.ngraminfo[subId].origin = toOtherMainform ? 'oldnew' : 'old'
-        }
-    }
-    if( ngramId in GroupsBuffer ) {
-        for(var i in GroupsBuffer[ ngramId ] ) {
-            var subId = GroupsBuffer[ ngramId ][i] ;
-            // ----------- new links (not in DB)
-            activeGroup.now_links.push(subId)
-            activeGroup.ngraminfo[subId] = AjaxRecords[subId]
-            activeGroup.ngraminfo[subId].origin = 'new'
-        }
+    for(var i in CurrentGroups["links"][ ngramId ] ) {
+        var subId = CurrentGroups["links"][ ngramId ][i] ;
+        // ----------- links (old and new)
+        activeGroup.now_links.push(subId)
+        activeGroup.ngraminfo[subId] = AjaxRecords[subId]
     }
 }
 
@@ -881,12 +963,12 @@ function transformContent(ngramId) {
     }
 
     // GState = 1 situation: button allows to add to active group
-    // (if previously had add2group button clicked)
+    // (if previously had addToGroup button clicked)
     if(GState==1 ) {
-        if(ngram_info.state!=System[0]["statesD"]["delete"] && ! GroupsBuffer[ngramId]) { // if deleted and already group, no Up button
+        if(ngram_info.state!=System[0]["statesD"]["delete"] && ! GroupsBuffer._to_add[ngramId]) { // if deleted and already group, no Up button
             plus_event  = '<span class="note glyphicon glyphicon-plus"'
             plus_event +=      ' color="#FF530D"'
-            plus_event +=      ' onclick="add2group('+ ngramId +')"></span>'
+            plus_event +=      ' onclick="addToGroup('+ ngramId +')"></span>'
         }
     }
 
@@ -1219,6 +1301,19 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
                 }
             }
         }
+        // (if previously was under a group)
+        else if (oldState === state_skip) {
+            if (desiredState === state_main || desiredState === state_map) {
+                registry["inmain"][id] = true
+                // (... and one more action only if is now desired to be in MAP)
+                if(desiredState === state_map) {
+                  registry["inmap"][ id ] = true
+                }
+            }
+            else if(desiredState === state_stop) {
+                registry["indel"][id] = true
+            }
+        }
         // (if previously was in MAIN)
         else  {
             if(desiredState === state_map) {
@@ -1230,6 +1325,8 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
             }
         }
     }
+    console.log("registry")
+    console.log(registry)
     return registry
 }
 
@@ -1260,13 +1357,13 @@ function SaveLocalChanges() {
   // LOOP on all mainforms + subforms
   // --------------------------------
   // we use 2 globals to evaluate change-of-state
-  //   => NGrams for old states (as in DB)
+  //   => OriginalNG for old states (as in DB)
   //   => AjaxRecords for current (desired) states
   for(var id in AjaxRecords) {
 
     var oldState = 0 ;
-    if      (NGrams["map"][ id ] ) oldState = 1
-    else if (NGrams["stop"][ id ]) oldState = 2
+    if      (OriginalNG["map"][ id ] ) oldState = 1
+    else if (OriginalNG["stop"][ id ]) oldState = 2
 
     var mainNewState = AjaxRecords[id]["state"] ;
 
@@ -1275,26 +1372,22 @@ function SaveLocalChanges() {
         FlagsBuffer = InferCRUDFlags(id, oldState, mainNewState, FlagsBuffer)
     }
 
+    console.log( "dont do anything" )
+    return "dont do anything"
+
     // [ = = = = propagating to subforms = = = = ]
 
     // if change in mainform list or change in groups
-    if(oldState != mainNewState || GroupsBuffer[id]) {
+    if(oldState != mainNewState || GroupsBuffer._to_add[id]) {
+
         // linked nodes
-        var linkedNodes ;
-
-        // a) retrieve the untouched (from DB) grouped ngrams (aka "old")
-        if(NGrams.group.links[id]) linkedNodes = NGrams.group.links[id]
-
-        // b) or retrieve the new linked nodes (aka "new" + "oldnew")
-        else if( GroupsBuffer[id] )     linkedNodes = GroupsBuffer[id]
-
-        for (var i in linkedNodes) {
-            var subNgramId = linkedNodes[i] ;
+        for (var i in CurrentGroups["links"][id]) {
+            var subNgramId = CurrentGroups["links"][id][i] ;
 
             // todo check (if undefined old state, should add to main too...)
             var subOldState = undefined ;
-            if      (NGrams["map"][ subNgramId ] ) subOldState = System[0]["statesD"]["keep"]
-            else if (NGrams["stop"][ subNgramId ]) subOldState = System[0]["statesD"]["delete"]
+            if      (OriginalNG["map"][ subNgramId ] ) subOldState = System[0]["statesD"]["keep"]
+            else if (OriginalNG["stop"][ subNgramId ]) subOldState = System[0]["statesD"]["delete"]
             else {
                 subOldState = System[0]["statesD"]["normal"] ;
                 // (special legacy case: subforms can have oldStates == undefined,
@@ -1405,7 +1498,7 @@ function SaveLocalChanges() {
     console.log("===> AJAX CRUD6 RmStop <===\n") ;
     CRUD( stoplist_id , Object.keys(FlagsBuffer["outdel"]), "DELETE" , function(success) {
       if (success) {
-        CRUD_7_groups()    // chained AJAX  6 -> 7
+        CRUD_7_AddGroups()    // chained AJAX  6 -> 7
       }
       else {
         console.warn('CRUD error on ngrams remove from stoplist ('+stoplist_id+')')
@@ -1413,14 +1506,28 @@ function SaveLocalChanges() {
     });
   }
   // add to groups reading data from GroupsBuffer
-  function CRUD_7_groups() {
-      console.log("===> AJAX CRUD7 RewriteGroups <===\n") ;
-      GROUPCRUD(groupnode_id, GroupsBuffer, function(success) {
+  // (also removes previous groups with same mainforms!)
+  function CRUD_7_AddGroups() {
+      console.log("===> AJAX CRUD7 AddGroups <===\n") ;
+      GROUPCRUDS(groupnode_id, GroupsBuffer._to_add, "POST" , function(success) {
           if (success) {
-              window.location.reload() // all 7 CRUDs OK => refresh whole page
+              CRUD_8_RmGroups()    // chained AJAX  7 -> 8
           }
           else {
-              console.warn('CRUD error on ngrams add to group node ('+groupings_id+')')
+              console.warn('CRUD error on groups modification ('+groupnode_id+')')
+          }
+      }) ;
+  }
+
+  // add to groups reading data from GroupsBuffer
+  function CRUD_8_RmGroups() {
+      console.log("===> AJAX CRUD8 RmGroups <===\n") ;
+      GROUPCRUDS(groupnode_id, GroupsBuffer._to_del, "DELETE", function(success) {
+          if (success) {
+              window.location.reload() // all 8 CRUDs OK => refresh whole page
+          }
+          else {
+              console.warn('CRUD error on groups removal ('+groupnode_id+')')
           }
       }) ;
   }
@@ -1464,36 +1571,54 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 
 
 // For group modifications (POST: {mainformA: [subformsA1,A2,A3], mainformB:..})
-function GROUPCRUD( groupnode_id , post_data , callback) {
-    // ngramlists/change?node_id=42&ngram_ids=1,2
+//                                (adds new groups for mainformA and mainformB)
+//                                (also deletes any old group under A or B)
+//
+//                         (DEL: {"keys": [mainformX, mainformY]})
+//                               (just deletes the old groups of X and Y)
+function GROUPCRUDS( groupnode_id , send_object, http_method , callback) {
+
+    // ngramlists/groups?node=9
     var the_url = window.location.origin+"/api/ngramlists/groups?node="+groupnode_id;
 
-    // debug
-    // console.log("  ajax target: " + the_url + " (" + http_method + ")")
+    // array of the keys
+    var mainformIds = Object.keys(send_object)
 
-    $.ajax({
-      method: 'POST',
-      url: the_url,
-      data: post_data,  // currently all data explicitly in the url (like a GET)
-      beforeSend: function(xhr) {
-        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-      },
-      success: function(data){
-            console.log("-- GROUPCRUD ----------")
-            console.log("POST ok!!")
-            console.log(JSON.stringify(data))
-            console.log("-----------------------")
-            callback(true);
-      },
-      error: function(result) {
-          console.log("-- GROUPCRUD ----------")
-          console.log("AJAX Error on POST " + the_url);
-          console.log(result)
-          console.log("-----------------------")
-          callback(false);
-      }
-    });
+    var send_data ;
 
+    // if DELETE we need only them keys
+    if (http_method == "DELETE") {
+        send_data = {"keys": mainformIds} ;
+    }
+    else {
+        send_data = send_object ;
+    }
+
+    if(mainformIds.length > 0) {
+        $.ajax({
+          method: http_method,
+          url: the_url,
+          data: send_data,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function(data){
+                console.log("-- GROUPCRUD ----------")
+                console.log(http_method + " ok!!")
+                console.log(JSON.stringify(data))
+                console.log("-----------------------")
+                callback(true);
+          },
+          error: function(result) {
+              console.log("-- GROUPCRUD ----------")
+              console.log("AJAX Error on " + http_method + " " + the_url);
+              console.log(result)
+              console.log("------------------")
+              callback(false);
+          }
+        });
+
+    } else callback(true);
 }
 
 
@@ -1509,7 +1634,7 @@ function GROUPCRUD( groupnode_id , post_data , callback) {
  * 3. Creates the scores distribution chart over table
  * 4. Set up Search div
  *
- * @param ngdata: a response from the api/node/CID/ngrams/list/ routes
+ * @param ngdata: OriginalNG['records']
  * @param initial: initial score type "occs" or "tfidf"
  * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
  */
@@ -1518,24 +1643,24 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // debug
     // alert("refresh main")
 
-    console.log("")
-    console.log(" = = = = MainTableAndCharts: = = = = ")
-    console.log("ngdata:")
-    console.log(ngdata)
-    console.log("initial:")   //
-    console.log(initial)
-    console.log("search_filter:")        // eg 'filter_all'
-    console.log(search_filter)
-    console.log(" = = = = / MainTableAndCharts: = = = = ")
-    console.log("")
+    // console.log("")
+    // console.log(" = = = = MainTableAndCharts: = = = = ")
+    // console.log("ngdata:")
+    // console.log(ngdata)
+    // console.log("initial:")   //
+    // console.log(initial)
+    // console.log("search_filter:")        // eg 'filter_all'
+    // console.log(search_filter)
+    // console.log(" = = = = / MainTableAndCharts: = = = = ")
+    // console.log("")
 
-    // Expected infos in "ngdata.ngrams" should have the form:
+    // Expected infos in "ngdata" should have the form:
     // { "1": { id: "1", name: "réalité",        score: 36  },
     //   "9": { id: "9", name: "pdg",            score: 116 },
     //  "10": { id:"10", name: "infrastructure", score:  12 }  etc. }
 
     // (see filling of rec_info below)
-    // console.log(ngdata.ngrams)
+    // console.log(ngdata)
 
     var DistributionDict = {}
     for(var i in DistributionDict)
@@ -1616,21 +1741,21 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     $('#delAll').data("columnSelection", 'SOME')
     $('#mapAll').data("columnSelection", 'SOME')
 
-    var div_stats = "<p>";
-    for(var i in ngdata.scores) {
-      var value = (!isNaN(Number(ngdata.scores[i])))? Number(ngdata.scores[i]).toFixed(1) : ngdata.scores[i];
-      div_stats += i+": "+value+" | "
-    }
-    div_stats += "</p>"
-    $("#stats").html(div_stats)
+    // var div_stats = "<p>";
+    // for(var i in ngscores) {
+    //   var value = (!isNaN(Number(ngscores[i])))? Number(ngscores[i]).toFixed(1) : ngscores[i];
+    //   div_stats += i+": "+value+" | "
+    // }
+    // div_stats += "</p>"
+    // $("#stats").html(div_stats)
 
     AjaxRecords = {}
 
-    for(var id in ngdata.ngrams) {
+    for(var id in ngdata) {
 
       // console.log(i)
-      // console.log(ngdata.ngrams[i])
-      var le_ngram = ngdata.ngrams[id] ;
+      // console.log(ngdata[i])
+      var le_ngram = ngdata[id] ;
 
       // INIT records
       // one record <=> one line in the table + ngram states
@@ -1643,7 +1768,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         "state": (le_ngram.state)?le_ngram.state:0,
 
         // properties enabling to see old and new groups
-        "group_exists": (le_ngram.id in NGrams.group.links || le_ngram.id in GroupsBuffer),
+        "group_exists": (le_ngram.id in CurrentGroups["links"])
       }
       // AjaxRecords.push(rec_info)
       AjaxRecords[id] = rec_info
@@ -1960,12 +2085,12 @@ function GET_( url , callback ) {
 // [ = = = = = = = = = = INIT = = = = = = = = = = ]
 // http://localhost:8000/api/node/84592/ngrams?format=json&score=tfidf,occs&list=miam
 var corpus_id = getIDFromURL( "corpora" )
-var NGrams = {
-    "group" : {},
+var OriginalNG = {
+    "records" : {},
     "stop" : {},
-    "main" : {},
     "map" : {},
-    "scores" : {}
+    "scores" : {},
+    "links" : {}
 }
 
 
@@ -1982,51 +2107,47 @@ var final_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_i
 GET_(final_url, HandleAjax)
 
 function HandleAjax(res, sourceUrl) {
+    //£TODO unify with AfterAjax
     if (res && res.ngraminfos) {
 
-        main_ngrams_objects = {}
+        // = = = = MIAM = = = = //
+        OriginalNG["records"] = {}
         for (var ngram_id in res.ngraminfos) {
             var ngram_tuple = res.ngraminfos[ngram_id]
-            main_ngrams_objects[ngram_id] = {
+            OriginalNG["records"][ngram_id] = {
                 'id' : ngram_id,         // redundant but for backwards compat
                 'name' : ngram_tuple[0],
                 'score' : ngram_tuple[1]
             }
         }
 
-        // = = = = MIAM = = = = //
-        NGrams["main"] = {
-            "ngrams": main_ngrams_objects,
-              "scores": {
+
+        OriginalNG["scores"] = {
                 "initial":"occs",
-                "nb_ngrams":Object.keys(main_ngrams_objects).length,
+                "nb_ngrams":Object.keys(OriginalNG["records"]).length,
             }
-        } ;
 
         // = = MAP ALSO STOP = = //
         // 2x(array of ids) ==> 2x(lookup hash)
-        NGrams["map"] = {} ;
+        OriginalNG["map"] = {} ;
         for (var i in res.listmembers.maplist) {
             var map_ng_id = res.listmembers.maplist[i] ;
-            NGrams["map"][map_ng_id] = true ;
+            OriginalNG["map"][map_ng_id] = true ;
         }
 
-        NGrams["stop"] = {} ;
+        OriginalNG["stop"] = {} ;
         for (var i in res.listmembers.stoplist) {
             var stop_ng_id = res.listmembers.stoplist[i] ;
-            NGrams["stop"][stop_ng_id] = true ;
+            OriginalNG["stop"][stop_ng_id] = true ;
         }
 
         // = = = = GROUP = = = = //
-        NGrams["group"] = {
-            "links" : res.links ,
-            // "nodesmemory" will be filled from "links" in AfterAjax()
-            "nodesmemory" : {}
-        };
+        // they go directly to "Current" var (we need not keep the original situation)
+        CurrentGroups["links"] = res.links ;
 
     }
-    // console.log('after init NGrams["main"].ngrams')
-    // console.log(NGrams["main"].ngrams)
+    // console.log('after init OriginalNG["records"]')
+    // console.log(OriginalNG["records"])
 
     // cache all DB node_ids
     $("input#mainlist_id").val(res.nodeids['mainlist'])
@@ -2039,86 +2160,73 @@ function HandleAjax(res, sourceUrl) {
 
 function AfterAjax(sourceUrl) {
   // -------------------------------------------------------------------
-  // console.log(JSON.stringify(NGrams))
+  // console.log(JSON.stringify(OriginalNG))
   // -------------------------------------------------------------------
 
+  state_skip = -1                              // -1
+  state_main = System[0]["statesD"]["normal"]  //  0
+  state_map  = System[0]["statesD"]["keep"]    //  1
+  state_stop = System[0]["statesD"]["delete"]  //  2
+
   // ----------------------------------------- MAPLIST
-  // keepstateId = 1
-  keepstateId = System[0]["statesD"]["keep"]
-  if( Object.keys(NGrams["map"]).length>0 ) {
-      for(var ngram_id in NGrams["map"]) {
-          myNgramInfo = NGrams["main"].ngrams[ngram_id]
-          // initialize state of maplist items
-          myNgramInfo["state"] = keepstateId ;
+
+  if( Object.keys(OriginalNG["map"]).length>0 ) {
+      for(var ngram_id in OriginalNG["map"]) {
+          myNgramInfo = OriginalNG["records"][ngram_id]
+          if (typeof myNgramInfo == "undefined") {
+              console.error("record of ngram " + ngram_id + " is undefined")
+          }
+          else {
+              // initialize state of maplist items
+              myNgramInfo["state"] = state_map ;
+          }
       }
   }
 
   // ----------------------------------------- STOPLIST
-  // delstateId = 2
-  delstateId = System[0]["statesD"]["delete"]
-  if( Object.keys(NGrams["stop"]).length>0 ) {
-      for(var ngram_id in NGrams["stop"]) {
-          console.log('stopping ' + ngram_id)
-          myNgramInfo = NGrams["main"].ngrams[ngram_id]
-          // initialize state of stoplist items
-          myNgramInfo["state"] = delstateId ;
+
+  if( Object.keys(OriginalNG["stop"]).length>0 ) {
+      for(var ngram_id in OriginalNG["stop"]) {
+          myNgramInfo = OriginalNG["records"][ngram_id]
+          if (typeof myNgramInfo == "undefined") {
+              console.error("record of ngram " + ngram_id + " is undefined")
+          }
+          else {
+              // initialize state of stoplist items
+              myNgramInfo["state"] = state_stop ;
+          }
       }
   }
 
-    // Deleting subforms from the ngrams-table, clean start baby!
-    if( Object.keys(NGrams["group"].links).length>0 ) {
-
-        // subforms inventory {  "main":{ all mainform ids } , "sub":{ all subform ids}  }
-        var _forms = {  "main":{} , "sub":{}  }
-        for(var ngramId in NGrams["group"].links) {
-            _forms["main"][ngramId] = true
-            for(var i in NGrams["group"].links[ngramId]) {
-                var subformId = NGrams["group"].links[ngramId][i]
-                // for each subform: true
-                _forms["sub"][ subformId ] = true
+    // Deactivating subforms from the ngrams-table, clean start baby!
+    if( Object.keys(CurrentGroups["links"]).length>0 ) {
+        // init global actualized subform inventory (reverse index of links)
+        // (very useful to find what to change if group is split)
+        for(var ngramId in CurrentGroups["links"]) {
+            for(var i in CurrentGroups["links"][ngramId]) {
+                var subformId = CurrentGroups["links"][ngramId][i]
+                // for each subform: mainform
+                CurrentGroups["subs"][ subformId ] = ngramId
             }
         }
 
-        // ------------------------------------------- MAINLIST
-        // ngrams_data_ will update NGrams.main.ngrams (with subforms removed)
-        var ngrams_data_ = {}
-        for(var ngram_id in NGrams["main"].ngrams) {
+        // use it to deactivate <=> hidden state for all them subforms
+        for (var subNgramId in CurrentGroups["subs"]) {
 
-            // if ngram is subform of another
-            if(_forms["sub"][ngram_id]) {
-                // move subform info into NGrams.group.nodesmemory
-                // ------------------------------------------
-                // (subform goes away from new list but info preserved)
-                // (useful if we want to see/revive subforms in future)
-                NGrams.group.nodesmemory[ngram_id] = NGrams["main"].ngrams[ngram_id]
-
-                // debug:
-                // console.log(ngram_id + " ("+NGrams["main"].ngrams[ngram_id].name+") is a subform")
-            }
-            // normal case
-            else {
-                // we keep the info untouched in the new obj
-                ngrams_data_[ngram_id] = NGrams["main"].ngrams[ngram_id]
-            }
+            // will allow us to distinguish it from mainlist items that
+            // have original state undefined (in InferCRUDFlags)
+            OriginalNG['records'][subNgramId]['state'] = state_skip
         }
-
-        // the new hash of ngrams replaces the old main
-        NGrams["main"].ngrams = ngrams_data_;
     }
 
-    // NB: this miamlist will eventually become AjaxRecords
-    // debug:
-    // console.log('NGrams["main"]')
-    // console.log( NGrams["main"] )
 
-
-    // Building the Score-Selector //NGrams["scores"]
-    var FirstScore = NGrams["main"].scores.initial
+    // Building the Score-Selector //OriginalNG["scores"]
+    var FirstScore = OriginalNG.scores.initial
     // TODO scores_div
     //       Recreate possible_scores from some constants (tfidf, occs)
     //       and not from ngrams[0], to keep each ngram's info smaller
 
-    // var possible_scores = Object.keys( NGrams["main"].ngrams[0].scores );
+    // var possible_scores = Object.keys( OriginalNG["main"].ngrams[0].scores );
     // var scores_div = '<br><select style="font-size:25px;" class="span1" id="scores_selector">'+"\n";
     // scores_div += "\t"+'<option value="'+FirstScore+'">'+FirstScore+'</option>'+"\n"
     // for( var i in possible_scores ) {
@@ -2131,21 +2239,10 @@ function AfterAjax(sourceUrl) {
     termsfilter = (sourceUrl == final_url) ? "reset" : "1"
 
     // Initializing the Charts and Table ---------------------------------------
-    var result = MainTableAndCharts( NGrams["main"] , FirstScore , termsfilter) ;
+    var result = MainTableAndCharts(OriginalNG["records"], FirstScore , termsfilter) ;
 
     console.log( result ) // OK
     // -------------------------------------------------------------------------
-
-    // see TODO scores_div
-    // Listener for onchange Score-Selector
-    // scores_div += "<select>"+"\n";
-    // $("#ScoresBox").html(scores_div)
-    // $("#scores_selector").on('change', function() {
-    //   console.log( this.value )
-    //   var result = MainTableAndCharts( NGrams["main"] , this.value , "filter_all")
-    //   console.log( result )
-    //
-    // });
 
     $("#content_loader").remove()
 

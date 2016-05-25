@@ -345,11 +345,11 @@ def compute_ti_ranking(corpus,
         # create the new TFIDF-XXXX node to get an id
         tir_nd = corpus.add_child()
         if count_scope == "local":
-            tir_nd.typename  = "TFIDF-CORPUS"
+            tir_nd.typename  = "TIRANK-CORPUS"
             tir_nd.name      = "ti rank (%i ngforms in corpus:%s)" % (
                                      total_ngramforms, corpus_id)
         elif count_scope == "global":
-            tir_nd.typename  = "TFIDF-GLOBAL"
+            tir_nd.typename  = "TIRANK-GLOBAL"
             tir_nd.name      = "ti rank (%i ngforms %s in corpora of sourcetype:%s)" % (
                                        total_ngramforms,
                                        ("from corpus %i" % corpus_id) if (termset_scope == "local") else "" ,

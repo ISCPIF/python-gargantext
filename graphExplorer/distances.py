@@ -14,11 +14,11 @@ import numpy    as np
 import pandas   as pd
 import networkx as nx
 
-def clusterByDistances( cooc_id
+def clusterByDistances( cooc_matrix
                , field1=None, field2=None
                , distance='conditional'):
     '''
-    do_distance :: Int -> (Graph, Partition, {ids}, {weight})
+    do_distance :: Coocs[nga, ngb => ccweight] -> (Graph, Partition, {ids}, {weight})
     '''
 
     # implicit global session
@@ -32,19 +32,19 @@ def clusterByDistances( cooc_id
     labels = dict()
     weight = dict()
 
-    Cooc = aliased(NodeNgramNgram)
+    for cooc in cooc_matrix.items:
+        ngram1_id = cooc[0]
+        ngram2_id = cooc[1]
+        ccweight = cooc_matrix.items[cooc]
 
-    query = session.query(Cooc).filter(Cooc.node_id==cooc_id).all()
+        matrix[ngram1_id][ngram2_id] = ccweight
+        matrix[ngram2_id][ngram1_id] = ccweight
 
-    for cooc in query:
-        matrix[cooc.ngram1_id][cooc.ngram2_id] = cooc.weight
-        matrix[cooc.ngram2_id][cooc.ngram1_id] = cooc.weight
+        ids[ngram1_id] = (field1, ngram1_id)
+        ids[ngram2_id] = (field2, ngram2_id)
 
-        ids[cooc.ngram1_id] = (field1, cooc.ngram1_id)
-        ids[cooc.ngram2_id] = (field2, cooc.ngram2_id)
-
-        weight[cooc.ngram1_id] = weight.get(cooc.ngram1_id, 0) + cooc.weight
-        weight[cooc.ngram2_id] = weight.get(cooc.ngram2_id, 0) + cooc.weight
+        weight[ngram1_id] = weight.get(ngram1_id, 0) + ccweight
+        weight[ngram2_id] = weight.get(ngram2_id, 0) + ccweight
 
     x = pd.DataFrame(matrix).fillna(0)
 
@@ -217,4 +217,3 @@ def clusterByDistances( cooc_id
     partition = best_partition(G.to_undirected())
 
     return(G,partition,ids,weight)
-

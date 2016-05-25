@@ -69,10 +69,11 @@ var Resource = function(url_path) {
         });
     };
     // change an item
-    this.change = this.update = function(item, callback) {
+    this.change = this.update = function(id, callback) {
         $.ajax({
-            url: url_path + '/' + item.id,
+            url: url_path + '/' + id,
             type: 'PATCH',
+
             success: callback
         });
     };
@@ -84,14 +85,18 @@ var Resource = function(url_path) {
         $.ajax({
             url: url_path + '/' + id,
             type: 'DELETE',
+
             success: callback
         });
     };
     // add an item
     this.add = this.append = function(value, callback) {
         $.ajax({
+
+            // todo define id
             url: url_path + '/' + id,
             type: 'POST',
+
             success: callback
         });
     };
@@ -99,12 +104,12 @@ var Resource = function(url_path) {
 
 var GarganRest = function(base_path, path_list) {
     var that = this;
-    $.each(path_list, function(p, path){
+    $.each(path_list, function(i, path){
         that[path] = new Resource(base_path + path);
     });
 };
 
-garganrest = new GarganRest('/api/', ['nodes']);
+garganrest = new GarganRest('/api/', ['nodes', 'metrics']);
 
 
 // var log = function(result){console.log(result);};

@@ -88,13 +88,29 @@
                                             {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
                                         </a>
                                     </div>
-                                    <div class="col-md-2 content">
-                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                    <div class="col-md-3 content">
+                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}"
+                                        title="View the corpus">
                                         <button type="button" class="btn btn-default" aria-label="Left Align">
                                               <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                         </button>
 
                                         </a>
+                                        <!--  -->
+                                        <button type="button" class="btn btn-default yopla" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                            data-content="
+                                            <ul>
+                                                <li
+                                                onclick=&quot;
+                                                        garganrest.metrics.update({{corpus.id}}, function(){alert('The corpus ({{corpus.name|escapejs}}) was updated')});
+                                                        &quot;>
+                                                    <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
+                                                </li>
+                                            </ul>
+                                            ">
+                                            <span class="glyphicon glyphicon-dashboard" aria-hidden="true"
+                                            title='Recalculate ngram scores and similarities'></span>
+                                        </button>
                                         <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
                                             <ul>
@@ -103,14 +119,15 @@
                                                         garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
                                                         $(this).parent().parent().remove();
                                                     &quot;>
-                                                    <a href=&quot;#&quot;>Delete this</a>
+                                                    <a href='#'>Delete this</a>
                                                 </li>
                                             </ul>
                                             ">
-                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                            title='Delete this corpus'></span>
                                         </button>
                                     </div>
-                                    <div class="col-md-4 content">
+                                    <div class="col-md-3 content">
                                         {% for state in corpus.hyperdata.statuses %}
                                                 {% ifequal state.action "Workflow" %}
                                                     {% if state.complete %}

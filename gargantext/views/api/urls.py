@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 from . import nodes
+from . import metrics
 from . import ngramlists
 from . import analytics
 
@@ -18,6 +19,14 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
               , url(r'^nodes/(\d+)/facets$'   , nodes.CorpusFacet.as_view()          )
               , url(r'^nodes/(\d+)/favorites$', nodes.CorpusFavorites.as_view()      )
               # in these two routes the node is supposed to be a *corpus* node
+
+
+              , url(r'^metrics/(\d+)$',         metrics.CorpusMetrics.as_view()      )
+                # update all metrics for a corpus
+                #  ex: PUT metrics/123
+                #                     \
+                #                   corpus id
+
 
               , url(r'^ngramlists/change$', ngramlists.ListChange.as_view()          )
                 # add or remove ngram from a list

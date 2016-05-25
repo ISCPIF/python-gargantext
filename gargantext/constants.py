@@ -13,10 +13,12 @@ LISTTYPES = {
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
     'SPECIFICITY'  : WeightedList,
-    'OCCURRENCES'  : WeightedIndex,   # todo replace by WeightedList
+    'OCCURRENCES'  : WeightedIndex,   # could be WeightedList
     'COOCCURRENCES': WeightedMatrix,
-    'TFIDF-CORPUS' : WeightedIndex,   # todo split -> WeightedList for ti_rank and WeightedIndex for tfidf
-    'TFIDF-GLOBAL' : WeightedIndex,   # todo split -> WeightedList for ti_rank and WeightedIndex for tfidf
+    'TFIDF-CORPUS' : WeightedIndex,
+    'TFIDF-GLOBAL' : WeightedIndex,
+    'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
+    'TIRANK-GLOBAL' : WeightedIndex   # could be WeightedList
 }
 
 NODETYPES = [
@@ -40,8 +42,11 @@ NODETYPES = [
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
     # docs subset
-    'FAVORITES'              # 15
-    # TODO add ti RANK
+    'FAVORITES',             # 15
+
+    # more scores (sorry!)
+    'TIRANK-LOCAL',          # 16
+    'TIRANK-GLOBAL',         # 17
 ]
 
 INDEXED_HYPERDATA = {

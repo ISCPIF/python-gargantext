@@ -34,24 +34,36 @@ def _query_list(list_id,
     """
     if not details:
         # simple contents
-        query = session.query(NodeNgram.ngram_id)
+        query = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id == list_id)
     else:
         # detailed contents (terms and some NodeNodeNgram for score)
+
+        # NB: score can be undefined (eg ex-subform that now became free)
+        #     ==> we need outerjoin
+        #     and the filter needs to have scoring_metric_id so we do it before
+        ScoresTable = (session
+                        .query(NodeNodeNgram.score, NodeNodeNgram.ngram_id)
+                        .filter(NodeNodeNgram.node1_id == scoring_metric_id)
+                        .subquery()
+                        )
+
         query = (session
                     .query(
                         NodeNgram.ngram_id,
                         Ngram.terms,
-                        NodeNodeNgram.score
+                        ScoresTable.c.score
                      )
                     .join(Ngram, NodeNgram.ngram_id == Ngram.id)
-                    .join(NodeNodeNgram, NodeNgram.ngram_id == NodeNodeNgram.ngram_id)
-                    .filter(NodeNodeNgram.node1_id == scoring_metric_id)
-                    .order_by(desc(NodeNodeNgram.score))
-                )
 
-    # main filter
-    # -----------
-    query = query.filter(NodeNgram.node_id == list_id)
+                    # main filter ----------------------
+                    .filter(NodeNgram.node_id == list_id)
+
+                    # scores if possible
+                    .outerjoin(ScoresTable,
+                               ScoresTable.c.ngram_id == NodeNgram.ngram_id)
+
+                    .order_by(desc(ScoresTable.c.score))
+                )
 
     if pagination_limit:
         query = query.limit(pagination_limit)
@@ -128,13 +140,18 @@ class GroupChange(APIView):
      }
 
     Chained effect:
+        any previous group under mainformA or B will be overwritten
+
+
+    The DELETE HTTP method also works, with same url
+                 (and simple array in the data)
 
     NB: request.user is also checked for current authentication status
     """
 
     def initial(self, request):
         """
-        Before dispatching to post()
+        Before dispatching to post() or delete()
 
         Checks current user authentication to prevent remote DB manipulation
         """
@@ -150,28 +167,29 @@ class GroupChange(APIView):
           => removes couples where newly reconnected ngrams where involved
           => adds new couples from GroupsBuffer of terms view
 
-        TODO recalculate scores after new groups
         TODO see use of util.lists.Translations
-        TODO benchmark selective delete compared to entire list rewrite
+
+        POST data:
+            <QueryDict: {'1228[]': ['891', '1639']}> => creates 1228 - 891
+                                                            and 1228 - 1639
+        request.POST.lists() iterator where each elt is like :('1228[]',['891','1639'])
         """
         group_node = get_parameters(request)['node']
-        all_nodes_involved = []
+        all_mainforms = []
         links = []
 
         for (mainform_key, subforms_ids) in request.POST.lists():
             mainform_id = mainform_key[:-2]   # remove brackets '543[]' -> '543'
-            all_nodes_involved.append(mainform_id)
+            all_mainforms.append(mainform_id)
             for subform_id in subforms_ids:
                 links.append((mainform_id,subform_id))
-                all_nodes_involved.append(subform_id)
 
-        # remove selectively all groupings with these nodes involved
-        # TODO benchmark
+        # remove selectively all groupings with these mainforms
+        # using IN is correct in this case: list of ids is short and external
+        # see stackoverflow.com/questions/444475/
         old_links = (session.query(NodeNgramNgram)
                     .filter(NodeNgramNgram.node_id == group_node)
-                    .filter(or_(
-                            NodeNgramNgram.ngram1_id.in_(all_nodes_involved),
-                            NodeNgramNgram.ngram2_id.in_(all_nodes_involved)))
+                    .filter(NodeNgramNgram.ngram1_id.in_(all_mainforms))
                 )
         n_removed = old_links.delete(synchronize_session=False)
         session.commit()
@@ -186,6 +204,40 @@ class GroupChange(APIView):
         return JsonHttpResponse({
             'count_removed': n_removed,
             'count_added': len(links),
+            }, 200)
+
+
+    def delete(self, request):
+        """
+        Deletes some groups from the group node
+
+        Send in data format is simply a json { 'keys':'["11492","16438"]' }
+
+        ==> it means removing any synonym groups having these 2 as mainform
+            (within the url's groupnode_id)
+
+        NB: At reception here it becomes like:
+                <QueryDict: {'keys[]': ['11492', '16438']}>
+
+        """
+
+        # from the url
+        group_node = get_parameters(request)['node']
+
+        print(request.POST)
+
+        # from the data in body
+        all_mainforms = request.POST.getlist('keys[]')
+
+        links_to_remove = (session.query(NodeNgramNgram)
+                    .filter(NodeNgramNgram.node_id == group_node)
+                    .filter(NodeNgramNgram.ngram1_id.in_(all_mainforms))
+                )
+        n_removed = links_to_remove.delete(synchronize_session=False)
+        session.commit()
+
+        return JsonHttpResponse({
+            'count_removed': n_removed
             }, 200)
 
 

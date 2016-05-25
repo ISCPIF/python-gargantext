@@ -89,7 +89,7 @@ class NodeListResource(APIView):
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="Gargantext_Corpus.csv"'
 
-            writer = csv.writer(response, delimiter='\t')
+            writer = csv.writer(response, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
             keys =  [ 'title'   , 'journal'
                     , 'publication_year', 'publication_month', 'publication_day'

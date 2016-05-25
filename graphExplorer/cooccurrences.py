@@ -16,7 +16,7 @@ def countCooccurrences( corpus=None
                       , n_min=1, n_max=None , limit=1000
                       , coocNode_id=None    , reset=True
                       , isMonopartite=True  , threshold = 3
-                      , just_pass_result= True,  # just return the WeightedMatrix,
+                      , save_on_db= False,  # just return the WeightedMatrix,
                                                  #    (don't write to DB)
                       ):
     '''
@@ -189,8 +189,8 @@ def countCooccurrences( corpus=None
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
 
-    if just_pass_result:
-        return cooc
-    else:
+    if save_on_db:
         cooc.save(coocNode_id)
         return(coocNode_id)
+    else:
+        return cooc

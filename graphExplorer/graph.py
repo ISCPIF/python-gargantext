@@ -63,7 +63,7 @@ def get_graph( request=None         , corpus=None
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
                                     , isMonopartite=True    , threshold = threshold
-                                    , just_pass_result = True
+                                    , save_on_db = False
                                    #, limit=size
                                     )
     else:

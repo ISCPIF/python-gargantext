@@ -61,6 +61,7 @@ span.note {
 
 span.note.glyphicon {
   color: #555;
+  top:0;
 }
 
 p.note {
@@ -129,12 +130,8 @@ tr:hover {
     margin-bottom: 1em;
 }
 
-.oldsubform {
+.subform {
     color: #777 ;
-}
-
-.usersubform {
-    color: blue ;
 }
 
 .dynatable-record-count {

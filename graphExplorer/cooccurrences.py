@@ -15,7 +15,10 @@ def countCooccurrences( corpus=None
                       , mapList_id=None     , groupList_id=None
                       , n_min=1, n_max=None , limit=1000
                       , coocNode_id=None    , reset=True
-                      , isMonopartite=True  , threshold = 3):
+                      , isMonopartite=True  , threshold = 3
+                      , just_pass_result= True,  # just return the WeightedMatrix,
+                                                 #    (don't write to DB)
+                      ):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
     For the moment list of paramters are not supported because, lists need to
@@ -186,5 +189,8 @@ def countCooccurrences( corpus=None
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
 
-    cooc.save(coocNode_id)
-    return(coocNode_id)
+    if just_pass_result:
+        return cooc
+    else:
+        cooc.save(coocNode_id)
+        return(coocNode_id)

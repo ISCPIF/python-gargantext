@@ -29,3 +29,4 @@ networkx==1.11
 pandas==0.18.0
 six==1.10.0
 lxml==3.5.0
+bs4==0.0.1

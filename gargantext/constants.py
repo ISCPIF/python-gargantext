@@ -125,8 +125,8 @@ LANGUAGES = {
 from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser
 
-from gargantext.util.scrappers import \
-    CernScraper
+#from gargantext.util.scrappers import \
+#    CernScraper
 
 
 def get_resource(corpus_type):

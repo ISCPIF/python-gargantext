@@ -8,7 +8,7 @@ from traceback                  import print_tb
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
-from gargantext.constants       import resourcetype, QUERY_SIZE_N_MAX
+from gargantext.constants       import QUERY_SIZE_N_MAX
 from gargantext.models.nodes    import Node
 from gargantext.util.db         import session
 from gargantext.util.http       import JsonHttpResponse
@@ -133,7 +133,7 @@ def save(request , project_id):
             if filename!=False:
                 # add the uploaded resource to the corpus
                 corpus.add_resource(
-                  type = resourcetype('ISTex')
+                  type = 9
                 , path = filename
                                    )
                 dwnldsOK+=1

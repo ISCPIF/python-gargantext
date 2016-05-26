@@ -131,7 +131,9 @@ from gargantext.util.parsers import \
 
 def get_resource(corpus_type):
     '''get ressources values for a given ressource_type id'''
-    return [n for n in RESOURCES_TYPE if n["type"] == corpus_type][0]
+    for n in RESOURCETYPES:
+        if n["type"] == corpus_type:
+            return n
 
 RESOURCETYPES = [
     # type 0
@@ -176,7 +178,7 @@ RESOURCETYPES = [
         'accepted_formats':["zip",],
     },
     # type 6
-    {   'type': 6
+    {   'type': 6,
         'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'en',
@@ -209,8 +211,8 @@ RESOURCETYPES = [
         "parser": CernParser,
         "default_language": "en",
         'accepted_formats':["zip","xml"],
-        "scrapper": CernScrapper,
-        "base_url": "http://api.scoap3.org/search?",
+        #~ "scrapper": CernScrapper,
+        #~ "base_url": "http://api.scoap3.org/search?",
    },
 ]
 

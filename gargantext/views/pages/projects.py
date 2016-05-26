@@ -94,11 +94,8 @@ def project(request, project_id):
 
     # add a new corpus into Node Project > Node Corpus > Ressource
     if request.method == 'POST':
-        corpus = project.add_child(
-            name = request.POST['name'],
-            typename = 'CORPUS',
-        )
-        corpus = add_corpus(request)
+
+        corpus = add_corpus(request, project)
 
         if corpus.status:
             # parse_extract: fileparsing -> ngram extraction -> lists
@@ -119,32 +116,31 @@ def project(request, project_id):
     for corpus in corpora:
         # we only consider the first resource of the corpus to determine its type
         resources = corpus.resources()
-        if len(resources):
+        if len(resources) > 0:
             resource = resources[0]
+            resource= get_resource(resource["type"])
             ##here map from RESSOURCES_TYPES_ID and NOT NAME
-            resource_type_name = RESOURCETYPES[resource['type']]['name']
-            resource_type_accepted_formats = RESOURCETYPES[resource['type']]['accepted_formats']
-        else:
-            print("(WARNING) PROJECT view: no listed resource or one of the corpus has an invalid type")
+            resource_type_name = resource['name']
+            resource_type_accepted_formats = resource['accepted_formats']
 
-        # add some data for the viewer
-        corpus.count = corpus.children('DOCUMENT').count()
-        status = corpus.status()
-        if status is not None and not status['complete']:
-            if not status['error']:
-                corpus.status_message = '(in progress: %s, %d complete)' % (
-                    status['action'].replace('_', ' '),
-                    status['progress'],
-                )
+            # add some data for the viewer
+            corpus.count = corpus.children('DOCUMENT').count()
+            status = corpus.status()
+            if status is not None and not status['complete']:
+                if not status['error']:
+                    corpus.status_message = '(in progress: %s, %d complete)' % (
+                        status['action'].replace('_', ' '),
+                        status['progress'],
+                    )
+                else:
+                    corpus.status_message = '(aborted: "%s" after %i docs)' % (
+                        status['error'][-1],
+                        status['progress']
+                    )
             else:
-                corpus.status_message = '(aborted: "%s" after %i docs)' % (
-                    status['error'][-1],
-                    status['progress']
-                )
-        else:
-            corpus.status_message = ''
-        # add
-        sourcename2corpora[resource_type_name].append(corpus)
+                corpus.status_message = ''
+            # add
+            sourcename2corpora[resource_type_name].append(corpus)
     # source & their respective counts
     total_documentscount = 0
     sourcename2documentscount = defaultdict(int)

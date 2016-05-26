@@ -13,11 +13,11 @@ from .ngram_groups        import compute_groups
 
 from gargantext.util.db   import session
 from gargantext.models    import Node
-
+from gargantext.util.files import check_format, upload
 from datetime             import datetime
 from celery               import shared_task
 
-def add_corpus(request):
+def add_corpus(request, project):
     '''adding a new corpus into project corpus:
     verifying two prerequisites before upload:
     - file size can exceed UPLOAD_LIMIT set in constants
@@ -28,6 +28,10 @@ def add_corpus(request):
     corpus_msg = None
     #Corpus est du type Node
     #print(corpus.__str__)
+    corpus = project.add_child(
+            name = request.POST['name'],
+            typename = 'CORPUS',
+        )
     #get ressource type
     corpus_type = int(request.POST['type'])
     #corpus.type = int(request.POST['type'])
@@ -43,25 +47,15 @@ def add_corpus(request):
     except OSError as e:
         corpus_status = False
         corpus_status_msg = str(e)
-    if corpus_status:
-        corpus.add_resource(
-                type,
-                path,
-                type = corpus_type,
-                format = corpus_format,
+
+    corpus.add_resource(
+                type=corpus_type,
+                path=path,
             )
-    else:
-        corpus.add_resource(
-                type,
-                path,
-                type= corpus_type,
-                format = corpus_format,
-                status = corpus_status,
-                status_message = corpus_status_msg,
-            )
-    print(session.add(corpus))
-    print(session.commit())
-    return session.query(Node).filter(Node.id == corpus_id).first()
+
+    session.add(corpus)
+    session.commit()
+    return session.query(Node).filter(Node.id == corpus.id).first()
 
 #@shared_task
 def parse_extract(corpus):

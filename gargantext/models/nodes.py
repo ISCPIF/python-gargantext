@@ -110,6 +110,7 @@ class Node(Base):
 
         if order is not None:
             query = query.order_by(Node.name)
+
         return query
 
     def add_child(self, **kwargs):

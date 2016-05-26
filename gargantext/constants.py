@@ -176,7 +176,7 @@ RESOURCETYPES = [
         'accepted_formats':["zip",],
     },
     # type 6
-    {   'type': 6
+    {   'type': 6,
         'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'en',

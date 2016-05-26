@@ -1372,9 +1372,6 @@ function SaveLocalChanges() {
         FlagsBuffer = InferCRUDFlags(id, oldState, mainNewState, FlagsBuffer)
     }
 
-    console.log( "dont do anything" )
-    return "dont do anything"
-
     // [ = = = = propagating to subforms = = = = ]
 
     // if change in mainform list or change in groups

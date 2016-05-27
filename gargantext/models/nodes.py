@@ -110,6 +110,7 @@ class Node(Base):
 
         if order is not None:
             query = query.order_by(Node.name)
+
         return query
 
     def add_child(self, **kwargs):
@@ -135,7 +136,7 @@ class Node(Base):
             self['resources'] = MutableList()
         return self['resources']
 
-    def add_resource(self, type, path=None, url=None):
+    def add_resource(self, type, path=None, url=None, **kwargs):
         """Attach a resource to a given node.
         Mainly used for corpora.
 
@@ -145,10 +146,13 @@ class Node(Base):
         {'extracted': True,
           'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
           'type': 1,
-          'url': None}
+          'url': None,
+          'status':
+          'status_message':
+          }
         """
         self.resources().append(MutableDict(
-            {'type': type, 'path':path, 'url':url, 'extracted': False}
+            {'type': type, 'path':path, 'url':url, 'extracted': False, **kwargs}
         ))
 
     def status(self, action=None, progress=0, complete=False, error=None):

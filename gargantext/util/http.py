@@ -7,7 +7,7 @@ from django import forms
 from urllib.parse import quote_plus as urlencode
 
 from gargantext import settings
-
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 # authentication
 
@@ -19,7 +19,20 @@ def requires_auth(func):
         if not request.user.is_authenticated():
             url = '/auth/login/?next=%s' % urlencode(request.path)
             return redirect(url)
-        return func(request, *args, **kwargs)
+        try:
+            # normal return the subfunction when user ok
+            return func(request, *args, **kwargs)
+
+        except DetachedInstanceError as die:
+            print("===\n" * 10)
+            print(die)
+            print("===\n" * 10)
+            # user was authenticated but something made it expire (session.commit ?)
+            session.rollback()
+
+            # and relogin for safety
+            url = '/auth/login/?next=%s' % urlencode(request.path)
+            return redirect(url)
     return _requires_auth
 
 

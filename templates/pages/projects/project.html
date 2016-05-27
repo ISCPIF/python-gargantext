@@ -117,7 +117,7 @@
                                                 {% endif %}
                                             {% endifequal %}
                                         {% endfor %}
-                                                    
+
                                         <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
                                             <ul>
@@ -307,7 +307,7 @@
                                 },
                                 success: function(data) {
                                     console.log("in doTheQuery() Ajax.Success:")
-                                    console.log(data)
+                                    // console.log(data)
                                     setTimeout(
                                         function() {
                                             location.reload();
@@ -380,7 +380,7 @@
                                     success: function(data) {
                                         console.log("SUCCESS")
                                         console.log("in getGlobalResults")
-                                        console.log(data)
+                                        // console.log(data)
                                         console.log("enabling "+"#"+value.id)
                                         $("#"+value.id).attr('onclick','getGlobalResults(this);');
                                         // $("#submit_thing").prop('disabled' , false)
@@ -551,7 +551,7 @@
                                 },
                                 success: function(data) {
                                     console.log("ajax_success: in testISTEX()")
-                                    console.log(data)
+                                    // console.log(data)
                                     setTimeout(
                                         function() {
                                             location.reload();

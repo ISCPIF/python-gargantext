@@ -198,6 +198,16 @@ RESOURCETYPES = [
         'parser': ISTexParser,
         'default_language': 'en',
     },
+    # type 10
+    {    "type":10,
+         "name": 'SCOAP (XML MARC21 Format)',
+         "parser": CernParser,
+         "default_language": "en",
+         'accepted_formats':["zip","xml"],
+         #~ "scrapper": CernScrapper,
+         #~ "base_url": "http://api.scoap3.org/search?",
+    },
+
 ]
 
 # linguistic extraction parameters ---------------------------------------------

@@ -114,25 +114,27 @@
                                                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"
                                                         title='Recalculate ngram scores and similarities'></span>
                                                     </button>
+                                                   
+                                                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                        data-content="
+                                                        <ul>
+                                                            <li
+                                                            onclick=&quot;
+                                                                    garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                                                                    $(this).parent().parent().remove();
+                                                                &quot;>
+                                                                <a href='#'>Delete this</a>
+                                                            </li>
+                                                        </ul>
+                                                        ">
+                                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                        title='Delete this corpus'></span>
+                                                    </button>
+
                                                 {% endif %}
                                             {% endifequal %}
                                         {% endfor %}
-                                                    
-                                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                            data-content="
-                                            <ul>
-                                                <li
-                                                onclick=&quot;
-                                                        garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
-                                                        $(this).parent().parent().remove();
-                                                    &quot;>
-                                                    <a href='#'>Delete this</a>
-                                                </li>
-                                            </ul>
-                                            ">
-                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                                            title='Delete this corpus'></span>
-                                        </button>
+ 
                                     </div>
                                     <div class="col-md-3 content">
                                         {% for state in corpus.hyperdata.statuses %}

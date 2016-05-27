@@ -97,20 +97,27 @@
 
                                         </a>
                                         <!--  -->
-                                        <button type="button" class="btn btn-default yopla" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
-                                            data-content="
-                                            <ul>
-                                                <li
-                                                onclick=&quot;
-                                                        garganrest.metrics.update({{corpus.id}}, function(){alert('The corpus ({{corpus.name|escapejs}}) was updated')});
-                                                        &quot;>
-                                                    <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
-                                                </li>
-                                            </ul>
-                                            ">
-                                            <span class="glyphicon glyphicon-repeat" aria-hidden="true"
-                                            title='Recalculate ngram scores and similarities'></span>
-                                        </button>
+                                        {% for state in corpus.hyperdata.statuses %}
+                                            {% ifequal state.action "Workflow" %}
+                                                {% if state.complete %}
+                                                    <button type="button" class="btn btn-default yopla" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                        data-content="
+                                                        <ul>
+                                                            <li
+                                                            onclick=&quot;
+                                                                    garganrest.metrics.update({{corpus.id}}, function(){alert('The corpus ({{corpus.name|escapejs}}) was updated')});
+                                                                    &quot;>
+                                                                <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
+                                                            </li>
+                                                        </ul>
+                                                        ">
+                                                        <span class="glyphicon glyphicon-repeat" aria-hidden="true"
+                                                        title='Recalculate ngram scores and similarities'></span>
+                                                    </button>
+                                                {% endif %}
+                                            {% endifequal %}
+                                        {% endfor %}
+                                                    
                                         <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
                                             <ul>

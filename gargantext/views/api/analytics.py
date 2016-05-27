@@ -228,7 +228,7 @@ class NodeNgramsQueries(APIView):
         # build result: prepare data
         date_value_list = query_result.all()
         #print(date_value_list)
-        
+
         if date_value_list:
             date_min = date_value_list[0][0].replace(tzinfo=None)
             date_max = date_value_list[-2][0].replace(tzinfo=None)
@@ -265,8 +265,10 @@ class NodeNgramsQueries(APIView):
             return CsvHttpResponse(sorted(result.items()), ('date', 'value'), 201)
 
 
+
+# ?? TODO put in an ngrams.py file separately ?
 class ApiNgrams(APIView):
-    
+
     def get(self, request):
 
         # parameters retrieval and validation
@@ -275,10 +277,10 @@ class ApiNgrams(APIView):
         # query ngrams
         ParentNode = aliased(Node)
         ngrams_query = (session
-            .query(Ngram.terms, func.sum(NodeNgram.weight).label('count'))
+            .query(Ngram.id, Ngram.terms, func.sum(NodeNgram.weight).label('count'))
             .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
             .join(Node, Node.id == NodeNgram.node_id)
-            .group_by(Ngram.terms)
+            .group_by(Ngram.id, Ngram.terms)
             # .group_by(Ngram)
             .order_by(func.sum(NodeNgram.weight).desc(), Ngram.terms)
         )
@@ -287,11 +289,17 @@ class ApiNgrams(APIView):
         if 'startwith' in request.GET:
             ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
         if 'contain' in request.GET:
+            print("request.GET['contain']")
+            print(request.GET['contain'])
             ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
         if 'corpus_id' in request.GET:
             corpus_id_list = list(map(int, request.GET.get('corpus_id', '').split(',')))
             if corpus_id_list and corpus_id_list[0]:
                 ngrams_query = ngrams_query.filter(Node.parent_id.in_(corpus_id_list))
+        if 'ngram_id' in request.GET:
+            ngram_id_list = list(map(int, request.GET.get('ngram_id', '').split(',')))
+            if ngram_id_list and ngram_id_list[0]:
+                ngrams_query = ngrams_query.filter(Ngram.id.in_(ngram_id_list))
 
         # pagination
         offset = int(request.GET.get('offset', 0))
@@ -306,6 +314,7 @@ class ApiNgrams(APIView):
             },
             'data': [
                 {
+                    'id': ngram.id,
                     'terms': ngram.terms,
                     'count': ngram.count,
                 }
@@ -329,7 +338,7 @@ _operators_dict = {
 
 od = collections.OrderedDict(sorted(INDEXED_HYPERDATA.items()))
 
-_hyperdata_list = [ { key : value } 
+_hyperdata_list = [ { key : value }
             for key, value in od.items()
             if key != 'abstract'
          ]
@@ -403,5 +412,3 @@ class ApiHyperdata(APIView):
         return JsonHttpResponse({
             'data': get_metadata(corpus_id_list),
         })
-
-

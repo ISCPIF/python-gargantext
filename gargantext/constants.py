@@ -112,18 +112,17 @@ INDEXED_HYPERDATA = {
 }
 
 
-#from gargantext.util.taggers import FrenchMeltTagger, TurboTagger
-from gargantext.util.taggers import NltkTagger
+from gargantext.util.taggers import FrenchMeltTagger, TurboTagger
+
 LANGUAGES = {
     'en': {
         #'tagger': EnglishMeltTagger,
-        #'tagger': TurboTagger,
-        'tagger': NltkTagger,
+        'tagger': TurboTagger,
+        #'tagger': NltkTagger,
     },
     'fr': {
-        #'tagger': FrenchMeltTagger,
+        'tagger': FrenchMeltTagger,
         # 'tagger': TreeTagger,
-        'tagger': NltkTagger,
     },
 }
 
@@ -131,96 +130,85 @@ LANGUAGES = {
 from gargantext.util.parsers import \
     EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser
 
-#from gargantext.util.scrappers import \
-#    CernScraper
+def resourcetype(name):
+    '''
+    resourcetype :: String -> Int
+    Usage : resourcetype("Europress (English)") == 1
+    Examples in scrapers scripts (Pubmed or ISTex for instance).
+    '''
+    return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
 
-
-def get_resource(corpus_type):
-    '''get ressources values for a given ressource_type id'''
-    for n in RESOURCETYPES:
-        if n["type"] == corpus_type:
-            return n
+def resourcename(corpus):
+    '''
+    resourcetype :: Corpus -> String
+    Usage : resourcename(corpus) == "ISTex"
+    '''
+    resource = corpus.resources()[0]
+    resourcename = RESOURCETYPES[resource['type']]['name']
+    return re.sub(r'\(.*', '', resourcename)
 
 RESOURCETYPES = [
     # type 0
-    {   'type':0,
-        'name': 'Select database below',
+    {   'name': 'Select database below',
         'parser': None,
         'default_language': None,
     },
     # type 1
-    {   'type':1,
-        'name': 'Europress (English)',
+    {   'name': 'Europress (English)',
         'parser': EuropressParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 2
-    {   'type':2,
-        'name': 'Europress (French)',
+    {   'name': 'Europress (French)',
         'parser': EuropressParser,
         'default_language': 'fr',
-        'accepted_formats':["zip",],
     },
     # type 3
-    {   'type':3,
-        'name': 'Jstor (RIS format)',
+    {   'name': 'Jstor (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 4
-    {   'type':4,
-        'name': 'Pubmed (XML format)',
+    {   'name': 'Pubmed (XML format)',
         'parser': PubmedParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 5
-    {   'type':5,
-        'name': 'Scopus (RIS format)',
+    {   'name': 'Scopus (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 6
-    {   'type': 6,
-        'name': 'Web of Science (ISI format)',
+    {   'name': 'Web of Science (ISI format)',
         'parser': ISIParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 7
-    {   'type':7,
-        'name': 'Zotero (RIS format)',
+    {   'name': 'Zotero (RIS format)',
         'parser': RISParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
     # type 8
-    {   'type':8,
-        'name': 'CSV',
+    {   'name': 'CSV',
         'parser': CSVParser,
         'default_language': 'en',
-        'accepted_formats':["csv"],
     },
     # type 9
-    {   "type":9,
-        'name': 'ISTex',
+    {   'name': 'ISTex',
         'parser': ISTexParser,
         'default_language': 'en',
-        'accepted_formats':["zip",],
     },
-   {    "type":10,
-        "name": 'SCOAP (XML MARC21 Format)',
-        "parser": CernParser,
-        "default_language": "en",
-        'accepted_formats':["zip","xml"],
-        #~ "scrapper": CernScrapper,
-        #~ "base_url": "http://api.scoap3.org/search?",
-   },
-]
+    # type 10
+    {    "type":10,
+         "name": 'SCOAP (XML MARC21 Format)',
+         "parser": CernParser,
+         "default_language": "en",
+         'accepted_formats':["zip","xml"],
+         #~ "scrapper": CernScrapper,
+         #~ "base_url": "http://api.scoap3.org/search?",
+    },
 
+]
 
 # linguistic extraction parameters ---------------------------------------------
 DEFAULT_RANK_CUTOFF_RATIO      = .75         # MAINLIST maximum terms in %
@@ -246,8 +234,8 @@ DEFAULT_ALL_LOWERCASE_FLAG      = True       # lowercase ngrams before recording
                                              #  occurring at sentence beginning)
 
 # ------------------------------------------------------------------------------
-# other parameters
 
+# other parameters
 # default number of docs POSTed to scrappers.views.py
 #  (at page  project > add a corpus > scan/process sample)
 QUERY_SIZE_N_DEFAULT = 1000
@@ -257,7 +245,7 @@ from .settings import BASE_DIR
 # uploads/.gitignore prevents corpora indexing
 # copora can be either a folder or symlink towards specific partition
 UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
-UPLOAD_LIMIT       = 1024* 1024 * 1024
+UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 

@@ -2,7 +2,6 @@ import datetime
 import dateutil.parser
 import zipfile
 import re
-
 import dateparser as date_parser
 from gargantext.util.languages import languages
 
@@ -22,6 +21,13 @@ class Parser:
 
     def __del__(self):
         self._file.close()
+
+    def detect_format(self, afile, a_formats):
+        #import magic
+        print("Detecting format")
+        #print(magic.from_file(afile))
+
+        return
 
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
@@ -107,10 +113,10 @@ class Parser:
             hyperdata[prefix + "_hour"]      = date.strftime("%H")
             hyperdata[prefix + "_minute"]    = date.strftime("%M")
             hyperdata[prefix + "_second"]    = date.strftime("%S")
-
+        print(hyperdata['publication_date'])
         # finally, return the transformed result!
         return hyperdata
-        print(hyperdata['publication_date'])
+
 
     def format_hyperdata_languages(self, hyperdata):
         """format the languages found in the hyperdata."""

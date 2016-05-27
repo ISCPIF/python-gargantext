@@ -13,7 +13,7 @@
 # Available databases :
 ## Pubmed
 ## IsTex,
-## TODO CERN
+## En cours CERN
 
 
 from django.conf.urls import url
@@ -22,7 +22,7 @@ import moissonneurs.pubmed as pubmed
 import moissonneurs.istex  as istex
 
 # TODO
-#import moissonneurs.cern  as cern
+import moissonneurs.cern  as cern
 
 # TODO
 #import moissonneurs.hal         as hal
@@ -40,6 +40,6 @@ urlpatterns = [ url(r'^pubmed/query$'     , pubmed.query    )
               , url(r'^istex/save/(\d+)'  , istex.save      )
 
               # TODO
-              #, url(r'^scoap3/query$'      , cern.query       )
-              #, url(r'^scoap3/save/(\d+)'  , cern.save        )
+              , url(r'^scoap3/query$'      , cern.query       )
+              , url(r'^scoap3/save/(\d+)'  , cern.save        )
               ]

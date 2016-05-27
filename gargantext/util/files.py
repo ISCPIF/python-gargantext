@@ -23,13 +23,21 @@ def download(url, name=''):
         basedir = DOWNLOAD_DIRECTORY,
     )
 
+def check_format(corpus_type, name):
+    #~ if True:
+    acc_formats = RESOURCETYPES[corpus_type]["accepted_formats"]
+    if name.split(".")[-1].lower() not in acc_formats:
+        raise TypeError('Uncorrect format of file. File must be a %s file' %" or ".join(acc_formats))
+
 
 def upload(uploaded):
+
     if uploaded.size > UPLOAD_LIMIT:
         raise IOError('Uploaded file is bigger than allowed: %d > %d' % (
             uploaded.size,
             UPLOAD_LIMIT,
         ))
+
     return save(
         contents = uploaded.file.read(),
         name = uploaded.name,

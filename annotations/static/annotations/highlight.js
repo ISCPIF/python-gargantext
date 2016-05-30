@@ -118,12 +118,8 @@
               // * (see also InferCRUDFlags in lib/NGrams_dyna_chart_and_table)
               // ---------------------------------------------------------------
 
-              // TODO  disambiguate annotation.list_id for highlighted MapList items
-              //       -------------------------------------------------------------
-              //       Because MapList annotations are also MiamList,
-              //       we should ensure that list_id is indeed "MapList"
-              //       (ie that it was added last in CompileNgramsHtml)
-              //       otherwise the "if" here will propose MiamList's options
+              // NB: remember that shown mainlist items are actually main 'without map'
+              //     otherwise the menu for mainlist items can hide the menu for map items
 
               if ($rootScope.lists[annotation.list_id] == "MAPLIST") {
                 $scope.menuItems.push({

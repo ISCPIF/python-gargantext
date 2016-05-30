@@ -25,12 +25,24 @@
       <div class="container-fluid">
         <div class="row-fluid main-panel" ng-controller="NGramHighlightController">
           <div class="col-md-4 col-xs-4 tabbable words-panel">
-            <ul class="nav nav-pills nav-justified">
-              <li ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}">
-                <a href="#tab-{[{listId}]}" data-toggle="tab">{[{listName}]}</a>
-              </li>
-            </ul>
-            <div class="tab-content">
+              <div class="list-selector">
+                <h5>Select highlighted list(s)
+                <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
+
+                    <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}" ng-disabled="{[{ item.label == 'MAPLIST' }]}" >{[{item.label}]}</option>
+
+                    <!-- to disallow unchecking MapList add this into <option> element:  ng-disabled="{[{ item.label == 'MAPLIST' }]}" -->
+
+                </select>
+                </h5>
+                <div class="row spacer"></div>
+                <ul class="nav nav-pills nav-justified">
+                  <li ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}">
+                    <a href="#tab-{[{listId}]}" data-toggle="tab">{[{listName}]}</a>
+                  </li>
+                </ul>
+              </div>
+             <div class="tab-content">
               <div ng-controller="NgramListPaginationController" ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}" class="tab-pane" id="tab-{[{listId}]}">
                 <div ng-if="ngramsInPanel[listId].length == 0" class="alert alert-info" role="alert">
                   Input any keyword you want to link to this article and the list named '{[{listName}]}'
@@ -48,22 +60,13 @@
                     <li ng-class="{'disabled': currentListPage >= totalListPages(listId) - 1}"><a ng-click="nextListPage()" class="glyphicon glyphicon-forward"></a></li>
                   </ul>
                 </nav>
-
+                <!--
                 <div class="form-group" ng-controller="NgramInputController">
                   <input autosave="search" maxlength="240" placeholder="Add any text" type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
                   <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
                 </div>
+                -->
               </div>
-            </div>
-            <div class="list-selector">
-              <h5>Select lists</h5>
-              <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
-
-                  <option ng-repeat="item in allListsSelect" id="list---{[{item.id}]}">{[{item.label}]}</option>
-
-                  <!-- to disallow unchecking MapList add this into <option> element:  ng-disabled="{[{ item.label == 'MapList' }]}" -->
-
-              </select>
             </div>
           </div>
           <div class="col-md-8 col-xs-8 text-panel" ng-controller="DocController" id="document">

@@ -163,6 +163,10 @@
   float: right;
 }
 
+.spacer {
+   margin-top:40px;
+}
+
 .favactive {
   /* yellow */
   color: #FFF50D;

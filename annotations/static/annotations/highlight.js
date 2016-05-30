@@ -385,7 +385,7 @@
         // =============
         // text ------- "Background Few previous studies have examined
         //               non-wealth-based inequalities etc etc etc"
-        // ngram  ----- {uuid: 1846, occurrences: 1, list_id: 3689,
+        // ngram  ----- {uuid: 1846, occs: 1, list_id: 3689,
         //               text: "previous studies", listName: "MAINLIST"}
         // template --- "<span ng-controller='TextSelectionController'
         //                     ng-click='onClick($event)'

@@ -45,13 +45,18 @@ class NgramList(APIView):
 
         # our results: ngrams for the corpus_id (ignoring doc_id for the moment)
         doc_ngram_list = []
+        doc_ngram_list_add = doc_ngram_list.append
         lists = {}
 
         corpus_nod = cache.Node[corpus_id]
         doc_nod = cache.Node[doc_id]
         scores_nod = corpus_nod.children(typename="OCCURRENCES").first()
 
-        for list_type in ['MAINLIST', 'MAPLIST', 'STOPLIST']:
+        # maplist_ids to filter them from mainlist
+        maplist_ids = {}
+
+        # NB must do mainlist after map for filtering map items out of main
+        for list_type in ['MAPLIST', 'STOPLIST', 'MAINLIST']:
             list_nod = corpus_nod.children(typename=list_type).first()
             list_id = list_nod.id
             lists["%s" % list_id] = list_type
@@ -61,8 +66,20 @@ class NgramList(APIView):
             # doc_nod.ngrams iff we just need the occurrences in the doc (otherwise do manually)
             q = doc_nod.ngrams.join(ListsTable).filter(ListsTable.node_id == list_id)
 
-            # add to results
-            doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in q.all()]
+            # add to results (and optional filtering)
+            for (w,obj) in q.all():
+
+                # special filtering case
+                # when MAINLIST requested we actually want MAIN without MAP
+                if list_type == "MAPLIST":
+                    maplist_ids[obj.id] = True
+                if list_type == "MAINLIST":
+                    if obj.id in maplist_ids:
+                        # skip object
+                        continue
+
+                # normal case
+                doc_ngram_list_add((obj.id, obj.terms, w, list_id))
 
         # debug
         # print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
@@ -72,7 +89,7 @@ class NgramList(APIView):
                     {'uuid': ngram_id,
                      'text': ngram_text,
                      'occs': ngram_occurrences,
-                     'lid': list_id,}
+                     'list_id': list_id,}
                 for (ngram_id,ngram_text,ngram_occurrences,list_id) in doc_ngram_list
                 ],
             'lists': lists

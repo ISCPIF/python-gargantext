@@ -71,8 +71,8 @@ class NgramList(APIView):
                 [
                     {'uuid': ngram_id,
                      'text': ngram_text,
-                     'occurrences': ngram_occurrences,
-                     'list_id': list_id,}
+                     'occs': ngram_occurrences,
+                     'lid': list_id,}
                 for (ngram_id,ngram_text,ngram_occurrences,list_id) in doc_ngram_list
                 ],
             'lists': lists

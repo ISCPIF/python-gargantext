@@ -64,9 +64,9 @@
   * --------
   * "554": {
   *  "lists": { "558": "StopList",  "564": "MiamList",  "565": "MapList" }
-  *  "556": [{ "uuid": 2368, "occurrences": 1.0, "text": "idea", "list_id": 564 },
-  *          { "uuid": 5031, "occurrences": 1.0, "text": "indications", "list_id": 564},
-  *          { "uuid": 5015, "occurrences": 3.0, "text": "star", "list_id": 565 },
+  *  "556": [{ "uuid": 2368, "occs": 1.0, "text": "idea", "list_id": 564 },
+  *          { "uuid": 5031, "occs": 1.0, "text": "indications", "list_id": 564},
+  *          { "uuid": 5015, "occs": 3.0, "text": "star", "list_id": 565 },
   *           ... ],
   *   }
   */

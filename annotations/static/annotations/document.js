@@ -32,7 +32,10 @@
             },
             function(data) {
               $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+              // eg id => 'MAPLIST'
               $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
+              // inverted 'MAPLIST' => id
+              $rootScope.listIds = _.invert($rootScope.lists)
               $scope.dataLoading = false ;
             },
             function(data) {

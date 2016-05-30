@@ -13,7 +13,7 @@
   *
   * route: annotations/documents/@d_id
   * ------
-  *
+  * TODO use external: api/nodes/@d_id?fields[]=hyperdata
   * exemple:
   * --------
   * {
@@ -86,13 +86,19 @@
     );
   });
 
+
   /*
   * NgramHttpService: Create, modify or delete 1 Ngram
   * =================
   *
-  * TODO REACTIVATE IN urls.py
+  * TODO add a create case separately and then remove service
   *
-  * if new ngram:
+  * NB : replaced by external api: (MainApiChangeNgramHttpService)
+  *                           api/ngramlists/change?list=LISTID&ngrams=ID1,ID2..
+  *
+  * old logic:
+  * ----------
+  * if new ngram
   *   -> ngram_id will be "create"
   *   -> route: annotations/lists/@node_id/ngrams/create
   *   -> will land on views.NgramCreate
@@ -100,24 +106,61 @@
   * else:
   *   -> ngram_id is a real ngram id
   *   -> route: annotations/lists/@node_id/ngrams/@ngram_id
-  *   -> will land on views.NgramCreate
+  *   -> will land on views.NgramEdit
   *
   */
-  http.factory('NgramHttpService', function ($resource) {
+  // http.factory('NgramHttpService', function ($resource) {
+  //   return $resource(
+  //     window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
+  //   	{
+  //       listId: '@listId',
+  //       ngramId: '@id'
+  //     },
+  // 	{
+  //       post: {
+  //         method: 'POST',
+  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
+  //       },
+  //       delete: {
+  //         method: 'DELETE',
+  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
+  //       }
+  //     }
+  //   );
+  // });
+
+  /*
+  * MainApiChangeNgramHttpService: Add/remove ngrams from lists
+  * =============================
+  * route: api/ngramlists/change?list=LISTID&ngrams=ID1,ID2...
+  *
+  * (same route used in ngrams table)
+  *
+  * /!\ for this route we reach out of this annotation module
+  *     and send directly to the gargantext api route for list change
+  *     (cross origin request with http protocol scheme)
+  * ------
+  *
+  */
+
+  http.factory('MainApiChangeNgramHttpService', function($resource) {
     return $resource(
-      window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
-    	{
+       // adding explicit "http://" b/c this a cross origin request
+      'http://' + window.GARG_ROOT_URL
+                + "/api/ngramlists/change?list=:listId&ngrams=:ngramIdList",
+      {
         listId: '@listId',
-        ngramId: '@id'
+        ngramIdList: '@ngramIdList'  // list in str form (sep=","): "12,25,30"
+                                     // (usually in this app just 1 id): "12"
       },
-  	{
-        post: {
-          method: 'POST',
-          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+      {
+        put: {
+          method: 'PUT',
+          params: {listId: '@listId', ngramIdList: '@ngramIdList'}
         },
         delete: {
           method: 'DELETE',
-          params: {'listId': '@listId', 'ngramId': '@ngramId'}
+          params: {listId: '@listId', ngramIdList: '@ngramIdList'}
         }
       }
     );

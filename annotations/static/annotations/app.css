@@ -28,6 +28,15 @@
   cursor: pointer;
 }
 
+.FOCUS {
+  color: black;
+  font-weight: bold;
+  /* yellow */
+  background-color: rgba(255, 224, 101, 1);
+  cursor: pointer;
+}
+
+
 .delete-keyword, .occurrences {
     vertical-align: super;
     font-size: 70%;

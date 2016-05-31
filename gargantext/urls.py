@@ -41,7 +41,7 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
               # Module Annotation
               # tempo: unchanged doc-annotations routes --
               , url(r'^annotations/', include( annotations_urls )              )
-              , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/$', annotations_main_view)
+              , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/(focus=[0-9,]+)?$', annotations_main_view)
 
               # Module Scrapers (Moissonneurs in French)
               , url(r'^moissonneurs/'   , include( moissonneurs.urls )                 )

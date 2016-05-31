@@ -375,7 +375,7 @@
       /*
       * Replace the any ad hoc anchor by an html template
       */
-      function replaceAnchorByTemplate(text, ngram, template, pattern) {
+      function replaceAnchorByTemplate(text, ngram, template, pattern, cssclass) {
 
         // exemple args:
         // =============
@@ -387,6 +387,7 @@
         //                     ng-click='onClick($event)'
         //                     class='keyword-inline'></span>"
         // pattern ---- RegExp(/#\(#MAINLIST-10007#\)#/gm)
+        // cssclass --- MAINLIST
 
         return text.replace(pattern, function(matched) {
           var tpl = angular.element(template);
@@ -396,7 +397,7 @@
           /*
           * Add CSS class depending on the list the ngram is into
           */
-          tpl.addClass(ngram.listName);
+          tpl.addClass(cssclass);
           return tpl.get(0).outerHTML;
         });
       }
@@ -424,9 +425,18 @@
       }
       /*
       * Match and replace Ngram into the text
+      * =====================================
+      * main mechanism:
+      * @param annotations is the list of ngrams with their info
+      * @param textMapping is an object with text contents
+      * @param $rootScope (global) to check activeLists and list names
+      *
+      * add-on mechanism:
+      * @param focusNgram: an ngram_id to higlight more
+      *        (it is assumed to be already in one of the active lists)
       */
-      function compileNgramsHtml(annotations, textMapping, $rootScope) {
-        if ($rootScope.activeLists === undefined) return;
+      function compileNgramsHtml(annotations, textMapping, $rootScope, focusNgram) {
+        if (typeof $rootScope.activeLists == "undefined") return;
         if (_.keys($rootScope.activeLists).length === 0) return;
         var templateBegin = "<span ng-controller='TextSelectionController' ng-click='onClick($event)' class='keyword-inline'>";
         var templateEnd = "</span>";
@@ -534,8 +544,13 @@
           // again exclude ngrams that are into inactive lists
           if ($rootScope.activeLists[annotation.list_id] === undefined) return;
 
-          // now used to setup css class
-          annotation.listName = $rootScope.lists[annotation.list_id];
+          // listName now used to setup css class
+          var cssClass = $rootScope.lists[annotation.list_id];
+
+          // except if FOCUS
+          if (annotation.uuid == focusNgram) {
+              cssClass = "FOCUS"
+          }
 
           // used as unique placeholder for str.replace
           //        (anchor avoids side effects of multiple replacements
@@ -553,7 +568,8 @@
                   textContent,
                   annotation,
                   template,
-                  anchorPattern);
+                  anchorPattern,
+                  cssClass);
             }
           });
         });
@@ -588,6 +604,9 @@
         if ($rootScope.activeLists === undefined) return;
         if (_.keys($rootScope.activeLists).length === 0) return;
 
+        // console.log("$rootScope.annotations")
+        // console.log($rootScope.annotations)
+
         // initialize ngramsInPanel
         // ------------------------
         //  $rootScope.ngramsInPanel = {
@@ -620,7 +639,8 @@
             '#abstract-text': angular.copy($rootScope.abstract_text),
             '#title': angular.copy($rootScope.title)
           },
-          $rootScope
+          $rootScope,
+          $rootScope.focusNgram // new: optional focus ngram
         );
         // inject highlighted HTML
         angular.forEach(result, function(html, eltId) {

@@ -19,9 +19,11 @@ from gargantext.util.http     import requires_auth
 from sqlalchemy.sql.expression import case
 
 @requires_auth
-def main(request, project_id, corpus_id, document_id):
+def main(request, project_id, corpus_id, document_id, optional_focus_ngram):
     """
     Full page view
+
+    NB: url params are NOT used here (angular has its own url regex in app.js)
     """
     return render_to_response('annotations/main.html', {
         # TODO use reverse()
@@ -48,14 +50,14 @@ class NgramList(APIView):
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
 
-        # our results: ngrams for the corpus_id (ignoring doc_id for the moment)
+        # our results: ngrams within a doc and a list + weights in the doc
         doc_ngram_list = []
         doc_ngram_list_add = doc_ngram_list.append
         lists = {}
 
         corpus_nod = cache.Node[corpus_id]
         doc_nod = cache.Node[doc_id]
-        scores_nod = corpus_nod.children(typename="OCCURRENCES").first()
+        # scores_nod = corpus_nod.children(typename="OCCURRENCES").first()
         groups_nod = corpus_nod.children(typename="GROUPLIST").first()
 
         # synonyms sub table for outerjoins

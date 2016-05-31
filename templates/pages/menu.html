@@ -111,26 +111,14 @@
                                         </a>
                                         <i class="caret"></i>
                                     <ul class="dropdown-menu">
-                                        {% if view == "titles" %}
                                             <li>
                                                 <a tabindex="-1"
                                                     data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With conditional distance        </a>
                                             </li>
                                             <li>
                                                 <a tabindex="-1"
-                                                        data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
+                                                    data-url="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5" onclick='gotoexplorer(this)'  >With distributional distance</a>
                                             </li>
-                                        {% else %}
-                                            <li>
-                                                <a tabindex="-1"
-                                                    href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5" >With conditional distance        </a>
-                                            </li>
-                                            <li>
-                                                <a tabindex="-1"
-                                                        href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=distributional&amp;bridgeness=5">With distributional distance</a>
-                                            </li>
-
-                                        {% endif %}
                                     </ul>
                                     </li>
 
@@ -192,7 +180,7 @@
                                             </h3>
                                             <h3>
                                                 <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-                                                Author(s): {{ user.username | truncatechars:15}} 
+                                                Author(s): {{ user.username | truncatechars:15}}
                                             </h3>
 
                                     </div>
@@ -268,16 +256,20 @@
 
 
         <script type="text/javascript">
+
+          // constrains the graph request with startdate & enddate if present
           function gotoexplorer(elem) {
 
             var url_ = $(elem).data("url")
-            if (TheBuffer==false)
+            if (TheBuffer==false) {
               return window.open(url_,'_blank');
+            }
 
-                var current_timerange = TheBuffer
+            var current_timerange = TheBuffer
             var time_limits = [new Date(oldest[0],oldest[1]-1,oldest[2]), new Date(latest[0],latest[1]-1,latest[2] ) ];
             time_limits[0] = new Date(time_limits[0].setDate(time_limits[0].getDate()-1) );
             time_limits[1] = new Date(time_limits[1].setDate(time_limits[1].getDate()+1) );
+
             if( ( +current_timerange[0]===+time_limits[0] ) &&  ( +current_timerange[1]===+time_limits[1] ) ) {
               url_ = url_ // rien
             } else {

@@ -93,79 +93,8 @@ class NgramList(APIView):
 
 
 # 2016-03-24: refactoring, deactivated NgramEdit and NgramCreate
+# 2016-05-27: removed NgramEdit: replaced the local httpservice by api/ngramlists
 # ------------------------------------
-# class NgramEdit(APIView):
-#     """
-#     Actions on one existing Ngram in one list
-#     """
-#     renderer_classes = (JSONRenderer,)
-#     authentication_classes = (SessionAuthentication, BasicAuthentication)
-#
-#     def post(self, request, list_id, ngram_ids):
-#         """
-#         Edit an existing NGram in a given list
-#         """
-#         # implicit global session
-#         list_id = int(list_id)
-#         list_node = session.query(Node).filter(Node.id==list_id).first()
-#         # TODO add 1 for MapList social score ?
-#         if list_node.type_id == cache.NodeType['MiamList']:
-#             weight=1.0
-#         elif list_node.type_id == cache.NodeType['StopList']:
-#             weight=-1.0
-#
-#         # TODO remove the node_ngram from another conflicting list
-#         for ngram_id in ngram_ids.split('+'):
-#             ngram_id = int(ngram_id)
-#             node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=weight)
-#             session.add(node_ngram)
-#
-#         session.commit()
-#
-#         # return the response
-#         return Response({
-#             'uuid': ngram_id,
-#             'list_id': list_id,
-#             } for ngram_id in ngram_ids)
-#
-#     def put(self, request, list_id, ngram_ids):
-#         return Response(None, 204)
-#
-#     def delete(self, request, list_id, ngram_ids):
-#         """
-#         Delete a ngram from a list
-#         """
-#         # implicit global session
-#         print("to del",ngram_ids)
-#         for ngram_id in ngram_ids.split('+'):
-#             print('ngram_id', ngram_id)
-#             ngram_id = int(ngram_id)
-#             (session.query(NodeNgram)
-#                     .filter(NodeNgram.node_id==list_id)
-#                     .filter(NodeNgram.ngram_id==ngram_id).delete()
-#                     )
-#
-#         session.commit()
-#
-#         # [ = = = = del from map-list = = = = ]
-#         list_id = session.query(Node).filter(Node.id==list_id).first()
-#         corpus = session.query(Node).filter(Node.id==list_id.parent_id , Node.type_id==cache.NodeType['Corpus'].id).first()
-#         node_mapList = get_or_create_node(nodetype='MapList', corpus=corpus )
-#         results = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id ).all()
-#         ngram_2del = [int(i) for i in ngram_ids.split('+')]
-#         ngram_2del_ = session.query(NodeNgram).filter(NodeNgram.node_id==node_mapList.id , NodeNgram.ngram_id.in_(ngram_2del) ).all()
-#         for map_node in ngram_2del_:
-#             session.delete(map_node)
-#         session.commit()
-#
-#         node_stopList = get_or_create_node(nodetype='StopList', corpus=corpus )
-#         for ngram_id in ngram_2del:
-#             stop_node = NodeNgram( weight=1.0, ngram_id=ngram_id , node_id=node_stopList.id)
-#             session.add(stop_node)
-#         session.commit()
-#         # [ = = = = / del from map-list = = = = ]
-#
-#         return Response(None, 204)
 #
 # class NgramCreate(APIView):
 #     """

@@ -7,39 +7,101 @@
   * Controls one Ngram displayed in the flat lists (called "extra-text")
   */
   annotationsAppNgramList.controller('NgramController',
-    ['$scope', '$rootScope', 'NgramHttpService', 'NgramListHttpService',
-    function ($scope, $rootScope, NgramHttpService, NgramListHttpService) {
+    ['$scope', '$rootScope', 'MainApiChangeNgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, MainApiChangeNgramHttpService, NgramListHttpService) {
       /*
       * Click on the 'delete' cross button
+      * (NB: we have different delete consequences depending on list)
       */
       $scope.onDeleteClick = function () {
-        NgramHttpService.delete({
-          'listId': $scope.keyword.list_id,
-          'ngramId': $scope.keyword.uuid
-        }, function(data) {
-          // Refresh the annotationss
-          NgramListHttpService.get(
-            {
-              'corpusId': $rootScope.corpusId,
-              'docId': $rootScope.docId
-            },
-            function(data) {
-              // $rootScope.annotations
-              // ----------------------
-              // is the union of all lists, one being later "active"
-              // (then used for left-side flatlist AND inline annots)
-              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-              // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
-              // $rootScope.lookup =
-              $rootScope.refreshDisplay();
-            },
-            function(data) {
-              console.error("unable to refresh the list of ngrams");
-            }
-          );
-        }, function(data) {
-          console.error("unable to remove the Ngram " + $scope.keyword.text);
-        });
+          var listName = $scope.keyword.listName
+          var thisListId = $scope.keyword.list_id
+          var thisNgramId = $scope.keyword.uuid
+          var crudActions = [] ;
+
+          if (listName == 'MAPLIST') {
+              crudActions = [
+                  ["delete", thisListId]
+              ]
+          }
+          else if (listName == 'MAINLIST') {
+              crudActions = [
+                  ["delete", thisListId],
+                  ["put", $rootScope.listIds.STOPLIST],
+              ]
+          }
+          else if (listName == 'STOPLIST') {
+              crudActions = [
+                  ["delete", thisListId],
+                  ["put", $rootScope.listIds.MAINLIST],
+              ]
+          }
+
+          // using recursion to make chained calls,
+          // todo factorize with highlight.js
+
+          var lastCallback = function() {
+              // Refresh the annotationss
+              NgramListHttpService.get(
+                {'corpusId': $rootScope.corpusId,
+                  'docId': $rootScope.docId},
+                function(data) {
+                  // $rootScope.annotations
+                  // ----------------------
+                  // is the union of all lists, one being later "active"
+                  // (then used for left-side flatlist AND inline annots)
+                  $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                  // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
+                  // $rootScope.lookup =
+                  $rootScope.refreshDisplay();
+                },
+                function(data) {
+                  console.error("unable to refresh the list of ngrams");
+                }
+              );
+          }
+
+          // chained recursion to do several actions then callback (eg refresh)
+          function makeChainedCalls (i, listOfActions, finalCallback) {
+            // each action couple has 2 elts
+            var action = listOfActions[i][0]
+            var listId = listOfActions[i][1]
+
+            MainApiChangeNgramHttpService[action](
+                    {'listId': thisListId,
+                     'ngramIdList': thisNgramId},
+
+                     // on success
+                     function(data) {
+                        // case NEXT
+                        //      ----
+                        // when chained actions
+                        if (listOfActions.length > i+1) {
+                            console.log("calling next action ("+(i+1)+")")
+
+                            // ==============================================
+                            makeChainedCalls(i+1, listOfActions, finalCallback)
+                            // ==============================================
+
+                        }
+                        // case LAST
+                        //     ------
+                        // when last action
+                        else {
+                            finalCallback()
+                        }
+                    },
+                    // on error
+                    function(data) {
+                      console.error("unable to edit the Ngram \""+ngramText+"\""
+                                   +"(ngramId "+ngramId+")"+"at crud no "+i
+                                   +" ("+action+" on list "+listId+")");
+                    }
+            );
+          }
+
+          // run the loop by calling the initial recursion step
+          makeChainedCalls(0, crudActions, lastCallback)
       };
     }]);
 
@@ -82,8 +144,8 @@
   * new NGram from the user input
   */
   annotationsAppNgramList.controller('NgramInputController',
-    ['$scope', '$rootScope', '$element', 'NgramHttpService', 'NgramListHttpService',
-    function ($scope, $rootScope, $element, NgramHttpService, NgramListHttpService) {
+    ['$scope', '$rootScope', '$element', 'NgramListHttpService',
+    function ($scope, $rootScope, $element, NgramListHttpService) {
     /*
     * Add a new NGram from the user input in the extra-text list
     */
@@ -114,46 +176,47 @@
       // ---------------------------------------------------------------
 
       // will check if there's a preexisting ngramId for this value
+      // TODO: reconnect separately from list addition
       // TODO: if maplist => also add to miam
-      NgramHttpService.post(
-        {
-          'listId': listId,
-          'ngramId': 'create'
-        },
-        {
-          'text': value
-        },
-        function(data) {
-          console.warn("refresh attempt");
-          // on success
-          if (data) {
-            angular.element(inputEltId).val("");
-            // Refresh the annotationss
-            NgramListHttpService.get(
-              {
-                'corpusId': $rootScope.corpusId,
-                'docId': $rootScope.docId
-              },
-              function(data) {
-                $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-
-                // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
-                // $rootScope.lookup =
-
-
-                $rootScope.refreshDisplay();
-              },
-              function(data) {
-                console.error("unable to get the list of ngrams");
-              }
-            );
-          }
-        }, function(data) {
-          // on error
-          angular.element(inputEltId).parent().addClass("has-error");
-          console.error("error adding Ngram "+ value);
-        }
-      );
+    //   NgramHttpService.post(
+    //     {
+    //       'listId': listId,
+    //       'ngramId': 'create'
+    //     },
+    //     {
+    //       'text': value
+    //     },
+    //     function(data) {
+    //       console.warn("refresh attempt");
+    //       // on success
+    //       if (data) {
+    //         angular.element(inputEltId).val("");
+    //         // Refresh the annotationss
+    //         NgramListHttpService.get(
+    //           {
+    //             'corpusId': $rootScope.corpusId,
+    //             'docId': $rootScope.docId
+    //           },
+    //           function(data) {
+    //             $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+      //
+    //             // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
+    //             // $rootScope.lookup =
+      //
+      //
+    //             $rootScope.refreshDisplay();
+    //           },
+    //           function(data) {
+    //             console.error("unable to get the list of ngrams");
+    //           }
+    //         );
+    //       }
+    //     }, function(data) {
+    //       // on error
+    //       angular.element(inputEltId).parent().addClass("has-error");
+    //       console.error("error adding Ngram "+ value);
+    //     }
+    //   );
     };
   }]);
 

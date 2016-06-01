@@ -233,6 +233,17 @@ DEFAULT_ALL_LOWERCASE_FLAG      = True       # lowercase ngrams before recording
                                              #  good for variants like same term
                                              #  occurring at sentence beginning)
 
+DEFAULT_INDEX_SUBGRAMS         = False       # False <=> traditional
+                                             # True  <=>
+                                             #  when ngram is like:
+                                             #  "very cool example"
+                                             #  then also count:
+                                             #  "very cool" and "cool example"
+                                             #  (n-1 length ngrams, at initial
+                                             #   indexing after extraction)
+
+
+
 # ------------------------------------------------------------------------------
 
 # other parameters

@@ -33,7 +33,7 @@ def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
     db.commit()
 
 
-def extract_ngrams(corpus, keys=('title', 'abstract', )):
+def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_INDEX_SUBGRAMS):
     """Extract ngrams for every document below the given corpus.
     Default language is given by the resource type.
     The result is then inserted into database.
@@ -75,10 +75,25 @@ def extract_ngrams(corpus, keys=('title', 'abstract', )):
                 # get ngrams
                 for ngram in ngramsextractor.extract(value):
                     tokens = tuple(token[0] for token in ngram)
-                    terms = normalize_terms(' '.join(tokens))
-                    if len(terms) > 1:
-                        nodes_ngrams_count[(document.id, terms)] += 1
-                        ngrams_data.add((terms[:255], len(tokens), ))
+
+                    if do_subngrams:
+                        # ex tokens = ["very", "cool", "exemple"]
+                        #    subterms = [['very', 'cool'],
+                        #                ['very', 'cool', 'exemple'],
+                        #                ['cool', 'exemple']]
+
+                        subterms = subsequences(tokens)
+                    else:
+                        subterms = [tokens]
+
+                    for seqterm in subterms:
+                        ngram = normalize_term(' '.join(seqterm))
+                        if len(ngram) > 1:
+                            # doc <=> ngram index
+                            nodes_ngrams_count[(document.id, ngram)] += 1
+                            # add fields :   terms          n
+                            ngrams_data.add((ngram[:255], len(seqterm), ))
+
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
@@ -116,3 +131,27 @@ def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
         term_str = term_str.lower()
 
     return term_str
+
+
+def subsequences(sequence):
+    """
+    For an array of length n, returns an array of subarrays
+    with the original and all its sub arrays of length n-1
+
+    Ex: subsequences(["Aaa","Bbb", "Ccc", "Ddd"])
+        [
+            ['Aaa', 'Bbb', 'Ccc'],
+            ['Aaa', 'Bbb', 'Ccc', 'Ddd'],
+                   ['Bbb', 'Ccc', 'Ddd']
+         ]
+    """
+    l = len(sequence)
+    li = []
+    lsave = li.append
+    for i in range(l):
+        for j in range(i+(l-1),l+1):
+            if i != j:
+                lsave(sequence[i:j])
+                # debug
+                # print("  >", sequence[i:j])
+    return li

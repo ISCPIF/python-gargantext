@@ -60,26 +60,26 @@ class Parser:
                 print(error, 'Date not parsed for:', date_string)
                 hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
+        
         elif hyperdata.get('publication_year', None) is not None:
             prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
             for prefix in prefixes:
                 date_string = hyperdata[prefix + "_year"]
                 key = prefix + "_month"
                 if key in hyperdata:
-                    date_string += " " + hyperdata[key]
+                    date_string += " " + hyperdata.get(key, "01")
                     key = prefix + "_day"
                     if key in hyperdata:
-                        date_string += " " + hyperdata[key]
+                        date_string += " " + hyperdata.get(key, "01")
                         key = prefix + "_hour"
                         if key in hyperdata:
-                            date_string += " " + hyperdata[key]
+                            date_string += " " + hyperdata.get(key, "01")
                             key = prefix + "_minute"
                             if key in hyperdata:
-                                date_string += ":" + hyperdata[key]
+                                date_string += ":" + hyperdata.get(key, "01")
                                 key = prefix + "_second"
                                 if key in hyperdata:
-                                    date_string += ":" + hyperdata[key]
+                                    date_string += ":" + hyperdata.get(key, "01")
                 try:
                     hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
                 except Exception as error:
@@ -90,13 +90,13 @@ class Parser:
 
                     except Exception as error:
                         try:
-                            print(error)
+                            print("error line 93", error)
                             # FIXME Date format:  1994 SPR
                             # By default, we take the year only
                             hyperdata[prefix + "_date"] = date_parser.parse(str(date_string)[:4]).strftime("%Y-%m-%d %H:%M:%S")
 
                         except Exception as error:
-                            print(error)
+                            print("error line 99", error)
         else:
             print("WARNING: Date unknown at _Parser level, using now()")
             hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -113,7 +113,7 @@ class Parser:
             hyperdata[prefix + "_hour"]      = date.strftime("%H")
             hyperdata[prefix + "_minute"]    = date.strftime("%M")
             hyperdata[prefix + "_second"]    = date.strftime("%S")
-        print(hyperdata['publication_date'])
+        print("line 116", hyperdata['publication_date'])
         # finally, return the transformed result!
         return hyperdata
 

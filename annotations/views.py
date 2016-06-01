@@ -12,15 +12,11 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
-# 2016-03-24: refactoring, new paths
-from gargantext.models.ngrams import Node, NodeNgram, Ngram
+from gargantext.models.ngrams import Node, NodeNgram, Ngram, NodeNgramNgram
 from gargantext.util.db       import session, aliased
 from gargantext.util.db_cache import cache
 from gargantext.util.http     import requires_auth
-
-# from ngram.lists import listIds, listNgramIds
-# from gargantext_web.db import get_or_create_node
-
+from sqlalchemy.sql.expression import case
 
 @requires_auth
 def main(request, project_id, corpus_id, document_id):
@@ -39,30 +35,93 @@ class NgramList(APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, corpus_id, doc_id):
-        """Get All for a doc id"""
+        """
+        Get all ngrams for a doc id, sorted by list
+
+        NB1 : we are within a doc only
+        NB2 : MAINLIST items are actually MAINLIST without MAP items
+        NB3 : mostly the mainforms are in lists, but doc can have subform
+              => if we simply join on ngram_id, we'll filter out the subforms
+              => join on value filled by case switch:
+                    (the ngram itself or a mainform if exists)
+        """
         corpus_id = int(corpus_id)
         doc_id = int(doc_id)
 
         # our results: ngrams for the corpus_id (ignoring doc_id for the moment)
         doc_ngram_list = []
+        doc_ngram_list_add = doc_ngram_list.append
         lists = {}
 
         corpus_nod = cache.Node[corpus_id]
         doc_nod = cache.Node[doc_id]
         scores_nod = corpus_nod.children(typename="OCCURRENCES").first()
+        groups_nod = corpus_nod.children(typename="GROUPLIST").first()
 
-        for list_type in ['MAINLIST', 'MAPLIST', 'STOPLIST']:
+        # synonyms sub table for outerjoins
+        Syno = (session.query(NodeNgramNgram.ngram1_id,
+                              NodeNgramNgram.ngram2_id)
+                .filter(NodeNgramNgram.node_id == groups_nod.id)
+                .subquery()
+               )
+
+        # maplist_ids to filter map ngrams from mainlist
+        maplist_ids = {}
+
+        # NB must do mainlist after map for filtering map items out of main
+        for list_type in ['MAPLIST', 'STOPLIST', 'MAINLIST']:
             list_nod = corpus_nod.children(typename=list_type).first()
             list_id = list_nod.id
             lists["%s" % list_id] = list_type
 
             ListsTable = aliased(NodeNgram)
 
-            # doc_nod.ngrams iff we just need the occurrences in the doc (otherwise do manually)
-            q = doc_nod.ngrams.join(ListsTable).filter(ListsTable.node_id == list_id)
+            mainform_id = case([
+                                (Syno.c.ngram1_id != None, Syno.c.ngram1_id),
+                                (Syno.c.ngram1_id == None, Ngram.id)
+                            ])
 
-            # add to results
-            doc_ngram_list += [(obj.id, obj.terms, w, list_id) for (w,obj) in q.all()]
+            q = (session
+                    # ngrams from the doc_id
+                    .query(NodeNgram.weight, Ngram, mainform_id)
+                    # debug
+                    #.query(NodeNgram.weight, Ngram.terms, Ngram.id, Syno.c.ngram1_id, mainform_id)
+                    .select_from(NodeNgram)
+                    .join(Ngram)
+                    .filter(NodeNgram.node_id == doc_id)
+
+                    # add mainforms next to their subforms
+                    .outerjoin(Syno,
+                                Syno.c.ngram2_id == Ngram.id)
+
+                    # filter mainforms on the list we want
+                    .join(ListsTable,
+                            #  possible that mainform is in list
+                            #  and not the subform
+                            ListsTable.ngram_id == mainform_id
+                        )
+                    .filter(ListsTable.node_id == list_id)
+                )
+
+            # add to results (and optional filtering)
+            for (w,obj, mainform_id) in q.all():
+
+                ngram_id = obj.id
+
+                # boolean if needed
+                # is_subform = (ngram_id == mainform_id)
+
+                # special filtering case
+                # when MAINLIST requested we actually want MAIN without MAP
+                if list_type == "MAPLIST":
+                    maplist_ids[ngram_id] = True
+                if list_type == "MAINLIST":
+                    if ngram_id in maplist_ids:
+                        # skip object
+                        continue
+
+                # normal case
+                doc_ngram_list_add((ngram_id, obj.terms, w, list_id))
 
         # debug
         # print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
@@ -71,7 +130,7 @@ class NgramList(APIView):
                 [
                     {'uuid': ngram_id,
                      'text': ngram_text,
-                     'occurrences': ngram_occurrences,
+                     'occs': ngram_occurrences,
                      'list_id': list_id,}
                 for (ngram_id,ngram_text,ngram_occurrences,list_id) in doc_ngram_list
                 ],

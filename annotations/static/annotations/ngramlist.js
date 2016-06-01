@@ -159,7 +159,7 @@
       // £TEST locally check if already in annotations NodeNgrams ------
 
       // $rootScope.annotations = array of ngram objects like:
-      // {"list_id":805,"occurrences":2,"uuid":9386,"text":"petit échantillon"}
+      // {"list_id":805,"occs":2,"uuid":9386,"text":"petit échantillon"}
 
       console.log('looking for "' + value + '" in list:' + listId)
       var already_in_list = false ;

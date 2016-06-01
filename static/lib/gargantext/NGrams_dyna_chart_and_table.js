@@ -1325,8 +1325,8 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
             }
         }
     }
-    console.log("registry")
-    console.log(registry)
+    // console.log("registry")
+    // console.log(registry)
     return registry
 }
 

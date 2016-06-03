@@ -87,7 +87,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
                         subterms = [tokens]
 
                     for seqterm in subterms:
-                        ngram = normalize_term(' '.join(seqterm))
+                        ngram = normalize_terms(' '.join(seqterm))
                         if len(ngram) > 1:
                             # doc <=> ngram index
                             nodes_ngrams_count[(document.id, ngram)] += 1
@@ -136,20 +136,27 @@ def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
 def subsequences(sequence):
     """
     For an array of length n, returns an array of subarrays
-    with the original and all its sub arrays of length n-1
+    with the original and all its sub arrays of lengths 1 to n-1
 
-    Ex: subsequences(["Aaa","Bbb", "Ccc", "Ddd"])
+    Ex: subsequences(['Aa','Bb','Cc','Dd'])
         [
-            ['Aaa', 'Bbb', 'Ccc'],
-            ['Aaa', 'Bbb', 'Ccc', 'Ddd'],
-                   ['Bbb', 'Ccc', 'Ddd']
+            ['Aa'],
+            ['Aa', 'Bb'],
+            ['Aa', 'Bb', 'Cc'],
+            ['Aa', 'Bb', 'Cc', 'Dd'],
+            ['Bb'],
+            ['Bb', 'Cc'],
+            ['Bb', 'Cc', 'Dd'],
+            ['Cc'],
+            ['Cc', 'Dd'],
+            ['Dd']
          ]
     """
     l = len(sequence)
     li = []
     lsave = li.append
     for i in range(l):
-        for j in range(i+(l-1),l+1):
+        for j in range(i+1,l+1):
             if i != j:
                 lsave(sequence[i:j])
                 # debug

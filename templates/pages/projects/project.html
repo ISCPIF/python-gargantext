@@ -114,7 +114,6 @@
                                                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"
                                                         title='Recalculate ngram scores and similarities'></span>
                                                     </button>
-
                                                     <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                                         data-content="
                                                         <ul>
@@ -130,11 +129,9 @@
                                                         <span class="glyphicon glyphicon-trash" aria-hidden="true"
                                                         title='Delete this corpus'></span>
                                                     </button>
-
                                                 {% endif %}
                                             {% endifequal %}
                                         {% endfor %}
-
                                     </div>
                                     <div class="col-md-3 content">
                                         {% for state in corpus.hyperdata.statuses %}

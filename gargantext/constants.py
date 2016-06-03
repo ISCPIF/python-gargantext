@@ -128,7 +128,7 @@ LANGUAGES = {
 
 
 from gargantext.util.parsers import \
-    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser
+    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser, RepecParser
 
 def resourcetype(name):
     '''
@@ -206,6 +206,12 @@ RESOURCETYPES = [
          'accepted_formats':["zip","xml"],
          #~ "scrapper": CernScrapper,
          #~ "base_url": "http://api.scoap3.org/search?",
+    },
+
+    # type 11
+    {   'name': 'REPEC (RIS format)',
+        'parser': RepecParser,
+        'default_language': 'en',
     },
 
 ]

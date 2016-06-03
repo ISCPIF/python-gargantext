@@ -4,7 +4,7 @@ from gargantext.util.languages import languages
 
 #from admin.utils import PrintException
 
-class RISParser(Parser):
+class RepecParser(Parser):
 
 #    def __init__(self, language_cache=None):
 #
@@ -16,16 +16,16 @@ class RISParser(Parser):
     _begin = 6
     _parameters = {
         b"ER":  {"type": "delimiter"},
-        b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
+        b"T1":  {"type": "hyperdata", "key": "title", "separator": " "},
         b"ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
-        b"AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
-        b"T2":  {"type": "hyperdata", "key": "journal"},
+        b"A1":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
+        b"JO":  {"type": "hyperdata", "key": "journal"},
         b"UR":  {"type": "hyperdata", "key": "doi"},
-        b"PY":  {"type": "hyperdata", "key": "publication_year"},
+        b"Y1":  {"type": "hyperdata", "key": "publication_year"},
         b"PD":  {"type": "hyperdata", "key": "publication_month"},
         b"N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
         b"LA":  {"type": "hyperdata", "key": "language_iso2"},
-        b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+        b"N2":  {"type": "hyperdata", "key": "abstract", "separator": " "},
         b"WC":  {"type": "hyperdata", "key": "fields"},
     }
 
@@ -45,7 +45,10 @@ class RISParser(Parser):
                         parameter = self._parameters[last_key]
                         if parameter["type"] == "hyperdata":
                             separator = parameter["separator"] if "separator" in parameter else ""
-                            hyperdata[parameter["key"]] = separator.join(last_values)
+                            if parameter["key"] == "publication_year":
+                                hyperdata[parameter["key"]] = separator.join(last_values)[:4]
+                            else:
+                                hyperdata[parameter["key"]] = separator.join(last_values)
                         elif parameter["type"] == "delimiter":
                             if 'language_fullname' not in hyperdata.keys():
                                 if 'language_iso3' not in hyperdata.keys():

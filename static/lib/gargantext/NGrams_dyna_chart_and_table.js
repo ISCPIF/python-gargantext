@@ -431,7 +431,9 @@ function saveActiveGroup() {
             GroupsBuffer._to_del[downgradedNgramId] = CurrentGroups["links"][downgradedNgramId]
 
             // locally
-            deleteInCurrentGroups(downgradedNgramId, false)     // "false" <=> no need to change subform states
+            deleteInCurrentGroups(false, downgradedNgramId)
+                // arg 1 "false" <=> no need to change subform states
+                // arg 3 no subforms  <=> delete entire group
         }
     }
 
@@ -671,26 +673,24 @@ function removeSubform(ngramId) {
     //    in another group see comment at the top of script
 
 
-
     // special case: if removed form already was a subform it becomes independant
     //
-    // (because the old mainform may be remaining in the new group, we set a
-    //  convention: entire previous group goes "to_delete" at 1st sub remove)
+    // (because the old mainform may be remaining in the new group)
     //
     if (CurrentGroups["subs"][ngramId]) {
         var oldMainFormId = CurrentGroups["subs"][ngramId]
 
-        // it must break the old group, mark for deletion
+        // it must remove the subform from old group
         // TODO make temporary
 
         // for DB
-        GroupsBuffer._to_del[oldMainFormId] = CurrentGroups["links"][ngramId]
+        GroupsBuffer._to_del[oldMainFormId] = [ngramId]
 
         // local consequences:
-        deleteInCurrentGroups(oldMainFormId, true)
-        //     => they are all removed from CurrentGroups
-        //     => the removed subform and all others from the old group
-        //        get a state (map/del/normal)
+	    var subformInheritsState = true
+        deleteInCurrentGroups(subformInheritsState, oldMainFormId, [ngramId])
+        // arg1 true     => the removed subform from the old group
+        //                  gets a state (map/del/normal)
     }
 
     // ==========================================
@@ -723,42 +723,76 @@ function removeSubform(ngramId) {
 
 
 /**
- * Effects of deleting a mainform from the current groups
+ * Effects of deleting a mainform from the current groups (client-side)
  *
  *  => updates the global var CurrentGroups
+ *  => optionally triggers assignment of a state to the ex-subforms
  *
- * @param ngramId of a mainform
  * @param inheritState boolean  => updates the AjaxRecords[subformId].state
+ * @param ngramId of a mainform
+ * @param (optional) subforms array of subNgramIds (removes individual links)
+ *        if absent: removes the whole group
  */
-function deleteInCurrentGroups(ngramId, inheritState) {
+function deleteInCurrentGroups(inheritState, mainformId, subforms) {
+
+    var wholeGroup = false
+    if (typeof subforms == "undefined") {
+        console.log("deleteInCurrentGroups: no subforms specified: removing *entire* old group")
+	wholeGroup = true
+    }
     if (inheritState) {
         // ex-subforms can inherit state from their previous mainform
-        var implicitState = AjaxRecords[ngramId].state
+        var implicitState = AjaxRecords[mainformId].state
     }
 
-    if (CurrentGroups.links[ngramId]) {
-        var oldGroup = CurrentGroups.links[ngramId]
-        // deleting in reverse index
-        for (var i in oldGroup) {
-            var subformId = oldGroup[i]
-            delete CurrentGroups.subs[subformId]
+    var subsToDel = []
+    if (wholeGroup) {
+        subsToDel = CurrentGroups.links[mainformId]
+    }
+    else {
+        subsToDel = subforms
+    }
 
-            if (inheritState) {
-                AjaxRecords[subformId].state = implicitState
-                // consequence:
-                //   now OriginalNG.records[subformId].state
-                //        is != AjaxRecords[subformId].state
-                //   therefore the newly independant forms
-                //   will be added to their new wordlist
-            }
+    // deleting in reverse index
+    for (var i in subsToDel) {
+        var subformId = subsToDel[i]
+
+        // deleting in "subs"
+        delete CurrentGroups.subs[subformId]
+
+        if (inheritState) {
+            AjaxRecords[subformId].state = implicitState
+            // consequence:
+            //   now OriginalNG.records[subformId].state
+            //        is != AjaxRecords[subformId].state
+            //   therefore the newly independant forms
+            //   will be added to their new wordlist
         }
+
         // deleting in "links"
-        delete CurrentGroups.links[ngramId]
+        if (! wholeGroup) {
+            // remove 1 from links array (indexOf is ok b/c length always small)
+            var i = CurrentGroups["links"][mainformId].indexOf(subformId)
+            CurrentGroups["links"][mainformId].splice(i,1)
+
+            // if it was the last of this group
+            if (CurrentGroups["links"][mainformId].length == 0) {
+                delete CurrentGroups["links"][mainformId]
+            }
+
+        }
+    }
+
+    // deleting in "links" is simpler in this case
+    if (wholeGroup) {
+        delete CurrentGroups["links"][mainformId]
     }
 }
 
+
+
 /**
- * Adding links to the current groups
+ * Adding links to the current groups (client-side)
  *
  *  => updates the global var CurrentGroups
  *

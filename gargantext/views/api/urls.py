@@ -35,8 +35,8 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
 
               ,  url(r'^ngramlists/groups$', ngramlists.GroupChange.as_view()        )
                 # modify grouping couples of a group node
-                #  ex: POST ngramlists/groups?node=43
-                # post data looks like : {"767":[209,640],"779":[436,265,385]}"
+                #  ex: PUT/DEL ngramlists/groups?node=43
+                #      & group data also in url: 767[]=209,640 & 779[]=436,265,385
 
               , url(r'^ngramlists/family$'     , ngramlists.ListFamily.as_view()     )
                 # entire combination of lists from a corpus, dedicated to termtable

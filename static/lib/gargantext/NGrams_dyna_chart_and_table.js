@@ -54,9 +54,9 @@
  *           - new api routes + prefetch maplist terms
  *           - simplify UpdateTable
  *           - clarify cruds
- *           - better "created groups" handling
+ *           - fine-grained "created groups" handling
  *
- * @version 1.2
+ * @version 1.3
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -144,9 +144,10 @@ var GroupsBuffer = {'_to_add':{}, '_to_del':{}}
 // to_add will have structure like this  { mainformid1 : [array1 of subformids],
 //                                         mainformid2 : [array2 of subformids]}
 
-// to_del is simple array of mainforms : [mainform3, mainform4]
-// because deleting "the group of mainform3" is deleting all DB rows of
-// couples having mainform3 on the left-hand-side ( <=> no need to know the subform)
+// to_del has same format
+// (will be interpreted as couples to remove from DB rows)
+//  for instance: _to_del  = {      A1 : [A2, A5],             B1 : [B2] }
+//  means to remove 3 DB rows   A1 -- A2   and   A1 -- A5   and B1 -- B2
 
 
 
@@ -423,7 +424,13 @@ function saveActiveGroup() {
     for (downgradedNgramId in activeGroup.were_mainforms) {
         // (except the one we just saved)
         if (downgradedNgramId != mainform) {
-            GroupsBuffer._to_del[downgradedNgramId] = true
+            // it deletes the current groups with these ex-mainforms
+            // TODO check
+
+            // for DB
+            GroupsBuffer._to_del[downgradedNgramId] = CurrentGroups["links"][downgradedNgramId]
+
+            // locally
             deleteInCurrentGroups(downgradedNgramId, false)     // "false" <=> no need to change subform states
         }
     }
@@ -674,9 +681,12 @@ function removeSubform(ngramId) {
         var oldMainFormId = CurrentGroups["subs"][ngramId]
 
         // it must break the old group, mark for deletion
-        GroupsBuffer._to_del[oldMainFormId] = true
+        // TODO make temporary
 
-        // consequences:
+        // for DB
+        GroupsBuffer._to_del[oldMainFormId] = CurrentGroups["links"][ngramId]
+
+        // local consequences:
         deleteInCurrentGroups(oldMainFormId, true)
         //     => they are all removed from CurrentGroups
         //     => the removed subform and all others from the old group
@@ -1506,7 +1516,7 @@ function SaveLocalChanges() {
   // (also removes previous groups with same mainforms!)
   function CRUD_7_AddGroups() {
       console.log("===> AJAX CRUD7 AddGroups <===\n") ;
-      GROUPCRUDS(groupnode_id, GroupsBuffer._to_add, "POST" , function(success) {
+      GROUPCRUDS(groupnode_id, GroupsBuffer._to_add, "PUT" , function(success) {
           if (success) {
               CRUD_8_RmGroups()    // chained AJAX  7 -> 8
           }
@@ -1567,35 +1577,46 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 }
 
 
-// For group modifications (POST: {mainformA: [subformsA1,A2,A3], mainformB:..})
-//                                (adds new groups for mainformA and mainformB)
-//                                (also deletes any old group under A or B)
+// For group modifications
+//  @param groupnode_id: the node with the groupings to change
+//  @param send_data: {mainformA: [subformsA1,A2,A3], mainformB:..})
 //
-//                         (DEL: {"keys": [mainformX, mainformY]})
-//                               (just deletes the old groups of X and Y)
-function GROUPCRUDS( groupnode_id , send_object, http_method , callback) {
+//  @param http_method:
+//         PUT: adds new group rows : groupnode_id -- mainformA -- subformsA1
+//                                    groupnode_id -- mainformA -- subformsA2
+//                                    groupnode_id -- mainformA -- subformsA3
+//                                    groupnode_id -- mainformB -- ....
+//
+//         DEL: idem but removes the group rows
+//
+// ex: /api/ngramlists/groups?node=783&3409[]=4745,14691,3730
+//
+// NB no chained effects
+
+function GROUPCRUDS( groupnode_id , send_data, http_method , callback) {
 
     // ngramlists/groups?node=9
     var the_url = window.location.origin+"/api/ngramlists/groups?node="+groupnode_id;
 
-    // array of the keys
-    var mainformIds = Object.keys(send_object)
+    if(Object.keys(send_data).length > 0) {
+        // group details go also in the url as additional params
+        for (var mainformId in send_data) {
+            subformIds = send_data[mainformId]
+            if (typeof subformIds != "undefined" && subformIds.constructor == Array) {
+                console.log("(ok doing: "+http_method+") for mainform "+mainformId+" with subforms", subformIds)
+                the_url = the_url + '&' + mainformId + '[]=' + subformIds.join()
+            }
+            else {
+                console.error("(skipping: "+http_method+") for mainform "+mainformId+" with subforms", subformIds)
+            }
+        }
 
-    var send_data ;
-
-    // if DELETE we need only them keys
-    if (http_method == "DELETE") {
-        send_data = {"keys": mainformIds} ;
-    }
-    else {
-        send_data = send_object ;
-    }
-
-    if(mainformIds.length > 0) {
         $.ajax({
           method: http_method,
           url: the_url,
-          data: send_data,
+          // data: send_data // all data explicitly in the url (like a GET)
+                             // because DEL can't consistently support form data
+
           beforeSend: function(xhr) {
             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
           },
@@ -2155,6 +2176,11 @@ function HandleAjax(res, sourceUrl) {
     AfterAjax(sourceUrl) ;
 }
 
+
+
+// throws errors when ngram in list has no infos
+// (can't assign state and copy to AjaxRecords)
+
 function AfterAjax(sourceUrl) {
   // -------------------------------------------------------------------
   // console.log(JSON.stringify(OriginalNG))
@@ -2171,7 +2197,7 @@ function AfterAjax(sourceUrl) {
       for(var ngram_id in OriginalNG["map"]) {
           myNgramInfo = OriginalNG["records"][ngram_id]
           if (typeof myNgramInfo == "undefined") {
-              console.error("record of ngram " + ngram_id + " is undefined")
+              console.error("record of ngram " + ngram_id + " was undefined")
           }
           else {
               // initialize state of maplist items

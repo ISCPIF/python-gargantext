@@ -4,13 +4,14 @@ API views for advanced operations on ngrams and ngramlists
     - retrieve several lists together ("family")
     - retrieve detailed list infos (ngram_id, term strings, scores...)
     - modify NodeNgram lists (PUT/DEL an ngram to a MAINLIST OR MAPLIST...)
-    - modify NodeNgramNgram groups (POST a list of groupings like {"767":[209,640],"779":[436,265,385]}")
+    - modify NodeNgramNgram groups (PUT/DEL a list of groupings like {"767[]":[209,640],"779[]":[436,265,385]}")
 """
 
 from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
                                      ValidationException, Http404
 from gargantext.util.db       import session, aliased, desc, bulk_insert
-from gargantext.util.db_cache import cache, or_
+from gargantext.util.db_cache import cache
+from sqlalchemy               import tuple_
 from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.lists    import UnweightedList, Translations
 
@@ -132,19 +133,11 @@ class GroupChange(APIView):
                                group node
                                to modify
 
-    We use POST HTTP method to send group data with structure like:
-     {
-        mainform_A: [subform_A1],
-        mainformB:  [subform_B1,subform_B2,subform_B3]
-        ...
-     }
+    We use PUT HTTP method to send group data to DB and DELETE to remove them.
 
-    Chained effect:
-        any previous group under mainformA or B will be overwritten
+    They both use same data format in the url (see links_to_couples).
 
-
-    The DELETE HTTP method also works, with same url
-                 (and simple array in the data)
+    No chained effects : simply adds or deletes rows of couples
 
     NB: request.user is also checked for current authentication status
     """
@@ -160,80 +153,120 @@ class GroupChange(APIView):
             # can't use return in initial() (although 401 maybe better than 404)
             # can't use @requires_auth because of positional 'self' within class
 
-    def post(self, request):
+    def links_to_couples(self,params):
         """
-        Rewrites the group node **selectively**
+        IN (dict from url params)
+        ---
+        params = {
+                       "mainform_A": ["subform_A1"]
+                       "mainform_B": ["subform_B1,subform_B2,subform_B3"]
+                       ...
+                     }
 
-          => removes couples where newly reconnected ngrams where involved
-          => adds new couples from GroupsBuffer of terms view
+        OUT (for DB rows)
+        ----
+        couples = [
+                    (mainform_A , subform_A1),
+                    (mainform_B , subform_B1),
+                    (mainform_B , subform_B2),
+                    (mainform_B , subform_B3),
+                    ...
+                  ]
+        """
+        couples = []
+        for (mainform_id, subforms_ids) in params.items():
+            for subform_id in subforms_ids[0].split(','):
+                # append the couple
+                couples.append((int(mainform_id),int(subform_id)))
+        return couples
+
+    def put(self, request):
+        """
+        Add some group elements to a group node
+          => adds new couples from GroupsBuffer._to_add of terms view
 
         TODO see use of util.lists.Translations
 
-        POST data:
-            <QueryDict: {'1228[]': ['891', '1639']}> => creates 1228 - 891
-                                                            and 1228 - 1639
-        request.POST.lists() iterator where each elt is like :('1228[]',['891','1639'])
+        Parameters are all in the url (for symmetry with DELETE method)
+           api/ngramlists/groups?node=783&1228[]=891,1639
+                                     => creates 1228 - 891
+                                            and 1228 - 1639
+
+        general format is:   mainform_id[]=subform_id1,subform_id2 etc
+                                     => creates mainform_id - subform_id1
+                                            and mainform_id - subform_id2
+
+        NB: also checks if the couples exist before because the ngram table
+            will send the entire group (old existing links + new links)
         """
-        group_node = get_parameters(request)['node']
-        all_mainforms = []
-        links = []
+        # from the url
+        params = get_parameters(request)
+        # the node param is unique
+        group_node = params.pop('node')
+        # the others params are links to change
+        couples = self.links_to_couples(params)
 
-        for (mainform_key, subforms_ids) in request.POST.lists():
-            mainform_id = mainform_key[:-2]   # remove brackets '543[]' -> '543'
-            all_mainforms.append(mainform_id)
-            for subform_id in subforms_ids:
-                links.append((mainform_id,subform_id))
-
-        # remove selectively all groupings with these mainforms
-        # using IN is correct in this case: list of ids is short and external
-        # see stackoverflow.com/questions/444475/
-        old_links = (session.query(NodeNgramNgram)
-                    .filter(NodeNgramNgram.node_id == group_node)
-                    .filter(NodeNgramNgram.ngram1_id.in_(all_mainforms))
+        # local version of "insert if not exists" -------------------->8--------
+        # (1) check already existing elements
+        check_query = (session.query(NodeNgramNgram)
+                        .filter(NodeNgramNgram.node_id == group_node)
+                        .filter(
+                            tuple_(NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id)
+                            .in_(couples)
+                    )
                 )
-        n_removed = old_links.delete(synchronize_session=False)
-        session.commit()
 
-        # add new groupings
+        existing = {}
+        for synonyms in check_query.all():
+            existing[(synonyms.ngram1_id,synonyms.ngram2_id)] = True
+
+        # (2) compute difference locally
+        couples_to_add = [(mform,sform) for (mform,sform)
+                                        in couples
+                                        if (mform,sform) not in existing]
+
+        # (3) add new groupings
         bulk_insert(
             NodeNgramNgram,
             ('node_id', 'ngram1_id', 'ngram2_id', 'weight'),
-            ((group_node, mainform, subform, 1.0) for (mainform,subform) in links)
+            ((group_node, mainform, subform, 1.0) for (mainform,subform)
+                                                  in couples_to_add)
         )
 
+        # ------------------------------------------------------------>8--------
+
         return JsonHttpResponse({
-            'count_removed': n_removed,
-            'count_added': len(links),
+            'count_added': len(couples_to_add),
             }, 200)
+
 
 
     def delete(self, request):
         """
-        Deletes some groups from the group node
+        Within a groupnode, deletes some group elements from some groups
 
-        Send in data format is simply a json { 'keys':'["11492","16438"]' }
-
-        ==> it means removing any synonym groups having these 2 as mainform
-            (within the url's groupnode_id)
-
-        NB: At reception here it becomes like:
-                <QueryDict: {'keys[]': ['11492', '16438']}>
-
+        Data format just like in POST, everything in the url
         """
 
         # from the url
-        group_node = get_parameters(request)['node']
+        params = get_parameters(request)
+        # the node param is unique
+        group_node = params.pop('node')
+        # the others params are links to change
+        couples_to_remove = self.links_to_couples(params)
 
-        print(request.POST)
-
-        # from the data in body
-        all_mainforms = request.POST.getlist('keys[]')
-
-        links_to_remove = (session.query(NodeNgramNgram)
+        # remove selectively group_couples
+        # using IN is correct in this case: list of ids is short and external
+        # see stackoverflow.com/questions/444475/
+        db_rows = (session.query(NodeNgramNgram)
                     .filter(NodeNgramNgram.node_id == group_node)
-                    .filter(NodeNgramNgram.ngram1_id.in_(all_mainforms))
+                    .filter(
+                      tuple_(NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id)
+                      .in_(couples_to_remove)
+                    )
                 )
-        n_removed = links_to_remove.delete(synchronize_session=False)
+
+        n_removed = db_rows.delete(synchronize_session=False)
         session.commit()
 
         return JsonHttpResponse({
@@ -425,8 +458,6 @@ class MapListGlance(APIView):
                 'scores':  None,
             }
         })
-
-
 
 
 

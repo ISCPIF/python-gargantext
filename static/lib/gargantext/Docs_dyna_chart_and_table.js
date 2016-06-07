@@ -330,8 +330,8 @@ function Main_test(Data) {
   var t1 = get_node_date(AjaxRecords.slice(-1)[0]);
   oldest = t0;
   latest = t1;
-  console.log('t0, t1')
-  console.log(t0, t1)
+  // console.log('t0, t1')
+  // console.log(t0, t1)
 
   TheBuffer = [t0, t1];
   TheBuffer[0] = new Date(TheBuffer[0].setDate(TheBuffer[0].getDate()-1) );
@@ -363,7 +363,7 @@ function Main_test(Data) {
       return d.month;
   });
 
-  console.warn(moveMonths)
+  // console.warn(moveMonths)
 
   //moveChart:(3)
   var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
@@ -645,6 +645,7 @@ $.ajax({
 
           var result = Main_test(maindata.records)
 
+          // OK ?
           console.log( result )
         },
       });

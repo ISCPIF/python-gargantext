@@ -449,7 +449,7 @@ function saveActiveGroup() {
     // clean group modification zone and buffer and update table
     removeActiveGroupFrameAndUpdate()
 
-    console.log("after changes, GroupsBuffer: ",GroupsBuffer)
+    // console.log("after changes, GroupsBuffer: ",GroupsBuffer)
 }
 
 function removeActiveGroupFrameAndUpdate() {
@@ -471,7 +471,7 @@ function removeActiveGroupFrameAndUpdate() {
 
     // TODO when several scores, use cache like currentStateFilter
     var FirstScore = OriginalNG.scores.initial
-    console.log("full re-create table")
+    // console.log("full re-create table")
     MainTableAndCharts(AjaxRecords, FirstScore , currentStateFilter)
 }
 
@@ -863,7 +863,7 @@ function deleteInCurrentGroups(becomesFree, mainformId, subforms) {
  * @param subforms array of subNgramIds
  */
 function addInCurrentGroups(mainformId, subforms) {
-    console.log("addInCurrentGroups: "+mainformId+"("+JSON.stringify(subforms)+")")
+    // console.log("addInCurrentGroups: "+mainformId+"("+JSON.stringify(subforms)+")")
     CurrentGroups["links"][mainformId] = subforms
     for (var i in subforms) {
         var subformId = subforms[i]
@@ -1199,7 +1199,7 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
 
   //debug
   if( typeof AjaxRecords[record.id] == "undefined") {
-      console.log('/!\\ nothing for ' + record.id)
+      console.warn('/!\\ nothing for ' + record.id)
       return false;
   }
   // erase state <= 0
@@ -1413,10 +1413,10 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
 
     // thus skips newly grouped items and returns unmodified registry
     if (desiredState != state_skip) {
-        console.log(oldState,"==>",  desiredState)
+        // console.log(oldState,"==>",  desiredState)
         // (if was previously in MAP)
         if (oldState === state_map) {
-            console.log("previously in map:" + id + "("+AjaxRecords[id]['name']+")")
+            // console.log("previously in map:" + id + "("+AjaxRecords[id]['name']+")")
             if (desiredState === state_main || desiredState === state_stop) {
                 registry["outmap"][ id ] = true
                 // (... and some more actions only if is now desired to be in STOP)
@@ -1428,7 +1428,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
         }
         // (if previously was in STOP)
         else if (oldState === state_stop) {
-            console.log("previously in stop:" + id + "("+AjaxRecords[id]['name']+")")
+            // console.log("previously in stop:" + id + "("+AjaxRecords[id]['name']+")")
             if (desiredState === state_main || desiredState === state_map) {
                 registry["outdel"][id] = true
                 registry["inmain"][id] = true
@@ -1441,7 +1441,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
         // (if previously was under a group)
         else if (oldState === state_skip) {
             if (desiredState === state_main || desiredState === state_map) {
-                console.warn("enter free record:" + id + "("+AjaxRecords[id]['name']+")")
+                // console.log("previously hidden in group:" + id + "("+AjaxRecords[id]['name']+")")
                 registry["inmain"][id] = true
                 // (... and one more action only if is now desired to be in MAP)
                 if(desiredState === state_map) {
@@ -1477,7 +1477,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
 // Save changes to all corpusA-lists
 function SaveLocalChanges() {
   // console.clear()
-  console.log("In SaveLocalChanges()")
+  // console.log("In SaveLocalChanges()")
 
   // registry with summary of the requested changes with consequences
   // ------------------------------------------------------------------
@@ -1506,7 +1506,7 @@ function SaveLocalChanges() {
     if      (OriginalNG["map"][ id ] ) oldState = 1
     else if (OriginalNG["stop"][ id ]) oldState = 2
     else if (typeof oldState == "undefined") {
-        console.warn('old state in OriginalNG not defined but not map nor stop: (id:' + id +')')
+        console.error('old state in OriginalNG not defined but not map nor stop: (id:' + id +')')
         oldState = 0 ;
     }
 
@@ -1576,7 +1576,7 @@ function SaveLocalChanges() {
 
   // add some ngrams to maplist
   function CRUD_1_AddMap() {
-    console.log("===> AJAX CRUD1 AddMap <===\n") ;
+    console.log("AJAX CRUD1 AddMap") ;
     CRUD( maplist_id , Object.keys(FlagsBuffer["inmap"]), "PUT" , function(success) {
       if (success) {
         CRUD_2_RmMap()      // trigger chained AJAX  1 -> 2
@@ -1588,7 +1588,7 @@ function SaveLocalChanges() {
   }
   // remove some ngrams from maplist
   function CRUD_2_RmMap() {
-    console.log("===> AJAX CRUD2 RmMap <===\n") ;
+    console.log("AJAX CRUD2 RmMap") ;
     CRUD( maplist_id , Object.keys(FlagsBuffer["outmap"]), "DELETE" , function(success) {
       if (success) {
         CRUD_3_AddMain()    // chained AJAX  2 -> 3
@@ -1600,7 +1600,7 @@ function SaveLocalChanges() {
   }
   // add some ngrams to mainlist
   function CRUD_3_AddMain() {
-    console.log("===> AJAX CRUD3 AddMain <===\n") ;
+    console.log("AJAX CRUD3 AddMain") ;
     CRUD( mainlist_id , Object.keys(FlagsBuffer["inmain"]), "PUT" , function(success) {
       if (success) {
         CRUD_4_RmMain()    // chained AJAX  3 -> 4
@@ -1612,7 +1612,7 @@ function SaveLocalChanges() {
   }
   // remove some ngrams from mainlist
   function CRUD_4_RmMain() {
-    console.log("===> AJAX CRUD4 RmMain <===\n") ;
+    console.log("AJAX CRUD4 RmMain") ;
     CRUD( mainlist_id , Object.keys(FlagsBuffer["outmain"]), "DELETE" , function(success) {
       if (success) {
         CRUD_5_AddStop()    // chained AJAX  4 -> 5
@@ -1624,7 +1624,7 @@ function SaveLocalChanges() {
   }
   // add some ngrams to stoplist
   function CRUD_5_AddStop() {
-    console.log("===> AJAX CRUD5 AddStop <===\n") ;
+    console.log("AJAX CRUD5 AddStop") ;
     CRUD( stoplist_id , Object.keys(FlagsBuffer["indel"]), "PUT" , function(success) {
       if (success) {
         CRUD_6_RmStop()    // chained AJAX  5 -> 6
@@ -1636,7 +1636,7 @@ function SaveLocalChanges() {
   }
   // remove some ngrams from stoplist
   function CRUD_6_RmStop() {
-    console.log("===> AJAX CRUD6 RmStop <===\n") ;
+    console.log("AJAX CRUD6 RmStop") ;
     CRUD( stoplist_id , Object.keys(FlagsBuffer["outdel"]), "DELETE" , function(success) {
       if (success) {
         CRUD_7_AddGroups()    // chained AJAX  6 -> 7
@@ -1649,7 +1649,7 @@ function SaveLocalChanges() {
   // add to groups reading data from GroupsBuffer
   // (also removes previous groups with same mainforms!)
   function CRUD_7_AddGroups() {
-      console.log("===> AJAX CRUD7 AddGroups <===\n") ;
+      console.log("AJAX CRUD7 AddGroups") ;
       GROUPCRUDS(groupnode_id, GroupsBuffer._to_add, "PUT" , function(success) {
           if (success) {
               CRUD_8_RmGroups()    // chained AJAX  7 -> 8
@@ -1662,7 +1662,7 @@ function SaveLocalChanges() {
 
   // add to groups reading data from GroupsBuffer
   function CRUD_8_RmGroups() {
-      console.log("===> AJAX CRUD8 RmGroups <===\n") ;
+      console.log("AJAX CRUD8 RmGroups") ;
       GROUPCRUDS(groupnode_id, GroupsBuffer._to_del, "DELETE", function(success) {
           if (success) {
               window.location.reload() // all 8 CRUDs OK => refresh whole page
@@ -1694,15 +1694,15 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
           success: function(data){
                 console.log("-- CRUD ----------")
                 console.log(http_method + " ok!!")
-                console.log(JSON.stringify(data))
-                console.log("------------------")
+                // console.log(JSON.stringify(data))
+                // console.log("------------------")
                 callback(true);
           },
           error: function(result) {
               console.log("-- CRUD ----------")
-              console.log("AJAX Error on " + http_method + " " + the_url);
-              console.log(result)
-              console.log("------------------")
+              console.error("AJAX Error on " + http_method + " " + the_url);
+            //   console.log(result)
+            //   console.log("------------------")
               callback(false);
           }
         });
@@ -1757,15 +1757,15 @@ function GROUPCRUDS( groupnode_id , send_data, http_method , callback) {
           success: function(data){
                 console.log("-- GROUPCRUD ----------")
                 console.log(http_method + " ok!!")
-                console.log(JSON.stringify(data))
-                console.log("-----------------------")
+             // console.log(JSON.stringify(data))
+             // console.log("-----------------------")
                 callback(true);
           },
           error: function(result) {
               console.log("-- GROUPCRUD ----------")
-              console.log("AJAX Error on " + http_method + " " + the_url);
-              console.log(result)
-              console.log("------------------")
+              console.error("AJAX Error on " + http_method + " " + the_url);
+            //console.log(result)
+            //console.log("------------------")
               callback(false);
           }
         });
@@ -1931,12 +1931,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
           (typeof le_ngram.score == "undefined" || le_ngram.score == null)
            && (typeof le_ngram.state == "undefined" || (le_ngram.state != 2 && le_ngram.state != -1))
             ) {
-          console.log("no score for:")
-          console.log(le_ngram.id)
-          console.log(le_ngram.name)
-          console.log(le_ngram)
-          console.log("\n")
-      //    rec_info["score"] = 4000
+          console.warn("no score for:" + le_ngram.id, le_ngram.name)
       }
 
       // AjaxRecords.push(rec_info)

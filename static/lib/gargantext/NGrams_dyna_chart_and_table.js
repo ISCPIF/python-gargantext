@@ -38,14 +38,6 @@
  *          (each user action is enacted in Current and at the same time carried
  *           over to GroupsBuffer)
  *
- * NB for groups removal: there is a case when user clicks "cancel" in group modifs
- *                        but some modifications will already be triggered:
- *                        it happens when an entire group A is attached to a new
- *                        group B, and then later an ex-element of A is removed
- *                        from the new group
- *                        => even if the new group B is canceled, it will mark
- *                           the entire old group A for destruction
- *
  * @author
  *   Samuel Castillo (original 2015 work)
  *   Romain Loth
@@ -72,7 +64,7 @@
 // ----------------------------------
 // from /api/ngramlists/lexmodel?corpus=312
 // with some expanding in AfterAjax
-var AjaxRecords = [] ;
+var AjaxRecords = {}
 
 
 // current groups
@@ -400,11 +392,24 @@ function getRecords() {
 // ------------------
 function saveActiveGroup() {
     var mainform = activeGroup.now_mainform_id
-    // pr("saving mainform to GroupsBuffer: " + mainform)
+    // console.log("before changes, GroupsBuffer: ", JSON.stringify(GroupsBuffer))
+    // console.log("saving mainform to GroupsBuffer: " + mainform)
+    // console.log("using the activeGroup:\n  ", JSON.stringify(activeGroup))
 
-    // the new array of tgt forms to save is in now_links
-    addInCurrentGroups(mainform, activeGroup.now_links)    // -> current status
-    GroupsBuffer._to_add[mainform] = activeGroup.now_links // -> changes to make
+    // first free the items that were not kept (in pending no man's land)
+    for (var j in activeGroup.new_free) {
+        var ngid = activeGroup.new_free[j]
+        freeSubform(ngid)
+    }
+
+    // £POSSIBLE: ideally add links only if not pre-existing (but otherwise API will do it)
+
+
+    // save the group (the new array of tgt forms to save is in now_links)
+    if (activeGroup.now_links.length) {
+        addInCurrentGroups(mainform, activeGroup.now_links)    // -> current status
+        GroupsBuffer._to_add[mainform] = activeGroup.now_links // -> changes to make
+    }
 
     // -----------------------------------------------------
     // various consequences
@@ -414,34 +419,40 @@ function saveActiveGroup() {
         AjaxRecords[mainform].name = "*" + AjaxRecords[mainform].name
     }
 
-    // all subforms old and new become deactivated in AjaxRecords
+    // all subforms become deactivated in AjaxRecords
     for (var i in activeGroup.now_links) {
         subformId = activeGroup.now_links[i]
         AjaxRecords[subformId].state = -1
     }
 
-    // the previous mainforms have old groupings to be marked for deletion
+    // the previous mainforms may have old groupings to be marked for deletion
     for (downgradedNgramId in activeGroup.were_mainforms) {
         // (except the one we just saved)
-        if (downgradedNgramId != mainform) {
-            // it deletes the current groups with these ex-mainforms
-            // TODO check
+        if (downgradedNgramId != mainform
+            // and if it did have a group
+            && CurrentGroups.links[downgradedNgramId]) {
 
-            // for DB
+            // then we delete the entire ex-group under the ex-mainform
+
+            // 1) for DB
             GroupsBuffer._to_del[downgradedNgramId] = CurrentGroups["links"][downgradedNgramId]
 
-            // locally
+            // 2) locally
             deleteInCurrentGroups(false, downgradedNgramId)
                 // arg 1 "false" <=> no need to change subform states
-                // arg 3 no subforms  <=> delete entire group
+                //                   because these subforms stay subforms
+                //                   (but under the new mainform)
+                // no arg 3 <=> delete entire group
         }
     }
 
     // clean group modification zone and buffer and update table
-    removeActiveGroupFrame()
+    removeActiveGroupFrameAndUpdate()
+
+    console.log("after changes, GroupsBuffer: ",GroupsBuffer)
 }
 
-function removeActiveGroupFrame() {
+function removeActiveGroupFrameAndUpdate() {
     // no need to restore records:  everything from the frame
     // was in temporary var activeGroup
 
@@ -456,7 +467,12 @@ function removeActiveGroupFrame() {
     vizopenGroup = {}
 
     // reprocess from current record states
-    MyTable.data('dynatable').dom.update();
+    var currentStateFilter = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
+
+    // TODO when several scores, use cache like currentStateFilter
+    var FirstScore = OriginalNG.scores.initial
+    console.log("full re-create table")
+    MainTableAndCharts(AjaxRecords, FirstScore , currentStateFilter)
 }
 
 // for click open/close
@@ -550,7 +566,15 @@ function drawSublist (linkNamesArray) {
     return sublistHtml
 }
 
-function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
+// we can create sort functions for ngramIds to use their associated name
+// (name lookup uses global var AjaxRecords or any other similar records)
+function comparatorNamesInRecords(records) {
+    return function(a,b) {
+        return records[a].name.localeCompare(records[b].name)
+    }
+}
+
+function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos, newFree) {
     var groupHtml  = '<p id="group_box_mainform">';
         groupHtml +=    mainformSpan(ngInfos[mainformId])
         groupHtml += '  <br> │<br>';
@@ -559,7 +583,7 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
         groupHtml += '<p id="group_box_content">';
 
     var last_i = linkIdsArray.length - 1 ;
-    for(var i in linkIdsArray) {
+    for(var i in linkIdsArray.sort(comparatorNamesInRecords(ngInfos))) {
         var subNgramId = linkIdsArray[i] ;
         if (i != last_i) {
             groupHtml += ' ├── ' + subformSpan(ngInfos[subNgramId]) + '<br>' ;
@@ -573,7 +597,7 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
     groupHtml += '\n          <p id="activeGroupButtons">';
 
     // Ok - No
-    var cancelGroupButton  = '<button onclick="removeActiveGroupFrame()">' ;
+    var cancelGroupButton  = '<button onclick="removeActiveGroupFrameAndUpdate()">' ;
         cancelGroupButton +=   'cancel' ;
         cancelGroupButton += '</button>' ;
 
@@ -583,6 +607,15 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos) {
 
     groupHtml += cancelGroupButton
     groupHtml += tempoSaveGroupButton
+
+    groupHtml += '<hr><p id="group_box_pending" style="color:grey;">';
+    if (newFree.length) {
+        groupHtml += 'Unwanted items will become independant terms at finish'
+    }
+    for (var j in newFree) {
+        pendingFormId = newFree[j]
+        groupHtml += pendingSubfHtml(ngInfos[pendingFormId])
+    }
     groupHtml += '</p>\n'
 
     // write html to current DOM
@@ -613,6 +646,21 @@ function subformSpan( subNgramInfo ) {
     return(span[0].outerHTML)
 }
 
+// html for new_free subforms
+function pendingSubfHtml( subNgramInfo ) {
+    // each item is a new ngram in the no man's land between grouped and free status
+
+    // like subformSpan
+    var subformHtml  = '<p title="'+subNgramInfo.id+'" id="pending-subform-'+subNgramInfo.id+'" class="pending subform">'
+    // like plus_event
+    subformHtml += '<span class="note smaller glyphicon glyphicon-plus"'
+    subformHtml +=      ' title=\'add "'+subNgramInfo.name+'" back to active group\''
+    subformHtml +=      ' color="#FF530D"'
+    subformHtml +=      ' onclick="addToGroup('+ subNgramInfo.id +',true)"></span>'
+    subformHtml += subNgramInfo.name
+    subformHtml += '</p>'
+    return(subformHtml)
+}
 
 // makes mainform's span
 function mainformSpan( ngramInfo ) {
@@ -640,12 +688,10 @@ function makeMainform(ngramId) {
     //   -> it was not in any of the lists
     if (! (mainform in activeGroup.were_mainforms)) {
         // update records
-        delete activeGroup.ngraminfo[mainform].origin
         AjaxRecords[mainform] = activeGroup.ngraminfo[mainform]
         AjaxRecords[mainform].state = 0
 
         // update lists (inherits status of previous mainform)
-
     }
 
 
@@ -658,67 +704,71 @@ function makeMainform(ngramId) {
         '#group_box',
         activeGroup.now_mainform_id,
         activeGroup.now_links,
-        activeGroup.ngraminfo
+        activeGroup.ngraminfo,
+        activeGroup.new_free
      )
      // and update
      MyTable.data('dynatable').dom.update();
 }
 
 
-function removeSubform(ngramId) {
-    // no need to restore AjaxRecords[ngramId] because it's untouched
 
+// remove the subform from activeGroup (and any older group in CurrentGroups)
+// NB do this first at activeGroup save (before CurrentGroups will change)
+function freeSubform(ngramId) {
 
-    // NB removeSubform has a side effect for subforms that were previously
-    //    in another group see comment at the top of script
+    // we prefix "*" to the name if not already there like for mainform
+    if (AjaxRecords[ngramId].name[0] != '*') {
+        AjaxRecords[ngramId].name = "*" + AjaxRecords[ngramId].name
+    }
 
+    // normal case
+    if (AjaxRecords[ngramId].state != -1) {
+        // nothing to do:
+        // activeGroup removal will reveal untouched element in AjaxRecords
 
+    }
     // special case: if removed form already was a subform it becomes independant
-    //
     // (because the old mainform may be remaining in the new group)
-    //
-    if (CurrentGroups["subs"][ngramId]) {
-        var oldMainFormId = CurrentGroups["subs"][ngramId]
-
-        // it must remove the subform from old group
-        // TODO make temporary
-
-        // for DB
-        GroupsBuffer._to_del[oldMainFormId] = [ngramId]
-
-        // local consequences:
-	    var subformInheritsState = true
-        deleteInCurrentGroups(subformInheritsState, oldMainFormId, [ngramId])
-        // arg1 true     => the removed subform from the old group
-        //                  gets a state (map/del/normal)
-    }
-
-    // ==========================================
-    // core of the function for any type of ngram
-    // ==========================================
-    $('#active-subform-'+ngramId).remove()
-    if (activeGroup.now_links.length == 1) {
-        // close the frame if last subform
-        removeActiveGroupFrame()
-    }
     else {
-        // clean now_links array
-        var i = activeGroup.now_links.indexOf(ngramId)
-        activeGroup.now_links.splice(i,1)
-
-        // clean were_mainforms dict (if key existed)
-        delete activeGroup.were_mainforms[ngramId]
-
-        // redraw active group_box_content
-        drawActiveGroup(
-            '#group_box',
-            activeGroup.now_mainform_id,
-            activeGroup.now_links,
-            activeGroup.ngraminfo
-         )
-         // and update
-         MyTable.data('dynatable').dom.update();
+        var oldMainFormId = CurrentGroups["subs"][ngramId]
+        // for DB
+        if (! GroupsBuffer._to_del[oldMainFormId]) {
+            GroupsBuffer._to_del[oldMainFormId] = [ngramId]
+        }
+        else {
+            GroupsBuffer._to_del[oldMainFormId].push(ngramId)
+        }
+        // local consequences:
+	    var subformBecomesFree = true
+        deleteInCurrentGroups(subformBecomesFree, oldMainFormId, [ngramId])
+        // arg1 true     => the removed subform from the old group
+        //                  will get a placeholder score !
+        //              and will gets a state (map/del/normal)
+        //           (which will also finally trigger DB list change to new state)
     }
+}
+
+function removeSubform(ngramId) {
+    // element moves from activeGroup.now_links ==> activeGroup.new_free
+    // (it's not going to be "freed" until user clicks "Finish")
+
+    // clean now_links array
+    var i = activeGroup.now_links.indexOf(ngramId)
+    activeGroup.now_links.splice(i,1)
+    // clean were_mainforms dict (if key existed)
+    delete activeGroup.were_mainforms[ngramId]
+    // add to free elements
+    activeGroup.new_free.push(ngramId)
+    // redraw active group_box_content
+    // (will remove the active item and add to pending zone)
+    drawActiveGroup(
+        '#group_box',
+        activeGroup.now_mainform_id,
+        activeGroup.now_links,
+        activeGroup.ngraminfo,
+        activeGroup.new_free
+     )
 }
 
 
@@ -728,29 +778,40 @@ function removeSubform(ngramId) {
  *  => updates the global var CurrentGroups
  *  => optionally triggers assignment of a state to the ex-subforms
  *
- * @param inheritState boolean  => updates the AjaxRecords[subformId].state
+ * @param becomesFree boolean  => gets a new inherited AjaxRecords[subformId].state
+ *                             => adds placeholder for AjaxRecords[subformId].score
  * @param ngramId of a mainform
  * @param (optional) subforms array of subNgramIds (removes individual links)
  *        if absent: removes the whole group
  */
-function deleteInCurrentGroups(inheritState, mainformId, subforms) {
+function deleteInCurrentGroups(becomesFree, mainformId, subforms) {
 
     var wholeGroup = false
-    if (typeof subforms == "undefined") {
+    if (! subforms) {
         console.log("deleteInCurrentGroups: no subforms specified: removing *entire* old group")
-	wholeGroup = true
+	       wholeGroup = true
     }
-    if (inheritState) {
-        // ex-subforms can inherit state from their previous mainform
-        var implicitState = AjaxRecords[mainformId].state
-    }
-
     var subsToDel = []
     if (wholeGroup) {
-        subsToDel = CurrentGroups.links[mainformId]
+        if (typeof CurrentGroups.links[mainformId] != "undefined") {
+            subsToDel = CurrentGroups.links[mainformId]
+        }
+        else {
+            subsToDel = []
+        }
     }
     else {
         subsToDel = subforms
+    }
+
+    // nothing to remove, we return at once
+    if (subsToDel.length == 0) {
+        return
+    }
+
+    if (becomesFree) {
+        // ex-subforms can inherit state from their previous mainform
+        var implicitState = AjaxRecords[mainformId].state
     }
 
     // deleting in reverse index
@@ -760,13 +821,15 @@ function deleteInCurrentGroups(inheritState, mainformId, subforms) {
         // deleting in "subs"
         delete CurrentGroups.subs[subformId]
 
-        if (inheritState) {
+        if (becomesFree) {
             AjaxRecords[subformId].state = implicitState
             // consequence:
             //   now OriginalNG.records[subformId].state
             //        is != AjaxRecords[subformId].state
             //   therefore the newly independant forms
             //   will be added to their new wordlist
+
+            AjaxRecords[subformId].score = "NaN (do recount for score ?)"
         }
 
         // deleting in "links"
@@ -825,10 +888,10 @@ function modifyGroup ( mainFormNgramId ) {
     activeGroup.now_mainform_id = mainFormNgramId ;
     activeGroup.were_mainforms[mainFormNgramId] = true ;
     activeGroup.now_links = [] ;
-    // ngraminfo = standard info of records + 'origin' property
+    // ngraminfo = standard info of records (temporary copy)
     activeGroup.ngraminfo = {}
     activeGroup.ngraminfo[mainFormNgramId] = AjaxRecords[mainFormNgramId] ;
-    activeGroup.ngraminfo[mainFormNgramId]['origin'] = 'new' ;
+    activeGroup.new_free = []
 
     // add relevant information from old & new links to activeGroup.now_links
     updateActiveGroupInfo (mainFormNgramId, false)
@@ -838,7 +901,8 @@ function modifyGroup ( mainFormNgramId ) {
         '#group_box',
         activeGroup.now_mainform_id,
         activeGroup.now_links,
-        activeGroup.ngraminfo
+        activeGroup.ngraminfo,
+        activeGroup.new_free
      )
 
      MyTable.data('dynatable').dom.update();
@@ -846,7 +910,7 @@ function modifyGroup ( mainFormNgramId ) {
 
 
 // add new ngramid (and any present subforms) to currently modified group
-function addToGroup ( ngramId ) {
+function addToGroup ( ngramId, pending ) {
 
     // console.log("FUN addToGroup(" + AjaxRecords[ngramId].name + ")")
 
@@ -859,15 +923,24 @@ function addToGroup ( ngramId ) {
         activeGroup.now_links.push(ngramId)
         activeGroup.ngraminfo[ngramId] = AjaxRecords[ngramId]
 
-        // also add all its subforms as new subforms
-        updateActiveGroupInfo (ngramId, toOther)
+        // special case if it comes from 'no man's land'
+        if (pending) {
+            var i = activeGroup.new_free.indexOf(ngramId)
+            activeGroup.new_free.splice(i,1)
+        }
+        // normal case (item added from table)
+        else {
+            // also add all its subforms as new subforms
+            updateActiveGroupInfo (ngramId, toOther)
+        }
 
         // redraw active group_box_content
         drawActiveGroup(
             '#group_box',
             activeGroup.now_mainform_id,
             activeGroup.now_links,
-            activeGroup.ngraminfo
+            activeGroup.ngraminfo,
+            activeGroup.new_free
          )
 
          MyTable.data('dynatable').dom.update();
@@ -894,11 +967,12 @@ function updateActiveGroupInfo (ngramId, toOtherMainform) {
     // fill active link info
     for(var i in CurrentGroups["links"][ ngramId ] ) {
         var subId = CurrentGroups["links"][ ngramId ][i] ;
-        // ----------- links (old and new)
         activeGroup.now_links.push(subId)
         activeGroup.ngraminfo[subId] = AjaxRecords[subId]
     }
 }
+
+
 
 // LIST MEMBERSHIP CONTROLLERS
 // ----------------------------
@@ -1020,11 +1094,27 @@ function transformContent(ngramId) {
     //         score and name column cells
     // -------------------------------------------
 
-    // <td> score </td>              atts.id (ex: "normal" or "delete" etc)
-    result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>\n'
+    // <td> score </td>
+    // unexpected NaN (£TODO remove: ONLY USEFUL FOR INHERITED BUGGY CORPORA)
+    if (! ngram_info["score"]) {
+        // score can be undefined or null after group separation
+        console.warn('undefined score at content rendering, for', ngramId)
+        result["score"] = '<span class="'+atts.id+'">ERROR (recount should fix it)</span>\n'
+    }
+    // expected NaN
+    else if (ngram_info["score"] == "NaN") {
+        result["score"] = '<span class="'+atts.id+' note">NaN (do recount for score)</span>\n'
+    }
+    else {
+        result["score"] = '<span class="'+atts.id+'">'+ngram_info["score"]+'</span>\n'
+    }
+
+    //                               atts.id (ex: "normal" or "delete" etc)
 
     // <td> name  </td>     aka   "ngrambox"
     result["name"]  = '<div class="ngrambox" id="box-'+ngramId+'">\n'
+
+    // test allows to make active items 'disappear'
     if (ngramId != activeGroup.now_mainform_id && !(ngramId in activeGroup.were_mainforms)) {
 
         result["name"] +=   plus_event + '\n'
@@ -1323,8 +1413,10 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
 
     // thus skips newly grouped items and returns unmodified registry
     if (desiredState != state_skip) {
+        console.log(oldState,"==>",  desiredState)
         // (if was previously in MAP)
         if (oldState === state_map) {
+            console.log("previously in map:" + id + "("+AjaxRecords[id]['name']+")")
             if (desiredState === state_main || desiredState === state_stop) {
                 registry["outmap"][ id ] = true
                 // (... and some more actions only if is now desired to be in STOP)
@@ -1336,6 +1428,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
         }
         // (if previously was in STOP)
         else if (oldState === state_stop) {
+            console.log("previously in stop:" + id + "("+AjaxRecords[id]['name']+")")
             if (desiredState === state_main || desiredState === state_map) {
                 registry["outdel"][id] = true
                 registry["inmain"][id] = true
@@ -1348,6 +1441,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
         // (if previously was under a group)
         else if (oldState === state_skip) {
             if (desiredState === state_main || desiredState === state_map) {
+                console.warn("enter free record:" + id + "("+AjaxRecords[id]['name']+")")
                 registry["inmain"][id] = true
                 // (... and one more action only if is now desired to be in MAP)
                 if(desiredState === state_map) {
@@ -1360,6 +1454,7 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
         }
         // (if previously was in MAIN)
         else  {
+            // console.log("previously in main:" + id + "("+AjaxRecords[id]['name']+")")
             if(desiredState === state_map) {
                 registry["inmap"][ id ] = true
             }
@@ -1405,9 +1500,15 @@ function SaveLocalChanges() {
   //   => AjaxRecords for current (desired) states
   for(var id in AjaxRecords) {
 
-    var oldState = 0 ;
+    var oldState = OriginalNG["records"][ id ]["state"] ;
+
+    // map and stop not in original states TODO
     if      (OriginalNG["map"][ id ] ) oldState = 1
     else if (OriginalNG["stop"][ id ]) oldState = 2
+    else if (typeof oldState == "undefined") {
+        console.warn('old state in OriginalNG not defined but not map nor stop: (id:' + id +')')
+        oldState = 0 ;
+    }
 
     var mainNewState = AjaxRecords[id]["state"] ;
 
@@ -1468,7 +1569,6 @@ function SaveLocalChanges() {
 
   // The AJAX CRUDs in cascade:
 
-  // £TODO reactivate here and AddMap
   $("#Save_All").append('<img width="8%" src="/static/img/ajax-loader.gif"></img>')
 
   // trigger chained CRUD calls
@@ -1738,10 +1838,10 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
       // Any <th> defined here will end up in the 'columns' arg of ulWriter
       // ------------------------------------------------------------------
 
-      // uncomment for column ngramId (here and in transformContent - l.577)
+      // uncomment for column ngramId (here and in transformContent - l.1134)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="ngramId" style="background-color:grey">ngramId</th>'+"\n";
 
-      // uncomment for column stateId (here and in transformContent - l.580)
+      // uncomment for column stateId (here and in transformContent - l.1137)
       // div_table += "\t"+"\t"+'<th data-dynatable-column="state" style="background-color:grey">State</th>'+"\n" ;
 
       // selector columns... not sortable to allow 'click => check all'
@@ -1801,6 +1901,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // div_stats += "</p>"
     // $("#stats").html(div_stats)
 
+    // NB will be transformed into ArrayAjaxRecords for dynatable pagination
     AjaxRecords = {}
 
     for(var id in ngdata) {
@@ -1822,11 +1923,42 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         // properties enabling to see old and new groups
         "group_exists": (le_ngram.id in CurrentGroups["links"])
       }
+
+      // temporary fix for scores out of broken groups
+      // useful for corpora imported during the 'falsefalsefalse' bug period
+      // (between 2016-05-23   and   2016-06-07)
+      if (
+          (typeof le_ngram.score == "undefined" || le_ngram.score == null)
+           && (typeof le_ngram.state == "undefined" || (le_ngram.state != 2 && le_ngram.state != -1))
+            ) {
+          console.log("no score for:")
+          console.log(le_ngram.id)
+          console.log(le_ngram.name)
+          console.log(le_ngram)
+          console.log("\n")
+      //    rec_info["score"] = 4000
+      }
+
       // AjaxRecords.push(rec_info)
       AjaxRecords[id] = rec_info
 
-      if ( ! DistributionDict[rec_info.score] ) DistributionDict[rec_info.score] = 0;
-      DistributionDict[rec_info.score]++;
+      // now ngram.score will be the key (=> X value) ...
+      var xkey ;
+      if (! isNumeric(rec_info.score)) {
+          xkey = 0
+      }
+      else {
+          xkey = rec_info.score
+      }
+
+      // ... and we count how often an ngram got it (=> Y value)
+      if ( ! DistributionDict[xkey] ) {
+          DistributionDict[xkey] = 1;
+      }
+      else {
+          DistributionDict[xkey]++;
+      }
+
     }
 
     // console.log(FirstScore)
@@ -1872,23 +2004,24 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     });
 
     LineChart
+    .dimension(x_occs)
+    .group(y_frecs)
+    .x(d3.scale.linear().domain([min_occ,max_occ+min_occ]))
       .width(800)
       .height(150)
       .margins({top: 10, right: 50, bottom: 25, left: 40})
-      .group(y_frecs)
-      .dimension(x_occs)
       .transitionDuration(500)
-      .x(d3.scale.linear().domain([min_occ,max_occ+min_occ]))
-      // .y(d3.scale.log().domain([min_frec/2,max_frec*2]))
+      .y(d3.scale.log().domain([min_frec/2,max_frec*2]))
       .renderArea(true)
-      // .valueAccessor(function (d) {
-      //     return d.value;
-      // })
+    //   .valueAccessor(function (d) {
+    //       console.log(d)
+    //       if(isNumeric(d)) {
+    //           return d.value;
+    //       }
+    //       else return 0 ;
+    //   })
 
-      // .stack(y_frecs, function (d) {
-      //     return d.value;
-      // })
-      // .ordinalColors(d3.scale.category10())
+    //   .ordinalColors(d3.scale.category10())
       .elasticY(true)
       // .round(dc.round.floor)
       .renderHorizontalGridLines(true)
@@ -1898,7 +2031,16 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
       // .renderDataPoints({radius: 2, fillOpacity: 0.8, strokeOpacity: 0.8})
       .brushOn(false)
       .title(function (d) {
-                  var value = d.data.value.avg ? d.data.value.avg : d.data.value;
+          if (isNaN(d.data.value))  {
+              console.warn(JSON.stringify(d))
+          }
+          // exemple d here:
+          // Object {
+          //            x:2698,        y:1,
+          //         layer:0,y0:0,
+          //         data:{key:2698, value:1}
+          //        }
+                  var value = d.y;
                   if (isNaN(value)) value = 0;
                   return value+" ngrams with "+FirstScore+"="+Number(d.key);
               })
@@ -1946,21 +2088,19 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     volumeChart.filterAll();
     dc.redrawAll();
 
-    // AjaxRecords per ngramid => dense array to maintain proper page range
-    // see MyTable.data('dynatable').settings.dataset.originalRecords
-    var ArrayAjaxRecords = [] ;
-    for (ngid in AjaxRecords) {
-        ArrayAjaxRecords.push(AjaxRecords[ngid]) ;
-    }
 
+    // DYNATABLE initialization
     MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
-                  records: ArrayAjaxRecords
+                  // from AjaxRecords => array (to maintain proper page range)
+                  records: makeRecordArray(AjaxRecords),
+                  sortTypes: {
+                      "score": 'NumOrNaNSort'
+                  }
                 },
                 features: {
                   pushState: false,
-                  // sort: false //i need to fix the sorting function... the current one just sucks
                 },
                 writers: {
                   _rowWriter: ulWriter
@@ -1972,13 +2112,41 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
                 }
             })
 
-    // MyTable.data('dynatable').settings.dataset.records = []
-    // MyTable.data('dynatable').settings.dataset.originalRecords = []
-    // MyTable.data('dynatable').settings.dataset.originalRecords = AjaxRecords;
+    // /!\ settings.dataset.originalRecords will be set to ArrayAjaxRecords (in lib)
+
+    // sorts on numbers but allows NaN (and puts them as highest)
+    // ----------------------------------------------------------
+    MyTable.data('dynatable').sorts.functions["NumOrNaNSort"] = function NumOrNaNSort (rec1,rec2, attr, direction) {
+        if (typeof direction == "undefined") {
+            return 0
+        }
+        score1Numeric = (typeof rec1.score == 'number')
+        score2Numeric = (typeof rec2.score == 'number')
+
+        // if (rec1.state == -1 || rec2.state == -1) {
+        //     console.warn("Programming error: can't process inactive items in sort")
+        //     return (rec1.name < rec2.name) ? direction : (-direction)
+        // }
+
+        // we'll assume both records have active states
+        if (score1Numeric && score2Numeric) {
+            return direction * (rec2.score - rec1.score)
+        }
+        else if (score1Numeric) {
+            return direction
+        }
+        else if (score2Numeric) {
+            return -direction
+        }
+        // when both records have non numeric values => alpha sort
+        else {
+            return (rec1.name < rec2.name) ? direction : (-direction)
+        }
+    }
 
     MyTable.data('dynatable').sorts.clear();
-    MyTable.data('dynatable').sorts.add('score', 0) // 1=ASCENDING,
-    MyTable.data('dynatable').process();
+    MyTable.data('dynatable').sorts.add('score', 1) // 1=DESCENDING,
+    // MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
     MyTable.data('dynatable').paginationPerPage.set(20);  // default:10
     MyTable.data('dynatable').process();
@@ -2055,6 +2223,23 @@ function tidyAfterUpdate(event) {
 /**
  * tidyAfterPageSet:
  *     -------------
+ *    Here we convert AjaxRecords to an array
+ */
+function makeRecordArray(recordsDict) {
+    var recArray = []
+    for (ngid in recordsDict) {
+        // must filter inactive forms for pagination/number of items to work right
+        if (recordsDict[ngid]['state'] != -1) {
+            recArray.push(recordsDict[ngid]) ;
+        }
+    }
+    return recArray
+}
+
+
+/**
+ * tidyAfterPageSet:
+ *     -------------
  *    Here we clean vars that become obsolete not at all updates, but only
  *    when page changes (bound to the dynatable event "dynatable:page:set")
  */
@@ -2085,6 +2270,10 @@ function tidyAfterPageSetUpdate() {
 
 function pr(msg) {
     console.log(msg)
+}
+
+function isNumeric(n) {
+  return (!isNaN(parseFloat(n)) && isFinite(n))
 }
 
 function getCookie(name) {
@@ -2159,7 +2348,7 @@ var final_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_i
 GET_(final_url, HandleAjax)
 
 function HandleAjax(res, sourceUrl) {
-    //£TODO unify with AfterAjax
+    //TODO unify with AfterAjax
     if (res && res.ngraminfos) {
 
         // = = = = MIAM = = = = //
@@ -2169,7 +2358,12 @@ function HandleAjax(res, sourceUrl) {
             OriginalNG["records"][ngram_id] = {
                 'id' : ngram_id,         // redundant but for backwards compat
                 'name' : ngram_tuple[0],
-                'score' : ngram_tuple[1]
+
+                // 'NaN' is our standard for re-reading un-recounted corpora
+                'score' : ngram_tuple[1] ? ngram_tuple[1] : 'NaN',
+
+                // state 0 temporary default: for non-main items, it'll be updated to -1, 1 or 2
+                'state' : 0
             }
         }
 
@@ -2271,7 +2465,7 @@ function AfterAjax(sourceUrl) {
         for (var subNgramId in CurrentGroups["subs"]) {
 
             // will allow us to distinguish it from mainlist items that
-            // have original state undefined (in InferCRUDFlags)
+            // have default original state (in InferCRUDFlags)
             OriginalNG['records'][subNgramId]['state'] = state_skip
         }
     }

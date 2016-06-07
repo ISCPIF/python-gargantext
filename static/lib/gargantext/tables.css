@@ -62,6 +62,7 @@ span.note {
 span.note.glyphicon {
   color: #555;
   top:0;
+  padding-right: 3;
 }
 
 p.note {
@@ -76,6 +77,10 @@ p.note > input {
 
 p.note > label {
   float: left;
+}
+
+.smaller {
+  font-size: 60%;
 }
 
 .greyed {
@@ -130,8 +135,19 @@ tr:hover {
     margin-bottom: 1em;
 }
 
+#group_box_pending {
+    line-height: .9 ;
+    font-size: 90% ;
+}
+
 .subform {
     color: #777 ;
+}
+
+p.pending.subform {
+    margin-bottom: 0 ;
+    margin-left: 1em ;
+    font-size: 90% ;
 }
 
 .dynatable-record-count {

@@ -57,9 +57,7 @@
       columns: null,
       headRowSelector: 'thead tr', // or e.g. tr:first-child
       bodyRowSelector: 'tbody tr',
-      headRowClass: null,
-      copyHeaderAlignment: true,
-      copyHeaderClass: false
+      headRowClass: null
     },
     inputs: {
       queries: null,
@@ -87,13 +85,7 @@
       perPagePlacement: 'before',
       perPageText: 'Show: ',
       pageText: 'Pages: ',
-      recordCountPageBoundTemplate: '{pageLowerBound} to {pageUpperBound} of',
-      recordCountPageUnboundedTemplate: '{recordsShown} of',
-      recordCountTotalTemplate: '{recordsQueryCount} {collectionName}',
-      recordCountFilteredTemplate: ' (filtered from {recordsTotal} total records)',
-      recordCountText: 'Showing',
-      recordCountTextTemplate: '{text} {pageTemplate} {totalTemplate} {filteredTemplate}',
-      recordCountTemplate: '<span id="dynatable-record-count-{elementId}" class="dynatable-record-count">{textTemplate}</span>',
+      recordCountText: 'Showing ',
       processingText: 'Processing...'
     },
     dataset: {
@@ -110,7 +102,7 @@
       perPageDefault: 10,
       perPageOptions: [10,20,50,100],
       sorts: {},
-      sortsKeys: [],
+      sortsKeys: null,
       sortTypes: {},
       records: null
     },
@@ -200,16 +192,12 @@
 
     this.$element.trigger('dynatable:init', this);
 
-    if (!this.settings.dataset.ajax || (this.settings.dataset.ajax && this.settings.dataset.ajaxOnLoad) || this.settings.features.paginate || (this.settings.features.sort && !$.isEmptyObject(this.settings.dataset.sorts))) {
+    if (!this.settings.dataset.ajax || (this.settings.dataset.ajax && this.settings.dataset.ajaxOnLoad) || this.settings.features.paginate) {
       this.process();
     }
   };
 
   processAll = function(skipPushState) {
-
-    if( $("#multiple_selection").length>0 )
-      $("#multiple_selection")[0].checked = false;
-
     var data = {};
 
     this.$element.trigger('dynatable:beforeProcess', data);
@@ -301,7 +289,6 @@
   function defaultCellWriter(column, record) {
     var html = column.attributeWriter(record),
         td = '<td';
-        // console.log("html:",html)
 
     if (column.hidden || column.textAlign) {
       td += ' style="';
@@ -317,10 +304,6 @@
       }
 
       td += '"';
-    }
-
-    if (column.cssClass) {
-      td += ' class="' + column.cssClass + '"';
     }
 
     return td + '>' + html + '</td>';
@@ -377,8 +360,6 @@
       for (var i = 0, len = settings.dataset.records.length; i < len; i++) {
         var record = settings.dataset.records[i],
             tr = rowWriter(i, record, columns, cellWriter);
-        // console.log("therecord:")
-        // console.log(record)
         rows += tr;
       }
 
@@ -479,8 +460,7 @@
         attributeReader: settings.readers[id] || settings.readers._attributeReader,
         sorts: sorts,
         hidden: $column.css('display') === 'none',
-        textAlign: settings.table.copyHeaderAlignment && $column.css('text-align'),
-        cssClass: settings.table.copyHeaderClass && $column.attr('class')
+        textAlign: $column.css('text-align')
       });
 
       // Modify header cell
@@ -626,10 +606,10 @@
     // For really advanced sorting,
     // see http://james.padolsey.com/javascript/sorting-elements-with-jquery/
     this.sort = function() {
-      var sort = [].sort;
-      var sorts = settings.dataset.sorts;
-      var sortsKeys = settings.dataset.sortsKeys;
-      var sortTypes = settings.dataset.sortTypes;
+      var sort = [].sort,
+          sorts = settings.dataset.sorts,
+          sortsKeys = settings.dataset.sortsKeys,
+          sortTypes = settings.dataset.sortTypes;
 
       var sortFunction = function(a, b) {
         var comparison;
@@ -640,15 +620,15 @@
           // // console.log(sortsKeys)
           // console.log("( "+a.name+"|"+a.score+" , "+b.name+"|"+a.score+" )")
           for (var i = 0, len = sortsKeys.length; i < len; i++) {
-            var attr = sortsKeys[i];
-            var direction = sorts[attr];
-            var sortType = sortTypes[attr] || obj.sorts.guessType(a, b, attr);
-            var comparison = obj.sorts.functions[sortType](a, b, attr, direction);
-            // // console.log("a: "+a+" | b: "+b)
-
+            var attr = sortsKeys[i],
+                direction = sorts[attr],
+                sortType = sortTypes[attr] || obj.sorts.guessType(a, b, attr);
+            comparison = obj.sorts.functions[sortType](a, b, attr, direction);
+            // console.log("a: "+a+" | b: "+b)
             // console.log("\tattr: "+attr+" | direction: "+direction+" | sortType: "+sortType+" | comparison: "+comparison)
-            // // Don't need to sort any further unless this sort is a tie between a and b,
-            // // so break the for loop unless tied
+
+           // Don't need to sort any further unless this sort is a tie between a and b,
+            // so break the for loop unless tied
             if (comparison !== 0) { break; }
           }
           // console.log(" - -- - - - ")
@@ -656,15 +636,7 @@
         return comparison;
       }
 
-      // // var thearray = sort.call(settings.dataset.records, sortFunction)
-      // var thearray = settings.dataset.records
-
-      // for(var i in thearray) {
-      //   console.log(i+": "+thearray[i].date)
-      // }
-
       return sort.call(settings.dataset.records, sortFunction);
-      // return settings.dataset.records
     };
 
     this.paginate = function() {
@@ -743,44 +715,28 @@
     };
 
     this.create = function() {
-      var pageTemplate = '',
-          filteredTemplate = '',
-          options = {
-            elementId: obj.element.id,
-            recordsShown: obj.records.count(),
-            recordsQueryCount: settings.dataset.queryRecordCount,
-            recordsTotal: settings.dataset.totalRecordCount,
-            collectionName: settings.params.records === "_root" ? "records" : settings.params.records,
-            text: settings.inputs.recordCountText
-          };
+      var recordsShown = obj.records.count(),
+          recordsQueryCount = settings.dataset.queryRecordCount,
+          recordsTotal = settings.dataset.totalRecordCount,
+          text = settings.inputs.recordCountText,
+          collection_name = settings.params.records;
 
-      if (settings.features.paginate) {
-
-        // If currently displayed records are a subset (page) of the entire collection
-        if (options.recordsShown < options.recordsQueryCount) {
-          var bounds = obj.records.pageBounds();
-          options.pageLowerBound = bounds[0] + 1;
-          options.pageUpperBound = bounds[1];
-          pageTemplate = settings.inputs.recordCountPageBoundTemplate;
-
-        // Else if currently displayed records are the entire collection
-        } else if (options.recordsShown === options.recordsQueryCount) {
-          pageTemplate = settings.inputs.recordCountPageUnboundedTemplate;
-        }
+      if (recordsShown < recordsQueryCount && settings.features.paginate) {
+        var bounds = obj.records.pageBounds();
+        text += "<span class='dynatable-record-bounds'>" + (bounds[0] + 1) + " to " + bounds[1] + "</span> of ";
+      } else if (recordsShown === recordsQueryCount && settings.features.paginate) {
+        text += recordsShown + " of ";
+      }
+      text += recordsQueryCount + " " + collection_name;
+      if (recordsQueryCount < recordsTotal) {
+        text += " (filtered from " + recordsTotal + " total records)";
       }
 
-      // If collection for table is queried subset of collection
-      if (options.recordsQueryCount < options.recordsTotal) {
-        filteredTemplate = settings.inputs.recordCountFilteredTemplate;
-      }
-
-      // Populate templates with options
-      options.pageTemplate = utility.template(pageTemplate, options);
-      options.filteredTemplate = utility.template(filteredTemplate, options);
-      options.totalTemplate = utility.template(settings.inputs.recordCountTotalTemplate, options);
-      options.textTemplate = utility.template(settings.inputs.recordCountTextTemplate, options);
-
-      return utility.template(settings.inputs.recordCountTemplate, options);
+      return $('<span></span>', {
+                id: 'dynatable-record-count-' + obj.element.id,
+                'class': 'dynatable-record-count',
+                html: text
+              });
     };
 
     this.attach = function() {
@@ -924,19 +880,14 @@
 
     this.init = function() {
       var sortsUrl = window.location.search.match(new RegExp(settings.params.sorts + '[^&=]*=[^&]*', 'g'));
-      if (sortsUrl) {
-        settings.dataset.sorts = utility.deserialize(sortsUrl)[settings.params.sorts];
-      }
-      if (!settings.dataset.sortsKeys.length) {
-        settings.dataset.sortsKeys = utility.keysFromObject(settings.dataset.sorts);
-      }
+      settings.dataset.sorts = sortsUrl ? utility.deserialize(sortsUrl)[settings.params.sorts] : {};
+      settings.dataset.sortsKeys = sortsUrl ? utility.keysFromObject(settings.dataset.sorts) : [];
     };
 
     this.add = function(attr, direction) {
       var sortsKeys = settings.dataset.sortsKeys,
           index = $.inArray(attr, sortsKeys);
       settings.dataset.sorts[attr] = direction;
-      obj.$element.trigger('dynatable:sorts:added', [attr, direction]);
       if (index === -1) { sortsKeys.push(attr); }
       return dt;
     };
@@ -945,16 +896,13 @@
       var sortsKeys = settings.dataset.sortsKeys,
           index = $.inArray(attr, sortsKeys);
       delete settings.dataset.sorts[attr];
-      obj.$element.trigger('dynatable:sorts:removed', attr);
       if (index !== -1) { sortsKeys.splice(index, 1); }
       return dt;
     };
 
     this.clear = function() {
-
       settings.dataset.sorts = {};
       settings.dataset.sortsKeys.length = 0;
-      obj.$element.trigger('dynatable:sorts:cleared');
     };
 
     // Try to intelligently guess which sort function to use
@@ -1086,6 +1034,10 @@
     this.toggleSort = function(e, $link, column) {
       var sortedByColumn = this.sortedByColumn($link, column),
           value = this.sortedByColumnValue(column);
+
+      // console.log("toggleSort (previous direction value:"+value+")")
+      // direction value can be {-1,1,undefined}
+
       // Clear existing sorts unless this is a multisort event
       if (!settings.inputs.multisort || !utility.anyMatch(e, settings.inputs.multisort, function(evt, key) { return e[key]; })) {
         this.removeAllArrows();
@@ -1109,12 +1061,12 @@
         //   }
         //   this.removeArrow($link);
         // [2016-05-11 rl: ...but instead set to ascending] ----8<----
-        for (var i = 0, len = column.sorts.length; i < len; i++) {
-          obj.sorts.add(column.sorts[i], 1);
-        }
-        this.appendArrowUp($link);
-        }
+            for (var i = 0, len = column.sorts.length; i < len; i++) {
+                obj.sorts.add(column.sorts[i], 1);
+            }
+            this.appendArrowUp($link);
         // -----------------------------------------------------8<----
+        }
 
       // Otherwise, if not already set, set to ascending
       } else {
@@ -1640,7 +1592,7 @@
           }
         }
       }
-      return $.param(urlOptions);
+      return decodeURI($.param(urlOptions));
     },
     // Get array of keys from object
     // see http://stackoverflow.com/questions/208016/how-to-list-the-properties-of-a-javascript-object/208020#208020
@@ -1718,12 +1670,6 @@
     // Taken from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/105074#105074
     randomHash: function() {
       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    },
-    // Adapted from http://stackoverflow.com/questions/377961/efficient-javascript-string-replacement/378001#378001
-    template: function(str, data) {
-      return str.replace(/{(\w*)}/g, function(match, key) {
-        return data.hasOwnProperty(key) ? data[key] : "";
-      });
     }
   };
 

@@ -78,6 +78,10 @@ var CurrentGroups = {"links":{}, "subs":{}}
 var MyTable ;
 
 
+// Need Save Flag  (please modify via toggleNeedSave, not directly)
+// ---------------
+var _NeedSave = false ;
+
 //  definition of switching statuses for the 3 lists
 // --------------------------------------------------
 //  mainlist (+ maplist)
@@ -450,6 +454,11 @@ function saveActiveGroup() {
     removeActiveGroupFrameAndUpdate()
 
     // console.log("after changes, GroupsBuffer: ",GroupsBuffer)
+
+    // mark that there was a change
+    if (! _NeedSave) {
+        toggleNeedSave()
+    }
 }
 
 function removeActiveGroupFrameAndUpdate() {
@@ -597,12 +606,12 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos, newFr
     groupHtml += '\n          <p id="activeGroupButtons">';
 
     // Ok - No
-    var cancelGroupButton  = '<button class="btn btn-default" onclick="removeActiveGroupFrameAndUpdate()">' ;
+    var cancelGroupButton  = '<button class="btn btn-danger" onclick="removeActiveGroupFrameAndUpdate()">' ;
         cancelGroupButton +=   'cancel' ;
         cancelGroupButton += '</button>' ;
 
-    var tempoSaveGroupButton  = '<button class="btn btn-warning" onclick="saveActiveGroup()">' ;
-        tempoSaveGroupButton +=   'finish' ;
+    var tempoSaveGroupButton  = '<button class="btn btn-info" onclick="saveActiveGroup()">' ;
+        tempoSaveGroupButton +=   'done' ;
         tempoSaveGroupButton += '</button>' ;
 
     groupHtml += cancelGroupButton
@@ -990,6 +999,11 @@ function clickngram_action ( ngramId ) {
 
     // console.log("click: state after: "+ AjaxRecords[ngramId].state) ;
     MyTable.data('dynatable').dom.update();
+
+    // mark that there was a change
+    if (! _NeedSave) {
+        toggleNeedSave()
+    }
 }
 
 
@@ -1023,6 +1037,11 @@ function checkBox(boxType, ngramId) {
     // replace old state and color
     AjaxRecords[ngramId].state = targetState ;
     MyTable.data('dynatable').dom.update();
+
+    // mark that there was a change
+    if (! _NeedSave) {
+        toggleNeedSave()
+    }
 }
 
 
@@ -1362,6 +1381,11 @@ function SelectPage(boxType, boxElem) {
 
   // and update our own "column situation" storage
   $(boxElem).data('columnSelection', newColumnSelection);
+
+  // mark that there was a change
+  if (! _NeedSave) {
+      toggleNeedSave()
+  }
 }
 
 
@@ -2279,6 +2303,34 @@ function pr(msg) {
 function isNumeric(n) {
   return (!isNaN(parseFloat(n)) && isFinite(n))
 }
+
+// this turns ON the NeedSave flag and the corresponding visual
+// (it can only go back OFF with a save action via page reload)
+function toggleNeedSave() {
+
+    // change the status icons
+    $(".needsaveicon").removeClass("glyphicon-floppy-saved");
+    $(".needsaveicon").addClass("glyphicon-floppy-remove");
+    $(".needsaveicon").css("color","red");
+    $(".needsaveicon").css("font-size","120%");
+
+    // save_divs get a new tooltip title
+    $('.savediv').prop('title', "Click to save all changes to DB")
+
+    // activate the buttons
+    $('#Save_All').prop('disabled', false) ;
+    $('#Save_All').removeClass("btn-muted");
+    $('#Save_All').addClass("btn-success");
+
+    $('#Save_All_Bottom').prop('disabled', false) ;
+    $('#Save_All_Bottom').removeClass("btn-muted");
+    $('#Save_All_Bottom').addClass("btn-success");
+
+    // toggle the global var ON
+    _NeedSave = true
+}
+
+
 
 function getCookie(name) {
     var cookieValue = null;

@@ -34,8 +34,8 @@ _tag_replacements['fr'] = identity_dict({
 
     # 'PRO':      '',
     # 'PROREL':   '',
-    # 'P':        '',
-    # 'P+D':      '',
+    'P':        'IN',
+    'P+D':      'IN',
     # 'P+PRO':    '',
 
     # 'V':        '',

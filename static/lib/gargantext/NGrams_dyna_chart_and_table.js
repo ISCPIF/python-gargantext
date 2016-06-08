@@ -2125,7 +2125,8 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
                   records: makeRecordArray(AjaxRecords),
                   sortTypes: {
                       "score": 'NumOrNaNSort'
-                  }
+                  },
+                  perPageOptions: [20,50,100,200]
                 },
                 features: {
                   pushState: false,
@@ -2176,7 +2177,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     MyTable.data('dynatable').sorts.add('score', 1) // 1=DESCENDING,
     // MyTable.data('dynatable').process();
     MyTable.data('dynatable').paginationPage.set(1);
-    MyTable.data('dynatable').paginationPerPage.set(20);  // default:10
+    MyTable.data('dynatable').paginationPerPage.set(50);  // default:10
     MyTable.data('dynatable').process();
 
     // hook on page change

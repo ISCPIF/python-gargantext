@@ -195,14 +195,16 @@ function transformContent2(rec_id) {
   var result = {}
   if (elem["del"]) {
     result["id"] = elem["id"]
-    result["date"] = '<strike>'+elem["date"]+'</strike>'
+    result["short_date"] = '<strike>'+elem["short_date"]+'</strike>'
+    result["hyperdata.journal"] = '<strike><small><i>'+elem["hyperdata"]["journal"]+'</small></i></strike>'
     result["docurl"] = '<strike>'+elem["docurl"]+'</strike>'
     result["isFavorite"] = favstatusToStar(rec_id, elem["isFavorite"], boolStrike=true)
     result["rawtitle"] = elem["rawtitle"]
     result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
   } else {
     result["id"] = elem["id"]
-    result["date"] = elem["date"]
+    result["short_date"] = elem["short_date"]
+    result["hyperdata.journal"] = '<small><i>'+elem["hyperdata"]["journal"]+'</i></small>'
     result["docurl"] = elem["docurl"]
     result["isFavorite"] =  favstatusToStar(rec_id, elem["isFavorite"])
     result["rawtitle"] = elem["rawtitle"]
@@ -318,10 +320,12 @@ function Main_test(Data) {
   var div_table = '<p align="right">'+"\n"
     div_table += '<table id="my-ajax-table" class="table table-bordered">'+"\n"
     div_table += "\t"+'<thead>'+"\n"
-    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="date">'+"\n"
+    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="short_date">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar"></span> Date</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="docurl">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size"></span> Title</th>'+"\n"
+    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="hyperdata.journal">'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-book"></span> Source</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="isFavorite">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-star"></span>'+"\n"
     div_table += "\t"+"\t"+'</th>'+"\n"
@@ -490,7 +494,8 @@ function Main_test(Data) {
                 records: Data,
                 sorts : {"date": 1},
                 sortTypes: {
-                    docurl: 'rawtitleSort'
+                    docurl: 'rawtitleSort',
+                    'hyperdata.journal': 'journalSort'
                 }
               },
               features: {
@@ -571,6 +576,12 @@ function Main_test(Data) {
         else                return rec2.rawtitle.localeCompare(rec1.rawtitle)
     }
 
+    MyTable.data('dynatable').sorts.functions["journalSort"] = function journalSort (rec1,rec2, attr, direction) {
+        // like rawtitle but nested property
+        if (direction == 1) return rec1.hyperdata.journal.localeCompare(rec2.hyperdata.journal)
+        else                return rec2.hyperdata.journal.localeCompare(rec1.hyperdata.journal)
+    }
+
     MyTable.data('dynatable').process();
 
   // re-apply search function on click
@@ -587,6 +598,16 @@ function Main_test(Data) {
 
   return "OK"
 }
+
+// create a sort function (alphabetic with locale-aware order)
+// on any record.property with a str inside (for instance "rawtitle")
+function makeAlphaSortFunctionOnProperty(property) {
+    return function (rec1,rec2, attr, direction) {
+        if (direction == 1) return rec1[property].localeCompare(rec2[property])
+        else                return rec2[property].localeCompare(rec1[property])
+    }
+}
+
 
 var dupFlag = false ;
 
@@ -647,9 +668,11 @@ $.ajax({
             record.del = false;
           });
 
-          // initialize countByTitle and countByMeta census
+          // loop for stats and locally created/transformed data
           for (var i in maindata.records) {
-              ourTitle = maindata.records[i]['rawtitle'] ;
+              var rec = maindata.records[i]
+              // initialize countByTitle and countByMeta census
+              ourTitle = rec['rawtitle'] ;
               if (countByTitles.hasOwnProperty(ourTitle)) {
                   countByTitles[ourTitle] ++ ;
               }
@@ -657,7 +680,7 @@ $.ajax({
                   countByTitles[ourTitle] = 1 ;
               }
 
-              ourSignature = metaSignature(maindata.records[i])
+              ourSignature = metaSignature(rec)
               if (countByMeta.hasOwnProperty(ourSignature)) {
                   countByMeta[ourSignature] ++ ;
               }
@@ -665,7 +688,16 @@ $.ajax({
                   countByMeta[ourSignature] = 1 ;
               }
               // also save record's "meta signature" for later lookup
-              maindata.records[i].signature = ourSignature
+              rec.signature = ourSignature
+
+              // also create a short version of the date
+              rec.short_date = ( rec.hyperdata.publication_year
+                                +"/"+
+                                 rec.hyperdata.publication_month
+                                +"/"+
+                                 rec.hyperdata.publication_day
+                                )
+
           }
 
           AjaxRecords = maindata.records; // backup-ing in global variable!

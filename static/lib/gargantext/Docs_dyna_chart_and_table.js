@@ -143,6 +143,7 @@ var RecDict={};
 var AjaxRecords = []
 var Garbage = {}
 var countByTitles = {}  // useful for title duplicates
+var countByMeta = {}  //         for title + date + journal duplicates
 var favorites = {}
 
 function getRecord(rec_id) {
@@ -284,6 +285,22 @@ function ulWriter(rowIndex, record, columns, cellWriter) {
     tr += cellWriter(columns[i], cp_rec);
   }
   return '<tr>' + tr + '</tr>';
+}
+
+
+// creates a unique string defining the document's metadata: title, source, date
+// doc Record => string
+// (useful for de-duplication of documents with the same meta)
+// format: title--source--date
+function metaSignature(docRecord) {
+    var keyStr = ""
+    keyStr = (docRecord.rawtitle
+                +"--"+
+              docRecord.hyperdata.journal
+                +"--"+
+              docRecord.hyperdata.publication_date
+          )
+    return keyStr
 }
 
 
@@ -539,7 +556,8 @@ function Main_test(Data) {
         .functions['docFilter'] = function(record,opt) {
             if      (opt == 'filter_all')  return true
             else if (opt == 'filter_favs') return favorites[record.id]
-            else if (opt == 'filter_dupl') return (countByTitles[record.rawtitle] > 1)
+            else if (opt == 'filter_dupl_tit') return (countByTitles[record.rawtitle] > 1)
+            else if (opt == 'filter_dupl_all') return (countByMeta[record.signature] > 1)
         }
 
     // and set this filter's initial status to 'filter_all'
@@ -575,14 +593,14 @@ var dupFlag = false ;
 $("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
     // debug
     // console.warn(e)
-    if (!dupFlag && qname == 'docFilter' && qval == "filter_dupl") {
+    if (!dupFlag && qname == 'docFilter' && (qval == "filter_dupl_tit" || qval == "filter_dupl_all")) {
         MyTable.data('dynatable').queries.remove('docFilter')
         // to avoid recursion when we'll call this filter again in 4 lines
         dupFlag = true ;
         // sort alphabetically **before** duplicates filter
         MyTable.data('dynatable').sorts.clear();
         MyTable.data('dynatable').sorts.add('rawtitle', -1) // -1 <==> DESC (ASC doesn't work well ?)
-        MyTable.data('dynatable').queries.add('docFilter', 'filter_dupl')
+        MyTable.data('dynatable').queries.add('docFilter', qval)
         MyTable.data('dynatable').process();
     }
 });
@@ -629,7 +647,7 @@ $.ajax({
             record.del = false;
           });
 
-          // initialize CountByTitle census
+          // initialize countByTitle and countByMeta census
           for (var i in maindata.records) {
               ourTitle = maindata.records[i]['rawtitle'] ;
               if (countByTitles.hasOwnProperty(ourTitle)) {
@@ -638,7 +656,18 @@ $.ajax({
               else {
                   countByTitles[ourTitle] = 1 ;
               }
+
+              ourSignature = metaSignature(maindata.records[i])
+              if (countByMeta.hasOwnProperty(ourSignature)) {
+                  countByMeta[ourSignature] ++ ;
+              }
+              else {
+                  countByMeta[ourSignature] = 1 ;
+              }
+              // also save record's "meta signature" for later lookup
+              maindata.records[i].signature = ourSignature
           }
+
           AjaxRecords = maindata.records; // backup-ing in global variable!
 
           $("#content_loader").remove();

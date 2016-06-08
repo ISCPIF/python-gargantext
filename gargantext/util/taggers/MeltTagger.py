@@ -104,21 +104,23 @@ class MeltTagger(Tagger):
 
     def tag_text(self, text, lemmatize=False):
         tagged_tokens = self._tag(text)
-        # without lemmatization
         if not lemmatize:
+            # without lemmatization
             for form, tag in tagged_tokens:
-                yield (form, self._tag_replacements[tag])
-            return
-        # with lemmatization
-        command_input = ' '.join(
-            '%s/%s' % (token, tag)
-            for token, tag in tagged_tokens
-        )
-        lemmatized = self._pipe(command_input, self._lemmatization_commands)
-        for token in lemmatized.split():
-            if len(token):
-                values = token.split('/')
-                yield (values[0], self._tag_replacements[values[1]], values[2].replace('*', ''))
+                    if form != "SENT_BOUND":
+                        yield (form, self._tag_replacements[tag])
+        else:
+            # with lemmatization
+            command_input = ' '.join(
+                '%s/%s' % (token, tag)
+                for token, tag in tagged_tokens
+            )
+            lemmatized = self._pipe(command_input, self._lemmatization_commands)
+            for token in lemmatized.split():
+                if len(token):
+                    values = token.split('/')
+                    if values[0] != "SENT_BOUND":
+                        yield (values[0], self._tag_replacements[values[1]], values[2].replace('*', ''))
 
 
 def EnglishMeltTagger(*args, **kwargs):

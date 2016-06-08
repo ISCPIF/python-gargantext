@@ -37,6 +37,8 @@
               ]
           }
 
+          // console.log(crudActions)
+
           // using recursion to make chained calls,
           // todo factorize with highlight.js
 
@@ -68,7 +70,7 @@
             var listId = listOfActions[i][1]
 
             MainApiChangeNgramHttpService[action](
-                    {'listId': thisListId,
+                    {'listId': listId,
                      'ngramIdList': thisNgramId},
 
                      // on success
@@ -77,7 +79,7 @@
                         //      ----
                         // when chained actions
                         if (listOfActions.length > i+1) {
-                            console.log("calling next action ("+(i+1)+")")
+                            // console.log("calling next action ("+(i+1)+")")
 
                             // ==============================================
                             makeChainedCalls(i+1, listOfActions, finalCallback)

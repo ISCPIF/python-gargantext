@@ -55,14 +55,14 @@ Clone the repository of gargantext
 ``` bash
 git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
         && cd /srv/gargantext \
-        && git fetch origin refactoring \
-        && git checkout refactoring \
+        && git fetch origin unstable \
+        && git checkout unstable \
 ```
 
 **Optionnal**: if you want to contribute clone the repo into your own branch
 
 ``` bash
-git checkout -b username-refactoring refactoring
+git checkout -b username-unstable unstable
 ```
 
     ! TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git
@@ -240,8 +240,8 @@ cp ~/.ssh/id_rsa.pub id_rsa.pub
 `
 git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
         && cd /srv/gargantext \
-        && git fetch origin refactoring \
-        && git checkout refactoring \
+        && git fetch origin unstable \
+        && git checkout unstable \
 ```
 
 TODO (soon) : git clone https://gogs.iscpif.fr/gargantext.git

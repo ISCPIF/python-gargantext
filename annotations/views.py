@@ -40,6 +40,8 @@ class NgramList(APIView):
         """
         Get all ngrams for a doc id, sorted by list
 
+        usual route: /annotations/documents/<docid>
+
         NB1 : we are within a doc only
         NB2 : MAINLIST items are actually MAINLIST without MAP items
         NB3 : mostly the mainforms are in lists, but doc can have subform
@@ -122,8 +124,12 @@ class NgramList(APIView):
                         # skip object
                         continue
 
+                if mainform_id == ngram_id:
+                    group = None
+                else:
+                    group = mainform_id
                 # normal case
-                doc_ngram_list_add((ngram_id, obj.terms, w, list_id))
+                doc_ngram_list_add((ngram_id, obj.terms, group, w, list_id))
 
         # debug
         # print("annotations.views.NgramList.doc_ngram_list: ", doc_ngram_list)
@@ -131,10 +137,11 @@ class NgramList(APIView):
             '%s' % doc_id :
                 [
                     {'uuid': ngram_id,
+                     'group': group,      # the mainform if there is a group
                      'text': ngram_text,
-                     'occs': ngram_occurrences,
+                     'occs': ngram_occs,
                      'list_id': list_id,}
-                for (ngram_id,ngram_text,ngram_occurrences,list_id) in doc_ngram_list
+                for (ngram_id,ngram_text,group,ngram_occs,list_id) in doc_ngram_list
                 ],
             'lists': lists
         }}

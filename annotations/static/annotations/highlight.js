@@ -27,7 +27,7 @@
       // attach the annotation scope dynamically
       if (keyword) {
         // console.log('TextSelectionController found highlighted keyword annotation: ' + keyword.text)
-        keyword.romdebuginfo = "source = TextSelectionController" ;
+        // keyword.romdebuginfo = "source = TextSelectionController" ;
         $scope.keyword = keyword;
       }
 
@@ -35,7 +35,7 @@
         $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
         $rootScope.$emit("toggleAnnotationMenu", $scope.keyword);
         // $rootScope.$emit("toggleAnnotationMenu", {'uuid':42,'list_id':1,'text':'gotcha'});
-        console.log("EMIT toggleAnnotationMenu with \$scope.keyword: '" + $scope.keyword.text +"'")
+        // console.log("EMIT toggleAnnotationMenu with \$scope.keyword: '" + $scope.keyword.text +"'")
         e.stopPropagation();
       };
   }]);
@@ -122,6 +122,7 @@
               //     otherwise the menu for mainlist items can hide the menu for map items
 
               if ($rootScope.lists[annotation.list_id] == "MAPLIST") {
+                  console.log($scope)
                 $scope.menuItems.push({
                     // "tgtListName" is just used to render the GUI explanation
                     'tgtListName': 'STOPLIST',
@@ -257,13 +258,14 @@
       *                  post/delete
       */
       $scope.onMenuClick = function($event, crudActions) {
-          console.warn('in onMenuClick')
-          console.warn('item.crudActions')
-          console.warn(crudActions)
+        //   console.warn('in onMenuClick')
+        //   console.warn('item.crudActions')
+        //   console.warn(crudActions)
 
         if (angular.isObject($scope.selection_text)) {
 
             var ngramId = $scope.selection_text.uuid
+            var mainformId = $scope.selection_text.group
             var ngramText = $scope.selection_text.text
 
             var lastCallback = function() {
@@ -291,7 +293,7 @@
 
               MainApiChangeNgramHttpService[action](
                       {'listId': listId,
-                       'ngramIdList': ngramId},
+                       'ngramIdList': mainformId ? mainformId : ngramId},
 
                        // on success
                        function(data) {
@@ -548,7 +550,7 @@
           var cssClass = $rootScope.lists[annotation.list_id];
 
           // except if FOCUS
-          if (annotation.uuid == focusNgram) {
+          if (focusNgram && (annotation.uuid == focusNgram || annotation.group == focusNgram)) {
               cssClass = "FOCUS"
           }
 

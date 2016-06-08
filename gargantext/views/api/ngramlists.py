@@ -206,9 +206,9 @@ class GroupChange(APIView):
         # the others params are links to change
         couples = self.links_to_couples(params)
 
-        # £debug
-        print("==couples from url =================================++++=")
-        print(couples)
+        # debug
+        # print("==couples from url =================================++++=")
+        # print(couples)
 
         # local version of "insert if not exists" -------------------->8--------
         # (1) check already existing elements
@@ -224,18 +224,18 @@ class GroupChange(APIView):
         for synonyms in check_query.all():
             existing[(synonyms.ngram1_id,synonyms.ngram2_id)] = True
 
-        # £debug
-        print("==existing")
-        print(existing)
+        # debug
+        #print("==existing")
+        #print(existing)
 
         # (2) compute difference locally
         couples_to_add = [(mform,sform) for (mform,sform)
                                         in couples
                                         if (mform,sform) not in existing]
 
-        # £debug
-        print("== couples_to_add =================================++++=")
-        print(couples_to_add)
+        # debug
+        # print("== couples_to_add =================================++++=")
+        # print(couples_to_add)
 
 
         # (3) add new groupings
@@ -268,9 +268,9 @@ class GroupChange(APIView):
         # the others params are links to change
         couples_to_remove = self.links_to_couples(params)
 
-        # £debug
-        print("==couples_to_remove=================================dd=")
-        print(couples_to_remove)
+        # debug
+        # print("==couples_to_remove=================================dd=")
+        # print(couples_to_remove)
 
         # remove selectively group_couples
         # using IN is correct in this case: list of ids is short and external

@@ -597,11 +597,11 @@ function drawActiveGroup (tgtElementId, mainformId, linkIdsArray, ngInfos, newFr
     groupHtml += '\n          <p id="activeGroupButtons">';
 
     // Ok - No
-    var cancelGroupButton  = '<button onclick="removeActiveGroupFrameAndUpdate()">' ;
+    var cancelGroupButton  = '<button class="btn btn-default" onclick="removeActiveGroupFrameAndUpdate()">' ;
         cancelGroupButton +=   'cancel' ;
         cancelGroupButton += '</button>' ;
 
-    var tempoSaveGroupButton  = '<button onclick="saveActiveGroup()">' ;
+    var tempoSaveGroupButton  = '<button class="btn btn-warning" onclick="saveActiveGroup()">' ;
         tempoSaveGroupButton +=   'finish' ;
         tempoSaveGroupButton += '</button>' ;
 
@@ -1391,6 +1391,9 @@ $("#Clean_All").click(function(){
 $("#Save_All").click(function(){
     SaveLocalChanges()
 });
+$("#Save_All_Bottom").click(function(){
+    SaveLocalChanges()
+});
 
 
 // find all the consequences of changes from MAP => MAIN
@@ -1476,6 +1479,12 @@ function InferCRUDFlags(id, oldState, desiredState, registry) {
 
 // Save changes to all corpusA-lists
 function SaveLocalChanges() {
+
+  // if there is an activeGroup modification, also finish it and save it
+  if (GState == 1) {
+      saveActiveGroup()
+  }
+
   // console.clear()
   // console.log("In SaveLocalChanges()")
 

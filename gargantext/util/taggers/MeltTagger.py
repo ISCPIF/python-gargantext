@@ -107,7 +107,7 @@ class MeltTagger(Tagger):
         if not lemmatize:
             # without lemmatization
             for form, tag in tagged_tokens:
-                    if form != "SENT_BOUND":
+                    if form != "_SENT_BOUND":
                         yield (form, self._tag_replacements[tag])
         else:
             # with lemmatization
@@ -119,7 +119,7 @@ class MeltTagger(Tagger):
             for token in lemmatized.split():
                 if len(token):
                     values = token.split('/')
-                    if values[0] != "SENT_BOUND":
+                    if values[0] != "_SENT_BOUND":
                         yield (values[0], self._tag_replacements[values[1]], values[2].replace('*', ''))
 
 

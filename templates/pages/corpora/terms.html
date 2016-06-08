@@ -64,12 +64,17 @@
                             </button> -->
                         </center>
                       </h2>
-                      <div class="pull-right" style="margin-top:1.7em;padding-left:2em;">
+                      <div class="savediv pull-left" style="margin-top:1.5em;padding-right:1em;" title="No changes to save">
+                          <!-- need save status -->
+                          <span class="needsaveicon glyphicon glyphicon-floppy-saved"></span>
+                          &nbsp;
                           <!-- save button -->
-                          <button id="Save_All" class="btn btn-primary">Save all changes permanently</button>
+                          <button id="Save_All" class="btn btn-muted" disabled style="font-size:120%">
+                              <b>Save all changes</b>
+                          </button>
                       </div>
                         <!-- see in javascript function queries.functions['my_state_filter'] -->
-                        <div class="pull-left" style="margin-top:2.1em;">
+                        <div class="pull-right" style="margin-top:2.1em;padding-left:1em;">
                             Filter:
                             <select id="picklistmenu" name="my_state_filter">
                               <option value='reset'>All terms</option>
@@ -89,9 +94,14 @@
                       </div>
 
                       <!-- copy of save button under the table -->
-                      <p align="right">
-                          <button id="Save_All_Bottom" class="btn btn-primary">Save all changes permanently</button>
-                      </p>
+                      <div align="right" class="savediv"  title="No changes to save">
+                          <!-- need save status -->
+                          <span class="needsaveicon glyphicon glyphicon-floppy-saved"></span>
+                          &nbsp;
+                          <button id="Save_All_Bottom" class="btn btn-muted" disabled>
+                              <b>Save all changes</b>
+                          </button>
+                      </div>
                     </div>
 
                 </div> <!-- /div panel -->

@@ -41,7 +41,7 @@
                         {% if corpus %}
                         <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                                {{corpus.name | truncatechars:15}}
+                                {{corpus.name | truncatechars:25}}
                             </a>
                         </li>
                         {% endif %}
@@ -150,12 +150,32 @@
                             <br>
                             <br>
                                 <div class="row">
-                                    <h3>
-                                        <a href="/projects/{{project.id}}">
-                                            <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                                            {{ project.name | truncatechars:50}}
+                                    <div class="col-md-6">
+                                        <h3>
+                                            <a href="/projects/{{project.id}}">
+                                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                                                {{ project.name | truncatechars:50}}
+                                            </a>
+                                        </h3>
+                                    </div>
+                                    <!-- export button -->
+                                    <div class="col-md-6">
+                                        {% if view == 'terms'  %}
+                                        <a class="btn btn-primary exportbtn pull-right" role="button"
+                                            href="/api/ngramlists/export?corpus={{corpus.id}}"
+                                            title="Export terms table in CSV">
+                                            Export terms table &nbsp; <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                                         </a>
-                                    </h3>
+                                        {% elif view == 'titles'  %}
+                                        <a class="btn btn-primary exportbtn pull-right" role="button"
+                                            href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
+                                            title="Export full corpus in CSV">
+                                            Export corpus &nbsp; <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                                        </a>
+                                        {% else  %}
+                                        <!-- TODO export journal table -->
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-1">
@@ -167,10 +187,7 @@
                                             </h3>
                                             <h3>
                                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                                                {{ corpus.name | truncatechars:20 }}
-                                                <a class="btn btn-primary" role="button" href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv">
-                                                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
-                                                </a>
+                                                {{ corpus.name | truncatechars:30 }}
                                             </h3>
 
                                     </div>

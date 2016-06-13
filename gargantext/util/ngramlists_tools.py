@@ -18,7 +18,7 @@ from io                  import StringIO # pseudo file to write CSV to memory
 
 def query_list(list_id,
                 pagination_limit=None, pagination_offset=None,
-                details=False, scoring_metric_id=None
+                details=False, scoring_metric_id=None, groupings_id=None
                 ):
     """
     Paginated listing of ngram_ids in a NodeNgram lists.
@@ -32,10 +32,28 @@ def query_list(list_id,
                  if True and a scoring_id, send triples with (ngram_id, term, scoring)
       - scoring_metric_id: id of a scoring metric node   (TFIDF or OCCS)
                            (for details and sorting)
+      - groupings_id: optional id of a list of grouping relations (synonyms)
+                      (each synonym will be added to the list if not already in there)
+
+    FIXME: subforms appended recently and not generalized enough
+            => add a common part for all "if groupings_id"
+            => provide the option also in combination with scoring
     """
     # simple contents
     if not details:
         query = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id == list_id)
+
+        if groupings_id:
+            subforms = (session.query(NodeNgramNgram.ngram2_id)
+                               # subform ids...
+                               .filter(NodeNgramNgram.node_id == groupings_id)
+                               # .. that are connected to a mainform
+                               .join(NodeNgram, NodeNgram.ngram_id == NodeNgramNgram.ngram1_id)
+                               # .. which is in the list
+                               .filter(NodeNgram.node_id == list_id)
+                               )
+            # union with the main q
+            query = query.union(subforms)
 
     # detailed contents (id + terms)
     elif not scoring_metric_id:
@@ -43,6 +61,18 @@ def query_list(list_id,
                         .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
                         .filter(NodeNgram.node_id == list_id)
                         )
+        if groupings_id:
+            subforms = (session.query(Ngram.id, Ngram.terms, Ngram.n)
+                               .join(NodeNgramNgram, NodeNgramNgram.ngram2_id == Ngram.id)
+                               # subform ids...
+                               .filter(NodeNgramNgram.node_id == groupings_id)
+                               # .. that are connected to a mainform
+                               .join(NodeNgram, NodeNgram.ngram_id == NodeNgramNgram.ngram1_id)
+                               # .. which is in the list
+                               .filter(NodeNgram.node_id == list_id)
+                               )
+            # union with the main q
+            query = query.union(subforms)
 
     # detailed contents (id + terms) + score
     else:
@@ -175,9 +205,9 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
     # listes de ngram_ids correspondantes
     # ------------------------------------
     # contenu: liste des objets ngrammes [(2562,"monterme",1),...]
-    stop_ngrams  = query_list(stoplist_node.id, details=True).all()
-    main_ngrams  = query_list(mainlist_node.id, details=True).all()
-    map_ngrams  = query_list(maplist_node.id, details=True).all()
+    stop_ngrams  = query_list(stoplist_node.id, details=True, groupings_id=group_node.id).all()
+    main_ngrams  = query_list(mainlist_node.id, details=True, groupings_id=group_node.id).all()
+    map_ngrams  = query_list(maplist_node.id, details=True, groupings_id=group_node.id).all()
 
 
     # pour debug ---------->8 --------------------
@@ -209,8 +239,8 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
                                        list_type="stop")
 
     # miam contient map donc il y a un préalable ici
-    map_ngram_ids = [ng.id for ng in map_ngrams]
-    main_without_map = [ng for ng in main_ngrams if ng not in map_ngram_ids]
+    map_ngram_ids = {ng.id for ng in map_ngrams}
+    main_without_map = [ng for ng in main_ngrams if ng.id not in map_ngram_ids]
     miam_csv_rows = ngrams_to_csv_rows(main_without_map,
                                        id_groupings=grouped,
                                        list_type="main")

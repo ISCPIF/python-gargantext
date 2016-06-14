@@ -292,6 +292,7 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     '''
     This function reads a CSV of an ngrams table for a Corpus,
     then it converts old ngram_ids to those of the current DB
+       (and adds to DB any unknown ngrams)
     then recreates an equivalent set of MAINLIST, MAPLIST, STOPLIST + GROUPS
 
     Input example:
@@ -468,3 +469,184 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     print("IMPORT: read %i grouping relations" % n_group_relations)
 
     return result
+
+
+
+def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
+    """
+    Integrates an external terms table to the current one:
+       - merges groups (using group_union() function)
+       - resolves conflicts if terms belong in different lists
+          > map wins over both other types
+          > main wins over stop
+          > stop never wins
+
+    @param new_lists:     a dict of *new* imported lists with format:
+                                {'stop':     UnweightedList,
+                                 'main':     UnweightedList,
+                                 'map':      UnweightedList,
+                                 'groupings': Translations }
+
+    @param onto_corpus:   a corpus node to get the *old* lists
+
+    @param del_originals: an array of original wordlists to ignore
+                          and delete during the merge
+                          possible values : ['stop','main','map']
+
+            par exemple
+            del_originals = ['stop','main'] => effacera la stoplist
+                                                 et la mainlist
+                                          mais pas la maplist qui sera fusionnée
+                                         (les éléments de la map list
+                                          seront remis dans la main à la fin)
+
+    NB: Uses group_tools.group_union() to merge the synonym links.
+
+    FIXME: new terms created at import_ngramlists() can now be added to lists
+           but are never added to docs
+    """
+
+    # the tgt node arg has to be a corpus here
+    if not hasattr(onto_corpus, "typename") or onto_corpus.typename != "CORPUS":
+        raise TypeError("IMPORT: 'onto_corpus' argument must be a Corpus Node")
+
+    # for stats
+    added_nd_ng = 0   # number of added list elements
+
+
+    # our list shortcuts will be 0,1,2 (aka lid)
+    # by order of precedence
+    linfos = [
+       {'key': 'stop', 'name':"STOPLIST"},    # lid = 0
+       {'key': 'main', 'name':"MAINLIST"},    # lid = 1
+       {'key': 'map',  'name':"MAPLIST"}      # lid = 2
+    ]
+
+    # ======== Get the old lists =========
+    old_lists = {}
+
+    # DB nodes stored with same indices 0,1,2 (resp. stop, miam and map)
+    # find target ids of the list node objects
+    tgt_nodeids = [
+                    onto_corpus.children("STOPLIST").first().id,
+                    onto_corpus.children("MAINLIST").first().id,
+                    onto_corpus.children("MAPLIST").first().id
+                ]
+
+    # retrieve old data...
+    for lid, linfo in enumerate(linfos):
+        list_type = linfo['key']
+        if list_type not in del_originals:
+            old_lists[list_type] = UnweightedList(tgt_nodeids[lid])
+        else:
+            # ...or use empty objects if replacing old list
+            old_lists[list_type] = UnweightedList()
+
+    # ======== Merging all involved ngrams =========
+
+    # all memberships with resolved conflicts of interfering memberships
+    resolved_memberships = {}
+
+    for list_set in [old_lists, new_lists]:
+        for lid, info in enumerate(linfos):
+            list_type = info['key']
+            # we use the fact that lids are ordered ints...
+            for ng_id in list_set[list_type].items:
+                if ng_id not in resolved_memberships:
+                    resolved_memberships[ng_id] = lid
+                else:
+                    # ...now resolving is simply taking the max
+                    # stop < main < map
+                    resolved_memberships[ng_id] = max(
+                                                    lid,
+                                                    resolved_memberships[ng_id]
+                                                    )
+            # now each ngram is only in its most important list
+            # -------------------------------------------------
+            # NB temporarily map items are not in main anymore
+            #    but we'll copy it at the end
+            # NB temporarily all subforms were treated separately
+            #    from mainforms but we'll force them into same list
+            #    after we merge the groups
+
+    # del old_lists
+    # del new_lists['stop']
+    # del new_lists['main']
+    # del new_lists['map']
+
+    # ======== Merging old and new groups =========
+    # get the arcs already in the target DB (directed couples)
+    old_group_id = onto_corpus.children("GROUPLIST").first().id
+    previous_links = session.query(
+       NodeNgramNgram.ngram1_id,
+       NodeNgramNgram.ngram2_id
+      ).filter(
+         NodeNgramNgram.node_id == old_group_id
+       ).all()
+
+    n_links_previous = len(previous_links)
+
+    # same format for the new arcs (Translations ~~~> array of couples)
+    translated_imported_links = []
+    add_link = translated_imported_links.append
+    n_links_added = 0
+    for (y,x) in new_lists['groupings'].items.items():
+        add_link((x,y))
+        n_links_added += 1
+    #del new_lists
+
+    # group_union: joins 2 different synonym-links lists into 1 new list
+    new_links = group_union(previous_links, translated_imported_links)
+    #del previous_links
+    #del translated_imported_links
+
+    n_links_after = len(new_links)
+
+    merged_group = Translations([(y,x) for (x,y) in new_links])
+    #del new_links
+
+    print("IMPORT: groupings updated (links before/added/after: %i/%i/%i)"
+                % (n_links_previous, n_links_added,n_links_after))
+
+    # ======== Target list(s) append data =========
+    # if list 2 => write in both tgt_data_lists [1,2]
+    # lists 0 or 1 => straightforward targets [0] or [1]
+
+    merged_results = {
+        'stop': UnweightedList(),
+        'main': UnweightedList(),
+        'map':  UnweightedList()
+    }
+
+    for (ng_id, winner_lid) in resolved_memberships.items():
+
+        ## 1) using the new groups
+        # normal case if not a subform
+        if ng_id not in merged_group.items:
+            target_lid = winner_lid
+        # inherit case if is a subform
+        else:
+            mainform_id = merged_group.items[ng_id]
+            # inherited winner
+            target_lid = resolved_memberships[mainform_id]
+
+        ## 2) map => map + main
+        if target_lid == 2:
+            todo_lids = [1,2]
+        else:
+            todo_lids = [target_lid]
+
+        ## 3) storage
+        for lid in todo_lids:
+            list_type = linfos[lid]['key']
+            merged_results[list_type].items.add(ng_id)
+
+
+    # print("IMPORT: added %i elements in the lists indices" % added_nd_ng)
+
+    # ======== Overwrite old data with new =========
+    for lid, info in enumerate(linfos):
+        tgt_id = tgt_nodeids[lid]
+        list_type = info['key']
+        result = merged_results[list_type]
+        result.save(tgt_id)

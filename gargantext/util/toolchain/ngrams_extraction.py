@@ -9,6 +9,9 @@ from re          import sub
 from gargantext.util.scheduling import scheduled
 
 def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
+    """
+    @param ngrams_data   a set like {('single word', 2), ('apple', 1),...}
+    """
     print('INTEGRATE')
     # integrate ngrams
     ngrams_ids = bulk_insert_ifnotexists(

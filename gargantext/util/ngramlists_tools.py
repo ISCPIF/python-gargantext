@@ -253,7 +253,6 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
     this_corpus_all_rows = map_csv_rows + miam_csv_rows + stop_csv_rows
 
     # choice of output: file or string
-    print(type(fname))
     if fname == None:
         out_file = StringIO()
     elif type(fname) == str:
@@ -317,6 +316,8 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
            (creates absent ngrams if necessary)
         => use the new ids to map the relations involving the old ones
 
+    NB: the creation of MAINLIST also adds all elements from the MAPLIST
+
     NB: To merge the imported lists into a corpus node's lists,
         chain this function with merge_ngramlists()
     '''
@@ -346,11 +347,17 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
                              quoting   = QUOTE_MINIMAL
                              )
 
+    # for stats
     n_read_lines = 0
+    n_total_ng = 0
+    n_added_ng = 0
+    n_group_relations = 0
 
     # load CSV + initial checks
     for i, csv_row in enumerate(ngrams_csv_rows):
-        print("---------------READ LINE %i" % i)
+        # fyi
+        n_read_lines +=1
+        # print("---------------READ LINE %i" % i)
         try:
             this_ng_oldid        = str(csv_row[0])
             this_ng_term         = str(csv_row[1])
@@ -398,19 +405,19 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
                   (this_ng_oldid,external_subform_id)
                   )
 
-        # fyi
-        n_read_lines +=1
-
     # end of CSV read
     fh.close()
 
     # ======== ngram save + id lookup =========
-    # returns a dict {term => id}
-    new_ngrams_ids = bulk_insert_ifnotexists(
+    n_total_ng = len(imported_ngrams_dbdata)
+
+    # returns a dict {term => id} and a count of inserted ones
+    (new_ngrams_ids, n_added_ng) = bulk_insert_ifnotexists(
         model = Ngram,
         uniquekey = 'terms',
         fields = ('terms', 'n'),
-        data = imported_ngrams_dbdata
+        data = imported_ngrams_dbdata,
+        do_stats = True
     )
     del imported_ngrams_dbdata
 
@@ -421,34 +428,43 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     del new_ngrams_ids
     del imported_ngrams_oldids
 
-    print(old_to_new_id_map)
-    print(import_nodes_ngrams)
+    # print(old_to_new_id_map)
+    # print(import_nodes_ngrams)
     # ======== Import into lists =========
 
-    # 3 x abstract lists
-    new_lists = {
+    # 3 x abstract lists + 1 translations
+    result = {
          'map':  UnweightedList(),
          'main': UnweightedList(),
-         'stop': UnweightedList()
+         'stop': UnweightedList(),
+         'groupings' : Translations()
          }
 
     for list_type in import_nodes_ngrams:
         for old_id in import_nodes_ngrams[list_type]:
             new_id = old_to_new_id_map[old_id]
             # add to the abstract list
-            new_lists[list_type].items.add(new_id)
+            result[list_type].items.add(new_id)
+
+        # for main also add map elements
+        if list_type == 'main':
+            for old_id in import_nodes_ngrams['map']:
+                new_id = old_to_new_id_map[old_id]
+                result['main'].items.add(new_id)
 
     # ======== Synonyms =========
-    new_groups = Translations()
-
     for (x,y) in imported_groupings:
         new_mainform_id = old_to_new_id_map[x]
         new_subform_id  = old_to_new_id_map[y]
 
         # /!\ Translations use (subform => mainform) order
-        new_groups.items[new_subform_id] = new_mainform_id
+        result['groupings'].items[new_subform_id] = new_mainform_id
+        n_group_relations += 1
 
     # ------------------------------------------------------------------
     print("IMPORT: read %i lines from the CSV" % n_read_lines)
+    print("IMPORT: read %i terms (%i added and %i already existing)"
+                % (n_total_ng, n_added_ng, n_total_ng-n_added_ng) )
+    print("IMPORT: read %i grouping relations" % n_group_relations)
 
-    return (new_lists, new_groups)
+    return result

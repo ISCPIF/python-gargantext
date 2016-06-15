@@ -110,6 +110,7 @@ def group_union(g_a_links, g_b_links):
      rloth: this is some slightly amended code
      from Samuel's in rest_v1_0.ngrams.Group.get
 
+     TODO use "most frequent" score if leader candidates are ex aequo by degree.
     """
 
     # output: list of links forming new group

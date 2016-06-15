@@ -2,7 +2,9 @@
 Tools to work with ngramlists (MAINLIST, MAPLIST, STOPLIST)
 
     - query_list(list_id) to retrieve ngrams
-    - export_ngramlists(corpus_id)
+    - export_ngramlists(corpus_node)
+    - import_ngramlists(corpus_node)
+    - merge_ngramlists(new_lists, onto_corpus = corpus_node)
 """
 
 from gargantext.util.group_tools import query_groups, group_union
@@ -12,6 +14,10 @@ from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
                                         NodeNgramNgram
 
 from gargantext.util.lists       import UnweightedList, Translations
+
+# import will implement the same text cleaning procedures as toolchain
+from gargantext.util.toolchain.parsing           import normalize_chars
+from gargantext.util.toolchain.ngrams_extraction import normalize_terms
 
 from sqlalchemy.sql      import exists
 from os                  import path
@@ -323,7 +329,7 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
         chain this function with merge_ngramlists()
     '''
     # --------------
-    #   READ CSV
+    #
     # --------------
 
     # main storage for the ngrams by list
@@ -342,6 +348,10 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     #     (ie imported ids.. that will have to be translated
     #      to target db ids)
 
+    # skipped lines can (very rarely) be used in groups => mark as ignored
+    ignored_oldids = []
+
+    # =============== READ CSV ===============
     fh = open(fname, "r")
     ngrams_csv_rows = reader(fh,
                              delimiter = delimiter,
@@ -366,25 +376,37 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
             this_list_type       = str(csv_row[3])
             this_ng_group        = str(csv_row[4])
 
+            # string normalizations
+            this_ng_term = normalize_terms(normalize_chars(this_ng_term))
+
         except:
             if i == 0:
                 print("WARN: (skip line) probable header line at CSV %s:l.0" % fname)
                 continue
 
-        # --- term checking
-        if not len(this_ng_term) > 0:
-            print("WARN: (skip line) empty term at CSV %s:l.%i" % (fname, i))
-            continue
-
-        # --- check before any old ID retrieve
+        # --- check format before any old ID retrieve
         if not match("\d+$", this_ng_oldid):
             print("WARN: (skip line) bad ID at CSV %s:l.%i" % (fname, i))
             continue
         else:
             this_ng_oldid = int(this_ng_oldid)
 
+        # --- term checking
+        if not len(this_ng_term) > 0:
+            print("WARN: (skip line) empty term at CSV %s:l.%i" % (fname, i))
+            ignored_oldids.append(this_ng_oldid)
+            continue
+
+        # --- check if not a duplicate string
+        if this_ng_term in imported_ngrams_oldids:
+            ignored_oldids.append(this_ng_oldid)
+            print("WARN: (skip line) term appears more than once (previous id: %i) at CSV %s:l.%i"
+                    % (imported_ngrams_oldids[this_ng_term], fname, i))
+            continue
+
         # --- check correct list type
         if not this_list_type in ['stop','main','map']:
+            ignored_oldids.append(this_ng_oldid)
             print("WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
             continue
 
@@ -455,12 +477,13 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
 
     # ======== Synonyms =========
     for (x,y) in imported_groupings:
-        new_mainform_id = old_to_new_id_map[x]
-        new_subform_id  = old_to_new_id_map[y]
+        if (x not in ignored_oldids) and (y not in ignored_oldids):
+            new_mainform_id = old_to_new_id_map[x]
+            new_subform_id  = old_to_new_id_map[y]
 
-        # /!\ Translations use (subform => mainform) order
-        result['groupings'].items[new_subform_id] = new_mainform_id
-        n_group_relations += 1
+            # /!\ Translations use (subform => mainform) order
+            result['groupings'].items[new_subform_id] = new_mainform_id
+            n_group_relations += 1
 
     # ------------------------------------------------------------------
     print("IMPORT: read %i lines from the CSV" % n_read_lines)
@@ -533,14 +556,24 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
                     onto_corpus.children("MAPLIST").first().id
                 ]
 
-    # retrieve old data...
+    old_group_id = onto_corpus.children("GROUPLIST").first().id
+
+    # retrieve old data into old_lists[list_type]...
+    # ----------------------------------------------
     for lid, linfo in enumerate(linfos):
         list_type = linfo['key']
         if list_type not in del_originals:
-            old_lists[list_type] = UnweightedList(tgt_nodeids[lid])
+
+            # NB can't use UnweightedList(tgt_nodeids[lid])
+            # because we need to include out-of-list subforms
+            list_ngrams_q  = query_list(tgt_nodeids[lid],
+                                        groupings_id=old_group_id)
+            old_lists[list_type] = UnweightedList(list_ngrams_q.all())
         else:
             # ...or use empty objects if replacing old list
+            # ----------------------------------------------
             old_lists[list_type] = UnweightedList()
+            print("MERGE: ignoring old %s which will be overwritten" % linfo['name'])
 
     # ======== Merging all involved ngrams =========
 
@@ -569,14 +602,13 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             #    from mainforms but we'll force them into same list
             #    after we merge the groups
 
-    # del old_lists
-    # del new_lists['stop']
-    # del new_lists['main']
-    # del new_lists['map']
+    del old_lists
+    del new_lists['stop']
+    del new_lists['main']
+    del new_lists['map']
 
     # ======== Merging old and new groups =========
     # get the arcs already in the target DB (directed couples)
-    old_group_id = onto_corpus.children("GROUPLIST").first().id
     previous_links = session.query(
        NodeNgramNgram.ngram1_id,
        NodeNgramNgram.ngram2_id
@@ -593,20 +625,24 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     for (y,x) in new_lists['groupings'].items.items():
         add_link((x,y))
         n_links_added += 1
-    #del new_lists
+    del new_lists
 
     # group_union: joins 2 different synonym-links lists into 1 new list
     new_links = group_union(previous_links, translated_imported_links)
-    #del previous_links
-    #del translated_imported_links
+    del previous_links
+    del translated_imported_links
 
     n_links_after = len(new_links)
 
     merged_group = Translations([(y,x) for (x,y) in new_links])
-    #del new_links
+    del new_links
 
-    print("IMPORT: groupings updated (links before/added/after: %i/%i/%i)"
-                % (n_links_previous, n_links_added,n_links_after))
+    # ======== Overwrite old data with new =========
+
+    merged_group.save(old_group_id)
+
+    print("MERGE: groupings %i updated (links before/added/after: %i/%i/%i)"
+            % (old_group_id, n_links_previous, n_links_added, n_links_after))
 
     # ======== Target list(s) append data =========
     # if list 2 => write in both tgt_data_lists [1,2]
@@ -641,7 +677,6 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             list_type = linfos[lid]['key']
             merged_results[list_type].items.add(ng_id)
 
-
     # print("IMPORT: added %i elements in the lists indices" % added_nd_ng)
 
     # ======== Overwrite old data with new =========
@@ -650,3 +685,6 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
         list_type = info['key']
         result = merged_results[list_type]
         result.save(tgt_id)
+
+        print("MERGE: %s %i updated (new size: %i)"
+              % (info['name'],tgt_id, len(merged_results[list_type].items)))

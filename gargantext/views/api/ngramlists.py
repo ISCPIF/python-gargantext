@@ -15,10 +15,11 @@ from sqlalchemy               import tuple_
 from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.lists    import UnweightedList, Translations
 
-
-# subroutines that were previously in this module are now in util.XYZ_tools
-from gargantext.util.ngramlists_tools import query_list, export_ngramlists
+# useful subroutines
+from gargantext.util.ngramlists_tools import query_list, export_ngramlists, \
+                                             import_ngramlists, merge_ngramlists
 from gargantext.util.group_tools      import query_grouped_ngrams
+
 
 class List(APIView):
     """
@@ -30,6 +31,8 @@ class List(APIView):
 class CSVLists(APIView):
     """
     For CSV exports of all lists of a corpus
+
+    Or CSV import into existing lists as "patch"
     """
     def get(self, request):
         params = get_parameters(request)
@@ -43,6 +46,49 @@ class CSVLists(APIView):
         # fill the response with the data
         export_ngramlists(corpus_node, fname=response, titles=True)
         return response
+
+    def post(self,request):
+        """
+        Merge the lists of a corpus with other lists from a CSV source
+                                                 or from another corpus
+
+        params in request.GET:
+            corpus:    the corpus whose lists are getting patched
+
+        params in request.FILES:
+            csvsource: the csv file
+
+        or in get
+            dbsource:  another corpus instead of the csvfile
+                       (? this last option should perhaps not be in CSVLists ?)
+
+        NB: not using PATCH because we'll need POST file upload
+
+
+        /!\ We assume we checked the file size client-side before upload
+
+        £TODO check authentication and user.id
+        """
+        # this time the corpus param is the one with the target lists to be patched
+        params = get_parameters(request)
+        corpus_id = int(params.pop("onto_corpus"))
+        corpus_node = cache.Node[corpus_id]
+
+        # request also contains the file
+        # csv_file has type django.core.files.uploadedfile.InMemoryUploadedFile
+        #                                                 ----------------------
+        csv_file = request.data['csvfile']
+
+        # import the csv
+        new_lists = import_ngramlists(csv_file)
+        del csv_file
+
+        # merge the new_lists onto those of the target corpus
+        log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+
+        return JsonHttpResponse({
+            'log': log_msg,
+            }, 200)
 
 
 

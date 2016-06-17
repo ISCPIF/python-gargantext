@@ -33,6 +33,10 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
                 #  TODO : unify to a /api/ngrams?formatted=csv
                 #        (similar to /api/nodes?formatted=csv)
 
+              , url(r'^ngramlists/import$', ngramlists.CSVLists.as_view()            )
+                # same handling class as export (CSVLists)
+                # but this route used only for POST + file
+
               , url(r'^ngramlists/change$', ngramlists.ListChange.as_view()          )
                 # add or remove ngram from a list
                 #  ex: add <=> PUT ngramlists/change?list=42&ngrams=1,2

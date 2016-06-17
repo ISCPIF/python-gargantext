@@ -313,7 +313,7 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
 
     Output:  3 x UnweightedList + 1 x Translations
 
-    @param fname            a filename
+    @param fname            a local filename or a filehandle-like
     @param delimiter        a character used as separator in the CSV
     @param group_delimiter  a character used as grouped subforms separator
                             (in the last column)
@@ -352,8 +352,26 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     ignored_oldids = []
 
     # =============== READ CSV ===============
-    fh = open(fname, "r")
-    ngrams_csv_rows = reader(fh,
+
+    if isinstance(fname, str):
+        fh = open(fname, "r")
+    elif callable(getattr(fname, "read", None)):
+        fh = fname
+    else:
+        raise TypeError("IMPORT: fname argument has unknown type %s" % type(fh))
+
+
+    # reading all directly b/c csv.reader takes only lines or a real fh in bytes
+    # and we usually have a "false" fh (uploadedfile.InMemoryUploadedFile) in strings
+    # (but we checked its size before!)
+    contents = fh.read().decode("UTF-8").split("\n")
+
+    # end of CSV read
+    fh.close()
+
+    # <class 'django.core.files.uploadedfile.InMemoryUploadedFile'>
+
+    ngrams_csv_rows = reader(contents,
                              delimiter = delimiter,
                              quoting   = QUOTE_MINIMAL
                              )
@@ -369,6 +387,9 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
         # fyi
         n_read_lines +=1
         # print("---------------READ LINE %i" % i)
+        if not len(csv_row):
+            continue
+
         try:
             this_ng_oldid        = str(csv_row[0])
             this_ng_term         = str(csv_row[1])
@@ -381,33 +402,35 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
 
         except:
             if i == 0:
-                print("WARN: (skip line) probable header line at CSV %s:l.0" % fname)
+                print("IMPORT WARN: (skip line) probable header line at CSV %s:l.0" % fname)
                 continue
+            else:
+                raise ValueError("Error on CSV read line %i" %n_read_lines)
 
         # --- check format before any old ID retrieve
-        if not match("\d+$", this_ng_oldid):
-            print("WARN: (skip line) bad ID at CSV %s:l.%i" % (fname, i))
+        if not match(r"\d+$", this_ng_oldid):
+            print("IMPORT WARN: (skip line) bad ID at CSV %s:l.%i" % (fname, i))
             continue
         else:
             this_ng_oldid = int(this_ng_oldid)
 
         # --- term checking
         if not len(this_ng_term) > 0:
-            print("WARN: (skip line) empty term at CSV %s:l.%i" % (fname, i))
+            print("IMPORT WARN: (skip line) empty term at CSV %s:l.%i" % (fname, i))
             ignored_oldids.append(this_ng_oldid)
             continue
 
         # --- check if not a duplicate string
         if this_ng_term in imported_ngrams_oldids:
             ignored_oldids.append(this_ng_oldid)
-            print("WARN: (skip line) term appears more than once (previous id: %i) at CSV %s:l.%i"
+            print("IMPORT WARN: (skip line) term appears more than once (previous id: %i) at CSV %s:l.%i"
                     % (imported_ngrams_oldids[this_ng_term], fname, i))
             continue
 
         # --- check correct list type
         if not this_list_type in ['stop','main','map']:
             ignored_oldids.append(this_ng_oldid)
-            print("WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
+            print("IMPORT WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
             continue
 
         # ================= Store the data ====================
@@ -427,9 +450,6 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
                 imported_groupings.append(
                   (this_ng_oldid,external_subform_id)
                   )
-
-    # end of CSV read
-    fh.close()
 
     # ======== ngram save + id lookup =========
     n_total_ng = len(imported_ngrams_dbdata)
@@ -529,6 +549,9 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
            but are never added to docs
     """
 
+    # log to send back to client-side (lines will be joined)
+    my_log = []
+
     # the tgt node arg has to be a corpus here
     if not hasattr(onto_corpus, "typename") or onto_corpus.typename != "CORPUS":
         raise TypeError("IMPORT: 'onto_corpus' argument must be a Corpus Node")
@@ -573,7 +596,9 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             # ...or use empty objects if replacing old list
             # ----------------------------------------------
             old_lists[list_type] = UnweightedList()
-            print("MERGE: ignoring old %s which will be overwritten" % linfo['name'])
+            msg = "MERGE: ignoring old %s which will be overwritten" % linfo['name']
+            print(msg)
+            my_log.append(msg)
 
     # ======== Merging all involved ngrams =========
 
@@ -641,8 +666,9 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
 
     merged_group.save(old_group_id)
 
-    print("MERGE: groupings %i updated (links before/added/after: %i/%i/%i)"
-            % (old_group_id, n_links_previous, n_links_added, n_links_after))
+    msg = "MERGE: groupings %i updated (links before/added/after: %i/%i/%i)" % (old_group_id, n_links_previous, n_links_added, n_links_after)
+    my_log.append(msg)
+    print(msg)
 
     # ======== Target list(s) append data =========
     # if list 2 => write in both tgt_data_lists [1,2]
@@ -664,7 +690,11 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
         else:
             mainform_id = merged_group.items[ng_id]
             # inherited winner
-            target_lid = resolved_memberships[mainform_id]
+            try:
+                target_lid = resolved_memberships[mainform_id]
+            except KeyError:
+                target_lid = winner_lid
+                print("MERGE: WARN ng_id %i has incorrect mainform %i ?" % (ng_id, mainform_id))
 
         ## 2) map => map + main
         if target_lid == 2:
@@ -686,5 +716,9 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
         result = merged_results[list_type]
         result.save(tgt_id)
 
-        print("MERGE: %s %i updated (new size: %i)"
-              % (info['name'],tgt_id, len(merged_results[list_type].items)))
+        msg = "MERGE: %s %i updated (new size: %i)" % (info['name'],tgt_id, len(merged_results[list_type].items))
+        my_log.append(msg)
+        print(msg)
+
+    # return a log
+    return("\n".join(my_log))

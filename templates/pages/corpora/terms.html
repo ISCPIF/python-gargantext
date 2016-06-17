@@ -72,6 +72,15 @@
                           <button id="Save_All" class="btn btn-muted" disabled style="font-size:120%">
                               <b>Save all changes</b>
                           </button>
+                          <br/>
+                          <br/>
+                          <!-- import icon -->
+                          <span class="needsaveicon glyphicon glyphicon-import"></span>
+                          &nbsp;
+                          <button id="ImportList" class="btn btn-warning" style="font-size:120%"
+                                   onclick="$('#csvimport').modal('show');">
+                              <b>Import a Termlist</b>
+                          </button>
                       </div>
                         <!-- see in javascript function queries.functions['my_state_filter'] -->
                         <div class="pull-right" style="margin-top:2.1em;padding-left:1em;">
@@ -107,25 +116,110 @@
                 </div> <!-- /div panel -->
 
         </div> <!-- /jumbotron -->
-    <!--
-    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">
-        Import a Corpus-List
-    </button>
--->
+
 <!--</div> This div is closed in the menu !-->
 
 
 
-
-    <!--
-    # stub to import a list (aka orange button)
-    <button id="ImportList" onclick="GetUserPortfolio();" class="btn btn-warning">Import a Corpus-List</button>
-    -->
-
+<div class="modal" aria-hidden="true" id="csvimport">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+     <h3 id="myModalLabel">Import a CSV term list</h3>
+    </div>
+    <div class="modal-body" id="uploadform">
+        <form id="csvimportform"
+              onsubmit="return postCSV(event)"
+              enctype="multipart/form-data"
+              method="post">
+            {% csrf_token %}
+            <label>From your disk:</label>
+            <input type="file" id="csvfile" accept="text/csv">
+            <br/>
+            <label>From another corpus:</label>
+            <p>TODO</p>
+            <br/>
+            <input type="submit" class="btn btn-xs btn-info" id="csvsubmit" value="Submit" />
+        </form>
+    </div>
+    <div class="modal-footer" id="formanswer"></div>
+    </div>
+    </div>
+</div>
 
 <script type="text/javascript" src="{% static "lib/jquery/dynatable/jquery.dynatable.js" %}"></script>
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "lib/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
+
+<script type="text/javascript">
+
+/*                                             merci c24b !
+ * Uses csvimportroute variable from the django template
+ * Ex: /api/ngramlists/import?onto_corpus=corpus_id
+ *
+ * Uses input#csvfile as source data.
+ */
+function postCSV(e){
+    // don't do page reload of usual submits
+    e.preventDefault()
+
+    // 2MB ≈ 70000 ngrams
+    var max_size = 2097152
+
+    // we take it straight from the input element
+    theFile = $('input#csvfile')[0].files[0]
+
+    // debug
+    // console.log(theFile.name, "size", theFile.size, theFile.lastModifiedDate)
+
+    if (! theFile) {
+        console.warn('Ignoring "submit": no provided file')
+        return false
+    }
+    else if (theFile.size > max_size) {
+        console.warn('Ignoring "submit": file is too big')
+        $('#formanswer').html(
+            'The import failed: your file is too big ('+max_size/1024+'kB max).'
+        );
+        return false
+    }
+    // normal case
+    else {
+        // append into an empty form (or fixme: initialize it using form element)
+        var myFileFormData = new FormData();
+        myFileFormData.append("csvfile", theFile)
+
+        //postCorpusFile
+        $.ajax({
+             url: "{{csvimportroute | safe}}",
+             type: 'POST',
+             async: true,
+             contentType: false,
+             processData: false,
+             data: myFileFormData,
+             beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+             },
+             success: function(response) {
+                 my_html  = "<h2 color='green'>IMPORT OK ! </h2>"
+                 my_html += "<p class='note'>" + response['log'].replace(/\n/g, '<br/>') + "</p>"
+                 my_html += "<p'>(this page will reload in 3s)</p>"
+                 $('#formanswer').html(my_html);
+                 console.log(response) ;
+                 // reload after 3s
+                 setTimeout("location.reload(true)", 3000);
+                 },
+              error: function(result) {
+                  $('#formanswer').html('Erreur');
+                  console.error(result);
+                 },
+            });
+        $('#formanswer').html('CSV import in Progress');
+    }
+};
+</script>
+
 
 
 {% endblock %}

@@ -8,118 +8,88 @@ API views for advanced operations on ngrams and ngramlists
 """
 
 from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
-                                     ValidationException, Http404
-from gargantext.util.db       import session, aliased, desc, bulk_insert
+                                     ValidationException, Http404, HttpResponse
+from gargantext.util.db       import session, aliased, bulk_insert
 from gargantext.util.db_cache import cache
 from sqlalchemy               import tuple_
 from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
 from gargantext.util.lists    import UnweightedList, Translations
 
+# useful subroutines
+from gargantext.util.ngramlists_tools import query_list, export_ngramlists, \
+                                             import_ngramlists, merge_ngramlists
+from gargantext.util.group_tools      import query_grouped_ngrams
 
-def _query_list(list_id,
-                pagination_limit=None, pagination_offset=None,
-                details=False, scoring_metric_id=None
-                ):
-    """
-    Paginated listing of ngram_ids in a NodeNgram lists.
-
-    Works for a mainlist or stoplist or maplist (not grouplists!)
-
-    Parameter:
-      - pagination_limit, pagination_offset
-      - details: if False, send just the array of ngram_ids
-                 if True, send triples with (ngram_id, term, scoring)
-                                                             ^^^^^^^
-      - scoring_metric_id: id of a scoring metric node   (TFIDF or OCCS)
-                           (for details and sorting)
-    """
-    if not details:
-        # simple contents
-        query = session.query(NodeNgram.ngram_id).filter(NodeNgram.node_id == list_id)
-    else:
-        # detailed contents (terms and some NodeNodeNgram for score)
-
-        # NB: score can be undefined (eg ex-subform that now became free)
-        #     ==> we need outerjoin
-        #     and the filter needs to have scoring_metric_id so we do it before
-        ScoresTable = (session
-                        .query(NodeNodeNgram.score, NodeNodeNgram.ngram_id)
-                        .filter(NodeNodeNgram.node1_id == scoring_metric_id)
-                        .subquery()
-                        )
-
-        query = (session
-                    .query(
-                        NodeNgram.ngram_id,
-                        Ngram.terms,
-                        ScoresTable.c.score
-                     )
-                    .join(Ngram, NodeNgram.ngram_id == Ngram.id)
-
-                    # main filter ----------------------
-                    .filter(NodeNgram.node_id == list_id)
-
-                    # scores if possible
-                    .outerjoin(ScoresTable,
-                               ScoresTable.c.ngram_id == NodeNgram.ngram_id)
-
-                    .order_by(desc(ScoresTable.c.score))
-                )
-
-    if pagination_limit:
-        query = query.limit(pagination_limit)
-
-    if pagination_offset:
-        query = query.offset(pagination_offsets)
-
-    return query
-
-
-
-
-def _query_grouped_ngrams(groupings_id, details=False, scoring_metric_id=None):
-    """
-    Listing of "hidden" ngram_ids from the groups
-
-    Works only for grouplists
-
-    Parameter:
-      - details: if False, send just the array of ngram_ids
-                 if True, send triples with (ngram_id, term, scoring)
-                                                             ^^^^^^^
-
-      deprecated: scoring_metric_id: id of a scoring metric node   (TFIDF or OCCS)
-                           (for details and sorting)
-                   (no more OCCS counts of subforms)
-    """
-    if not details:
-        # simple contents
-        query = session.query(NodeNgramNgram.ngram2_id)
-    else:
-        # detailed contents (terms and some NodeNodeNgram for score)
-        query = (session
-                    .query(
-                        NodeNgramNgram.ngram2_id,
-                        Ngram.terms,
-                        # NodeNodeNgram.score           #
-                     )
-                    .join(Ngram, NodeNgramNgram.ngram2_id == Ngram.id)
-                    # .join(NodeNodeNgram, NodeNgramNgram.ngram2_id == NodeNodeNgram.ngram_id)
-                    # .filter(NodeNodeNgram.node1_id == scoring_metric_id)
-                    # .order_by(desc(NodeNodeNgram.score))
-                )
-
-    # main filter
-    # -----------
-    query = query.filter(NodeNgramNgram.node_id == groupings_id)
-
-    return query
 
 class List(APIView):
     """
     see already available API query api/nodes/<list_id>?fields[]=ngrams
     """
     pass
+
+
+class CSVLists(APIView):
+    """
+    For CSV exports of all lists of a corpus
+
+    Or CSV import into existing lists as "patch"
+    """
+    def get(self, request):
+        params = get_parameters(request)
+        corpus_id = int(params.pop("corpus"))
+        corpus_node = cache.Node[corpus_id]
+
+        # response is file-like + headers
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="corpus-%i_gargantext_term_list.csv"' % corpus_id
+
+        # fill the response with the data
+        export_ngramlists(corpus_node, fname=response, titles=True)
+        return response
+
+    def post(self,request):
+        """
+        Merge the lists of a corpus with other lists from a CSV source
+                                                 or from another corpus
+
+        params in request.GET:
+            corpus:    the corpus whose lists are getting patched
+
+        params in request.FILES:
+            csvsource: the csv file
+
+        or in get
+            dbsource:  another corpus instead of the csvfile
+                       (? this last option should perhaps not be in CSVLists ?)
+
+        NB: not using PATCH because we'll need POST file upload
+
+
+        /!\ We assume we checked the file size client-side before upload
+
+        £TODO check authentication and user.id
+        """
+        # this time the corpus param is the one with the target lists to be patched
+        params = get_parameters(request)
+        corpus_id = int(params.pop("onto_corpus"))
+        corpus_node = cache.Node[corpus_id]
+
+        # request also contains the file
+        # csv_file has type django.core.files.uploadedfile.InMemoryUploadedFile
+        #                                                 ----------------------
+        csv_file = request.data['csvfile']
+
+        # import the csv
+        new_lists = import_ngramlists(csv_file)
+        del csv_file
+
+        # merge the new_lists onto those of the target corpus
+        log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+
+        return JsonHttpResponse({
+            'log': log_msg,
+            }, 200)
+
 
 
 class GroupChange(APIView):
@@ -441,7 +411,7 @@ class MapListGlance(APIView):
         listmembers = {'maplist':[]}         # ngram ids sorted per list name
 
         # infos for all ngrams from maplist
-        map_ngrams = _query_list(maplist_id, details=True,
+        map_ngrams = query_list(maplist_id, details=True,
                                       scoring_metric_id= scores_id).all()
 
         # ex:  [(8805, 'mean age', 4.0),
@@ -566,25 +536,25 @@ class ListFamily(APIView):
         if "head" in parameters:
             # head <=> only mainlist AND only k top ngrams
             glance_limit = int(parameters['head'])
-            mainlist_query = _query_list(mainlist_id, details=True,
+            mainlist_query = query_list(mainlist_id, details=True,
                                           pagination_limit = glance_limit,
                                           scoring_metric_id= scores_id)
         else:
             # infos for all ngrams from mainlist
-            mainlist_query = _query_list(mainlist_id, details=True,
+            mainlist_query = query_list(mainlist_id, details=True,
                                           scoring_metric_id= scores_id)
             # infos for grouped ngrams, absent from mainlist
-            hidden_ngrams_query = _query_grouped_ngrams(groups_id, details=True,
+            hidden_ngrams_query = query_grouped_ngrams(groups_id, details=True,
                                           scoring_metric_id= scores_id)
 
             # infos for stoplist terms, absent from mainlist
-            stop_ngrams_query = _query_list(other_list_ids['stoplist'], details=True,
+            stop_ngrams_query = query_list(other_list_ids['stoplist'], details=True,
                                             scoring_metric_id=scores_id)
 
             # and for the other lists (stop and map)
             # no details needed here, just the member ids
             for li in other_list_ids:
-                li_elts = _query_list(other_list_ids[li], details=False
+                li_elts = query_list(other_list_ids[li], details=False
                                       ).all()
                 # simple array of ngram_ids
                 listmembers[li] = [ng[0] for ng in li_elts]

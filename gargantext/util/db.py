@@ -86,7 +86,19 @@ class bulk_insert:
     readline = read
 
 
-def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
+def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None, do_stats=False):
+    """
+    Inserts bulk data with an intermediate check on a uniquekey
+    (ex: Ngram.terms) to see if the row existed before.
+
+    If the row already existed we just retrieve its id.
+    If it didn't exist we create it and retrieve the id.
+
+    Returns a dict {uniquekey => id}
+
+    Option:
+        do stats: also returns the number of those that had no previous id
+    """
     if cursor is None:
         db, cursor = get_cursor()
         mustcommit = True
@@ -109,6 +121,7 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
         sourcetable = model.__tablename__,
         uniquecolumn = uniquekey,
     ))
+
     # insert what has not been found to the real table
     cursor.execute('''
         INSERT INTO {sourcetable} ({columns})
@@ -119,6 +132,11 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
         sourcetable = model.__tablename__,
         columns = ', '.join(fields),
     ))
+
+    if do_stats:
+        # remember how many rows we inserted just now
+        n_new = cursor.rowcount
+
     # retrieve dict associating unique key to id
     cursor.execute('''
         SELECT source.id, source.{uniquecolumn}
@@ -130,10 +148,15 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None):
         columns = ', '.join(fields),
     ))
     result = {
+        # term : new_id
         row[1]: row[0] for row in cursor.fetchall()
     }
     # this is the end!
     cursor.execute('DROP TABLE __tmp__')
     if mustcommit:
         db.commit()
-    return result
+
+    if do_stats:
+        return result, n_new
+    else:
+        return result

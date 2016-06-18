@@ -19,3 +19,13 @@
     line-height: .85;
     margin-bottom: -5px;
 }
+
+.exportbtn {
+    /* border: 1px solid #333 ; */
+    margin-top:17px ;   /* valigns with bootstrap h2  */
+}
+
+.btn .glyphicon {
+    /* glyphicons are always rendered too high within bootstrap buttons */
+    vertical-align:middle
+}

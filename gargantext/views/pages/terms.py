@@ -33,6 +33,9 @@ def ngramtable(request, project_id, corpus_id):
             'project': project,
             'corpus' : corpus,
             'resourcename' : resourcename(corpus),
-            'view': 'terms'
+            'view': 'terms',
+
+            # for the CSV import modal
+            'csvimportroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id
         },
     )

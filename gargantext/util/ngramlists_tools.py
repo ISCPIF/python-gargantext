@@ -444,30 +444,53 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
     n_added_ng = 0
     n_group_relations = 0
 
+    # columntype => int
+    columns = {}
+
     # load CSV + initial checks
     for i, csv_row in enumerate(ngrams_csv_rows):
         # fyi
         n_read_lines +=1
         # print("---------------READ LINE %i" % i)
+
+        # headers
+        if i == 0:
+            n_cols = len(csv_row)
+            for j, colname in enumerate(csv_row):
+                if colname in ['label', 'status', 'forms']:
+                    columns[colname] = j
+                else:
+                    raise ValueError('Wrong header "%s" on line %i (only possible headers are "label", "forms" and "status")' % (colname, n_read_lines))
+            if 'label' not in columns:
+                raise ValueError('CSV must contain at least one column with the header "label"')
+
         if not len(csv_row):
             continue
 
-        try:
-            # £TODO this_list_type optionnel => default="map"
-            # £TODO pré-diagnostic => retrouver les col_id
-            this_list_type       = str(csv_row[0])
-            this_row_label       = str(csv_row[1])
-            this_row_forms       = str(csv_row[2])
+        # try:
+        # mandatory column
+        this_row_label     = str(csv_row[columns['label']])
 
-            # string normalizations
-            this_row_label = normalize_terms(normalize_chars(this_row_label))
+        # other columns or their default values
+        if 'status' in columns:
+            this_list_type = str(csv_row[columns['status']])
+        else:
+            this_list_type = 'map'
 
-        except:
-            if i == 0:
-                print("IMPORT WARN: (skip line) probable header line at CSV %s:l.0" % fname)
-                continue
-            else:
-                raise ValueError("Error on CSV read line %i" %n_read_lines)
+        if 'forms' in columns:
+            this_row_forms = str(csv_row[columns['forms']])
+        else:
+            this_row_forms = ''
+
+        # string normalizations
+        this_row_label = normalize_terms(normalize_chars(this_row_label))
+
+        # except:
+        #     if i == 0:
+        #         print("IMPORT WARN: (skip line) probable header line at CSV %s:l.0" % fname)
+        #         continue
+        #     else:
+        #         raise ValueError("Error on CSV read line %i" % i)
 
         # --- term checking
         if not len(this_row_label) > 0:
@@ -475,7 +498,6 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
             continue
 
         # --- check correct list type
-        # £TODO this_list_type optionnel => default="map"
         if not this_list_type in ['stop','main','map']:
             print("IMPORT WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
             continue

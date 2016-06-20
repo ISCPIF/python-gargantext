@@ -26,7 +26,8 @@ ENV PYTHON_ENV  /srv/env_3-5
 RUN apt-get update && \
     apt-get install -y \
     apt-utils ca-certificates locales \
-    sudo aptitude gcc g++ wget git postgresql-9.5 vim
+    sudo aptitude gcc g++ wget git postgresql-9.5 vim \
+    build-essential
 
 ### Configure timezone and locale
 RUN echo "Europe/Paris" > /etc/timezone && \

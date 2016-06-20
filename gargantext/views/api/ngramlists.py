@@ -80,15 +80,20 @@ class CSVLists(APIView):
         csv_file = request.data['csvfile']
 
         # import the csv
-        new_lists = import_ngramlists(csv_file)
-        del csv_file
+        try:
+            new_lists = import_ngramlists(csv_file)
+            del csv_file
 
-        # merge the new_lists onto those of the target corpus
-        log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+            # merge the new_lists onto those of the target corpus
+            log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+            return JsonHttpResponse({
+                'log': log_msg,
+                }, 200)
 
-        return JsonHttpResponse({
-            'log': log_msg,
-            }, 200)
+        except Exception as e:
+            return JsonHttpResponse({
+                'err': str(e),
+                }, 400)
 
 
 

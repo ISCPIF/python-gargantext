@@ -66,13 +66,21 @@ class CSVLists(APIView):
 
 
         /!\ We assume we checked the file size client-side before upload
-
-        £TODO check authentication and user.id
         """
+        if not request.user.is_authenticated():
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
+
         # this time the corpus param is the one with the target lists to be patched
         params = get_parameters(request)
         corpus_id = int(params.pop("onto_corpus"))
         corpus_node = cache.Node[corpus_id]
+
+        if request.user.id != corpus_node.user_id:
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
 
         # request also contains the file
         # csv_file has type django.core.files.uploadedfile.InMemoryUploadedFile

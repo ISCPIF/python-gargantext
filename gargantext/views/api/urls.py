@@ -36,6 +36,7 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
               , url(r'^ngramlists/import$', ngramlists.CSVLists.as_view()            )
                 # same handling class as export (CSVLists)
                 # but this route used only for POST + file
+                #                           or PATCH + other corpus id
 
               , url(r'^ngramlists/change$', ngramlists.ListChange.as_view()          )
                 # add or remove ngram from a list

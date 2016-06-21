@@ -22,6 +22,16 @@ def ngramtable(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
+    # retrieve all corpora of this user for list import option
+    # POSSIBILITY: could do same task in ajax "only if needed"
+    #              (use api for that when merged)
+    corpora_infos_q = (session.query(Node.id, Node.name)
+                              .filter(Node.typename == "CORPUS")
+                              .filter(Node.user_id == project.user_id))
+                               # .filter(Node.id != corpus_id)
+    corpora_infos = corpora_infos_q.all()
+
+
     # rendered page : terms.html
     return render(
         template_name = 'pages/corpora/terms.html',
@@ -36,6 +46,7 @@ def ngramtable(request, project_id, corpus_id):
             'view': 'terms',
 
             # for the CSV import modal
-            'csvimportroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id
+            'importroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id,
+            'corporainfos' : corpora_infos
         },
     )

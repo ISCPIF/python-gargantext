@@ -1,3 +1,2 @@
 
-##Welcome to Gargantext documentation
 

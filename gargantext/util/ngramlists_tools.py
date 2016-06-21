@@ -15,6 +15,8 @@ from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
 
 from gargantext.util.lists       import UnweightedList, Translations
 
+from gargantext.constants        import DEFAULT_CSV_DELIM, DEFAULT_CSV_DELIM_GROUP
+
 # import will implement the same text cleaning procedures as toolchain
 from gargantext.util.toolchain.parsing           import normalize_chars
 from gargantext.util.toolchain.ngrams_extraction import normalize_terms
@@ -23,7 +25,7 @@ from sqlalchemy.sql      import exists
 from os                  import path
 from csv                 import writer, reader, QUOTE_MINIMAL
 from collections         import defaultdict
-from re                  import match
+from re                  import match, findall
 from io                  import StringIO # pseudo file to write CSV to memory
 
 def query_list(list_id,
@@ -124,57 +126,71 @@ def query_list(list_id,
 
 
 # helper func for exports
-def ngrams_to_csv_rows(ngram_objs, id_groupings={}, list_type=""):
+def ngrams_to_csv_rows(ngram_objs, ngram_dico={}, group_infos={},
+                        list_type="", groupings_delim=DEFAULT_CSV_DELIM_GROUP):
     """
     @param: ngram_objs
             an array of ngrams (eg: from a db query.all())
 
-    @param: optional id_groupings
-            a dict of sets {mainform_id : {subform_idA, subform_idB, etc}}
+    @param: optional group_infos as links and subs
+            ginfos{links} = a dict of sets
+                            {mainform_id : {subform_idA, subform_idB, etc}}
+            ginfos{subs}  = a reverse map
+                            {subform_idA:mainform_id, subform_idB:mainform_id, etc}}
 
     @param: list_type (a str 'map','main' or 'stop' to fill in col 4)
 
-    Outputs a basic info table per ngram
-      (ng_id, term string, term size, list_type)
+    Outputs a condensed info table per ngram
+      (list_type, "term string")
 
-      with an optional 5th column of grouped subforms  ex: "4|42"
+      with an optional 3rd column of grouped subforms
+        ex: "othertermstring|yetanothertermstring"
 
     Returns format is a csv_rows matrix (as a list of lists)
              [
-              [ligne1_colA, ligne1_colB..],
-              [ligne2_colA, ligne2_colB..],
+              [row1_colA, row1_colB..],
+              [row2_colA, row2_colB..],
               ..
              ]
 
     (to be used for instance like: csv.writer.writerows(csv_rows)
 
     list_type ici:
-      0  <=> stopList
-      1  <=> miamList
-      2  <=> mapList
+      0  <=> stop
+      1  <=> miam
+      2  <=> map
     """
-    # transcrire les objets ngrammes en tableau (liste de listes)
+    # transcribe ngram objects to a table (array of row-arrays)
     csv_rows = list()
     for ng_obj in ngram_objs:
         ng_id = ng_obj.id
 
-        if ng_id in id_groupings.keys():
-            this_grouped = "|".join(str(gid) for gid in id_groupings[ng_id])
-        else:
-            this_grouped = ""
+        # only mainforms will get their own row
+        if ng_id not in group_infos['subs']:
 
-        # transcription : 5 columns
-        # ID , terme , n , type_de_liste , grouped_id|grouped_id...
+            # if has subforms
+            if ng_id in group_infos['links']:
+                this_grouped_terms = groupings_delim.join(
+                                # we replace grouped_ids by their terms string
+                                [ngram_dico[subf_id] for subf_id in group_infos['links'][ng_id]]
+                                )
+            # if no subforms
+            else:
+                this_grouped_terms = ""
 
-        csv_rows.append(
-              [ng_id,ng_obj.terms,ng_obj.n,list_type,this_grouped]
-              )
+            # transcription :
+            # 3 columns = |status,         |  mainform, |  forms
+            #             (type_of_list)    ( term )     ( subterm1|&|subterm2 )
+
+            csv_rows.append(
+                  [list_type,ng_obj.terms,this_grouped_terms]
+                  )
 
     return csv_rows
 
 
 
-def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
+def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
     """
     export of the 3 lists under a corpus node (MAP, MAIN, STOP)
            with local combination of groups
@@ -189,10 +205,9 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
 
     @param titles:    optional flag to print or not a first line with headers
 
-    # ID  , term , nwords , list_type , grouped_id|grouped_id...
-    1622	textile	1	main 1623|3397
-    3397	textile production	2	main
-    3410	possibility	1	stop
+    status     label               forms
+    map        textile             textiles|&|textile production
+    stop       possibility
 
     TODO : REFACTOR split list logic from corpus logic
                     => possibility to act on one list
@@ -211,7 +226,6 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
     # et les groupes de synonymes
     group_node = node.children("GROUPLIST").first()
 
-
     # listes de ngram_ids correspondantes
     # ------------------------------------
     # contenu: liste des objets ngrammes [(2562,"monterme",1),...]
@@ -219,40 +233,56 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
     main_ngrams  = query_list(mainlist_node.id, details=True, groupings_id=group_node.id).all()
     map_ngrams  = query_list(maplist_node.id, details=True, groupings_id=group_node.id).all()
 
-
     # pour debug ---------->8 --------------------
     #~ stop_ngrams = stop_ngrams[0:10]
     #~ main_ngrams = main_ngrams[0:10]
     #~ map_ngrams  = map_ngrams[0:10]
     # --------------------->8 --------------------
 
-    # pour la group_list on a des couples de ngram_ids
+    # preloop to fill a local copy of dictionary  ng_id => ng_term_str
+    dico = {}
+    for li in [stop_ngrams, main_ngrams, map_ngrams]:
+        for (ngid, ngterm, ignored) in li:
+            dico[ngid] = ngterm
+
+    # for the groups we got couples of ids in the DB
     # -------------------
     # ex: [(3544, 2353), (2787, 4032), ...]
     group_ngram_id_couples = query_groups(group_node.id).all()
 
-    # k couples comme set
-    # --------------------
-    # [(x => y1), (x => y2)] >~~~~~~~> [x => {y1,y2}]
-    grouped = defaultdict(set)
+    # we expend this to double structure for groups lookup
+    # 1) g['links'] = k couples (x,y_i) as a set   [x => {y1,y2}]
+
+    # 2) g['subs']  = reverse map like translations    [(y1 => x), (y2 => x)]
+
+    g = {
+        "links":defaultdict(set),
+        "subs":defaultdict(int)
+        }
     for ngram in group_ngram_id_couples:
-        grouped[ngram[0]].add(ngram[1])
+        x = int(ngram[0])
+        y = int(ngram[1])
+        g['links'][x].add(y)
+        g['subs'][y] = x
 
     # on applique notre fonction ng_to_csv sur chaque liste
     # ------------------------------------------------------
     map_csv_rows = ngrams_to_csv_rows(map_ngrams,
-                                       id_groupings=grouped,
+                                       ngram_dico=dico,
+                                       group_infos=g,
                                        list_type="map")
 
     stop_csv_rows = ngrams_to_csv_rows(stop_ngrams,
-                                       id_groupings=grouped,
+                                       ngram_dico=dico,
+                                       group_infos=g,
                                        list_type="stop")
 
     # miam contient map donc il y a un préalable ici
     map_ngram_ids = {ng.id for ng in map_ngrams}
     main_without_map = [ng for ng in main_ngrams if ng.id not in map_ngram_ids]
     miam_csv_rows = ngrams_to_csv_rows(main_without_map,
-                                       id_groupings=grouped,
+                                       ngram_dico=dico,
+                                       group_infos=g,
                                        list_type="main")
 
     # all lists together now
@@ -273,7 +303,7 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
                     quoting=QUOTE_MINIMAL)
 
     if titles:
-        csv_wr.writerow(["oldid","term","nwords","listtype","subforms"])
+        csv_wr.writerow(["status","label","forms"])
 
     # write to outfile
     csv_wr.writerows(this_corpus_all_rows)
@@ -294,7 +324,8 @@ def export_ngramlists(node,fname=None,delimiter="\t",titles=False):
 
 
 
-def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
+def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
+                             group_delimiter=DEFAULT_CSV_DELIM_GROUP):
     '''
     This function reads a CSV of an ngrams table for a Corpus,
     then it converts old ngram_ids to those of the current DB
@@ -302,23 +333,61 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     then recreates an equivalent set of MAINLIST, MAPLIST, STOPLIST + GROUPS
 
     Input example:
-        oldid  | term          |nwords| ltype  |group_oldids
-        -------+---------------+------+--------+---------------
-        3842     water table        2    map      3724
-        3724     water tables       2    map
-        4277     water supply       2    map      190362|13415
-        13415    water supplies     2    map
-        190362   water-supply       1    map
-        20489    wastewater         1    map
+        status  | label         |forms
+        --------+---------------+---------------------
+        map      water table     water tables
+        map      water supply    water-supply|&|water supplies
+        stop     wastewater
 
-    Output:  3 x UnweightedList + 1 x Translations
+    The title line is mandatory.
+    The label will correspond to our DB mainform type.
+
+    Variants:
+    ----------
+    For user accessibility, we allow different formats using equivalence rules:
+
+    1) It is implicit that the label string is also one of the forms
+       therefore the input example table is equivalent to this "verbose" table:
+
+        status  | label         |forms
+        --------+---------------+---------------------
+        map      water table     water table|&|water tables
+        map      water supply    water supply|&|water-supply|&|water supplies
+        stop     wastewater      wastewater
+
+
+    2) The default status is map and the status column is optional
+       thus, if we ignore "wastewater", the input table is also equivalent to:
+
+         label         |forms
+        ---------------+---------------------
+        water table     water tables
+        water supply    water-supply|&|water supplies
+
+
+    3) From DB point of view, both "forms that are labels" and "other forms" are
+       finally saved just as ngrams. So the input table is also equivalent to:
+
+        status  | label         |forms
+        --------+---------------+---------------------
+        map      water table     water tables
+        map      water tables
+        map      water supply    water-supply|&|water supplies
+        map      water supplies
+        map      water-supply
+        stop     wastewater
+
+
+    Output:
+    -------
+        3 x UnweightedList + 1 x Translations
 
     @param fname            a local filename or a filehandle-like
     @param delimiter        a character used as separator in the CSV
     @param group_delimiter  a character used as grouped subforms separator
                             (in the last column)
 
-    The conversion of old_id to ngram_id works in 2 steps:
+    The retrieval of ngram_ids works in 2 steps:
         => look up each term str in the DB with bulk_insert_ifnotexists
            (creates absent ngrams if necessary)
         => use the new ids to map the relations involving the old ones
@@ -328,28 +397,21 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     NB: To merge the imported lists into a corpus node's lists,
         chain this function with merge_ngramlists()
     '''
-    # --------------
-    #
-    # --------------
+    # ---------------
+    #  ngram storage
+    # ---------------
 
     # main storage for the ngrams by list
-    import_nodes_ngrams = {'stop':[], 'main':[], 'map':[]}
+    imported_nodes_ngrams = {'stop':[], 'main':[], 'map':[]}
 
-    # separate storage for the term's couples  [(term str, nwords int),...]
-    imported_ngrams_dbdata = []
+    # and all the terms (for unique and for dbdata bulk_insert)
+    imported_unique_ngramstrs = {}
 
-    # and all the old ids, by term (for id lookup after dbdata bulk_insert)
-    imported_ngrams_oldids = {}
-
-    # and for the imported_grouping list of couples [(x1,y1),(x1,y2),(x2,y3),..]
+    # and for the imported_grouping list of couples [(str1,str1),(str1,str2)..]
     imported_groupings = []
 
-    # /!\ imported_grouping contains only external ids (aka oldids)
-    #     (ie imported ids.. that will have to be translated
-    #      to target db ids)
-
-    # skipped lines can (very rarely) be used in groups => mark as ignored
-    ignored_oldids = []
+    # /!\ imported_grouping contains the subforms' terms themselves
+    #     (that will have to be translated to ngram_ids for the target db)
 
     # =============== READ CSV ===============
 
@@ -382,77 +444,105 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     n_added_ng = 0
     n_group_relations = 0
 
+    # columntype => int
+    columns = {}
+
     # load CSV + initial checks
     for i, csv_row in enumerate(ngrams_csv_rows):
         # fyi
         n_read_lines +=1
         # print("---------------READ LINE %i" % i)
+
+        # headers
+        if i == 0:
+            n_cols = len(csv_row)
+            for j, colname in enumerate(csv_row):
+                if colname in ['label', 'status', 'forms']:
+                    columns[colname] = j
+                else:
+                    raise ValueError('Wrong header "%s" on line %i (only possible headers are "label", "forms" and "status")' % (colname, n_read_lines))
+            if 'label' not in columns:
+                raise ValueError('CSV must contain at least one column with the header "label"')
+
         if not len(csv_row):
             continue
 
-        try:
-            this_ng_oldid        = str(csv_row[0])
-            this_ng_term         = str(csv_row[1])
-            this_ng_nwords       = int(csv_row[2])
-            this_list_type       = str(csv_row[3])
-            this_ng_group        = str(csv_row[4])
+        # try:
+        # mandatory column
+        this_row_label     = str(csv_row[columns['label']])
 
-            # string normalizations
-            this_ng_term = normalize_terms(normalize_chars(this_ng_term))
-
-        except:
-            if i == 0:
-                print("IMPORT WARN: (skip line) probable header line at CSV %s:l.0" % fname)
-                continue
-            else:
-                raise ValueError("Error on CSV read line %i" %n_read_lines)
-
-        # --- check format before any old ID retrieve
-        if not match(r"\d+$", this_ng_oldid):
-            print("IMPORT WARN: (skip line) bad ID at CSV %s:l.%i" % (fname, i))
-            continue
+        # other columns or their default values
+        if 'status' in columns:
+            this_list_type = str(csv_row[columns['status']])
         else:
-            this_ng_oldid = int(this_ng_oldid)
+            this_list_type = 'map'
+
+        if 'forms' in columns:
+            this_row_forms = str(csv_row[columns['forms']])
+        else:
+            this_row_forms = ''
+
+        # string normalizations
+        this_row_label = normalize_terms(normalize_chars(this_row_label))
+
+        # except:
+        #     if i == 0:
+        #         print("IMPORT WARN: (skip line) probable header line at CSV %s:l.0" % fname)
+        #         continue
+        #     else:
+        #         raise ValueError("Error on CSV read line %i" % i)
 
         # --- term checking
-        if not len(this_ng_term) > 0:
+        if not len(this_row_label) > 0:
             print("IMPORT WARN: (skip line) empty term at CSV %s:l.%i" % (fname, i))
-            ignored_oldids.append(this_ng_oldid)
-            continue
-
-        # --- check if not a duplicate string
-        if this_ng_term in imported_ngrams_oldids:
-            ignored_oldids.append(this_ng_oldid)
-            print("IMPORT WARN: (skip line) term appears more than once (previous id: %i) at CSV %s:l.%i"
-                    % (imported_ngrams_oldids[this_ng_term], fname, i))
             continue
 
         # --- check correct list type
         if not this_list_type in ['stop','main','map']:
-            ignored_oldids.append(this_ng_oldid)
             print("IMPORT WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
             continue
 
+        # subforms can be duplicated (in forms and another label)
+        # but we must take care of unwanted other duplicates too
+        if this_row_label in imported_unique_ngramstrs:
+            print("TODO IMPORT DUPL: (skip line) term appears more than once at CSV %s:l.%i"
+                    % (fname, i))
+
         # ================= Store the data ====================
-        # the ngram data
-        imported_ngrams_dbdata.append([this_ng_term, this_ng_nwords])
-        imported_ngrams_oldids[this_ng_term] = this_ng_oldid
+        # the ngram census
+        imported_unique_ngramstrs[this_row_label] = True
 
         # and the "list to ngram" relation
-        import_nodes_ngrams[this_list_type].append(this_ng_oldid)
+        imported_nodes_ngrams[this_list_type].append(this_row_label)
 
         # ====== Store synonyms from the import (if any) ======
-        if len(this_ng_group) != 0:
-            group_as_external_ids = this_ng_group.split('|')
+        if len(this_row_forms) != 0:
+            other_terms = []
+            for raw_term_str in this_row_forms.split(group_delimiter):
 
-            for external_subform_id in group_as_external_ids:
-                external_subform_id = int(external_subform_id)
-                imported_groupings.append(
-                  (this_ng_oldid,external_subform_id)
-                  )
+                # each subform is also like an ngram declaration
+                term_str = normalize_terms(normalize_chars(raw_term_str))
+                imported_unique_ngramstrs[term_str] = True
+                imported_nodes_ngrams[this_list_type].append(term_str)
+
+                # the optional repeated mainform doesn't interest us
+                # because we already have it via the label
+                if term_str != this_row_label:
+
+                    # save links
+                    imported_groupings.append(
+                        (this_row_label, term_str)
+                        )
 
     # ======== ngram save + id lookup =========
-    n_total_ng = len(imported_ngrams_dbdata)
+    n_total_ng = len(imported_unique_ngramstrs)
+
+    # prepare data format
+    imported_ngrams_dbdata = []
+    for ngram_str in imported_unique_ngramstrs:
+        # DB needs the number of separate words
+        n_words = 1 + len(findall(r' ', ngram_str))
+        imported_ngrams_dbdata.append((ngram_str, n_words))
 
     # returns a dict {term => id} and a count of inserted ones
     (new_ngrams_ids, n_added_ng) = bulk_insert_ifnotexists(
@@ -464,15 +554,11 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
     )
     del imported_ngrams_dbdata
 
-    # loop on old ngrams and create direct mapping old_id => new_id
-    old_to_new_id_map = {}
-    for term, oldid in imported_ngrams_oldids.items():
-        old_to_new_id_map[oldid] = new_ngrams_ids[term]
-    del new_ngrams_ids
-    del imported_ngrams_oldids
+    # new_ngrams_ids contains a direct mapping ng_str => new_id
+    del imported_unique_ngramstrs
 
-    # print(old_to_new_id_map)
-    # print(import_nodes_ngrams)
+    # print(new_ngrams_ids)
+    # print(imported_nodes_ngrams)
     # ======== Import into lists =========
 
     # 3 x abstract lists + 1 translations
@@ -483,27 +569,26 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
          'groupings' : Translations()
          }
 
-    for list_type in import_nodes_ngrams:
-        for old_id in import_nodes_ngrams[list_type]:
-            new_id = old_to_new_id_map[old_id]
+    for list_type in imported_nodes_ngrams:
+        for ng_str in imported_nodes_ngrams[list_type]:
+            new_id = new_ngrams_ids[ng_str]
             # add to the abstract list
             result[list_type].items.add(new_id)
 
         # for main also add map elements
         if list_type == 'main':
-            for old_id in import_nodes_ngrams['map']:
-                new_id = old_to_new_id_map[old_id]
+            for ng_str in imported_nodes_ngrams['map']:
+                new_id = new_ngrams_ids[ng_str]
                 result['main'].items.add(new_id)
 
     # ======== Synonyms =========
-    for (x,y) in imported_groupings:
-        if (x not in ignored_oldids) and (y not in ignored_oldids):
-            new_mainform_id = old_to_new_id_map[x]
-            new_subform_id  = old_to_new_id_map[y]
+    for (x_str,y_str) in imported_groupings:
+        new_mainform_id = new_ngrams_ids[x_str]
+        new_subform_id  = new_ngrams_ids[y_str]
 
-            # /!\ Translations use (subform => mainform) order
-            result['groupings'].items[new_subform_id] = new_mainform_id
-            n_group_relations += 1
+        # /!\ Translations use (subform => mainform) order
+        result['groupings'].items[new_subform_id] = new_mainform_id
+        n_group_relations += 1
 
     # ------------------------------------------------------------------
     print("IMPORT: read %i lines from the CSV" % n_read_lines)
@@ -511,6 +596,7 @@ def import_ngramlists(fname, delimiter='\t', group_delimiter='|'):
                 % (n_total_ng, n_added_ng, n_total_ng-n_added_ng) )
     print("IMPORT: read %i grouping relations" % n_group_relations)
 
+    # print("IMPORT RESULT", result)
     return result
 
 

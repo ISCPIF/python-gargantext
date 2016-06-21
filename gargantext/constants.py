@@ -250,6 +250,9 @@ DEFAULT_INDEX_SUBGRAMS         = False        # False <=> traditional
                                              #    at indexing after extraction)
 
 
+# ngram lists import/export parameters -----------------------------------------
+DEFAULT_CSV_DELIM              = '\t'        # for import/export CSV defaults
+DEFAULT_CSV_DELIM_GROUP        = '|&|'
 
 # ------------------------------------------------------------------------------
 

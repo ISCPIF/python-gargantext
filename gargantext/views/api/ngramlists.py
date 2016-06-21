@@ -66,13 +66,21 @@ class CSVLists(APIView):
 
 
         /!\ We assume we checked the file size client-side before upload
-
-        £TODO check authentication and user.id
         """
+        if not request.user.is_authenticated():
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
+
         # this time the corpus param is the one with the target lists to be patched
         params = get_parameters(request)
         corpus_id = int(params.pop("onto_corpus"))
         corpus_node = cache.Node[corpus_id]
+
+        if request.user.id != corpus_node.user_id:
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
 
         # request also contains the file
         # csv_file has type django.core.files.uploadedfile.InMemoryUploadedFile
@@ -80,15 +88,20 @@ class CSVLists(APIView):
         csv_file = request.data['csvfile']
 
         # import the csv
-        new_lists = import_ngramlists(csv_file)
-        del csv_file
+        try:
+            new_lists = import_ngramlists(csv_file)
+            del csv_file
 
-        # merge the new_lists onto those of the target corpus
-        log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+            # merge the new_lists onto those of the target corpus
+            log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+            return JsonHttpResponse({
+                'log': log_msg,
+                }, 200)
 
-        return JsonHttpResponse({
-            'log': log_msg,
-            }, 200)
+        except Exception as e:
+            return JsonHttpResponse({
+                'err': str(e),
+                }, 400)
 
 
 

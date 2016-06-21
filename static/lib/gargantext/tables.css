@@ -87,7 +87,7 @@ p.note > label {
   opacity: 0.3;
 }
 
-tr:hover {
+#my-ajax-table tr:hover {
   cursor: pointer;
   font-weight: bold;
 }

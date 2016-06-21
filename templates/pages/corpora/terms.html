@@ -7,6 +7,53 @@
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/tables.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/charts.css"%}"/>
 
+<style>
+
+#formatinfos-announce {
+    font-size: 12px ;
+    padding-top: .5em;
+}
+
+#formatinfos {
+    background-color: #CCC ;
+    font-size: 12px ;
+    padding: 1em;
+    border-radius: 1em;
+    margin: 1.5em;
+}
+
+#formatinfos table {
+    margin-left: 2.5em;
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+
+#formatinfos tr:hover {
+    font-weight: normal
+}
+
+#formatinfos td {
+    color: inherit ;
+    hover: none ;
+}
+
+#formatinfos h4 {
+    font-size: 14px;
+    color: #777;
+    font-weight: bold;
+}
+
+#formatinfos p {
+    font-size: 14px;
+}
+
+#formatinfos em {
+    font-weight:bold ;
+}
+
+</style>
+
+
 <script type="text/javascript" src="{% static "lib/d3/d3.js"%}"></script>
 <script type="text/javascript" src="{% static "lib/d3/crossfilter.js"%}"></script>
 <script type="text/javascript" src="{% static "lib/d3/dc.js"%}"></script>
@@ -126,7 +173,7 @@
     <div class="modal-content">
     <div class="modal-header">
      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-     <h3 id="myModalLabel">Import a CSV term list</h3>
+     <h3 id="myModalLabel">Import a Termlist</h3>
     </div>
     <div class="modal-body" id="uploadform">
         <form id="csvimportform"
@@ -134,8 +181,36 @@
               enctype="multipart/form-data"
               method="post">
             {% csrf_token %}
-            <label>From your disk:</label>
+            <label>From a CSV on your disk:</label>
             <input type="file" id="csvfile" accept="text/csv">
+
+            <p id="formatinfos-announce">
+                <span
+                    id="formatinfos-icon"
+                    class="glyphicon glyphicon-triangle-right"
+                    onclick="toggleFormatInfos()"></span>
+                More infos about CSV expected format
+            </p>
+            <div id="formatinfos" style="display:none;">
+                <h4>Example table</h4>
+                <table class="table-condensed note">
+                    <tr><th>status</th>  <th>label</th>           <th>forms</th></tr>
+                    <tr><td>map</td>     <td>barograph</td>        <td></td></tr>
+                    <tr><td>map</td>     <td>seafaring</td>        <td>seafarer|&amp;|ocean travel</td></tr>
+                    <tr><td>main</td>    <td>electromagnetic</td>  <td>electro-magnetic</td></tr>
+                </table>
+                <h4>Remarks</h4>
+                <ul>
+                    <li>Tabulation is the expected delimiter between columns.</li>
+                    <li>The only mandatory column is <em>label</em>.</li>
+                    <li>If <em>status</em> is absent, default target status is "map"</li>
+                    <li>When a column is there, always add its header on the 1st line: <em>status</em>, <em>label</em>, <em>forms</em></li>
+                    <li>The label will be always added as a form, even if it's not in 'forms' column</li>
+                    <li>The string <em>|&amp;|</em> (3 characters) is the expected delimiter between forms.</li>
+                </ul>
+            </div>
+
+
             <br/>
             <label>From another corpus:</label>
             <p>TODO</p>
@@ -153,6 +228,28 @@
 <script type="text/javascript" src="{% static "lib/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
 
 <script type="text/javascript">
+var formatInfosOpen = false;
+
+function toggleFormatInfos() {
+    // when already open => we close
+    if (formatInfosOpen) {
+        // hide div
+        $('#formatinfos').hide()
+        // change icon
+        $('#formatinfos-icon')[0].classList.remove('glyphicon-triangle-bottom')
+        $('#formatinfos-icon')[0].classList.add('glyphicon-triangle-right')
+        // toggle flag
+        formatInfosOpen = false;
+    }
+    else {
+        // opposite case
+        $('#formatinfos').show()
+        $('#formatinfos-icon')[0].classList.remove('glyphicon-triangle-right')
+        $('#formatinfos-icon')[0].classList.add('glyphicon-triangle-bottom')
+        formatInfosOpen = true;
+    }
+}
+
 
 /*                                             merci c24b !
  * Uses csvimportroute variable from the django template
@@ -202,7 +299,7 @@ function postCSV(e){
                xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
              },
              success: function(response) {
-                 my_html  = "<h2 color='green'>IMPORT OK ! </h2>"
+                 my_html  = '<h3 style="color:green">IMPORT OK</h3>'
                  my_html += "<p class='note'>" + response['log'].replace(/\n/g, '<br/>') + "</p>"
                  my_html += "<p'>(this page will reload in 3s)</p>"
                  $('#formanswer').html(my_html);
@@ -211,7 +308,10 @@ function postCSV(e){
                  setTimeout("location.reload(true)", 3000);
                  },
               error: function(result) {
-                  $('#formanswer').html('Erreur');
+                  my_html  = '<h3 style="color:red">Error</h3>'
+                  my_html += "<p class='note'>please correct your CSV file and retry</p>"
+                  my_html += "<p>"+ result.responseJSON['err']+"</p>"
+                  $('#formanswer').html(my_html);
                   console.error(result);
                  },
             });

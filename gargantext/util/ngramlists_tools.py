@@ -616,6 +616,8 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
                                  'map':      UnweightedList,
                                  'groupings': Translations }
 
+                   if any of those lists is absent it is considered empty
+
     @param onto_corpus:   a corpus node to get the *old* lists
 
     @param del_originals: an array of original wordlists to ignore
@@ -694,17 +696,19 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     for list_set in [old_lists, new_lists]:
         for lid, info in enumerate(linfos):
             list_type = info['key']
-            # we use the fact that lids are ordered ints...
-            for ng_id in list_set[list_type].items:
-                if ng_id not in resolved_memberships:
-                    resolved_memberships[ng_id] = lid
-                else:
-                    # ...now resolving is simply taking the max
-                    # stop < main < map
-                    resolved_memberships[ng_id] = max(
-                                                    lid,
-                                                    resolved_memberships[ng_id]
-                                                    )
+            # if you don't want to merge one list just don't put it in new_lists
+            if list_type in list_set:
+                # we use the fact that lids are ordered ints...
+                for ng_id in list_set[list_type].items:
+                    if ng_id not in resolved_memberships:
+                        resolved_memberships[ng_id] = lid
+                    else:
+                        # ...now resolving is simply taking the max
+                        # stop < main < map
+                        resolved_memberships[ng_id] = max(
+                                                            lid,
+                                                            resolved_memberships[ng_id]
+                                                        )
             # now each ngram is only in its most important list
             # -------------------------------------------------
             # NB temporarily map items are not in main anymore
@@ -714,9 +718,6 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             #    after we merge the groups
 
     del old_lists
-    del new_lists['stop']
-    del new_lists['main']
-    del new_lists['map']
 
     # ======== Merging old and new groups =========
     # get the arcs already in the target DB (directed couples)

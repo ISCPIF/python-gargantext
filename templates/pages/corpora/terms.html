@@ -9,9 +9,23 @@
 
 <style>
 
-#formatinfos-announce {
+#corpuschoose {
+    max-width: 75%;
+}
+
+input[type="checkbox"].importcheck {
+    margin-right: 1em;
+}
+
+.announce {
     font-size: 12px ;
     padding-top: .5em;
+}
+
+#importsubmit {
+    margin-left: 25%;
+    padding: .3em .5em;
+    font-size: 120% ;
 }
 
 #formatinfos {
@@ -47,7 +61,7 @@
     font-size: 14px;
 }
 
-#formatinfos em {
+em {
     font-weight:bold ;
 }
 
@@ -122,7 +136,7 @@
                           <br/>
                           <br/>
                           <!-- import icon -->
-                          <span class="needsaveicon glyphicon glyphicon-import"></span>
+                          <span class="glyphicon glyphicon-import"></span>
                           &nbsp;
                           <button id="ImportList" class="btn btn-warning" style="font-size:120%"
                                    onclick="$('#csvimport').modal('show');">
@@ -176,20 +190,43 @@
      <h3 id="myModalLabel">Import a Termlist</h3>
     </div>
     <div class="modal-body" id="uploadform">
-        <form id="csvimportform"
-              onsubmit="return postCSV(event)"
+        <form id="importform"
+              onsubmit="return submitImport(event, this)"
               enctype="multipart/form-data"
               method="post">
             {% csrf_token %}
+            <label>From another corpus:</label>
+            <select id="corpuschoose" name="corpuschoose">
+                <option selected value> -- select a corpus -- </option>
+                <!-- lists all corpora of this user -->
+                {% for corpusinfo in corporainfos %}
+                <option value="{{corpusinfo.id}}">{{corpusinfo.name}}</option>
+                {% endfor %}
+            </select>
+            <br/>
+            <p class="announce" onclick="toggleAdvancedCheckboxes()">
+                <span
+                    id="corpusadvanced-icon"
+                    class="glyphicon glyphicon-triangle-right"></span>
+                Advanced options
+            </p>
+            <div id="corpusadvanced" style="display:none;" class="input-group">
+                <input type="checkbox" class="importcheck" name="listtypes" id="listtypes-map" value="map" checked>import map terms</input>
+                <br/>
+                <input type="checkbox" class="importcheck" name="listtypes" id="listtypes-main" value="main">import normal terms</input>
+                <br/>
+                <input type="checkbox" class="importcheck" name="listtypes" id="listtypes-stop" value="stop">import stoplist terms</input>
+            </div>
+            <br/>
+            <br/>
             <label>From a CSV on your disk:</label>
-            <input type="file" id="csvfile" accept="text/csv">
+            <input type="file" id="csvfile" name="csvfile" accept="text/csv">
 
-            <p id="formatinfos-announce">
+            <p class="announce" onclick="toggleFormatInfos()">
                 <span
                     id="formatinfos-icon"
-                    class="glyphicon glyphicon-triangle-right"
-                    onclick="toggleFormatInfos()"></span>
-                More infos about CSV expected format
+                    class="glyphicon glyphicon-triangle-right"></span>
+                More info about the expected CSV format
             </p>
             <div id="formatinfos" style="display:none;">
                 <h4>Example table</h4>
@@ -210,12 +247,9 @@
                 </ul>
             </div>
 
+            <br/>
 
-            <br/>
-            <label>From another corpus:</label>
-            <p>TODO</p>
-            <br/>
-            <input type="submit" class="btn btn-xs btn-info" id="csvsubmit" value="Submit" />
+            <input type="submit" class="btn btn-xs btn-info" id="importsubmit" value="Import and merge with current table" />
         </form>
     </div>
     <div class="modal-footer" id="formanswer"></div>
@@ -227,8 +261,34 @@
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "lib/gargantext/NGrams_dyna_chart_and_table.js" %}"></script>
 
+<!-- import modal controllers -->
 <script type="text/javascript">
 var formatInfosOpen = false;
+var corpusAdvancedOpen = false;
+
+// declared here to enable inspection
+var myFormData ;
+
+
+function toggleAdvancedCheckboxes() {
+    // when already open => we close
+    if (corpusAdvancedOpen) {
+        // hide div
+        $('#corpusadvanced').hide()
+        // change icon
+        $('#corpusadvanced-icon')[0].classList.remove('glyphicon-triangle-bottom')
+        $('#corpusadvanced-icon')[0].classList.add('glyphicon-triangle-right')
+        // toggle flag
+        corpusAdvancedOpen = false;
+    }
+    else {
+        // opposite case
+        $('#corpusadvanced').show()
+        $('#corpusadvanced-icon')[0].classList.remove('glyphicon-triangle-right')
+        $('#corpusadvanced-icon')[0].classList.add('glyphicon-triangle-bottom')
+        corpusAdvancedOpen = true;
+    }
+}
 
 function toggleFormatInfos() {
     // when already open => we close
@@ -252,29 +312,103 @@ function toggleFormatInfos() {
 
 
 /*                                             merci c24b !
- * Uses csvimportroute variable from the django template
+ * Uses importroute variable from the django template
  * Ex: /api/ngramlists/import?onto_corpus=corpus_id
  *
  * Uses input#csvfile as source data.
  */
-function postCSV(e){
+function submitImport(e, formElt){
     // don't do page reload of usual submits
     e.preventDefault()
 
+    // parse the form (allows iteration like so: for (kv of myFormData))
+    myFormData = new FormData(formElt);
+
+    // user had 2 possibilities
+    var theCorpus = myFormData.get("corpuschoose")
+    var theFile = myFormData.get("csvfile")
+
+    // console.log(theCorpus)
+    // console.log(theFile)
+
+    if (theCorpus && theFile.name) {
+        // can't select both!
+        my_msg = "Please select a source corpus <em>or</em> choose a source file (not both!)."
+    }
+    else if (theFile.name) {
+        listmergeCsvPost(theFile)
+        my_msg = "CSV import in progress..."
+    }
+    else if (theCorpus) {
+        listmergeUpdate(myFormData)
+        my_msg = "Internal list import in progress..."
+    }
+    else {
+        my_msg = "Please provide an input source!"
+        console.warn('Ignoring "submit": no provided input')
+    }
+
+    $('#formanswer').html(
+        '<p style="color:#777;font-style:italic">'+my_msg+'</p>'
+    );
+
+}
+
+function listmergeUpdate(aFormData){
+    // console.log(aFormData)
+
+    // get the selected source corpus
+    // ex: "13308"
+    var sourceCorpusId = aFormData.get("corpuschoose")
+
+    // get checkbox entries into an array
+    // ex: ["map", "stop"]
+    var todoLists = aFormData.getAll("listtypes")
+
+    // base url ex: /api/ngramlists/import?onto_corpus=123
+    var theUrl = "{{importroute | safe}}"
+
+    // all params are added in the url like a GET
+    theUrl += "&from_corpus="+sourceCorpusId
+    theUrl += "&todo="+todoLists.join(',')
+
+    // result url looks like this : /api/ngramlists/import?onto_corpus=2&from=13308&todo=map,stop
+    // console.log(theUrl)
+
+    // Update request
+    $.ajax({
+         url: theUrl,
+         type: 'PATCH',
+         async: true,
+         beforeSend: function(xhr) {
+           xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+         },
+         success: function(response) {
+             my_html  = '<h3 style="color:green">IMPORT OK</h3>'
+             my_html += "<p class='note'>" + response['log'].replace(/\n/g, '<br/>') + "</p>"
+             my_html += "<p'>(this page will reload in 3s)</p>"
+             $('#formanswer').html(my_html);
+             console.log(response) ;
+             // reload after 3s
+             setTimeout("location.reload(true)", 3000);
+             },
+          error: function(result) {
+              my_html  = '<h3 style="color:red">Error</h3>'
+              my_html += "<p>"+ result.responseJSON['err']+"</p>"
+              $('#formanswer').html(my_html);
+              console.error(result);
+             },
+        });
+};
+
+function listmergeCsvPost(theFile){
     // 2MB ≈ 70000 ngrams
     var max_size = 2097152
-
-    // we take it straight from the input element
-    theFile = $('input#csvfile')[0].files[0]
 
     // debug
     // console.log(theFile.name, "size", theFile.size, theFile.lastModifiedDate)
 
-    if (! theFile) {
-        console.warn('Ignoring "submit": no provided file')
-        return false
-    }
-    else if (theFile.size > max_size) {
+    if (theFile.size > max_size) {
         console.warn('Ignoring "submit": file is too big')
         $('#formanswer').html(
             'The import failed: your file is too big ('+max_size/1024+'kB max).'
@@ -283,13 +417,13 @@ function postCSV(e){
     }
     // normal case
     else {
-        // append into an empty form (or fixme: initialize it using form element)
+        // append into an empty form (all other infos from old form were not for us)
         var myFileFormData = new FormData();
         myFileFormData.append("csvfile", theFile)
 
         //postCorpusFile
         $.ajax({
-             url: "{{csvimportroute | safe}}",
+             url: "{{importroute | safe}}",
              type: 'POST',
              async: true,
              contentType: false,
@@ -315,7 +449,6 @@ function postCSV(e){
                   console.error(result);
                  },
             });
-        $('#formanswer').html('CSV import in Progress');
     }
 };
 </script>

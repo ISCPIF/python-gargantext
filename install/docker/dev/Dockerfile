@@ -62,5 +62,11 @@ RUN apt-get install -y sudo && adduser gargantua sudo \
 #####################################################################
 
 RUN sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargantext_data\'%" /etc/postgresql/9.5/main/postgresql.conf
-
 #####################################################################
+
+COPY  . /install
+CMD [./install/python/configure, ./install/posgres/configure, sudo pip install virtualenvwrapper]
+
+
+
+

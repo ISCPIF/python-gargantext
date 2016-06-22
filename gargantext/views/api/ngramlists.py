@@ -30,9 +30,10 @@ class List(APIView):
 
 class CSVLists(APIView):
     """
-    For CSV exports of all lists of a corpus
+    GET   => CSV exports of all lists of a corpus
 
-    Or CSV import into existing lists as "patch"
+    POST  => CSV import into existing lists as "post"
+    PATCH => internal import into existing lists (?POSSIBILITY put it in another class ?)
     """
     def get(self, request):
         params = get_parameters(request)
@@ -47,23 +48,17 @@ class CSVLists(APIView):
         export_ngramlists(corpus_node, fname=response, titles=True)
         return response
 
+
     def post(self,request):
         """
         Merge the lists of a corpus with other lists from a CSV source
                                                  or from another corpus
 
         params in request.GET:
-            corpus:    the corpus whose lists are getting patched
+            onto_corpus:  the corpus whose lists are getting patched
 
         params in request.FILES:
-            csvsource: the csv file
-
-        or in get
-            dbsource:  another corpus instead of the csvfile
-                       (? this last option should perhaps not be in CSVLists ?)
-
-        NB: not using PATCH because we'll need POST file upload
-
+            csvfile:      the csv file
 
         /!\ We assume we checked the file size client-side before upload
         """
@@ -72,7 +67,7 @@ class CSVLists(APIView):
             res.status_code = 401
             return res
 
-        # this time the corpus param is the one with the target lists to be patched
+        # the corpus with the target lists to be patched
         params = get_parameters(request)
         corpus_id = int(params.pop("onto_corpus"))
         corpus_node = cache.Node[corpus_id]
@@ -90,10 +85,72 @@ class CSVLists(APIView):
         # import the csv
         try:
             new_lists = import_ngramlists(csv_file)
+            print("===============================!!!")
+            print(new_lists)
             del csv_file
 
             # merge the new_lists onto those of the target corpus
             log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+            return JsonHttpResponse({
+                'log': log_msg,
+                }, 200)
+
+        except Exception as e:
+            return JsonHttpResponse({
+                'err': str(e),
+                }, 400)
+
+    def patch(self,request):
+        """
+        A copy of POST (merging list) but with the source == just an internal corpus_id
+
+        params in request.GET:
+            onto_corpus:  the corpus whose lists are getting patched
+            from:         the corpus from which we take the source lists to merge in
+            todo:         an array of the list types ("map", "main", "stop") to merge in
+
+        """
+        if not request.user.is_authenticated():
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
+
+        params = get_parameters(request)
+        print(params)
+
+        # the corpus with the target lists to be patched
+        corpus_id = int(params.pop("onto_corpus"))
+        corpus_node = cache.Node[corpus_id]
+
+        print(params)
+
+        if request.user.id != corpus_node.user_id:
+            res = HttpResponse("Unauthorized")
+            res.status_code = 401
+            return res
+
+        list_types = {'map':'MAPLIST', 'main':'MAINLIST', 'stop':'STOPLIST'}
+
+        # internal DB retrieve source_lists
+        source_corpus_id = int(params.pop("from_corpus"))
+        source_node = cache.Node[source_corpus_id]
+
+        todo_lists = params.pop("todo").split(',')   # ex: ['map', 'stop']
+        source_lists = {}
+        for key in todo_lists:
+            source_lists[key] = UnweightedList(
+                                    source_node.children(list_types[key]).first().id
+                                )
+
+        # add the groupings too
+        source_lists['groupings'] = Translations(
+                                        source_node.children("GROUPLIST").first().id
+                                    )
+
+        # attempt to merge and send response
+        try:
+            # merge the source_lists onto those of the target corpus
+            log_msg = merge_ngramlists(source_lists, onto_corpus=corpus_node)
             return JsonHttpResponse({
                 'log': log_msg,
                 }, 200)

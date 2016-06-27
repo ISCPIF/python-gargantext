@@ -228,8 +228,8 @@ function transformContent2(rec_id, trClass) {
 function toggleTrashIt(boxElem) {
   var id = boxElem.id       // row_id in the table (not ngram_id)
   var val = boxElem.checked
-  console.log("striking =>", val)
-  console.log("record", AjaxRecords[id])
+  // console.log("striking =>", val)
+  // console.log("record", AjaxRecords[id])
 
   // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
   AjaxRecords[id]["del"] = val;
@@ -686,25 +686,29 @@ var dupFlag = false ;
 // intercept duplicates query to sort alphabetically **before** duplicates filter
 $("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
     // debug
-    // console.warn(e)
+    //console.warn(e)
+    // console.warn("add", qname)
+    // console.warn("add", qval)
     if (!dupFlag && qname == 'docFilter' && qval == "filter_dupl_all") {
         MyTable.data('dynatable').queries.remove('docFilter')
         // flag to avoid recursion when we'll call this filter again in 4 lines
         dupFlag = true ;
         // the sorting
         MyTable.data('dynatable').sorts.clear();
-        MyTable.data('dynatable').sorts.add('docurl', 1)
+        MyTable.data('dynatable').sorts.add('signature', 1)
         // now we can add the query
         MyTable.data('dynatable').queries.add('docFilter', qval)
         MyTable.data('dynatable').process();
     }
-    else if (qname == 'docFilter') {
+    else if (qname == 'docFilter' && qval != "filter_dupl_all") {
         dupFlag = false
     }
 });
 
 $("#div-table").on("dynatable:queries:removed", function(e, qname, qval) {
-    if (qname == 'filter_dupl_all') {
+    //console.warn(e)
+    //console.warn("rm", qname)
+    if (qname == 'docFilter') {
         dupFlag = false ;
     }
 });

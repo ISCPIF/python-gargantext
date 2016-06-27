@@ -51,7 +51,7 @@ th a {
  * NB: top/bottom convention only works because of sort rule that always put smallest id first
  */
 .duplrowkeep {
-    border-top: 3px solid black
+    /*border-top: 3px solid black*/
 }
 
 .duplrowdel {

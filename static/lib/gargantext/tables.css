@@ -46,6 +46,25 @@ th a {
 }
 
 
+/* special effects for duplicate rows
+ *
+ * NB: top/bottom convention only works because of sort rule that always put smallest id first
+ */
+.duplrowkeep {
+    border-top: 3px solid black
+}
+
+.duplrowdel {
+    background-color: #CCC;
+    border-bottom: 3px solid black
+}
+
+
+/* table titles */
+th.dynatable-head {
+    vertical-align: middle !important;
+}
+
 /* notes under table titles */
 th .note {
     color: #ccc;
@@ -77,6 +96,8 @@ p.note > input {
 
 p.note > label {
   float: left;
+  margin-bottom: 0 ;
+  padding-bottom: 0 ;
 }
 
 .smaller {
@@ -89,7 +110,7 @@ p.note > label {
 
 #my-ajax-table tr:hover {
   cursor: pointer;
-  font-weight: bold;
+  /*font-weight: bold;*/
 }
 
 /* ngram states */

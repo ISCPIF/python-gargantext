@@ -202,7 +202,7 @@ function transformContent2(rec_id, trClass) {
     result["isFavorite"] = favstatusToStar(rec_id, elem["isFavorite"], boolStrike=true)
     result["rawtitle"] = elem["rawtitle"]
     if (trClass == "normalrow" || trClass == "duplrowdel") {
-        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox" checked/>'
+        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox" checked></input>'
     }
     else if (trClass=="duplrowkeep") {
         // forbid deletion for one of the duplicates
@@ -216,7 +216,7 @@ function transformContent2(rec_id, trClass) {
     result["isFavorite"] =  favstatusToStar(rec_id, elem["isFavorite"])
     result["rawtitle"] = elem["rawtitle"]
     if (trClass == "normalrow" || trClass == "duplrowdel") {
-        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox"/>'
+        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox"></input>'
     }
     else if (trClass=="duplrowkeep") {
         result["del"] = ''
@@ -225,21 +225,37 @@ function transformContent2(rec_id, trClass) {
   return result;
 }
 
-function toggleTrashIt(boxElem) {
+/*  Trash one element
+ *   -> strike it
+ *   -> move it to Garbage global var
+ *
+ *   @param boxElem    the html checkbox element that was just (un)checked
+ *                     <input id="185" class="trash1" onclick="toggleTrashIt(this)" type="checkbox">
+ *
+ *   @param doUpdate   optional boolean (default: true)
+ *                     possibility to control the dynatable update after trashing
+ *                     (set it to false if several operations are done at once)
+ */
+function toggleTrashIt(boxElem, doUpdate) {
   var id = boxElem.id       // row_id in the table (not ngram_id)
   var val = boxElem.checked
+
+  if (typeof doUpdate == 'undefined') {
+      doUpdate = true ;
+  }
   // console.log("striking =>", val)
   // console.log("record", AjaxRecords[id])
 
-  // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
   AjaxRecords[id]["del"] = val;
 
   if(val) Garbage[id] = true;
   else delete Garbage[id];
-  if(Object.keys(Garbage).length>0) $("#move2trash").show();
-  else $("#move2trash").hide();
-  // console.log(MyTable.data('dynatable').settings.dataset.originalRecords[id])
-  MyTable.data('dynatable').dom.update();
+  if(Object.keys(Garbage).length>0) $("#empty-trash").show();
+  else $("#empty-trash").hide();
+
+  if (doUpdate) {
+      MyTable.data('dynatable').dom.update();
+  }
 }
 
 // function transformContent(rec_id , header , content) {
@@ -253,7 +269,7 @@ function toggleTrashIt(boxElem) {
 // }
 
 
-$("#move2trash")
+$("#empty-trash")
 .click(function(){
 
     var ids2trash = []
@@ -272,12 +288,12 @@ $("#move2trash")
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
       },
       success: function(data) {
-        console.log("in #move2trash")
+        console.log("in #empty-trash")
         console.log(data)
         location.reload();
       },
         error: function(result) {
-            console.log("Data not found in #move2trash");
+            console.log("Data not found in #empty-trash");
             console.log(result)
         }
     });
@@ -657,7 +673,6 @@ function Main_test(Data) {
 
 function trashAll() {
     var newColumnState = $("#trashAll").prop('checked')
-
     // propagate changes to all rows
     $("tbody tr").each(function (i, row) {
         // var nodeId = $(row).attr("node-id") ;
@@ -671,12 +686,13 @@ function trashAll() {
                 // toggle all these rows' boxes
                 boxElem.checked = newColumnState
                 // and trigger the corresponding action manually
-                toggleTrashIt(boxElem)
+                toggleTrashIt(boxElem, false)
+                // false <=> don't update the table each time
             }
         }
     });
 
-    // OK update this table page
+    // OK now update this table page
     MyTable.data('dynatable').dom.update();
 }
 

@@ -188,11 +188,12 @@ function toggleFavstatus (rec_id) {
     });
 }
 
-function transformContent2(rec_id) {
+function transformContent2(rec_id, trClass) {
   // pr("\t\ttransformContent2: "+rec_id)
   var elem = AjaxRecords[rec_id];
   // pr("\t"+elem.rawtitle)
   var result = {}
+
   if (elem["del"]) {
     result["id"] = elem["id"]
     result["short_date"] = '<strike>'+elem["short_date"]+'</strike>'
@@ -200,7 +201,13 @@ function transformContent2(rec_id) {
     result["docurl"] = '<strike>'+elem["docurl"]+'</strike>'
     result["isFavorite"] = favstatusToStar(rec_id, elem["isFavorite"], boolStrike=true)
     result["rawtitle"] = elem["rawtitle"]
-    result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
+    if (trClass == "normalrow" || trClass == "duplrowdel") {
+        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox" checked/>'
+    }
+    else if (trClass=="duplrowkeep") {
+        // forbid deletion for one of the duplicates
+        result["del"] = ''
+    }
   } else {
     result["id"] = elem["id"]
     result["short_date"] = elem["short_date"]
@@ -208,16 +215,22 @@ function transformContent2(rec_id) {
     result["docurl"] = elem["docurl"]
     result["isFavorite"] =  favstatusToStar(rec_id, elem["isFavorite"])
     result["rawtitle"] = elem["rawtitle"]
-    result["del"] = '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
+    if (trClass == "normalrow" || trClass == "duplrowdel") {
+        result["del"] = '<input id='+rec_id+' class="trash1" onclick="toggleTrashIt(this)" type="checkbox"/>'
+    }
+    else if (trClass=="duplrowkeep") {
+        result["del"] = ''
+    }
   }
   return result;
 }
 
-function overRide(elem) {
-  var id = elem.id
-  var val = elem.checked
-  console.log("striking: ")
-  console.log(AjaxRecords[id])
+function toggleTrashIt(boxElem) {
+  var id = boxElem.id       // row_id in the table (not ngram_id)
+  var val = boxElem.checked
+  // console.log("striking =>", val)
+  // console.log("record", AjaxRecords[id])
+
   // MyTable.data('dynatable').settings.dataset.originalRecords[id]["del"] = val;
   AjaxRecords[id]["del"] = val;
 
@@ -229,13 +242,15 @@ function overRide(elem) {
   MyTable.data('dynatable').dom.update();
 }
 
-function transformContent(rec_id , header , content) {
-  if(header=="del") {
-    // pr("\t\ttransformContent1: "+rec_id)
-    if(content==true) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox" checked/>'
-    if(content==false) return '<input id='+rec_id+' onclick="overRide(this)" type="checkbox"/>'
-  } else return content;
-}
+// function transformContent(rec_id , header , content) {
+//     console.warn("hello transformContent1")
+//     if(header=="del") {
+//         // pr("\t\ttransformContent1: "+rec_id)
+//         if(content==true) return '<input id='+rec_id+' onclick="toggleTrashIt(this)" type="checkbox" checked/>'
+//         if(content==false) return '<input id='+rec_id+' onclick="toggleTrashIt(this)" type="checkbox"/>'
+//     }
+//     else return content;
+// }
 
 
 $("#move2trash")
@@ -271,22 +286,43 @@ $("#move2trash")
 
 //generic enough
 function ulWriter(rowIndex, record, columns, cellWriter) {
+
+    var trClass = 'normalrow'
+
+    // special case ------------------------------------------------- 8< -------
+    // set the tr class to show duplicates in another light
+    // normalrow|duplrowdel|duplrowkeep (the last 2 for duplicate case)
+    if (dupFlag) {
+        // console.log("dupFlag in ulWriter")
+        recId = RecDict[record.id]
+        if (recId == countByMeta[record.signature]['smallest_id']) {
+            trClass = 'duplrowkeep'
+        }
+        else {
+            trClass = 'duplrowdel'
+        }
+    }
+    // -------------------------------------------------------------- 8< -------
+
   // pr("\tulWriter: "+record.id)
   var tr = '';
   var cp_rec = {}
+
   if(!MyTable) {
+    // £TODO check if ever used
     for(var i in record) {
       cp_rec[i] = transformContent(RecDict[record.id], i , record[i])
     }
   } else {
     // pr("\t\tbfr transf2: rec_id="+record.id+" | arg="+RecDict[record.id])
-    cp_rec = transformContent2(RecDict[record.id])
+    cp_rec = transformContent2(RecDict[record.id], trClass)
   }
   // grab the record's attribute for each column
   for (var i = 0, len = columns.length; i < len; i++) {
     tr += cellWriter(columns[i], cp_rec);
   }
-  return '<tr>' + tr + '</tr>';
+
+  return '<tr class='+trClass+' node-id='+record.id+'>' + tr + '</tr>';
 }
 
 
@@ -330,7 +366,12 @@ function Main_test(Data) {
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-star"></span>'+"\n"
     div_table += "\t"+"\t"+'</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="del" data-dynatable-no-sort="true">'+"\n"
-    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash"></span>'+"\n"
+    div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-trash" style="padding:3 2 0 0"></span>'+"\n"
+    div_table += "\t"+"\t"+'<p class="note" style="padding:0 0 1 3">'
+    div_table += "\t"+"\t"+"\t"+'<input type="checkbox" id="trashAll"'
+    div_table += "\t"+"\t"+"\t"+' onclick="trashAll(this)" title="Check to mark all for trash"></input>'
+    div_table += "\t"+"\t"+"\t"+'<label>All page</label>'
+    div_table += "\t"+"\t"+'</p>'
     div_table += "\t"+"\t"+'</th>'+"\n"
     div_table += "\t"+'</thead>'+"\n"
     div_table += "\t"+'<tbody>'+"\n"
@@ -494,6 +535,7 @@ function Main_test(Data) {
                 records: Data,
                 sorts : {"date": 1},
                 sortTypes: {
+                    signature: 'signatureSort',
                     docurl: 'rawtitleSort',
                     'hyperdata.journal': 'journalSort'
                 }
@@ -561,76 +603,148 @@ function Main_test(Data) {
         .functions['docFilter'] = function(record,opt) {
             if      (opt == 'filter_all')  return true
             else if (opt == 'filter_favs') return favorites[record.id]
-            else if (opt == 'filter_dupl_tit') return (countByTitles[record.rawtitle] > 1)
-            else if (opt == 'filter_dupl_all') return (countByMeta[record.signature] > 1)
+            else if (opt == 'filter_dupl_all') return (countByMeta[record.signature]['n'] > 1)
         }
 
     // and set this filter's initial status to 'filter_all'
     MyTable.data('dynatable').settings.dataset.queries['docFilter'] = 'filter_all'
 
 
-    MyTable.data('dynatable').sorts.functions["rawtitleSort"] = function rawtitleSort (rec1,rec2, attr, direction) {
-        // sorts on rawtitle instead of derived docurl
-        // and sorts with locale-aware order
-        if (direction == 1) return rec1.rawtitle.localeCompare(rec2.rawtitle)
-        else                return rec2.rawtitle.localeCompare(rec1.rawtitle)
-    }
-
+    MyTable.data('dynatable').sorts.functions["rawtitleSort"] = makeAlphaSortFunctionOnProperty('rawtitle')
+    MyTable.data('dynatable').sorts.functions["signatureSort"] = makeAlphaSortFunctionOnProperty('signature')
     MyTable.data('dynatable').sorts.functions["journalSort"] = function journalSort (rec1,rec2, attr, direction) {
         // like rawtitle but nested property
         if (direction == 1) return rec1.hyperdata.journal.localeCompare(rec2.hyperdata.journal)
         else                return rec2.hyperdata.journal.localeCompare(rec1.hyperdata.journal)
     }
 
+    // hook on page change
+    MyTable.bind('dynatable:page:set', tidyAfterPageSet)
+
     MyTable.data('dynatable').process();
 
-  // re-apply search function on click
-  $('#searchAB').click( function() {
-    MyTable.data('dynatable').process();
-  });
-
-  // re-apply search function on ENTER
-  $("#doubleSearch").keyup(function (e) {
-    if (e.keyCode == 13) {
+    // re-apply search function on click
+    $('#searchAB').click( function() {
       MyTable.data('dynatable').process();
-    }
-  })
+    });
 
-  return "OK"
+    // re-apply search function on ENTER
+    $("#doubleSearch").keyup(function (e) {
+      if (e.keyCode == 13) {
+        MyTable.data('dynatable').process();
+      }
+    })
+
+    // trashAll default position is: off
+    $('#trashAll').prop("checked", false)
+    // real trashAll states : SOME|ALL|NONE
+    $('#trashAll').data("columnSelection", 'SOME')
+
+    return "OK"
 }
+
+
+// select all column "trash"
+// --------------------------
+/**
+ * Toggle all checkboxes in a column by changing their list in System
+ *
+ * effect => sets the "del" property of all visible records on this page
+ *                ------------------
+ *           (except if they are of class duplrowkeep)
+ * cf more complex original function SelectPage() in NGrams_dyna_chart_and_table
+ */
+
+function trashAll() {
+    var newColumnState = $("#trashAll").prop('checked')
+
+    // propagate changes to all rows
+    $("tbody tr").each(function (i, row) {
+        // var nodeId = $(row).attr("node-id") ;
+        // var recId = RecDict[nodeId]
+
+        var exceptionUntrashable = row.classList.contains('duplrowkeep')
+        if (!exceptionUntrashable) {
+            var boxElem = row.getElementsByClassName("trash1")[0]
+            var stateBefore = boxElem.checked
+            if (stateBefore != newColumnState) {
+                // toggle all these rows' boxes
+                boxElem.checked = newColumnState
+                // and trigger the corresponding action manually
+                toggleTrashIt(boxElem)
+            }
+        }
+    });
+
+    // OK update this table page
+    MyTable.data('dynatable').dom.update();
+}
+
+// global flag when duplicates special filter is requested
+var dupFlag = false ;
+
+// intercept duplicates query to sort alphabetically **before** duplicates filter
+$("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
+    // debug
+    //console.warn(e)
+    // console.warn("add", qname)
+    // console.warn("add", qval)
+    if (!dupFlag && qname == 'docFilter' && qval == "filter_dupl_all") {
+        MyTable.data('dynatable').queries.remove('docFilter')
+        // flag to avoid recursion when we'll call this filter again in 4 lines
+        dupFlag = true ;
+        // the sorting
+        MyTable.data('dynatable').sorts.clear();
+        MyTable.data('dynatable').sorts.add('signature', 1)
+        // now we can add the query
+        MyTable.data('dynatable').queries.add('docFilter', qval)
+        MyTable.data('dynatable').process();
+    }
+    else if (qname == 'docFilter' && qval != "filter_dupl_all") {
+        dupFlag = false
+    }
+});
+
+$("#div-table").on("dynatable:queries:removed", function(e, qname, qval) {
+    //console.warn(e)
+    //console.warn("rm", qname)
+    if (qname == 'docFilter') {
+        dupFlag = false ;
+    }
+});
+
 
 // create a sort function (alphabetic with locale-aware order)
 // on any record.property with a str inside (for instance "rawtitle")
 function makeAlphaSortFunctionOnProperty(property) {
     return function (rec1,rec2, attr, direction) {
-        if (direction == 1) return rec1[property].localeCompare(rec2[property])
-        else                return rec2[property].localeCompare(rec1[property])
+        var cmp = null
+
+        // the alphabetic sort
+        if (direction == 1) cmp = rec1[property].localeCompare(rec2[property])
+        else                cmp = rec2[property].localeCompare(rec1[property])
+
+        // second level sorting on key = id in records array
+        // (this one volontarily not reversable by direction
+        //  so as to have smallest_id always on top in layout)
+        if (cmp == 0)       cmp = RecDict[rec1.id] < RecDict[rec2.id] ? -1 : 1
+
+        return cmp
     }
 }
 
+/**
+ * tidyAfterPageSet:
+ *     -------------
+ *    Here we clean vars that become obsolete not at all updates, but only
+ *    when page changes (bound to the dynatable event "dynatable:page:set")
+ */
 
-var dupFlag = false ;
+function tidyAfterPageSet() {
+    // we visually uncheck the 'trashAll' box
+    $('input#trashAll').attr('checked', false);
+}
 
-$("#div-table").on("dynatable:queries:added", function(e, qname, qval) {
-    // debug
-    // console.warn(e)
-    if (!dupFlag && qname == 'docFilter' && (qval == "filter_dupl_tit" || qval == "filter_dupl_all")) {
-        MyTable.data('dynatable').queries.remove('docFilter')
-        // to avoid recursion when we'll call this filter again in 4 lines
-        dupFlag = true ;
-        // sort alphabetically **before** duplicates filter
-        MyTable.data('dynatable').sorts.clear();
-        MyTable.data('dynatable').sorts.add('rawtitle', -1) // -1 <==> DESC (ASC doesn't work well ?)
-        MyTable.data('dynatable').queries.add('docFilter', qval)
-        MyTable.data('dynatable').process();
-    }
-});
-
-$("#div-table").on("dynatable:queries:removed", function(e, qname) {
-    if (qname == 'docFilter') {
-        dupFlag = false ;
-    }
-});
 
 
 // FIRST portion of code to be EXECUTED:
@@ -682,10 +796,20 @@ $.ajax({
 
               ourSignature = metaSignature(rec)
               if (countByMeta.hasOwnProperty(ourSignature)) {
-                  countByMeta[ourSignature] ++ ;
+
+                  // property n contains the count
+                  countByMeta[ourSignature]['n'] ++ ;
+
+                  // no need to check for min rec_id b/c loop in ascending order
               }
               else {
-                  countByMeta[ourSignature] = 1 ;
+                  countByMeta[ourSignature] = {'n':undefined,
+                                               'smallest_id':undefined}
+                  countByMeta[ourSignature]['n'] = 1 ;
+
+                  // we also take the min rec_id
+                  // (to keep only one exemplar at deduplication)
+                  countByMeta[ourSignature]['smallest_id'] = i ;
               }
               // also save record's "meta signature" for later lookup
               rec.signature = ourSignature

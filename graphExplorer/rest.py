@@ -77,11 +77,8 @@ class Graph(APIView):
         accepted_field2 = ['ngrams',                               ]
         options         = ['start', 'end', 'threshold', 'distance', 'cooc_id' ]
         
-
-        return JsonHttpResponse({
-            'log': "Ceci est un message",
-            }, 400)
-
+        
+        # Test function
 
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :

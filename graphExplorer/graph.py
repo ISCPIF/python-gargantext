@@ -1,10 +1,11 @@
 # Gargantext lib
 from gargantext.util.db           import session
+from gargantext.util.lists        import WeightedMatrix, UnweightedList, Translations
 from gargantext.util.http         import JsonHttpResponse
 from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram
 
 #from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graphExplorer.cooccurrences  import countCooccurrences
+from graphExplorer.cooccurrences  import countCooccurrences, filterMatrix
 from graphExplorer.distances      import clusterByDistances
 from graphExplorer.bridgeness     import filterByBridgeness
 
@@ -63,11 +64,15 @@ def get_graph( request=None         , corpus=None
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
                                     , isMonopartite=True    , threshold = threshold
-                                    , save_on_db = False
+                                    , save_on_db = True
                                    #, limit=size
                                     )
     else:
-        cooc_matrix = WeightedMatrix(cooc_id)
+        print("Getting data for matrix %d", int(cooc_id))
+        matrix      = WeightedMatrix(int(cooc_id))
+        print(matrix)
+        cooc_matrix = filterMatrix(matrix, mapList_id, groupList_id)
+
 
     # fyi
     after_cooc = datetime.now()

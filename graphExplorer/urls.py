@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 
 # Module "Graph Explorer"
 from graphExplorer.rest         import Graph
-from graphExplorer.views        import explorer
+from graphExplorer.views        import explorer, myGraphs
 from graphExplorer.intersection import intersection
 
 
@@ -12,8 +12,9 @@ from graphExplorer.intersection import intersection
 # ^explorer/$corpus_id/data.json
 # ^explorer/$corpus_id/intersection
 
-urlpatterns = [ url(r'^explorer/intersection/(\w+)$', intersection     )
-              , url(r'^projects/(\d+)/corpora/(\d+)/explorer$', explorer       )
-              , url(r'^projects/(\d+)/corpora/(\d+)/graph$'   , Graph.as_view())
-              , url(r'^projects/(\d+)/corpora/(\d+)/node_link.json$', Graph.as_view())
+# GET ^api/projects/(\d+)/corpora/(\d+)/explorer$ -> data in json format
+
+urlpatterns = [ url(r'^projects/(\d+)/corpora/(\d+)/explorer$'      , explorer       )
+              , url(r'^projects/(\d+)/corpora/(\d+)/myGraphs$'      , myGraphs       )
+              , url(r'^explorer/intersection/(\w+)$'                , intersection   )
               ]

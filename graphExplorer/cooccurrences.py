@@ -9,6 +9,14 @@ from sqlalchemy            import desc, asc, or_, and_
 #import inspect
 import datetime
 
+
+def filterMatrix(matrix, mapList_id, groupList_id):
+    mapList   = UnweightedList( mapList_id  )
+    group_list = Translations  ( groupList_id )
+    cooc       = matrix & (mapList * group_list)
+    return cooc
+
+
 def countCooccurrences( corpus=None
                       , field1='ngrams'     , field2='ngrams'
                       , start=None          , end=None
@@ -182,15 +190,14 @@ def countCooccurrences( corpus=None
         cooc_query = cooc_query.group_by(NodeHyperdataNgram.ngram_id, NodeNgramY.ngram_id)
 
     # Order according some scores
-    cooc_query = cooc_query.order_by(desc('cooc_score'))
+    # If ordering is really needed, use Ordered Index (faster)
+    #cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
-    mapList   = UnweightedList( mapList_id  )
-    group_list = Translations  ( groupList_id )
-    cooc       = matrix & (mapList * group_list)
+    cooc = filterMatrix(matrix, mapList_id, groupList_id)
 
     if save_on_db:
         cooc.save(coocNode_id)
-        return(coocNode_id)
-    else:
-        return cooc
+        print("Cooccurrence Matrix saved")
+    
+    return cooc

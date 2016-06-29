@@ -22,7 +22,7 @@ function getIDFromURL( item ) {
 function modify_ngrams( classname ) {
     console.clear()
 
-    var corpus_id = getIDFromURL( "corpus" ) // not used
+    var corpus_id = getIDFromURL( "corpora" ) // not used
     var list_id = $("#list_id").val()
     var selected_ngrams = $.extend({}, selections)
     console.log( selected_ngrams )
@@ -134,7 +134,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
             return b-a
         });
 
-        // console.log( AttsDict_sorted )
+        console.log( AttsDict_sorted )
 
 
         var div_info = "";            
@@ -554,7 +554,7 @@ function getTopPapers(type){
         var pageurl = window.location.href.split("/")
         var cid;
         for(var i in pageurl) {
-            if(pageurl[i]=="corpus") {
+            if(pageurl[i]=="corpora") {
                 cid=parseInt(i);
                 break;
             }
@@ -574,7 +574,7 @@ function getTopPapers(type){
         pr(theids)
         $.ajax({
             type: 'GET',
-            url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
+            url: window.location.origin+'/api/nodes/'+corpus_id+'/having?score=tfidf&ngram_ids='+theids.join(","),
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){ 

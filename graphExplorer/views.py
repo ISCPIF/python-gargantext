@@ -25,9 +25,6 @@ def explorer(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
-    #graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "graph?cooc_id=102560"
-    graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "/node_link.json"
-
     # rendered page : explorer.html
     return render(
         template_name = 'graphExplorer/explorer.html',
@@ -40,7 +37,6 @@ def explorer(request, project_id, corpus_id):
             'project'   : project          ,
             'corpus'    : corpus           ,
             'maplist_id': maplist_id       ,
-            'graphurl'  : graphurl         ,
             'view'      : 'graph'          ,
         },
     )

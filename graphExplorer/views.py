@@ -25,6 +25,7 @@ def explorer(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
+    #graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "graph?cooc_id=102560"
     graphurl = "projects/" + str(project_id) + "/corpora/" + str(corpus_id) + "/node_link.json"
 
     # rendered page : explorer.html
@@ -32,14 +33,54 @@ def explorer(request, project_id, corpus_id):
         template_name = 'graphExplorer/explorer.html',
         request = request,
         context = {
+            'debug'     : settings.DEBUG   ,
+            'request'   : request          ,
+            'user'      : request.user     ,
+            'date'      : datetime.now()   ,
+            'project'   : project          ,
+            'corpus'    : corpus           ,
+            'maplist_id': maplist_id       ,
+            'graphurl'  : graphurl         ,
+            'view'      : 'graph'          ,
+        },
+    )
+
+
+
+@requires_auth
+def myGraphs(request, project_id, corpus_id):
+    '''
+    List all of my Graphs
+    '''
+
+    user = cache.User[request.user.id]
+    # we pass our corpus
+    corpus = cache.Node[corpus_id]
+
+    # and the project just for project.id in corpusBannerTop
+    project = cache.Node[project_id]
+
+    coocs = corpus.children('COOCCURRENCES', order=True).all()
+    
+    coocs_count = dict()
+    for cooc in coocs:
+        cooc_nodes = session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc.id).count()
+        coocs_count[cooc.id] = cooc_nodes
+
+    return render(
+        template_name = 'pages/corpora/myGraphs.html',
+        request = request,
+        context = {
             'debug'     : settings.DEBUG,
             'request'   : request,
             'user'      : request.user,
             'date'      : datetime.now(),
             'project'   : project,
+            'resourcename' : resourcename(corpus),
             'corpus'    : corpus,
-            'maplist_id': maplist_id,
-            'graphfile' : graphurl,
-            'view'      : 'graph'
+            'view'      : 'myGraph',
+            'coocs'     : coocs,
+            'coocs_count' : coocs_count
         },
     )
+

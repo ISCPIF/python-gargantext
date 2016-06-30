@@ -22,7 +22,7 @@ python-dateutil==2.4.2
 pytz==2015.7                   # timezones
 PyYAML==3.11
 RandomWords==0.1.12
-SQLAlchemy==1.1.0b1.dev0
+SQLAlchemy==1.1.0b1
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 wheel==0.29.0

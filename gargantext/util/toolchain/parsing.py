@@ -8,7 +8,7 @@ from re          import sub
 def parse(corpus):
     try:
         documents_count = 0
-        
+
         corpus.status('Docs', progress=0)
 
         # will gather info about languages
@@ -86,6 +86,7 @@ def normalize_chars(my_str):
        ou passer en lowercase, seront à placer plutôt *après* le tagger,
             cf. toolchain.ngrams_extraction.normalize_terms)
     """
+    # print('normalize_chars  IN: "%s"' % my_str)
     # --------------
     # E S P A C E S
     # --------------
@@ -121,12 +122,12 @@ def normalize_chars(my_str):
     # Guillemets
     # ----------
     # la plupart des quotes simples --> ' APOSTROPHE
-    my_str = sub(r"‘’‚`‛", "'", my_str) # U+2018 U+2019 U+201a U+201b
+    my_str = sub(r"[‘’‚`‛]", "'", my_str) # U+2018 U+2019 U+201a U+201b
     my_str = sub(r'‹ ?',"'", my_str)    # U+2039 plus espace éventuel après
     my_str = sub(r' ?›',"'", my_str)    # U+203A plus espace éventuel avant
 
     # la plupart des quotes doubles --> " QUOTATION MARK
-    my_str = sub(r'“”„‟', '"', my_str)  # U+201C U+201D U+201E U+201F
+    my_str = sub(r'[“”„‟]', '"', my_str)  # U+201C U+201D U+201E U+201F
     my_str = sub(r'« ?', '"', my_str)   # U+20AB plus espace éventuel après
     my_str = sub(r' ?»', '"', my_str)   # U+20AB plus espace éventuel avant
 
@@ -177,5 +178,7 @@ def normalize_chars(my_str):
     my_str = sub(r'ﬆ', 'st', my_str)
     my_str = sub(r'Ꜩ', 'Tz', my_str)
     my_str = sub(r'ꜩ', 'tz', my_str)
+
+    # print('normalize_chars OUT: "%s"' % my_str)
 
     return my_str

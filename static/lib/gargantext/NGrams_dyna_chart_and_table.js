@@ -1357,7 +1357,7 @@ function SelectPage(boxType, boxElem) {
 
     // console.log("data became:" + newColumnSelection)
 
-  $("tbody tr").each(function (i, row) {
+  $("table#my-ajax-table tbody tr").each(function (i, row) {
       var ngramId = $(row).attr("ngram-id") ;
 
       // a cache to restore previous states if unchecked
@@ -1374,6 +1374,7 @@ function SelectPage(boxType, boxElem) {
           AjaxRecords[ngramId]["state"] = AjaxRecords[ngramId]["state_buff"] ;
           AjaxRecords[ngramId]["state_buff"] = null ;
       }
+
   });
 
   // OK update this table page

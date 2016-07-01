@@ -44,13 +44,12 @@ RUN apt-get update && apt-get install -y \
         postgresql-server-dev-9.5 libpq-dev libxml2 \
         libxml2-dev xml-core libgfortran-5-dev \
         virtualenv python3-virtualenv \
-        python3.4 python3.4-dev \
-        python3.5 python3.5-dev \
+        python3.5 python3-dev \
         python3-six python3-numpy python3-setuptools \
         # ^for numpy, pandas
         python3-numexpr \
         # ^ for numpy performance
-        libxml2-dev libxslt-dev 
+        libxml2-dev libxslt-dev
         # ^ for lxml
         #libxslt1-dev zlib1g-dev
 
@@ -75,3 +74,7 @@ RUN python3-pip install -r /srv/gargantex/install/python/requirements.txt
 #in docker database
 #RUN sed -iP 's%^data_directory.*%data_directory = '\/srv\/gargantext_data'%' /etc/postgresql/9.5/main/postgresql.conf
 ######################################################################
+
+#INSTALLATION AND CONFIG python and postgresql module
+COPY  . /install
+CMD [./install/python/configure, ./install/postgres/configure]

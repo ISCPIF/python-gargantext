@@ -12,7 +12,8 @@ LISTTYPES = {
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
-    'SPECIFICITY'  : WeightedList,
+    'SPECCLUSION'  : WeightedList,
+    'GENCLUSION'   : WeightedList,
     'OCCURRENCES'  : WeightedIndex,   # could be WeightedList
     'COOCCURRENCES': WeightedMatrix,
     'TFIDF-CORPUS' : WeightedIndex,
@@ -47,6 +48,7 @@ NODETYPES = [
     # more scores (sorry!)
     'TIRANK-LOCAL',          # 16
     'TIRANK-GLOBAL',         # 17
+    'GENCLUSION',            # 18
 ]
 
 INDEXED_HYPERDATA = {

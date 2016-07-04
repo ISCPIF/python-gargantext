@@ -9,22 +9,26 @@ from gargantext.util.db_cache import cache
 from gargantext.util.lists    import UnweightedList
 from sqlalchemy               import desc, asc
 from gargantext.constants     import DEFAULT_MAPLIST_MAX,\
+                                     DEFAULT_MAPLIST_GENCLUSION_RATIO,\
                                      DEFAULT_MAPLIST_MONOGRAMS_RATIO
 
 def do_maplist(corpus,
                overwrite_id = None,
                mainlist_id  = None,
-               specificity_id = None,
+               specclusion_id = None,
+               genclusion_id = None,
                grouplist_id = None,
                limit=DEFAULT_MAPLIST_MAX,
+               genclusion_part=DEFAULT_MAPLIST_GENCLUSION_RATIO,
                monograms_part=DEFAULT_MAPLIST_MONOGRAMS_RATIO
                ):
     '''
-    According to Specificities and mainlist
+    According to Genericity/Specificity and mainlist
 
     Parameters:
       - mainlist_id (starting point, already cleaned of stoplist terms)
-      - specificity_id (ranking factor)
+      - specclusion_id (inclusion by cooc specificity -- ranking factor)
+      - genclusion_id (inclusion by cooc genericity -- ranking factor)
       - grouplist_id (filtering grouped ones)
       - overwrite_id: optional if preexisting MAPLIST node to overwrite
 
@@ -33,8 +37,8 @@ def do_maplist(corpus,
         - monograms_part: a ratio of terms with only one lexical unit to keep
     '''
 
-    if not (mainlist_id and specificity_id and grouplist_id):
-        raise ValueError("Please provide mainlist_id, specificity_id and grouplist_id")
+    if not (mainlist_id and specclusion_id and genclusion_id and grouplist_id):
+        raise ValueError("Please provide mainlist_id, specclusion_id, genclusion_id and grouplist_id")
 
     monograms_limit = round(limit * monograms_part)
     multigrams_limit = limit - monograms_limit
@@ -58,7 +62,7 @@ def do_maplist(corpus,
     # specificity-ranked
     query = (session.query(ScoreSpec.ngram_id)
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
-                .filter(ScoreSpec.node_id == specificity_id)
+                .filter(ScoreSpec.node_id == specclusion_id)
 
                 # we want only terms within mainlist
                 .join(MainlistTable, Ngram.id == MainlistTable.ngram_id)
@@ -73,7 +77,7 @@ def do_maplist(corpus,
     # TODO: move these 2 pools up to mainlist selection
     top_monograms = (query
                 .filter(Ngram.n == 1)
-                .order_by(asc(ScoreSpec.weight))
+                .order_by(desc(ScoreSpec.weight))
                 .limit(monograms_limit)
                 .all()
                )

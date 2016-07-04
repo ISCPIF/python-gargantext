@@ -10,8 +10,8 @@ from .ngram_groups        import compute_groups
 from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_ti_ranking
 from .list_main           import do_mainlist
 from .ngram_coocs         import compute_coocs
-from .metric_specificity  import compute_specificity
-from .list_map            import do_maplist     # TEST
+from .metric_specgen      import compute_specgen
+from .list_map            import do_maplist
 from .mail_notification   import notify_owner
 from gargantext.util.db   import session
 from gargantext.models    import Node
@@ -136,22 +136,26 @@ def parse_extract_indexhyperdata(corpus):
     # => used for doc <=> ngram association
 
     # ------------
-    # -> cooccurrences on mainlist: compute + write (=> Node and NodeNgramNgram)
+    # -> cooccurrences on mainlist: compute + write (=> Node and NodeNgramNgram)*
     coocs = compute_coocs(corpus,
                             on_list_id = mainlist_id,
                             groupings_id = group_id,
-                            just_pass_result = True)
+                            just_pass_result = True,
+                            diagonal_filter = False) # preserving the diagonal
+                                                     # (useful for spec/gen)
     print('CORPUS #%d: [%s] computed mainlist coocs for specif rank' % (corpus.id, t()))
 
-    # -> specificity: compute + write (=> NodeNodeNgram)
-    spec_id = compute_specificity(corpus,cooc_matrix = coocs)
+    # -> specclusion/genclusion: compute + write (2 Nodes + 2 lists in NodeNgram)
+    (spec_id, gen_id) = compute_specgen(corpus,cooc_matrix = coocs)
     # no need here for subforms because cooc already counted them in mainform
-    print('CORPUS #%d: [%s] new specificity node #%i' % (corpus.id, t(), spec_id))
+    print('CORPUS #%d: [%s] new spec-clusion node #%i' % (corpus.id, t(), spec_id))
+    print('CORPUS #%d: [%s] new gen-clusion node #%i' % (corpus.id, t(), gen_id))
 
     # maplist: compute + write (to Node and NodeNgram)
     map_id = do_maplist(corpus,
                         mainlist_id = mainlist_id,
-                        specificity_id=spec_id,
+                        specclusion_id=spec_id,
+                        genclusion_id=gen_id,
                         grouplist_id=group_id
                         )
     print('CORPUS #%d: [%s] new maplist node #%i' % (corpus.id, t(), map_id))
@@ -187,7 +191,7 @@ def recount(corpus):
          - ndocs
          - ti_rank
          - coocs
-         - specificity
+         - specclusion/genclusion
          - tfidf
 
     NB: no new extraction, no list change, just the metrics
@@ -208,9 +212,14 @@ def recount(corpus):
         old_tirank_id = None
 
     try:
-        old_spec_id   = corpus.children("SPECIFICITY").first().id
+        old_spec_id   = corpus.children("SPECCLUSION").first().id
     except:
         old_spec_id   = None
+
+    try:
+        old_gen_id   = corpus.children("GENCLUSION").first().id
+    except:
+        old_gen_id   = None
 
     try:
         old_ltfidf_id = corpus.children("TFIDF-CORPUS").first().id
@@ -254,11 +263,13 @@ def recount(corpus):
                             just_pass_result = True)
     print('RECOUNT #%d: [%s] updated mainlist coocs for specif rank' % (corpus.id, t()))
 
-    # -> specificity: compute + write (=> NodeNgram)
-    spec_id = compute_specificity(corpus,cooc_matrix = coocs, overwrite_id = old_spec_id)
 
+    # -> specclusion/genclusion: compute + write (=> NodeNodeNgram)
+    (spec_id, gen_id) = compute_specgen(corpus, cooc_matrix = coocs,
+                            spec_overwrite_id = spec_id, gen_overwrite_id = gen_id)
 
-    print('RECOUNT #%d: [%s] updated specificity node #%i' % (corpus.id, t(), spec_id))
+    print('RECOUNT #%d: [%s] updated spec-clusion node #%i' % (corpus.id, t(), spec_id))
+    print('RECOUNT #%d: [%s] updated gen-clusion node #%i' % (corpus.id, t(), gen_id))
 
     print('RECOUNT #%d: [%s] FINISHED metric recounts' % (corpus.id, t()))
 

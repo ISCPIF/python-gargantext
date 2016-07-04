@@ -69,6 +69,7 @@ Successfully built <container_id>
 ``` bash
 ./srv/gargantext/install/docker/enterGargantextImage
 ```
+    [ICI] Tester si les config de postgresql et python sont faits en amont à la création du docker file
 
 * Install Python environment
 
@@ -81,10 +82,6 @@ Inside the docker image, execute as root:
 Inside the docker image, execute as root:
 ``` bash
 /srv/gargantext/install/postgres/configure
-```
-* Exit the docker
-```
-exit (or Ctrl+D)
 ```
 
 
@@ -100,21 +97,30 @@ Inside the docker container:
 ``` bash
 service postgresql start
 #su gargantua
+#activate the virtualenv
 source /srv/env_3-5/bin/activate
-python /srv/gargantext/dbmigrate.py
-/srv/gargantext/manage.py makemigrations
-/srv/gargantext/manage.py migrate
-python /srv/gargantext/dbmigrate.py
+```
+You have entered the virtualenv as shown with (env_3-5)
+``` bash
+(env_3-5) $ python /srv/gargantext/dbmigrate.py
+(env_3-5) $  /srv/gargantext/manage.py makemigrations
+(env_3-5) $  /srv/gargantext/manage.py migrate
+(env_3-5) $  python /srv/gargantext/dbmigrate.py
 #will create tables and not hyperdata_nodes
-python /srv/gargantext/dbmigrate.py
+(env_3-5) $  python /srv/gargantext/dbmigrate.py
 #will create table hyperdata_nodes
 #launch first time the server to create first user
-/srv/gargantext/manage.py runserver 0.0.0.0:8000
-/srv/gargantext/init_accounts.py /srv/gargantext/install/init/account.csv
+(env_3-5) $ /srv/gargantext/manage.py runserver 0.0.0.0:8000
+(env_3-5) $  /srv/gargantext/init_accounts.py /srv/gargantext/install/init/account.csv
 ```
 
     FIXME: dbmigrate need to launched several times since tables are
     ordered with alphabetical order (and not dependencies order)
+* Exit the docker
+```
+exit (or Ctrl+D)
+```
+
 ####Debian way [advanced]
 
 ##Run Gargantext
@@ -133,9 +139,9 @@ su gargantua
 #activate the virtualenv
 source /srv/env_3-5/bin/activate
 #go to gargantext srv
-cd /srv/gargantext/
+(env_3-5) $ cd /srv/gargantext/
 #run the server
-/manage.py runserver 0.0.0.0:8000
+(env_3-5) $ /manage.py runserver 0.0.0.0:8000
 ```
 
 

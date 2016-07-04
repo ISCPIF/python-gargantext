@@ -1,96 +1,105 @@
-Install Instructions for Gargantext (CNRS):
+#Install Instructions for Gargantext (CNRS):
+
+## Get the source code
+by cloning gargantext into /srv/gargantext
+
+``` bash
+git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+        && cd /srv/gargantext \
+        && git fetch origin stable \
+        && git checkout stable \
+```
+
+
+The folder will be /srv/gargantext:
+* docs containes all informations on gargantext
+    /srv/gargantext/docs/
+* install contains all the installation files
+    /srv/gargantext/install/
 
 Help needed ?
-See [http://gargantext.org/about](http://gargantext.org/about) and [tools]() for the community
+See [http://gargantext.org/about](http://gargantext.org/about) and [tools](./contribution_guide.md) for the community
+
+Two installation procedure are provided:
+
+1. Semi-automatic installation  [EASY]
+2. Step by step installation     [ADVANCED]
+
+Here only semi-automatic installation is covered checkout [manual_install](manual_install.md)
+to follow step by step procedure
 
 
-Prepare your environnement and make the initial installation.
-Once you setup and install the Gargantext box. You can use ./install/run.sh utility
-to load gargantext web plateform and access it throught your web browser
-
-______________________________
-
-1. [Prerequisites](##Prerequisites)
-
-2. [SETUP](##Setup)
-
-3. [INSTALL](##Install)
-
-4. [RUN](##RUN)
-______________________________
 ##Prerequisites
+## Init Setup
+## Install
+## Run
+
+--------------------
+
+# Semi automatic installation
+All the procedure files are located into /srv/garantext/install/
+``` bash
+user@computer:$ cd /srv/garantext/install/
+```
+
+## Prerequisites
 
 * A Debian based OS >= [FIXME]
 
-* At least 35GO in the desired location of Gargantua [FIXME]
+* At least 35GO in /srv/ [FIXME]
     todo: reduce the size of gargantext lib
-    todo: remove lib once docker is configure
+    todo: remove lib once docker is configured
 
-    tip: if you have enought space for the full package you can:
+! tip: if you have enought space for the full package you can:
         * resize your partition
         * make a simlink on gargantext_lib
 
-* A [docker engine installation](https://docs.docker.com/engine/installation/linux/)
 
-##Setup
+
+
+##Init Setup
 Prepare your environnement and make the initial setup.
 
-Setup can be done in 2 ways:
-    * [automatic setup](setup.sh) can be done by using the setup script provided [here](setup.sh)
-    * [manual setup](manual_setup.md) if you want to change some parameters [here](manual_setup.md)
+This initial step creates a user for gargantext plateform along with dowloading additionnal libs and files.
 
-##Install
-
-Two installation procedure are actually proposed:
-* the docker way [easy]
-* the debian way [advanced]
-
-####DOCKER WAY [EASY]
-
-* Install docker
-See [installation instruction for your distribution](https://docs.docker.com/engine/installation/)
-
-* Build your docker image
+It also install docker and build the docker image and build the gargantext box
 
 ``` bash
-cd /srv/gargantext/install/docker/config
-./build
-ID=$(docker build .) && docker run -i -t $ID
+user@computer:/srv/garantext/install/$ .init.sh
 ```
 
-You should see
 
-```
-Successfully built <container_id>
-```
+### Install
+Once the init step is done
 
 * Enter into the docker environnement
 
+Inside folder /srv/garantext/install/
+enter the gargantext image
 ``` bash
-./srv/gargantext/install/docker/enterGargantextImage
+user@computer:/srv/garantext/install/$ .docker/enterGargantextImage
+```
+go to the installation folder
+``` bash
+root@dockerimage8989809:$ cd /srv/gargantext/install/
 ```
     [ICI] Tester si les config de postgresql et python sont faits en amont à la création du docker file
 
 * Install Python environment
 
-Inside the docker image, execute as root:
+
 ``` bash
-/srv/gargantext/install/python/configure
+root@dockerimage8989809:/srv/garantext/install/$ python/configure
 ```
 * Configure PostgreSql
 
 Inside the docker image, execute as root:
 ``` bash
-/srv/gargantext/install/postgres/configure
+root@computer:/srv/garantext/install/$ postgres/configure
 ```
-
+    [Si OK ] enlever ses lignes
 
 Install Gargantext server
-
-* Enter docker container
-``` bash
-/srv/gargantext/install/docker/enterGargantextImage
-```
 
 *  Configure the database
 Inside the docker container:
@@ -116,15 +125,15 @@ You have entered the virtualenv as shown with (env_3-5)
 
     FIXME: dbmigrate need to launched several times since tables are
     ordered with alphabetical order (and not dependencies order)
+
 * Exit the docker
 ```
 exit (or Ctrl+D)
 ```
 
-####Debian way [advanced]
 
-##Run Gargantext
-* Launch Gargantext
+
+## Run Gargantext
 
 Enter the docker container:
 ``` bash
@@ -132,7 +141,7 @@ Enter the docker container:
 ```
 Inside the docker container:
 ``` bash
-#start postgresql
+#start Database (postgresql)
 service postgresql start
 #change to user
 su gargantua
@@ -143,20 +152,19 @@ source /srv/env_3-5/bin/activate
 #run the server
 (env_3-5) $ /manage.py runserver 0.0.0.0:8000
 ```
-
-
-* Launch browser
-outside the docker
+Keep it open and  outside the docker launch browser
 
 ``` bash
 chromium http://127.0.0.1:8000/
 ```
+
 * Click on Test Gargantext
 ```
 Login : gargantua
 Password : autnagrag
 ```
 Enjoy :)
+
 See [User Guide](/demo/tuto.md) for quick usage example
 
 

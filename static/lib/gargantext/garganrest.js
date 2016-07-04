@@ -22,13 +22,6 @@ var getCookie = function(name) {
     }
     return cookieValue;
 }
-var csrftoken = getCookie('csrftoken');
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-    }
-});
-
 
 // Resource class
 var Resource = function(url_path) {
@@ -65,6 +58,9 @@ var Resource = function(url_path) {
         $.ajax({
             url: url,
             type: 'GET',
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            },
             success: callback
         });
     };
@@ -73,30 +69,32 @@ var Resource = function(url_path) {
         $.ajax({
             url: url_path + '/' + id,
             type: 'PATCH',
-
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            },
             success: callback
         });
     };
     // remove an item
     this.delete = this.remove = function(id, callback) {
-        if (id.id != undefined) {
-            id = id.id;
-        }
         $.ajax({
             url: url_path + '/' + id,
             type: 'DELETE',
-
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            },
             success: callback
         });
     };
     // add an item
-    this.add = this.append = function(value, callback) {
+    this.add = this.append = function(id, callback) {
         $.ajax({
-
             // todo define id
             url: url_path + '/' + id,
             type: 'POST',
-
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            },
             success: callback
         });
     };

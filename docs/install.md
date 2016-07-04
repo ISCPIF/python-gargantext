@@ -53,7 +53,7 @@ See [installation instruction for your distribution](https://docs.docker.com/eng
 * Build your docker image
 
 ``` bash
-cd /srv/gargantext/install/docker/dev
+cd /srv/gargantext/install/docker/config
 ./build
 ID=$(docker build .) && docker run -i -t $ID
 ```

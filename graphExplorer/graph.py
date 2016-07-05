@@ -23,6 +23,7 @@ import networkx                   as nx
 
 
 def get_graph( request=None         , corpus=None
+            , test= False
             , field1='ngrams'       , field2='ngrams'
             , mapList_id = None     , groupList_id = None
             , cooc_id=None          , type='node_link'
@@ -67,6 +68,25 @@ def get_graph( request=None         , corpus=None
                                     , save_on_db = True
                                    #, limit=size
                                     )
+        if test = True:
+           cooc_matrix = countCooccurrences( corpus=corpus, test=test
+                                       #, field1="ngrams", field2="ngrams"
+                                        , start=start           , end =end
+                                        , mapList_id=mapList_id , groupList_id=groupList_id
+                                        , isMonopartite=True    , threshold = threshold
+                                        , save_on_db = True
+                                       #, limit=size
+                                        )
+  
+        else:
+            cooc_matrix = countCooccurrences( corpus=corpus, test=test
+                                       #, field1="ngrams", field2="ngrams"
+                                        , start=start           , end =end
+                                        , mapList_id=mapList_id , groupList_id=groupList_id
+                                        , isMonopartite=True    , threshold = threshold
+                                        , save_on_db = True
+                                       #, limit=size
+                                        )
     else:
         print("Getting data for matrix %d", int(cooc_id))
         matrix      = WeightedMatrix(int(cooc_id))

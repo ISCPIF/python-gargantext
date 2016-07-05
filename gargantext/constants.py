@@ -19,7 +19,7 @@ LISTTYPES = {
     'TFIDF-CORPUS' : WeightedIndex,
     'TFIDF-GLOBAL' : WeightedIndex,
     'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
-    'TIRANK-GLOBAL' : WeightedIndex   # could be WeightedList
+    'TIRANK-GLOBAL' : WeightedIndex,   # could be WeightedList
 }
 
 NODETYPES = [
@@ -38,7 +38,7 @@ NODETYPES = [
     'COOCCURRENCES',         # 9
     # scores
     'OCCURRENCES',           # 10
-    'SPECIFICITY',           # 11
+    'SPECCLUSION',           # 11
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
@@ -224,12 +224,16 @@ DEFAULT_RANK_CUTOFF_RATIO      = .75         # MAINLIST maximum terms in %
 DEFAULT_RANK_HARD_LIMIT        = 5000        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
 DEFAULT_MAPLIST_MAX             = 350        # MAPLIST maximum terms
 
-DEFAULT_MAPLIST_MONOGRAMS_RATIO = .15         # part of monograms in MAPLIST
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .25        # quota of monograms in MAPLIST
+                                             # (vs multigrams = 1-mono)
+
+DEFAULT_MAPLIST_GENCLUSION_RATIO = .7        # quota of top genclusion in MAPLIST
+                                             # (vs top specclusion = 1-gen)
 
 DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)

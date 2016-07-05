@@ -17,7 +17,7 @@ def filterMatrix(matrix, mapList_id, groupList_id):
     return cooc
 
 
-def countCooccurrences( corpus=None
+def countCooccurrences( corpus=None         , test= False
                       , field1='ngrams'     , field2='ngrams'
                       , start=None          , end=None
                       , mapList_id=None     , groupList_id=None

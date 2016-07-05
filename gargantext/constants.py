@@ -20,8 +20,8 @@ LISTTYPES = {
     'TFIDF-GLOBAL' : WeightedIndex,
     'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
     'TIRANK-GLOBAL' : WeightedIndex,   # could be WeightedList
-     # 'OWNLIST'      : UnweightedList,    # £TODO use this for any term-level tags
 }
+# 'OWNLIST'      : UnweightedList,    # £TODO use this for any term-level tags
 
 NODETYPES = [
     # TODO separate id not array index, read by models.node

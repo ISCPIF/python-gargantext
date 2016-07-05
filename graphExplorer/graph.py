@@ -60,14 +60,6 @@ def get_graph( request=None         , corpus=None
     #      if False => read and give to clusterByDistances
     #      if True => compute and give to clusterByDistances  <==
     if cooc_id == None:
-        cooc_matrix = countCooccurrences( corpus=corpus
-                                   #, field1="ngrams", field2="ngrams"
-                                    , start=start           , end =end
-                                    , mapList_id=mapList_id , groupList_id=groupList_id
-                                    , isMonopartite=True    , threshold = threshold
-                                    , save_on_db = True
-                                   #, limit=size
-                                    )
         if test = True:
            cooc_matrix = countCooccurrences( corpus=corpus, test=test
                                        #, field1="ngrams", field2="ngrams"

@@ -230,10 +230,10 @@ DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
 
 DEFAULT_MAPLIST_MAX             = 350        # MAPLIST maximum terms
 
-DEFAULT_MAPLIST_MONOGRAMS_RATIO = .25        # quota of monograms in MAPLIST
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .2         # quota of monograms in MAPLIST
                                              # (vs multigrams = 1-mono)
 
-DEFAULT_MAPLIST_GENCLUSION_RATIO = .7        # quota of top genclusion in MAPLIST
+DEFAULT_MAPLIST_GENCLUSION_RATIO = .6        # quota of top genclusion in MAPLIST
                                              # (vs top specclusion = 1-gen)
 
 DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
@@ -279,7 +279,7 @@ DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 # about batch processing...
 BATCH_PARSING_SIZE          = 256
-BATCH_NGRAMSEXTRACTION_SIZE = 1024
+BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many distinct ngrams before INTEGRATE
 
 
 # Scrapers config

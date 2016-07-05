@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 echo "Adding user gargantua";
 sudo adduser --disabled-password --gecos "" gargantua;
 echo "Creating the environnement into /srv/";

@@ -100,6 +100,9 @@ def do_maplist(corpus,
     scored_ngrams = query.all()
     n_ngrams = len(scored_ngrams)
 
+    if n_ngrams == 0:
+        raise ValueError("No ngrams in cooc table ?")
+
     # results, with same structure as quotas
     chosen_ngrams = {
                      'topgen':{'monograms':[], 'multigrams':[]},

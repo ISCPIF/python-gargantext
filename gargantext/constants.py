@@ -20,6 +20,7 @@ LISTTYPES = {
     'TFIDF-GLOBAL' : WeightedIndex,
     'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
     'TIRANK-GLOBAL' : WeightedIndex,   # could be WeightedList
+     # 'OWNLIST'      : UnweightedList,    # £TODO use this for any term-level tags
 }
 
 NODETYPES = [
@@ -288,7 +289,7 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 # Grammar rules for chunking
 RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
-RULE_JJDTNN = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
+RULE_NPN    = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
 RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
                +?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?\
                ,){0,2}?(N.?.?,|\?,)+?)+?)*?$"

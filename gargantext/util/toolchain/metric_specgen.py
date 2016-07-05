@@ -194,10 +194,6 @@ def compute_specgen(corpus, cooc_id=None, cooc_matrix=None,
         session.commit()
         the_spec_id = specnode.id
 
-    # debug:
-    options.display.float_format = '${:,.3f}'.format
-    # print(Specclusion)
-
     if not Specclusion.empty:
         data = WeightedList(
                 zip(  Specclusion.index.tolist()

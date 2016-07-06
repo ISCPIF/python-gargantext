@@ -1,6 +1,7 @@
 // Mathieu Jacomy @ Sciences Po Médialab & WebAtlas
 
 var ForceAtlas2 = function(graph) {
+  console.log('FUN t.asyncFA2:ForceAtlas2')
   var self = this;
   this.graph = graph;
 
@@ -31,6 +32,7 @@ var ForceAtlas2 = function(graph) {
 
   // Runtime (the ForceAtlas2 itself)
   this.init = function() {
+    console.log('FUN t.asyncFA2:init')
     self.state = {step: 0, index: 0};
     self.graph.nodes.forEach(function(n) {
       n.fa2 = {
@@ -46,10 +48,12 @@ var ForceAtlas2 = function(graph) {
   }
 
   this.go = function() {
+    console.log('FUN t.asyncFA2:go')
     while (self.onebucle()) {}
   }
 
   this.onebucle = function() {
+    console.log('FUN t.asyncFA2:onebucle')
     var graph = self.graph;
     var nodes = graph.nodes;
     var edges = graph.edges;
@@ -233,7 +237,7 @@ var ForceAtlas2 = function(graph) {
             totalSwinging += n.fa2.mass * swinging;
             swingingSum += swinging;
             promdxdy += (Math.abs(n.fa2.dx)+Math.abs(n.fa2.dy))/2; /**/
-            
+
             totalEffectiveTraction += n.fa2.mass *
                                       0.5 *
                                       Math.sqrt(
@@ -242,15 +246,15 @@ var ForceAtlas2 = function(graph) {
                                       );
           }
         });
-        
+
         self.p.totalSwinging = totalSwinging;
-        
+
         var convg= ((Math.pow(nodes.length,2))/promdxdy);    /**/
         var swingingVSnodes_length = swingingSum/nodes.length;     /**/
-        // if(convg > swingingVSnodes_length){ 
+        // if(convg > swingingVSnodes_length){
         //     self.p.banderita=true;
         // }
-        
+
         self.p.totalEffectiveTraction = totalEffectiveTraction;
 
         // We want that swingingMovement < tolerance * convergenceMovement
@@ -346,6 +350,7 @@ var ForceAtlas2 = function(graph) {
   }
 
   this.end = function() {
+    console.log('FUN t.asyncFA2:end')
     this.graph.nodes.forEach(function(n) {
       n.fa2 = null;
     });
@@ -353,6 +358,7 @@ var ForceAtlas2 = function(graph) {
 
   // Auto Settings
   this.setAutoSettings = function() {
+    console.log('FUN t.asyncFA2:setAutoSettings')
     var graph = this.graph;
 
     // Tuning
@@ -833,6 +839,7 @@ var ForceAtlas2 = function(graph) {
 
 
 var updateMassAndGeometry = function() {
+  console.log('FUN t.asyncFA2:updateMassAndGeometry')
   if (this.nodes.length > 1) {
     // Compute Mass
     var mass = 0;
@@ -878,13 +885,14 @@ var Region = function(nodes, depth) {
     massCenterX: 0,
     massCenterY: 0
   };
-  
+
   console.log("updating mass and geometry");
   this.updateMassAndGeometry();
 }
 
 
 var buildSubRegions = function() {
+  console.log('FUN t.asyncFA2:buildSubRegions')
   if (this.nodes.length > 1) {
     var leftNodes = [];
     var rightNodes = [];
@@ -936,6 +944,7 @@ var buildSubRegions = function() {
 };
 
 var applyForce = function(n, Force, theta) {
+  console.log('FUN t.asyncFA2:applyForce')
   if (this.nodes.length < 2) {
     var regionNode = this.nodes[0];
     Force.apply_nn(n, regionNode);
@@ -958,6 +967,7 @@ var applyForce = function(n, Force, theta) {
 };
 
 var startForceAtlas2 = function(graph,limit_it) {
+    console.log('FUN t.asyncFA2:startForceAtlas2')
 //    pr("inside FA2")
 ////  if(!this.forceatlas2) {
 //    pr(graph);
@@ -981,7 +991,7 @@ var startForceAtlas2 = function(graph,limit_it) {
     forceatlas2 = new ForceAtlas2(graph);
     forceatlas2.setAutoSettings();
     forceatlas2.init();
-    
+
     count=0;
     flag=false;
     while(true){
@@ -994,13 +1004,13 @@ var startForceAtlas2 = function(graph,limit_it) {
         }
         count++;
         if(flag||count>limit_it) break;
-    }    
+    }
 //    pr(forceatlas2.graph.nodes[0].x)
 //    pr(forceatlas2.graph.nodes[0].y)
 //    console.log("\titerations: "+count)
     result={
         "nodes":forceatlas2.graph.nodes,
-        "it":count        
+        "it":count
     }
     return result;
 };
@@ -1016,5 +1026,5 @@ self.addEventListener("message", function(e) {
         "nodes":result.nodes,
         "it":result.it
     });
-    
+
 }, false);

@@ -1,6 +1,7 @@
 
 
 function cancelSelection (fromTagCloud) {
+    console.log('FUN t.methods:cancelSelection')
     pr("\t***in cancelSelection");
     highlightSelectedNodes(false); //Unselect the selected ones :D
     opossites = [];
@@ -10,8 +11,8 @@ function cancelSelection (fromTagCloud) {
     partialGraph.refresh();
 
     partialGraph.states.slice(-1)[0].selections=[]
-    
-    
+
+
     //Nodes colors go back to normal
     overNodes=false;
     e = partialGraph._core.graph.edges;
@@ -20,17 +21,17 @@ function cancelSelection (fromTagCloud) {
             e[i].attr['grey'] = 0;
     }
     partialGraph.draw(2,1,2);
-                
+
     partialGraph.iterNodes(function(n){
             n.active=false;
             n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
             n.attr['grey'] = 0;
     }).draw(2,1,2);
     //Nodes colors go back to normal
-    
-    
+
+
     if(fromTagCloud==false){
-        $("#names").html(""); 
+        $("#names").html("");
         $("#ngrams_actions").html("")
         $("#topPapers").html(""); $("#topPapers").hide();
         $("#opossiteNodes").html(""); $("#tab-container").hide();
@@ -38,7 +39,7 @@ function cancelSelection (fromTagCloud) {
         $("#searchinput").val("");
         $("#switchbutton").hide();
         $("#tips").html(getTips());
-    }   
+    }
     for(var i in deselections){
         if( !isUndef(partialGraph._core.graph.nodesIndex[i]) ) {
             partialGraph._core.graph.nodesIndex[i].forceLabel=false;
@@ -53,9 +54,10 @@ function cancelSelection (fromTagCloud) {
     partialGraph.draw();
 }
 
-function highlightSelectedNodes(flag){ 
+function highlightSelectedNodes(flag){
+    console.log('FUN t.methods:highlightSelectedNodes')
     pr("\t***methods.js:highlightSelectedNodes(flag)"+flag+" selEmpty:"+is_empty(selections))
-    if(!is_empty(selections)){          
+    if(!is_empty(selections)){
         for(var i in selections) {
             if(Nodes[i].type==catSoc && swclickActual=="social"){
                 node = partialGraph._core.graph.nodesIndex[i];
@@ -69,13 +71,14 @@ function highlightSelectedNodes(flag){
                 node = partialGraph._core.graph.nodesIndex[i];
                 node.active = flag;
             }
-            else break;        
+            else break;
         }
-        
+
     }
 }
 
-function alertCheckBox(eventCheck){    
+function alertCheckBox(eventCheck){
+    console.log('FUN t.methods:alertCheckBox')
     if(!isUndef(eventCheck.checked)) checkBox=eventCheck.checked;
 }
 
@@ -88,13 +91,13 @@ function alertCheckBox(eventCheck){
 // b : Meso-Semantic
 // AaBb: Socio-Semantic
 function RefreshState(newNOW){
-
+    console.log('FUN t.methods:RefreshState')
     pr("\t\t\tin RefreshState newNOW:_"+newNOW+"_.")
 
 	if (newNOW!="") {
 	    PAST = NOW;
 	    NOW = newNOW;
-		
+
 		// if(NOW=="a" || NOW=="A" || NOW=="AaBb") {
 		// 	$("#category-A").show();
 		// }
@@ -104,7 +107,7 @@ function RefreshState(newNOW){
 	}
 
     $("#category-A").hide();
-    $("#category-B").hide();  
+    $("#category-B").hide();
     // i=0; for(var s in selections) { i++; break;}
     // if(is_empty(selections) || i==0) LevelButtonDisable(true);
     // else LevelButtonDisable(false);
@@ -133,7 +136,7 @@ function RefreshState(newNOW){
         $("#semLoader").hide();
         $("#category-A").show();
         $("#colorGraph").show();
-        
+
     }
     if(NOW=="B" || NOW=="b") {
         var N=( Object.keys(Nodes).filter(function(n){return Nodes[n].type==catSem}) ).length
@@ -156,7 +159,7 @@ function RefreshState(newNOW){
             $.doTimeout(30,function (){
                 EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
                 NodeWeightFilter ( "#sliderBNodeWeight"  , "NGram", "type" , "size");
-                
+
             });
         } else {
             $("#semLoader").css('visibility', 'visible');
@@ -175,6 +178,7 @@ function RefreshState(newNOW){
 }
 
 function pushSWClick(arg){
+    console.log('FUN t.methods:pushSWClick')
     swclickPrev = swclickActual;
     swclickActual = arg;
 }
@@ -182,28 +186,29 @@ function pushSWClick(arg){
 
 //FOR UNI-PARTITE
 function selectionUni(currentNode){
+    console.log('FUN t.methods:selectionUni')
     pr("\tin selectionUni:"+currentNode.id);
     if(checkBox==false && cursor_size==0) {
         highlightSelectedNodes(false);
         opossites = [];
         selections = [];
         partialGraph.refresh();
-    }   
-    
+    }
+
     if((typeof selections[currentNode.id])=="undefined"){
         selections[currentNode.id] = 1;
         currentNode.active=true;
     }
     else {
-        delete selections[currentNode.id];               
+        delete selections[currentNode.id];
         currentNode.active=false;
     }
     //highlightOpossites(nodes1[currentNode.id].neighbours);
     //        currentNode.color = currentNode.attr['true_color'];
     //        currentNode.attr['grey'] = 0;
-    //        
     //
-   
+    //
+
 
     partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8);
     partialGraph.refresh();
@@ -211,12 +216,13 @@ function selectionUni(currentNode){
 
 // it receives entire node
 function selection(currentNode){
+    console.log('FUN t.methods:selection')
     if(checkBox==false && cursor_size==0) {
         highlightSelectedNodes(false);
         opossites = [];
         selections = [];
         partialGraph.refresh();
-    }    
+    }
     if(socsemFlag==false){
         if(isUndef(selections[currentNode.id])){
             selections[currentNode.id] = 1;
@@ -229,7 +235,7 @@ function selection(currentNode){
                         opossites[bipartiteD2N[currentNode.id].neighbours[i]]++;
                     }
                 }
-            }  
+            }
             if(Nodes[currentNode.id].type==catSem){
                 if(!isUndef(bipartiteN2D[currentNode.id])){
                     for(i=0;i<bipartiteN2D[currentNode.id].neighbours.length;i++) {
@@ -237,14 +243,14 @@ function selection(currentNode){
                             opossites[bipartiteN2D[currentNode.id].neighbours[i]]=1;
                         }
                         else opossites[bipartiteN2D[currentNode.id].neighbours[i]]++;
-                
+
                     }
                 }
             }
-            currentNode.active=true; 
+            currentNode.active=true;
         }
         else {
-            delete selections[currentNode.id];        
+            delete selections[currentNode.id];
             markAsSelected(currentNode.id,false);
             if(Nodes[currentNode.id].type==catSoc){
                 for(i=0;i<bipartiteD2N[currentNode.id].neighbours.length;i++) {
@@ -258,7 +264,7 @@ function selection(currentNode){
                         opossites[bipartiteD2N[currentNode.id].neighbours[i]]--;
                     }
                 }
-            }    
+            }
             if(Nodes[currentNode.id].type==catSem){
                 for(i=0;i<bipartiteN2D[currentNode.id].neighbours.length;i++) {
                     if(isUndef(opossites[bipartiteN2D[currentNode.id].neighbours[i]])) {
@@ -272,17 +278,17 @@ function selection(currentNode){
                     }
                 }
             }
-        
+
             currentNode.active=false;
         }
     }
-    
+
     /* ============================================================================================== */
-    
+
     else {
         if(isUndef(selections[currentNode.id])){
             selections[currentNode.id] = 1;
-        
+
             if(Nodes[currentNode.id].type==catSoc){
                 for(i=0;i<bipartiteD2N[currentNode.id].neighbours.length;i++) {
                     //opossitesbipartiteD2N[currentNode.id].neighbours[i]];
@@ -293,23 +299,23 @@ function selection(currentNode){
                         opossites[bipartiteD2N[currentNode.id].neighbours[i]]++;
                     }
                 }
-            }    
+            }
             if(Nodes[currentNode.id].type==catSem){
                 for(i=0;i<nodes2[currentNode.id].neighbours.length;i++) {
                     if(isUndef(opossites[nodes2[currentNode.id].neighbours[i]])){
                         opossites[nodes2[currentNode.id].neighbours[i]]=1;
                     }
                     else opossites[nodes2[currentNode.id].neighbours[i]]++;
-                
+
                 }
             }
-        
+
             currentNode.active=true;
         }
         else {
             delete selections[currentNode.id];
             markAsSelected(currentNode.id,false);
-            
+
             if(Nodes[currentNode.id].type==catSoc){
                 for(i=0;i<bipartiteD2N[currentNode.id].neighbours.length;i++) {
                     if(isUndef(opossites[bipartiteD2N[currentNode.id].neighbours[i]])) {
@@ -322,7 +328,7 @@ function selection(currentNode){
                         opossites[bipartiteD2N[currentNode.id].neighbours[i]]--;
                     }
                 }
-            }    
+            }
             if(Nodes[currentNode.id].type==catSem){
                 for(i=0;i<nodes2[currentNode.id].neighbours.length;i++) {
                     if(isUndef(opossites[nodes2[currentNode.id].neighbours[i]])) {
@@ -336,7 +342,7 @@ function selection(currentNode){
                     }
                 }
             }
-        
+
             currentNode.active=false;
         }
     }
@@ -345,7 +351,8 @@ function selection(currentNode){
 }
 
 function getOpossitesNodes(node_id, entireNode) {
-    node="";    
+    console.log('FUN t.methods:getOpossitesNodes')
+    node="";
     if(entireNode==true) node=node_id;
     else node = partialGraph._core.graph.nodesIndex[node_id];
     if(socsemFlag==true) {
@@ -353,12 +360,12 @@ function getOpossitesNodes(node_id, entireNode) {
         cancelSelection(false);
         socsemFlag=false;
     }
-    
+
     if (!node) return null;
-    //selection(node);    
+    //selection(node);
     if(categoriesIndex.length==1) selectionUni(node);
     if(categoriesIndex.length==2) selection(node);
-    
+
     opos = ArraySortByValue(opossites, function(a,b){
         return b-a
     });
@@ -366,6 +373,7 @@ function getOpossitesNodes(node_id, entireNode) {
 
 //	tag cloud div
 function htmlfied_alternodes(elems) {
+    console.log('FUN t.methods:htmlfied_alternodes')
     var oppositesNodes=[]
     js1='onclick="graphTagCloudElem(\'';
     js2="');\""
@@ -391,12 +399,14 @@ function htmlfied_alternodes(elems) {
 }
 
 function manualForceLabel(nodeid,active) {
+    console.log('FUN t.methods:manualForceLabel')
 	// pr("manual|"+nodeid+"|"+active)
 	partialGraph._core.graph.nodesIndex[nodeid].active=active;
 	partialGraph.draw();
 }
 
 function htmlfied_samenodes(elems) {
+    console.log('FUN t.methods:htmlfied_samenodes')
     var sameNodes=[]
     js1=' onmouseover="manualForceLabel(this.id,true);" ';
     js2=' onmouseout="manualForceLabel(this.id,true);" ';
@@ -414,7 +424,7 @@ function htmlfied_samenodes(elems) {
 
 // nodes information div
 function htmlfied_nodesatts(elems){
-
+    console.log('FUN t.methods:htmlfied_nodesatts')
     var socnodes=[]
     var semnodes=[]
     for(var i in elems) {
@@ -442,7 +452,7 @@ function htmlfied_nodesatts(elems){
                     }
                 } else {
                     information += '<li>' + $("<div/>").html(node.htmlCont).text() + '</li>';
-                }        
+                }
                 socnodes.push(information)
             }
 
@@ -462,6 +472,7 @@ function htmlfied_nodesatts(elems){
 //missing: getTopPapers for both node types
 //considering complete graphs case! <= maybe i should mv it
 function updateLeftPanel_fix( sels , oppos ) {
+    console.log('FUN t.methods:updateLeftPanel_fix')
     pr("updateLeftPanel() corrected version** ")
     var namesDIV=''
     var alterNodesDIV=''
@@ -484,7 +495,7 @@ function updateLeftPanel_fix( sels , oppos ) {
 
     if(oppos.length>0) {
 	    alterNodesDIV+='<div id="opossitesBox">';//tagcloud
-	    alterNodesDIV+= htmlfied_alternodes( oppos ).join("\n") 
+	    alterNodesDIV+= htmlfied_alternodes( oppos ).join("\n")
 	    alterNodesDIV+= '</div>';
 	}
 
@@ -502,23 +513,24 @@ function updateLeftPanel_fix( sels , oppos ) {
     //using the readmore.js
     // ive put a limit for nodes-name div
     // and opposite-nodes div aka tagcloud div
-    // and im commenting now because github is not 
+    // and im commenting now because github is not
     // pushing my commit
     // because i need more lines, idk
-    $("#names").html(namesDIV).readmore({maxHeight:100}); 
+    $("#names").html(namesDIV).readmore({maxHeight:100});
     $("#ngrams_actions").html(ngram_actions)
     $("#tab-container").show();
-    $("#opossiteNodes").html(alterNodesDIV).readmore({maxHeight:200}); 
-    $("#sameNodes").html(sameNodesDIV).readmore({maxHeight:200}); 
+    $("#opossiteNodes").html(alterNodesDIV).readmore({maxHeight:200});
+    $("#sameNodes").html(sameNodesDIV).readmore({maxHeight:200});
     $("#information").html(informationDIV);
     $("#tips").html("");
 
     if(categoriesIndex.length==1) getTopPapers("semantic");
     else getTopPapers(swclickActual);
-    
+
 }
 
 function printStates() {
+    console.log('FUN t.methods:printStates')
 	pr("\t\t\t\t---------"+getClientTime()+"---------")
 	pr("\t\t\t\tswMacro: "+swMacro)
 	pr("\t\t\t\tswActual: "+swclickActual+" |  swPrev: "+swclickPrev)
@@ -534,11 +546,13 @@ function printStates() {
 //true: button disabled
 //false: button enabled
 function LevelButtonDisable( TF ){
+    console.log('FUN t.methods:LevelButtonDisable')
 	$('#changelevel').prop('disabled', TF);
 }
 
 //Fixed! apres: refactor!
 function graphTagCloudElem(nodes) {
+    console.log('FUN t.methods:graphTagCloudElem')
     pr("in graphTagCloudElem, nodae_id: "+nodes);
     cancelSelection();
     partialGraph.emptyGraph();
@@ -579,7 +593,7 @@ function graphTagCloudElem(nodes) {
                 nodes_2_colour[t]=false;
                 edges_2_colour[s+";"+t]=true;
                 edges_2_colour[t+";"+s]=true;
-                if( !selections[t]  ) 
+                if( !selections[t]  )
                     voisinage[ Number(t) ] = true;
             }
         }
@@ -603,10 +617,10 @@ function graphTagCloudElem(nodes) {
                 // console.log( "\t" + voisinage[i] + " vs " + voisinage[j] )
                 add1Elem( voisinage[i]+";"+voisinage[j] )
             }
-            
+
         }
     }
-    
+
     futurelevel = false;
 
 
@@ -623,7 +637,7 @@ function graphTagCloudElem(nodes) {
     partialGraph.states[avantlastpos] = {};
     partialGraph.states[avantlastpos].level = present.level;
     partialGraph.states[avantlastpos].selections = present.selections;
-    partialGraph.states[avantlastpos].type = present.type; 
+    partialGraph.states[avantlastpos].type = present.type;
     partialGraph.states[avantlastpos].opposites = present.opposites;
     partialGraph.states[avantlastpos].categories = present.categories;//to_del
     partialGraph.states[avantlastpos].categoriesDict = present.categoriesDict;//to_del
@@ -644,11 +658,11 @@ function graphTagCloudElem(nodes) {
     ChangeGraphAppearanceByAtt(true)
 
 }
-      
+
 
 
 function greyEverything(){
-    
+    console.log('FUN t.methods:greyEverything')
     nds = partialGraph._core.graph.nodes.filter(function(n) {
                             return !n['hidden'];
                         });
@@ -660,7 +674,7 @@ function greyEverything(){
             }
             nds[i].attr['grey'] = 1;
     }
-    
+
     eds = partialGraph._core.graph.edges.filter(function(e) {
                             return !e['hidden'];
                         });
@@ -689,10 +703,10 @@ function greyEverything(){
 
 
 function markAsSelected_new(n_id) {
-
+    console.log('FUN t.methods:markAsSelected_new')
     if(n_id.id) nodeSel=n_id;
     else nodeSel = partialGraph._core.graph.nodesIndex[n_id];
-    
+
     nodeSel.color = nodeSel.attr['true_color'];
     nodeSel.attr['grey'] = 0;
     nodeSel.active = true;
@@ -718,7 +732,7 @@ function markAsSelected_new(n_id) {
             }
         }
     }
-    
+
     // if( !isUndef(nodes1[nodeSel.id]) && !isUndef(nodes1[nodeSel.id].neighbours) ){
     //     neigh=nodes1[nodeSel.id].neighbours;/**/
     //     for(var i in neigh){
@@ -744,16 +758,17 @@ function markAsSelected_new(n_id) {
 
 
 //to_del
-//it is a mess but it works. 
+//it is a mess but it works.
 // TODO: refactor this
 function markAsSelected(n_id,sel) {
+    console.log('FUN t.methods:markAsSelected')
     if(!isUndef(n_id.id)) nodeSel=n_id;
     else nodeSel = partialGraph._core.graph.nodesIndex[n_id];
-    
+
     if(sel) {
         nodeSel.color = nodeSel.attr['true_color'];
         nodeSel.attr['grey'] = 0;
-        
+
         if(categoriesIndex.length==1) {
             if( !isUndef(nodes1[nodeSel.id]) &&
                     !isUndef(nodes1[nodeSel.id].neighbours)
@@ -809,7 +824,7 @@ function markAsSelected(n_id,sel) {
 
                                     //highlight edge
                                     an_edge.color = an_edge.attr['true_color'];
-                                    an_edge.attr['grey'] = 0;                           
+                                    an_edge.attr['grey'] = 0;
                                 }
 
                                 // if ( (NOW=="a" || NOW=="b") && nodeVec.color==grey)
@@ -829,7 +844,7 @@ function markAsSelected(n_id,sel) {
                             }
                         }
                     }
-                } else { 
+                } else {
 
                     if( !isUndef(bipartiteN2D[nodeSel.id]) &&
                         !isUndef(bipartiteN2D[nodeSel.id].neighbours)
@@ -837,7 +852,7 @@ function markAsSelected(n_id,sel) {
                         neigh=bipartiteN2D[nodeSel.id].neighbours;/**/
                         for(var i in neigh){
 
-                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ){                                
+                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ){
                                 vec = partialGraph._core.graph.nodesIndex[neigh[i]];
                                 vec.color = vec.attr['true_color'];
                                 vec.attr['grey'] = 0;
@@ -857,7 +872,7 @@ function markAsSelected(n_id,sel) {
                 }
             }
             if(swclickActual=="semantic") {
-                if(nodeSel.type==catSoc){           
+                if(nodeSel.type==catSoc){
                     if( !isUndef(bipartiteD2N[nodeSel.id]) &&
                         !isUndef(bipartiteD2N[nodeSel.id].neighbours)
                       ){
@@ -909,7 +924,7 @@ function markAsSelected(n_id,sel) {
 
                                 	//highlight edge
                                     an_edge.color = an_edge.attr['true_color'];
-                                    an_edge.attr['grey'] = 0;                         	
+                                    an_edge.attr['grey'] = 0;
                                 }
 
                                 // if ( (NOW=="a" || NOW=="b") && nodeVec.color==grey)
@@ -936,7 +951,7 @@ function markAsSelected(n_id,sel) {
                 }
             }
             if(swclickActual=="sociosemantic") {
-                if(nodeSel.type==catSoc){  
+                if(nodeSel.type==catSoc){
 
                     if( !isUndef(nodes1[nodeSel.id]) &&
                         !isUndef(nodes1[nodeSel.id].neighbours)
@@ -958,7 +973,7 @@ function markAsSelected(n_id,sel) {
                                     an_edge.attr['grey'] = 0;
                                 }
                             }
-                        }   
+                        }
                     }
 
                     if( !isUndef(bipartiteD2N[nodeSel.id]) &&
@@ -966,7 +981,7 @@ function markAsSelected(n_id,sel) {
                       ){
                         neigh=bipartiteD2N[nodeSel.id].neighbours;/**/
                         for(var i in neigh) {
-                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ) {                                
+                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ) {
                                 vec = partialGraph._core.graph.nodesIndex[neigh[i]];
                                 vec.color = vec.attr['true_color'];
                                 vec.attr['grey'] = 0;
@@ -984,7 +999,7 @@ function markAsSelected(n_id,sel) {
                         }
                       }
                 }
-                else {                
+                else {
                     if( !isUndef(nodes2[nodeSel.id]) &&
                         !isUndef(nodes2[nodeSel.id].neighbours)
                       ){
@@ -1013,7 +1028,7 @@ function markAsSelected(n_id,sel) {
                       ){
                         neigh=bipartiteN2D[nodeSel.id].neighbours;/**/
                         for(var i in neigh){
-                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ) {                                
+                            if( !isUndef(partialGraph._core.graph.nodesIndex[neigh[i]]) ) {
                                 vec = partialGraph._core.graph.nodesIndex[neigh[i]];
                                 vec.color = vec.attr['true_color'];
                                 vec.attr['grey'] = 0;
@@ -1038,8 +1053,9 @@ function markAsSelected(n_id,sel) {
 
 //to_del
 function DrawAsSelectedNodes( nodeskeys ) {
-    greyEverything(); 
-    
+    console.log('FUN t.methods:DrawAsSelectedNodes')
+    greyEverything();
+
     var ndsids=[]
     if( $.isArray(nodeskeys) ) {
 
@@ -1054,23 +1070,23 @@ function DrawAsSelectedNodes( nodeskeys ) {
         checkBox=true;
         for(var i in ndsids){
             nodeid = ndsids[i]
-            markAsSelected(nodeid,true); 
+            markAsSelected(nodeid,true);
         }
         checkBox=false;
     }
-    overNodes=true; 
+    overNodes=true;
 }
 
 //to_del
 function MultipleSelection(nodes , desalg){
-
+    console.log('FUN t.methods:MultipleSelection')
 	pr("IN MULTIPLE SELECTION: checkbox="+checkBox)
 
     var prevsels = selections;
 
 	if(!checkBox) cancelSelection(false);
 
-	greyEverything(); 
+	greyEverything();
 
 	var ndsids=[]
 	if(! $.isArray(nodes)) ndsids.push(nodes);
@@ -1106,7 +1122,7 @@ function MultipleSelection(nodes , desalg){
                 ndsids = tmparr;
             }
         } else pr("CASE NOT COVERED")
-        
+
 
         if (ndsids.length>0) {
     		for(var i in ndsids) {
@@ -1122,20 +1138,20 @@ function MultipleSelection(nodes , desalg){
             return;
         }
 		checkBox=false;
-        
-	} else { 
+
+	} else {
 	  //checkbox = true
 		cancelSelection(false);
-		greyEverything(); 
+		greyEverything();
 
 		for(var i in ndsids){
 		 	nodeid = ndsids[i]
 		 	getOpossitesNodes(nodeid,false); //false -> just nodeid
-		 	markAsSelected(nodeid,true); 
+		 	markAsSelected(nodeid,true);
 		}
     }
 
-	overNodes=true; 
+	overNodes=true;
 
 	partialGraph.draw();
 
@@ -1146,29 +1162,30 @@ function MultipleSelection(nodes , desalg){
 
 
 function graphResetColor(){
+    console.log('FUN t.methods:graphResetColor')
     nds = partialGraph._core.graph.nodes.filter(function(x) {
                             return !x['hidden'];
           });
     eds = partialGraph._core.graph.edges.filter(function(x) {
                             return !x['hidden'];
           });
-          
+
     for(var x in nds){
         n=nds[x];
         n.attr["grey"] = 0;
         n.color = n.attr["true_color"];
     }
-    
+
     for(var x in eds){
         e=eds[x];
         e.attr["grey"] = 0;
         e.color = e.attr["true_color"];
-    }  
+    }
 }
 
 //to_del
 function createEdgesForExistingNodes (typeOfNodes) {
-    
+    console.log('FUN t.methods:createEdgesForExistingNodes')
 	if(typeOfNodes=="social") typeOfNodes="Scholars"
 	if(typeOfNodes=="semantic") typeOfNodes="Keywords"
 	if(typeOfNodes=="sociosemantic") typeOfNodes="Bipartite"
@@ -1215,15 +1232,15 @@ function createEdgesForExistingNodes (typeOfNodes) {
     if(typeOfNodes=="Bipartite"){
         for(i=0; i < existingNodes.length ; i++){
             for(j=0; j < existingNodes.length ; j++){
-                
-                i1=existingNodes[i].id+";"+existingNodes[j].id;                    
-                i2=existingNodes[j].id+";"+existingNodes[i].id;                    
-                    
+
+                i1=existingNodes[i].id+";"+existingNodes[j].id;
+                i2=existingNodes[j].id+";"+existingNodes[i].id;
+
                 indexS1 = existingNodes[i].id;
-                indexT1 = existingNodes[j].id; 
-                    
-                indexS2 = existingNodes[j].id;  
-                indexT2 = existingNodes[i].id;     
+                indexT1 = existingNodes[j].id;
+
+                indexS2 = existingNodes[j].id;
+                indexT2 = existingNodes[i].id;
 
                 if(!isUndef(Edges[i1]) && !isUndef(Edges[i2])){
                     if(Edges[i1].weight > Edges[i2].weight ){
@@ -1233,15 +1250,15 @@ function createEdgesForExistingNodes (typeOfNodes) {
                         unHide(indexS2+";"+indexT2);
                     }
                     if(Edges[i1].weight == Edges[i2].weight){
-                        if(Edges[i1].label!="bipartite") {  /*danger*/   
+                        if(Edges[i1].label!="bipartite") {  /*danger*/
                             if( isUndef(partialGraph._core.graph.edgesIndex[indexS1+";"+indexT1]) &&
                                 isUndef(partialGraph._core.graph.edgesIndex[indexT1+";"+indexS1]) ){
                                 unHide(indexS1+";"+indexT1);
                             }
                         }
                     }
-                        
-                        
+
+
                 }
                 else {
                     if(!isUndef(Edges[i1])){// && Edges[i1].label=="bipartite"){
@@ -1253,28 +1270,28 @@ function createEdgesForExistingNodes (typeOfNodes) {
                         unHide(indexS2+";"+indexT2);
                     }
                 }
-            }            
+            }
         }
     }
-    else {  
+    else {
         for(i=0; i < existingNodes.length ; i++){
             for(j=(i+1); j < existingNodes.length ; j++){
-                    
-                i1=existingNodes[i].id+";"+existingNodes[j].id; 
-                i2=existingNodes[j].id+";"+existingNodes[i].id; 
+
+                i1=existingNodes[i].id+";"+existingNodes[j].id;
+                i2=existingNodes[j].id+";"+existingNodes[i].id;
 
                 // pr("Edges[i1]:")
                 // pr(Edges[i1])
-                
+
                 // pr("Edges[i2]:")
                 // pr(Edges[i2])
                 // pr(".")
                 // pr(".")
 
                 // if(!isUndef(Edges[i1]) && !isUndef(Edges[i2]) && i1!=i2){
-                    
-                //         if(typeOfNodes=="Scholars") { 
-                //             if(Edges[i1].label=="nodes1" && Edges[i2].label=="nodes1"){                              
+
+                //         if(typeOfNodes=="Scholars") {
+                //             if(Edges[i1].label=="nodes1" && Edges[i2].label=="nodes1"){
                 //                 pr(Edges[i1])
                 //                 if(Edges[i1].weight > Edges[i2].weight){
                 //                     unHide(i1);
@@ -1284,11 +1301,11 @@ function createEdgesForExistingNodes (typeOfNodes) {
                 //                 }
                 //                 if(Edges[i1].weight == Edges[i2].weight){
                 //                     unHide(i1);
-                //                 }  
+                //                 }
                 //             }
                 //         }
-                //         if(typeOfNodes=="Keywords") { 
-                //             if(Edges[i1].label=="nodes2" && Edges[i2].label=="nodes2"){ 
+                //         if(typeOfNodes=="Keywords") {
+                //             if(Edges[i1].label=="nodes2" && Edges[i2].label=="nodes2"){
                 //                 pr(Edges[i1]);
                 //                 if(Edges[i1].weight > Edges[i2].weight){
                 //                     unHide(i1);
@@ -1306,15 +1323,16 @@ function createEdgesForExistingNodes (typeOfNodes) {
                     e=(!isUndef(Edges[i1]))?Edges[i1]:Edges[i2]
                     if(!isUndef(e)){
                         if(typeOfNodes=="Scholars" && e.label=="nodes1") unHide(e.id)
-                        if(typeOfNodes=="Keywords" && e.label=="nodes2") unHide(e.id) 
+                        if(typeOfNodes=="Keywords" && e.label=="nodes2") unHide(e.id)
                     }
                 // }
-            }  
-        }  
+            }
+        }
     }
 }
 
 function hideEverything(){
+    console.log('FUN t.methods:hideEverything')
     pr("\thiding all");
     nodeslength=0;
     for(var n in partialGraph._core.graph.nodesIndex){
@@ -1331,7 +1349,7 @@ function hideEverything(){
 
 
 function add1Elem(id) {
-
+    console.log('FUN t.methods:add1Elem')
     id = ""+id;
     if(id.split(";").length==1) { // i've received a NODE
         id = parseInt(id)
@@ -1361,7 +1379,7 @@ function add1Elem(id) {
     } else { // It's an edge!
         if(!isUndef(gete(id))) return;
         if(Edges[id] && !Edges[id].lock){
-            // var present = partialGraph.states.slice(-1)[0];            
+            // var present = partialGraph.states.slice(-1)[0];
             var anedge = {
                 id:         id,
                 sourceID:   Edges[id].source,
@@ -1381,6 +1399,7 @@ function add1Elem(id) {
 
 //to_del
 function unHide(id){
+    console.log('FUN t.methods:unHide')
 	// pr("unhide "+id)
     id = ""+id;
     if(id.split(";").length==1) {
@@ -1390,9 +1409,9 @@ function unHide(id){
             var tt = Nodes[id].type
             var anode = ({
                 id:id,
-                label: Nodes[id].label, 
-                size: (parseFloat(Nodes[id].size)+sizeMult[tt])+"", 
-                x: Nodes[id].x, 
+                label: Nodes[id].label,
+                size: (parseFloat(Nodes[id].size)+sizeMult[tt])+"",
+                x: Nodes[id].x,
                 y: Nodes[id].y,
                 hidden:  (Nodes[id].lock)?true:false,
                 type: Nodes[id].type,
@@ -1404,7 +1423,7 @@ function unHide(id){
                 updateSearchLabels(id,Nodes[id].label,Nodes[id].type);
                 nodeslength++;
             }
-            
+
             partialGraph.addNode(id,anode);
             return;
         }
@@ -1430,6 +1449,7 @@ function unHide(id){
 }
 
 function pushFilterValue(filtername,arg){
+    console.log('FUN t.methods:pushFilterValue')
     if(lastFilter[filtername]["orig"]=="-") {
         lastFilter[filtername]["orig"] = arg;
         lastFilter[filtername]["last"] = arg;
@@ -1441,7 +1461,8 @@ function pushFilterValue(filtername,arg){
 }
 
 //to_del
-function add1Edge(ID) {	
+function add1Edge(ID) {
+    console.log('FUN t.methods:add1Edge')
 	if(gete(ID)) return;
 	var s = Edges[ID].sourceID
 	var t = Edges[ID].targetID
@@ -1457,7 +1478,7 @@ function add1Edge(ID) {
     if(getn(s) && getn(t)) {
 
         partialGraph.addEdge(ID,s,t,edge);
-        
+
         if(!isUndef(getn(s))) {
             partialGraph._core.graph.nodesIndex[s].x = Nodes[s].x
             partialGraph._core.graph.nodesIndex[s].y = Nodes[s].y
@@ -1465,13 +1486,14 @@ function add1Edge(ID) {
         if(!isUndef(getn(t))) {
             partialGraph._core.graph.nodesIndex[t].x = Nodes[t].x
             partialGraph._core.graph.nodesIndex[t].y = Nodes[t].y
-        }   
+        }
     }
 }
 
 
 //to_del
 function hideElem(id){
+    console.log('FUN t.methods:hideElem')
     if(id.split(";").length==1){
         //updateSearchLabels(id,Nodes[id].label,Nodes[id].type);
         partialGraph._core.graph.nodesIndex[id].hidden=true;
@@ -1484,6 +1506,7 @@ function hideElem(id){
 
 //to_del
 function unHideElem(id){
+    console.log('FUN t.methods:unHideElem')
     if(id.split(";").length==1){
         //updateSearchLabels(id,Nodes[id].label,Nodes[id].type);
         partialGraph._core.graph.nodesIndex[id].hidden=false;
@@ -1495,8 +1518,8 @@ function unHideElem(id){
 }
 
 //to_del
-function changeToMeso(iwannagraph) { 
-
+function changeToMeso(iwannagraph) {
+    console.log('FUN t.methods:changeToMeso')
     labels=[]
 
     iwantograph=iwannagraph;//just a mess
@@ -1507,7 +1530,7 @@ function changeToMeso(iwannagraph) {
 
     if(iwannagraph=="social") {
         if(!is_empty(selections)) {
-            
+
             if(swclickPrev=="social") {
 
                 var finalnodes={}
@@ -1536,7 +1559,7 @@ function changeToMeso(iwannagraph) {
                    }
                 }
                 for (var Nk in finalnodes) unHide(Nk);
-                createEdgesForExistingNodes(iwannagraph);/**/   
+                createEdgesForExistingNodes(iwannagraph);/**/
             }
 
             if(swclickPrev=="semantic") {
@@ -1562,10 +1585,10 @@ function changeToMeso(iwannagraph) {
                     }
                 }
                 for (var Nk in finalnodes) unHide(Nk);
-                createEdgesForExistingNodes(iwannagraph);/**/   
+                createEdgesForExistingNodes(iwannagraph);/**/
             }
 
-            if(swclickPrev=="sociosemantic") { 
+            if(swclickPrev=="sociosemantic") {
 
                 var finalnodes={}
 
@@ -1574,7 +1597,7 @@ function changeToMeso(iwannagraph) {
                         // unHide(i);
                         finalnodes[i] = 1;
                         if(nodes1[i]) {
-                            for(var j in nodes1[i].neighbours) { 
+                            for(var j in nodes1[i].neighbours) {
                                 id=nodes1[i].neighbours[j];
                                 // unHide(id);
                                 finalnodes[id] = 1;
@@ -1593,7 +1616,7 @@ function changeToMeso(iwannagraph) {
                 createEdgesForExistingNodes(iwannagraph);
             }
         }
-        
+
         // EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
         $("#colorGraph").show();
     }
@@ -1605,22 +1628,22 @@ function changeToMeso(iwannagraph) {
             for(var i in selections) {
                 unHide(i);
             }
-                
+
             for(var i in opossites) {
                 unHide(i);
             }
-                
+
             createEdgesForExistingNodes(iwannagraph);
 
             socsemFlag=true;
         }
-        
+
         $("#category-B").show();
         EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
         NodeWeightFilter ( "#sliderBNodeWeight"  , "NGram", "type" , "size");
         $("#colorGraph").hide();
     }
-     
+
     if(iwannagraph=="semantic") {
         if(!is_empty(opossites)){
             // hideEverything()
@@ -1658,7 +1681,7 @@ function changeToMeso(iwannagraph) {
                 }
 
                 for (var Nk in finalnodes) unHide(Nk);
-                createEdgesForExistingNodes(iwannagraph);/**/   
+                createEdgesForExistingNodes(iwannagraph);/**/
 
                 // for(var i in selections) {
                 //     // unHide(i);
@@ -1674,8 +1697,8 @@ function changeToMeso(iwannagraph) {
                 // for (var Nk in finalnodes) unHide(Nk);
                 // createEdgesForExistingNodes(iwannagraph);
             }
-            if(swclickPrev=="social") {  
-                var finalnodes = {}          
+            if(swclickPrev=="social") {
+                var finalnodes = {}
                 for(var i in selections) {
                     if(Nodes[i].type==catSoc){
                         for(var j in opossites) {
@@ -1698,36 +1721,36 @@ function changeToMeso(iwannagraph) {
                 createEdgesForExistingNodes(iwannagraph);
             }
             if(swclickPrev=="sociosemantic") {
-                var finalnodes = {}                     
+                var finalnodes = {}
                 for(var i in selections) {
-                    if(Nodes[i].type==catSoc){                        
+                    if(Nodes[i].type==catSoc){
                         for(var j in opossites) {
                             // unHide(j);
                             finalnodes[i] = 1;
                         }
                     }
-                    if(Nodes[i].type==catSem){                        
+                    if(Nodes[i].type==catSem){
                         // unHide(i);//sneaky bug!
                         finalnodes[i] = 1;
                         if(nodes2[i]) {
-                            for(var j in nodes2[i].neighbours) { 
+                            for(var j in nodes2[i].neighbours) {
                                 id=nodes2[i].neighbours[j];
                                 // unHide(id);
                                 finalnodes[id] = 1;
                             }
                         }
                     }
-                }  
+                }
                 for (var Nk in finalnodes) unHide(Nk);
-                createEdgesForExistingNodes(iwannagraph);              
+                createEdgesForExistingNodes(iwannagraph);
             }
         }
-        
+
         $("#category-B").show();
         EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
         NodeWeightFilter ( "#sliderBNodeWeight"  , "NGram", "type" , "size");
         // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-        // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
+        // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size")
         $("#colorGraph").hide();
     }
 
@@ -1740,6 +1763,7 @@ function changeToMeso(iwannagraph) {
 
 //to_del
 function changeToMacro(iwannagraph) {
+    console.log('FUN t.methods:changeToMacro')
     labels=[]
     pr("CHANGING TO Macro-"+iwannagraph);
 
@@ -1751,7 +1775,7 @@ function changeToMacro(iwannagraph) {
 
         partialGraph.draw();
         partialGraph.refresh();
-        
+
         $("#semLoader").css('visibility', 'visible');
         $("#semLoader").show();
 
@@ -1765,10 +1789,10 @@ function changeToMacro(iwannagraph) {
         category = (iwannagraph=="social")?catSoc:catSem;
         pr("CHANGING TO Macro-"+iwannagraph+" __ [category: "+category+"] __ [actualsw: "+swclickActual+"] __ [prevsw: "+swclickPrev+"]")
         //show semantic nodes
-        for(var n in Nodes) {                
+        for(var n in Nodes) {
             if(Nodes[n].type==category){
                 unHide(n);
-            }                
+            }
         } // and semantic edges
 
         createEdgesForExistingNodes(iwannagraph);
@@ -1791,7 +1815,7 @@ function changeToMacro(iwannagraph) {
         //iwantograph socio-semantic
         for(var n in Nodes) unHide(n);
 
-        for(var e in Edges) {  
+        for(var e in Edges) {
             if(Edges[e].label=="nodes1" || Edges[e].label=="nodes2"){
 
                 st=e.split(";");
@@ -1810,7 +1834,7 @@ function changeToMacro(iwannagraph) {
                             unHide(st[1]+";"+st[0]);
                         }
                     }
-                }                
+                }
             }
             if(Edges[e].label=="bipartite"){
                 unHide(e);
@@ -1825,22 +1849,22 @@ function changeToMacro(iwannagraph) {
 
         if(iwannagraph=="social") {
             // EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
-            $("#colorGraph").show();      
+            $("#colorGraph").show();
         }
 
         if(iwannagraph=="semantic") {
             // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-            // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
-            $("#colorGraph").hide();              
-        
-            
+            // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size")
+            $("#colorGraph").hide();
+
+
         }
 
         if(iwannagraph=="sociosemantic") {
             // EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
-            // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size") 
+            // NodeWeightFilter ( "#sliderBNodeWeight" , "type" , "NGram" , "size")
             // EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
-            $("#colorGraph").hide();        
+            $("#colorGraph").hide();
         }
     });
 
@@ -1849,13 +1873,13 @@ function changeToMacro(iwannagraph) {
     $('.gradient').css({"background-size":"40px 40px"});
 
     var activefilterscount=0;
-    for(var i in lastFilter) { 
+    for(var i in lastFilter) {
 
     	if(iwannagraph=="social" && i.indexOf("sliderA")!=-1 )
     		if(lastFilter[i].charAt(0)!="0")
     			activefilterscount++;
 
-    	if(iwannagraph=="semantic" && i.indexOf("sliderb")!=-1) 
+    	if(iwannagraph=="semantic" && i.indexOf("sliderb")!=-1)
     		if(lastFilter[i].charAt(0)!="0")
     			activefilterscount++;
 
@@ -1875,6 +1899,7 @@ function changeToMacro(iwannagraph) {
 
 //to_del
 function highlightOpossites (list){/*here*/
+    console.log('FUN t.methods:highlightOpossites')
     for(var n in list){
         if(!isUndef(partialGraph._core.graph.nodesIndex[n])){
             partialGraph._core.graph.nodesIndex[n].active=true;
@@ -1883,7 +1908,7 @@ function highlightOpossites (list){/*here*/
 }
 
 function saveGraph() {
-    
+    console.log('FUN t.methods:saveGraph')
     size = getByID("check_size").checked
     color = getByID("check_color").checked
     atts = {"size":size,"color":color}
@@ -1900,6 +1925,7 @@ function saveGraph() {
 }
 
 function saveGEXF(nodes,edges,atts){
+    console.log('FUN t.methods:saveGEXF')
     gexf = '<?xml version="1.0" encoding="UTF-8"?>\n';
     gexf += '<gexf xmlns="http://www.gexf.net/1.1draft" xmlns:viz="http://www.gephi.org/gexf/viz" version="1.1">\n';
     gexf += '<graph defaultedgetype="undirected" type="static">\n';
@@ -1915,15 +1941,15 @@ function saveGEXF(nodes,edges,atts){
     gexf += '</attributes>\n';
     gexf += "<nodes>\n";
 
-    for(var n in nodes){    
-        
+    for(var n in nodes){
+
         gexf += '<node id="'+nodes[n].id+'" label="'+nodes[n].label+'">\n';
         gexf += ' <viz:position x="'+nodes[n].x+'"    y="'+nodes[n].y+'"  z="0" />\n';
         if(atts["color"]) gexf += ' <viz:size value="'+nodes[n].size+'" />\n';
         if(atts["color"]) {
             col = hex2rga(nodes[n].color);
             gexf += ' <viz:color r="'+col[0]+'" g="'+col[1]+'" b="'+col[2]+'" a="1"/>\n';
-        }    
+        }
         gexf += ' <attvalues>\n';
         gexf += ' <attvalue for="0" value="'+nodes[n].type+'"/>\n';
         gexf += ' <attvalue for="1" value="'+Nodes[nodes[n].id].CC+'"/>\n';
@@ -1931,7 +1957,7 @@ function saveGEXF(nodes,edges,atts){
         gexf += '</node>\n';
     }
     gexf += "\n</nodes>\n";
-    gexf += "<edges>\n";    
+    gexf += "<edges>\n";
     cont = 1;
     for(var e in edges){
         gexf += '<edge id="'+cont+'" source="'+edges[e].source.id+'"  target="'+edges[e].target.id+'" weight="'+edges[e].weight+'">\n';
@@ -1945,9 +1971,9 @@ function saveGEXF(nodes,edges,atts){
 }
 
 function saveGraphIMG(){
-        
+    console.log('FUN t.methods:saveGraphIMG')
         var strDownloadMime = "image/octet-stream"
-        
+
         var nodesDiv = partialGraph._core.domElements.nodes;
         var nodesCtx = nodesDiv.getContext("2d");
 

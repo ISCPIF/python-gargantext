@@ -10,6 +10,7 @@ function print(msg) {
 
 //to general utils
 function getClientTime(){
+    console.log('FUN t.globalUtils:getClientTime')
     var totalSec = new Date().getTime() / 1000;
     var d = new Date();
     var hours = d.getHours();
@@ -20,11 +21,13 @@ function getClientTime(){
 }
 
 function compareNumbers(a, b) {
+    console.log('FUN t.globalUtils:compareNumbers')
     return a - b;
 }
 
 //python range(a,b) | range(a)
 function calc_range(begin, end) {
+  console.log('FUN t.globalUtils:calc_range')
   if (typeof end === "undefined") {
     end = begin; begin = 0;
   }
@@ -38,6 +41,7 @@ function calc_range(begin, end) {
 
 //to general utils (not used btw)
 function cloneObject(source) {
+    console.log('FUN t.globalUtils:cloneObject')
     for (i in source) {
         if (typeof source[i] == 'source') {
             this[i] = new cloneObject(source[i]);
@@ -49,14 +53,16 @@ function cloneObject(source) {
 }
 
 function isUndef(variable){
+    // console.log('FUN t.globalUtils:isUndef')
     if(typeof(variable)==="undefined") return true;
     else return false;
 }
 
 
 $.fn.toggleClick = function(){
+        console.log('FUN t.globalUtils:toggleClick')
         methods = arguments, // store the passed arguments for future reference
-            count = methods.length; // cache the number of methods 
+            count = methods.length; // cache the number of methods
 
         //use return this to maintain jQuery chainability
         return this.each(function(i, item){
@@ -71,6 +77,7 @@ $.fn.toggleClick = function(){
 
 
 getUrlParam = (function () {
+    console.log('FUN t.globalUtils:getUrlParam')
     var get = {
         push:function (key,value){
             var cur = this[key];
@@ -101,12 +108,13 @@ getUrlParam = (function () {
 
 
 function ArraySortByValue(array, sortFunc){
+    console.log('FUN t.globalUtils:ArraySortByValue')
     var tmp = [];
     oposMAX=0;
     for (var k in array) {
         if (array.hasOwnProperty(k)) {
             tmp.push({
-                key: k, 
+                key: k,
                 value:  array[k]
             });
             if((array[k]) > oposMAX) oposMAX= array[k];
@@ -115,18 +123,19 @@ function ArraySortByValue(array, sortFunc){
 
     tmp.sort(function(o1, o2) {
         return sortFunc(o1.value, o2.value);
-    });   
-    return tmp;      
+    });
+    return tmp;
 }
 
 
 
 function ArraySortByKey(array, sortFunc){
+    console.log('FUN t.globalUtils:ArraySortByKey')
     var tmp = [];
     for (var k in array) {
         if (array.hasOwnProperty(k)) {
             tmp.push({
-                key: k, 
+                key: k,
                 value:  array[k]
             });
         }
@@ -134,12 +143,13 @@ function ArraySortByKey(array, sortFunc){
 
     tmp.sort(function(o1, o2) {
         return sortFunc(o1.key, o2.key);
-    });   
-    return tmp;      
+    });
+    return tmp;
 }
-    
+
 
 function is_empty(obj) {
+    console.log('FUN t.globalUtils:is_empty')
     // Assume if it has a length property with a non-zero value
     // that that property is correct.
     if (obj.length && obj.length > 0)    return false;
@@ -153,12 +163,14 @@ function is_empty(obj) {
 
 
 function getByID(elem) {
+    console.log('FUN t.globalUtils:getByID')
     return document.getElementById(elem);
 }
 
 
 
 function hex2rga(sent_hex) {
+    // console.log('FUN t.globalUtils:hex2rga')
     result = []
     hex = ( sent_hex.charAt(0) === "#" ? sent_hex.substr(1) : sent_hex );
     // check if 6 letters are provided
@@ -173,6 +185,7 @@ function hex2rga(sent_hex) {
 }
 
 function calculateFull(hex) {
+    // console.log('FUN t.globalUtils:calculateFull')
     var r = parseInt(hex.substring(0, 2), 16);
     var g = parseInt(hex.substring(2, 4), 16);
     var b = parseInt(hex.substring(4, 6), 16);
@@ -182,6 +195,7 @@ function calculateFull(hex) {
 
 // function for calculating 3 letters hex value
 function calculatePartial(hex) {
+    console.log('FUN t.globalUtils:calculatePartial')
     var r = parseInt(hex.substring(0, 1) + hex.substring(0, 1), 16);
     var g = parseInt(hex.substring(1, 2) + hex.substring(1, 2), 16);
     var b = parseInt(hex.substring(2, 3) + hex.substring(2, 3), 16);
@@ -189,27 +203,31 @@ function calculatePartial(hex) {
 }
 
 function componentToHex(c) {
+    console.log('FUN t.globalUtils:componentToHex')
     var hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(r, g, b) {
+    console.log('FUN t.globalUtils:rgbToHex')
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 
  /**
-  * function to load a given css file 
-  */ 
+  * function to load a given css file
+  */
  loadCSS = function(href) {
+     console.log('FUN t.globalUtils:loadCSS')
      var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
-     $("head").append(cssLink); 
+     $("head").append(cssLink);
  };
 
 /**
- * function to load a given js file 
- */ 
+ * function to load a given js file
+ */
  loadJS = function(src) {
+     console.log('FUN t.globalUtils:loadJS')
      var jsLink = $("<script type='text/javascript' src='"+src+"'>");
-     $("head").append(jsLink); 
- }; 
+     $("head").append(jsLink);
+ };

@@ -1,6 +1,7 @@
 // Function.prototype.index
 (function(reComments, reParams, reNames) {
   Function.prototype.index = function(arrParamNames) {
+    console.log('FUN t.TinawebJS:Function=>index')
     var fnMe = this;
     arrParamNames = arrParamNames
       || (((fnMe + '').replace(reComments, '')
@@ -22,6 +23,7 @@
 );
 
 $.fn.visibleHeight = function() {
+    console.log('FUN t.TinawebJS:visibleHeight')
     var elBottom, elTop, scrollBot, scrollTop, visibleBottom, visibleTop;
     scrollTop = $(window).scrollTop();
     scrollBot = scrollTop + $(window).height();
@@ -33,7 +35,8 @@ $.fn.visibleHeight = function() {
 }
 
 // for new SigmaUtils
-function sigmaLimits( sigmacanvas ) {    
+function sigmaLimits( sigmacanvas ) {
+    console.log('FUN t.TinawebJS:sigmaLimits')
     pw=$( sigmacanvas ).width();
     ph=$( sigmacanvas ).height();
     // $("body").css("padding-top",0)
@@ -59,8 +62,10 @@ function sigmaLimits( sigmacanvas ) {
 
 
 SelectionEngine = function() {
+    console.log('FUN t.TinawebJS:SelectionEngine:new')
     // Selection Engine!! finally...
     this.SelectorEngine_part01 = (function(cursorsize, area ) {
+        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part01')
         var clickedNodes = []
         if(cursorsize>0) {
             clickedNodes = this.SelectThis2( area )
@@ -75,7 +80,7 @@ SelectionEngine = function() {
     }).index();
 
     this.SelectorEngine_part02 = (function( addvalue , clicktype , prevsels , currsels ) {
-        
+        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part02')
         print("Add[]:")
         print(addvalue)
         print("clicktype:")
@@ -90,7 +95,7 @@ SelectionEngine = function() {
         var targeted = currsels.map(Number).sort(this.sortNumber);
 
         if(clicktype=="double" && targeted.length==0) return [];
-        
+
         // if(targeted.length>0) {
         if(buffer.length>0) {
             if(JSON.stringify(buffer)==JSON.stringify(targeted)) {
@@ -117,13 +122,13 @@ SelectionEngine = function() {
                 }
                 targeted = Object.keys(whitelist).map(Number);
             } else {// inter = 0 ==> click in other portion of the graph (!= current selection)
-                // Union! 
+                // Union!
                 if(addvalue) {
                     targeted = targeted.concat(buffer.filter(function (item) {
                         return targeted.indexOf(item) < 0;
                     }));
                 }
-                return targeted; 
+                return targeted;
             }
         } else return targeted;
         // }
@@ -132,9 +137,10 @@ SelectionEngine = function() {
     }).index();
 
     this.SelectorEngine = (function( cursorsize , area , addvalue , clicktype , prevsels , currsels ) {
+        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine')
         var targeted = []
         var buffer = Object.keys(prevsels).map(Number).sort(this.sortNumber);
-        
+
         if( isUndef(currsels) ) { // bunch of nodes from a click in the map
             if(cursorsize>0) {
                 targeted = this.SelectThis2( area )
@@ -151,14 +157,14 @@ SelectionEngine = function() {
                 targeted = currsels.concat(buffer.filter(function (item) {
                     return currsels.indexOf(item) < 0;
                 }));
-            } else targeted = currsels; 
+            } else targeted = currsels;
             return targeted;
         }
-        
+
         targeted = targeted.map(Number)
 
         if(clicktype=="double" && targeted.length==0) return [];
-        
+
         targeted = targeted.sort(this.sortNumber);
 
         if(targeted.length>0) {
@@ -187,13 +193,13 @@ SelectionEngine = function() {
                     }
                     targeted = Object.keys(whitelist).map(Number);
                 } else {// inter = 0 ==> click in other portion of the graph (!= current selection)
-                    // Union! 
+                    // Union!
                     if(addvalue) {
                         targeted = targeted.concat(buffer.filter(function (item) {
                             return targeted.indexOf(item) < 0;
                         }));
                     }
-                    return targeted; 
+                    return targeted;
                 }
             } else return targeted;
         }
@@ -203,6 +209,7 @@ SelectionEngine = function() {
 
     // uses: SelectorEngine() and MultipleSelection2()
     this.search = function(string) {
+        console.log('FUN t.TinawebJS:SelectionEngine:search')
         var id_node = '';
         var results = find(string)
 
@@ -211,8 +218,8 @@ SelectionEngine = function() {
             coincd.push(results[i].id)
         }
         var targeted = SelectorEngine( {
-                        addvalue:checkBox, 
-                        clicktype:"simple", 
+                        addvalue:checkBox,
+                        clicktype:"simple",
                         prevsels:selections,
                         currsels:coincd
                     } )
@@ -233,6 +240,7 @@ SelectionEngine = function() {
 
     //Util
     this.intersect_safe = function(a, b) {
+        console.log('FUN t.TinawebJS:SelectionEngine:intersect_safe')
         var ai=0, bi=0;
         var result = new Array();
 
@@ -251,6 +259,7 @@ SelectionEngine = function() {
     // return Nodes-ids under the clicked Area
     //  external usage : partialGraph
     this.SelectThis2 = function( area ) {
+        console.log('FUN t.TinawebJS:SelectionEngine:SelectThis2')
         var x1 = area.x1;
         var y1 = area.y1;
 
@@ -265,7 +274,7 @@ SelectionEngine = function() {
                     );
                 if(parseInt(distance)<=cursor_size) {
                     counter++;
-                    actualSel.push(n.id);                                
+                    actualSel.push(n.id);
                 }
             }
         });
@@ -274,10 +283,10 @@ SelectionEngine = function() {
 
     //  external usage : partialGraph , updateLeftPanel_fix();
     this.MultipleSelection2 = (function(nodes,nodesDict,edgesDict) {
-
-        pr("IN SelectionEngine.MultipleSelection2:")
+        console.log('FUN t.TinawebJS:SelectionEngine:MultipleSelection2')
+        // pr("IN SelectionEngine.MultipleSelection2:")
         print(nodes)
-        greyEverything(); 
+        greyEverything();
 
 
         var typeNow = partialGraph.states.slice(-1)[0].type.map(Number).join("|")
@@ -350,27 +359,28 @@ SelectionEngine = function() {
                         neighsDict[neighs[n]] = 0;
                     neighsDict[neighs[n]]++;
                 }
-            }    
-        } 
+            }
+        }
 
         var oppos = ArraySortByValue(neighsDict, function(a,b){
             return b-a
         });
 
 
-        overNodes=true; 
+        overNodes=true;
 
         partialGraph.draw();
 
         updateLeftPanel_fix( selections , oppos );
 
-        for(var n in neighsDict) 
+        for(var n in neighsDict)
             delete neighsDict[n]
 
     }).index()
 };
 
 TinaWebJS = function ( sigmacanvas ) {
+    console.log('FUN t.TinawebJS:TinaWebJS:new')
     this.sigmacanvas = sigmacanvas;
 
     this.init = function () {
@@ -378,10 +388,12 @@ TinaWebJS = function ( sigmacanvas ) {
     }
 
     this.getSigmaCanvas = function () {
+        console.log('FUN t.TinawebJS:getSigmaCanvas')
         return this.sigmacanvas;
     }
 
     this.AdjustSigmaCanvas = function ( sigmacanvas ) {
+        console.log('FUN t.TinawebJS:AdjustSigmaCanvas')
         var canvasdiv = "";
         if( sigmacanvas ) canvasdiv = sigmacanvas;
         else canvasdiv = this.sigmacanvas;
@@ -390,7 +402,7 @@ TinaWebJS = function ( sigmacanvas ) {
     }
 
     this.SearchListeners = function () {
-
+        console.log('FUN t.TinawebJS:SearchListeners')
         var SelInst = new SelectionEngine();
 
         $.ui.autocomplete.prototype._renderItem = function(ul, item) {
@@ -412,7 +424,7 @@ TinaWebJS = function ( sigmacanvas ) {
                 var results = $.grep(labels, function(e) {
                     return matcher.test(e.label); //|| matcher.test(e.desc);
                 });
-                
+
                 if (!results.length) {
                     $("#noresults").text("Pas de résultats");
                 } else {
@@ -420,11 +432,11 @@ TinaWebJS = function ( sigmacanvas ) {
                 }
                 matches = results.slice(0, maxSearchResults);
                 response(matches);
-                
+
             },
             minLength: minLengthAutoComplete
-        }); 
-       
+        });
+
         $('#searchinput').bind('autocompleteopen', function(event, ui) {
             $(this).data('is_open',true);
         });
@@ -441,21 +453,21 @@ TinaWebJS = function ( sigmacanvas ) {
                 $(this).val(strSearchBar);
             }
         });
-        
+
         // i've a list of coincidences and i press enter like a boss >:D
         //  external usage: partialGraph, SelectorEngine() , MultipleSelection2()
         $("#searchinput").keydown(function (e) {
             if (e.keyCode == 13 && $("input#searchinput").data('is_open') === true) {
                 // Search has several results and you pressed ENTER
-                if(!is_empty(matches)) {                
+                if(!is_empty(matches)) {
                     var coincidences = []
                     for(j=0;j<matches.length;j++){
                         coincidences.push(matches[j].id)
                     }
                     $.doTimeout(30,function (){
                         var targeted = SelInst.SelectorEngine( {
-                                        addvalue:checkBox, 
-                                        clicktype:"double", 
+                                        addvalue:checkBox,
+                                        clicktype:"double",
                                         prevsels:selections,
                                         currsels:coincidences
                                     } )
@@ -478,7 +490,7 @@ TinaWebJS = function ( sigmacanvas ) {
                 }
             }
         });
-        
+
         // i was navigating (with the up|down) sur the coincidences-list and i pressed enter!
         //  external usage: partialGraph, SelectorEngine() , MultipleSelection2()
         $("#searchinput").keyup(function (e) {
@@ -489,8 +501,8 @@ TinaWebJS = function ( sigmacanvas ) {
                     $.doTimeout(30,function (){
 
                             var targeted = SelInst.SelectorEngine( {
-                                        addvalue:checkBox, 
-                                        clicktype:"double", 
+                                        addvalue:checkBox,
+                                        clicktype:"double",
                                         prevsels:selections,
                                         currsels:[exfnd.id]
                                     } )
@@ -499,19 +511,19 @@ TinaWebJS = function ( sigmacanvas ) {
                                 SelInst.MultipleSelection2({nodes:targeted});
                             }
                             partialGraph.draw();
-                            
+
                             $("input#searchinput").val("");
                             $("input#searchinput").autocomplete( "close" );
-                    });     
+                    });
                 }
             }
         });
     }
 
-    //  external usage: SelectorEngine*() , MultipleSelection2() , 
+    //  external usage: SelectorEngine*() , MultipleSelection2() ,
     //      enviroment.js:changeType()|changeLevel()|NodeWeightFilter()|EdgeWeightFilter
     this.initListeners = function (categories, partialGraph) {
-        
+        console.log('FUN t.TinawebJS:initListeners')
         var SelInst = new SelectionEngine();
 
         $("#semLoader").hide();
@@ -521,8 +533,8 @@ TinaWebJS = function ( sigmacanvas ) {
 
         $('.etabs').click(function(){
             $.doTimeout(500,function () {
-                $("#opossiteNodes").readmore({maxHeight:200}); 
-                $("#sameNodes").readmore({maxHeight:200}); 
+                $("#opossiteNodes").readmore({maxHeight:200});
+                $("#sameNodes").readmore({maxHeight:200});
             });
         });
 
@@ -558,25 +570,25 @@ TinaWebJS = function ( sigmacanvas ) {
             fullwidth=$('#fixedtop').width();
             e.preventDefault();
             // $("#wrapper").toggleClass("active");
-            if(parseFloat(sidebar.css("right"))<0){            
-                $("#aUnfold").attr("class","rightarrow"); 
+            if(parseFloat(sidebar.css("right"))<0){
+                $("#aUnfold").attr("class","rightarrow");
                 sidebar.animate({
                     "right" : sidebar.width()+"px"
-                }, { duration: 400, queue: false }); 
+                }, { duration: 400, queue: false });
 
                 $("#ctlzoom").animate({
                         "right": (sidebar.width()+10)+"px"
-                }, { duration: 400, queue: false }); 
-                   
+                }, { duration: 400, queue: false });
+
                 // $('#sigma-example').width(fullwidth-sidebar.width());
                 $('#sigma-example').animate({
                         "width": fullwidth-sidebar.width()+"px"
-                }, { duration: 400, queue: false }); 
+                }, { duration: 400, queue: false });
                 setTimeout(function() {
                       partialGraph.resize();
                       partialGraph.refresh();
                 }, 400);
-            } 
+            }
             else {
                 //HIDE leftcolumn
                 $("#aUnfold").attr("class","leftarrow");
@@ -586,7 +598,7 @@ TinaWebJS = function ( sigmacanvas ) {
 
                 $("#ctlzoom").animate({
                         "right": "0px"
-                }, { duration: 400, queue: false }); 
+                }, { duration: 400, queue: false });
 
                     // $('#sigma-example').width(fullwidth);
                 $('#sigma-example').animate({
@@ -595,8 +607,8 @@ TinaWebJS = function ( sigmacanvas ) {
                 setTimeout(function() {
                       partialGraph.resize();
                       partialGraph.refresh();
-                }, 400);   
-            }   
+                }, 400);
+            }
         });
 
         startMiniMap();
@@ -608,10 +620,10 @@ TinaWebJS = function ( sigmacanvas ) {
         $("#tips").html(getTips());
 
         showMeSomeLabels(6);
-        
+
         // updateDownNodeEvent(false);
-        
-        $("#saveAs").click(function() {        
+
+        $("#saveAs").click(function() {
             $('#savemodal').modal('show');
         });
 
@@ -634,17 +646,17 @@ TinaWebJS = function ( sigmacanvas ) {
             area.y1 = partialGraph._core.mousecaptor.mouseY;
 
             targeted = SelInst.SelectorEngine_part01({
-                            cursorsize:cursor_size, 
-                            area:area 
+                            cursorsize:cursor_size,
+                            area:area
                         })
-            
+
             if(targeted.length>0) {
-                var finalSelection = SelInst.SelectorEngine_part02( { 
+                var finalSelection = SelInst.SelectorEngine_part02( {
                                             addvalue:checkBox ,
                                             clicktype:(checkBox)?"simple":"double",
                                             prevsels:selections,
-                                            currsels:targeted 
-                                        }); 
+                                            currsels:targeted
+                                        });
                 cancelSelection(false);
                 SelInst.MultipleSelection2( {nodes:finalSelection} )
 
@@ -678,10 +690,10 @@ TinaWebJS = function ( sigmacanvas ) {
                     area.x1 = partialGraph._core.mousecaptor.mouseX;
                     area.y1 = partialGraph._core.mousecaptor.mouseY;
                     var targeted = SelInst.SelectorEngine( {
-                                        cursorsize:cursor_size, 
+                                        cursorsize:cursor_size,
                                         area:area,
-                                        addvalue:checkBox, 
-                                        clicktype:"simple", 
+                                        addvalue:checkBox,
+                                        clicktype:"simple",
                                         prevsels:selections
                                     } )
                     if(targeted.length>0) {
@@ -708,8 +720,8 @@ TinaWebJS = function ( sigmacanvas ) {
                 // pr(sigmaJsMouseProperties.minRatio)
                 // pr(sigmaJsMouseProperties.maxRatio)
                 partialGraph.zoomTo(
-                    partialGraph._core.width / 2, 
-                    partialGraph._core.height / 2, 
+                    partialGraph._core.width / 2,
+                    partialGraph._core.height / 2,
                     ui.value);
             }
         });
@@ -742,9 +754,9 @@ TinaWebJS = function ( sigmacanvas ) {
             } else {
                 partialGraph.startForceAtlas2();
                 return;
-            } 
+            }
         });
-        
+
         NodeWeightFilter ( categories , "#slidercat0nodesweight" ,  categories[0],  "type" ,"size");
 
         EdgeWeightFilter("#slidercat0edgesweight", "label" , "nodes1", "weight");
@@ -770,7 +782,7 @@ TinaWebJS = function ( sigmacanvas ) {
                        partialGraph.draw();
                 });
             }
-        }); 
+        });
 
         //finished
         $("#slidercat1nodessize").freshslider({
@@ -791,7 +803,7 @@ TinaWebJS = function ( sigmacanvas ) {
                        partialGraph.draw();
                 });
             }
-        }); 
+        });
 
         //Cursor Size slider
         $("#unranged-value").freshslider({
@@ -809,4 +821,3 @@ TinaWebJS = function ( sigmacanvas ) {
     }
 
 };
-

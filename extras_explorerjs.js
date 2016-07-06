@@ -3,11 +3,13 @@
  */
 
 function newPopup(url) {
+    console.log('FUN extras_explorerjs:newPopup')
 	popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
 }
 
 
 function getIDFromURL( item ) {
+    console.log('FUN extras_explorerjs:getIDFromURL')
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
@@ -15,11 +17,12 @@ function getIDFromURL( item ) {
             cid=parseInt(i);
             break;
         }
-    } 
+    }
     return pageurl[cid+1];
 }
 
 function modify_ngrams( classname ) {
+    console.log('FUN extras_explorerjs:modify_ngrams')
     console.clear()
 
     var corpus_id = getIDFromURL( "corpora" ) // not used
@@ -54,6 +57,7 @@ function modify_ngrams( classname ) {
 }
 
 function CRUD( parent_id , action , nodes , args , http_method , callback) {
+    console.log('FUN extras_explorerjs:CRUD')
     var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
     the_url = the_url.replace(/\/$/, ""); //remove trailing slash
     console.log( the_url )
@@ -80,19 +84,20 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 
     } else callback(false);
 }
-// = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = // 
+// = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = //
 
     // Execution:    ChangeGraphAppearanceByAtt( true )
     // It scans the existing node-attributes and t keeps only those which are Numeric.
     //  then, add the button in the html with the sigmaUtils.clustersBy(x) listener.
     //TODO: move to ClustersPlugin.js or smntng
     function ChangeGraphAppearanceByAtt( manualflag ) {
+        console.log('FUN extras_explorerjs:ChangeGraphAppearanceByAtt')
 
         if ( !isUndef(manualflag) && !colorByAtt ) colorByAtt = manualflag;
         if(!colorByAtt) return;
 
         // Seeing all the possible attributes!
-        var AttsDict = {}    
+        var AttsDict = {}
         var Atts_2_Exclude = {}
         var v_nodes = getVisibleNodes();
         for (var i in v_nodes) {
@@ -107,11 +112,11 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
                     if ( ( typeof(someatt)=="string" && isNaN(Number(someatt)) ) || typeof(someatt)=="object" ) {
                         if (!Atts_2_Exclude[a]) Atts_2_Exclude[a]=0;
                         Atts_2_Exclude[a]++;
-                    } 
+                    }
                 }
 
                 var possible_atts = [];
-                if (!isUndef(Nodes[id].attributes)) 
+                if (!isUndef(Nodes[id].attributes))
                     possible_atts = Object.keys(Nodes[id].attributes)
 
                 if(!isUndef(v_nodes[i].degree))
@@ -119,15 +124,15 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
                 possible_atts.push("clust_louvain")
 
                 for(var a in possible_atts){
-                    if ( !AttsDict[ possible_atts[a] ] ) 
+                    if ( !AttsDict[ possible_atts[a] ] )
                         AttsDict[ possible_atts[a] ] = 0
                     AttsDict[ possible_atts[a] ] ++;
-                } 
-                
+                }
+
             }
         }
 
-        for(var i in Atts_2_Exclude) 
+        for(var i in Atts_2_Exclude)
             delete AttsDict[i];
 
         var AttsDict_sorted = ArraySortByValue(AttsDict, function(a,b){
@@ -137,9 +142,9 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
         console.log( AttsDict_sorted )
 
 
-        var div_info = "";            
+        var div_info = "";
 
-        if( $( ".colorgraph_div" ).length>0 )          
+        if( $( ".colorgraph_div" ).length>0 )
             div_info += '<ul id="colorGraph" class="nav navbar-nav navbar-right">'
 
         div_info += ' <li class="dropdown">'
@@ -174,9 +179,9 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 
 
 
-        div_info = "";            
+        div_info = "";
 
-        if( $( ".sizegraph_div" ).length>0 )          
+        if( $( ".sizegraph_div" ).length>0 )
             div_info += '<ul id="sizeGraph" class="nav navbar-nav navbar-right">'
 
         div_info += ' <li class="dropdown">'
@@ -210,7 +215,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 
         console.log('$( ".sizegraph_div" ).length')
         console.log($( ".sizegraph_div" ).length)
-        
+
 
         if( $( ".sizegraph_div" ).length>0 )   {
             div_info += '</ul>'
@@ -225,6 +230,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
     //  then, it runs external library jLouvain()
     //TODO: move to ClustersPlugin.js or smntng
     function RunLouvain() {
+      console.log('FUN extras_explorerjs:RunLouvain')
 
       var node_realdata = []
       var nodesV = getVisibleNodes()
@@ -242,7 +248,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
         }
         edge_realdata.push(info)
       }
-        var community = jLouvain().nodes(node_realdata).edges(edge_realdata);  
+        var community = jLouvain().nodes(node_realdata).edges(edge_realdata);
         var results = community();
         for(var i in results)
             Nodes[i].attributes["clust_louvain"]=results[i]
@@ -251,13 +257,14 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
     // Highlight nodes belonging to cluster_i when you click in thecluster_i of the legend
     //TODO: move to ClustersPlugin.js or smntng
     function HoverCluster( ClusterCode ) {
+        console.log('FUN extras_explorerjs:HoverCluster')
         console.log( ClusterCode )
 
         var raw = ClusterCode.split("||")
         var Type=raw[0], Cluster=raw[1], clstID=Number(raw[2]);
 
         var present = partialGraph.states.slice(-1)[0]; // Last
-        var type_t0 = present.type;    
+        var type_t0 = present.type;
         var str_type_t0 = type_t0.map(Number).join("|")
         console.log( "\t"+str_type_t0)
 
@@ -322,7 +329,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
         });
 
         for(var n in nodes_2_label) {
-            if(n==4) 
+            if(n==4)
                 break
             var ID = nodes_2_label[n].key
             partialGraph._core.graph.nodesIndex[ID].forceLabel = true;
@@ -338,6 +345,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
     //      daclass = "clust_default" | "clust_louvain" | "clust_x" ...
     //TODO: move to ClustersPlugin.js or smntng
     function set_ClustersLegend ( daclass ) {
+        console.log('FUN extras_explorerjs:set_ClustersLegend')
         //partialGraph.states.slice(-1)[0].LouvainFait = true
 
         if( daclass=="clust_default" && Clusters.length==0)
@@ -388,17 +396,18 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
         }
         LegendDiv += '      </ul>'
         LegendDiv += '    </div>'
-        
+
 
         $("#legend_for_clusters").addClass( "my-legend" );
         $("#legend_for_clusters").html( LegendDiv )
     }
 
-// = = = = = = = = = = = [ / Clusters Plugin ] = = = = = = = = = = = // 
+// = = = = = = = = = = = [ / Clusters Plugin ] = = = = = = = = = = = //
 
 
 // PHP-mode when you've a cortext db.
 function getTopPapers_OriginalVersion(type){
+    console.log('FUN extras_explorerjs:getTopPapers_OriginalVersion')
     if(getAdditionalInfo){
         jsonparams=JSON.stringify(getSelections());
         bi=(Object.keys(categories).length==2)?1:0;
@@ -417,11 +426,11 @@ function getTopPapers_OriginalVersion(type){
             data: "type="+type+"&bi="+bi+"&query="+jsonparams+"&gexf="+thisgexf+"&index="+field[getUrlParam.file],
             //contentType: "application/json",
             //dataType: 'json',
-            success : function(data){ 
+            success : function(data){
                 pr(APINAME+'info_div.php?'+"type="+type+"&bi="+bi+"&query="+jsonparams+"&gexf="+thisgexf+"&index="+field[getUrlParam.file]);
                 $("#topPapers").html(data);
             },
-            error: function(){ 
+            error: function(){
                 pr('Page Not found: getTopPapers');
             }
         });
@@ -430,7 +439,7 @@ function getTopPapers_OriginalVersion(type){
 
 // PHP-mode when you've a cortext db.
 function getTopProposals(type , jsonparams , thisgexf) {
-
+    console.log('FUN extras_explorerjs:getTopProposals')
     type = "semantic";
     if(swclickActual=="social") {
         nodesA = []
@@ -472,11 +481,11 @@ function getTopProposals(type , jsonparams , thisgexf) {
         data: "type="+"semantic"+"&query="+jsonparams+"&gexf="+thisgexf,
         //contentType: "application/json",
         //dataType: 'json',
-        success : function(data){ 
+        success : function(data){
             pr("API_pasteur/"+'info_div2.php?'+"type="+"semantic"+"&query="+jsonparams+"&gexf="+thisgexf);
             $("#topProposals").html(data);
         },
-        error: function(){ 
+        error: function(){
             pr('Page Not found: getTopProposals');
         }
     });
@@ -486,6 +495,7 @@ function getTopProposals(type , jsonparams , thisgexf) {
 
 // Just for Garg
 function genericGetTopPapers(theids , corpus_id , thediv) {
+    console.log('FUN extras_explorerjs:genericGetTopPapers')
     if(getAdditionalInfo) {
         $("#"+thediv).show();
         $.ajax({
@@ -493,7 +503,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
             url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
             //contentType: "application/json",
             //dataType: 'json',
-            success : function(data){ 
+            success : function(data){
                 pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
@@ -515,7 +525,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                     }
                     if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
                     if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
-                    
+
                     var jsstuff = "if(wnws_buffer!=null) {wnws_buffer.close();} "
                     var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
                     jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
@@ -535,9 +545,9 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
 
                 // $('#tab-container-top').easytabs({updateHash:false});
 
-                
+
             },
-            error: function(){ 
+            error: function(){
                 pr('Page Not found: getTopPapers()');
             }
         });
@@ -546,6 +556,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
 
 // Just for Garg: woops, override
 function getTopPapers(type){
+    console.log('FUN extras_explorerjs:getTopPapers')
     if(getAdditionalInfo){
 
         $("#topPapers").show();
@@ -558,7 +569,7 @@ function getTopPapers(type){
                 cid=parseInt(i);
                 break;
             }
-        } 
+        }
         var corpus_id = pageurl[cid+1];
 
         pr("corpus_id: "+ corpus_id);
@@ -569,7 +580,7 @@ function getTopPapers(type){
                 theids.push(parseInt(Nodes[i].id))
             }
         }
-        
+
         pr("the IDs of the selectioons")
         pr(theids)
         $.ajax({
@@ -577,7 +588,7 @@ function getTopPapers(type){
             url: window.location.origin+'/api/nodes/'+corpus_id+'/having?score=tfidf&ngram_ids='+theids.join(","),
             //contentType: "application/json",
             //dataType: 'json',
-            success : function(data){ 
+            success : function(data){
                 // pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 // var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
@@ -594,7 +605,7 @@ function getTopPapers(type){
                           }
                         }
                         var getpubAPI = window.location.origin+'/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+pub["id"]
-                        
+
 
                         var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 
@@ -609,7 +620,7 @@ function getTopPapers(type){
                         }
                         if(pub["fields"]) ifkeywords = "<br>Fields: "+pub["fields"];
                         if(pub["publication_date"]) ifdate = "<br>In "+pub["publication_date"].split(" ")[0];
-                        
+
                         var jsstuff = "if(wnws_buffer!=null) {wnws_buffer.close();} "
                         var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
@@ -629,7 +640,7 @@ function getTopPapers(type){
                 // $('#tab-container-top').easytabs({updateHash:false});
                 $("#topPapers").html(output);
             },
-            error: function(){ 
+            error: function(){
                 pr('Page Not found: getTopPapers()');
             }
         });
@@ -645,6 +656,7 @@ function getTopPapers(type){
 }
 
 function getCookie(name) {
+    console.log('FUN extras_explorerjs:getCookie')
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
         var cookies = document.cookie.split(';');
@@ -661,13 +673,14 @@ function getCookie(name) {
 }
 // Just for Garg
 function printCorpuses() {
+    console.log('FUN extras_explorerjs:printCorpuses')
     console.clear()
     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
     pr(corpusesList)
 
     var selected = $('input[name=optradio]:checked')[0].id.split("_")
     var sel_p = selected[0], sel_c=selected[1]
-    
+
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
@@ -675,7 +688,7 @@ function printCorpuses() {
             cid=parseInt(i);
             break;
         }
-    } 
+    }
     var current_corpus = pageurl[cid+1];
 
     pr("corpus id, selected: "+corpusesList[sel_p]["corpuses"][sel_c]["id"])
@@ -701,7 +714,7 @@ function printCorpuses() {
         },
         success : function(data){
             console.log( "!!!!!!!! in printCorpuses() AJAX!!!!!!!! " )
-        
+
             for(var i in Nodes) {
                 if(data[i])
                     Nodes[i].attributes["inter"] = data[i]
@@ -715,7 +728,7 @@ function printCorpuses() {
             clustersBy("inter" , "color")
             clustersBy("inter" , "size")
 
-            
+
         },
         error: function(xhr, status, error) {
           var err = eval("(" + xhr.responseText + ")");
@@ -732,7 +745,7 @@ function printCorpuses() {
     //     var c = corpusesList[i]["id"]
     //     string += "\t"+"<li id='tab_"+text+"' class='tab'><a href='#tabs"+c+"'>"+text+" Pubs</a></li>"+"\n";
     // }
-    
+
     // string += "</ul>"+"\n";
     // string += "<div class='panel-container'>"+"\n";
     // string += "\t"+'<div id="tabs3">'+"\n";
@@ -763,7 +776,7 @@ function printCorpuses() {
     //         cid=parseInt(i);
     //         break;
     //     }
-    // } 
+    // }
     // var corpus_id = pageurl[cid+1];
 
     // theids.push( corpus_id )
@@ -782,6 +795,7 @@ function printCorpuses() {
 
 // Just for Garg
 function GetUserPortfolio() {
+    console.log('FUN extras_explorerjs:GetUserPortfolio')
     //http://localhost:8000/api/corpusintersection/1a50317a50145
     var pageurl = window.location.href.split("/")
     var pid;
@@ -790,7 +804,7 @@ function GetUserPortfolio() {
             pid=parseInt(i);
             break;
         }
-    } 
+    }
     var project_id = pageurl[pid+1];
 
     var cid;
@@ -799,7 +813,7 @@ function GetUserPortfolio() {
             cid=parseInt(i);
             break;
         }
-    } 
+    }
     var corpus_id = pageurl[cid+1];
 
     if( Object.keys( corpusesList ).length > 0 )
@@ -810,7 +824,7 @@ function GetUserPortfolio() {
         type: 'GET',
         url: query_url,
         success : function(data) {
-            
+
             var html_ = ""
             html_ += '<div class="panel-group" id="accordion">'+"\n"
             html_ += ' <form id="corpuses_form" role="form">'+"\n"
@@ -858,68 +872,70 @@ function GetUserPortfolio() {
 
 
         },
-        error: function(){ 
+        error: function(){
             pr('Page Not found: TestFunction()');
         }
     });
 }
 
 function camaraButton(){
+    console.log('FUN extras_explorerjs:camaraButton')
     $("#PhotoGraph").click(function (){
-        
+
         //canvas=partialGraph._core.domElements.nodes;
-        
-        
-        
+
+
+
         var nodesCtx = partialGraph._core.domElements.nodes;
         /*
         var edgesCtx = document.getElementById("sigma_edges_1").getContext('2d');
-        
+
         var edgesImg = edgesCtx.getImageData(0, 0, document.getElementById("sigma_edges_1").width, document.getElementById("sigma_edges_1").height)
-        
+
         nodesCtx.putImageData(edgesImg,0,0);
-        
-        
-        
-        
+
+
+
+
         //ctx.drawImage(partialGraph._core.domElements.edges,0,0)
-        //var oCanvas = ctx;  
+        //var oCanvas = ctx;
   */
         //div = document.getElementById("sigma_nodes_1").getContext('2d');
         //ctx = div.getContext("2d");
         //oCanvas.drawImage(partialGraph._core.domElements.edges,0,0);
         Canvas2Image.saveAsPNG(nodesCtx);
-        
+
         /*
-        Canvas2Image.saveAsJPEG(oCanvas); // will prompt the user to save the image as JPEG.   
-        // Only supported by Firefox.  
-  
-        Canvas2Image.saveAsBMP(oCanvas);  // will prompt the user to save the image as BMP.  
-  
-  
-        // returns an <img> element containing the converted PNG image  
-        var oImgPNG = Canvas2Image.saveAsPNG(oCanvas, true);     
-  
-        // returns an <img> element containing the converted JPEG image (Only supported by Firefox)  
-        var oImgJPEG = Canvas2Image.saveAsJPEG(oCanvas, true);   
-                                                         
-        // returns an <img> element containing the converted BMP image  
-        var oImgBMP = Canvas2Image.saveAsBMP(oCanvas, true);   
-  
-  
-        // all the functions also takes width and height arguments.   
-        // These can be used to scale the resulting image:  
-  
-        // saves a PNG image scaled to 100x100  
-        Canvas2Image.saveAsPNG(oCanvas, false, 100, 100);  
+        Canvas2Image.saveAsJPEG(oCanvas); // will prompt the user to save the image as JPEG.
+        // Only supported by Firefox.
+
+        Canvas2Image.saveAsBMP(oCanvas);  // will prompt the user to save the image as BMP.
+
+
+        // returns an <img> element containing the converted PNG image
+        var oImgPNG = Canvas2Image.saveAsPNG(oCanvas, true);
+
+        // returns an <img> element containing the converted JPEG image (Only supported by Firefox)
+        var oImgJPEG = Canvas2Image.saveAsJPEG(oCanvas, true);
+
+        // returns an <img> element containing the converted BMP image
+        var oImgBMP = Canvas2Image.saveAsBMP(oCanvas, true);
+
+
+        // all the functions also takes width and height arguments.
+        // These can be used to scale the resulting image:
+
+        // saves a PNG image scaled to 100x100
+        Canvas2Image.saveAsPNG(oCanvas, false, 100, 100);
         */
     });
 }
 
-function getTips(){   
+function getTips(){
+    console.log('FUN extras_explorerjs:getTips')
     param='';
 
-    text = 
+    text =
         "<br>"+
         "Basic Interactions:"+
         "<ul>"+
@@ -939,7 +955,7 @@ function getTips(){
         "<li>To explore the neighborhood of a selection, either double click on the selected nodes, either click on the macro/meso level button. Zoom out in meso view return to macro view.</li>"+
         "<li>Click on the 'all nodes' tab below to view the full clickable list of nodes.</li>"+
         "</ul>";
-        
+
     $("#tab-container").hide();
     $("#tab-container-top").hide();
     return text;

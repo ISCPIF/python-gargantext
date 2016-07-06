@@ -19,29 +19,29 @@ if (mainfile) {
             var filename = getUrlParam.file;
             if( filename.indexOf(".json") > -1 ) {
                 bringTheNoise( filename , "mono");
-                
+
             } else {
                 listGexfs();
         		parse(getUrlParam.file);
-        		nb_cats = scanCategories();  
+        		nb_cats = scanCategories();
         		pr("nb_cats: "+nb_cats);
-        		
+
                 graphtype=(nb_cats==1)?"mono":"bi";
         		bringTheNoise(getUrlParam.file,graphtype);
-        		
+
         		$.doTimeout(30,function (){
         		    if(!isUndef(gexfDict[getUrlParam.file])){
         		        $("#currentGraph").html(gexfDict[getUrlParam.file]);
         		    } else $("#currentGraph").html(getUrlParam.file);
         		    scanDataFolder();
                     listGexfs();
-        		});            
+        		});
             }
 	    });
 	} else {
 	    window.location.href=window.location.origin+window.location.pathname+"?file="+mainfile;
 	}
-} //url-mode 
+} //url-mode
 else {
 
     if(isUndef(getUrlParam.nodeidparam)) {
@@ -71,12 +71,13 @@ else {
 
 //just CSS
 function sigmaLimits(){
+    console.log('FUN t.main_backup:sigmaLimits')
     pr("\t*** sigmaLimits()")
-    
+
     pw=$('#sigma-example').width();
-    ph=$('#sigma-example').height();    
+    ph=$('#sigma-example').height();
     pr("\t\tprevsigma:("+pw+","+ph+")");
-    
+
     sidebar=$('#leftcolumn').width();
     anchototal=$('#fixedtop').width();
     altototal=$('#leftcolumn').height();
@@ -84,14 +85,15 @@ function sigmaLimits(){
     altodeftop=$('#defaultop').height()
     $('#sigma-example').width(anchototal-sidebar);
     $('#sigma-example').height(altototal-altofixtop-altodeftop-4);
-    
+
     pw=$('#sigma-example').width();
     ph=$('#sigma-example').height();
     pr("\t\tnowsigma:("+pw+","+ph+")");
 }
 
 function bringTheNoise(pathfile,type){
-    
+    console.log('FUN t.main_backup:bringTheNoise')
+
     $("#semLoader").hide();
 
 
@@ -100,7 +102,7 @@ function bringTheNoise(pathfile,type){
 
     //  === get width and height   === //
     sigmaLimits();
-    
+
     //  === sigma canvas resize  with previous values === //
     partialGraph = sigma.init(document.getElementById('sigma-example'))
     .drawingProperties(sigmaJsDrawingProperties)
@@ -117,8 +119,8 @@ function bringTheNoise(pathfile,type){
 
     $('.etabs').click(function(){
         $.doTimeout(500,function () {
-            $("#opossiteNodes").readmore({maxHeight:200}); 
-            $("#sameNodes").readmore({maxHeight:200}); 
+            $("#opossiteNodes").readmore({maxHeight:200});
+            $("#sameNodes").readmore({maxHeight:200});
         });
     });
 
@@ -159,25 +161,25 @@ function bringTheNoise(pathfile,type){
         fullwidth=$('#fixedtop').width();
         e.preventDefault();
         // $("#wrapper").toggleClass("active");
-        if(parseFloat(sidebar.css("right"))<0){            
-            $("#aUnfold").attr("class","rightarrow"); 
+        if(parseFloat(sidebar.css("right"))<0){
+            $("#aUnfold").attr("class","rightarrow");
             sidebar.animate({
                 "right" : sidebar.width()+"px"
-            }, { duration: 400, queue: false }); 
+            }, { duration: 400, queue: false });
 
             $("#ctlzoom").animate({
                     "right": (sidebar.width()+10)+"px"
-            }, { duration: 400, queue: false }); 
-               
+            }, { duration: 400, queue: false });
+
             // $('#sigma-example').width(fullwidth-sidebar.width());
             $('#sigma-example').animate({
                     "width": fullwidth-sidebar.width()+"px"
-            }, { duration: 400, queue: false }); 
+            }, { duration: 400, queue: false });
             setTimeout(function() {
                   partialGraph.resize();
                   partialGraph.refresh();
             }, 400);
-        } 
+        }
         else {
             //HIDE leftcolumn
             $("#aUnfold").attr("class","leftarrow");
@@ -187,7 +189,7 @@ function bringTheNoise(pathfile,type){
 
             $("#ctlzoom").animate({
                     "right": "0px"
-            }, { duration: 400, queue: false }); 
+            }, { duration: 400, queue: false });
 
                 // $('#sigma-example').width(fullwidth);
             $('#sigma-example').animate({
@@ -197,21 +199,21 @@ function bringTheNoise(pathfile,type){
                   partialGraph.resize();
                   partialGraph.refresh();
             }, 400);
-            
-        }   
+
+        }
     });
 
 
     // $("#statsicon").click(function(){
     //     $('#statsmodal').modal('show');
     // });
-    
+
 
     //  === start minimap library... currently off  === //
     startMiniMap();
-    
 
-    console.log("parsing...");    
+
+    console.log("parsing...");
     // < === EXTRACTING DATA === >
     if(mainfile) {
         pr("mainfile: "+mainfile)
@@ -229,7 +231,7 @@ function bringTheNoise(pathfile,type){
             if( pathfile.indexOf(".json") > -1 ) {
                 JSONFile( pathfile )
             } else {
-                onepartiteExtract(); 
+                onepartiteExtract();
             }
 
             pushSWClick("social");
@@ -241,7 +243,7 @@ function bringTheNoise(pathfile,type){
 
             pr(partialGraph._core.graph.nodes.length)
             pr(partialGraph._core.graph.edges.length)
-	    } 
+	    }
 
         if(type=="bi")  {
 
@@ -255,15 +257,15 @@ function bringTheNoise(pathfile,type){
 
 
         partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
-        theListeners(); 
-        $("#closeloader").click(); 
+        theListeners();
+        $("#closeloader").click();
 
     } else {
-      // 
+      //
         var theurl,thedata,thename;
 
     	$('#modalloader').modal('show');
-    	
+
 	    if(type=="unique_id") {
 		    pr("bring the noise, case: unique_id");
             pr(getClientTime()+" : DataExt Ini");
@@ -298,32 +300,33 @@ function bringTheNoise(pathfile,type){
         }
 
         SigmaLayouting( theurl , thedata , thename );
-    }  
+    }
 }
 
 //http://communityexplorer.org/explorerjs.html?nodeidparam={%22categorya%22%3A%22Keywords%22%2C%22categoryb%22%3A%22Scholars%22%2C%22tags%22%3A[%22%23resident%22]}
 
 
 function theListeners(){
+    console.log('FUN t.main_backup:theListeners')
     pr("in THELISTENERS");
     // leftPanel("close");
     $("#closeloader").click();//modal.hide doesnt work :c
 
-    cancelSelection(false);        
+    cancelSelection(false);
     $("#tips").html(getTips());
     //$('#sigma-example').css('background-color','white');
     $("#category-B").hide();
     $("#labelchange").hide();
-    $("#availableView").hide(); 
+    $("#availableView").hide();
     showMeSomeLabels(6);
     initializeMap();
     updateMap();
     updateDownNodeEvent(false);
     partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw(2,2,2);
-    $("#saveAs").click(function() {        
+    $("#saveAs").click(function() {
         $('#savemodal').modal('show');
     });
-    
+
     /******************* /SEARCH ***********************/
     $.ui.autocomplete.prototype._renderItem = function(ul, item) {
         var searchVal = $("#searchinput").val();
@@ -343,7 +346,7 @@ function theListeners(){
             var results = $.grep(labels, function(e) {
                 return matcher.test(e.label); //|| matcher.test(e.desc);
             });
-            
+
             if (!results.length) {
                 $("#noresults").text("Pas de résultats");
             } else {
@@ -351,11 +354,11 @@ function theListeners(){
             }
             matches = results.slice(0, maxSearchResults);
             response(matches);
-            
+
         },
         minLength: minLengthAutoComplete
-    }); 
-   
+    });
+
     $('#searchinput').bind('autocompleteopen', function(event, ui) {
         $(this).data('is_open',true);
     });
@@ -372,12 +375,12 @@ function theListeners(){
             $(this).val(strSearchBar);
         }
     });
-    
+
     // i've a list of coincidences and i press enter like a boss
     $("#searchinput").keydown(function (e) {
         if (e.keyCode == 13 && $("input#searchinput").data('is_open') === true) {
             // Search has several results and you pressed ENTER
-            if(!is_empty(matches)) {                
+            if(!is_empty(matches)) {
                 var coincidences = []
                 for(j=0;j<matches.length;j++){
                 	coincidences.push(matches[j].id)
@@ -391,7 +394,7 @@ function theListeners(){
             }
         }
     });
-    
+
     $("#searchinput").keyup(function (e) {
         if (e.keyCode == 13 && $("input#searchinput").data('is_open') !== true) {
             pr("search KEY UP");
@@ -401,10 +404,10 @@ function theListeners(){
                 	MultipleSelection(exfnd.id , true);//true-> apply deselection algorithm
                     $("input#searchinput").val("");
                     $("input#searchinput").autocomplete( "close" );
-            });     
+            });
         }
     });
-    
+
     $("#searchsubmit").click(function () {
         pr("searchsubmit CLICK");
         var s = $("#searchinput").val();
@@ -420,12 +423,12 @@ function theListeners(){
         partialGraph.refresh();
         // partialGraph.startForceAtlas2();
     });
-    
+
     $('#sigma-example').dblclick(function(event) {
         pr("in the double click event");
 
         var targeted = [];
-        
+
         if(cursor_size>0) {
                     //Multiple selection
             x1 = partialGraph._core.mousecaptor.mouseX;
@@ -440,7 +443,7 @@ function theListeners(){
                         );
                     if(parseInt(distance)<=cursor_size) {
                         counter++;
-                        actualSel.push(n.id);                                
+                        actualSel.push(n.id);
                     }
                 }
             });
@@ -457,14 +460,14 @@ function theListeners(){
         }
 
         if(!is_empty(targeted)) {
-            graphTagCloudElem(targeted); 
+            graphTagCloudElem(targeted);
         } else {
             if(!is_empty(selections)){
-                cancelSelection(false);                
+                cancelSelection(false);
             }
         }
     });
-    
+
     // minimap stuff
     // $("#overview")
     //    .mousemove(onOverviewMove)
@@ -472,7 +475,7 @@ function theListeners(){
     //    .mouseup(endMove)
     //    .mouseout(endMove)
     //    .mousewheel(onGraphScroll);
-    
+
     $("#sigma-example")
         .mousemove(function(){
             if(!isUndef(partialGraph)) {
@@ -494,7 +497,7 @@ function theListeners(){
                 }).map(function(n) {
                     return n.id;
                 });
-                
+
                 partialGraph.dispatch(
                     e['type'] == 'mousedown' ?
                     'downgraph' :
@@ -515,7 +518,7 @@ function theListeners(){
                                 );
                             if(parseInt(distance)<=cursor_size) {
                                 counter++;
-                                actualSel.push(n.id);                                
+                                actualSel.push(n.id);
                             }
                         }
                     });
@@ -545,9 +548,9 @@ function theListeners(){
                     // //The most brilliant way of knowing if an array is empty in the world of JavaScript
                     i=0; for(var s in actualSel) { i++; break;}
 
-                    if(is_empty(actualSel) || i==0){ 
-                        pr("cursor radius ON, mouseDown -> selecciones vacias"); 
-                        cancelSelection(false);   
+                    if(is_empty(actualSel) || i==0){
+                        pr("cursor radius ON, mouseDown -> selecciones vacias");
+                        cancelSelection(false);
                         //$("#names").html("");
                         //$("#opossiteNodes").html("");
                         //$("#information").html("");
@@ -555,7 +558,7 @@ function theListeners(){
                         //$("#tips").html(getTips());
                         //changeButton("unselectNodes");
                         //if(counter>0) graphResetColor();
-                    }      
+                    }
 
                 } else {
                     //Unique Selection
@@ -563,11 +566,11 @@ function theListeners(){
                         e['type'] == 'mousedown' ? 'downnodes' : 'upnodes',
                         targeted
                         );
-                }      
-                
+                }
+
                 partialGraph.draw();
-                trackMouse();    
-                
+                trackMouse();
+
 
             }
         });
@@ -586,12 +589,12 @@ function theListeners(){
         	// pr(sigmaJsMouseProperties.minRatio)
         	// pr(sigmaJsMouseProperties.maxRatio)
             partialGraph.zoomTo(
-                partialGraph._core.width / 2, 
-                partialGraph._core.height / 2, 
+                partialGraph._core.width / 2,
+                partialGraph._core.height / 2,
                 ui.value);
         }
     });
-    
+
     $("#zoomPlusButton").click(function () {
         partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, partialGraph._core.mousecaptor.ratio * 1.5);
         $("#zoomSlider").slider("value",partialGraph.position().ratio);
@@ -603,7 +606,7 @@ function theListeners(){
         $("#zoomSlider").slider("value",partialGraph.position().ratio);
         return false;
     });
-    
+
     $("#edgesButton").click(function () {
         fa2enabled=true;
         if(!isUndef(partialGraph.forceatlas2)) {
@@ -621,9 +624,9 @@ function theListeners(){
             partialGraph.startForceAtlas2();
             return;
         }
-        
+
     });
-    
+
 
     NodeWeightFilter ( "#sliderANodeWeight" ,  "Document",  "type" ,"size");
 
@@ -648,7 +651,7 @@ function theListeners(){
                    partialGraph.draw();
             });
         }
-    }); 
+    });
 
     //finished
     $("#sliderBNodeSize").freshslider({
@@ -668,7 +671,7 @@ function theListeners(){
                    partialGraph.draw();
             });
         }
-    }); 
+    });
 
 
     //finished
@@ -689,6 +692,7 @@ function theListeners(){
 //      Social Spatialization
 //          Semantic Spatialization
 function SigmaLayouting( URL, DATA, NAME) {
+    console.log('FUN t.main_backup:SigmaLayouting')
 	pr(URL+"?"+DATA)
     return $.ajax({
         type: 'GET',
@@ -774,7 +778,7 @@ function SigmaLayouting( URL, DATA, NAME) {
 
                         // [ semantic layouting ]
                         var ForceAtlas2_ = new Worker("tinawebJS/asyncFA2.js");
-                        ForceAtlas2_.postMessage({ 
+                        ForceAtlas2_.postMessage({
                             "nodes": otherGraph._core.graph.nodes,
                             "edges": otherGraph._core.graph.edges,
                             "it":iterationsFA2_
@@ -801,30 +805,30 @@ function SigmaLayouting( URL, DATA, NAME) {
 
                             semanticConverged = true;
                             $("#semLoader").hide();
-                            if( NOW=="B" ) { 
+                            if( NOW=="B" ) {
 
                                 changeToMacro("semantic");
-                                partialGraph.draw();            
+                                partialGraph.draw();
                                 // $("#sliderBEdgeWeight").html("");
                                 // $("#sliderBNodeWeight").html("");
                                 $("#category-B").show();
                                 EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
                                 NodeWeightFilter ( "#sliderBNodeWeight"  , "NGram", "type" , "size");
                                 $("#colorGraph").hide();
-                            
-                                
+
+
                             }
-    
+
                             console.log("Parsing and FA2 complete for SemanticGraph.");
                         });
                         // [ / semantic layouting ]
 
 
 
-                        theListeners(); 
-                    }); 
+                        theListeners();
+                    });
         },
-        error: function(){ 
+        error: function(){
             pr("Page Not found. parseCustom, inside the IF");
         }
     });

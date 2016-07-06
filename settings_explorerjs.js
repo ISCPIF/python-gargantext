@@ -2,6 +2,8 @@
  * Customize as you want ;)
  */
 
+console.log('FUN settings_explorerjs:main')
+
 // ============ < DEVELOPER OPTIONS > ============
 var geomap=false;
 var colorByAtt = false;
@@ -78,7 +80,7 @@ var SigmaUtils = function () {};
 var TinaWebJS = function () {};
 
 var Relations = {}
-    
+
 
 var SystemStates = {}
     SystemStates.level = true;
@@ -116,7 +118,7 @@ var desirableScholarSize=6; //Remember that all scholars have the same size!
  *Three states:
  *  - true: fa2 running at start
  *  - false: fa2 stopped at start, button exists
- *  - "off": button doesn't exist, fa2 stopped forever 
+ *  - "off": button doesn't exist, fa2 stopped forever
  **/ var fa2enabled=false;//"off";
 var stopcriteria = false;
 var iterationsFA2=1000;
@@ -152,7 +154,7 @@ var sigmaJsMouseProperties = {
     maxRatio: 50
 };
 // ============ < / SIGMA.JS PROPERTIES > ============
-         
+
 
 // ============ < / DEVELOPER OPTIONS > ============
 
@@ -198,14 +200,14 @@ var overviewScale = 0.25;
 var overviewHover=false;
 var moveDelay = 80, zoomDelay = 2;
 //var Vecindad;
-var partialGraph; 
+var partialGraph;
 var otherGraph;
-var Nodes = []; 
+var Nodes = [];
 var Edges = [];
 
 var nodeslength=0;
 
-var labels = [];   
+var labels = [];
 
 var numberOfDocs=0;
 var numberOfNGrams=0;
@@ -268,4 +270,3 @@ var RVUniformC = function(seed){
     };
 }
 //unifCont = new RVUniformC(100000000)
-

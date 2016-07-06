@@ -2,6 +2,7 @@
 
 // Level-01
 ParseCustom = function ( format , data ) {
+    console.log('FUN t.sigma.parseCustom:ParseCustom')
     this.data = data;
     this.format = format;
     this.nbCats = 0;
@@ -35,14 +36,14 @@ ParseCustom = function ( format , data ) {
 
 // Level-02
 ParseCustom.prototype.scanFile = function() {
-
+    console.log('FUN t.sigma.parseCustom:scanFile')
     switch (this.format) {
         case "api.json":
             pr("scanFile: "+this.format)
-            break; 
+            break;
         case "db.json":
             pr("scanFile: "+this.format)
-            break; 
+            break;
         case "json":
             pr("scanFile: "+this.format)
             categories = this.getJSONCategories( this.data );
@@ -53,7 +54,7 @@ ParseCustom.prototype.scanFile = function() {
             categories = this.getGEXFCategories( this.data );
             return categories;
             break;
-        default: 
+        default:
             pr("scanFile   jsaispas: "+this.format)
             break;
     }
@@ -61,14 +62,14 @@ ParseCustom.prototype.scanFile = function() {
 
 // Level-02
 ParseCustom.prototype.makeDicts = function(categories) {
-
+    console.log('FUN t.sigma.parseCustom:makeDicts')
     switch (this.format) {
         case "api.json":
             pr("makeDicts: "+this.format)
-            break; 
+            break;
         case "db.json":
             pr("makeDicts: "+this.format)
-            break; 
+            break;
         case "json":
             pr("makeDicts: "+this.format)
             dictionaries = this.parseJSON( categories );
@@ -79,7 +80,7 @@ ParseCustom.prototype.makeDicts = function(categories) {
             dictionaries = this.parseGEXF( categories );
             return dictionaries;
             break;
-        default: 
+        default:
             pr("makeDicts   jsaispas: "+this.format)
             break;
     }
@@ -90,11 +91,12 @@ ParseCustom.prototype.makeDicts = function(categories) {
 
 // Level-00
 function scanGexf(gexf) {
+    console.log('FUN t.sigma.parseCustom:scanGexf')
     var categoriesDict={}, categories=[];
     nodesNodes = gexf.getElementsByTagName('nodes');
-    for(i=0; i<nodesNodes.length; i++){       
+    for(i=0; i<nodesNodes.length; i++){
         var nodesNode = nodesNodes[i];  // Each xml node 'nodes' (plural)
-        node = nodesNode.getElementsByTagName('node');            
+        node = nodesNode.getElementsByTagName('node');
         for(j=0; j<node.length; j++){
             attvalueNodes = node[j].getElementsByTagName('attvalue');
             for(k=0; k<attvalueNodes.length; k++){
@@ -138,7 +140,7 @@ function scanGexf(gexf) {
 // Level-00
 // for {1,2}partite graphs
 function dictfyGexf( gexf , categories ) {
-
+    console.log('FUN t.sigma.parseCustom:dictfyGexf')
 
     var catDict = {}
     var catCount = {}
@@ -146,53 +148,53 @@ function dictfyGexf( gexf , categories ) {
 
     var edges={}, nodes={}, nodes1={}, nodes2=false, bipartiteD2N=false, bipartiteN2D=false;
     if(categories.length>1) {
-        nodes2={}, bipartiteD2N={}, bipartiteN2D={}        
+        nodes2={}, bipartiteD2N={}, bipartiteN2D={}
     }
 
     var i, j, k;
     var nodesAttributes = [];   // The list of attributes of the nodes of the graph that we build in json
     var edgesAttributes = [];   // The list of attributes of the edges of the graph that we build in json
     var attributesNodes = gexf.getElementsByTagName('attributes');  // In the gexf (that is an xml), the list of xml nodes 'attributes' (note the plural 's')
-  
+
     for(i = 0; i<attributesNodes.length; i++){
         var attributesNode = attributesNodes[i];  // attributesNode is each xml node 'attributes' (plural)
         if(attributesNode.getAttribute('class') == 'node'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-        
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 nodesAttributes.push(attribute);
-        
+
             }
         } else if(attributesNode.getAttribute('class') == 'edge'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-          
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 edgesAttributes.push(attribute);
-        
+
             }
         }
     } //out: nodesAttributes Array
-    
+
     var nodesNodes = gexf.getElementsByTagName('nodes') // The list of xml nodes 'nodes' (plural)
     labels = [];
     numberOfDocs=0;
@@ -204,7 +206,7 @@ function dictfyGexf( gexf , categories ) {
         for(j=0; j<nodeNodes.length; j++) {
 
             var nodeNode = nodeNodes[j];  // Each xml node 'node' (no 's')
-      
+
             window.NODE = nodeNode;
 
             // [ get ID ]
@@ -220,8 +222,8 @@ function dictfyGexf( gexf , categories ) {
               sizeNode = sizeNodes[0];
               size = parseFloat(sizeNode.getAttribute('value'));
             }// [ / get Size ]
-            
-            // [ get Coordinates ]            
+
+            // [ get Coordinates ]
             var x = 100 - 200*Math.random();
             var y = 100 - 200*Math.random();
             var positionNodes = nodeNode.getElementsByTagName('position');
@@ -242,13 +244,13 @@ function dictfyGexf( gexf , categories ) {
                     parseFloat(colorNode.getAttribute('g')),
                     parseFloat(colorNode.getAttribute('b')));
             }// [ / get Colour ]
-            
+
             var node = ({
                 id:id,
-                label:label, 
-                size:Math.log(size+1), 
-                x:x, 
-                y:y, 
+                label:label,
+                size:Math.log(size+1),
+                x:x,
+                y:y,
                 color:color
             });
 
@@ -281,9 +283,9 @@ function dictfyGexf( gexf , categories ) {
 
                 // console.log(node)
             }
-        
+
         }
-    }  
+    }
 
     var edgeId = 0;
     var edgesNodes = gexf.getElementsByTagName('edges');
@@ -297,7 +299,7 @@ function dictfyGexf( gexf , categories ) {
             var type = edgeNode.getAttribute('type');//line or curve
 
             var indice=source+";"+target;
-                
+
             var edge = {
                 id: indice,
                 source: source,
@@ -318,7 +320,7 @@ function dictfyGexf( gexf , categories ) {
                 var attr = attvalueNode.getAttribute('for');
                 var val = attvalueNode.getAttribute('value');
                 edge.attributes.push({
-                    attr:attr, 
+                    attr:attr,
                     val:val
                 });
             }
@@ -337,7 +339,7 @@ function dictfyGexf( gexf , categories ) {
                 idInRelations = []
                 for(var c in petitDict) idInRelations[catDict[c]] = true;
                 for(var c=0; c<categories.length;c++) {
-                    if(!idInRelations[c]) idInRelations[c] = false; 
+                    if(!idInRelations[c]) idInRelations[c] = false;
                 }
                 idArray = idInRelations.map(Number).join("|")
                 edge.categ = idArray;
@@ -358,43 +360,43 @@ function dictfyGexf( gexf , categories ) {
                         nodes1[source] = {
                             label: nodes[source].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     if(isUndef(nodes1[target])) {
                         nodes1[target] = {
                             label: nodes[target].label,
                             neighbours: []
-                        };                    
-                    }   
+                        };
+                    }
                     nodes1[source].neighbours.push(target);
                     nodes1[target].neighbours.push(source);
                     // partialGraph.addEdge(indice,source,target,edge);
                 }
-                
+
                 if(categories.length>1) {
 
                     // Term <-> Term
-                    if(idS==categories[1] && idT==categories[1]){ 
+                    if(idS==categories[1] && idT==categories[1]){
                         edge.label = "nodes2";
 
                         if(isUndef(nodes2[source])) {
                             nodes2[source] = {
                                 label: nodes[source].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
                         if(isUndef(nodes2[target])) {
                             nodes2[target] = {
                                 label: nodes[target].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
                         nodes2[source].neighbours.push(target);
                         nodes2[target].neighbours.push(source);
-                        
+
                         // otherGraph.addEdge(indice,source,target,edge);
                     }
-                    
+
                     // Doc <-> Term
                     if((idS==categories[0] && idT==categories[1]) ||
                         (idS==categories[1] && idT==categories[0])) {
@@ -407,13 +409,13 @@ function dictfyGexf( gexf , categories ) {
                                 bipartiteD2N[source] = {
                                     label: nodes[source].label,
                                     neighbours: []
-                                };                    
+                                };
                             }
                             if(isUndef(bipartiteN2D[target])) {
                                 bipartiteN2D[target] = {
                                     label: nodes[target].label,
                                     neighbours: []
-                                };                    
+                                };
                             }
 
                             bipartiteD2N[source].neighbours.push(target);
@@ -426,13 +428,13 @@ function dictfyGexf( gexf , categories ) {
                                 bipartiteN2D[source] = {
                                     label: nodes[source].label,
                                     neighbours: []
-                                };                    
+                                };
                             }
                             if(isUndef(bipartiteD2N[target])) {
                                 bipartiteD2N[target] = {
                                     label: nodes[target].label,
                                     neighbours: []
-                                };                    
+                                };
                             }
                             bipartiteN2D[source].neighbours.push(target);
                             bipartiteD2N[target].neighbours.push(source);
@@ -474,7 +476,7 @@ function dictfyGexf( gexf , categories ) {
 
 // Level-00
 function scanJSON( data ) {
-
+    console.log('FUN t.sigma.parseCustom:scanJSON')
     var categoriesDict={}, categories=[];
     var nodes = data.nodes;
 
@@ -516,6 +518,7 @@ function scanJSON( data ) {
 // Level-00
 // for {1,2}partite graphs
 function dictfyJSON( data , categories ) {
+    console.log('FUN t.sigma.parseCustom:dictfyJSON')
     console.clear()
     console.log("IN DICTIFY JSON")
     var catDict = {}
@@ -525,7 +528,7 @@ function dictfyJSON( data , categories ) {
     var edges={}, nodes={}, nodes1={}, nodes2=false, bipartiteD2N=false, bipartiteN2D=false;
 
     if(categories.length>1) {
-        nodes2={}, bipartiteD2N={}, bipartiteN2D={}        
+        nodes2={}, bipartiteD2N={}, bipartiteN2D={}
     }
 
     for(var i in data.nodes) {
@@ -572,7 +575,7 @@ function dictfyJSON( data , categories ) {
         edge.target = parseInt(target);
         edge.weight = weight;
         edge.type = type;
-        
+
         if ( (nodes[source] && nodes[target]) )  {
             idS=nodes[source].type;
             idT=nodes[target].type;
@@ -585,7 +588,7 @@ function dictfyJSON( data , categories ) {
             idInRelations = []
             for(var c in petitDict) idInRelations[catDict[c]] = true;
             for(var c=0; c<categories.length;c++) {
-                if(!idInRelations[c]) idInRelations[c] = false; 
+                if(!idInRelations[c]) idInRelations[c] = false;
             }
             idArray = idInRelations.map(Number).join("|")
             edge.categ = idArray;
@@ -606,42 +609,42 @@ function dictfyJSON( data , categories ) {
                     nodes1[source] = {
                         label: nodes[source].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 if(isUndef(nodes1[target])) {
                     nodes1[target] = {
                         label: nodes[target].label,
                         neighbours: []
-                    };                    
-                }   
+                    };
+                }
                 nodes1[source].neighbours.push(target);
                 nodes1[target].neighbours.push(source);
             }
-            
+
             if(categories.length>1) {
 
                 // Term <-> Term
-                if(idS==categories[1] && idT==categories[1]){ 
+                if(idS==categories[1] && idT==categories[1]){
                     edge.label = "nodes2";
 
                     if(isUndef(nodes2[source])) {
                         nodes2[source] = {
                             label: nodes[source].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     if(isUndef(nodes2[target])) {
                         nodes2[target] = {
                             label: nodes[target].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     nodes2[source].neighbours.push(target);
                     nodes2[target].neighbours.push(source);
-                    
+
                     // otherGraph.addEdge(indice,source,target,edge);
                 }
-                
+
                 // Doc <-> Term
                 if((idS==categories[0] && idT==categories[1]) ||
                     (idS==categories[1] && idT==categories[0])) {
@@ -654,13 +657,13 @@ function dictfyJSON( data , categories ) {
                             bipartiteD2N[source] = {
                                 label: nodes[source].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
                         if(isUndef(bipartiteN2D[target])) {
                             bipartiteN2D[target] = {
                                 label: nodes[target].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
 
                         bipartiteD2N[source].neighbours.push(target);
@@ -673,13 +676,13 @@ function dictfyJSON( data , categories ) {
                             bipartiteN2D[source] = {
                                 label: nodes[source].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
                         if(isUndef(bipartiteD2N[target])) {
                             bipartiteD2N[target] = {
                                 label: nodes[target].label,
                                 neighbours: []
-                            };                    
+                            };
                         }
                         bipartiteN2D[source].neighbours.push(target);
                         bipartiteD2N[target].neighbours.push(source);
@@ -717,6 +720,7 @@ function dictfyJSON( data , categories ) {
 
 // to move
 function buildInitialState( categories ) {
+    console.log('FUN t.sigma.parseCustom:buildInitialState')
     var firstState = []
     for(var i=0; i<categories.length ; i++) {
         if(i==0) firstState.push(true)
@@ -727,11 +731,12 @@ function buildInitialState( categories ) {
 
 //to move
 function makeSystemStates (cats) {
+    console.log('FUN t.sigma.parseCustom:makeSystemStates')
     var systemstates = {}
     var N=Math.pow(2 , cats.length);
 
-    for (i = 0; i < N; i++) { 
-        
+    for (i = 0; i < N; i++) {
+
         bin = (i).toString(2)
         bin_splitted = []
         for(var j in bin)
@@ -742,7 +747,7 @@ function makeSystemStates (cats) {
         for (k = 0; k < toadd; k++)
             bin_array.push("0")
 
-        for(var j in bin) 
+        for(var j in bin)
             bin_array.push(bin[j])
 
         bin_array = bin_array.map(Number)
@@ -760,6 +765,7 @@ function makeSystemStates (cats) {
 
 //to_del
 function parse(gexfPath) {
+    console.log('FUN t.sigma.parseCustom:parse')
     var gexfhttp;
     gexfhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
     gexfhttp.open('GET', gexfPath, false);
@@ -769,11 +775,12 @@ function parse(gexfPath) {
 
 //to_del
 function scanCategories() {
+    console.log('FUN t.sigma.parseCustom:scanCategories')
     nodesNodes = gexf.getElementsByTagName('nodes');
-    for(i=0; i<nodesNodes.length; i++){       
+    for(i=0; i<nodesNodes.length; i++){
         var nodesNode = nodesNodes[i];  // Each xml node 'nodes' (plural)
         node = nodesNode.getElementsByTagName('node');
-        
+
         for(j=0; j<node.length; j++){
             attvalueNodes = node[j].getElementsByTagName('attvalue');
             for(k=0; k<attvalueNodes.length; k++){
@@ -801,7 +808,7 @@ function scanCategories() {
 
 //to_del
 function onepartiteExtract(){
-    
+    console.log('FUN t.sigma.parseCustom:onepartiteExtract')
     var i, j, k;
     //    partialGraph.emptyGraph();
     // Parse Attributes
@@ -809,46 +816,46 @@ function onepartiteExtract(){
     var nodesAttributes = [];   // The list of attributes of the nodes of the graph that we build in json
     var edgesAttributes = [];   // The list of attributes of the edges of the graph that we build in json
     var attributesNodes = gexf.getElementsByTagName('attributes');  // In the gexf (that is an xml), the list of xml nodes 'attributes' (note the plural 's')
-  
+
     for(i = 0; i<attributesNodes.length; i++){
         var attributesNode = attributesNodes[i];  // attributesNode is each xml node 'attributes' (plural)
         if(attributesNode.getAttribute('class') == 'node'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-        
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 nodesAttributes.push(attribute);
-        
+
             }
         } else if(attributesNode.getAttribute('class') == 'edge'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-          
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 edgesAttributes.push(attribute);
-        
+
             }
         }
     }
-  
+
     var nodesNodes = gexf.getElementsByTagName('nodes') // The list of xml nodes 'nodes' (plural)
 
     labels = [];
@@ -862,13 +869,13 @@ function onepartiteExtract(){
 
         for(j=0; j<nodeNodes.length; j++){
             var nodeNode = nodeNodes[j];  // Each xml node 'node' (no 's')
-      
-      
+
+
             window.NODE = nodeNode;
 
             var id = ""+nodeNode.getAttribute('id');
             var label = nodeNode.getAttribute('label') || id;
-            
+
             //viz
             var size=1;
             sizeNodes = nodeNode.getElementsByTagName('size');
@@ -882,10 +889,10 @@ function onepartiteExtract(){
             var x = 100 - 200*Math.random();
             var y = 100 - 200*Math.random();
             var color;
-      
+
             var positionNodes = nodeNode.getElementsByTagName('position');
-            positionNodes = positionNodes.length ? 
-            positionNodes : 
+            positionNodes = positionNodes.length ?
+            positionNodes :
             nodeNode.getElementsByTagNameNS('*','position');
             if(positionNodes.length>0){
                 var positionNode = positionNodes[0];
@@ -894,8 +901,8 @@ function onepartiteExtract(){
             }
 
             var colorNodes = nodeNode.getElementsByTagName('color');
-            colorNodes = colorNodes.length ? 
-            colorNodes : 
+            colorNodes = colorNodes.length ?
+            colorNodes :
             nodeNode.getElementsByTagNameNS('*','color');
             if(colorNodes.length>0){
                 colorNode = colorNodes[0];
@@ -903,18 +910,18 @@ function onepartiteExtract(){
                     parseFloat(colorNode.getAttribute('g')),
                     parseFloat(colorNode.getAttribute('b')));
             }
-            
+
             var node = ({
                 id:id,
-                label:label, 
-                size:size, 
-                x:x, 
-                y:y, 
+                label:label,
+                size:size,
+                x:x,
+                y:y,
                 type:"",
-                attributes:[], 
+                attributes:[],
                 color:color
             });  // The graph node
-                
+
             // Attribute values
             var attvalueNodes = nodeNode.getElementsByTagName('attvalue');
             var atts={};
@@ -923,7 +930,7 @@ function onepartiteExtract(){
                 var attr = attvalueNode.getAttribute('for');
                 var val = attvalueNode.getAttribute('value');
                    // node.attributes.push({
-                   //     attr:attr, 
+                   //     attr:attr,
                    //     val:val
                    // });
                 atts[attr]=val;
@@ -937,31 +944,31 @@ function onepartiteExtract(){
                // if(node.attributes[1].attr=="weight"){
                //     node.size=node.attributes[1].val;
                // }
-                
+
             partialGraph.addNode(id,node);
             labels.push({
                 'label' : label,
                 'desc'  : node.type
             });
-            
+
             if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
             if(parseInt(node.size) > parseInt(maxNodeSize)) maxNodeSize= node.size;
             // Create Node
             Nodes[id] = node  // The graph node
             //pr(node);
         }
-    }    
-    
+    }
+
     //New scale for node size: now, between 2 and 5 instead [1,70]
     for(var it in Nodes){
-        Nodes[it].size = 
+        Nodes[it].size =
         desirableNodeSizeMIN+
         (parseInt(Nodes[it].size)-1)*
         ((desirableNodeSizeMAX-desirableNodeSizeMIN)/
             (maxNodeSize-minNodeSize));
         partialGraph._core.graph.nodesIndex[it].size=Nodes[it].size;
     }
-    
+
 
     var edgeId = 0;
     var edgesNodes = gexf.getElementsByTagName('edges');
@@ -975,7 +982,7 @@ function onepartiteExtract(){
             var source = edgeNode.getAttribute('source');
             var target = edgeNode.getAttribute('target');
             var indice=source+";"+target;
-            
+
             var edge = {
                 id:         j,
                 sourceID:   source,
@@ -1006,12 +1013,12 @@ function onepartiteExtract(){
                     if(edge.weight > maxEdgeWeight) maxEdgeWeight= edge.weight;
                 }
                 edge.attributes.push({
-                    attr:attr, 
+                    attr:attr,
                     val:val
                 });
             }
 
-            edge.label="nodes1";            
+            edge.label="nodes1";
             if(isUndef(nodes1[source])){
                 nodes1[source] = {
                     label: Nodes[source].label,
@@ -1019,7 +1026,7 @@ function onepartiteExtract(){
                     neighboursIndex: {}
                 };
                 nodes1[source].neighboursIndex[target] = 1;
-            } else nodes1[source].neighboursIndex[target] = 1;  
+            } else nodes1[source].neighboursIndex[target] = 1;
 
             if( isUndef(nodes1[target]) ){
                 nodes1[target] = {
@@ -1032,10 +1039,10 @@ function onepartiteExtract(){
 
             Edges[indice] = edge;
             if( isUndef(gete([target+";"+source])) ) partialGraph.addEdge(indice,source,target,edge);
-            
+
         }
     }
-    
+
     for(var n in nodes1) {
     	nodes1[n].neighbours = Object.keys(nodes1[n].neighboursIndex)
     	nodes1[n].neighboursIndex = null;
@@ -1045,54 +1052,55 @@ function onepartiteExtract(){
 
 //to_del
 function fullExtract(){
+    console.log('FUN t.sigma.parseCustom:fullExtract')
     var i, j, k;
     // Parse Attributes
     // This is confusing, so I'll comment heavily
     var nodesAttributes = [];   // The list of attributes of the nodes of the graph that we build in json
     var edgesAttributes = [];   // The list of attributes of the edges of the graph that we build in json
     var attributesNodes = gexf.getElementsByTagName('attributes');  // In the gexf (that is an xml), the list of xml nodes 'attributes' (note the plural 's')
-  
+
     for(i = 0; i<attributesNodes.length; i++){
         var attributesNode = attributesNodes[i];  // attributesNode is each xml node 'attributes' (plural)
         if(attributesNode.getAttribute('class') == 'node'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-        
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 nodesAttributes.push(attribute);
-        
+
             }
         } else if(attributesNode.getAttribute('class') == 'edge'){
             var attributeNodes = attributesNode.getElementsByTagName('attribute');  // The list of xml nodes 'attribute' (no 's')
             for(j = 0; j<attributeNodes.length; j++){
                 var attributeNode = attributeNodes[j];  // Each xml node 'attribute'
-        
+
                 var id = attributeNode.getAttribute('id'),
                 title = attributeNode.getAttribute('title'),
                 type = attributeNode.getAttribute('type');
-          
+
                 var attribute = {
-                    id:id, 
-                    title:title, 
+                    id:id,
+                    title:title,
                     type:type
                 };
                 edgesAttributes.push(attribute);
-        
+
             }
         }
     }
-  
+
     var nodesNodes = gexf.getElementsByTagName('nodes') // The list of xml nodes 'nodes' (plural)
-  
+
     labels = [];
     numberOfDocs=0;
     numberOfNGrams=0;
@@ -1102,13 +1110,13 @@ function fullExtract(){
 
         for(j=0; j<nodeNodes.length; j++){
             var nodeNode = nodeNodes[j];  // Each xml node 'node' (no 's')
-      
-      
+
+
             window.NODE = nodeNode;
 
             var id = nodeNode.getAttribute('id');
             var label = nodeNode.getAttribute('label') || id;
-            
+
             var size=1;
             sizeNodes = nodeNode.getElementsByTagName('size');
             sizeNodes = sizeNodes.length ?
@@ -1118,11 +1126,11 @@ function fullExtract(){
               sizeNode = sizeNodes[0];
               size = parseFloat(sizeNode.getAttribute('value'));
             }
-            
+
             var x = 100 - 200*Math.random();
             var y = 100 - 200*Math.random();
             var color;
-      
+
             var positionNodes = nodeNode.getElementsByTagName('position');
             positionNodes = positionNodes.length ? positionNodes : nodeNode.getElementsByTagNameNS('*','position');
             if(positionNodes.length>0){
@@ -1139,15 +1147,15 @@ function fullExtract(){
                     parseFloat(colorNode.getAttribute('g')),
                     parseFloat(colorNode.getAttribute('b')));
             }
-            
+
             var node = ({
                 id:id,
-                label:label, 
-                size:size, 
-                x:x, 
-                y:y, 
+                label:label,
+                size:size,
+                x:x,
+                y:y,
                 type:"",
-                attributes:[], 
+                attributes:[],
                 color:color
             });  // The graph node
 
@@ -1163,7 +1171,7 @@ function fullExtract(){
                 /*      Para asignar tamaño a los NGrams    */
                 if(atts["category"]===categoriesIndex[1]) {
                     if(typeof(node.size)==="undefined") node.size=parseInt(val).toFixed(2);
-                   
+
                 }
                 /*      Para asignar tamaño a los NGrams    */
             }
@@ -1186,17 +1194,17 @@ function fullExtract(){
                 node.id = "N::"+node.id;
                 numberOfNGrams++;
                 if(isUndef(node.size)) node.size=nodew;
-            }      
-            
+            }
+
             if(parseInt(node.size) < parseInt(minNodeSize)) minNodeSize= node.size;
             if(parseInt(node.size) > parseInt(maxNodeSize)) maxNodeSize= node.size;
             // Create Node
 
             Nodes[node.id] = node  // The graph node
-            
-            
+
+
         }
-    }  
+    }
     //New scale for node size: now, between 2 and 5 instead [1,70]
     for(var i in Nodes){
         normalizedSize=desirableNodeSizeMIN+(Nodes[i].size-1)*((desirableNodeSizeMAX-desirableNodeSizeMIN)/(parseInt(maxNodeSize)-parseInt(minNodeSize)));
@@ -1204,11 +1212,11 @@ function fullExtract(){
         nodeK = Nodes[i];
         if(Nodes[i].type==catSoc) {
 			nodeK.shape="square";
-        	partialGraph.addNode(i,nodeK); 
+        	partialGraph.addNode(i,nodeK);
         }
         // pr(nodeK)
     }
-    
+
 
     //Edges
     var edgeId = 0;
@@ -1225,7 +1233,7 @@ function fullExtract(){
             target = (Nodes["D::"+target])? ("D::"+target):("N::"+target)
 
             var indice=source+";"+target;
-                
+
             var edge = {
                 id:         indice,
                 sourceID:   source,
@@ -1256,21 +1264,21 @@ function fullExtract(){
                     if(edge.weight > maxEdgeWeight) maxEdgeWeight= edge.weight;
                 }
                 edge.attributes.push({
-                    attr:attr, 
+                    attr:attr,
                     val:val
                 });
             }
-            
+
             // pr(edge)
             idS=Nodes[edge.sourceID].type;
             idT=Nodes[edge.targetID].type;
 
             Edges[indice] = edge;
-            
+
             // if(idS==idT)
            		// pr(edge.sourceID+"|"+idS+" <-> "+idT+"|"+edge.targetID)
 
-            if(idS==catSoc && idT==catSoc){  
+            if(idS==catSoc && idT==catSoc){
                 // pr("anything here?")
 
                 edge.label = "nodes1";
@@ -1279,43 +1287,43 @@ function fullExtract(){
                     nodes1[source] = {
                         label: Nodes[source].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 if(isUndef(nodes1[target])) {
                     nodes1[target] = {
                         label: Nodes[target].label,
                         neighbours: []
-                    };                    
-                }   
+                    };
+                }
                 nodes1[source].neighbours.push(target);
                 nodes1[target].neighbours.push(source);
 
                 partialGraph.addEdge(indice,source,target,edge);
             }
-            
-            
-            if(idS==catSem && idT==catSem){ 
+
+
+            if(idS==catSem && idT==catSem){
                 edge.label = "nodes2";
 
                 if(isUndef(nodes2[source])) {
                     nodes2[source] = {
                         label: Nodes[source].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 if(isUndef(nodes2[target])) {
                     nodes2[target] = {
                         label: Nodes[target].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 nodes2[source].neighbours.push(target);
                 nodes2[target].neighbours.push(source);
-                
+
                 // otherGraph.addEdge(indice,source,target,edge);
             }
-            
-            
+
+
             if((idS==catSoc && idT==catSem)||(idS==catSem && idT==catSoc)) {
                 edge.label = "bipartite";
 
@@ -1328,13 +1336,13 @@ function fullExtract(){
                         bipartiteD2N[source] = {
                             label: Nodes[source].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     if(isUndef(bipartiteN2D[target])) {
                         bipartiteN2D[target] = {
                             label: Nodes[target].label,
                             neighbours: []
-                        };                    
+                        };
                     }
 
                     bipartiteD2N[source].neighbours.push(target);
@@ -1347,13 +1355,13 @@ function fullExtract(){
                         bipartiteN2D[source] = {
                             label: Nodes[source].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     if(isUndef(bipartiteD2N[target])) {
                         bipartiteD2N[target] = {
                             label: Nodes[target].label,
                             neighbours: []
-                        };                    
+                        };
                     }
                     bipartiteN2D[source].neighbours.push(target);
                     bipartiteD2N[target].neighbours.push(source);
@@ -1373,9 +1381,9 @@ function fullExtract(){
 
 //to_del
 function JSONFile( URL ) {
+    console.log('FUN t.sigma.parseCustom:JSONFile')
 
 
-    
     return $.ajax({
         type: 'GET',
         url: URL,
@@ -1391,7 +1399,7 @@ function JSONFile( URL ) {
 
             parseSimpleJSON(data,seed)
         },
-        error: function(){ 
+        error: function(){
             pr("Page Not found. parseCustom, inside the IF");
         }
     });
@@ -1399,22 +1407,22 @@ function JSONFile( URL ) {
 
 //to_del
 function parseSimpleJSON( data , seed ) {
-
+    console.log('FUN t.sigma.parseCustom:parseSimpleJSON')
     var i, j, k;
-    rand=new RVUniformC(seed);                     
+    rand=new RVUniformC(seed);
     //partialGraph.emptyGraph();
     // Parse Attributes
     // This is confusing, so I'll comment heavily
     var nodesAttributes = [];   // The list of attributes of the nodes of the graph that we build in json
     var edgesAttributes = [];   // The list of attributes of the edges of the graph that we build in json
     //var attributesNodes = gexf.getElementsByTagName('attributes');  // In the gexf (that is an xml), the list of xml nodes 'attributes' (note the plural 's')
-    
+
     var nodesNodes = data.nodes // The list of xml nodes 'nodes' (plural)
 
     labels = [];
     numberOfDocs=0;
     numberOfNGrams=0;
-    
+
     //Manually assigning ONE category
     categories[catSoc]=catSoc;
     categoriesIndex[0]=catSoc;
@@ -1425,20 +1433,20 @@ function parseSimpleJSON( data , seed ) {
         var color, label;
         if(isUndef(nodesNodes[i].color)) color = "#800000";
         if(isUndef(nodesNodes[i].label)) label = "node_"+i;
-        
+
         var node = ({
             id: i ,
-            label:label, 
-            size:1, 
-            x:rand.getRandom(), 
-            y:rand.getRandom(), 
+            label:label,
+            size:1,
+            x:rand.getRandom(),
+            y:rand.getRandom(),
             type:catSoc,
             htmlCont:"",
             color:color
         });  // The graph node
         pr(node)
         Nodes[i] = node;
-        partialGraph.addNode( i , node );  
+        partialGraph.addNode( i , node );
     }
 
     var edgeId = 0;
@@ -1473,14 +1481,14 @@ function parseSimpleJSON( data , seed ) {
                 nodes1[source] = {
                     label: Nodes[source].label,
                     neighbours: []
-                };                    
+                };
             }
             if(isUndef(nodes1[target])) {
                 nodes1[target] = {
                     label: Nodes[target].label,
                     neighbours: []
-                };                    
-            }   
+                };
+            }
             nodes1[source].neighbours.push(target);
             nodes1[target].neighbours.push(source);
 
@@ -1494,22 +1502,23 @@ function parseSimpleJSON( data , seed ) {
 //to_del
 // For CommunityExplorer API
 function extractFromJson(data,seed){
+    console.log('FUN t.sigma.parseCustom:extractFromJson')
     var i, j, k;
-    rand=new RVUniformC(seed);                     
+    rand=new RVUniformC(seed);
     //partialGraph.emptyGraph();
     // Parse Attributes
     // This is confusing, so I'll comment heavily
     var nodesAttributes = [];   // The list of attributes of the nodes of the graph that we build in json
     var edgesAttributes = [];   // The list of attributes of the edges of the graph that we build in json
     //var attributesNodes = gexf.getElementsByTagName('attributes');  // In the gexf (that is an xml), the list of xml nodes 'attributes' (note the plural 's')
-    
+
     var nodesNodes = data.nodes // The list of xml nodes 'nodes' (plural)
     labels = [];
     numberOfDocs=0;
     numberOfNGrams=0;
 
     for (var uid in data.ID) egonode[uid] = data.ID[uid]
-    
+
     //Manually assigning categories
     categories[catSoc]=catSoc;
     categories[catSem]=catSem;
@@ -1525,13 +1534,13 @@ function extractFromJson(data,seed){
                     parseFloat(colorRaw[0]));
                     //Colors inverted... Srsly??
         } else color = "#800000";
-        
+
         var node = ({
             id:i,
-            label:nodesNodes[i].label, 
-            size:1, 
-            x:rand.getRandom(), 
-            y:rand.getRandom(), 
+            label:nodesNodes[i].label,
+            size:1,
+            x:rand.getRandom(),
+            y:rand.getRandom(),
             // x:Math.random(),
             // y:Math.random(),
             type:"",
@@ -1562,23 +1571,23 @@ function extractFromJson(data,seed){
         if(Nodes[i].type=="NGram") {
             normalizedSize=desirableNodeSizeMIN+(Nodes[i].size-1)*((desirableNodeSizeMAX-desirableNodeSizeMIN)/(parseInt(maxNodeSize)-parseInt(minNodeSize)));
             Nodes[i].size = ""+normalizedSize;
-            
+
             nodeK = Nodes[i];
-            otherGraph.addNode(i,nodeK);  
-        } 
+            otherGraph.addNode(i,nodeK);
+        }
         else {
-            partialGraph.addNode(i,Nodes[i]);  
+            partialGraph.addNode(i,Nodes[i]);
             updateSearchLabels(i,Nodes[i].label,Nodes[i].type);
         }
     }
-    
+
     var edgeId = 0;
     var edgesNodes = data.links;
     for(var i in edgesNodes) {
         var source = edgesNodes[i].s;
         var target = edgesNodes[i].t;
         var indice=source+";"+target;
-        
+
         var edge = {
                 id:         indice,
                 sourceID:   source,
@@ -1596,7 +1605,7 @@ function extractFromJson(data,seed){
         idT=Nodes[edge.targetID].type;
 
 
-        if(idS==catSoc && idT==catSoc){  
+        if(idS==catSoc && idT==catSoc){
 
             edge.label = "nodes1";
 
@@ -1604,47 +1613,47 @@ function extractFromJson(data,seed){
                 nodes1[source] = {
                     label: Nodes[source].label,
                     neighbours: []
-                };                    
+                };
             }
             if(isUndef(nodes1[target])) {
                 nodes1[target] = {
                     label: Nodes[target].label,
                     neighbours: []
-                };                    
-            }   
+                };
+            }
             nodes1[source].neighbours.push(target);
             nodes1[target].neighbours.push(source);
 
             // social edges = 1
             Edges[indice].bweight = edgesNodes[i].w;//realweight just in bigraph-weight
-            edge.weight = 1; 
+            edge.weight = 1;
 
             partialGraph.addEdge(indice,source,target,edge);
         }
-        
-        
-        if(idS==catSem && idT==catSem){ 
+
+
+        if(idS==catSem && idT==catSem){
             edge.label = "nodes2";
 
             if(isUndef(nodes2[source])) {
                 nodes2[source] = {
                     label: Nodes[source].label,
                     neighbours: []
-                };                    
+                };
             }
             if(isUndef(nodes2[target])) {
                 nodes2[target] = {
                     label: Nodes[target].label,
                     neighbours: []
-                };                    
+                };
             }
             nodes2[source].neighbours.push(target);
             nodes2[target].neighbours.push(source);
-        
+
         	otherGraph.addEdge(indice,source,target,edge);
         }
-        
-        
+
+
         if((idS==catSoc && idT==catSem)||(idS==catSem && idT==catSoc)) {
             edge.label = "bipartite";
 
@@ -1657,13 +1666,13 @@ function extractFromJson(data,seed){
                     bipartiteD2N[source] = {
                         label: Nodes[source].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 if(isUndef(bipartiteN2D[target])) {
                     bipartiteN2D[target] = {
                         label: Nodes[target].label,
                         neighbours: []
-                    };                    
+                    };
                 }
 
                 bipartiteD2N[source].neighbours.push(target);
@@ -1676,18 +1685,18 @@ function extractFromJson(data,seed){
                     bipartiteN2D[source] = {
                         label: Nodes[source].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 if(isUndef(bipartiteD2N[target])) {
                     bipartiteD2N[target] = {
                         label: Nodes[target].label,
                         neighbours: []
-                    };                    
+                    };
                 }
                 bipartiteN2D[source].neighbours.push(target);
                 bipartiteD2N[target].neighbours.push(source);
             }
         }
-            
+
     }
 }

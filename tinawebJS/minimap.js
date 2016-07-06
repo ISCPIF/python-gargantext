@@ -1,5 +1,6 @@
 
-function draw1Circle(ctx , x , y , color) {    
+function draw1Circle(ctx , x , y , color) {
+    console.log('FUN t.minimap:draw1Circle')
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1;
     ctx.fillStyle = color;
@@ -14,6 +15,7 @@ function draw1Circle(ctx , x , y , color) {
 
 
 function trackMouse() {
+    console.log('FUN t.minimap:trackMouse')
     if(!shift_key) {
         // $.doTimeout(300,function (){
             var ctx = partialGraph._core.domElements.mouse.getContext('2d');
@@ -22,13 +24,13 @@ function trackMouse() {
 
             x = partialGraph._core.mousecaptor.mouseX;
             y = partialGraph._core.mousecaptor.mouseY;
-            
+
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
             ctx.fillStyle = "#71C3FF";
-            ctx.globalAlpha = 0.5;  
+            ctx.globalAlpha = 0.5;
             ctx.beginPath();
-            
+
             if(partialGraph._core.mousecaptor.ratio>showLabelsIfZoom){
                 for(var i in partialGraph._core.graph.nodesIndex){
                         n=partialGraph._core.graph.nodesIndex[i];
@@ -63,7 +65,7 @@ function trackMouse() {
                 if(partialGraph.forceatlas2 && partialGraph.forceatlas2.count<=1) {
                     partialGraph.draw(2,2,2);
                 }
-            }          
+            }
             ctx.arc(x, y, cursor_size, 0, Math.PI * 2, true);
             //ctx.arc(partialGraph._core.width/2, partialGraph._core.height/2, 4, 0, 2 * Math.PI, true);/*todel*/
             ctx.closePath();
@@ -74,6 +76,7 @@ function trackMouse() {
 };
 
 function changeGraphPosition(evt, echelle) {
+    console.log('FUN t.minimap:changeGraphPosition')
     document.body.style.cursor = "move";
     var _coord = {
         x : evt.pageX,
@@ -86,22 +89,22 @@ function changeGraphPosition(evt, echelle) {
 }
 
 function onOverviewMove(evt) {
-    console.log("onOverViewMove"); 
+    console.log('FUN t.minimap:onOverviewMove')
     /*
      pageX: 1247   pageY: 216
      screenX: 1188  screenY: 307
-    
+
      pageX: 1444    pageY: 216
      screenX: 1365  screenY: 307
      */
-    
+
     if (partialGraph.dragOn) {
         changeGraphPosition(evt,-overviewScale);
     }
 }
 
 function startMove(evt){
-    console.log("startMove");
+    console.log('FUN t.minimap:startMove')
     evt.preventDefault();
     partialGraph.dragOn = true;
     partialGraph.lastMouse = {
@@ -112,13 +115,14 @@ function startMove(evt){
 }
 
 function endMove(evt){
-    console.log("endMove");
+    console.log('FUN t.minimap:endMove')
     document.body.style.cursor = "default";
     partialGraph.dragOn = false;
     partialGraph.mouseHasMoved = false;
 }
 
 function onGraphScroll(evt, delta) {
+    console.log('FUN t.minimap:onGraphScroll')
     $("#zoomSlider").slider("value",partialGraph.position().ratio);
     // partialGraph.totalScroll += delta;
     // if (Math.abs(partialGraph.totalScroll) >= 1) {
@@ -130,13 +134,13 @@ function onGraphScroll(evt, delta) {
     //             //_off = $(this).offset(),
     //             //_deltaX = evt.pageX - _el.width() / 2 - _off.left,
     //             //_deltaY = evt.pageY - _el.height() / 2 - _off.top;
-    //             var 
+    //             var
     //             mx=evt.offsetX,
     //             my=evt.offsetY;
     //             partialGraph.centreX=mx*((partialGraph._core.width-1)/(overviewWidth)),
-    //             partialGraph.centreY=my*((partialGraph._core.height-1)/(overviewHeight));               
-                
-    //             //                console.log("mx: "+mx+" - my: "+ my);                
+    //             partialGraph.centreY=my*((partialGraph._core.height-1)/(overviewHeight));
+
+    //             //                console.log("mx: "+mx+" - my: "+ my);
     //             //                console.log("cx: "+cx+" - cy: "+ cy);
     //             //                partialGraph.centreX =cx;
     //             //                partialGraph.centreY =cy;
@@ -155,13 +159,13 @@ function onGraphScroll(evt, delta) {
     //             //_off = $(this).offset(),
     //             //_deltaX = evt.pageX - _el.width() / 2 - _off.left,
     //             //_deltaY = evt.pageY - _el.height() / 2 - _off.top;
-    //             var 
+    //             var
     //             mx=evt.offsetX,
     //             my=evt.offsetY;
     //             partialGraph.centreX=mx*((partialGraph._core.width-1)/(overviewWidth)),
-    //             partialGraph.centreY=my*((partialGraph._core.height-1)/(overviewHeight));               
-                
-    //             //                console.log("mx: "+mx+" - my: "+ my);                
+    //             partialGraph.centreY=my*((partialGraph._core.height-1)/(overviewHeight));
+
+    //             //                console.log("mx: "+mx+" - my: "+ my);
     //             //                console.log("cx: "+cx+" - cy: "+ cy);
     //             //                partialGraph.centreX =cx;
     //             //                partialGraph.centreY =cy;
@@ -174,9 +178,10 @@ function onGraphScroll(evt, delta) {
 }
 
 function initializeMap() {
+    console.log('FUN t.minimap:initializeMap')
     clearInterval(partialGraph.timeRefresh);
     partialGraph.oldParams = {};
-    
+
     if(minimap){
         $("#overviewzone").css({
             width : overviewWidth + "px",
@@ -191,7 +196,8 @@ function initializeMap() {
 }
 
 function updateMap(){
-    if(minimap){    
+    console.log('FUN t.minimap:updateMap')
+    if(minimap){
         partialGraph.imageMini="";
         partialGraph.ctxMini="";
         partialGraph.ctxMini = document.getElementById('overview').getContext('2d');
@@ -205,21 +211,22 @@ function updateMap(){
                 aleat = Math.random() * numPosibilidades;
                 partialGraph.ctxMini.arc(((n.displayX/1.2)-200)*0.25 , ((n.displayY/1.2)+110)*0.25 , (0.9 + aleat)*0.25+1 , 0 , Math.PI*2 , true);
                 //        //console.log(n.x*1000 +" * 0.25"+" _ "+ n.y*1000 +" * 0.25"+" _ "+ (0.9 + aleat) +" * 0.25 + 1");
-                //        
+                //
                 partialGraph.ctxMini.closePath();
                 partialGraph.ctxMini.fill();
             }
-        //        
+        //
         });
         partialGraph.imageMini = partialGraph.ctxMini.getImageData(0, 0, overviewWidth, overviewHeight);
     }
 }
 
 function traceMap() {
+    console.log('FUN t.minimap:traceMap')
     //pr("\ttracingmap");
     partialGraph.echelleGenerale = Math.pow( Math.SQRT2, partialGraph.position().ratio );
     partialGraph.ctxMini.putImageData(partialGraph.imageMini, 0, 0);
-    
+
     var _r = 0.25 / partialGraph.echelleGenerale,
     cx =  partialGraph.centreX,
     cy =  partialGraph.centreY,
@@ -235,10 +242,11 @@ function traceMap() {
 }
 
 function startMiniMap(){
+    console.log('FUN t.minimap:startMiniMap')
     if(minimap){
-        partialGraph.ctxMini = document.getElementById('overview').getContext('2d'); 
+        partialGraph.ctxMini = document.getElementById('overview').getContext('2d');
         partialGraph.ctxMini.clearRect(0, 0, overviewWidth, overviewHeight);
-        partialGraph.totalScroll=0;    
+        partialGraph.totalScroll=0;
         partialGraph.centreX = partialGraph._core.width/2;
         partialGraph.centreY = partialGraph._core.heigth/2;
     }

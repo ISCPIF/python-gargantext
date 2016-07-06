@@ -1,13 +1,14 @@
-/* 
+/*
 Author: Corneliu S. (github.com/upphiminn)
 
-This is a javascript implementation of the Louvain 
+This is a javascript implementation of the Louvain
 community detection algorithm (http://arxiv.org/abs/0803.0476)
-Based on https://bitbucket.org/taynaud/python-louvain/overview 
+Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 */
 (function(){
 	jLouvain = function(){
+        console.log('FUN t.jLouvain:jLouvain')
 		//Constants
 		var __PASS_MAX = -1
 		var __MIN 	 = 0.0000001
@@ -48,16 +49,16 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 			});
 			return weight;
 		};
-		
+
 		function get_neighbours_of_node(graph, node){
 			if(typeof graph._assoc_mat[node] == 'undefined')
 				return [];
 
-			var neighbours = Object.keys(graph._assoc_mat[node]);		
+			var neighbours = Object.keys(graph._assoc_mat[node]);
 			return neighbours;
 		}
-		
-		
+
+
 		function get_edge_weight(graph, node1, node2){
 			return graph._assoc_mat[node1] ? graph._assoc_mat[node1][node2] : undefined;
 		}
@@ -113,8 +114,9 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 		    return temp;
 		}
 
-		//Core-Algorithm Related 
+		//Core-Algorithm Related
 		function init_status(graph, status, part){
+            console.log('FUN t.jLouvain:init_status')
 			status['nodes_to_com'] = {};
 			status['total_weight'] = 0;
 			status['internals'] = {};
@@ -184,13 +186,13 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 			var weights = {};
 			var neighboorhood = get_neighbours_of_node(graph, node);//make iterable;
-			
+
 			neighboorhood.forEach(function(neighbour, i){
 				if(neighbour != node){
-					var weight = graph._assoc_mat[node][neighbour] || 1; 
+					var weight = graph._assoc_mat[node][neighbour] || 1;
 					var neighbourcom = status.nodes_to_com[neighbour];
 					weights[neighbourcom] = (weights[neighbourcom] || 0) + weight;
-				}	
+				}
 			});
 
 			return weights;
@@ -212,7 +214,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 		function __renumber(dict){
 			var count = 0;
-			var ret = clone(dict); //deep copy :) 
+			var ret = clone(dict); //deep copy :)
 			var new_values = {};
 			var dict_keys = Object.keys(dict);
 			dict_keys.forEach(function(key){
@@ -255,7 +257,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 							best_increase = incr;
 							best_com = com;
 						}
-					});	
+					});
 
 					__insert(node, best_com, neigh_communities[best_com] || 0, status);
 
@@ -269,6 +271,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 		}
 
 		function induced_graph(partition, graph){
+            console.log('FUN t.jLouvain:induced_graph')
 			var ret = {nodes:[], edges:[], _assoc_mat: {}};
 			var w_prec, weight;
 			//add nodes from partition values
@@ -278,7 +281,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 				weight = edge.weight || 1;
 				var com1 = partition[edge.source];
 				var com2 = partition[edge.target];
-				w_prec = (get_edge_weight(ret, com1, com2) || 0); 
+				w_prec = (get_edge_weight(ret, com1, com2) || 0);
 				var new_weight = (w_prec + weight);
 				add_edge_to_graph(ret, {'source': com1, 'target': com2, 'weight': new_weight});
 			});
@@ -286,6 +289,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 		}
 
 		function partition_at_level(dendogram, level){
+            console.log('FUN t.jLouvain:partition_at_level')
 			var partition = clone(dendogram[0]);
 			for(var i = 1; i < level + 1; i++ )
 				Object.keys(partition).forEach(function(key,j){
@@ -298,7 +302,8 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 
 		function generate_dendogram(graph, part_init){
-			
+            console.log('FUN t.jLouvain:generate_dendogram')
+
 			if(graph.edges.length == 0){
 				var part = {};
 				graph.nodes.forEach(function(node,i){
@@ -326,14 +331,14 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 					break;
 
 				partition = __renumber(status.nodes_to_com);
-				status_list.push(partition); 
+				status_list.push(partition);
 
 				mod = new_mod;
 				current_graph = induced_graph(partition, current_graph);
 				init_status(current_graph, status);
 			}
 
-			return status_list; 
+			return status_list;
 		}
 
 		var core = function(){
@@ -361,7 +366,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 						  		   '_assoc_mat': assoc_mat };
 			}
 			return core;
-			
+
 		};
 
 		core.partition_init = function(prttn){

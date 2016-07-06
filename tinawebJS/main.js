@@ -38,18 +38,18 @@ var AjaxSync = (function(TYPE, URL, DATA, CT , DT) {
                 header = (header)?"json":"gexf";
                 Result = { "OK":true , "format":header , "data":data };
             },
-            error: function(exception) { 
+            error: function(exception) {
                 Result = { "OK":false , "format":false , "data":exception.status };
             }
         });
     return Result;
 }).index();
- 
+
 
 var urlfile_override = (isUndef(getUrlParam.file))?false:true;
 
 var files_selector = ""
-if(urlfile_override) 
+if(urlfile_override)
     mainfile.unshift( getUrlParam.file );
 
 unique_mainfile = mainfile.filter(function(item, pos) {
@@ -79,13 +79,16 @@ $.ajax({
             Result = { "OK":true , "format":header , "data":data };
             MainFunction( Result )
         },
-        error: function(exception) { 
+        error: function(exception) {
             Result = { "OK":false , "format":false , "data":exception.status };
             MainFunction( Result )
         }
 });
 
 function MainFunction( RES ) {
+    console.log('           ------------')
+    console.log('FUN t.main:MainFunction')
+    console.log('           ------------')
     if(!RES["OK"]) {
         alert("error: "+RES["data"])
         return false;
@@ -94,7 +97,7 @@ function MainFunction( RES ) {
 
     var fileparam;// = { db|api.json , somefile.json|gexf }
     var the_data = RES["data"];
-    
+
     if(file=="db.json") {
 
         getAdditionalInfo = true;
@@ -126,7 +129,7 @@ function MainFunction( RES ) {
         pr(the_data.length)
         pr(fileparam)
         pr("\n============================\n")
-    } 
+    }
 
     if (file=="api.json") {
         fileparam = file;
@@ -136,7 +139,7 @@ function MainFunction( RES ) {
     if ( file!="db.json" && file!="api.json" )
         fileparam = RES["format"];
 
-    
+
     start = new ParseCustom(  fileparam , the_data );
     categories = start.scanFile(); //user should choose the order of categories
     pr("Categories: ")
@@ -161,11 +164,11 @@ function MainFunction( RES ) {
 
     for(var i in categories) {
         Filters[i] = {}
-        Filters[i]["#slidercat"+i+"edgesweight"] = true;        
-    } 
-    
+        Filters[i]["#slidercat"+i+"edgesweight"] = true;
+    }
+
     // [ Initiating Sigma-Canvas ]
-    var twjs_ = new TinaWebJS('#sigma-example'); 
+    var twjs_ = new TinaWebJS('#sigma-example');
     print( twjs_.AdjustSigmaCanvas() );
     $( window ).resize(function() { print(twjs_.AdjustSigmaCanvas()) });
     // [ / Initiating Sigma-Canvas ]
@@ -217,7 +220,7 @@ function MainFunction( RES ) {
         var past = partialGraph.states.slice(-2)[0] // avant Last
         print("previous level: "+past.level)
         print("new level: "+present.level)
-        
+
         print(" % % % % % % % % % % ")
         print("")
 
@@ -245,7 +248,7 @@ function MainFunction( RES ) {
             $("#category0").hide();
             $("#category1").show();
 
-            if($("#slidercat1nodesweight").html()=="") 
+            if($("#slidercat1nodesweight").html()=="")
                 NodeWeightFilter( this.categories , "#slidercat1nodesweight" ,  this.categories[1],  "type" ,"size");
 
             if($("#slidercat1edgesweight").html()=="")
@@ -263,7 +266,7 @@ function MainFunction( RES ) {
             $("#category0").show();
             $("#category1").hide();
 
-            if($("#slidercat0nodesweight").html()=="") 
+            if($("#slidercat0nodesweight").html()=="")
                 NodeWeightFilter( this.categories , "#slidercat0nodesweight" ,  this.categories[0],  "type" ,"size");
 
             if($("#slidercat0edgesweight").html()=="")
@@ -275,7 +278,7 @@ function MainFunction( RES ) {
             }
             set_ClustersLegend ( "clust_default" )
         } else {
-            
+
         //finished
         $("#slidercat1nodessize").freshslider({
             step:1,
@@ -295,7 +298,7 @@ function MainFunction( RES ) {
                        partialGraph.draw();
                 });
             }
-        }); 
+        });
 
         }
 
@@ -311,7 +314,7 @@ function MainFunction( RES ) {
         }
     }).index();
 
-    partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
+    // partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
 
     // fa2enabled=true; //partialGraph.zoomTo(partialGraph._core.width / 2, partialGraph._core.height / 2, 0.8).draw();
     // $.doTimeout(1,function(){
@@ -337,18 +340,16 @@ function MainFunction( RES ) {
 
     $("footer").remove()
 
-    
+
     console.log( "FIN" )
-    fa2enabled=true; partialGraph.startForceAtlas2(); 
+    fa2enabled=true; partialGraph.startForceAtlas2();
     setTimeout(function() {
         console.log( "LALALALALALLA" )
+        console.log( "hello" )
         partialGraph.stopForceAtlas2();
     }, fa2seconds*1000);
-    
+
 }
 
 
 console.log("finish")
-
-
-

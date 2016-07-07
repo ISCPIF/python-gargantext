@@ -137,7 +137,8 @@ var sigmaJsDrawingProperties = {
     defaultLabelSize: 10,//in fact I'm using it as minLabelSize'
     defaultLabelBGColor: '#fff',
     defaultLabelHoverColor: '#000',
-    labelThreshold: 6,
+    labelThreshold: 4,
+    labelSize: "proportional",
     defaultEdgeType: 'curve',
 
     borderSize: 2.5,//Something other than 0
@@ -147,7 +148,7 @@ var sigmaJsDrawingProperties = {
 };
 var sigmaJsGraphProperties = {
     minEdgeSize: 2,
-    maxEdgeSize: 2
+    maxEdgeSize: 3
 };
 var sigmaJsMouseProperties = {
     minRatio:0.1,

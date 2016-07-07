@@ -26,25 +26,20 @@ function modify_ngrams( classname ) {
     console.clear()
 
     var corpus_id = getIDFromURL( "corpora" ) // not used
-    var list_id = $("#list_id").val()
+    var list_id = $("#maplist_id").val()
     var selected_ngrams = $.extend({}, selections)
-    console.log( selected_ngrams )
 
     if(classname=="delete") {
-        CRUD( corpus_id , "/keep" , [] , selected_ngrams , "DELETE" , function(result) {
-            console.log(" Delete from Map-list: "+result)
-            CRUD( list_id , "" , Object.keys(selected_ngrams).map(Number) , [] , "DELETE", function(result) {
-                console.log(" Add to Stop-list "+result)
-                cancelSelection(false)
-                for(var i in selected_ngrams) {
-                    partialGraph.dropNode( i )
-                    delete Nodes[i]
-                    delete partialGraph._core.graph.nodesIndex[i]
-                }
-                partialGraph.refresh()
-                // $("#lensButton").click() // after-delete: do nothing
-            });
-        });
+        CRUD(list_id, Object.keys(selected_ngrams), "DELETE", function(success) {
+            cancelSelection(false)
+            for(var i in selected_ngrams) {
+                partialGraph.dropNode( i )
+                delete Nodes[i]
+                delete partialGraph._core.graph.nodesIndex[i]
+            }
+            partialGraph.refresh()
+            $("#lensButton").click()
+        }) ;
     }
 
     // if(classname=="group") {
@@ -56,34 +51,43 @@ function modify_ngrams( classname ) {
     // }
 }
 
-function CRUD( parent_id , action , nodes , args , http_method , callback) {
-    console.log('FUN extras_explorerjs:CRUD')
-    var the_url = window.location.origin+"/api/node/"+parent_id+"/ngrams"+action+"/"+nodes.join("+");
-    the_url = the_url.replace(/\/$/, ""); //remove trailing slash
-    console.log( the_url )
-    console.log( args )
-    if(nodes.length>0 || Object.keys(args).length>0) {
+function CRUD( list_id , ngram_ids , http_method , callback) {
+    // ngramlists/change?node_id=42&ngram_ids=1,2
+    var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id+"&ngrams="+ngram_ids.join(",");
+
+    // debug
+    // console.log("starting CRUD AJAX => URL: " + the_url + " (" + http_method + ")")
+
+    if(ngram_ids.length>0) {
         $.ajax({
           method: http_method,
           url: the_url,
-          data: args,
+            //    data: args,   // currently all data explicitly in the url (like a GET)
           beforeSend: function(xhr) {
             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
           },
           success: function(data){
+                console.log("-- CRUD ----------")
                 console.log(http_method + " ok!!")
-                console.log(nodes)
-                console.log(data)
-                callback("Success");
+                console.log(JSON.stringify(data))
+                console.log("------------------")
+                callback(true);
           },
           error: function(result) {
+              console.log("-- CRUD ----------")
+              console.log("Data not found in #Save_All");
               console.log(result)
-              callback("Fail");
+              console.log("------------------")
+              callback(false);
           }
         });
 
     } else callback(false);
 }
+
+
+
+
 // = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = //
 
     // Execution:    ChangeGraphAppearanceByAtt( true )
@@ -149,7 +153,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Colors" src="/static/js/libs/img2/colors.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Colors" src="/static/img/colors.png" width="20px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 
@@ -186,7 +190,7 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Sizes" src="/static/js/libs/img2/NodeSize.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Sizes" src="/static/img/NodeSize.png" width="20px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 
@@ -198,7 +202,8 @@ function CRUD( parent_id , action , nodes , args , http_method , callback) {
             return b-a
         });
 
-        console.clear()
+        // console.clear()
+
         console.log( AttsDict_sorted )
         for (var i in AttsDict_sorted) {
             var att_s = AttsDict_sorted[i].key;
@@ -500,16 +505,16 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
         $("#"+thediv).show();
         $.ajax({
             type: 'GET',
-            url: window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a"),
+            url: window.location.origin+'/api/nodes/'+corpus_id+'/having?score=tfidf&ngram_ids='+theids.join(","),
             //contentType: "application/json",
             //dataType: 'json',
             success : function(data){
-                pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
+                pr(window.location.origin+'/api/nodes/'+corpus_id+'/having?score=tfidf&ngram_ids='+theids.join(",") )
                 var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
                 for(var i in arraydata) {
                     var pub = arraydata[i]
-                    var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+                    var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
                     var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
 
                     var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
@@ -531,7 +536,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                     jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                     output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                    output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                    output += '<a href="'+gquery+'" target=_blank><img title="Query the anonymous web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                     output +="</li>\n";
                     // for(var j in pub) {
                     //  if(j!="abstract")
@@ -595,8 +600,9 @@ function getTopPapers(type){
                 for(var i in data) {
                     var pub = data[i]
                     if(pub["title"]) {
-                        var gquery = "http://www.google.com/#q="+pub["title"].replace(" "+"+")
+                        var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
 
+                        // ex url_elems = ["http:", "", "localhost:8000", "projects", "1", "corpora", "2690", "explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5"]
                         var url_elems = window.location.href.split("/")
                         var url_mainIDs = {}
                         for(var i=0; i<url_elems.length; i++) {
@@ -604,7 +610,10 @@ function getTopPapers(type){
                             url_mainIDs[url_elems[i-1]] = Number(url_elems[i]);
                           }
                         }
-                        var getpubAPI = window.location.origin+'/project/'+url_mainIDs["project"]+'/corpus/'+ url_mainIDs["corpus"] + '/document/'+pub["id"]
+                        // ex url_mainIDs = {projects: 1, corpora: 2690}
+
+                        // link to matching document
+                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]
 
 
                         var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
@@ -675,7 +684,7 @@ function getCookie(name) {
 function printCorpuses() {
     console.log('FUN extras_explorerjs:printCorpuses')
     console.clear()
-    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
+    console.log( "!!!!!!!! Corpus chosen, going to make the diff !!!!!!!! " )
     pr(corpusesList)
 
     var selected = $('input[name=optradio]:checked')[0].id.split("_")
@@ -684,18 +693,18 @@ function printCorpuses() {
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
-        if(pageurl[i]=="corpus") {
+        if(pageurl[i]=="corpora") {
             cid=parseInt(i);
             break;
         }
     }
     var current_corpus = pageurl[cid+1];
 
-    pr("corpus id, selected: "+corpusesList[sel_p]["corpuses"][sel_c]["id"])
+    pr("corpus id, selected: "+sel_c)
     pr("current corpus: "+current_corpus)
     var the_ids = []
     the_ids.push( current_corpus )
-    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
+    the_ids.push( sel_c )
 
     $("#closecorpuses").click();
 
@@ -706,7 +715,7 @@ function printCorpuses() {
     console.log( thenodes )
     $.ajax({
         type: 'GET',
-        url: window.location.origin+'/api/corpusintersection/'+the_ids.join("a"),
+        url: window.location.origin+'/explorer/intersection/'+the_ids.join("a"),
         data: "nodeids="+JSON.stringify(thenodes),
         type: 'POST',
         beforeSend: function(xhr) {
@@ -724,7 +733,7 @@ function printCorpuses() {
             cancelSelection(false)
             ChangeGraphAppearanceByAtt(true)
 
-            console.log("YOLOYOLYOLYOYKOYYKYOY")
+            console.log("Getting the clusters")
             clustersBy("inter" , "color")
             clustersBy("inter" , "size")
 
@@ -772,7 +781,7 @@ function printCorpuses() {
     // var pageurl = window.location.href.split("/")
     // var cid;
     // for(var i in pageurl) {
-    //     if(pageurl[i]=="corpus") {
+    //     if(pageurl[i]=="corpora") {
     //         cid=parseInt(i);
     //         break;
     //     }
@@ -809,7 +818,7 @@ function GetUserPortfolio() {
 
     var cid;
     for(var i in pageurl) {
-        if(pageurl[i]=="corpus") {
+        if(pageurl[i]=="corpora") {
             cid=parseInt(i);
             break;
         }
@@ -819,43 +828,68 @@ function GetUserPortfolio() {
     if( Object.keys( corpusesList ).length > 0 )
         return true;
 
-    var query_url = window.location.origin+'/api/userportfolio/project/'+project_id+'/corpuses'
+    var query_url = window.location.origin+'/api/nodes?types[]=PROJECT&types[]=CORPUS&pagination_limit=100'
+    // var query_url = window.location.origin+'/api/nodes?types[]=PROJECT&types[]=CORPUS&pagination_limit=100&fields[]=hyperdata'
     $.ajax({
         type: 'GET',
+        dataType : 'JSON',
         url: query_url,
         success : function(data) {
 
             var html_ = ""
+            var portfolio = {}
+
             html_ += '<div class="panel-group" id="accordion">'+"\n"
             html_ += ' <form id="corpuses_form" role="form">'+"\n"
-            corpusesList = data;
-            for (var k1 in data) {
-                var v1 = data[k1]
-                html_ += '  <div class="panel panel-default">'+"\n"
-                html_ += '   <div class="panel-heading">'+"\n"
-                html_ += '    <h4 class="panel-title">'+"\n"
-                html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_'+k1+'">'+v1["proj_name"]+'</a>'+"\n"
-                html_ += '    </h4>'+"\n"
-                html_ += '   </div>'+"\n"
-                html_ += '   <div id="collapse_'+k1+'" class="panel-collapse collapse">'+"\n"
-                html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
-                html_ += '     <ul>'+"\n"
-                for(var c in v1["corpuses"]) {
-                    var Ci = v1["corpuses"][c]
-                    if( Ci["id"]!= corpus_id) {
-                        html_ += '      <li>'+"\n"
-                        html_ += '       <div class="radio">'+"\n"
-                        html_ += '        <label><input type="radio" id="'+k1+"_"+c+'" name="optradio">'+"\n"
-                        html_ += '         <a target="_blank" href="/project/'+k1+'/corpus/'+Ci["id"]+'/">'+Ci["name"] +' ('+Ci["c"]+' docs.)</a>'+"\n"
-                        html_ += '        </label>'+"\n"
-                        html_ += '       </div>'+"\n"
-                        html_ += '     </li>'+"\n"
+            for (var record in data["records"]) {
+                console.log( " ici le record " + record )
+                if ( data["records"][record]["typename"] === 'PROJECT' ) {
+
+                    var project_id   = data["records"][record]["id"]
+                    var project_name = data["records"][record]["name"]
+
+                    portfolio[project_id] = project_name
+
+                    html_ += '  <div class="panel panel-default">'+"\n"
+                    html_ += '   <div class="panel-heading">'+"\n"
+                    html_ += '    <h4 class="panel-title">'+"\n"
+                    html_ += '     <a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + project_id+'">'
+                    html_ += '       <span class="glyphicon glyphicon-book" aria-hidden="true"></span> ' + project_name
+                    html_ += '     </a>'+"\n"
+                    html_ += '    </h4>'+"\n"
+                    html_ += '   </div>'+"\n"
+                    html_ += '   <div id="collapse_'+project_id+'" class="panel-collapse collapse">'+"\n"
+                    html_ += '    <div class="panel-body" style="input[type=radio] {display: none;}">'+"\n"
+                    html_ += '     <ul>'+"\n"
+
+                    for (var record2 in data["records"]) {
+                        if ( data["records"][record2]["typename"] == 'CORPUS' ) {
+                            var corpus_parent_id = data["records"][record2]["parent_id"]
+                            if (corpus_parent_id !== null) {
+                                if ( corpus_parent_id == project_id) {
+                                        var corpus_id   = data["records"][record2]["id"]
+                                        var corpus_name = data["records"][record2]["name"]
+
+                                        portfolio[corpus_id] = corpus_name
+
+                                        html_ += '      <div class="row">'+"\n"
+                                        html_ += '       <div class="radio">'+"\n"
+                                        html_ += '        <label><input type="radio" id="'+project_id+"_"+corpus_id+'" name="optradio">'+"\n"
+                                        html_ += '         <a target="_blank" href="/projects/'+project_id+'/corpora/'+corpus_id+'/">'
+                                        html_ += '       <span class="glyphicon glyphicon-file" aria-hidden="true"></span> ' + corpus_name +'</a>'+"\n"
+                                        html_ += '        </label>'+"\n"
+                                        html_ += '       </div>'+"\n"
+                                        html_ += '     </div>'+"\n"
+                                }
+                            }
+                        }
                     }
+
+                    html_ += '     </ul>'+"\n"
+                    html_ += '    </div>'+"\n"
+                    html_ += '   </div>'+"\n"
+                    html_ += '  </div>'+"\n"
                 }
-                html_ += '     </ul>'+"\n"
-                html_ += '    </div>'+"\n"
-                html_ += '   </div>'+"\n"
-                html_ += '  </div>'+"\n"
             }
 
             html_ += ' </form>'+"\n"
@@ -865,8 +899,17 @@ function GetUserPortfolio() {
             $('#corpuses_form input:radio').change(function() {
                $("#add_corpus_tab").prop("disabled",false)
                var selected = $('input[name=optradio]:checked')[0].id.split("_")
-               var sel_p = selected[0], sel_c=selected[1]
-               $("#selected_corpus").html( "<center>"+data[sel_p]["proj_name"] + " , " + data[sel_p]["corpuses"][sel_c]["name"]+"</center><br>" )
+               var sel_p_id = selected[0], sel_c_id =selected[1]
+
+               var html_selection  = ""
+               html_selection     += '<center>You are comparing :<br><span class="glyphicon glyphicon-hand-down" aria-hidden="true"></span></center>'+"\n"
+               html_selection     += '<center>'
+               html_selection     += '( current graph ) '
+               html_selection     += '<span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span>'
+               html_selection     += ' (' + portfolio[sel_p_id] + ' / ' + portfolio[sel_c_id] + ')'
+               // html_selection     += ' (' + portfolio[sel_p_id] + '/' + sel_c_id + portfolio[sel_c_id] + ')'
+               html_selection     += '</center><br>'+"\n"
+               $("#selected_corpus").html( html_selection )
 
             });
 

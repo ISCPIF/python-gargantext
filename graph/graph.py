@@ -5,9 +5,9 @@ from gargantext.util.http         import JsonHttpResponse
 from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram
 
 #from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graphExplorer.cooccurrences  import countCooccurrences, filterMatrix
-from graphExplorer.distances      import clusterByDistances
-from graphExplorer.bridgeness     import filterByBridgeness
+from graph.cooccurrences  import countCooccurrences, filterMatrix
+from graph.distances      import clusterByDistances
+from graph.bridgeness     import filterByBridgeness
 
 # Prelude lib
 from copy                         import copy, deepcopy

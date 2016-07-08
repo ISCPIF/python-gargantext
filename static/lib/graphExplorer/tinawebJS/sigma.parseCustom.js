@@ -20,17 +20,20 @@ ParseCustom = function ( format , data ) {
     }// output = [ nodes, edges, nodes1, ... ]
 
 
-
     // input = JSONstring
-    this.getJSONCategories = function(json) {
+    this.getJSONCategories = function(json, formatDetails) {
         this.data = json;
-        return scanJSON( this.data );
+        return scanJSON( this.data, formatDetails);
     }// output = [ "cat1" , "cat2" , ...]
 
 
     // input = [ "cat1" , "cat2" , ...]
-    this.parseJSON = function(categories ) {
-        return dictfyJSON( this.data , categories );
+    this.parseJSON = function(categories, formatDetails ) {
+        var isCompact = false
+        if (formatDetails = 'compactjson') {
+            isCompact = true
+        }
+        return dictfyJSON( this.data , categories, isCompact);
     }// output = [ nodes, edges, nodes1, ... ]
 };
 
@@ -45,8 +48,9 @@ ParseCustom.prototype.scanFile = function() {
             pr("scanFile: "+this.format)
             break;
         case "json":
+        case "compactjson":
             pr("scanFile: "+this.format)
-            categories = this.getJSONCategories( this.data );
+            categories = this.getJSONCategories(this.data, this.format);
             return categories;
             break;
         case "gexf":
@@ -63,6 +67,7 @@ ParseCustom.prototype.scanFile = function() {
 // Level-02
 ParseCustom.prototype.makeDicts = function(categories) {
     console.log('FUN t.sigma.parseCustom:makeDicts')
+    console.warn("this.format:", this.format)
     switch (this.format) {
         case "api.json":
             pr("makeDicts: "+this.format)
@@ -71,8 +76,9 @@ ParseCustom.prototype.makeDicts = function(categories) {
             pr("makeDicts: "+this.format)
             break;
         case "json":
+        case "compactjson":
             pr("makeDicts: "+this.format)
-            dictionaries = this.parseJSON( categories );
+            dictionaries = this.parseJSON( categories, this.format );
             return dictionaries;
             break;
         case "gexf":
@@ -475,49 +481,55 @@ function dictfyGexf( gexf , categories ) {
 }
 
 // Level-00
-function scanJSON( data ) {
+function scanJSON( data, format ) {
     console.log('FUN t.sigma.parseCustom:scanJSON')
     var categoriesDict={}, categories=[];
     var nodes = data.nodes;
 
-    for(var i in nodes) {
-        n = nodes[i];
-        if(n.type) categoriesDict[n.type]=n.type;
-    }
-
-    for(var cat in categoriesDict)
-        categories.push(cat);
-
-    var catDict = {}
-    if(categories.length==0) {
-        categories[0]="Document";
-        catDict["Document"] = 0;
-    }
-    if(categories.length==1) {
-        catDict[categories[0]] = 0;
-    }
-    if(categories.length>1) {
-        var newcats = []
-        for(var i in categories) {
-            c = categories[i]
-            if(c.indexOf("term")==-1) {// NOT a term-category
-                newcats[0] = c;
-                catDict[c] = 0;
-            }
-            else {
-                newcats[1] = c; // IS a term-category
-                catDict[c] = 1;
-            }
+    if (format == "json") {
+        for(var i in nodes) {
+            n = nodes[i];
+            // eg n.type = 'terms'
+            if(n.type) categoriesDict[n.type]=n.type;
         }
-        categories = newcats;
+        for(var cat in categoriesDict)
+            categories.push(cat);
+
+        var catDict = {}
+        if(categories.length==0) {
+            categories[0]="Document";
+            catDict["Document"] = 0;
+        }
+        if(categories.length==1) {
+            catDict[categories[0]] = 0;
+        }
+        if(categories.length>1) {
+            var newcats = []
+            for(var i in categories) {
+                c = categories[i]
+                if(c.indexOf("term")==-1) {// NOT a term-category
+                    newcats[0] = c;
+                    catDict[c] = 0;
+                }
+                else {
+                    newcats[1] = c; // IS a term-category
+                    catDict[c] = 1;
+                }
+            }
+            categories = newcats;
+        }
+    }
+    else if (format == "compactjson") {
+        categories = ['terms']
     }
 
+    // eg : ['terms']
     return categories;
 }
 
 // Level-00
 // for {1,2}partite graphs
-function dictfyJSON( data , categories ) {
+function dictfyJSON( data , categories, isCompact ) {
     console.log('FUN t.sigma.parseCustom:dictfyJSON')
     console.clear()
     console.log("IN DICTIFY JSON")
@@ -531,25 +543,58 @@ function dictfyJSON( data , categories ) {
         nodes2={}, bipartiteD2N={}, bipartiteN2D={}
     }
 
-    for(var i in data.nodes) {
-        n = data.nodes[i];
-        node = {}
-        node.id = n.id;
-        node.label = (n.label)? n.label+"" : ("node_"+n.id) ;
-        node.size = (n.size)? Math.log(n.size+1) : 3 ;
-        node.type = (n.type)? n.type : "Document" ;
-        node.x = (n.x)? n.x : Math.random();
-        node.y = (n.y)? n.y : Math.random();
-        node.color = (n.color)? n.color : "#FFFFFF" ;
-        if(n.shape) node.shape = n.shape;
-        node.attributes = (n.attributes)?n.attributes:[];
-        node.type = (n.type)? n.type : categories[0] ;
-        // node.shape = "square";
+    // old case with longer names (format == "json")
+    if (! isCompact) {
+        for(var i in data.nodes) {
+            n = data.nodes[i];
+            node = {}
+            node.id = n.id;
+            node.label = (n.label)? n.label+"" : ("node_"+n.id) ;
+            node.size = (n.size)? Math.log(n.size+1) : 3 ;
+            // node.type = (n.type)? n.type : "Document" ;
+            node.x = (n.x)? n.x : Math.random();
+            node.y = (n.y)? n.y : Math.random();
+            node.color = (n.color)? n.color : "#FFFFFF" ;
+            if(n.shape) node.shape = n.shape;
+            node.attributes = (n.attributes)?n.attributes:[];
+            node.type = (n.type)? n.type : categories[0] ;
+            // node.shape = "square";
 
-        if (!catCount[node.type]) catCount[node.type] = 0
-        catCount[node.type]++;
+            if (!catCount[node.type]) catCount[node.type] = 0
+            catCount[node.type]++;
 
-        nodes[n.id] = node;
+            nodes[n.id] = node;
+        }
+    }
+    // case for shorter names (format == "compactjson")
+    else {
+        for(var i in data.nodes) {
+            n = data.nodes[i];
+            node = {}
+            node.id = n.id;
+            node.label = (n.lb)? n.lb+"" : ("node_"+n.id) ;
+            node.size = (n.s)? Math.log(n.s+1) : 3 ;
+            node.x = (n.x)? n.x : Math.random();
+            node.y = (n.y)? n.y : Math.random();
+            node.color = (n.col)? n.col : "#FFFFFF" ;
+            if(n.shape) node.shape = n.shape;
+            node.attributes = [];
+            if (n.at) {
+                for (var attr in n.at) {
+                    if (attr == 'cl')
+                        node.attributes['clust_default'] = n.at.cl
+                    else
+                        node.attributes[attr] = n.at[attr]
+                }
+            }
+            node.type = (n.t)? n.t : categories[0] ;
+            // node.shape = "square";
+
+            if (!catCount[node.type]) catCount[node.type] = 0
+            catCount[node.type]++;
+
+            nodes[n.id] = node;
+        }
     }
 
     colorList.sort(function(){ return Math.random()-0.5; });

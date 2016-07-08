@@ -74,9 +74,11 @@ var file = (Array.isArray(mainfile))?mainfile[0]:mainfile;
 $.ajax({
         url: file,
         success : function(data, textStatus, jqXHR) {
-            header = jqXHR.getResponseHeader("Content-Type")
-            header = (header)?"json":"gexf";
-            Result = { "format":header , "data":data };
+            var format = 'gexf'  // default value
+            var header = jqXHR.getResponseHeader("Content-Type")
+            if (header.indexOf("application/json") != -1)
+                format = 'compactjson'
+            Result = { "format":format , "data":data };
             MainFunction( Result )
         },
         error: function(exception) {
@@ -142,10 +144,9 @@ function MainFunction( RES ) {
         fileparam = file;
     }
 
-    // Reading just a JSON|GEXF
+    // Reading just a JSON|COMPACTJSON|GEXF
     if ( file!="db.json" && file!="api.json" )
         fileparam = RES["format"];
-
 
     start = new ParseCustom(  fileparam , the_data );
     categories = start.scanFile(); //user should choose the order of categories

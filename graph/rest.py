@@ -2,7 +2,7 @@
 
 from gargantext.util.db      import session
 from gargantext.models.nodes import Node
-from graphExplorer.graph     import get_graph
+from graph.graph             import get_graph
 from gargantext.util.http    import APIView, APIException\
                                   , JsonHttpResponse, requires_auth
 

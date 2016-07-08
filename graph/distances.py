@@ -2,7 +2,7 @@ from gargantext.models     import Node, NodeNgram, NodeNgramNgram, \
                                   NodeHyperdata
 from gargantext.util.db    import session, aliased
 
-from graphExplorer.louvain import best_partition
+from graph.louvain         import best_partition
 
 from copy        import copy
 from collections import defaultdict

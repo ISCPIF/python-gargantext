@@ -21,9 +21,8 @@ import gargantext.views.pages.urls
 from annotations         import urls as annotations_urls
 from annotations.views   import main as annotations_main_view
 
-# Module "Graph Explorer"
-#from graphExplorer     import urls as graphExplorer_urls
-import graphExplorer.urls
+# Module for graph service
+import graph.urls
 
 # Module Scrapers
 import moissonneurs.urls
@@ -35,8 +34,8 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
               , url(r'^favicon.ico$', Redirect.as_view( url=static.url('favicon.ico')
                                     , permanent=False), name="favicon")
 
-              # Module "Graph Explorer"
-              , url(r'^'           , include( graphExplorer.urls )             )
+              # Module Graph
+              , url(r'^'           , include( graph.urls )                     )
 
               # Module Annotation
               # tempo: unchanged doc-annotations routes --

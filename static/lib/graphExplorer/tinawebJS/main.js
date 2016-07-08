@@ -76,25 +76,32 @@ $.ajax({
         success : function(data, textStatus, jqXHR) {
             header = jqXHR.getResponseHeader("Content-Type")
             header = (header)?"json":"gexf";
-            Result = { "OK":true , "format":header , "data":data };
+            Result = { "format":header , "data":data };
             MainFunction( Result )
         },
         error: function(exception) {
-            Result = { "OK":false , "format":false , "data":exception.status };
-            MainFunction( Result )
+            // console.warn(JSON.stringify(exception, null, 2))
+            showErrorDialog(file, exception.status, exception.responseJSON.msg)
         }
 });
+
+function showErrorDialog(url, status, msg) {
+    console.log('FUN t.main:showErrorDialog')
+    // hide loader gif etc
+    $("#semLoader").hide();
+    $("#closeloader").click();
+
+    // copy message content
+    $('#errormsg').html(msg.replace(/\n/g, '<br/>'))
+
+    // show the dialog box
+    $('#errormodal').modal('show');
+}
 
 function MainFunction( RES ) {
     console.log('           ------------')
     console.log('FUN t.main:MainFunction')
     console.log('           ------------')
-    if(!RES["OK"]) {
-        alert("error: "+RES["data"])
-        return false;
-    }
-
-
     var fileparam;// = { db|api.json , somefile.json|gexf }
     var the_data = RES["data"];
 

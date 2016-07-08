@@ -9,19 +9,6 @@ from graph.cooccurrences  import countCooccurrences, filterMatrix
 from graph.distances      import clusterByDistances
 from graph.bridgeness     import filterByBridgeness
 
-# Prelude lib
-from copy                         import copy, deepcopy
-from collections                  import defaultdict
-from sqlalchemy.orm               import aliased
-
-# Math/Graph lib
-import math
-import pandas                     as pd
-import numpy                      as np
-
-import networkx                   as nx
-
-
 def get_graph( request=None         , corpus=None
             , field1='ngrams'       , field2='ngrams'
             , mapList_id = None     , groupList_id = None

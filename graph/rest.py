@@ -8,6 +8,20 @@ from gargantext.util.http    import APIView, APIException\
 
 from traceback import format_tb
 
+def compress_graph(graphdata):
+    """
+    graph data is usually a dict with 2 slots:
+      "nodes": [{"id":4103, "type":"terms", "attributes":{"clust_default": 0}, "size":29, "label":"regard"},...]
+      "links": [{"t": 998,"s": 768,"w": 0.0425531914893617},...]
+
+    To send this data over the net, this function can reduce some of its size:
+      - keep less decimals for float value of each link's weight
+      - (TODO) have shorter names for node properties (eg: s/clust_default/cd/)
+    """
+    for link in graphdata['links']:
+        link['w'] = format(link['w'], '.3f')   # keep only 3 decimals
+    return graphdata
+
 # TODO check authentication
 
 class Graph(APIView):
@@ -104,7 +118,10 @@ class Graph(APIView):
                 if len(data['nodes']) > 0 and len(data['links']) > 0:
                     # normal case --------------------------------
                     if format_ == 'json':
-                        return JsonHttpResponse(data, status=200)
+                        return JsonHttpResponse(
+                                 compress_graph(data),
+                                 status=200
+                               )
                     # --------------------------------------------
                 else:
                     # empty data case

@@ -26,6 +26,7 @@ ENV PYTHON_ENV  /srv/env_3-5
 RUN apt-get update && \
     apt-get install -y \
     apt-utils ca-certificates locales \
+    python3-dev \
     sudo aptitude gcc g++ wget git postgresql-9.5 vim \
     build-essential make
 
@@ -44,7 +45,7 @@ RUN apt-get update && apt-get install -y \
         postgresql-server-dev-9.5 libpq-dev libxml2 \
         libxml2-dev xml-core libgfortran-5-dev \
         virtualenv python3-virtualenv \
-        python3.5 python3-dev \
+        python3.5 \
         python3-six python3-numpy python3-setuptools \
         # ^for numpy, pandas
         python3-numexpr \

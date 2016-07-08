@@ -13,13 +13,12 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
         nodesB_dict = {}
         for node_id in G.nodes():
             #node,type(labels[node])
-            G.node[node_id]['pk']           = ids[node_id][1]
             nodesB_dict [ ids[node_id][1] ] = True
             # TODO the query below is not optimized (do it do_distance).
             the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
             the_label = ", ".join(the_label)
             G.node[node_id]['label']        = the_label
-            
+
             G.node[node_id]['size']         = weight[node_id]
             G.node[node_id]['type']         = ids[node_id][0].replace("ngrams","terms")
             G.node[node_id]['attributes']   = { "clust_default": partition[node_id]} # new format
@@ -31,7 +30,7 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
         if bridgeness > 0:
             com_link = defaultdict(lambda: defaultdict(list))
             com_ids = defaultdict(list)
-            
+
             for k, v in partition.items():
                 com_ids[v].append(k)
 
@@ -39,14 +38,14 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
             s = e[0]
             t = e[1]
             weight = G[ids[s][1]][ids[t][1]]["weight"]
-            
+
             if bridgeness < 0:
                 info = { "s": ids[s][1]
                        , "t": ids[t][1]
                        , "w": weight
                        }
                 links.append(info)
-            
+
             else:
                 if partition[s] == partition[t]:
 
@@ -55,11 +54,11 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
                            , "w": weight
                            }
                     links.append(info)
-                
+
                 if bridgeness > 0:
                     if partition[s] < partition[t]:
                         com_link[partition[s]][partition[t]].append((s,t,weight))
-        
+
         if bridgeness > 0:
             for c1 in com_link.keys():
                 for c2 in com_link[c1].keys():

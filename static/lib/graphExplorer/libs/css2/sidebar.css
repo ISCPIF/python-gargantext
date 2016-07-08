@@ -1,0 +1,45 @@
+#wrapper {
+  /*transition: all 0.1s ease 0s;*/
+}
+
+/*old one*/
+/*#leftcolumn {
+  margin-left: -210px;
+  margin-right: 0px;
+  left: 210px;
+  width: 210px;
+  background: url(../img/climpek.png) repeat;
+  position: fixed;
+  height: 100%;
+  border: 1px #888888 solid;
+-moz-box-shadow: 0px 0px 3px 0px #888888;
+-webkit-box-shadow: 0px 0px 3px 0px #888888;
+box-shadow: 0px 0px 3px 0px #888888;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.4s ease 0s;
+}*/
+
+
+#leftcolumn {
+  overflow-y: scroll;
+  margin-right: -300px;
+  margin-left: 0px;
+  padding-bottom: 10px;
+  padding-left: 5px;
+  right: 300px;
+  width: 300px;
+  position: fixed;
+  height: 100%;
+  border: 1px #888888 solid;
+  background: #fff url(../img2/bg.jpg) repeat top right;
+  -webkit-border-radius: 0px 11px 11px 0px;-moz-border-radius: 0px 11px 11px 0px; border-radius: 0px 11px 11px 0px;-webkit-box-shadow: #B3B3B3 4px 4px 4px;-moz-box-shadow: #B3B3B3 4px 4px 4px; box-shadow: #B3B3B3 4px 4px 4px;
+  /*-webkit-border-radius: 11px 0px 0px 11px;-moz-border-radius: 11px 0px 0px 11px;border-radius: 11px 0px 0px 11px;-webkit-box-shadow: #B3B3B3 4px 4px 4px;-moz-box-shadow: #B3B3B3 4px 4px 4px; box-shadow: #B3B3B3 4px 4px 4px;*/
+  /*transition: all 0.1s ease 0s;*/
+}
+
+#page-content-wrapper {
+  width: 100%;
+}
+
+

@@ -78,17 +78,25 @@ def get_graph( request=None         , corpus=None
     after_cooc = datetime.now()
     print("... Cooccurrences took %f s." % (after_cooc - before_cooc).total_seconds())
 
-    G, partition, ids, weight = clusterByDistances ( cooc_matrix
-                                                   , field1="ngrams", field2="ngrams"
-                                                   , distance=distance
-                                                   )
 
-    after_cluster = datetime.now()
-    print("... Clustering took %f s." % (after_cluster - after_cooc).total_seconds())
+    # case when 0 coocs are observed (usually b/c not enough ngrams in maplist)
+    if len(cooc_matrix.items) == 0:
+        print("GET_GRAPH: 0 coocs in matrix")
+        data = {'nodes':[], 'links':[]}  # empty data
 
-    data = filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2)
+    # normal case
+    else:
+        G, partition, ids, weight = clusterByDistances ( cooc_matrix
+                                                       , field1="ngrams", field2="ngrams"
+                                                       , distance=distance
+                                                       )
 
-    after_filter = datetime.now()
-    print("... Filtering took %f s." % (after_filter - after_cluster).total_seconds())
+        after_cluster = datetime.now()
+        print("... Clustering took %f s." % (after_cluster - after_cooc).total_seconds())
+
+        data = filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2)
+
+        after_filter = datetime.now()
+        print("... Filtering took %f s." % (after_filter - after_cluster).total_seconds())
 
     return data

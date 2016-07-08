@@ -6,6 +6,8 @@ from graph.graph             import get_graph
 from gargantext.util.http    import APIView, APIException\
                                   , JsonHttpResponse, requires_auth
 
+from traceback import format_tb
+
 # TODO check authentication
 
 class Graph(APIView):
@@ -19,28 +21,28 @@ class Graph(APIView):
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
         '''
-        
+
         # Get the node we are working with
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
-        
+
         # Get all the parameters in the URL
         cooc_id      = request.GET.get     ('cooc_id'   , None         )
-        
+
         field1       = str(request.GET.get ('field1'    , 'ngrams'     ))
         field2       = str(request.GET.get ('field2'    , 'ngrams'     ))
-        
+
         start        = request.GET.get     ('start'     , None         )
         end          = request.GET.get     ('end'       , None         )
-        
+
         mapList_id   = int(request.GET.get ('mapList'   , 0            ))
         groupList_id = int(request.GET.get ('groupList' , 0            ))
-        
+
         threshold    = int(request.GET.get ('threshold' , 1            ))
         bridgeness   = int(request.GET.get ('bridgeness', -1           ))
         format_      = str(request.GET.get ('format'    , 'json'       ))
         type_        = str(request.GET.get ('type'      , 'node_link'  ))
         distance     = str(request.GET.get ('distance'  , 'conditional'))
-        
+
         # Get default value if no map list
 
         if mapList_id == 0 :
@@ -50,10 +52,11 @@ class Graph(APIView):
                                            )
                                     .first()
                           )
-            
+
             mapList_id = mapList_id[0]
-            
+
             if mapList_id == None :
+                # todo add as an error msg ?
                 raise ValueError("MAPLIST node needed for cooccurrences")
 
 
@@ -65,23 +68,23 @@ class Graph(APIView):
                                             )
                                      .first()
                             )
-            
+
             groupList_id  = groupList_id[0]
-            
+
             if groupList_id == None :
+                # todo add as an error msg ?
                 raise ValueError("GROUPLIST node needed for cooccurrences")
 
 
-        # Chec the options
+        # Check the options
         accepted_field1 = ['ngrams', 'journal', 'source', 'authors']
         accepted_field2 = ['ngrams',                               ]
         options         = ['start', 'end', 'threshold', 'distance', 'cooc_id' ]
-        
-        
-        # Test function
 
-        if field1 in accepted_field1 :
-            if field2 in accepted_field2 :
+
+        try:
+            # Test params
+            if (field1 in accepted_field1) and (field2 in accepted_field2):
                 if start is not None and end is not None :
                     data = get_graph( corpus=corpus, cooc_id = cooc_id
                                   #, field1=field1           , field2=field2
@@ -97,12 +100,31 @@ class Graph(APIView):
                                    , distance   = distance
                                    , bridgeness = bridgeness
                                    )
-                if format_ == 'json':
-                    return JsonHttpResponse(data)
-        else:
+                # Test data length
+                if len(data['nodes']) > 0 and len(data['links']) > 0:
+                    # normal case --------------------------------
+                    if format_ == 'json':
+                        return JsonHttpResponse(data, status=200)
+                    # --------------------------------------------
+                else:
+                    # empty data case
+                    return JsonHttpResponse({
+                        'msg': '''Empty graph warning
+                                  No cooccurences found in this corpus for the words of this maplist
+                                  (maybe add more terms to the maplist?)''',
+                        }, status=400)
+            else:
+                # parameters error case
+                return JsonHttpResponse({
+                    'msg': '''Usage warning
+                              Please choose only one field from each range:
+                                - "field1": %s
+                                - "field2": %s
+                                - "options": %s''' % (accepted_field1, accepted_field2, options)
+                    }, status=400)
+
+        # for any other errors that we forgot to test
+        except Exception as e:
             return JsonHttpResponse({
-                'Warning USAGE' : 'One field for each range:'
-                , 'field1' : accepted_field1
-                , 'field2' : accepted_field2
-                , 'options': options
-                })
+                'msg' : 'Unknown error (showing the trace):\n%s' % "\n".join(format_tb(e.__traceback__))
+                }, status=400)

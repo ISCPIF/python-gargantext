@@ -24,6 +24,8 @@ class Graph(APIView):
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
         
         # Get all the parameters in the URL
+        cooc_id      = request.GET.get     ('cooc_id'   , None         )
+        
         field1       = str(request.GET.get ('field1'    , 'ngrams'     ))
         field2       = str(request.GET.get ('field2'    , 'ngrams'     ))
         
@@ -40,6 +42,7 @@ class Graph(APIView):
         distance     = str(request.GET.get ('distance'  , 'conditional'))
         
         # Get default value if no map list
+
         if mapList_id == 0 :
             mapList_id = ( session.query ( Node.id )
                                     .filter( Node.typename  == "MAPLIST"
@@ -72,19 +75,22 @@ class Graph(APIView):
         # Chec the options
         accepted_field1 = ['ngrams', 'journal', 'source', 'authors']
         accepted_field2 = ['ngrams',                               ]
-        options         = ['start', 'end', 'threshold', 'distance' ]
+        options         = ['start', 'end', 'threshold', 'distance', 'cooc_id' ]
         
+        
+        # Test function
+
         if field1 in accepted_field1 :
             if field2 in accepted_field2 :
                 if start is not None and end is not None :
-                    data = get_graph( corpus=corpus
+                    data = get_graph( corpus=corpus, cooc_id = cooc_id
                                   #, field1=field1           , field2=field2
                                    , mapList_id = mapList_id , groupList_id = groupList_id
                                    , start=start             , end=end
                                    , threshold =threshold    , distance=distance
                                    )
                 else:
-                    data = get_graph( corpus = corpus
+                    data = get_graph( corpus = corpus, cooc_id = cooc_id
                                   #, field1=field1, field2=field2
                                    , mapList_id = mapList_id , groupList_id = groupList_id
                                    , threshold  = threshold

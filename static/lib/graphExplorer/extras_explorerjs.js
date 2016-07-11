@@ -3,11 +3,13 @@
  */
 
 function newPopup(url) {
+    console.log('FUN extras_explorerjs:newPopup')
 	popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
 }
 
 
 function getIDFromURL( item ) {
+    console.log('FUN extras_explorerjs:getIDFromURL')
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
@@ -20,6 +22,7 @@ function getIDFromURL( item ) {
 }
 
 function modify_ngrams( classname ) {
+    console.log('FUN extras_explorerjs:modify_ngrams')
     console.clear()
 
     var corpus_id = getIDFromURL( "corpora" ) // not used
@@ -92,6 +95,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //  then, add the button in the html with the sigmaUtils.clustersBy(x) listener.
     //TODO: move to ClustersPlugin.js or smntng
     function ChangeGraphAppearanceByAtt( manualflag ) {
+        console.log('FUN extras_explorerjs:ChangeGraphAppearanceByAtt')
 
         if ( !isUndef(manualflag) && !colorByAtt ) colorByAtt = manualflag;
         if(!colorByAtt) return;
@@ -198,7 +202,8 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
             return b-a
         });
 
-        console.clear()
+        // console.clear()
+
         console.log( AttsDict_sorted )
         for (var i in AttsDict_sorted) {
             var att_s = AttsDict_sorted[i].key;
@@ -230,6 +235,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //  then, it runs external library jLouvain()
     //TODO: move to ClustersPlugin.js or smntng
     function RunLouvain() {
+      console.log('FUN extras_explorerjs:RunLouvain')
 
       var node_realdata = []
       var nodesV = getVisibleNodes()
@@ -256,6 +262,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     // Highlight nodes belonging to cluster_i when you click in thecluster_i of the legend
     //TODO: move to ClustersPlugin.js or smntng
     function HoverCluster( ClusterCode ) {
+        console.log('FUN extras_explorerjs:HoverCluster')
         console.log( ClusterCode )
 
         var raw = ClusterCode.split("||")
@@ -343,6 +350,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //      daclass = "clust_default" | "clust_louvain" | "clust_x" ...
     //TODO: move to ClustersPlugin.js or smntng
     function set_ClustersLegend ( daclass ) {
+        console.log('FUN extras_explorerjs:set_ClustersLegend')
         //partialGraph.states.slice(-1)[0].LouvainFait = true
 
         if( daclass=="clust_default" && Clusters.length==0)
@@ -404,6 +412,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 
 // PHP-mode when you've a cortext db.
 function getTopPapers_OriginalVersion(type){
+    console.log('FUN extras_explorerjs:getTopPapers_OriginalVersion')
     if(getAdditionalInfo){
         jsonparams=JSON.stringify(getSelections());
         bi=(Object.keys(categories).length==2)?1:0;
@@ -435,7 +444,7 @@ function getTopPapers_OriginalVersion(type){
 
 // PHP-mode when you've a cortext db.
 function getTopProposals(type , jsonparams , thisgexf) {
-
+    console.log('FUN extras_explorerjs:getTopProposals')
     type = "semantic";
     if(swclickActual=="social") {
         nodesA = []
@@ -491,6 +500,7 @@ function getTopProposals(type , jsonparams , thisgexf) {
 
 // Just for Garg
 function genericGetTopPapers(theids , corpus_id , thediv) {
+    console.log('FUN extras_explorerjs:genericGetTopPapers')
     if(getAdditionalInfo) {
         $("#"+thediv).show();
         $.ajax({
@@ -551,6 +561,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
 
 // Just for Garg: woops, override
 function getTopPapers(type){
+    console.log('FUN extras_explorerjs:getTopPapers')
     if(getAdditionalInfo){
 
         $("#topPapers").show();
@@ -624,7 +635,7 @@ function getTopPapers(type){
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                         output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
+                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
                         output +="</li>\n";
                         // for(var j in pub) {
                         //  if(j!="abstract")
@@ -654,6 +665,7 @@ function getTopPapers(type){
 }
 
 function getCookie(name) {
+    console.log('FUN extras_explorerjs:getCookie')
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
         var cookies = document.cookie.split(';');
@@ -670,6 +682,7 @@ function getCookie(name) {
 }
 // Just for Garg
 function printCorpuses() {
+    console.log('FUN extras_explorerjs:printCorpuses')
     console.clear()
     console.log( "!!!!!!!! Corpus chosen, going to make the diff !!!!!!!! " )
     pr(corpusesList)
@@ -768,7 +781,7 @@ function printCorpuses() {
     // var pageurl = window.location.href.split("/")
     // var cid;
     // for(var i in pageurl) {
-    //     if(pageurl[i]=="corpus") {
+    //     if(pageurl[i]=="corpora") {
     //         cid=parseInt(i);
     //         break;
     //     }
@@ -791,6 +804,7 @@ function printCorpuses() {
 
 // Just for Garg
 function GetUserPortfolio() {
+    console.log('FUN extras_explorerjs:GetUserPortfolio')
     //http://localhost:8000/api/corpusintersection/1a50317a50145
     var pageurl = window.location.href.split("/")
     var pid;
@@ -804,7 +818,7 @@ function GetUserPortfolio() {
 
     var cid;
     for(var i in pageurl) {
-        if(pageurl[i]=="corpus") {
+        if(pageurl[i]=="corpora") {
             cid=parseInt(i);
             break;
         }
@@ -908,6 +922,7 @@ function GetUserPortfolio() {
 }
 
 function camaraButton(){
+    console.log('FUN extras_explorerjs:camaraButton')
     $("#PhotoGraph").click(function (){
 
         //canvas=partialGraph._core.domElements.nodes;
@@ -960,6 +975,7 @@ function camaraButton(){
 }
 
 function getTips(){
+    console.log('FUN extras_explorerjs:getTips')
     param='';
 
     text =

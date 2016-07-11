@@ -127,11 +127,14 @@ def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
 
     (benefits from normalize_chars upstream so there's less cases to consider)
     """
-    term_str = sub(r'^[-",;/%(){}\\\[\]\.\']+', '', term_str)
-    term_str = sub(r'[-",;/%(){}\\\[\]\.\']+$', '', term_str)
+    # print('normalize_terms  IN: "%s"' % term_str)
+    term_str = sub(r'^[-",;/%(){}\\\[\]\.\' ]+', '', term_str)
+    term_str = sub(r'[-",;/%(){}\\\[\]\.\' ]+$', '', term_str)
 
     if do_lowercase:
         term_str = term_str.lower()
+
+    # print('normalize_terms OUT: "%s"' % term_str)
 
     return term_str
 

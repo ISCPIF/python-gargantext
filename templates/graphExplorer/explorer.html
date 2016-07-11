@@ -6,9 +6,9 @@
 {% block css %}
 
     <link rel="stylesheet" href="{% static "lib/jquery/1.11.2/jquery-ui.css" %}" media="screen">
-    <link rel="stylesheet" href="{% static "lib/external_libs/css2/freshslider.css" %}" media="screen">
-    <link rel="stylesheet" href="{% static "lib/external_libs/css2/custom.css" %}" media="screen">
-    <link rel="stylesheet" href="{% static "lib/external_libs/css2/sidebar.css" %}" media="screen">
+    <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/css2/freshslider.css" %}" media="screen">
+    <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/css2/custom.css" %}" media="screen">
+    <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/css2/sidebar.css" %}" media="screen">
 
     <style>
 
@@ -38,8 +38,8 @@
       #category1 ul li { margin: 0 12px 12px 0; }
     </style>
     <!--
-    <link rel="stylesheet" href="{% static "lib/external_libs/bootswatch/css/bootswatch.css" %}">
-    <link rel="stylesheet" href="{% static "lib/external_libs/css2/font.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/bootswatch/css/bootswatch.css" %}">
+    <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/css2/font.css" %}" type="text/css">
     -->
   </head>
 
@@ -362,7 +362,26 @@
       </div>
     </div>
 
+    <div id="errormodal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
 
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title">Graph generation error</h4>
+          </div>
+
+          <div class="modal-body form-horizontal">
+            <div id="errormsg"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
     <div id="corpuses" class="modal fade">
 
@@ -421,32 +440,32 @@
     <script src="{% static "lib/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
     <script src="{% static "lib/jquery/1.11.2/jquery-ui.js" %}" type="text/javascript"></script>
 
-    <script src="{% static "lib/external_libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "lib/external_libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "lib/graphExplorer/libs/jquery/jquery.ba-dotimeout.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "lib/graphExplorer/libs/jquery/jquery.mousewheel.min.js" %}" type="text/javascript"></script>
 
-    <script type="text/javascript" src="{% static "lib/external_libs/freshslider.1.0.js" %}"></script>
-    <script type="text/javascript" src="{% static "lib/external_libs/readmore.js" %}"></script>
-    <script type="text/javascript" src="{% static "lib/external_libs/jquery/jquery.easytabs.min.js" %}"></script>
-
-
-    <script src="{% static "lib/external_libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
-    <script src="{% static "lib/external_libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
+    <script type="text/javascript" src="{% static "lib/graphExplorer/libs/freshslider.1.0.js" %}"></script>
+    <script type="text/javascript" src="{% static "lib/graphExplorer/libs/readmore.js" %}"></script>
+    <script type="text/javascript" src="{% static "lib/graphExplorer/libs/jquery/jquery.easytabs.min.js" %}"></script>
 
 
-    <script src="{% static "lib/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
-    <script src="{% static "lib/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>
-    <script src="{% static "lib/graphExplorer/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/libs/bootstrap/js/bootstrap-modal.js" %}" type="text/javascript"></script>
+    <script src="{% static "lib/graphExplorer/libs/bootstrap/js/bootstrap-hover-dropdown.min.js" %}" type="text/javascript"></script>
+
+
+    <script src="{% static "lib/graphExplorer/tinawebJS/globalUtils.js" %}" type="text/javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/plugins/jLouvain.js" %}" type="text/javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/sigma.min.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/sigma.forceatlas2.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "lib/graphExplorer/settings_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/sigma.parseCustom.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/sigma.parseCustom.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "lib/graphExplorer/extras_explorerjs.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/sigmaUtils.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/methods.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/minimap.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/enviroment.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/Tinaweb.js" %}" type="text/javascript" language="javascript"></script>
-    <script src="{% static "lib/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/sigmaUtils.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/methods.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/minimap.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/enviroment.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/Tinaweb.js" %}" type="text/javascript" language="javascript"></script>
+    <script src="{% static "lib/graphExplorer/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
 
     <script type="text/javascript">
       function newPopup(url) {

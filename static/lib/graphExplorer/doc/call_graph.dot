@@ -1,0 +1,84 @@
+// dot call_graph.dot -Tpng -o tina_call_graph.png
+digraph tina_call_graph {
+    graph [ordering="out"];
+    rankdir=LR ;
+
+    edge [fontsize=10] ;
+    label=<<B><U>tinawebJS</U></B><BR/>(initialization callgraph)>;
+    labelloc="t" ;
+
+    // settings
+    "settings var" -> "settings:SystemStates";
+    "settings var" -> "settings:sigmaJsDrawingProperties";
+    "settings var" -> "etc.";
+
+    // getUrlParam
+    "t.globalUtils:getUrlParam" -> "var mainfile (url)" ;
+
+    // main 1: get graph
+    "t.main" -> "var mainfile (url)" ;
+    "var mainfile (url)" -> "ajax garg" ;
+    "ajax garg" -> "t.main:MainFunction" ;
+
+    // main 2: parse graph
+    "t.main:MainFunction" -> "t.sigma.parseCustom:ParseCustom" ;
+    "t.main:MainFunction" -> "t.sigma.parseCustom:scanFile" ;
+        "t.sigma.parseCustom:scanFile" -> "t.sigma.parseCustom:getJSONCategories" ;
+            "t.sigma.parseCustom:getJSONCategories" -> "t.sigma.parseCustom:scanJSON" ;
+    "t.main:MainFunction" -> "t.sigma.parseCustom:makeSystemStates" ;
+    "t.main:MainFunction" -> "t.sigma.parseCustom:buildInitialState" ;
+    "t.main:MainFunction" -> "t.sigma.parseCustom:makeDicts" ;
+        "t.sigma.parseCustom:makeDicts" -> "t.sigma.parseCustom:dictfyJSON"  [label="cats={'terms':0}"] ;
+
+    // main 3: new TinaWebJS()
+    "t.main:MainFunction" -> "var twjs_" ;
+        "var twjs_" -> "t.TinawebJS:TinaWebJS:new" ;
+
+    // main 4: adjust canvas routine
+    "t.main:MainFunction" -> "t.TinawebJS:AdjustSigmaCanvas" ;      // twjs_.AdjustSigmaCanvas()
+        "t.TinawebJS:AdjustSigmaCanvas" -> "t.TinawebJS:sigmaLimits" ;
+        "t.TinawebJS:sigmaLimits" -> "t.TinawebJS:visibleHeight" ;
+        "t.TinawebJS:sigmaLimits" -> "new canvas!" ;
+
+    // main 5: partialGraph and new SigmaUtils()
+    "t.main:MainFunction" -> "var partialGraph" ;
+        "var partialGraph" -> "sigma:init";
+    "t.main:MainFunction" -> "t.SigmaUtils:SigmaUtils:new" ;
+    "t.main:MainFunction" -> "t.SigmaUtils:SigmaUtils:FillGraph" ; // [ Poblating the Sigma-Graph ]
+        "t.SigmaUtils:SigmaUtils:FillGraph" -> "SigmaPublic.addNode" [label="x N"];
+        "t.SigmaUtils:SigmaUtils:FillGraph" -> "SigmaPublic.addEdge" [label="x N"];
+            "SigmaPublic.addEdge" -> "t.globalUtils:hex2rga" [label="x M"];
+        "t.SigmaUtils:SigmaUtils:FillGraph" -> "t.enviroment:updateSearchLabels" [label="N x push labels"];
+
+    // main 6: state and settings for partialGraph
+    // "settings:sigmaJsDrawingProperties" -> "var partialGraph" ;
+    // "settings:SystemStates" -> "var partialGraph" ;
+        "var partialGraph" -> "t.main:partialGraph:setState";
+
+    // main 7: twjs_.initListeners( categories , partialGraph)
+    "t.main:MainFunction" -> "t.TinawebJS:initListeners" ;
+        "t.TinawebJS:initListeners" -> "t.TinawebJS:SelectionEngine:new" [label="initListeners:SelInst"] ;
+        "t.TinawebJS:initListeners" -> "onclick:#changetype" ;
+        "t.TinawebJS:initListeners" -> "onclick:#changelevel" ;
+        "t.TinawebJS:initListeners" -> "onclick:#aUnfold" ;
+        "t.TinawebJS:initListeners" -> "t.minimap:startMiniMap" [label = "if minimap"] ;
+        "t.TinawebJS:initListeners" -> "t.methods:pushSWClick" [label = "var swclickActual"] ;
+        "t.TinawebJS:initListeners" -> "t.methods:cancelSelection" ;
+            "t.methods:cancelSelection" -> "t.methods:highlightSelectedNodes" [label = "false"] ;
+                "t.methods:highlightSelectedNodes" -> "t.globalUtils:is_empty" ;
+            "t.methods:cancelSelection" -> "erase:#names" ;
+            "t.methods:cancelSelection" -> "erase:#ngrams_actions" ;
+            "t.methods:cancelSelection" -> "erase:#topPapers" ;
+            "t.methods:cancelSelection" -> "erase:#opossiteNodes" ;
+            "t.methods:cancelSelection" -> "erase:#searchinput" ;
+            "t.methods:cancelSelection" -> "t.methods:LevelButtonDisable" ;
+        "t.TinawebJS:initListeners" -> "t.sigmaUtils:showMeSomeLabels" ;
+            "t.sigmaUtils:showMeSomeLabels" -> "t.sigmaUtils:getVisibleNodes" ;
+
+        "t.TinawebJS:initListeners" -> "t.TinawebJS:SearchListeners" ;
+            "t.TinawebJS:SearchListeners" -> "autocomplete:#searchinput" ;
+                "autocomplete:#searchinput" -> "t.TinawebJS:SelectionEngine:new" [label="SearchListeners:SelInst"]  ;
+
+    /*t.methods:highlightSelectedNodes*/
+
+}

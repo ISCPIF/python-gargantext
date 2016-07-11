@@ -42,6 +42,9 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 CELERY_IMPORTS = ("gargantext.util.toolchain")
 
 
+# garg's custom unittests runner (adapted to our db models)
+TEST_RUNNER = 'unittests.framework.GargTestRunner'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -164,6 +167,3 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-

@@ -2,6 +2,8 @@
  * Customize as you want ;)
  */
 
+console.log('FUN settings_explorerjs:main')
+
 // ============ < DEVELOPER OPTIONS > ============
 var geomap=false;
 var colorByAtt = false;
@@ -138,7 +140,7 @@ var sigmaJsDrawingProperties = {
 };
 var sigmaJsGraphProperties = {
     minEdgeSize: 2,
-    maxEdgeSize: 4,
+    maxEdgeSize: 3
 };
 var sigmaJsMouseProperties = {
     minRatio:0.1,

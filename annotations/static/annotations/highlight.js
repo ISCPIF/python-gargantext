@@ -434,10 +434,10 @@
       * @param $rootScope (global) to check activeLists and list names
       *
       * add-on mechanism:
-      * @param focusNgram: an ngram_id to higlight more
+      * @param focusNgrams: some ngram_ids to higlight more
       *        (it is assumed to be already in one of the active lists)
       */
-      function compileNgramsHtml(annotations, textMapping, $rootScope, focusNgram) {
+      function compileNgramsHtml(annotations, textMapping, $rootScope, focusNgrams) {
         if (typeof $rootScope.activeLists == "undefined") return;
         if (_.keys($rootScope.activeLists).length === 0) return;
         var templateBegin = "<span ng-controller='TextSelectionController' ng-click='onClick($event)' class='keyword-inline'>";
@@ -540,8 +540,15 @@
         // 2nd pass for result html
         // =========================
 
-        // first pass for anchors
-        // ======================
+        // a small lookup for possible focus items (they'll get different css)
+        var checkFocusOn = {}
+        if (focusNgrams) {
+            for (var i in focusNgrams) {
+                var focusNgramId = focusNgrams[i]
+                checkFocusOn[focusNgramId] = true
+            }
+        }
+
         angular.forEach(sortedSizeAnnotations, function (annotation) {
           // again exclude ngrams that are into inactive lists
           if ($rootScope.activeLists[annotation.list_id] === undefined) return;
@@ -549,8 +556,9 @@
           // listName now used to setup css class
           var cssClass = $rootScope.lists[annotation.list_id];
 
-          // except if FOCUS
-          if (focusNgram && (annotation.uuid == focusNgram || annotation.group == focusNgram)) {
+          // except if uuid or group mainform is in FOCUS items
+          if (focusNgrams &&
+            (checkFocusOn[annotation.uuid] || checkFocusOn[annotation.group])) {
               cssClass = "FOCUS"
           }
 
@@ -642,7 +650,7 @@
             '#title': angular.copy($rootScope.title)
           },
           $rootScope,
-          $rootScope.focusNgram // new: optional focus ngram
+          $rootScope.focusNgrams // optional focus ngrams
         );
         // inject highlighted HTML
         angular.forEach(result, function(html, eltId) {

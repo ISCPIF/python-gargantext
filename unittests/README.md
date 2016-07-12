@@ -9,13 +9,12 @@ Running unit tests will involve creating a **temporary test DB** !
  + for instance in gargantext you would need to run this in psql as postgres:  
    `# ALTER USER gargantua CREATEDB;`
 
+A "principe de précaution" could be to allow gargantua the CREATEDB rights on the **dev** machines (to be able to run tests) and not give it on the **prod** machines (no testing but more protection just in case).
 
 Usage
 ------
-From the django container directory to runs all tests type:
-
 ```
-./manage.py test unittests/ -v 2
+./manage.py test unittests/ -v 2            # in django root container directory
 
 # or for a single module
 ./manage.py test unittests.tests_010_basic  -v 2
@@ -39,28 +38,34 @@ Tests
     - "/api/nodes/<ID>"
 
 
-Creating a test DB
-------------------
-Most of the tests will interact with a DB but we don't want to touch the real one so we provide a customized test_runner class in `unittests/framework.py`
+GargTestRunner
+---------------
+Most of the tests will interact with a DB but we don't want to touch the real one so we provide a customized test_runner class in `unittests/framework.py` that creates a test database.
 
-Our custom class needs to be referenced as the `TEST_RUNNER` environment variable in django's `settings.py` like this:
+It must be referenced in django's `settings.py` like this:
 ```
 TEST_RUNNER = 'unittests.framework.GargTestRunner'
 ```
+
+(This way the `./manage.py test` command will be using GargTestRunner.)
+
 
 Using a DB session
 ------------------
 To emulate a session the way we usually do it in gargantext, our `unittests.framework` also
 provides a session object to the test database via `GargTestRunner.testdb_session`
 
-To work correctly, it needs to be imported inside the test setup.
+To work correctly, it needs to be read *inside the test setup.*
 
 **Example**
 ```
+from unittests.framework import GargTestRunner
+
 class MyTestRecipes(TestCase):
     def setUp(self):
-        from unittests.framework import GargTestRunner
+        # -------------------------------------
         session = GargTestRunner.testdb_session
+        # -------------------------------------
         new_project = Node(
             typename = 'PROJECT',
             name = "hello i'm a project",
@@ -77,14 +82,17 @@ Django tests provide a client to browse the urls
 
 **Example**
 ```
+from django.test import Client
+
 class MyTestRecipes(TestCase):
     def setUp(self):
-        from django.test import Client
         self.client = Client()
 
     def test_001_get_front_page(self):
         ''' get the about page localhost/about '''
-        the_response = self.client.get('/')
+        # --------------------------------------
+        the_response = self.client.get('/about')
+        # --------------------------------------
         self.assertEqual(the_response.status_code, 200)
 ```
 
@@ -96,18 +104,31 @@ His login in 'pcorser' and password is 'peter'
 
 **Example**
 ```
+from django.test import Client
+
 class MyTestRecipes(TestCase):
     def setUp(self):
-        from django.test import Client
         self.client = Client()
-        # login with our fake user
+        # login ---------------------------------------------------
         response = self.client.post(
-                            '/auth/login/',
-                            {'username': 'pcorser', 'password': 'peter'}
-                            )
+                      '/auth/login/',
+                      {'username': 'pcorser', 'password': 'peter'}
+                   )
+        # ---------------------------------------------------------
 
     def test_002_get_to_a_restricted_page(self):
         ''' get the projects page /projects '''
         the_response = self.client.get('/projects')
         self.assertEqual(the_response.status_code, 200)
 ```
+
+*Si vous aimez les aventures de Peter Corser, lisez l'album précédent ["Doors"](https://gogs.iscpif.fr/leclaire/doors)* (Scénario M. Leclaire, Dessins R. Loth) (disponible dans toutes les bonnes librairies)
+
+
+FIXME
+-----
+
+url client get will still give read access to original DB ?
+      cf. http://stackoverflow.com/questions/19714521
+      cf. http://stackoverflow.com/questions/11046039
+      cf. test_073_get_api_one_node

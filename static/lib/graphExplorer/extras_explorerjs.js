@@ -612,9 +612,8 @@ function getTopPapers(type){
                         }
                         // ex url_mainIDs = {projects: 1, corpora: 2690}
 
-                        // link to matching document
-                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]
-
+                        // link to matching document (with focus=selections_ids param)
+                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]+'/focus='+theids.join(",")
 
                         var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 

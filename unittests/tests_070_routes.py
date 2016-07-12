@@ -3,6 +3,7 @@ ROUTE UNIT TESTS
 ================
 """
 from django.test import TestCase
+from django.test import Client
 
 # to be able to create Nodes
 from gargantext.models import Node
@@ -10,13 +11,15 @@ from gargantext.models import Node
 # to be able to compare in test_073_get_api_one_node()
 from gargantext.constants import NODETYPES
 
+# provides GargTestRunner.testdb_session
+from unittests.framework import GargTestRunner
+
 
 class RoutesChecker(TestCase):
     def setUp(self):
         """
-        Will be ran before each test
+        Will be run before each test
         """
-        from django.test import Client
         self.client = Client()
 
         # login with our fake user
@@ -26,7 +29,6 @@ class RoutesChecker(TestCase):
                             )
         print(response.status_code)
 
-        from unittests.framework import GargTestRunner
         session = GargTestRunner.testdb_session
 
         new_project = Node(
@@ -56,28 +58,32 @@ class RoutesChecker(TestCase):
         self.assertIn('application/json', api_response.get('Content-Type'))
 
         # 2) let's try to get things in the json
-        json_count = api_response.json()['count']
-        json_nodes = api_response.json()['records']
+        json_content = api_response.json()
+        json_count = json_content['count']
+        json_nodes = json_content['records']
         self.assertEqual(type(json_count), int)
         self.assertEqual(type(json_nodes), list)
-        # print("\ntesting nodecount: %i " % json_count)
+        print("\ntesting nodecount: %i " % json_count)
 
-    #
-    # def test_073_get_api_one_node(self):
-    #     ''' get "api/nodes/<node_id>" '''
-    #
-    #     # we first get one node id by re-running this bit from test_072
-    #     a_node_id = self.client.get('/api/nodes').json()['records'][0]['id']
-    #
-    #     one_node_route = '/api/nodes/%i' % a_node_id
-    #     # print("\ntesting node route: %s" % one_node_route)
-    #     api_response = self.client.get(one_node_route)
-    #     self.assertTrue(api_response.has_header('Content-Type'))
-    #     self.assertIn('application/json', api_response.get('Content-Type'))
-    #
-    #     json_nodetype = api_response.json()['typename']
-    #     # print("\ntesting nodetype:", json_nodetype)
-    #     self.assertIn(json_nodetype, NODETYPES)
+
+    def test_073_get_api_one_node(self):
+        ''' get "api/nodes/<node_id>" '''
+
+        # we first get one node id by re-running this bit from test_072
+        a_node_id = self.client.get('/api/nodes').json()['records'][0]['id']
+
+        one_node_route = '/api/nodes/%i' % a_node_id
+        # print("\ntesting node route: %s" % one_node_route)
+        api_response = self.client.get(one_node_route)
+        self.assertTrue(api_response.has_header('Content-Type'))
+        self.assertIn('application/json', api_response.get('Content-Type'))
+
+        json_content = api_response.json()
+        nodetype = json_content['typename']
+        nodename = json_content['name']
+        print("\ntesting nodename:", nodename)
+        print("\ntesting nodetype:", nodetype)
+        self.assertIn(nodetype, NODETYPES)
 
     # TODO http://localhost:8000/api/nodes?types[]=CORPUS
 

@@ -634,7 +634,7 @@ function getTopPapers(type){
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                         output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                        output += '<a href="'+gquery+'" target=_blank><img title="Query the web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                         output +="</li>\n";
                         // for(var j in pub) {
                         //  if(j!="abstract")

@@ -612,9 +612,8 @@ function getTopPapers(type){
                         }
                         // ex url_mainIDs = {projects: 1, corpora: 2690}
 
-                        // link to matching document
-                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]
-
+                        // link to matching document (with focus=selections_ids param)
+                        var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]+'/focus='+theids.join(",")
 
                         var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 
@@ -635,7 +634,7 @@ function getTopPapers(type){
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
                         output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
-                        output += '<a href="'+gquery+'" target=_blank><img title="Query to Google" src="'+window.location.origin+'/static/img/google.png"></img></a>'
+                        output += '<a href="'+gquery+'" target=_blank><img title="Query the web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                         output +="</li>\n";
                         // for(var j in pub) {
                         //  if(j!="abstract")

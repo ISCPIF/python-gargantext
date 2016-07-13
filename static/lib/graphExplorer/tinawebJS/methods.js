@@ -405,22 +405,6 @@ function manualForceLabel(nodeid,active) {
 	partialGraph.draw();
 }
 
-function htmlfied_samenodes(elems) {
-    console.log('FUN t.methods:htmlfied_samenodes')
-    var sameNodes=[]
-    js1=' onmouseover="manualForceLabel(this.id,true);" ';
-    js2=' onmouseout="manualForceLabel(this.id,true);" ';
-    if(elems.length>0) {
-        var A = getVisibleNodes()
-        for (var a in A){
-            n = A[a]
-            if(!n.active && n.color.charAt(0)=="#" ) {
-                sameNodes.push('<li onmouseover="manualForceLabel(\''+n.id+'\',true)"  onmouseout="manualForceLabel(\''+n.id+'\',false)" ><a>'+ n.label+ '</a></li>')
-            }
-        }
-    }
-    return sameNodes
-}
 
 // nodes information div
 function htmlfied_nodesatts(elems){
@@ -469,6 +453,45 @@ function htmlfied_nodesatts(elems){
     return socnodes.concat(semnodes)
 }
 
+
+function manualSelectNode ( nodeid ) {
+    console.log('FUN t.methods:manualSelectNode')
+    cancelSelection(false);
+    var SelInst = new SelectionEngine();
+    SelInst.MultipleSelection2({nodes:[nodeid]});
+}
+
+function htmlfied_tagcloud(elems , limit) {
+    console.log('FUN t.methods:htmlfied_tagcloud')
+    if(elems.length==0) return false;
+    var termNodes=[]
+    js1="" //'onclick="graphTagCloudElem(\'';
+    js2="" //"');\""
+    frecMAX=elems[0].value
+    for(var i in elems){
+        if(i==limit)
+            break
+        id=elems[i].key
+        frec=elems[i].value
+        if(frecMAX==1) fontSize=desirableTagCloudFont_MIN;
+        else {
+            fontSize=
+            desirableTagCloudFont_MIN+
+            (frec-1)*
+            ((desirableTagCloudFont_MAX-desirableTagCloudFont_MIN)/(frecMAX-1));
+        }
+        if(!isUndef(Nodes[id])){
+            //          js1            js2
+            // onclick="graphTagCloudElem('  ');
+            var jspart = ' onclick="manualSelectNode(\''+id+'\')" onmouseover="manualForceLabel(\''+id+'\',true)"  onmouseout="manualForceLabel(\''+id+'\',false)"'
+            htmlfied_terms = '<span class="tagcloud-item" style="font-size:'+fontSize+'px;" '+jspart+'>'+ Nodes[id].label+ '</span>';
+            termNodes.push(htmlfied_terms)
+        }
+    }
+    return termNodes
+}
+
+
 //missing: getTopPapers for both node types
 //considering complete graphs case! <= maybe i should mv it
 function updateLeftPanel_fix( sels , oppos ) {
@@ -500,9 +523,23 @@ function updateLeftPanel_fix( sels , oppos ) {
 	}
 
     sameNodesDIV = "";
-    sameNodesDIV+='<div id="sameNodes"><ul style="list-style: none;">';//tagcloud
-    sameNodesDIV += htmlfied_samenodes( getNodeIDs(sels) ).join("\n") ;
-    sameNodesDIV+= '</ul></div>';
+    if(getNodeIDs(sels).length>0) {
+        var temp_voisinage = {}
+        var A = getVisibleNodes()
+        for (var a in A){
+            var n = A[a]
+            if(!n.active && n.color.charAt(0)=="#" ) {
+                temp_voisinage[n.id] = Math.round(Nodes[n.id].size)
+            }
+        }
+        var voisinage = ArraySortByValue(temp_voisinage, function(a,b){
+            return b-a
+        });
+        sameNodesDIV+='<div id="sameNodes">';//tagcloud
+        var tagcloud_opposite_neigh = htmlfied_tagcloud( voisinage , tagcloud_limit)
+        sameNodesDIV+= (tagcloud_opposite_neigh!=false) ? tagcloud_opposite_neigh.join("\n")  : "No related terms.";
+        sameNodesDIV+= '</div>';
+    }
 
         // getTopPapers("semantic");
 

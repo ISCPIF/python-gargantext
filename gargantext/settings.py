@@ -42,6 +42,9 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 CELERY_IMPORTS = ("gargantext.util.toolchain")
 
 
+# garg's custom unittests runner (adapted to our db models)
+TEST_RUNNER = 'unittests.framework.GargTestRunner'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -123,6 +126,9 @@ DATABASES = {
         'PASSWORD': 'C8kdcUrAQy66U',
         'HOST': '127.0.0.1',
         'PORT': '5432',
+        'TEST': {
+            'NAME': 'test_gargandb',
+        },
     }
 }
 

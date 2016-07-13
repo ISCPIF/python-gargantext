@@ -19,7 +19,7 @@ from gargantext.constants        import DEFAULT_CSV_DELIM, DEFAULT_CSV_DELIM_GRO
 
 # import will implement the same text cleaning procedures as toolchain
 from gargantext.util.toolchain.parsing           import normalize_chars
-from gargantext.util.toolchain.ngrams_extraction import normalize_terms
+from gargantext.util.toolchain.ngrams_extraction import normalize_forms
 
 from sqlalchemy.sql      import exists
 from os                  import path

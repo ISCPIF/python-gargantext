@@ -39,11 +39,11 @@ def do_mainlist(corpus,
     # retrieve helper nodes if not provided
     if not ranking_scores_id:
         ranking_scores_id  = session.query(Node.id).filter(
-                                Node.typename  == "TFIDF-GLOBAL",
+                                Node.typename  == "TIRANK-GLOBAL",
                                 Node.parent_id == corpus.id
                     ).first()
         if not ranking_scores_id:
-            raise ValueError("MAINLIST: TFIDF node needed for mainlist creation")
+            raise ValueError("MAINLIST: TIRANK node needed for mainlist creation")
 
     if not stoplist_id:
         stoplist_id  = session.query(Node.id).filter(

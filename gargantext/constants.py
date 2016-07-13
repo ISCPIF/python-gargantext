@@ -12,14 +12,16 @@ LISTTYPES = {
     'STOPLIST'     : UnweightedList,
     'MAINLIST'     : UnweightedList,
     'MAPLIST'      : UnweightedList,
-    'SPECIFICITY'  : WeightedList,
+    'SPECCLUSION'  : WeightedList,
+    'GENCLUSION'   : WeightedList,
     'OCCURRENCES'  : WeightedIndex,   # could be WeightedList
     'COOCCURRENCES': WeightedMatrix,
     'TFIDF-CORPUS' : WeightedIndex,
     'TFIDF-GLOBAL' : WeightedIndex,
     'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
-    'TIRANK-GLOBAL' : WeightedIndex   # could be WeightedList
+    'TIRANK-GLOBAL' : WeightedIndex,   # could be WeightedList
 }
+# 'OWNLIST'      : UnweightedList,    # £TODO use this for any term-level tags
 
 NODETYPES = [
     # TODO separate id not array index, read by models.node
@@ -37,7 +39,7 @@ NODETYPES = [
     'COOCCURRENCES',         # 9
     # scores
     'OCCURRENCES',           # 10
-    'SPECIFICITY',           # 11
+    'SPECCLUSION',           # 11
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
@@ -47,6 +49,7 @@ NODETYPES = [
     # more scores (sorry!)
     'TIRANK-LOCAL',          # 16
     'TIRANK-GLOBAL',         # 17
+    'GENCLUSION',            # 18
 ]
 
 INDEXED_HYPERDATA = {
@@ -222,12 +225,16 @@ DEFAULT_RANK_CUTOFF_RATIO      = .75         # MAINLIST maximum terms in %
 DEFAULT_RANK_HARD_LIMIT        = 5000        # MAINLIST maximum terms abs
                                              # (makes COOCS larger ~ O(N²) /!\)
 
-DEFAULT_COOC_THRESHOLD          = 2          # inclusive minimum for COOCS coefs
+DEFAULT_COOC_THRESHOLD          = 3          # inclusive minimum for COOCS coefs
                                              # (makes COOCS more sparse)
 
 DEFAULT_MAPLIST_MAX             = 350        # MAPLIST maximum terms
 
-DEFAULT_MAPLIST_MONOGRAMS_RATIO = .15         # part of monograms in MAPLIST
+DEFAULT_MAPLIST_MONOGRAMS_RATIO = .2         # quota of monograms in MAPLIST
+                                             # (vs multigrams = 1-mono)
+
+DEFAULT_MAPLIST_GENCLUSION_RATIO = .6        # quota of top genclusion in MAPLIST
+                                             # (vs top specclusion = 1-gen)
 
 DEFAULT_MAX_NGRAM_LEN           = 7          # limit used after POStagging rule
                                              # (initial ngrams number is a power law of this /!\)
@@ -272,7 +279,7 @@ DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 # about batch processing...
 BATCH_PARSING_SIZE          = 256
-BATCH_NGRAMSEXTRACTION_SIZE = 1024
+BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many distinct ngrams before INTEGRATE
 
 
 # Scrapers config
@@ -282,7 +289,7 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 # Grammar rules for chunking
 RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
-RULE_JJDTNN = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
+RULE_NPN    = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
 RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
                +?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?\
                ,){0,2}?(N.?.?,|\?,)+?)+?)*?$"

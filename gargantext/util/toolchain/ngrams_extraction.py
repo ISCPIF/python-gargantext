@@ -77,7 +77,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
                     continue
                 # get ngrams
                 for ngram in ngramsextractor.extract(value):
-                    tokens = tuple(token[0] for token in ngram)
+                    tokens = tuple(normalize_forms(token[0]) for token in ngram)
 
                     if do_subngrams:
                         # ex tokens = ["very", "cool", "exemple"]
@@ -90,7 +90,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
                         subterms = [tokens]
 
                     for seqterm in subterms:
-                        ngram = normalize_terms(' '.join(seqterm))
+                        ngram = ' '.join(seqterm)
                         if len(ngram) > 1:
                             # doc <=> ngram index
                             nodes_ngrams_count[(document.id, ngram)] += 1
@@ -118,7 +118,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
         raise error
 
 
-def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
+def normalize_forms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
     """
     Removes unwanted trailing punctuation
     AND optionally puts everything to lowercase
@@ -127,14 +127,14 @@ def normalize_terms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):
 
     (benefits from normalize_chars upstream so there's less cases to consider)
     """
-    # print('normalize_terms  IN: "%s"' % term_str)
-    term_str = sub(r'^[-",;/%(){}\\\[\]\.\' ]+', '', term_str)
-    term_str = sub(r'[-",;/%(){}\\\[\]\.\' ]+$', '', term_str)
+    # print('normalize_forms  IN: "%s"' % term_str)
+    term_str = sub(r'^[-\'",;/%(){}\\\[\]\. ©]+', '', term_str)
+    term_str = sub(r'[-\'",;/%(){}\\\[\]\. ©]+$', '', term_str)
 
     if do_lowercase:
         term_str = term_str.lower()
 
-    # print('normalize_terms OUT: "%s"' % term_str)
+    # print('normalize_forms OUT: "%s"' % term_str)
 
     return term_str
 

@@ -18,12 +18,54 @@
 }
 
 
-
 .navbar { 
 	margin-bottom:1px;
 }
 
-#defaultop{ }
+#defaultop{
+    min-height: 5%;
+    /*max-height: 10%;*/
+    text-align: center;
+}
+
+#defaultop li.basicitem{
+    /*font-family: "Helvetica Neue", Helvetica, Arial, sans-serif ;*/
+    padding-left: .4em;
+    padding-right: .4em;
+    padding-bottom: 0;
+    font-size: 90% ;
+}
+
+#defaultop > div {
+    float: none;
+    display: inline-block;
+    text-align: left;
+}
+
+#defaultop > div {
+    float: none;
+    display: inline-block;
+    text-align: left;
+}
+
+#defaultop .nav > li > a {
+    text-align: center;
+    padding-top:    .4em;
+    padding-bottom: .2em;
+    margin-left: auto ;
+    margin-right: auto ;
+}
+
+/*searchnav should get same padding as our .navbar-nav > li > a or bootstrap's*/
+#defaultop div#searchnav {
+    padding-top: 13px; 
+    padding-bottom: 9px;
+}
+
+#defaultop .settingslider {
+    max-width: 80px;
+    display: inline-block ;
+}
 
 #sigma-example {
     width: 100%;
@@ -361,6 +403,12 @@
     list-style:none;
     padding-left:5%;
 }​
+
+/* small messages */
+p.micromessage{
+  font-size: 85%;
+  color: #707070 ;
+}
 
 .btn-sm:hover {
 	font-weight: bold;

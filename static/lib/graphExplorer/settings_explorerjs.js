@@ -32,6 +32,9 @@ var mainfile = ["db.json"];
 
 var tagcloud_limit = 50;
 
+// for the css of leftcolumn and canvasLimits size
+var sidecolumnSize = "24em"
+
 var current_url = window.location.origin+window.location.pathname+window.location.search
 getUrlParam.file = current_url.replace(/projects/g, "api/projects")
 

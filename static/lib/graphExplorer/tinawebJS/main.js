@@ -358,7 +358,7 @@ function MainFunction( RES ) {
     }, fa2seconds*1000);
 
     // apply width from settings on left column
-    document.getElementById('leftcolumn').style.width = sidecolumnSize ;
+    document.getElementById('sidecolumn').style.width = sidecolumnSize ;
 
 }
 

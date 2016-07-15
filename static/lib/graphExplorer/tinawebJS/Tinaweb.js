@@ -27,7 +27,7 @@
 function sigmaLimits( canvasdiv ) {
     console.log('FUN t.TinawebJS:sigmaLimits') ;
     var canvas = document.getElementById(canvasdiv) ;
-    var sidecolumn = document.getElementById('leftcolumn') ;
+    var sidecolumn = document.getElementById('sidecolumn') ;
     var ancho_total = window.innerWidth - sidecolumn.offsetWidth ;
     var alto_total =  window.innerHeight - sidecolumn.offsetTop ;
 
@@ -549,8 +549,8 @@ TinaWebJS = function ( sigmacanvas ) {
 
         //  ===  un/hide leftpanel  === //
         $("#aUnfold").click(function(e) {
-            //SHOW leftcolumn
-            sidebar = $("#leftcolumn");
+            //SHOW sidecolumn
+            sidebar = $("#sidecolumn");
             fullwidth=$('#fixedtop').width();
             e.preventDefault();
             // $("#wrapper").toggleClass("active");
@@ -574,7 +574,7 @@ TinaWebJS = function ( sigmacanvas ) {
                 }, 400);
             }
             else {
-                //HIDE leftcolumn
+                //HIDE sidecolumn
                 $("#aUnfold").attr("class","leftarrow");
                 sidebar.animate({
                     "right" : "-" + sidebar.width() + "px"

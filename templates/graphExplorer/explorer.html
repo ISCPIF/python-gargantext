@@ -30,6 +30,12 @@
 
       #category0 ul li { margin: 0 12px 12px 0; }
       #category1 ul li { margin: 0 12px 12px 0; }
+      
+      /* will be adjusted later to match rendered height of dafixedtop from menu template */
+      #topspace {
+          height: 90px;
+      }
+      
     </style>
     <!--
     <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/bootswatch/css/bootswatch.css" %}">
@@ -43,6 +49,10 @@
 
 {% block content %}
 
+    <!-- this is a vertical spacer used to start everything below dafixedtop -->
+    <div id="topspace">
+    </div>
+    
     <!-- this is the tweakbar -->
     <div id="defaultop" class="navbar navbar-default">
         <div class="navbar-collapse collapse navbar-responsive-collapse">
@@ -462,6 +472,11 @@
     <script src="{% static "lib/graphExplorer/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
 
     <script type="text/javascript">
+        // set exact height of topspace
+        var dafixedtopHeight = $('#dafixedtop').height() ;
+        $('#topspace').height(dafixedtopHeight) ;
+    
+    
       function newPopup(url) {
         popupWindow = window.open(
           url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')

@@ -149,11 +149,11 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
         var div_info = "";
 
         if( $( ".colorgraph_div" ).length>0 )
-            div_info += '<ul id="colorGraph" class="nav navbar-nav navbar-right">'
+            div_info += '<ul id="colorGraph" class="nav navbar-nav">'
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Colors" src="/static/img/colors.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Colors" src="/static/img/colors.png" width="22px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 
@@ -186,11 +186,11 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
         div_info = "";
 
         if( $( ".sizegraph_div" ).length>0 )
-            div_info += '<ul id="sizeGraph" class="nav navbar-nav navbar-right">'
+            div_info += '<ul id="sizeGraph" class="nav navbar-nav">'
 
         div_info += ' <li class="dropdown">'
         div_info += '<a href="#" class="dropdown-toggle" data-toggle="dropdown">'
-        div_info += '        <img title="Set Sizes" src="/static/img/NodeSize.png" width="20px"><b class="caret"></b></img>'
+        div_info += '        <img title="Set Sizes" src="/static/img/NodeSize.png" width="18px"><b class="caret"></b></img>'
         div_info += '</a>'
         div_info += '  <ul class="dropdown-menu">'
 

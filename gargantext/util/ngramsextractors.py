@@ -1,5 +1,5 @@
 from gargantext.util.languages import languages
-from gargantext.constants import LANGUAGES, DEFAULT_MAX_NGRAM_LEN, RULE_JJNN, RULE_JJDTNN
+from gargantext.constants import LANGUAGES, DEFAULT_MAX_NGRAM_LEN, RULE_JJNN, RULE_NPN
 
 import nltk
 import re

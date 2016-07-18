@@ -18,14 +18,53 @@
 }
 
 
-
 .navbar { 
 	margin-bottom:1px;
 }
 
-#defaultop{	
+#defaultop{
     min-height: 5%;
-    max-height: 10%;
+    /*max-height: 10%;*/
+    text-align: center;
+}
+
+#defaultop li.basicitem{
+    /*font-family: "Helvetica Neue", Helvetica, Arial, sans-serif ;*/
+    padding-left: .4em;
+    padding-right: .4em;
+    padding-bottom: 0;
+    font-size: 90% ;
+}
+
+#defaultop > div {
+    float: none;
+    display: inline-block;
+    text-align: left;
+}
+
+#defaultop > div {
+    float: none;
+    display: inline-block;
+    text-align: left;
+}
+
+#defaultop .nav > li > a {
+    text-align: center;
+    padding-top:    .4em;
+    padding-bottom: .2em;
+    margin-left: auto ;
+    margin-right: auto ;
+}
+
+/*searchnav should get same padding as our .navbar-nav > li > a or bootstrap's*/
+#defaultop div#searchnav {
+    padding-top: 13px; 
+    padding-bottom: 9px;
+}
+
+#defaultop .settingslider {
+    max-width: 80px;
+    display: inline-block ;
 }
 
 #sigma-example {
@@ -165,9 +204,7 @@
     display:inline-block;
     border:solid 1px;
     /*box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.3); */
-    -moz-border-radius: 6px; 
-    -webkit-border-radius: 6px; 
-    -khtml-border-radius: 6px;'+
+    border-radius: 6px; 
     border-color:#BDBDBD; 
     padding:0px 2px 0px 2px;
     margin:1px 0px 1px 0px;
@@ -367,6 +404,12 @@
     padding-left:5%;
 }​
 
+/* small messages */
+p.micromessage{
+  font-size: 85%;
+  color: #707070 ;
+}
+
 .btn-sm:hover {
 	font-weight: bold;
 }
@@ -376,7 +419,7 @@
 .tab { display: inline-block; zoom:1; *display:inline; background: #eee; border: solid 1px #999; border-bottom: none; -moz-border-radius: 4px 4px 0 0; -webkit-border-radius: 4px 4px 0 0; }
 .tab a { font-size: 12px; line-height: 2em; display: block; padding: 0 10px; outline: none; }
 .tab a:hover { text-decoration: underline; }
-.tab.active { background: #fff; padding-top: 6px; position: relative; top: 1px; border-color: #666; }
+.tab.active { background: #fff; padding-top: 6px; position: relative; top: 3px; border-color: #666; }
 .tab a.active { font-weight: bold; }
 .tab-container .panel-container { background: #fff; border: solid #666 1px; padding: 10px; -moz-border-radius: 0 4px 4px 4px; -webkit-border-radius: 0 4px 4px 4px; }
 .panel-container { margin-bottom: 10px; }

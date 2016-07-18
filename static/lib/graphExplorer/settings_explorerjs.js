@@ -30,6 +30,11 @@ var mainfile = ["db.json"];
 // getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // garg exclusive
 // var corpusesList = {} // garg exclusive -> corpus comparison
 
+var tagcloud_limit = 50;
+
+// for the css of sidecolumn and canvasLimits size
+var sidecolumnSize = "20%"
+
 var current_url = window.location.origin+window.location.pathname+window.location.search
 getUrlParam.file = current_url.replace(/projects/g, "api/projects")
 

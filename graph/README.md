@@ -1,8 +1,12 @@
 Module Graph Explorer: from text to graph
 =========================================
 
-Maintainer: If you see bugs, please report to team@gargantext.org
+## How to contribute ?
+Some solutions:
+1) please report to dev@gargantext.org
+2) fix with git repo and pull request
 
+## Graph Explorer main 
 0) All urls.py of the Graph Explorer
 1) Main view of the graph explorer:  views.py
 2) Data are retrieved as REST: rest.py
@@ -15,3 +19,14 @@ Maintainer: If you see bugs, please report to team@gargantext.org
 
 4) Additional features:
     a) intersection of graphs: intersection.py
+
+
+## TODO
+1) save parameters in hyperdata
+2) graph explorer: 
+    * save current graph
+2) myGraphs view:
+    * progress bar
+    * show parameters
+    * copy / paste and change some parameters to generate new graph
+

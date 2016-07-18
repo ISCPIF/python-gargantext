@@ -58,7 +58,7 @@ def get_graph( request=None         , corpus=None
         
         if mapList_size.count() < graph_constraints['mapList']:
             # Do not compute the graph if mapList is not big enough
-            return {'nodes':[], 'links':[0,0,0]}
+            return {'nodes':[mapList_size.count()], 'links':[0,0,0]}
 
 
         # case of corpus not big enough
@@ -119,7 +119,7 @@ def get_graph( request=None         , corpus=None
         
         elif corpus_size_query.count() <= graph_constraints['corpusMin']:
             # Do not compute the graph if corpus is not big enough
-            return {'nodes':[], 'links':[0,0]}  
+            return {'nodes':[corpus_size_query.count()], 'links':[0,0]}  
   
         else:
             # If graph_constraints are ok then compute the graph in live

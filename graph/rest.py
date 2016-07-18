@@ -143,7 +143,9 @@ class Graph(APIView):
 
 
                 # Test data length
-                if len(data['nodes']) > 1 and len(data['links']) > 1 :
+                # A graph needs more than 3 nodes and 3 links
+                # Others graphs are used to check the errors
+                if len(data['nodes']) > 3 and len(data['links']) > 3 :
                     # normal case --------------------------------
                     if format_ == 'json':
                         return JsonHttpResponse(
@@ -152,37 +154,52 @@ class Graph(APIView):
                                )
                     # --------------------------------------------
                 
-                elif len(data['nodes']) == 0 and len(data['links']) == 2 :
+                elif len(data['nodes']) == 1 and len(data['links']) == 2 :
                     # async data case
                     return JsonHttpResponse({
-                        'msg': '''Your corpus is too small.
-                                  Add more documents (more than %d documents) 
+                        'msg': '''Problem: your corpus is too small (only %d documents).
+                                  
+                                  Solution: Add more documents (more than %d documents) 
                                   in order to get a graph.
 
                                   You can manage your corpus here:
                                   http://%sgargantext.org/projects/%d/
-                                  ''' % (graph_constraints['corpusMin'], "dev.", corpus.parent_id),
+                                  ''' % ( data['nodes'][0]
+                                        , graph_constraints['corpusMin']
+                                        , "dev."
+                                        , corpus.parent_id
+                                        ),
                         }, status=400)
                 
-                elif len(data['nodes']) == 0 and len(data['links']) == 3 :
+                elif len(data['nodes']) == 1 and len(data['links']) == 3 :
                     # async data case
                     return JsonHttpResponse({
-                        'msg': '''Your map list is too small.
-                                  Add some terms (more than %d terms) 
+                        'msg': '''Problem: your map list is too small (currently %d terms).
+                                  
+                                  Solution: Add some terms (more than %d terms) 
                                   in order to get a graph.
 
                                   You can manage your map terms here:
                                   http://%sgargantext.org/projects/%d/corpora/%d/terms
-                                  ''' % (graph_constraints['mapList'], "dev.", corpus.parent_id, corpus.id),
+                                  ''' % ( data['nodes'][0]
+                                        , graph_constraints['mapList']
+                                        , "dev."
+                                        , corpus.parent_id
+                                        , corpus.id
+                                        ),
                         }, status=400)
 
 
-
-                elif len(data['nodes']) == 0 and len(data['links']) == 1 :
+                elif len(data['nodes']) == 0 and len(data['links']) == 0 :
                     # async data case
                     return JsonHttpResponse({
-                        'msg': '''Async graph generation
-                                  Wait a while and discover your graph 
+                        'msg': '''Warning: Async graph generation.
+
+                                  Wait a while and discover your graph very soon.
+
+                                  Click on the link and see your current graph 
+                                  processing on top of the list:
+                                  
                                   http://%sgargantext.org/projects/%d/corpora/%d/myGraph
                                   ''' % ("dev.", corpus.parent_id, corpus.id),
                         }, status=400)

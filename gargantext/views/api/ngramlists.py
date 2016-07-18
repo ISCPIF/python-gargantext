@@ -57,7 +57,7 @@ class CSVLists(APIView):
         params in request.GET:
             onto_corpus:  the corpus whose lists are getting patched
 
-        params in request.FILES:
+        params in request.data:
             csvfile:      the csv file
 
         /!\ We assume we checked the file size client-side before upload

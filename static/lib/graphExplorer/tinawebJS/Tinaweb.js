@@ -22,43 +22,25 @@
   /[$\w]+/g
 );
 
-$.fn.visibleHeight = function() {
-    console.log('FUN t.TinawebJS:visibleHeight')
-    var elBottom, elTop, scrollBot, scrollTop, visibleBottom, visibleTop;
-    scrollTop = $(window).scrollTop();
-    scrollBot = scrollTop + $(window).height();
-    elTop = this.offset().top;
-    elBottom = elTop + this.outerHeight();
-    visibleTop = elTop < scrollTop ? scrollTop : elTop;
-    visibleBottom = elBottom > scrollBot ? scrollBot : elBottom;
-    return visibleBottom - visibleTop
+// on window resize
+// @param canvasdiv: id of the div (without '#')
+function sigmaLimits( canvasdiv ) {
+    console.log('FUN t.TinawebJS:sigmaLimits') ;
+    var canvas = document.getElementById(canvasdiv) ;
+    var sidecolumn = document.getElementById('sidecolumn') ;
+    var ancho_total = window.innerWidth - sidecolumn.offsetWidth ;
+    var alto_total =  window.innerHeight - sidecolumn.offsetTop ;
+
+    // setting new size
+    canvas.style.width = ancho_total - 5 ;
+    canvas.style.height = alto_total - 5 ;
+    
+    // fyi result
+    var pw=canvas.offsetWidth;
+    var ph=canvas.offsetHeight;
+
+    console.log("new canvas! w:"+pw+" , h:"+ph) ;
 }
-
-// for new SigmaUtils
-function sigmaLimits( sigmacanvas ) {
-    console.log('FUN t.TinawebJS:sigmaLimits')
-    pw=$( sigmacanvas ).width();
-    ph=$( sigmacanvas ).height();
-    // $("body").css("padding-top",0)
-    // var footer = ( $("footer").length>0) ? ($('#leftcolumn').position().top -$("footer").height()) : $('#leftcolumn').position().top*2;
-    var ancho_total = $( window ).width() - $('#leftcolumn').width() ;
-    var alto_total = $('#leftcolumn').visibleHeight() ;
-    // console.log("")
-    // console.log(footer)
-    // console.log(ancho_total)
-    // console.log(alto_total)
-    // console.log("")
-
-    sidebar=$('#leftcolumn').width();
-    anchototal=$('#dafixedtop').width();
-
-    $( sigmacanvas ).width(ancho_total);
-    $( sigmacanvas ).height( alto_total );
-    pw=$( sigmacanvas ).width();
-    ph=$( sigmacanvas ).height();
-    return "new canvas! w:"+pw+" , h:"+ph;
-}
-
 
 
 SelectionEngine = function() {
@@ -381,6 +363,8 @@ SelectionEngine = function() {
 
 TinaWebJS = function ( sigmacanvas ) {
     console.log('FUN t.TinawebJS:TinaWebJS:new')
+
+    // '#canvasid'
     this.sigmacanvas = sigmacanvas;
 
     this.init = function () {
@@ -392,11 +376,11 @@ TinaWebJS = function ( sigmacanvas ) {
         return this.sigmacanvas;
     }
 
-    this.AdjustSigmaCanvas = function ( sigmacanvas ) {
+    this.AdjustSigmaCanvas = function ( canvasdiv ) {
         console.log('FUN t.TinawebJS:AdjustSigmaCanvas')
-        var canvasdiv = "";
-        if( sigmacanvas ) canvasdiv = sigmacanvas;
-        else canvasdiv = this.sigmacanvas;
+        if (! canvasdiv)
+            // '#canvasid' => 'canvasid'
+            canvasdiv = sigmacanvas.substring(1);
 
         return sigmaLimits( canvasdiv );
     }
@@ -565,8 +549,8 @@ TinaWebJS = function ( sigmacanvas ) {
 
         //  ===  un/hide leftpanel  === //
         $("#aUnfold").click(function(e) {
-            //SHOW leftcolumn
-            sidebar = $("#leftcolumn");
+            //SHOW sidecolumn
+            sidebar = $("#sidecolumn");
             fullwidth=$('#fixedtop').width();
             e.preventDefault();
             // $("#wrapper").toggleClass("active");
@@ -590,7 +574,7 @@ TinaWebJS = function ( sigmacanvas ) {
                 }, 400);
             }
             else {
-                //HIDE leftcolumn
+                //HIDE sidecolumn
                 $("#aUnfold").attr("class","leftarrow");
                 sidebar.animate({
                     "right" : "-" + sidebar.width() + "px"

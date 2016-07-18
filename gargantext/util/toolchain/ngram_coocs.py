@@ -18,7 +18,8 @@ def compute_coocs(  corpus,
                     stoplist_id     = None,
                     start           = None,
                     end             = None,
-                    symmetry_filter = False):
+                    symmetry_filter = False,
+                    diagonal_filter = True):
     """
     Count how often some extracted terms appear
     together in a small context (document)
@@ -55,6 +56,9 @@ def compute_coocs(  corpus,
                     NB the expected type of parameter value is datetime.datetime
                         (string is also possible but format must follow
                           this convention: "2001-01-01" aka "%Y-%m-%d")
+      - symmetry_filter: prevent calculating where ngram1_id  > ngram2_id
+      - diagonal_filter: prevent calculating where ngram1_id == ngram2_id
+
 
      (deprecated parameters)
       - field1,2: allowed to count other things than ngrams (eg tags) but no use case at present
@@ -69,7 +73,7 @@ def compute_coocs(  corpus,
         JOIN nodes_ngrams AS idxb
         ON idxa.node_id = idxb.node_id      <== that's cooc
         ---------------------------------
-        AND idxa.ngram_id <> idxb.ngram_id
+        AND idxa.ngram_id <> idxb.ngram_id   (diagonal_filter)
         AND idxa.node_id = MY_DOC ;
 
     on entire corpus
@@ -152,16 +156,14 @@ def compute_coocs(  corpus,
                     ucooc
 
                     # for debug (2/4)
-                    #, Xngram.terms.label("w_x")
-                    #, Yngram.terms.label("w_y")
+                    # , Xngram.terms.label("w_x")
+                    # , Yngram.terms.label("w_y")
                     )
                .join(Yindex, Xindex.node_id == Yindex.node_id )   # <- by definition of cooc
 
                .join(Node, Node.id == Xindex.node_id) # <- b/c within corpus
                .filter(Node.parent_id == corpus.id)   # <- b/c within corpus
                .filter(Node.typename == "DOCUMENT")   # <- b/c within corpus
-
-               .filter(Xindex_ngform_id != Yindex_ngform_id) # <- b/c not with itself
         )
 
     # outerjoin the synonyms if needed
@@ -179,12 +181,12 @@ def compute_coocs(  corpus,
                .group_by(
                     Xindex_ngform_id, Yindex_ngform_id # <- what we're counting
                     # for debug (3/4)
-                    #,"w_x", "w_y"
+                    # ,"w_x", "w_y"
                     )
 
             # for debug (4/4)
-            #.join(Xngram, Xngram.id == Xindex_ngform_id)
-            #.join(Yngram, Yngram.id == Yindex_ngform_id)
+            # .join(Xngram, Xngram.id == Xindex_ngform_id)
+            # .join(Yngram, Yngram.id == Yindex_ngform_id)
 
             .order_by(ucooc)
            )
@@ -192,6 +194,9 @@ def compute_coocs(  corpus,
 
     # 4) INPUT FILTERS (reduce N before O(N²))
     if on_list_id:
+        # £TODO listes différentes ou bien une liste pour x et tous les ngrammes pour y
+        #       car permettrait expansion de liste aux plus proches voisins (MacLachlan)
+        #       (avec une matr rectangulaire)
 
         m1 = aliased(NodeNgram)
         m2 = aliased(NodeNgram)
@@ -225,6 +230,10 @@ def compute_coocs(  corpus,
             .filter( s2.c.ngram_id == None )
 
         )
+
+    if diagonal_filter:
+        # don't compute ngram with itself
+        coocs_query = coocs_query.filter(Xindex_ngform_id != Yindex_ngform_id)
 
     if start or end:
         Time = aliased(NodeHyperdata)
@@ -268,6 +277,7 @@ def compute_coocs(  corpus,
     # threshold
     # £TODO adjust COOC_THRESHOLD a posteriori:
     # ex: sometimes 2 sometimes 4 depending on sparsity
+    print("COOCS: filtering pairs under threshold:", threshold)
     coocs_query = coocs_query.having(ucooc >= threshold)
 
 

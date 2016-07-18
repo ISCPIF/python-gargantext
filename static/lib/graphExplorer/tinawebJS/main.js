@@ -178,7 +178,7 @@ function MainFunction( RES ) {
     // [ Initiating Sigma-Canvas ]
     var twjs_ = new TinaWebJS('#sigma-example');
     print( twjs_.AdjustSigmaCanvas() );
-    $( window ).resize(function() { print(twjs_.AdjustSigmaCanvas()) });
+    window.onresize = function(){twjs_.AdjustSigmaCanvas()} // TODO: debounce?
     // [ / Initiating Sigma-Canvas ]
 
     print("categories: "+categories)
@@ -356,6 +356,9 @@ function MainFunction( RES ) {
         console.log( "hello" )
         partialGraph.stopForceAtlas2();
     }, fa2seconds*1000);
+
+    // apply width from settings on left column
+    document.getElementById('sidecolumn').style.width = sidecolumnSize ;
 
 }
 

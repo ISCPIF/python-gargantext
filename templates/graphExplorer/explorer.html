@@ -12,16 +12,6 @@
 
     <style>
 
-      #leftcolumn {
-        font-size: 10px;
-        width:20%;
-        overflow: auto;
-      }
-
-      #ctlzoom {
-        width:7%;
-      }
-
       #topPapers{
           margin: 7px;
           padding: 5px 0px 5px 5px;
@@ -31,11 +21,23 @@
       }
 
       #ctlzoom {
-          position: absolute; right: 16%; bottom: 1%; list-style: none; padding: 0; margin: 0;
+          position: absolute;
+          left: 1%;
+          width: 7%;
+          bottom: auto;
+          list-style: none;
+          padding: 0;
+          margin-top: 1em;
       }
 
       #category0 ul li { margin: 0 12px 12px 0; }
       #category1 ul li { margin: 0 12px 12px 0; }
+      
+      /* will be adjusted later to match rendered height of dafixedtop from menu template */
+      #topspace {
+          height: 90px;
+      }
+      
     </style>
     <!--
     <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/bootswatch/css/bootswatch.css" %}">
@@ -49,139 +51,143 @@
 
 {% block content %}
 
+    <!-- this is a vertical spacer used to start everything below dafixedtop -->
+    <div id="topspace">
+    </div>
+
     <!-- this is the tweakbar -->
-    <div id="defaultop" class="navbar navbar-default">
-        <div class="navbar-collapse collapse navbar-responsive-collapse">
-          <div id="left" style="margin:0em 2em;">
-                  <ul class="nav navbar-nav">
-                      <!--
+    <div class="container-fluid navbar-default">
+      <div id="defaultop" class="row">
+            <div id="left" class="col-sm-9 col-md-9 col-lg-7">
 
-                      <li>
-                         <a>
-                          <select id="aselector" onchange="console.log('salut monde')" class="selectpicker"  data-style="btn btn-success btn-sm"  data-width="auto">
-                            <option value="Document" selected>Scholars</option>
-                            <option value="NGram">Keywords</option>
-                          </select>
-                         </a>
-                      </li> -->
+              <ul class="nav navbar-nav">
+                <!--
+                <li>
+                   <a>
+                    <select id="aselector" onchange="console.log('salut monde')" class="selectpicker"  data-style="btn btn-success btn-sm"  data-width="auto">
+                      <option value="Document" selected>Scholars</option>
+                      <option value="NGram">Keywords</option>
+                    </select>
+                   </a>
+                </li>
+                -->
+                <li class='basicitem'><a>
+                    <button type="button" id="changetype" class="btn btn-success btn-sm">Change Type</button>
+                </a></li>
 
-                      <li>
-                         <a>
-                          <button type="button" id="changetype" class="btn btn-success btn-sm">Change Type</button>
-                         </a>
-                      </li>
+                <li class='basicitem'><a>
+                    <button type="button" id="changelevel" class="btn btn-info btn-sm" disabled>Change Level</button>
+                </a></li>
 
+                <li class='basicitem'><a>
+                  Selector size<br>
+                  <div id="unranged-value" class="settingslider"></div>
+                </a></li>
+                
 
-                      <li>
-                         <a>
-                          <button type="button" id="changelevel" class="btn btn-info btn-sm" disabled>Change Level</button>
-                         </a>
-                      </li>
+                 <li class='basicitem'><a>
+                   Colors<br>
+                   <div class="colorgraph_div"></div>
+                 </a></li>
 
+                 <li class='basicitem'><a>
+                   Sizes<br>
+                   <div class="sizegraph_div"></div>
+                 </a></li>
 
-                       <li>
-                         <a>
-                          <div style="margin:0em 2em;" id="unranged-value"></div>
-                          <label style="margin:0em 2em;" for="unranged-value">selector size</label>
-                         </a>
-                       </li>
+                 <li class='basicitem'><a>
+                   <!-- TODO fix: category0 -> category1 switching -->
+                   Label size<br>
+                   <div id="slidercat0nodessize" class="settingslider"></div>
+                 </a></li>
 
-                        <li>
-                          <a>
-                              <div id="graphid" style="visibility: hidden;">{{graphurl}}</div>
-                              <input type="hidden" id="maplist_id" value="{{ maplist_id }}"></input>
-                              <div id="jquerytemplatenb" style="visibility: hidden;">{{user.id}}</div>
-                          </a>
-                        </li>
+                <!--
+                <li>
+                   <a>
+                    <button type="button" onclick="partialGraph.stopForceAtlas2();" class="btn btn-sm">wu</button>
+                   </a>
+                </li>
+                -->
 
-                      <!--
-                      <li>
-                         <a>
-                          <button type="button" onclick="partialGraph.stopForceAtlas2();" class="btn btn-sm">wu</button>
-                         </a>
-                      </li>
-                      -->
-
-
+                <!-- TODO fix: category0 -> category1 switching -->
+                <li class='basicitem'><a>
+                  <!-- Create a subgraph -->
+                  <ul id="category0" class="nav">
+                        <li><small>Nodes</small> <div id="slidercat0nodesweight" class="settingslider"></div></li>
+                        <li><small>Edges</small> <div id="slidercat0edgesweight" class="settingslider"></div></li>
                   </ul>
+                </a></li>
+
+                <li class='basicitem'><a>
+                  Compare<br>
+                    <img width="30" title="Compare with other corpus!" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" src="{% static "img/INTER.png" %}"></img>
+                </a></li>
+
+              </ul>
+            </div><!-- /div#left -->
+
+            <div id="right" class="col-sm-2 col-md-2 col-lg-4">
+
+                   <div class='row' id="searchnav">
+                       <!-- the smaller the viewport, the larger the relative search box size -->
+                     <div class="col-sm-11 col-md-10 col-lg-10" >
+                       <div id="search_input_group" class="input-group input-group-sm">
+                          <span class="input-group-btn">
+                            <button id="searchbutton" 
+                                    title="Search the topic in the map"
+                                    class="btn btn-info" 
+                                    type="button">
+                              <span class="glyphicon glyphicon-search">
+                              </span>
+                            </button>
+                          </span>
+                          
+                          <!-- ########## THE SEARCH BAR ########## -->
+
+                          <input id="searchinput" 
+                                  type="text"
+                                  class="form-control" 
+                                  placeholder="Search" />
+                          <!-- #################################### -->
+                       </div>
+                       <!-- messages below the search bar -->
+                       <div id="unused_msg"></div>
+
+                    </div>
 
 
-                  <ul id="category0" class="nav navbar-nav navbar-right">
-                    <li>
-                      <ul style="list-style-type: none; margin:.5em 0em 1em 1em;">
-                        <li><div id="slidercat0nodesweight"></div></li>
-                        <li><div id="slidercat0edgesweight"></div></li>
-                        <li><div id="slidercat0nodessize"></div></li>
-                      </ul>
-                    </li>
-                  </ul>
-                  <ul id="filterslegend" class="nav navbar-nav navbar-right">
-                        <li>
-                            <ul style="list-style-type: none;">
-                                <li>Nodes</li>
-                                <li>Edges</li>
-                                <li>Size</li>
-                            </ul>
-                        </li>
-                  </ul>
-                  <ul id="category1" class="nav navbar-nav navbar-right">
-                    <li>
-                      <ul style="list-style-type: none; margin:0em 1em;">
-                        <li><div id="slidercat1nodesweight"></div></li>
-                        <li><div id="slidercat1edgesweight"></div></li>
-                        <li><div id="slidercat1nodessize"></div></li>
-                      </ul>
-                    </li>
-                  </ul>
-
-
-                  <ul class="nav navbar-nav navbar-right">
-                     <li><a>
-                              <input type="checkbox" id="checkboxdiv" onclick="alertCheckBox(this);">Add</input>
-                     </a></li>
-                  </ul>
-                  <ul class="nav navbar-nav navbar-right">
-                     <li><a>
-                              <input id="searchinput"  autocomplete="off" class="form-control input-sm col-lg-8" placeholder="Search" type="text">
-                     </a></li>
-                  </ul>
-
-                  <ul class="nav navbar-nav navbar-right">
-                     <li>
-                        <a>
-                              <img width="17%" title="Compare with other corpus!" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" src="{% static "img/INTER.png" %}"></img>
-                        </a>
-                     </li>
-                  </ul>
-
-                  <div class="colorgraph_div"></div>
-
-                  <div class="sizegraph_div"></div>
-
-                  <!---->
-
-
-
+                    <div class="col-sm-1 col-md-2 col-lg-2">
+                            <input id="checkboxdiv"  onclick="alertCheckBox(this);"
+                                    title="Add next search results to current selection"
+                                    class="btn btn-info" 
+                                    type="checkbox"></input>
+                            <p style="font-size:75%; line-height:90%">Add</p>
+                    </div>
                 </div>
 
-                  <!--
-                  <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#">Link</a></li>
-                    <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                      </ul>
-                    </li>
-                  </ul>
-                  -->
+            <!--
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="#">Link</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#">Separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            -->
+            </div>
 
-        </div><!-- /.nav-collapse -->
-    </div><!-- /.navbar -->
+      </div><!-- /.row#defaultop -->
+    </div><!-- /.container.fluid -->
+
+      <div id="graphid" style="display:none">{{graphurl}}</div>
+      <input type="hidden" id="maplist_id" value="{{ maplist_id }}"></input>
+      <div id="jquerytemplatenb" style="display:none">{{user.id}}</div>
 
 
     <div id="wrapper">
@@ -202,6 +208,11 @@
                 <!-- <div class="content-header">
                         <button id="menu-toggle">X</button>
                 </div> -->
+                   <li>
+                      <div id="unfold">
+                          <a href="#" id="aUnfold" class="rightarrow"></a>
+                      </div>
+                  </li> 
                   <!--
                    <li>
                       <a href="#" id="geomapicon" onclick="$('#geomapmodal').modal('show'); callGeomap();">
@@ -247,7 +258,7 @@
       </div>
 
       <!-- Sidebar -->
-      <div id="leftcolumn">
+      <div id="sidecolumn">
         <div id="tips"></div>
         <div id="names"></div>
         <div id="ngrams_actions"></div>
@@ -468,6 +479,11 @@
     <script src="{% static "lib/graphExplorer/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
 
     <script type="text/javascript">
+        // set exact height of topspace
+        var dafixedtopHeight = $('#dafixedtop').height() ;
+        $('#topspace').height(dafixedtopHeight) ;
+    
+    
       function newPopup(url) {
         popupWindow = window.open(
           url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')

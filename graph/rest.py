@@ -6,6 +6,7 @@ from graph.graph             import get_graph
 from gargantext.util.http    import APIView, APIException\
                                   , JsonHttpResponse, requires_auth
 
+from gargantext.constants    import graph_constraints
 from traceback import format_tb
 
 def compress_graph(graphdata):
@@ -150,6 +151,33 @@ class Graph(APIView):
                                  status=200
                                )
                     # --------------------------------------------
+                
+                elif len(data['nodes']) == 0 and len(data['links']) == 2 :
+                    # async data case
+                    return JsonHttpResponse({
+                        'msg': '''Your corpus is too small.
+                                  Add more documents (more than %d documents) 
+                                  in order to get a graph.
+
+                                  You can manage your corpus here:
+                                  http://%sgargantext.org/projects/%d/
+                                  ''' % (graph_constraints['corpusMin'], "dev.", corpus.parent_id),
+                        }, status=400)
+                
+                elif len(data['nodes']) == 0 and len(data['links']) == 3 :
+                    # async data case
+                    return JsonHttpResponse({
+                        'msg': '''Your map list is too small.
+                                  Add some terms (more than %d terms) 
+                                  in order to get a graph.
+
+                                  You can manage your map terms here:
+                                  http://%sgargantext.org/projects/%d/corpora/%d/terms
+                                  ''' % (graph_constraints['mapList'], "dev.", corpus.parent_id, corpus.id),
+                        }, status=400)
+
+
+
                 elif len(data['nodes']) == 0 and len(data['links']) == 1 :
                     # async data case
                     return JsonHttpResponse({
@@ -164,7 +192,8 @@ class Graph(APIView):
                     return JsonHttpResponse({
                         'msg': '''Empty graph warning
                                   No cooccurences found in this corpus for the words of this maplist
-                                  (maybe add more terms to the maplist?)''',
+                                  (maybe add more terms to the maplist or increase the size of your
+                                  corpus ?)''',
                         }, status=400)
 
             else:

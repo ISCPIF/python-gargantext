@@ -58,7 +58,7 @@ def get_graph( request=None         , corpus=None
         
         if mapList_size.count() < graph_constraints['mapList']:
             # Do not compute the graph if mapList is not big enough
-            return {'nodes':[], 'links':[]}
+            return {'nodes':[], 'links':[0,0,0]}
 
 
         # case of corpus not big enough
@@ -103,7 +103,7 @@ def get_graph( request=None         , corpus=None
 
         # Finally test if the size of the corpora is big enough
         # --------------------------------
-        if corpus_size_query.count() > graph_constraints['corpus']:
+        if corpus_size_query.count() > graph_constraints['corpusMax']:
             # Then compute cooc asynchronously with celery
             scheduled(countCooccurrences)( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
@@ -115,7 +115,11 @@ def get_graph( request=None         , corpus=None
                                         )
             # Dic hack to inform user that graph is computed asynchronously
             # (Impossible graph: no nodes with one link)
-            return {'nodes':[], 'links':[1]}  
+            return {'nodes':[], 'links':[0]}  
+        
+        elif corpus_size_query.count() <= graph_constraints['corpusMin']:
+            # Do not compute the graph if corpus is not big enough
+            return {'nodes':[], 'links':[0,0]}  
   
         else:
             # If graph_constraints are ok then compute the graph in live

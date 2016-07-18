@@ -139,8 +139,10 @@ class Graph(APIView):
                                    , distance   = distance
                                    , bridgeness = bridgeness
                                    )
+
+
                 # Test data length
-                if len(data['nodes']) > 0 and len(data['links']) > 0:
+                if len(data['nodes']) > 1 and len(data['links']) > 1 :
                     # normal case --------------------------------
                     if format_ == 'json':
                         return JsonHttpResponse(
@@ -148,6 +150,15 @@ class Graph(APIView):
                                  status=200
                                )
                     # --------------------------------------------
+                elif len(data['nodes']) == 0 and len(data['links']) == 1 :
+                    # async data case
+                    return JsonHttpResponse({
+                        'msg': '''Async graph generation
+                                  Wait a while and discover your graph 
+                                  http://%sgargantext.org/projects/%d/corpora/%d/myGraph
+                                  ''' % ("dev.", corpus.parent_id, corpus.id),
+                        }, status=400)
+
                 else:
                     # empty data case
                     return JsonHttpResponse({
@@ -155,6 +166,7 @@ class Graph(APIView):
                                   No cooccurences found in this corpus for the words of this maplist
                                   (maybe add more terms to the maplist?)''',
                         }, status=400)
+
             else:
                 # parameters error case
                 return JsonHttpResponse({
@@ -166,7 +178,8 @@ class Graph(APIView):
                     }, status=400)
 
         # for any other errors that we forgot to test
-        except Exception as e:
+        except Exception as error:
+            print(error)
             return JsonHttpResponse({
-                'msg' : 'Unknown error (showing the trace):\n%s' % "\n".join(format_tb(e.__traceback__))
+                'msg' : 'Unknown error (showing the trace):\n%s' % "\n".join(format_tb(error.__traceback__))
                 }, status=400)

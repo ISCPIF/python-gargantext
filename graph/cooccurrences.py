@@ -9,6 +9,7 @@ from sqlalchemy            import desc, asc, or_, and_
 #import inspect
 import datetime
 
+from celery               import shared_task
 
 def filterMatrix(matrix, mapList_id, groupList_id):
     mapList   = UnweightedList( mapList_id  )
@@ -17,7 +18,8 @@ def filterMatrix(matrix, mapList_id, groupList_id):
     return cooc
 
 
-def countCooccurrences( corpus=None         , test= False
+@shared_task
+def countCooccurrences( corpus_id=None         , test= False
                       , field1='ngrams'     , field2='ngrams'
                       , start=None          , end=None
                       , mapList_id=None     , groupList_id=None
@@ -47,8 +49,12 @@ def countCooccurrences( corpus=None         , test= False
     # Security test
     field1,field2 = str(field1), str(field2)
 
+    # Get corpus as Python object
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
+
     # Get node
     if not coocNode_id:
+        
         coocNode_id0  = ( session.query( Node.id )
                                 .filter( Node.typename  == "COOCCURRENCES"
                                        , Node.name      == "GRAPH EXPLORER"

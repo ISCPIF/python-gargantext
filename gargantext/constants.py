@@ -299,8 +299,9 @@ RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
 # Graph constraints to compute the graph:
 # Modes: live graph generation, graph asynchronously computed or errors detected
 # here are the maximum size of corpus and maplist required to compute the graph
-graph_constraints = {'corpus' : 400
-                    ,'mapList': 50
+graph_constraints = {'corpusMax' : 400
+                    ,'corpusMin' : 10
+                    ,'mapList'   : 50
                     }
 
 

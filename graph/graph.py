@@ -10,6 +10,7 @@ from graph.distances      import clusterByDistances
 from graph.bridgeness     import filterByBridgeness
 
 from gargantext.util.scheduling import scheduled
+from gargantext.constants import graph_constraints
 
 from datetime import datetime
 
@@ -42,15 +43,33 @@ def get_graph( request=None         , corpus=None
 
 
     before_cooc = datetime.now()
+    
 
-    if cooc_id == None:
     # case of Cooccurrences have not been computed already
+    if cooc_id == None:
+
+        # case of mapList not big enough
+        # ==============================
+        # if we do not have any mapList_id already
+        if mapList_id is None:
+            mapList_id = session.query(Node.id).filter(Node.typename == "MAPLIST").first()[0]
+
+        mapList_size = session.query(NodeNgram).filter(NodeNgram.node_id == mapList_id)
+        
+        if mapList_size.count() < graph_constraints['mapList']:
+            # Do not compute the graph if mapList is not big enough
+            return {'nodes':[], 'links':[]}
+
+
+        # case of corpus not big enough
+        # ==============================
         corpus_size_query = (session.query(Node)
                                     .filter(Node.typename=="DOCUMENT")
                                     .filter(Node.parent_id == corpus.id)
                             )
 
-
+        # filter by date if any start date
+        # --------------------------------
         if start is not None:
             #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
             date_start = datetime.strptime (str(start), "%Y-%m-%d")
@@ -65,6 +84,8 @@ def get_graph( request=None         , corpus=None
                           )
 
 
+        # filter by date if any end date
+        # --------------------------------
         if end is not None:
             date_end = datetime.strptime (str(end), "%Y-%m-%d")
             date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
@@ -77,8 +98,13 @@ def get_graph( request=None         , corpus=None
                                     .filter( End.key == 'publication_date')
                                     .filter( End.value_utc <= date_end_utc )
                           )
+        
+        
 
-        if corpus_size_query.count() > 400:
+        # Finally test if the size of the corpora is big enough
+        # --------------------------------
+        if corpus_size_query.count() > graph_constraints['corpus']:
+            # Then compute cooc asynchronously with celery
             scheduled(countCooccurrences)( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
                                         , start=start           , end =end
@@ -87,9 +113,12 @@ def get_graph( request=None         , corpus=None
                                         , save_on_db = True
                                        #, limit=size
                                         )
-            return {'nodes':[], 'links':[1]}  # Dic trick to inform user that graph is computed asynchronously
+            # Dic hack to inform user that graph is computed asynchronously
+            # (Impossible graph: no nodes with one link)
+            return {'nodes':[], 'links':[1]}  
   
         else:
+            # If graph_constraints are ok then compute the graph in live
             cooc_matrix = countCooccurrences( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
                                         , start=start           , end =end

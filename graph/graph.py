@@ -1,16 +1,19 @@
 # Gargantext lib
-from gargantext.util.db           import session
+from gargantext.util.db           import session, aliased
 from gargantext.util.lists        import WeightedMatrix, UnweightedList, Translations
 from gargantext.util.http         import JsonHttpResponse
-from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram
+from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
 
 #from gargantext.util.toolchain.ngram_coocs import compute_coocs
 from graph.cooccurrences  import countCooccurrences, filterMatrix
 from graph.distances      import clusterByDistances
 from graph.bridgeness     import filterByBridgeness
 
+from gargantext.util.scheduling import scheduled
+
+from datetime import datetime
+
 def get_graph( request=None         , corpus=None
-            , test= False
             , field1='ngrams'       , field2='ngrams'
             , mapList_id = None     , groupList_id = None
             , cooc_id=None          , type='node_link'
@@ -37,18 +40,46 @@ def get_graph( request=None         , corpus=None
 
     '''
 
-    from datetime import datetime
 
     before_cooc = datetime.now()
 
-    # TODO change test here (always true)
-    #      to something like "if cooc.status threshold == required_threshold
-    #                         and group.creation_time < cooc.creation_time"
-    #      if False => read and give to clusterByDistances
-    #      if True => compute and give to clusterByDistances  <==
     if cooc_id == None:
-        if test = True:
-           cooc_matrix = countCooccurrences( corpus=corpus, test=test
+    # case of Cooccurrences have not been computed already
+        corpus_size_query = (session.query(Node)
+                                    .filter(Node.typename=="DOCUMENT")
+                                    .filter(Node.parent_id == corpus.id)
+                            )
+
+
+        if start is not None:
+            #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
+            date_start = datetime.strptime (str(start), "%Y-%m-%d")
+            date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
+
+            Start=aliased(NodeHyperdata)
+            corpus_size_query = (corpus_size_query.join( Start
+                                         , Start.node_id == Node.id
+                                         )
+                                    .filter( Start.key == 'publication_date')
+                                    .filter( Start.value_utc >= date_start_utc)
+                          )
+
+
+        if end is not None:
+            date_end = datetime.strptime (str(end), "%Y-%m-%d")
+            date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
+
+            End=aliased(NodeHyperdata)
+
+            corpus_size_query = (corpus_size_query.join( End
+                                         , End.node_id == Node.id
+                                         )
+                                    .filter( End.key == 'publication_date')
+                                    .filter( End.value_utc <= date_end_utc )
+                          )
+
+        if corpus_size_query.count() > 400:
+            scheduled(countCooccurrences)( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
                                         , start=start           , end =end
                                         , mapList_id=mapList_id , groupList_id=groupList_id
@@ -56,20 +87,21 @@ def get_graph( request=None         , corpus=None
                                         , save_on_db = True
                                        #, limit=size
                                         )
+            return {'nodes':[], 'links':[1]}  # Dic trick to inform user that graph is computed asynchronously
   
         else:
-            cooc_matrix = countCooccurrences( corpus=corpus, test=test
+            cooc_matrix = countCooccurrences( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
                                         , start=start           , end =end
                                         , mapList_id=mapList_id , groupList_id=groupList_id
                                         , isMonopartite=True    , threshold = threshold
-                                        , save_on_db = True
+                                        , save_on_db = False
                                        #, limit=size
                                         )
     else:
         print("Getting data for matrix %d", int(cooc_id))
         matrix      = WeightedMatrix(int(cooc_id))
-        print(matrix)
+        #print(matrix)
         cooc_matrix = filterMatrix(matrix, mapList_id, groupList_id)
 
 

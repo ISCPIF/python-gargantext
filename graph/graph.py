@@ -27,6 +27,15 @@ def get_graph( request=None         , corpus=None
         ):
     '''
     Get_graph : main steps:
+    0) Check the parameters
+    
+    get_graph :: GraphParameters -> Either (Dic Nodes Links) (Dic State Length)
+        where type Length = Int
+
+    get_graph first checks the parameters and return either graph data or a dic with 
+    state "type" with an integer to indicate the size of the parameter 
+    (maybe we could add a String in that step to factor and give here the error message)
+
     1) count Cooccurrences  (function countCooccurrences)
             main parameters: threshold
 
@@ -54,11 +63,11 @@ def get_graph( request=None         , corpus=None
         if mapList_id is None:
             mapList_id = session.query(Node.id).filter(Node.typename == "MAPLIST").first()[0]
 
-        mapList_size = session.query(NodeNgram).filter(NodeNgram.node_id == mapList_id)
-        
-        if mapList_size.count() < graph_constraints['mapList']:
+        mapList_size_query = session.query(NodeNgram).filter(NodeNgram.node_id == mapList_id)
+        mapList_size = mapList_size_query.count()
+        if mapList_size < graph_constraints['mapList']:
             # Do not compute the graph if mapList is not big enough
-            return {'nodes':[mapList_size.count()], 'links':[0,0,0]}
+            return {'state': "mapListError", "length" : mapList_size}
 
 
         # case of corpus not big enough
@@ -103,7 +112,8 @@ def get_graph( request=None         , corpus=None
 
         # Finally test if the size of the corpora is big enough
         # --------------------------------
-        if corpus_size_query.count() > graph_constraints['corpusMax']:
+        corpus_size = corpus_size_query.count()
+        if corpus_size > graph_constraints['corpusMax']:
             # Then compute cooc asynchronously with celery
             scheduled(countCooccurrences)( corpus_id=corpus.id
                                        #, field1="ngrams", field2="ngrams"
@@ -113,13 +123,13 @@ def get_graph( request=None         , corpus=None
                                         , save_on_db = True
                                        #, limit=size
                                         )
-            # Dic hack to inform user that graph is computed asynchronously
-            # (Impossible graph: no nodes with one link)
-            return {'nodes':[], 'links':[0]}  
+            # Dic to inform user that corpus maximum is reached then
+            # graph is computed asynchronously
+            return {"state" : "corpusMax", "length" : corpus_size}
         
-        elif corpus_size_query.count() <= graph_constraints['corpusMin']:
+        elif corpus_size <= graph_constraints['corpusMin']:
             # Do not compute the graph if corpus is not big enough
-            return {'nodes':[corpus_size_query.count()], 'links':[0,0]}  
+            return {"state" : "corpusMin", "length" : corpus_size}
   
         else:
             # If graph_constraints are ok then compute the graph in live

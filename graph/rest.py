@@ -142,10 +142,12 @@ class Graph(APIView):
                                    )
 
 
-                # Test data length
-                # A graph needs more than 3 nodes and 3 links
-                # Others graphs are used to check the errors
-                if len(data['nodes']) > 3 and len(data['links']) > 3 :
+                # data :: Either (Dic Nodes Links) (Dic State Length)
+                
+                # data_test :: Either String Bool
+                data_test = data.get("state", True)
+
+                if data_test is True:
                     # normal case --------------------------------
                     if format_ == 'json':
                         return JsonHttpResponse(
@@ -154,64 +156,72 @@ class Graph(APIView):
                                )
                     # --------------------------------------------
                 
-                elif len(data['nodes']) == 1 and len(data['links']) == 2 :
-                    # async data case
-                    return JsonHttpResponse({
-                        'msg': '''Problem: your corpus is too small (only %d documents).
-                                  
-                                  Solution: Add more documents (more than %d documents) 
-                                  in order to get a graph.
-
-                                  You can manage your corpus here:
-                                  http://%sgargantext.org/projects/%d/
-                                  ''' % ( data['nodes'][0]
-                                        , graph_constraints['corpusMin']
-                                        , "dev."
-                                        , corpus.parent_id
-                                        ),
-                        }, status=400)
-                
-                elif len(data['nodes']) == 1 and len(data['links']) == 3 :
-                    # async data case
-                    return JsonHttpResponse({
-                        'msg': '''Problem: your map list is too small (currently %d terms).
-                                  
-                                  Solution: Add some terms (more than %d terms) 
-                                  in order to get a graph.
-
-                                  You can manage your map terms here:
-                                  http://%sgargantext.org/projects/%d/corpora/%d/terms
-                                  ''' % ( data['nodes'][0]
-                                        , graph_constraints['mapList']
-                                        , "dev."
-                                        , corpus.parent_id
-                                        , corpus.id
-                                        ),
-                        }, status=400)
-
-
-                elif len(data['nodes']) == 0 and len(data['links']) == 0 :
-                    # async data case
-                    return JsonHttpResponse({
-                        'msg': '''Warning: Async graph generation.
-
-                                  Wait a while and discover your graph very soon.
-
-                                  Click on the link and see your current graph 
-                                  processing on top of the list:
-                                  
-                                  http://%sgargantext.org/projects/%d/corpora/%d/myGraph
-                                  ''' % ("dev.", corpus.parent_id, corpus.id),
-                        }, status=400)
-
                 else:
-                    # empty data case
-                    return JsonHttpResponse({
-                        'msg': '''Empty graph warning
-                                  No cooccurences found in this corpus for the words of this maplist
-                                  (maybe add more terms to the maplist or increase the size of your
-                                  corpus ?)''',
-                        }, status=400)
+                    # All other cases (more probable are higher in the if list)
+                    if data["state"] == "corpusMin":
+                        # async data case
+                        return JsonHttpResponse({
+                            'msg': '''Problem: your corpus is too small (only %d documents).
+                                      
+                                      Solution: Add more documents (more than %d documents) 
+                                      in order to get a graph.
+
+                                      You can manage your corpus here:
+                                      http://%sgargantext.org/projects/%d/
+                                      ''' % ( data["length"]
+                                            , graph_constraints['corpusMin']
+                                            , "dev."
+                                            , corpus.parent_id
+                                            ),
+                            }, status=400)
+                
+                    elif data["state"] == "mapListError":
+                        # async data case
+                        return JsonHttpResponse({
+                            'msg': '''Problem: your map list is too small (currently %d terms).
+                                      
+                                      Solution: Add some terms (more than %d terms) 
+                                      in order to get a graph.
+
+                                      You can manage your map terms here:
+                                      http://%sgargantext.org/projects/%d/corpora/%d/terms
+                                      ''' % ( data["length"]
+                                            , graph_constraints['mapList']
+                                            , "dev."
+                                            , corpus.parent_id
+                                            , corpus.id
+                                            ),
+                            }, status=400)
+
+
+                    elif data["state"] == "corpusMax":
+                        # async data case
+                        return JsonHttpResponse({
+                            'msg': '''Warning: Async graph generation since your corpus is
+                                      big (about %d documents).
+
+                                      Wait a while and discover your graph very soon.
+
+                                      Click on the link below and see your current graph 
+                                      processing on top of the list:
+                                      
+                                      http://%sgargantext.org/projects/%d/corpora/%d/myGraphs
+                                      ''' % (data["length"], "dev.", corpus.parent_id, corpus.id),
+                            }, status=400)
+                    else :
+                       return JsonHttpResponse({
+                            'msg': '''Programming error.''',
+                            }, status=400)
+
+
+            elif len(data["nodes"]) < 2 and len(data["links"]) < 2:
+                # empty data case
+                return JsonHttpResponse({
+                    'msg': '''Empty graph warning
+                              No cooccurences found in this corpus for the words of this maplist
+                              (maybe add more terms to the maplist or increase the size of your
+                              corpus ?)''',
+                    }, status=400)
 
             else:
                 # parameters error case

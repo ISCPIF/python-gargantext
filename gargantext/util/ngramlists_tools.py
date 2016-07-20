@@ -21,6 +21,9 @@ from gargantext.constants        import DEFAULT_CSV_DELIM, DEFAULT_CSV_DELIM_GRO
 from gargantext.util.toolchain.parsing           import normalize_chars
 from gargantext.util.toolchain.ngrams_extraction import normalize_forms
 
+# merge will also index the new ngrams in the docs of the corpus
+from gargantext.util.toolchain.ngrams_addition   import index_new_ngrams
+
 from sqlalchemy.sql      import exists
 from os                  import path
 from csv                 import writer, reader, QUOTE_MINIMAL
@@ -483,7 +486,7 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
             this_row_forms = ''
 
         # string normalizations
-        this_row_label = normalize_terms(normalize_chars(this_row_label))
+        this_row_label = normalize_forms(normalize_chars(this_row_label))
 
         # except:
         #     if i == 0:
@@ -521,7 +524,7 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
             for raw_term_str in this_row_forms.split(group_delimiter):
 
                 # each subform is also like an ngram declaration
-                term_str = normalize_terms(normalize_chars(raw_term_str))
+                term_str = normalize_forms(normalize_chars(raw_term_str))
                 imported_unique_ngramstrs[term_str] = True
                 imported_nodes_ngrams[this_list_type].append(term_str)
 
@@ -559,6 +562,7 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
 
     # print(new_ngrams_ids)
     # print(imported_nodes_ngrams)
+
     # ======== Import into lists =========
 
     # 3 x abstract lists + 1 translations
@@ -632,11 +636,8 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
                                           seront remis dans la main à la fin)
 
     NB: Uses group_tools.group_union() to merge the synonym links.
-
-    FIXME: new terms created at import_ngramlists() can now be added to lists
-           but are never added to docs
+        Uses ngrams_addition.index_new_ngrams() to also add new ngrams to the docs
     """
-
     # log to send back to client-side (lines will be joined)
     my_log = []
 
@@ -655,6 +656,20 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
        {'key': 'main', 'name':"MAINLIST"},    # lid = 1
        {'key': 'map',  'name':"MAPLIST"}      # lid = 2
     ]
+
+
+    # ======== Index the new ngrams in the docs =========
+    all_possibly_new_ngram_ids = []
+    collect = all_possibly_new_ngram_ids.append
+    for lid, info in enumerate(linfos):
+        list_type = info['key']
+        if list_type in new_lists:
+            for ng_id in new_lists[list_type].items:
+                collect(ng_id)
+
+    n_added = index_new_ngrams(all_possibly_new_ngram_ids, onto_corpus)
+
+    my_log.append("MERGE: added %i new ngram occurrences in docs" % n_added)
 
     # ======== Get the old lists =========
     old_lists = {}

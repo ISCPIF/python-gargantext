@@ -176,7 +176,6 @@ def parse_extract_indexhyperdata(corpus):
     session.commit()
 
 
-
 @shared_task
 def recount(corpus):
     """

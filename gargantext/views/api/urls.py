@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 from . import nodes
+from . import ngrams
 from . import metrics
 from . import ngramlists
 from . import analytics
@@ -9,9 +10,11 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()         )
               , url(r'^nodes/(\d+)/having$'   , nodes.NodeListHaving.as_view()       )
 
+               # Ngrams
+               , url(r'^ngrams/?$'             , ngrams.ApiNgrams.as_view()          )
+
                # Analytics
               , url(r'^nodes/(\d+)/histories$', analytics.NodeNgramsQueries.as_view())
-              , url(r'^ngrams/$'              , analytics.ApiNgrams.as_view()        )
               , url(r'hyperdata$'             , analytics.ApiHyperdata.as_view()     )
                 # get a list of ngram_ids or ngram_infos by list_id
                 # url(r'^ngramlists/(\d+)$', ngramlists.List.as_view()),

@@ -12,7 +12,7 @@ class NodeTestCase(TestCase):
         self.new_node = nodes.Node()
 
     def test_010_node_has_id(self):
-        '''new_node.id'''
+        '''node_1000.id'''
         self.assertEqual(self.node_1000.id, 1000)
 
     def test_011_node_write(self):

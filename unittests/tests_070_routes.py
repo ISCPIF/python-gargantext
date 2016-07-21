@@ -40,13 +40,18 @@ class RoutesChecker(TestCase):
         self.a_node_id = new_project.id
         print("created a project with id: %i" % new_project.id)
 
-    def test_071_get_front_page(self):
+    def test_071a_get_front_page(self):
         ''' get the front page / '''
         front_response = self.client.get('/')
         self.assertEqual(front_response.status_code, 200)
         self.assertIn('text/html', front_response.get('Content-Type'))
         # on suppose que la page contiendra toujours ce titre
         self.assertIn(b'<h1>Gargantext</h1>', front_response.content)
+    
+    def test_071b_get_inexisting_page(self):
+        ''' get the inexisting page /foo '''
+        front_response = self.client.get('/foo')
+        self.assertEqual(front_response.status_code, 404)
 
     def test_072_get_api_nodes(self):
         ''' get "/api/nodes" '''

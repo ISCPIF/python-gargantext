@@ -84,7 +84,7 @@ def normalize_chars(my_str):
 
       (autres traitements plus invasifs, comme enlever les guillemets
        ou passer en lowercase, seront à placer plutôt *après* le tagger,
-            cf. toolchain.ngrams_extraction.normalize_terms)
+            cf. toolchain.ngrams_extraction.normalize_forms)
     """
     # print('normalize_chars  IN: "%s"' % my_str)
     # --------------

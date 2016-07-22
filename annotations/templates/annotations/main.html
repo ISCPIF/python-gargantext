@@ -121,7 +121,10 @@
       <!-- this menu is over the text on mouse selection -->
       <div ng-controller="TextSelectionMenuController" id="selection" class="selection-menu">
         <ul class="noselection">
-          <li ng-repeat="item in menuItems" class="{[{item.tgtListName}]}" ng-click="onMenuClick($event, item.crudActions)">Move to {[{item.tgtListName}]}</li>
+          <li ng-repeat="item in menuItems"
+              class="{[{item.tgtListName}]}"
+              ng-click="onMenuClick($event, item.crudCalls)"
+              >{[{item.comment ? item.comment : 'Move to ' + item.tgtListName}]}</li>
         </ul>
       </div>
     </div>

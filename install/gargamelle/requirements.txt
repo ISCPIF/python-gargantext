@@ -29,5 +29,8 @@ networkx==1.11
 pandas==0.18.0
 six==1.10.0
 lxml==3.5.0
+requests-futures==0.9.7
 bs4==0.0.1
 requests==2.10.0
+#testing github
+#-e git://github.com/zzzeek/sqlalchemy.git@rel_1_1

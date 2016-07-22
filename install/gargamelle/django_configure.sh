@@ -11,8 +11,8 @@
 
 
 
-echo "Starting Postgres"
-/usr/sbin/service postgresql start
+#echo "Starting Postgres"
+#/usr/sbin/service postgresql start
 
 /bin/su gargantua -c 'source /env_3-5/bin/activate \
     && ./srv/gargantext/manage.py makemigrations \

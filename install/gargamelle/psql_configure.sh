@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#######################################################################
+##    ____           _
+##   |  _ \ ___  ___| |_ __ _ _ __ ___  ___
+##   | |_) / _ \/ __| __/ _` | '__/ _ \/ __|
+##   |  __/ (_) \__ \ || (_| | | |  __/\__ \
+##   |_|   \___/|___/\__\__, |_|  \___||___/
+##                      |___/
+#######################################################################
+
+service postgresql stop
+
+su postgres -c 'pg_dropcluster 9.5 main --stop'
+#done in docker but redoing it
+
+if [[ -e "/srv/gargandata" ]]; then
+    rm -rf /srv/gargandata/*
+else
+    mkdir /srv/gargandata;
+    chown -R postgres:postgres /srv/gargandata
+fi
+
+su postgres -c '/usr/lib/postgresql/9.5/bin/initdb -D /srv/gargandata/'
+su postgres -c '/usr/lib/postgresql/9.5/bin/pg_ctl -D /srv/gargandata/ -l journal_applicatif start'
+
+
+#su postgres -c 'pg_createcluster -D /srv/gargandata 9.5 main '
+#su postgres -c 'pg_ctlcluster -D /srv/gargandata 9.5 main start '
+
+service postgresql start
+
+su postgres -c "psql -c \"CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'\""
+su postgres -c "createdb -O gargantua gargandb"
+
+echo "Postgres configured"
+service postgresql stop

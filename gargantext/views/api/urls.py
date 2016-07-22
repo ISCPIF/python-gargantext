@@ -5,6 +5,7 @@ from . import ngrams
 from . import metrics
 from . import ngramlists
 from . import analytics
+from graph.rest import Graph
 
 urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()     )
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()         )
@@ -61,4 +62,11 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
 
               , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view() )
                 # fast access to maplist, similarly formatted for termtable
+
+              , url(r'^projects/(\d+)/corpora/(\d+)/explorer$'      , Graph.as_view())
+                # data for graph explorer (json)
+                #                 GET /api/projects/43198/corpora/111107/explorer?
+                # Corresponding view is : /projects/43198/corpora/111107/explorer?
+                # Parameters (example):
+                # explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5&start=1996-6-1&end=2002-10-5
               ]

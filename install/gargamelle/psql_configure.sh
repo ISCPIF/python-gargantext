@@ -22,6 +22,7 @@ else
 fi
 
 su postgres -c '/usr/lib/postgresql/9.5/bin/initdb -D /srv/gargandata/'
+#su postgres -c '/usr/lib/postgresql/9.5/bin/pg_ctl -D /srv/gargandata/ -l journal_applicatif start'
 su postgres -c '/usr/lib/postgresql/9.5/bin/pg_ctl -D /srv/gargandata/ -l journal_applicatif start'
 
 
@@ -34,4 +35,4 @@ su postgres -c "psql -c \"CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'\""
 su postgres -c "createdb -O gargantua gargandb"
 
 echo "Postgres configured"
-service postgresql stop
+#service postgresql stop

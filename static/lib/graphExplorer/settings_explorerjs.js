@@ -2,6 +2,8 @@
  * Customize as you want ;)
  */
 
+console.log('FUN settings_explorerjs:main')
+
 // ============ < DEVELOPER OPTIONS > ============
 var geomap=false;
 var colorByAtt = false;
@@ -28,17 +30,14 @@ var mainfile = ["db.json"];
 // getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // garg exclusive
 // var corpusesList = {} // garg exclusive -> corpus comparison
 
-// getUrlParam.file = "data/testgraph.json";
+var tagcloud_limit = 50;
 
+// for the css of sidecolumn and canvasLimits size
+var sidecolumnSize = "20%"
 
-if( isUndef(getUrlParam.field1) && isUndef(getUrlParam.field2) ) {
-    if($("#graphid").length>0) {
-        getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
-    }
-} else {
-    var current_url = window.location.origin+window.location.pathname+window.location.search
-    getUrlParam.file = current_url.replace(/project(.*?)corpus/g, "api/corpus").replace("explorer?","graph?")
-}
+var current_url = window.location.origin+window.location.pathname+window.location.search
+getUrlParam.file = current_url.replace(/projects/g, "api/projects")
+
 // if($("#graphid").length>0) // just Garg
 //     getUrlParam.file = window.location.origin+"/"+$("#graphid").html(); // just Garg
 
@@ -146,7 +145,7 @@ var sigmaJsDrawingProperties = {
 };
 var sigmaJsGraphProperties = {
     minEdgeSize: 2,
-    maxEdgeSize: 4,
+    maxEdgeSize: 3
 };
 var sigmaJsMouseProperties = {
     minRatio:0.1,

@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 MAINTENANCE = False
 
 ALLOWED_HOSTS = [ 'localhost'
@@ -39,7 +39,7 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_IMPORTS = ("gargantext.util.toolchain")
+CELERY_IMPORTS = ("gargantext.util.toolchain", "graph.cooccurrences")
 
 
 # garg's custom unittests runner (adapted to our db models)
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djcelery',
     'annotations',
-    'graphExplorer',
+    'graph',
     'moissonneurs',
 ]
 

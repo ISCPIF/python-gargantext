@@ -31,7 +31,13 @@
     $rootScope.projectId = path[1];
     $rootScope.corpusId = path[2];
     $rootScope.docId = path[3];
-    $rootScope.focusNgram = path[4];
+
+    // ex: ["483", "3561", "9754", "35183"]
+    // (passed from graphExplorer selections)
+    if (path[4])
+        $rootScope.focusNgrams = path[4].split(",");
+    else
+        $rootScope.focusNgrams = []
     // -------------------------------
 
     // shared toolbox (functions useful for several modules) -------------------

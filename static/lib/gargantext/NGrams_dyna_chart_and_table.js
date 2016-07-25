@@ -1413,13 +1413,6 @@ $("#Clean_All").click(function(){
     // $("#Clean_All, #Save_All").attr( "disabled", "disabled" );
 });
 
-$("#Save_All").click(function(){
-    SaveLocalChanges()
-});
-$("#Save_All_Bottom").click(function(){
-    SaveLocalChanges()
-});
-
 
 // find all the consequences of changes from MAP => MAIN
 // -----------------------------------------------------
@@ -2310,23 +2303,36 @@ function isNumeric(n) {
 // (it can only go back OFF with a save action via page reload)
 function toggleNeedSave() {
 
+    var icons = $(".needsaveicon")
+    var boxes = $('.savediv')
+    var topButton = $('#ImportListOrSaveAll')
+    var botButton = $('#Save_All_Bottom')
+
     // change the status icons
-    $(".needsaveicon").removeClass("glyphicon-floppy-saved");
-    $(".needsaveicon").addClass("glyphicon-floppy-remove");
-    $(".needsaveicon").css("color","red");
-    $(".needsaveicon").css("font-size","120%");
+    icons.removeClass("glyphicon-floppy-saved");
+    icons.removeClass("glyphicon-import");
+    icons.addClass("glyphicon-exclamation-sign");
+    icons.css("color","red");
+    icons.css("font-size","120%");
+
+    // give new text to the hybrid save/import button
+    topButton.html("<b>Save all changes</b>")
 
     // save_divs get a new tooltip title
-    $('.savediv').prop('title', "Click to save all changes to DB")
+    boxes.prop('title', "Click to save all changes to DB")
 
     // activate the buttons
-    $('#Save_All').prop('disabled', false) ;
-    $('#Save_All').removeClass("btn-muted");
-    $('#Save_All').addClass("btn-success");
+    topButton.prop('disabled', false) ;
+    topButton.removeClass("btn-warning");
+    topButton.addClass("btn-success");
 
-    $('#Save_All_Bottom').prop('disabled', false) ;
-    $('#Save_All_Bottom').removeClass("btn-muted");
-    $('#Save_All_Bottom').addClass("btn-success");
+    botButton.prop('disabled', false) ;
+    botButton.removeClass("btn-muted");
+    botButton.addClass("btn-success");
+
+    // bind the onclick events (it also replaces the default import onclick for the hybrid button)
+    topButton.attr("onclick","SaveLocalChanges()");
+    botButton.attr("onclick","SaveLocalChanges()");
 
     // toggle the global var ON
     _NeedSave = true

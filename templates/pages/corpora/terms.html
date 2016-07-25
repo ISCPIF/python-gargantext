@@ -126,19 +126,11 @@ em {
                         </center>
                       </h2>
                       <div class="savediv pull-left" style="margin-top:1.5em;padding-right:1em;" title="No changes to save">
-                          <!-- need save status -->
-                          <span class="needsaveicon glyphicon glyphicon-floppy-saved"></span>
+                          <!-- save/import icon -->
+                          <span class="needsaveicon glyphicon glyphicon-import"></span>
                           &nbsp;
-                          <!-- save button -->
-                          <button id="Save_All" class="btn btn-muted" disabled style="font-size:120%">
-                              <b>Save all changes</b>
-                          </button>
-                          <br/>
-                          <br/>
-                          <!-- import icon -->
-                          <span class="glyphicon glyphicon-import"></span>
-                          &nbsp;
-                          <button id="ImportList" class="btn btn-warning" style="font-size:120%"
+                          <!-- save/import button -->
+                          <button id="ImportListOrSaveAll" class="btn btn-warning" style="font-size:120%"
                                    onclick="$('#csvimport').modal('show');">
                               <b>Import a Termlist</b>
                           </button>

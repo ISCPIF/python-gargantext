@@ -8,6 +8,12 @@ import random
 
 _members = [
 
+    { 'first_name' : 'Constance', 'last_name' : 'de Quatrebarbes',
+     'mail' : '4barbesATgmail.com',
+     'website'  : 'http://c24b.github.io/',
+     'picture' : 'constance.jpg',
+     'role' : 'developer'},
+
     { 'first_name' : 'David', 'last_name' : 'Chavalarias',
      'mail' : 'david.chavalariasATiscpif.fr',
      'website' : 'http://chavalarias.com',

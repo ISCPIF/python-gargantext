@@ -22,7 +22,7 @@
   * Main function
   * GET the document node and all its ngrams
   */
-  window.annotationsApp.run(function ($rootScope) {
+  window.annotationsApp.run(function ($rootScope, NgramListHttpService) {
     // ex: projects/1/corpora/2/documents/9/
     // ex: projects/1/corpora/2/documents/9/focus=2677 (to highlight ngram 2677 more)
     var path = window.location.pathname.match(/\/projects\/(.*)\/corpora\/(.*)\/documents\/(.*)\/(?:focus=([0-9,]+))?/);
@@ -40,8 +40,22 @@
         $rootScope.focusNgrams = []
     // -------------------------------
 
+
     // shared toolbox (functions useful for several modules) -------------------
-    $rootScope.mafonction = function (bidule) {console.warn(bidule)}
+    $rootScope.refresh = function() {
+      // Refresh the annotations
+      NgramListHttpService.get(
+        {'corpusId': $rootScope.corpusId,
+          'docId': $rootScope.docId},
+        function(data) {
+          $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+          $rootScope.refreshDisplay();
+        },
+        function(data) {
+          console.error("unable to refresh the list of ngrams");
+        }
+      );
+    }
 
     // chained recursion to do several AJAX actions and then a callback (eg refresh)
     $rootScope.makeChainedCalls =

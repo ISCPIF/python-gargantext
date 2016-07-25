@@ -8,17 +8,23 @@
 ##################################################
 #configure django migrations
 ##################################################
+echo "::::: DJANGO :::::"
+#echo "Starting Postgres"
+#/usr/sbin/service postgresql start
 
 
 
-echo "Starting Postgres"
-/usr/sbin/service postgresql start
+/bin/su gargantua -c 'source /env_3-5/bin/activate &&\
+    echo "Activated env" &&\
+    ./srv/gargantext/manage.py makemigrations &&\
+    ./srv/gargantext/manage.py migrate && \
+    echo "migrations ok" &&\
+    ./srv/gargantext/dbmigrate.py && \
+    ./srv/gargantext/dbmigrate.py && \
+    ./srv/gargantext/dbmigrate.py && \
+    ./srv/gargantext/manage.py createsuperuser'
 
-/bin/su gargantua -c 'source /env_3-5/bin/activate \
-    && ./srv/gargantext/manage.py makemigrations \
-    && ./srv/gargantext/manage.py migrate \
-    && ./srv/gargantext/dbmigrate.py \
-    && ./srv/gargantext/dbmigrate.py \
-    && ./srv/gargantext/dbmigrate.py;'
+
 
 /usr/sbin/service postgresql stop
+

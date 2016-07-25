@@ -162,55 +162,7 @@ class NgramList(APIView):
 
 # 2016-03-24: refactoring, deactivated NgramEdit and NgramCreate
 # 2016-05-27: removed NgramEdit: replaced the local httpservice by api/ngramlists
-# ------------------------------------
-#
-# class NgramCreate(APIView):
-#     """
-#     Create a new Ngram in one list
-#     """
-#     renderer_classes = (JSONRenderer,)
-#     authentication_classes = (SessionAuthentication, BasicAuthentication)
-#
-#     def post(self, request, list_id):
-#         """
-#         create NGram in a given list
-#
-#         example: request.data = {'text': 'phylogeny'}
-#         """
-#         # implicit global session
-#         list_id = int(list_id)
-#         # format the ngram's text
-#         ngram_text = request.data.get('text', None)
-#         if ngram_text is None:
-#             raise APIException("Could not create a new Ngram without one \
-#                 text key in the json body")
-#
-#         ngram_text = ngram_text.strip().lower()
-#         ngram_text = ' '.join(ngram_text.split())
-#         # check if the ngram exists with the same terms
-#         ngram = session.query(Ngram).filter(Ngram.terms == ngram_text).first()
-#         if ngram is None:
-#             ngram = Ngram(n=len(ngram_text.split()), terms=ngram_text)
-#         else:
-#             # make sure the n value is correct
-#             ngram.n = len(ngram_text.split())
-#
-#         session.add(ngram)
-#         session.commit()
-#         ngram_id = ngram.id
-#         # create the new node_ngram relation
-#         # TODO check existing Node_Ngram ?
-#         # £TODO ici indexation
-#         node_ngram = NodeNgram(node_id=list_id, ngram_id=ngram_id, weight=1.0)
-#         session.add(node_ngram)
-#         session.commit()
-#
-#         # return the response
-#         return Response({
-#             'uuid': ngram_id,
-#             'text': ngram_text,
-#             'list_id': list_id,
-#         })
+# 2016-07-21: removed NgramCreate: replaced the local httpservice by api/ngrams (put)
 
 class Document(APIView):
     """

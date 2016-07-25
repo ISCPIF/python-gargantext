@@ -60,7 +60,7 @@ class Parser:
                 print(error, 'Date not parsed for:', date_string)
                 hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        
+
         elif hyperdata.get('publication_year', None) is not None:
             prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
             for prefix in prefixes:
@@ -113,7 +113,7 @@ class Parser:
             hyperdata[prefix + "_hour"]      = date.strftime("%H")
             hyperdata[prefix + "_minute"]    = date.strftime("%M")
             hyperdata[prefix + "_second"]    = date.strftime("%S")
-        print("line 116", hyperdata['publication_date'])
+        # print("line 116", hyperdata['publication_date'])
         # finally, return the transformed result!
         return hyperdata
 

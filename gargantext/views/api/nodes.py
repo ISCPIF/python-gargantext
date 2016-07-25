@@ -215,6 +215,7 @@ class NodeListHaving(APIView):
 
 class NodeResource(APIView):
 
+    # TODO either real authentification test or remove check on user.id
     def get(self, request, node_id):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):

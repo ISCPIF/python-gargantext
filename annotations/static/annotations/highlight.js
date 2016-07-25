@@ -31,9 +31,10 @@
         $scope.keyword = keyword;
       }
 
+      // this onClick only works for existing annotations
       $scope.onClick = function(e) {
-        $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
         $rootScope.$emit("toggleAnnotationMenu", $scope.keyword);
+        $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
         // $rootScope.$emit("toggleAnnotationMenu", {'uuid':42,'list_id':1,'text':'gotcha'});
         // console.log("EMIT toggleAnnotationMenu with \$scope.keyword: '" + $scope.keyword.text +"'")
         e.stopPropagation();
@@ -44,8 +45,9 @@
   * Controls the menu over the current mouse selection
   */
   annotationsAppHighlight.controller('TextSelectionMenuController',
-    ['$scope', '$rootScope', '$element', '$timeout', 'MainApiChangeNgramHttpService', 'NgramListHttpService',
-    function ($scope, $rootScope, $element, $timeout, MainApiChangeNgramHttpService, NgramListHttpService) {
+    ['$scope', '$rootScope', '$element', '$timeout', 'MainApiChangeNgramHttpService', 'MainApiAddNgramHttpService', 'NgramListHttpService',
+    function ($scope, $rootScope, $element, $timeout, MainApiChangeNgramHttpService, MainApiAddNgramHttpService, NgramListHttpService) {
+
       /*
       * Universal text selection
       */
@@ -106,7 +108,12 @@
             // console.log("toggleMenu with \$scope.selection_text: '" + JSON.stringify($scope.selection_text) +"'") ;
 
             if (angular.isObject(annotation) && !$element.hasClass('menu-is-opened')) {
+
               // existing ngram
+              var ngramId = annotation.uuid
+              var mainformId = annotation.group
+
+              var targetId = mainformId ? mainformId : ngramId
 
               // Context menu proposes 2 things for each item of list A
               //      - adding/moving to other lists B or C
@@ -122,38 +129,45 @@
               //     otherwise the menu for mainlist items can hide the menu for map items
 
               if ($rootScope.lists[annotation.list_id] == "MAPLIST") {
-                  console.log($scope)
+
                 $scope.menuItems.push({
                     // "tgtListName" is just used to render the GUI explanation
                     'tgtListName': 'STOPLIST',
-                    // crudActions is an array of rest/DB actions
+                    // crudCalls is an array of rest/DB actions
                     // (consequences of the intention)
-                    'crudActions':[
-                                ["delete", maplist_id],
-                                ["delete", mainlist_id],
-                                ["put",   stoplist_id]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':maplist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':mainlist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':stoplist_id, 'ngramIdList': targetId} }
                     ]
                   });
                 $scope.menuItems.push({
                     'tgtListName': 'MAINLIST',
-                    'crudActions':[
-                                ["delete", maplist_id]
-                            ]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
+                    ]
                   });
               }
 
               else if ($rootScope.lists[annotation.list_id] == "MAINLIST") {
                 $scope.menuItems.push({
                     'tgtListName': "STOPLIST",
-                    'crudActions':[
-                                ["delete", mainlist_id],
-                                ["put",   stoplist_id]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':mainlist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':stoplist_id, 'ngramIdList': targetId} }
                     ]
                   });
                 $scope.menuItems.push({
                     'tgtListName': "MAPLIST",
-                    'crudActions':[
-                                ["put",   maplist_id]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
                     ]
                 });
               }
@@ -161,46 +175,79 @@
               else if ($rootScope.lists[annotation.list_id] == "STOPLIST") {
                 $scope.menuItems.push({
                     'tgtListName': "MAINLIST",
-                    'crudActions':[
-                                ["delete", stoplist_id],
-                                ["put",   mainlist_id]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':stoplist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':mainlist_id, 'ngramIdList': targetId} }
                     ]
                 });
                 $scope.menuItems.push({
                     'tgtListName': "MAPLIST",
-                    'crudActions':[
-                                ["delete", stoplist_id],
-                                ["put",   mainlist_id],
-                                ["put",    maplist_id]
+                    'crudCalls':[
+                    {'service': MainApiChangeNgramHttpService, 'action': 'delete',
+                     'params' : {'listId':stoplist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':mainlist_id, 'ngramIdList': targetId} },
+                    {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                     'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
                     ]
                 });
               }
 
               // show the menu
-              $element.fadeIn(100);
+              $element.fadeIn(50);
               $element.addClass('menu-is-opened');
             }
 
-            // -------8<------ "add" actions for non-existing ngram ------
-            // else if (annotation.trim() !== "" && !$element.hasClass('menu-is-opened')) {
-            //   // new ngram
-            //   $scope.menuItems = [
-            //     {
-            //       'action': 'post',
-            //       'listId': miamlist_id,
-            //       'verb': 'Add to',
-            //       'listName': $rootScope.lists[miamlist_id]
-            //     }
-            //   ];
-            //   // show the menu
-            //   $element.fadeIn(100);
-            //   $element.addClass('menu-is-opened');
-            // }
-            // -------8<--------------------------------------------------
+            // "add" actions for non-existing ngram
+            else if (annotation.trim() !== "" && !$element.hasClass('menu-is-opened')) {
+              var newNgramText = annotation.trim()
+              // new ngram (first call creates then like previous case for list)
+              $scope.menuItems.push({
+                      'comment'  : "Create and add to STOPLIST",
+                      'tgtListName': "STOPLIST",
+                      'crudCalls':[
+                      {'service': MainApiAddNgramHttpService, 'action': 'put',
+                       'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
+                       'dataPropertiesToCache': ['id'] },
+                      {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                       'params' : {'listId':stoplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                      ]
+                  }) ;
+              $scope.menuItems.push({
+                      'comment'  : "Create and add to MAINLIST",
+                      'tgtListName': "MAINLIST",
+                      'crudCalls':[
+                      {'service': MainApiAddNgramHttpService, 'action': 'put',
+                       'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
+                       'dataPropertiesToCache': ['id'] },
+                      {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                      ]
+                  }) ;
+              $scope.menuItems.push({
+                      'comment'  : "Create and add to MAPLIST",
+                      'tgtListName': "MAPLIST",
+                      'crudCalls':[
+                      {'service': MainApiAddNgramHttpService, 'action': 'put',
+                       'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
+                       'dataPropertiesToCache': ['id'] },
+                      {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } },
+                      {'service': MainApiChangeNgramHttpService, 'action': 'put',
+                       'params' : {'listId':maplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                      ]
+                  }) ;
+
+              // show the menu
+              $element.fadeIn(50);
+              $element.addClass('menu-is-opened');
+            }
             else {
-              $scope.menuItems = [];
               // close the menu
-              $element.fadeOut(100);
+              $scope.menuItems = [];
+              $element.fadeOut(50);
               $element.removeClass('menu-is-opened');
             }
           });
@@ -229,8 +276,9 @@
       /*
       * Finish positioning the menu then display the menu
       */
-      $(".text-container").mouseup(function(){
+      $(".text-container").mouseup(function(e){
         $(".text-container").unbind("mousemove", positionMenu);
+        $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
         toggleSelectionHighlight(selection.toString().trim());
         toggleMenu(null, selection.toString().trim());
       });
@@ -257,108 +305,28 @@
       * (1 intention => list of actions => MainApiChangeNgramHttpService CRUDs)
       *                  post/delete
       */
-      $scope.onMenuClick = function($event, crudActions) {
+      $scope.onMenuClick = function($event, crudCalls) {
         //   console.warn('in onMenuClick')
-        //   console.warn('item.crudActions')
-        //   console.warn(crudActions)
+        //   console.warn('item.crudCalls', crudCalls)
 
-        if (angular.isObject($scope.selection_text)) {
-
-            var ngramId = $scope.selection_text.uuid
-            var mainformId = $scope.selection_text.group
-            var ngramText = $scope.selection_text.text
-
-            var lastCallback = function() {
-                // Refresh the annotationss
-                NgramListHttpService.get(
-                  {'corpusId': $rootScope.corpusId,
-                    'docId': $rootScope.docId},
-                  function(data) {
-                    $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-                    $rootScope.refreshDisplay();
-                  },
-                  function(data) {
-                    console.error("unable to get the list of ngrams");
-                  }
-                );
-            }
-
-            // chained recursion to do several actions then callback (eg refresh)
-            function makeChainedCalls (i, listOfActions, finalCallback) {
-              // each action couple has 2 elts
-              var action = listOfActions[i][0]
-              var listId = listOfActions[i][1]
-
-              console.log("===>"+action+"<===")
-
-              MainApiChangeNgramHttpService[action](
-                      {'listId': listId,
-                       'ngramIdList': mainformId ? mainformId : ngramId},
-
-                       // on success
-                       function(data) {
-                          // case NEXT
-                          //      ----
-                          // when chained actions
-                          if (listOfActions.length > i+1) {
-                              console.log("calling next action ("+(i+1)+")")
-
-                              // ==============================================
-                              makeChainedCalls(i+1, listOfActions, finalCallback)
-                              // ==============================================
-
-                          }
-                          // case LAST
-                          //     ------
-                          // when last action
-                          else {
-                              finalCallback()
-                          }
-                      },
-                      // on error
-                      function(data) {
-                        console.error("unable to edit the Ngram \""+ngramText+"\""
-                                     +"(ngramId "+ngramId+")"+"at crud no "+i
-                                     +" ("+action+" on list "+listId+")");
-                      }
-              );
-            }
-
-            // run the loop by calling the initial recursion step
-            makeChainedCalls(0, crudActions, lastCallback)
+        var lastCallback = function() {
+            // Refresh the annotationss
+            NgramListHttpService.get(
+              {'corpusId': $rootScope.corpusId,
+                'docId': $rootScope.docId},
+              function(data) {
+                $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                $rootScope.refreshDisplay();
+              },
+              function(data) {
+                console.error("unable to refresh the list of ngrams");
+              }
+            );
         }
 
-        // TODO: first action creates then like previous case
-
-        // else if ($scope.selection_text.trim() !== "") {
-        //   // new annotation from selection
-        //   NgramHttpService.post(
-        //     {
-        //       'listId': listId,
-        //       'ngramId': 'create'
-        //     },
-        //     {
-        //       'text': $scope.selection_text.trim()
-        //     }, function(data) {
-        //       // Refresh the annotationss
-        //       NgramListHttpService.get(
-        //         {
-        //           'corpusId': $rootScope.corpusId,
-        //           'docId': $rootScope.docId
-        //         },
-        //         function(data) {
-        //           $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-        //           $rootScope.refreshDisplay();
-        //         },
-        //         function(data) {
-        //           console.error("unable to get the list of ngrams");
-        //         }
-        //       );
-        //     }, function(data) {
-        //       console.error("unable to edit the Ngram " + $scope.selection_text);
-        //     }
-        //   );
-        // }
+        // run the loop by calling the initial recursion step
+        $rootScope.makeChainedCalls(0, crudCalls, lastCallback)
+        // syntax: (step_to_run, list_of_steps, lastCallback)
 
         // hide the highlighted text and the menu element
         $(".text-panel").removeClass("selection");

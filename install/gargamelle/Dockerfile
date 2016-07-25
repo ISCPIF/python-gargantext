@@ -64,8 +64,8 @@ ADD requirements.txt /
 ADD psql_configure.sh /
 ADD django_configure.sh /
 
-RUN . /env_3-5/bin/activate; pip3 install -r requirements.txt; \
-    pip3  install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1; \
+RUN . /env_3-5/bin/activate && pip3 install -r requirements.txt && \
+    pip3  install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1 &&\
     python3 -m nltk.downloader averaged_perceptron_tagger;
 
 RUN chown gargantua:gargantua -R /env_3-5

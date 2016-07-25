@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+sudo docker run \
+        -v /srv/:/srv/\
+        -p 8000:8000 \
+        -p 5432 \
+        -it gargamelle:latest \
+        /bin/bash -c "service postgresql start; /bin/su gargantua -c 'source /env_3-5/bin/activate && /srv/gargantext/manage.py runserver 0.0.0.0:8000'"
+
+sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
+
+
+

@@ -13,8 +13,8 @@ done;
 #here gargantext_lib.tar.bz2 inside this directory
 
 #sudo wget http://dl.gargantext.org/gargantext_lib.tar.bz2 && \
-sudo tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
-&& sudo chown -R gargantua:gargantua /srv/gargantext_lib \
-&& echo ":::::::::::::::::Done::::::::::::::::::::::::::";
+#sudo tar xvjf gargantext_lib.tar.bz2 -o /srv/gargantext_lib \
+#&& sudo chown -R gargantua:gargantua /srv/gargantext_lib \
+#&& echo ":::::::::::::::::Done::::::::::::::::::::::::::";
 
 

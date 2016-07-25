@@ -265,7 +265,8 @@ def recount(corpus):
 
     # -> specclusion/genclusion: compute + write (=> NodeNodeNgram)
     (spec_id, gen_id) = compute_specgen(corpus, cooc_matrix = coocs,
-                            spec_overwrite_id = spec_id, gen_overwrite_id = gen_id)
+                                        spec_overwrite_id = old_spec_id, 
+                                        gen_overwrite_id = old_gen_id)
 
     print('RECOUNT #%d: [%s] updated spec-clusion node #%i' % (corpus.id, t(), spec_id))
     print('RECOUNT #%d: [%s] updated gen-clusion node #%i' % (corpus.id, t(), gen_id))

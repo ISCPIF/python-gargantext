@@ -48,28 +48,19 @@ def query_grouped_ngrams(groupings_id, details=False, scoring_metric_id=None):
 
     Parameter:
       - details: if False, send just the array of ngram_ids
-                 if True, send triples with (ngram_id, term, scoring)
-                                                             ^^^^^^^
-
-      deprecated: scoring_metric_id: id of a scoring metric node   (TFIDF or OCCS)
-                           (for details and sorting)
-                   (no more OCCS counts of subforms)
+                 if True, send couples with (ngram_id, term)
     """
     if not details:
         # simple contents
         query = session.query(NodeNgramNgram.ngram2_id)
     else:
-        # detailed contents (terms and some NodeNodeNgram for score)
+        # detailed contents (id + terms)
         query = (session
                     .query(
                         NodeNgramNgram.ngram2_id,
                         Ngram.terms,
-                        # NodeNodeNgram.score           #
                      )
                     .join(Ngram, NodeNgramNgram.ngram2_id == Ngram.id)
-                    # .join(NodeNodeNgram, NodeNgramNgram.ngram2_id == NodeNodeNgram.ngram_id)
-                    # .filter(NodeNodeNgram.node1_id == scoring_metric_id)
-                    # .order_by(desc(NodeNodeNgram.score))
                 )
 
     # main filter

@@ -36,9 +36,11 @@
                 </select>
                 </h5>
                 <div class="row spacer"></div>
-                <ul class="nav nav-pills nav-justified">
+                <ul class="nav nav-pills nav-justified activelists">
                   <li ng-repeat="(listId, listName) in activeLists" ng-class="{active: $first == true}">
-                    <a href="#tab-{[{listId}]}" data-toggle="tab">{[{listName}]}</a>
+                    <a href="#tab-{[{listId}]}" data-toggle="tab">
+                        <span class="{[{listName}]} inlay">{[{listName}]}</span>
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -60,12 +62,11 @@
                     <li ng-class="{'disabled': currentListPage >= totalListPages(listId) - 1}"><a ng-click="nextListPage()" class="glyphicon glyphicon-forward"></a></li>
                   </ul>
                 </nav>
-                <!--
-                <div class="form-group" ng-controller="NgramInputController">
-                  <input autosave="search" maxlength="240" placeholder="Add any text" type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
-                  <button type="submit" class="form-control btn btn-default btn-primary" ng-click="onListSubmit($event, listId)">Add to {[{listName}]}</button>
+                <div id="addfreengram" class="form-group" ng-controller="NgramInputController">
+                  <label for="{[{listId}]}-input">Add a free term to <span class="{[{listName}]} inlay">{[{listName}]}</span>:</label>
+                  <input autosave="search" maxlength="240" placeholder="Any text" type="text" class="form-control" id="{[{listId}]}-input" ng-keypress="onListSubmit($event, listId)">
+                  <button type="submit" class="form-control btn btn-default" ng-click="onListSubmit($event, listId)">Create &amp; add</button>
                 </div>
-                -->
               </div>
             </div>
           </div>

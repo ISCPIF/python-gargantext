@@ -8,7 +8,7 @@ import random
 
 _members = [
 
-    { 'first_name' : 'Constance', 'last_name' : 'De Quatrebarbes',
+    { 'first_name' : 'Constance', 'last_name' : 'de Quatrebarbes',
      'mail' : '4barbes@gmail.com',
      'website'  : 'http://c24b.github.io/',
      'picture' : 'constance.jpg',

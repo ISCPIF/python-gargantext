@@ -142,12 +142,16 @@
       }
     };
   });
+
+
   /*
   * new NGram from the user input
   */
   annotationsAppNgramList.controller('NgramInputController',
     ['$scope', '$rootScope', '$element', 'NgramListHttpService',
-    function ($scope, $rootScope, $element, NgramListHttpService) {
+     'MainApiChangeNgramHttpService', 'MainApiAddNgramHttpService',
+    function ($scope, $rootScope, $element, NgramListHttpService,
+            MainApiChangeNgramHttpService, MainApiAddNgramHttpService) {
     /*
     * Add a new NGram from the user input in the extra-text list
     */
@@ -158,10 +162,13 @@
       var value = angular.element(inputEltId).val().trim();
       if (value === "") return;
 
-      // £TEST locally check if already in annotations NodeNgrams ------
+      // locally check if already in annotations NodeNgrams ------------
 
       // $rootScope.annotations = array of ngram objects like:
       // {"list_id":805,"occs":2,"uuid":9386,"text":"petit échantillon"}
+
+      // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
+      //             // $rootScope.lookup =
 
       console.log('looking for "' + value + '" in list:' + listId)
       var already_in_list = false ;
@@ -177,49 +184,65 @@
       if (already_in_list) { return ; }
       // ---------------------------------------------------------------
 
-      // will check if there's a preexisting ngramId for this value
-      // TODO: reconnect separately from list addition
-      // TODO: if maplist => also add to miam
-    //   NgramHttpService.post(
-    //     {
-    //       'listId': listId,
-    //       'ngramId': 'create'
-    //     },
-    //     {
-    //       'text': value
-    //     },
-    //     function(data) {
-    //       console.warn("refresh attempt");
-    //       // on success
-    //       if (data) {
-    //         angular.element(inputEltId).val("");
-    //         // Refresh the annotationss
-    //         NgramListHttpService.get(
-    //           {
-    //             'corpusId': $rootScope.corpusId,
-    //             'docId': $rootScope.docId
-    //           },
-    //           function(data) {
-    //             $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-      //
-    //             // TODO £NEW : lookup obj[list_id][term_text] = {terminfo}
-    //             // $rootScope.lookup =
-      //
-      //
-    //             $rootScope.refreshDisplay();
-    //           },
-    //           function(data) {
-    //             console.error("unable to get the list of ngrams");
-    //           }
-    //         );
-    //       }
-    //     }, function(data) {
-    //       // on error
-    //       angular.element(inputEltId).parent().addClass("has-error");
-    //       console.error("error adding Ngram "+ value);
-    //     }
-    //   );
-    };
+      // AddNgram
+      // --------
+      // creation will return an ngramId
+      //   (checks if there's a preexisting ngramId for this value
+      //    otherwise creates a new one and indexes the ngram in corpus)
+      MainApiAddNgramHttpService.put(
+         {
+          // text <=> str to create the new ngram
+          'text': value,
+          'corpusId': $rootScope.corpusId
+         },
+         // on AddNgram success
+         function(data) {
+           var newNgramId = data.id
+           console.log("OK created new ngram for '"+value+"' with id: "+newNgramId)
+
+           // ChangeNgram
+           // -----------
+           // add to listId after creation
+           // TODO: if maplist => also add to miam
+           MainApiChangeNgramHttpService["put"](
+             {
+               'listId': listId,
+               'ngramIdList': newNgramId
+             },
+             // on ChangeNgram success
+             function(data) {
+               // Refresh the annotations (was broken: TODO FIX)
+               console.warn("refresh attempt");
+               angular.element(inputEltId).val(""); // what for ???
+               NgramListHttpService.get(
+                 {
+                   'corpusId': $rootScope.corpusId,
+                   'docId': $rootScope.docId
+                 },
+                 // on refresh success
+                 function(data) {
+                   $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                   $rootScope.refreshDisplay();
+                 },
+                 // on refresh error
+                 function(data) {
+                   console.error("unable to get the list of ngrams");
+                 }
+               );
+             },
+             // on ChangeNgram error
+             function(data) {
+               console.error("unable to edit the Ngram"+ngramId+") on list "+listId+")");
+             }
+           );
+         },
+         // on AddNgram error
+         function(data) {
+           angular.element(inputEltId).parent().addClass("has-error");
+           console.error("error adding Ngram "+ value);
+         }
+       );
+    };  // onListSubmit
   }]);
 
 })(window);

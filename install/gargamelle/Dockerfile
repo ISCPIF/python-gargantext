@@ -5,11 +5,6 @@
 # wich contains all the source code of the app
 FROM debian:stretch
 MAINTAINER ISCPIF <gargantext@iscpif.fr>
-# Configure global ENV with deb dependencies
-# Configure local ENV requirements
-########################################################################
-
-ENV DEBIAN_FRONTEND noninteractive
 
 USER root
 
@@ -84,4 +79,7 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.co
 RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
 
 EXPOSE 5432 8000
+
 VOLUME ["/srv/",]
+
+

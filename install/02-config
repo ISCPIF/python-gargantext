@@ -1,29 +1,15 @@
 #!/bin/bash
 #configure the base image gargamelle
-#echo '****************BUILD**********************************'
+#echo ':::: BUILD ::::'
 sudo docker build -t gargamelle:latest ./gargamelle
-#sudo docker build -t gargamelle:latest ./gargamelle
-#2 option with this image:
-    # configure the container
-    # run the image with the app in it
-echo '::::::::::::::::::::GARGAMELLE IMAGE BUILT:::::::::::::'
-echo '*************CONFIG************************************'
+echo ':::: CONFIGURE ::::'
 
 
 sudo docker run \
         -v /srv/:/srv/ \
-        -p 8000 \
+        -p 8000:8000 \
         -p 5432 \
         -it gargamelle:latest \
-        /bin/bash -c "/srv/gargantext/install/gargamelle/psql_configure.sh && /srv/gargantext/install/gargamelle/django_configure.sh && exit;"
+        /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
 sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
-
-#~ sudo docker run \
-        #~ -v /srv/:/srv/ \
-        #~ -p 8000 \
-        #~ -p 5432 \
-        #~ -it gargamelle:latest \
-        #~ /bin/bash -c "/srv/gargantext/install/gargamelle/django_configure.sh; exit;"
-
-#sudo docker rm -f `docker ps -a | grep -v CONTAINER awk '{print $1 }'`

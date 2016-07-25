@@ -1,5 +1,3 @@
-
-
 from gargantext.util.http       import ValidationException, APIView \
                                      , get_parameters, JsonHttpResponse, Http404\
                                      , HttpResponse
@@ -263,64 +261,6 @@ class NodeNgramsQueries(APIView):
             }, 201)
         elif input['format'] == 'csv':
             return CsvHttpResponse(sorted(result.items()), ('date', 'value'), 201)
-
-
-
-# ?? TODO put in an ngrams.py file separately ?
-class ApiNgrams(APIView):
-
-    def get(self, request):
-
-        # parameters retrieval and validation
-        startwith = request.GET.get('startwith', '').replace("'", "\\'")
-
-        # query ngrams
-        ParentNode = aliased(Node)
-        ngrams_query = (session
-            .query(Ngram.id, Ngram.terms, func.sum(NodeNgram.weight).label('count'))
-            .join(NodeNgram, NodeNgram.ngram_id == Ngram.id)
-            .join(Node, Node.id == NodeNgram.node_id)
-            .group_by(Ngram.id, Ngram.terms)
-            # .group_by(Ngram)
-            .order_by(func.sum(NodeNgram.weight).desc(), Ngram.terms)
-        )
-
-        # filters
-        if 'startwith' in request.GET:
-            ngrams_query = ngrams_query.filter(Ngram.terms.startswith(request.GET['startwith']))
-        if 'contain' in request.GET:
-            print("request.GET['contain']")
-            print(request.GET['contain'])
-            ngrams_query = ngrams_query.filter(Ngram.terms.contains(request.GET['contain']))
-        if 'corpus_id' in request.GET:
-            corpus_id_list = list(map(int, request.GET.get('corpus_id', '').split(',')))
-            if corpus_id_list and corpus_id_list[0]:
-                ngrams_query = ngrams_query.filter(Node.parent_id.in_(corpus_id_list))
-        if 'ngram_id' in request.GET:
-            ngram_id_list = list(map(int, request.GET.get('ngram_id', '').split(',')))
-            if ngram_id_list and ngram_id_list[0]:
-                ngrams_query = ngrams_query.filter(Ngram.id.in_(ngram_id_list))
-
-        # pagination
-        offset = int(request.GET.get('offset', 0))
-        limit = int(request.GET.get('limit', 20))
-        total = ngrams_query.count()
-        # return formatted result
-        return JsonHttpResponse({
-            'pagination': {
-                'offset': offset,
-                'limit': limit,
-                'total': total,
-            },
-            'data': [
-                {
-                    'id': ngram.id,
-                    'terms': ngram.terms,
-                    'count': ngram.count,
-                }
-                for ngram in ngrams_query[offset : offset+limit]
-            ],
-        })
 
 
 _operators_dict = {

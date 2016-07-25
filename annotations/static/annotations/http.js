@@ -86,48 +86,31 @@
     );
   });
 
-
   /*
-  * NgramHttpService: Create, modify or delete 1 Ngram
-  * =================
-  *
-  * TODO add a create case separately and then remove service
-  *
-  * NB : replaced by external api: (MainApiChangeNgramHttpService)
-  *                           api/ngramlists/change?list=LISTID&ngrams=ID1,ID2..
-  *
-  * old logic:
-  * ----------
-  * if new ngram
-  *   -> ngram_id will be "create"
-  *   -> route: annotations/lists/@node_id/ngrams/create
-  *   -> will land on views.NgramCreate
-  *
-  * else:
-  *   -> ngram_id is a real ngram id
-  *   -> route: annotations/lists/@node_id/ngrams/@ngram_id
-  *   -> will land on views.NgramEdit
+  * MainApiAddNgramHttpService: Create and index a new ngram
+  * ===========================
+  * route: PUT api/ngrams?text=mynewngramstring&corpus=corpus_id
+  * ------
   *
   */
-  // http.factory('NgramHttpService', function ($resource) {
-  //   return $resource(
-  //     window.ANNOTATION_API_URL  + 'lists/:listId/ngrams/:ngramId',
-  //   	{
-  //       listId: '@listId',
-  //       ngramId: '@id'
-  //     },
-  // 	{
-  //       post: {
-  //         method: 'POST',
-  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
-  //       },
-  //       delete: {
-  //         method: 'DELETE',
-  //         params: {'listId': '@listId', 'ngramId': '@ngramId'}
-  //       }
-  //     }
-  //   );
-  // });
+  http.factory('MainApiAddNgramHttpService', function($resource) {
+    return $resource(
+       // adding explicit "http://" b/c this a cross origin request
+      'http://' + window.GARG_ROOT_URL
+                + "/api/ngrams?text=:ngramStr&corpus=:corpusId",
+      {
+        ngramStr: '@ngramStr',
+        corpusId: '@corpusId'
+      },
+      {
+        put: {
+          method: 'PUT',
+          params: {listId: '@listId', ngramIdList: '@ngramIdList'}
+        }
+      }
+    );
+  });
+
 
   /*
   * MainApiChangeNgramHttpService: Add/remove ngrams from lists

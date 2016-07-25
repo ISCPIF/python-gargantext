@@ -614,8 +614,7 @@ class ListFamily(APIView):
             mainlist_query = query_list(mainlist_id, details=True,
                                           scoring_metric_id= scores_id)
             # infos for grouped ngrams, absent from mainlist
-            hidden_ngrams_query = query_grouped_ngrams(groups_id, details=True,
-                                          scoring_metric_id= scores_id)
+            hidden_ngrams_query = query_grouped_ngrams(groups_id, details=True)
 
             # infos for stoplist terms, absent from mainlist
             stop_ngrams_query = query_list(other_list_ids['stoplist'], details=True,

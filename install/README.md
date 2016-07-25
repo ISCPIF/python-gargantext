@@ -1,37 +1,60 @@
-# Install
+#Install Instructions for Gargamelle:
 
-Gargamelle is a developpement environemment to install configure and run Gargantext plateform.
+Gargamelle is the gargantext plateforme toolbox it is a full plateform system
+with minimal modules
 
-## Prerequisites
+First you need to get the source code to install it
+The folder will be /srv/gargantext:
+* docs containes all informations on gargantext
+    /srv/gargantext/docs/
+* install contains all the installation files
+    /srv/gargantext/install/
 
-* MaC or Debian based OS
-* Git 
-* Docker engine
+Help needed ?
+See [http://gargantext.org/about](http://gargantext.org/about) and [tools](./contribution_guide.md) for the community
 
-## Installation Procedure
+## Get the source code
 
-* Clone the repository
+by cloning gargantext into /srv/gargantext
 
-If you want to contribute see our [git workflow procedure](../tools/git.md)
-clone the repo and switch to your own branch named with username-branchname such as username-unstable for example
-
-Inside the repository (install)
-you will find the setup config and run procedure files
-cd gargantext/install/
-
+``` bash
+git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+        && cd /srv/gargantext \
+        && git fetch origin stable \
+        && git checkout stable \
 ```
 
-./01-setup
-./02-config #here you will have to choose a username & a password for gargantext
-./03-run
-```
 
-Open your browser Chrome perferably at localhost:8000
-click into enter and login!
+## Install
+ ``` bash
+ # go into the directory
+ user@computer: cd /srv/gargantext/
+ #git inside installation folder
+ user@computer: cd /install
+ #execute the installation
+ user@computer: ./install
+ ```
+During installation an admin account for gargantext will be created by asking you a username and a password
+Remember it to accès to the Gargantext plateform
 
-Enjoy ;)!
+## Run
+Once you proceed to installation Gargantext plateforme will be available at localhost:8000
+by running the run executable file
+ ``` bash
+ # go into the directory
+ user@computer: cd /srv/gargantext/
+ #git inside installation folder
+ user@computer: cd /install
+ #execute the installation
+ user@computer: ./run
+ #type ctrl+d to exit or exit; command
+ ```
 
+Then open up a chromium browser and go to localhost:8000
+Click on "Enter Gargantext"
+Login in with you created username and pasword
 
+Enjoy! ;)
 
 
 

@@ -514,7 +514,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
                 for(var i in arraydata) {
                     var pub = arraydata[i]
-                    var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
+                    var gquery = "https://search.iscpif.fr/?categories=general&q="+pub["title"].replace(" "+"+")
                     var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
 
                     var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
@@ -600,7 +600,7 @@ function getTopPapers(type){
                 for(var i in data) {
                     var pub = data[i]
                     if(pub["title"]) {
-                        var gquery = "https://searx.laquadrature.net/?categories=general&q="+pub["title"].replace(" "+"+")
+                        var gquery = "https://search.iscpif.fr/?categories=general&q="+pub["title"].replace(" "+"+")
 
                         // ex url_elems = ["http:", "", "localhost:8000", "projects", "1", "corpora", "2690", "explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5"]
                         var url_elems = window.location.href.split("/")

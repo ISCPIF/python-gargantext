@@ -114,6 +114,7 @@
                                                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"
                                                         title='Recalculate ngram scores and similarities'></span>
                                                     </button>
+                                                {% endif %}
 
                                                     <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
                                                     <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
@@ -131,7 +132,6 @@
                                                         <span class="glyphicon glyphicon-trash" aria-hidden="true"
                                                         title='Delete this corpus'></span>
                                                     </button>
-                                                {% endif %}
                                             {% endifequal %}
                                         {% endfor %}
                                     </div>

@@ -357,17 +357,19 @@
       </div>
     </div>
 
-    <div id="errormodal" class="modal fade">
+    <div id="msgmodal" class="modal fade">
       <div class="modal-dialog">
         <div class="modal-content">
 
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h4 class="modal-title">Graph generation error</h4>
+            <h4 id="msgtitle" class="modal-title">
+                Graph generation message
+            </h4>
           </div>
 
           <div class="modal-body form-horizontal">
-            <div id="errormsg"></div>
+            <div id="msgcontent"></div>
           </div>
 
           <div class="modal-footer">

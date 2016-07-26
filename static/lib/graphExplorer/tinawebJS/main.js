@@ -89,16 +89,24 @@ $.ajax({
 });
 
 function showDialog(url, hasError, status, msg) {
-    console.log('FUN t.main:showErrorDialog')
+    console.log('FUN t.main:showDialog' + 'hasError:'+hasError)
     // hide loader gif etc
     $("#semLoader").hide();
     $("#closeloader").click();
 
+    if (hasError) {
+        $('#msgtitle').html('Graph generation error')
+        $('#msgtitle').css('color', 'red')
+    }
+    else {
+        $('#msgtitle').html('Graph generation info')
+    }
+
     // copy message content
-    $('#errormsg').html(msg.replace(/\n/g, '<br/>'))
+    $('#msgcontent').html(msg.replace(/\n/g, '<br/>'))
 
     // show the dialog box
-    $('#errormodal').modal('show');
+    $('#msgmodal').modal('show');
 }
 
 function MainFunction( RES ) {

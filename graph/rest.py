@@ -67,6 +67,7 @@ class Graph(APIView):
 
         # Get all the parameters in the URL
         cooc_id      = request.GET.get     ('cooc_id'   , None         )
+        saveOnly     = request.GET.get     ('saveOnly'  , None         )
 
         field1       = str(request.GET.get ('field1'    , 'ngrams'     ))
         field2       = str(request.GET.get ('field2'    , 'ngrams'     ))
@@ -131,6 +132,7 @@ class Graph(APIView):
                                    , mapList_id = mapList_id , groupList_id = groupList_id
                                    , start=start             , end=end
                                    , threshold =threshold    , distance=distance
+                                   , saveOnly=saveOnly
                                    )
                 else:
                     data = get_graph( corpus = corpus, cooc_id = cooc_id
@@ -139,6 +141,7 @@ class Graph(APIView):
                                    , threshold  = threshold
                                    , distance   = distance
                                    , bridgeness = bridgeness
+                                   , saveOnly=saveOnly
                                    )
 
 
@@ -158,7 +161,17 @@ class Graph(APIView):
                 
                 else:
                     # All other cases (more probable are higher in the if list)
-                    if data["state"] == "corpusMin":
+
+                    if data["state"] == "saveOnly":
+                        # async data case
+                        return JsonHttpResponse({
+                            'msg': '''Your graph is saved:
+
+                                      http://%sgargantext.org/projects/%d/corpora/%d/myGraphs
+                                      ''' % ("dev.", corpus.parent_id, corpus.id),
+                            }, status=400)
+
+                    elif data["state"] == "corpusMin":
                         # async data case
                         return JsonHttpResponse({
                             'msg': '''Problem: your corpus is too small (only %d documents).
@@ -208,6 +221,9 @@ class Graph(APIView):
                                       http://%sgargantext.org/projects/%d/corpora/%d/myGraphs
                                       ''' % (data["length"], "dev.", corpus.parent_id, corpus.id),
                             }, status=400)
+                    
+
+
                     else :
                        return JsonHttpResponse({
                             'msg': '''Programming error.''',

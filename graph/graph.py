@@ -23,6 +23,7 @@ def get_graph( request=None         , corpus=None
             , distance='conditional'
             , isMonopartite=True                # By default, we compute terms/terms graph
             , bridgeness=5
+            , saveOnly=None
             #, size=1000
         ):
     '''
@@ -113,6 +114,18 @@ def get_graph( request=None         , corpus=None
         # Finally test if the size of the corpora is big enough
         # --------------------------------
         corpus_size = corpus_size_query.count()
+
+        if saveOnly is not None and saveOnly == "True":
+            scheduled(countCooccurrences)( corpus_id=corpus.id
+                                       #, field1="ngrams", field2="ngrams"
+                                        , start=start           , end =end
+                                        , mapList_id=mapList_id , groupList_id=groupList_id
+                                        , isMonopartite=True    , threshold = threshold
+                                        , save_on_db = True
+                                       #, limit=size
+                                        )
+            return {"state" : "saveOnly"}
+
         if corpus_size > graph_constraints['corpusMax']:
             # Then compute cooc asynchronously with celery
             scheduled(countCooccurrences)( corpus_id=corpus.id

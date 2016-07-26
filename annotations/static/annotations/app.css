@@ -5,7 +5,6 @@
 * To display another list name, add a new class under this
 */
 
-
 .MAPLIST {
   color: black;
   /* green */
@@ -16,8 +15,9 @@
 
 .MAINLIST {
   color: black;
-  /* background-color: rgba(60, 118, 61, 0.5); */
+  /* orange */
   background-color: orange;
+  /* background-color: rgba(60, 118, 61, 0.5); */
   cursor: pointer;
 }
 
@@ -36,6 +36,47 @@
   cursor: pointer;
 }
 
+.inlay {
+    border-radius: .8em;
+    padding: 0 .5em;
+    margin: 0 .2em;
+}
+
+.words-panel > .tab-content {
+    font-size: 80%;
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    padding: 1em ;
+    margin-right: 1px;
+    min-height: 22em ;  /* needs to be bigger than .words-list */
+}
+
+#addfreengram {
+    padding: 3em .5em .2em .5em ;
+}
+
+.nav-pills.activelists >li>a {
+    padding:10px 1px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #aaa;
+}
+
+.nav-pills.activelists > li.active > a,
+.nav-pills.activelists > li.active > a:focus,
+.nav-pills.activelists > li.active > a:hover {
+    background-color: #337ab7;
+    border-top: 1px solid #aaa;
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+    border-bottom: none ;
+}
 
 .delete-keyword, .occurrences {
     vertical-align: super;
@@ -83,6 +124,7 @@
 
 .words-list {
   margin-bottom: 5px;
+  min-height: 17em ;
 }
 
 .keyword-text {

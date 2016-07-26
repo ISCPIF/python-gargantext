@@ -216,7 +216,7 @@
             {% endif %}
         {% endblock %}
 
-        
+
         {% block content %}
         {% endblock %}
 
@@ -278,10 +278,13 @@
         <script type="text/javascript">
 
           // constrains the graph request with startdate & enddate if present
+          // TODO move in another template (only for pages that have dynacharts with a start/end)
+          //      and then in other pages replace all links like onclick='gotoexplorer(this) by normal links
           function gotoexplorer(elem) {
 
             var url_ = $(elem).data("url")
-            if (TheBuffer==false) {
+            // undef or false
+            if (typeof TheBuffer == "undefined" || !TheBuffer) {
               return window.open(url_,'_blank');
             }
 

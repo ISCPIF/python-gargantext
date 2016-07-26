@@ -13,12 +13,12 @@
 .loader{
     text-align:center;
     transform: translate(0, 50%) !important;
-    -ms-transform: translate(0, 50%) !important;  /*IE 9*/ 
+    -ms-transform: translate(0, 50%) !important;  /*IE 9*/
     -webkit-transform: translate(0, 50%) !important;  /*Safari and Chrome */
 }
 
 
-.navbar { 
+.navbar {
 	margin-bottom:1px;
 }
 
@@ -30,10 +30,10 @@
 
 #defaultop li.basicitem{
     /*font-family: "Helvetica Neue", Helvetica, Arial, sans-serif ;*/
-    padding-left: .4em;
-    padding-right: .4em;
+    padding-left: .2em;
+    padding-right: .2em;
     padding-bottom: 0;
-    font-size: 90% ;
+    font-size: 75% ;
 }
 
 #defaultop > div {
@@ -58,7 +58,7 @@
 
 /*searchnav should get same padding as our .navbar-nav > li > a or bootstrap's*/
 #defaultop div#searchnav {
-    padding-top: 13px; 
+    padding-top: 13px;
     padding-bottom: 9px;
 }
 
@@ -174,10 +174,10 @@
 /*.selection-item{
     display:inline-block;
     border:solid 1px;
-    -moz-border-radius: 6px; 
-    -webkit-border-radius: 6px; 
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
     -khtml-border-radius: 6px;'+
-    border-color:#BDBDBD; 
+    border-color:#BDBDBD;
     padding:0px 2px 0px 2px;
     margin:1px 0px 1px 0px;
     cursor: pointer;
@@ -204,8 +204,8 @@
     display:inline-block;
     border:solid 1px;
     /*box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.3); */
-    border-radius: 6px; 
-    border-color:#BDBDBD; 
+    border-radius: 6px;
+    border-color:#BDBDBD;
     padding:0px 2px 0px 2px;
     margin:1px 0px 1px 0px;
     cursor: pointer;
@@ -251,7 +251,7 @@
 }
 
 .gradient {
-    background-color: #f0f0f8; 
+    background-color: #f0f0f8;
     background-image: -webkit-radial-gradient(#ffffff, #d8d8e0); background-image: -moz-radial-gradient(#ffffff, #d8d8e0);
     /*background-color: #434343;*/
     /*background-image: linear-gradient(#434343, #282828);*/
@@ -338,7 +338,11 @@
 }
 
 #aUnfold {
-    display: block; width: 12px; height: 12px; background-image: url("../img2/fleches-horiz.png");  margin: 0 auto;
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-image: url("../img2/fleches-horiz.png");
+    /*margin: 0 auto;*/
 }
 /*
 #saveAs {
@@ -390,7 +394,7 @@
 }
 #tips ul{
     /*list-style:none;*/
-    padding-left:10%;    
+    padding-left:10%;
 }
 
 

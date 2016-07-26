@@ -676,8 +676,22 @@ function saveGEXF(nodes,edges,atts){
         cont++;
     }
     gexf += "\n</edges>\n</graph>\n</gexf>";
-    uriContent = "data:application/octet-stream," + encodeURIComponent(gexf);
-    newWindow=window.open(uriContent, 'neuesDokument');
+
+
+    var uriContent = "data:application/octet-stream," + encodeURIComponent(gexf);
+
+    // create a temporary link to provide name.ext for download
+    var a = document.createElement("a")
+    if (typeof a.download === 'string') {
+        a.href = uriContent
+        a.download = 'graphe_gargantext.gexf'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+    }
+    else {
+        window.open(uriContent, 'neuesDokument');
+    }
 }
 
 function saveGraphIMG(){

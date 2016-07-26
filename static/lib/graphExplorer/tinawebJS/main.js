@@ -70,12 +70,13 @@ $("#network").html(files_selector)
 
 var file = (Array.isArray(mainfile))?mainfile[0]:mainfile;
 
-
 $.ajax({
         url: file,
         success : function(data, textStatus, jqXHR) {
             var format = 'gexf'  // default value
             var header = jqXHR.getResponseHeader("Content-Type")
+            if ("msg" in data)
+                showDialog(file, false, textStatus, data["msg"])
             if (header.indexOf("application/json") != -1)
                 format = 'compactjson'
             Result = { "format":format , "data":data };
@@ -83,11 +84,11 @@ $.ajax({
         },
         error: function(exception) {
             // console.warn(JSON.stringify(exception, null, 2))
-            showErrorDialog(file, exception.status, exception.responseJSON.msg)
+            showDialog(file, true, exception.status, exception.responseJSON.msg)
         }
 });
 
-function showErrorDialog(url, status, msg) {
+function showDialog(url, hasError, status, msg) {
     console.log('FUN t.main:showErrorDialog')
     // hide loader gif etc
     $("#semLoader").hide();
@@ -174,6 +175,10 @@ function MainFunction( RES ) {
         Filters[i] = {}
         Filters[i]["#slidercat"+i+"edgesweight"] = true;
     }
+
+    // apply width from settings on left column
+    document.getElementById('sidecolumn').style.width = sidecolumnSize ;
+
 
     // [ Initiating Sigma-Canvas ]
     var twjs_ = new TinaWebJS('#sigma-example');
@@ -357,8 +362,6 @@ function MainFunction( RES ) {
         partialGraph.stopForceAtlas2();
     }, fa2seconds*1000);
 
-    // apply width from settings on left column
-    document.getElementById('sidecolumn').style.width = sidecolumnSize ;
 
 }
 

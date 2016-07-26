@@ -5,6 +5,12 @@
 * To display another list name, add a new class under this
 */
 
+.MapList {
+  color: black;
+  /* green */
+  background-color: rgba(60, 118, 61, .7);
+  cursor: pointer;
+}
 
 .MAPLIST {
   color: black;

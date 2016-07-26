@@ -48,7 +48,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
         ngrams_data = set()
         # extract ngrams
         resource_type_index = corpus.resources()[0]['type']
-
+        documents_count = 0
         resource_type = RESOURCETYPES[resource_type_index]
         default_language_iso2 = resource_type['default_language']
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):

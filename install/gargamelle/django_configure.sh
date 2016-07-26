@@ -24,7 +24,5 @@ echo "::::: DJANGO :::::"
     ./srv/gargantext/dbmigrate.py && \
     ./srv/gargantext/manage.py createsuperuser'
 
-
-
 /usr/sbin/service postgresql stop
 

@@ -48,6 +48,13 @@ def compress_graph(graphdata):
 
     return graphdata
 
+def format_html(link):
+    """
+    Build an html link adapted to our json message format
+    """
+    return "<a class='msglink' href='%s'>%s</a>" % (link, link)
+
+
 # TODO check authentication
 
 class Graph(APIView):
@@ -146,7 +153,7 @@ class Graph(APIView):
 
 
                 # data :: Either (Dic Nodes Links) (Dic State Length)
-                
+
                 # data_test :: Either String Bool
                 data_test = data.get("state", True)
 
@@ -158,70 +165,71 @@ class Graph(APIView):
                                  status=200
                                )
                     # --------------------------------------------
-                
+
                 else:
                     # All other cases (more probable are higher in the if list)
 
                     if data["state"] == "saveOnly":
                         # async data case
+                        link = "http://%s/projects/%d/corpora/%d/myGraphs" % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
                             'msg': '''Your graph is saved:
 
-                                      http://%sgargantext.org/projects/%d/corpora/%d/myGraphs
-                                      ''' % ("dev.", corpus.parent_id, corpus.id),
-                            }, status=400)
+                                      %s
+                                      ''' % format_html(link),
+                            }, status=200)
 
                     elif data["state"] == "corpusMin":
                         # async data case
+                        link = "http://%s/projects/%d/" % (request.get_host(), corpus.parent_id)
                         return JsonHttpResponse({
                             'msg': '''Problem: your corpus is too small (only %d documents).
-                                      
-                                      Solution: Add more documents (more than %d documents) 
+
+                                      Solution: Add more documents (more than %d documents)
                                       in order to get a graph.
 
                                       You can manage your corpus here:
-                                      http://%sgargantext.org/projects/%d/
+                                      %s
                                       ''' % ( data["length"]
                                             , graph_constraints['corpusMin']
-                                            , "dev."
-                                            , corpus.parent_id
+                                            , format_html(link)
                                             ),
                             }, status=400)
-                
+
                     elif data["state"] == "mapListError":
                         # async data case
+                        link = 'http://%s/projects/%d/corpora/%d/terms' % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
                             'msg': '''Problem: your map list is too small (currently %d terms).
-                                      
-                                      Solution: Add some terms (more than %d terms) 
+
+                                      Solution: Add some terms (more than %d terms)
                                       in order to get a graph.
 
                                       You can manage your map terms here:
-                                      http://%sgargantext.org/projects/%d/corpora/%d/terms
+                                      %s
                                       ''' % ( data["length"]
                                             , graph_constraints['mapList']
-                                            , "dev."
-                                            , corpus.parent_id
-                                            , corpus.id
+                                            , format_html(link)
                                             ),
                             }, status=400)
 
 
                     elif data["state"] == "corpusMax":
                         # async data case
+                        link = 'http://%s/projects/%d/corpora/%d/myGraphs' % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
                             'msg': '''Warning: Async graph generation since your corpus is
                                       big (about %d documents).
 
                                       Wait a while and discover your graph very soon.
 
-                                      Click on the link below and see your current graph 
+                                      Click on the link below and see your current graph
                                       processing on top of the list:
-                                      
-                                      http://%sgargantext.org/projects/%d/corpora/%d/myGraphs
-                                      ''' % (data["length"], "dev.", corpus.parent_id, corpus.id),
-                            }, status=400)
-                    
+
+                                      %s
+                                      ''' % (data["length"], format_html(link)),
+                            }, status=200)
+
 
 
                     else :

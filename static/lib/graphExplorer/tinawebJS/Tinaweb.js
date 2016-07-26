@@ -24,17 +24,25 @@
 
 // on window resize
 // @param canvasdiv: id of the div (without '#')
-function sigmaLimits( canvasdiv ) {
-    console.log('FUN t.TinawebJS:sigmaLimits') ;
+function sigmaLimits( canvasdiv, SidecolumnIsInvisible ) {
+    console.log('FUN t.TinawebJS:sigmaLimits (div=' + canvasdiv + ')') ;
     var canvas = document.getElementById(canvasdiv) ;
     var sidecolumn = document.getElementById('sidecolumn') ;
-    var ancho_total = window.innerWidth - sidecolumn.offsetWidth ;
+
     var alto_total =  window.innerHeight - sidecolumn.offsetTop ;
+    var ancho_total = -1
+    if (SidecolumnIsInvisible) {
+        ancho_total = window.innerWidth
+    }
+    else {
+        // normal case
+        ancho_total = window.innerWidth - sidecolumn.offsetWidth ;
+    }
 
     // setting new size
     canvas.style.width = ancho_total - 5 ;
     canvas.style.height = alto_total - 5 ;
-    
+
     // fyi result
     var pw=canvas.offsetWidth;
     var ph=canvas.offsetHeight;
@@ -549,29 +557,40 @@ TinaWebJS = function ( sigmacanvas ) {
 
         //  ===  un/hide leftpanel  === //
         $("#aUnfold").click(function(e) {
+            // TODO unify with/without jquery
             //SHOW sidecolumn
             sidebar = $("#sidecolumn");
-            fullwidth=$('#fixedtop').width();
+            fullwidth=window.innerWidth
             e.preventDefault();
             // $("#wrapper").toggleClass("active");
             if(parseFloat(sidebar.css("right"))<0){
+                sidebar.show()
                 $("#aUnfold").attr("class","rightarrow");
+                // apply width from settings on sidecolumn
+                document.getElementById('sidecolumn').style.width = sidecolumnSize ;
                 sidebar.animate({
-                    "right" : sidebar.width()+"px"
-                }, { duration: 400, queue: false });
-
-                $("#ctlzoom").animate({
-                        "right": (sidebar.width()+10)+"px"
+                    "right" : "0px"
                 }, { duration: 400, queue: false });
 
                 // $('#sigma-example').width(fullwidth-sidebar.width());
-                $('#sigma-example').animate({
-                        "width": fullwidth-sidebar.width()+"px"
-                }, { duration: 400, queue: false });
+                // $('#sigma-example').animate({
+                //         "width": fullwidth-sidecolumnSize+"px"
+                // }, { duration: 400, queue: false });
+
                 setTimeout(function() {
+                    // reposition the button inside the column
+                    var btn = document.getElementById('unfold')
+                    btn.style.position = 'initial' ;
+                    btn.style.top = undefined ;
+                    btn.style.right = 0 ;
+                    $('#unfold').insertBefore('#tips');
+
+                      sigmaLimits( "sigma-example")
                       partialGraph.resize();
                       partialGraph.refresh();
                 }, 400);
+
+                console.log('ok')
             }
             else {
                 //HIDE sidecolumn
@@ -580,18 +599,32 @@ TinaWebJS = function ( sigmacanvas ) {
                     "right" : "-" + sidebar.width() + "px"
                 }, { duration: 400, queue: false });
 
-                $("#ctlzoom").animate({
-                        "right": "0px"
-                }, { duration: 400, queue: false });
+                // $('#sigma-example').width(fullwidth);
+                // $('#sigma-example').animate({
+                //         "width": fullwidth+"px"
+                // },{ duration: 400, queue: false });
 
-                    // $('#sigma-example').width(fullwidth);
-                $('#sigma-example').animate({
-                        "width": fullwidth+"px"
-                },{ duration: 400, queue: false });
                 setTimeout(function() {
-                      partialGraph.resize();
-                      partialGraph.refresh();
+                    // position #aUnfold out of sidecolumn so it remains visible
+                    // var graph = document.getElementById("sigma-example")
+                    var gtop = document.getElementById("sidecolumn").offsetTop + 10
+                    $('#unfold').insertAfter('#sigma-example');
+
+                    var btn = document.getElementById('unfold') ;
+                    btn.style.position = 'fixed' ;
+                    btn.style.right = '20px' ;
+                    btn.style.top = gtop ;
+                    console.log('ok')
+
+                    //   partialGraph.resize();
+                    sigmaLimits( "sigma-example", true)
+                    partialGraph.resize();
+                    partialGraph.refresh();
+                    sidebar.hide()
                 }, 400);
+
+
+
             }
         });
 

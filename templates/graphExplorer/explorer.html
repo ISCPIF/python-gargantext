@@ -32,12 +32,12 @@
 
       #category0 ul li { margin: 0 12px 12px 0; }
       #category1 ul li { margin: 0 12px 12px 0; }
-      
+
       /* will be adjusted later to match rendered height of dafixedtop from menu template */
       #topspace {
           height: 90px;
       }
-      
+
     </style>
     <!--
     <link rel="stylesheet" href="{% static "lib/graphExplorer/libs/bootswatch/css/bootswatch.css" %}">
@@ -83,7 +83,7 @@
                   Selector size<br>
                   <div id="unranged-value" class="settingslider"></div>
                 </a></li>
-                
+
 
                  <li class='basicitem'><a>
                    Colors<br>
@@ -133,20 +133,20 @@
                      <div class="col-sm-11 col-md-10 col-lg-10" >
                        <div id="search_input_group" class="input-group input-group-sm">
                           <span class="input-group-btn">
-                            <button id="searchbutton" 
+                            <button id="searchbutton"
                                     title="Search the topic in the map"
-                                    class="btn btn-info" 
+                                    class="btn btn-info"
                                     type="button">
                               <span class="glyphicon glyphicon-search">
                               </span>
                             </button>
                           </span>
-                          
+
                           <!-- ########## THE SEARCH BAR ########## -->
 
-                          <input id="searchinput" 
+                          <input id="searchinput"
                                   type="text"
-                                  class="form-control" 
+                                  class="form-control"
                                   placeholder="Search" />
                           <!-- #################################### -->
                        </div>
@@ -159,7 +159,7 @@
                     <div class="col-sm-1 col-md-2 col-lg-2">
                             <input id="checkboxdiv"  onclick="alertCheckBox(this);"
                                     title="Add next search results to current selection"
-                                    class="btn btn-info" 
+                                    class="btn btn-info"
                                     type="checkbox"></input>
                             <p style="font-size:75%; line-height:90%">Add</p>
                     </div>
@@ -208,11 +208,7 @@
                 <!-- <div class="content-header">
                         <button id="menu-toggle">X</button>
                 </div> -->
-                   <li>
-                      <div id="unfold">
-                          <a href="#" id="aUnfold" class="rightarrow"></a>
-                      </div>
-                  </li> 
+
                   <!--
                    <li>
                       <a href="#" id="geomapicon" onclick="$('#geomapmodal').modal('show'); callGeomap();">
@@ -220,7 +216,6 @@
                       </a>
                   </li>
                   -->
-
 
                    <li>
                       <a href="#" id="snapicon" onclick="saveGraphIMG();" >
@@ -259,6 +254,10 @@
 
       <!-- Sidebar -->
       <div id="sidecolumn">
+         <div id="unfold">
+             <!-- button to be replaced by handle when sidecolumn is hidden -->
+             <a href="#" id="aUnfold" class="rightarrow"></a>
+         </div>
         <div id="tips"></div>
         <div id="names"></div>
         <div id="ngrams_actions"></div>
@@ -482,8 +481,8 @@
         // set exact height of topspace
         var dafixedtopHeight = $('#dafixedtop').height() ;
         $('#topspace').height(dafixedtopHeight) ;
-    
-    
+
+
       function newPopup(url) {
         popupWindow = window.open(
           url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')

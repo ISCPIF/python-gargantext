@@ -1,11 +1,8 @@
 #!/bin/bash
 #configure the base image gargamelle
-#echo '::::: BUILD :::::'
-
+#echo ':::: BUILD ::::'
 sudo docker build -t gargamelle:latest ./gargamelle
-
-
-echo '::::: CONFIG :::::'
+echo ':::: CONFIGURE ::::'
 
 
 sudo docker run \
@@ -16,4 +13,3 @@ sudo docker run \
         /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
 sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
-

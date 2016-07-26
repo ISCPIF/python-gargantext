@@ -343,7 +343,7 @@
           </div>
 
           <div class="modal-body form-horizontal">
-            Which atributes do you want to keep?:
+            Which attributes do you want to keep?:
             <div class="form-group">
               <label class="col-lg-2 control-label"> </label>
               <div class="col-lg-10">
@@ -365,8 +365,10 @@
 
           <div class="modal-footer">
             <button id="closesavemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="saveGraph();">Save File</button>
+            <button type="button" class="btn btn-primary" onclick="saveGraph();">Save to local file</button>
+            <button type="button" class="btn btn-primary" onclick="saveInServer();">Save to cloud</button>
           </div>
+          <div class="modal-footer" id="savemsg"></div>
 
         </div>
       </div>
@@ -491,6 +493,41 @@
       }
       $('#tab-container').easytabs({updateHash:false});
       // $('#tab-container-top').easytabs({updateHash:false});
+
+      function saveInServer() {
+          // send an ajax GET to server API with same params as in URL
+          var currentPath = window.location.pathname + window.location.search.replace(/#$/,'')
+
+          console.warn("currentPath", currentPath)
+
+          // current path shows it's already in db
+          if (currentPath.match(/\explorer\?cooc_id=[0-9]+$/)) {
+              var supposedLink = 'http://'+window.location.host+'/api'+currentPath
+              $('#savemsg').html(
+                  'Your graph has its own "cooc_id" so it must be already saved in the cloud at:'
+                  +'<a href='+supposedLink+'>'+supposedLink+'</a>'
+              )
+          }
+          // current path has normal params (field1 field2, etc.)
+          else {
+              $('#savemsg').html(
+                  'Saving in server...'
+              )
+              var apiPath = 'http://'+window.location.host+'/api'+currentPath+'&saveOnly=True'
+              $.ajax({
+                   url: apiPath ,
+                   type: 'GET',
+                   success: function(response) {
+                       // the return message
+                       $('#savemsg').html(response.msg.replace(/\n/g, '<br/>'))
+                       },
+                    error: function(result) {
+                        $('#savemsg').html('Saving failed !')
+                        console.warn('saveInServer problem:', result);
+                       },
+                  });
+          }
+      }
     </script>
 
 

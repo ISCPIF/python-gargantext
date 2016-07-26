@@ -88,6 +88,8 @@
       function toggleMenu(context, annotation) {
         $timeout(function() {
           $scope.$apply(function() {
+            $scope.menuItems = []; // init empty menu
+
             var mainlist_id = $rootScope.listIds.MAINLIST;
             var stoplist_id = $rootScope.listIds.STOPLIST;
             var maplist_id = $rootScope.listIds.MAPLIST;
@@ -128,9 +130,11 @@
               // NB: remember that shown mainlist items are actually main 'without map'
               //     otherwise the menu for mainlist items can hide the menu for map items
 
-              if ($rootScope.lists[annotation.list_id] == "MAPLIST") {
+              var sourceList = $rootScope.lists[annotation.list_id]
 
-                $scope.menuItems.push({
+              if ( sourceList == "MAPLIST") {
+                $scope.menuItems = [
+                  {
                     // "tgtListName" is just used to render the GUI explanation
                     'tgtListName': 'STOPLIST',
                     // crudCalls is an array of rest/DB actions
@@ -143,18 +147,20 @@
                     {'service': MainApiChangeNgramHttpService, 'action': 'put',
                      'params' : {'listId':stoplist_id, 'ngramIdList': targetId} }
                     ]
-                  });
-                $scope.menuItems.push({
+                  },
+                  {
                     'tgtListName': 'MAINLIST',
                     'crudCalls':[
                     {'service': MainApiChangeNgramHttpService, 'action': 'delete',
                      'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
                     ]
-                  });
+                  }
+                ];
               }
 
-              else if ($rootScope.lists[annotation.list_id] == "MAINLIST") {
-                $scope.menuItems.push({
+              else if (sourceList == "MAINLIST") {
+                $scope.menuItems = [
+                  {
                     'tgtListName': "STOPLIST",
                     'crudCalls':[
                     {'service': MainApiChangeNgramHttpService, 'action': 'delete',
@@ -162,18 +168,20 @@
                     {'service': MainApiChangeNgramHttpService, 'action': 'put',
                      'params' : {'listId':stoplist_id, 'ngramIdList': targetId} }
                     ]
-                  });
-                $scope.menuItems.push({
+                  },
+                  {
                     'tgtListName': "MAPLIST",
                     'crudCalls':[
                     {'service': MainApiChangeNgramHttpService, 'action': 'put',
                      'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
                     ]
-                });
+                  }
+                ];
               }
 
-              else if ($rootScope.lists[annotation.list_id] == "STOPLIST") {
-                $scope.menuItems.push({
+              else if (sourceList == "STOPLIST") {
+                $scope.menuItems = [
+                  {
                     'tgtListName': "MAINLIST",
                     'crudCalls':[
                     {'service': MainApiChangeNgramHttpService, 'action': 'delete',
@@ -181,8 +189,8 @@
                     {'service': MainApiChangeNgramHttpService, 'action': 'put',
                      'params' : {'listId':mainlist_id, 'ngramIdList': targetId} }
                     ]
-                });
-                $scope.menuItems.push({
+                  },
+                  {
                     'tgtListName': "MAPLIST",
                     'crudCalls':[
                     {'service': MainApiChangeNgramHttpService, 'action': 'delete',
@@ -192,7 +200,8 @@
                     {'service': MainApiChangeNgramHttpService, 'action': 'put',
                      'params' : {'listId':maplist_id, 'ngramIdList': targetId} }
                     ]
-                });
+                  }
+                ];
               }
 
               // show the menu
@@ -305,28 +314,13 @@
       * (1 intention => list of actions => MainApiChangeNgramHttpService CRUDs)
       *                  post/delete
       */
-      $scope.onMenuClick = function($event, crudCalls) {
+      $scope.onMenuClick = function($event, todoCrudCalls) {
         //   console.warn('in onMenuClick')
         //   console.warn('item.crudCalls', crudCalls)
 
-        var lastCallback = function() {
-            // Refresh the annotationss
-            NgramListHttpService.get(
-              {'corpusId': $rootScope.corpusId,
-                'docId': $rootScope.docId},
-              function(data) {
-                $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-                $rootScope.refreshDisplay();
-              },
-              function(data) {
-                console.error("unable to refresh the list of ngrams");
-              }
-            );
-        }
-
         // run the loop by calling the initial recursion step
-        $rootScope.makeChainedCalls(0, crudCalls, lastCallback)
-        // syntax: (step_to_run, list_of_steps, lastCallback)
+        $rootScope.makeChainedCalls(0,   todoCrudCalls,   $rootScope.refresh)
+        // syntax: (step_to_run_first,   list_of_steps,     lastCallback)
 
         // hide the highlighted text and the menu element
         $(".text-panel").removeClass("selection");

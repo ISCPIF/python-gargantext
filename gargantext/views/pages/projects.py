@@ -4,10 +4,6 @@ from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
-
-from gargantext.util.scheduling import scheduled
-from gargantext.util.toolchain import parse_extract_indexhyperdata
-
 from datetime import datetime
 from collections import defaultdict
 from django.utils.translation import ugettext_lazy

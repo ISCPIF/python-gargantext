@@ -123,31 +123,21 @@ def get_resource(sourcetype):
         if int(n["type"]) == int(sourcetype):
             return n
     return None
-
-def resourcetype(name):
-    '''resource :: name => Int'''
-    return [n["type"] for n in RESOURCETYPES if n["name"] == name][0]
-
-def resourcename(corpus):
-    '''
-    resourcetype :: Corpus -> String
-    Usage : resourcename(corpus) == "ISTex"
-    '''
-    resource = corpus.resources()[0]
-    rtype = resource["type"]
-    return get_resource(rtype)["name"]
-
+def get_resource_by_name(sourcename):
+    '''resource :: name => resource dict'''
+    for n in RESOURCETYPES:
+        if str(n["name"]) == str(sourcename):
+            return n
+# taggers -----------------------------------------------
 def get_tagger(lang):
     '''
-    lang => default langage[0] => tagger
+    lang => default langage[0] => Tagger
 
     '''
-
     name = LANGUAGES[lang]["tagger"]
     module = "gargantext.util.taggers.%s" %(name)
     module = importlib.import_module(module, "")
     tagger = getattr(module, name)
-    print(tagger)
     return tagger()
 
 
@@ -229,18 +219,28 @@ RESOURCETYPES = [
         'default_languages': ['en'],
    },
 ]
-#shortcut for resources declaration
+#shortcut for resources declaration in template
 PARSERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["parser"] is not None]
 CRAWLERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["crawler"] is not None]
 
 def load_parser(resource):
-    filename = resource.parser.replace("Parser", '')
-    module = 'gargantext.util.parsers.%s' %(filename)
-    module = importlib.import_module(module)
-    return getattr(module, resource.parser)
+    '''given a resource load the corresponding Crawler
+    resource(dict) > Parser(object)
+    '''
+    if resource["parser"] is not None:
+        filename = resource["parser"].replace("Parser", '')
+        print(filename)
+        module = 'gargantext.util.parsers.%s' %(filename)
+        module = importlib.import_module(module)
+        return getattr(module, resource["parser"])
+    else:
+        return None
 
 def load_crawler(resource):
-    filename = name.replace("Crawler", "")
+    '''given a resource load the corresponding Parser()
+    resource(dict) > Parser(object)
+    '''
+    filename = resource["name"].replace("Crawler", "")
     module = 'gargantext.util.crawlers.%s' %(filename)
     module = importlib.import_module(module)
     return getattr(module, resource.crawler)
@@ -264,6 +264,11 @@ LANGUAGES = {
 }
 
 def load_tagger(lang):
+    '''
+    given a LANG load the corresponding tagger
+    lang(str) > Tagger(Object)
+    '''
+
     filename = LANGUAGES[lang]
     module = 'gargantext.util.taggers.%s' %(filename)
     module = importlib.import_module(module)

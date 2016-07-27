@@ -161,7 +161,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type': 3,
-        'name': 'Pubmed',
+        'name': 'Pubmed [XML]',
         'format': 'Pubmed',
         'parser': "PubmedParser",
         'file_formats':["zip", "xml"],

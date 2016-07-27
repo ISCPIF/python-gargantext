@@ -59,12 +59,16 @@ def overview(request):
 
 
 class NewCorpusForm(forms.Form):
+    #mapping choices based on ressource.type
+
     type = forms.ChoiceField(
-        choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
+        choices = [(resource["type"], resource["name"]) for resource in RESOURCETYPES],
         widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
     )
     name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
     file = forms.FileField()
+    def clean_resource(self):
+        file_ = self.cleaned_data.get('file')
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
         if len(file_) > 1024 ** 3 : # we don't accept more than 1GB

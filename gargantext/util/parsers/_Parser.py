@@ -20,14 +20,9 @@ class Parser:
             self._file = file
 
     def __del__(self):
-        self._file.close()
+        if hasattr(self, '_file'):
+            self._file.close()
 
-    def detect_format(self, afile, a_formats):
-        #import magic
-        print("Detecting format")
-        #print(magic.from_file(afile))
-
-        return
 
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
@@ -167,6 +162,8 @@ class Parser:
 
     def __iter__(self, file=None):
         """Parse the file, and its children files found in the file.
+        C24B comment: le stokage/extraction du fichier devrait être faite en amont
+        et cette methode est un peu obscure
         """
         if file is None:
             file = self._file

@@ -2,6 +2,8 @@ from ._Parser import Parser
 from datetime import datetime
 from bs4 import BeautifulSoup
 from lxml import etree
+#import asyncio
+#q = asyncio.Queue(maxsize=0)
 
 class CernParser(Parser):
     #mapping MARC21 ==> hyperdata
@@ -52,10 +54,15 @@ class CernParser(Parser):
         print("Date", hyperdata["publication_date"])
         return hyperdata
 
+    #@asyncio.coroutine
     def parse(self, file):
+        print("PARSING")
         hyperdata_list = []
         doc = file.read()
-        soup = BeautifulSoup(doc.decode("utf-8"), "lxml")
+        print(doc[:35])
+        soup = BeautifulSoup(doc, "lxml")
+
+        #print(soup.find("record"))
         for record in soup.find_all("record"):
             hyperdata = {v:[] for v in self.MARC21["100"].values()}
             hyperdata["uid"] = soup.find("controlfield").text

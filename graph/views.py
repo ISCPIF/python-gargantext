@@ -67,16 +67,16 @@ def myGraphs(request, project_id, corpus_id):
         template_name = 'pages/corpora/myGraphs.html',
         request = request,
         context = {
-            'debug'     : settings.DEBUG,
-            'request'   : request,
-            'user'      : request.user,
-            'date'      : datetime.now(),
-            'project'   : project,
+            'debug'        : settings.DEBUG,
+            'request'      : request,
+            'user'         : request.user,
+            'date'         : datetime.now(),
+            'project'      : project,
             'resourcename' : resourcename(corpus),
-            'corpus'    : corpus,
-            'view'      : 'myGraph',
-            'coocs'     : coocs,
-            'coocs_count' : coocs_count
+            'corpus'       : corpus,
+            'view'         : 'myGraph',
+            'coocs'        : coocs,
+            'coocs_count'  : coocs_count
         },
     )
 

@@ -43,8 +43,8 @@ def get_graph( request=None         , corpus=None
     2) filter and cluster By Distances (function clusterByDistances)
             main parameter: distance
 
-    3) filter By Bridgeness (filter By Bridgeness)
-            main parameter: bridgness
+    3) filter By Bridgeness (function filterByBridgeness)
+            main parameter: bridgeness
 
     4) format the graph     (formatGraph)
             main parameter: format_

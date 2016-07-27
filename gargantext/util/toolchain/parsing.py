@@ -2,7 +2,7 @@ from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
 from gargantext.util.parsers import *
-from collections import defaultdict
+from collections import defaultdict, Counter
 from re          import sub
 
 def parse(corpus):
@@ -55,6 +55,8 @@ def parse(corpus):
                 session.add(document)
                 if document.hyperdata.has_key("error"):
                     #document.status("error")
+                    document.status('Parsing', error= document.hyperdata["error"])
+                    #session.delete(document)
                     corpus.skipped_docs.append(document.id)
 
 
@@ -66,9 +68,7 @@ def parse(corpus):
                 documents_count += 1
             # update info about the resource
             resource['extracted'] = True
-        # add a corpus-level info about languages...
-        corpus.hyperdata['languages'] = observed_languages
-        # ...with a special key inside for skipped languages at ngrams_extraction
+        # add a corpus-level info about languages adding a __skipped__ info
         corpus.hyperdata['languages']['__skipped__'] = Counter(skipped_languages)
         # commit all changes
         corpus.status('Docs', progress=documents_count, complete=True)

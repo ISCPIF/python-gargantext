@@ -53,19 +53,21 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         #load available taggers for source default langage
         tagger_bots = {lang: load_tagger(lang) for lang in source['default_languages']}
         #skipped documents that have been skipped previously for parsing error or unsupported language
+        print(corpus.skipped_docs)
         docs = [doc for doc in corpus.children('DOCUMENT') if doc.id not in corpus.skipped_docs]
+        #sort docs by lang?
+        docs = sorted(docs, key= lambda k: k.language_iso2)
         #print(corpus.hyperdata["languages"])
         for documents_count, document in enumerate(docs):
-            lang_doc = document.hyperdata['language_iso2']
-            ngramextractor = tagger_bots[lang_doc]
+            lang_doc = document.language_iso2
+            print(lang_doc)
             for key in keys:
                 value = document.hyperdata.get(key, None)
                 if not isinstance(value, str):
                     continue
                     # get ngrams
-                for ngram in ngramsextractor.extract(value):
+                for ngram in tagger_bots[lang_doc](value):
                     tokens = tuple(normalize_forms(token[0]) for token in ngram)
-
                     if do_subngrams:
                         # ex tokens = ["very", "cool", "exemple"]
                         #    subterms = [['very', 'cool'],
@@ -93,11 +95,12 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                 corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
                 session.commit()
-        # integrate ngrams and nodes-ngrams
-        _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
-        corpus.status('Ngrams', progress=documents_count+1, complete=True)
-        corpus.save_hyperdata()
-        session.commit()
+            else:
+                # integrate ngrams and nodes-ngrams
+                _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
+            corpus.status('Ngrams', progress=documents_count+1, complete=True)
+            corpus.save_hyperdata()
+            session.commit()
     except Exception as error:
         corpus.status('Ngrams', error=error)
         corpus.save_hyperdata()

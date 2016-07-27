@@ -3,7 +3,7 @@ When started, it initiates the parser;
 when passed text, the text is piped to the parser.
 When ended, the parser is closed and the tagged word returned as a tuple.
 """
-from constants import RULE_JJNN, DEFAULT_MAX_NGRAM_LEN
+from gargantext.constants import RULE_JJNN, DEFAULT_MAX_NGRAM_LEN
 import re
 import nltk
 
@@ -50,6 +50,7 @@ class Tagger:
         This method is called by the constructor, and can be overriden by
         inherited classes.
         """
+        print("START")
         self.extract(self.text)
 
     def stop(self):

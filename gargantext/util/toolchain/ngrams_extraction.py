@@ -1,8 +1,6 @@
 from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
-#from gargantext.util.ngramsextractors import ngramsextractors
-
 from collections import defaultdict
 from re          import sub
 
@@ -51,23 +49,28 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         source = get_resource(resource["type"])
         documents_count = 0
         #load available taggers for source default langage
-        tagger_bots = {lang: load_tagger(lang) for lang in source['default_languages']}
         #skipped documents that have been skipped previously for parsing error or unsupported language
-        print(corpus.skipped_docs)
+        tagger_bots = {lang: load_tagger(lang) for lang in corpus.languages if lang != "__skipped__"}
         docs = [doc for doc in corpus.children('DOCUMENT') if doc.id not in corpus.skipped_docs]
+
         #sort docs by lang?
-        docs = sorted(docs, key= lambda k: k.language_iso2)
-        #print(corpus.hyperdata["languages"])
         for documents_count, document in enumerate(docs):
-            lang_doc = document.language_iso2
-            print(lang_doc)
+            try:
+                lang_doc = document.hyperdata["language_iso2"]
+            except AttributeError:
+                print("NO LANG DETECTED")
+                document.status("NGRAMS", error="No lang detected?")
+                corpus.skipped_docs.append(document.id)
+                continue
             for key in keys:
-                value = document.hyperdata.get(key, None)
+                value = document.get(key, None)
+                print("VAL", value)
                 if not isinstance(value, str):
                     continue
                     # get ngrams
                 for ngram in tagger_bots[lang_doc](value):
                     tokens = tuple(normalize_forms(token[0]) for token in ngram)
+                    print("tk", tokens)
                     if do_subngrams:
                         # ex tokens = ["very", "cool", "exemple"]
                         #    subterms = [['very', 'cool'],

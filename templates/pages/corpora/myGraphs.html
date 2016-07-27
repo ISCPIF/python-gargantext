@@ -25,16 +25,15 @@
                 
                 <div class="col-md-5 content">
                     <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}">
-                        {{cooc.id}} {{ cooc.name }} 
+                        {{cooc.id}} {{ cooc.name }} {{cooc.hyperdata}}
                           
-                        (size = 
-                          
+                        (
                             {% for key, value in coocs_count.items %} 
                                 {% if key == cooc.id %}
                                 {{value}}
                                 {% endif %}
                             {% endfor %}
-                          )
+                        nodes)
                     </a>
                 </div>
                 <div class="col-md-3 content">

@@ -49,6 +49,11 @@ def countCooccurrences( corpus_id=None         , test= False
     # Security test
     field1,field2 = str(field1), str(field2)
 
+    # Parameters to save in hyperdata of the Node Cooc
+    parameters = dict()
+    parameters['field1'] = field1
+    parameters['field2'] = field2
+
     # Get corpus as Python object
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
@@ -65,7 +70,7 @@ def countCooccurrences( corpus_id=None         , test= False
         if not coocNode_id:
             coocNode = corpus.add_child(
             typename  = "COOCCURRENCES",
-            name = "GRAPH EXPLORER COOC (in:%s)" % corpus.id
+            name = "GRAPH (in corpus %s)" % corpus.id
             )
 
             session.add(coocNode)
@@ -168,6 +173,8 @@ def countCooccurrences( corpus_id=None         , test= False
                                 .filter( Start.value_utc >= date_start_utc)
                       )
 
+        parameters['start'] = date_start_utc
+
 
     if end is not None:
         # TODO : more complexe date format here.
@@ -183,6 +190,7 @@ def countCooccurrences( corpus_id=None         , test= False
                                 .filter( End.value_utc <= date_end_utc )
                       )
 
+        parameters['end'] = date_end_utc
 
     if isMonopartite:
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
@@ -202,8 +210,20 @@ def countCooccurrences( corpus_id=None         , test= False
     matrix = WeightedMatrix(cooc_query)
     cooc = filterMatrix(matrix, mapList_id, groupList_id)
 
+    parameters['MapList_id'] = str(mapList_id)
+    parameters['GroupList_id'] = str(mapList_id)
+
     if save_on_db:
+        # Saving cooc Matrix
         cooc.save(coocNode_id)
+        
+        # Saving the parameters
+        coocNode = session.query(Node).filter(Node.id==coocNode_id).first()
+        coocNode.hyperdata = parameters
+        session.add(coocNode)
+        session.commit()
+        
+        # Log message
         print("Cooccurrence Matrix saved")
     
     return cooc

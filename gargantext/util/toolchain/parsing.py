@@ -1,7 +1,7 @@
 from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
-
+from gargantext.util.parsers import *
 from collections import defaultdict
 from re          import sub
 
@@ -19,7 +19,9 @@ def parse(corpus):
             # information about the resource
             if resource['extracted']:
                 continue
-            resource_parser = RESOURCETYPES[resource['type']]['parser']
+            #source store available module for a resource
+            source = get_resource(resource["type"])
+            resource_parser = load_parser(source)
             resource_path = resource['path']
             # extract and insert documents from corpus resource into database
             for hyperdata in resource_parser(resource_path):

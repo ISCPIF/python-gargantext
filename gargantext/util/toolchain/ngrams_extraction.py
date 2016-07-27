@@ -48,12 +48,17 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
         ngrams_data = set()
         # extract ngrams
         resource = corpus.resources()[0]
+        source = get_resource(resource["type"])
         documents_count = 0
         #load available taggers for source default langage
-        taggers_bots = {lang: load_tagger(lang) for lang in resource['default_languages']}
+        tagger_bots = {lang: load_tagger(lang) for lang in source['default_languages']}
         #skipped documents that have an unsupported languages
-        corpus.skipped_docs = [doc.id for doc in enumerate(corpus.children('DOCUMENT')) if doc.hyperdata["language_iso2"] not in resource["default_languages"]]
-        print(set(corpus.languages.keys()).intersection(resource["default_languages"]))
+        corpus.skipped_docs = [doc.id for doc in corpus.children('DOCUMENT') if doc.hyperdata["language_iso2"] not in source["default_languages"]]
+        print(corpus.hyperdata["languages"])
+        #add it to corpus.Language info
+        #diff = set(corpus.hyperdata["languages"].keys()) - set(source["default_languages"]))
+        #if len(diff) > 1:
+
 
         # if lang_doc in corpus.hyperdata['languages']:
         #     skipped_lg_infos = corpus.hyperdata['languages'].pop(lang_doc)
@@ -77,7 +82,7 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
             #
             # else:
                 # extract ngrams on each of the considered keys
-                ngramextractor = taggers_bot[lang_doc]
+                ngramextractor = tagger_bots[lang_doc]
 
                 for key in keys:
                     value = document.hyperdata.get(key, None)
@@ -119,11 +124,11 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
             corpus.status('Ngrams', progress=documents_count+1, complete=True)
             corpus.save_hyperdata()
             session.commit()
-        except Exception as error:
-            corpus.status('Ngrams', error=error)
-            corpus.save_hyperdata()
-            session.commit()
-            raise error
+    except Exception as error:
+        corpus.status('Ngrams', error=error)
+        corpus.save_hyperdata()
+        session.commit()
+        raise error
 
 
 def normalize_forms(term_str, do_lowercase=DEFAULT_ALL_LOWERCASE_FLAG):

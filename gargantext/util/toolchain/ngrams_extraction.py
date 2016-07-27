@@ -50,12 +50,12 @@ def extract_ngrams(corpus, keys=('title', 'abstract', ), do_subngrams = DEFAULT_
         resource_type_index = corpus.resources()[0]['type']
         documents_count = 0
         resource_type = RESOURCETYPES[resource_type_index]
-        default_language_iso2 = resource_type['default_language']
+        default_language_iso2 = resource_type['default_languages']
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
             # get ngrams extractor for the current document
             language_iso2 = document.hyperdata.get('language_iso2', default_language_iso2)
             try:
-                # this looks for a parser in constants.LANGUAGES
+                # this looks for a tagger in constants.LANGUAGES
                 ngramsextractor = ngramsextractors[language_iso2]
             except KeyError:
                 # skip document

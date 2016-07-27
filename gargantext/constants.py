@@ -155,7 +155,7 @@ def get_tagger(lang):
 
 RESOURCETYPES = [
     {   "type":1,
-        'name': 'Europress [EUROPRESS]',
+        'name': 'Europress',
         'format': 'Europress',
         'parser': "EuropressParser",
         'file_formats':["zip"],
@@ -171,7 +171,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type': 3,
-        'name': 'Pubmed [PUBMED]',
+        'name': 'Pubmed',
         'format': 'Pubmed',
         'parser': "PubmedParser",
         'file_formats':["zip", "xml"],
@@ -204,7 +204,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type':7,
-        'name': 'CSV [CSV]',
+        'name': 'CSV',
         'format': 'CSV',
         'parser': 'CSVParser',
         'file_formats':["zip", "csv"],

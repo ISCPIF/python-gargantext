@@ -269,10 +269,10 @@ def load_tagger(lang):
     lang(str) > Tagger(Object)
     '''
 
-    filename = LANGUAGES[lang]
+    filename = LANGUAGES[lang]["tagger"]
     module = 'gargantext.util.taggers.%s' %(filename)
     module = importlib.import_module(module)
-    return getattr(module)
+    return getattr(module, filename)
 
 
 # linguistic extraction parameters ---------------------------------------------

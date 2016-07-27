@@ -243,10 +243,10 @@ def load_crawler(resource):
     PARSER filename: ISTEX
     PARSER object: ISTexCrawler
     '''
-    filename = resource["name"].replace("Crawler", "")
+    filename = resource["crawler"].replace("Crawler", "").upper()
     module = 'gargantext.util.crawlers.%s' %(filename)
     module = importlib.import_module(module)
-    return getattr(module, resource.crawler)
+    return getattr(module, resource["crawler"])
 
 
 

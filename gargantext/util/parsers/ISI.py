@@ -1,10 +1,10 @@
-from .Ris import RISParser
+from .RIS import RISParser
 
 
 class ISIParser(RISParser):
-    
+
         _begin = 3
-        
+
         _parameters = {
             b"ER":  {"type": "delimiter"},
             b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
@@ -17,4 +17,3 @@ class ISIParser(RISParser):
             b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
             b"WC":  {"type": "hyperdata", "key": "fields"},
         }
-

@@ -1,3 +1,4 @@
+#!/usr/bin/python3 env
 """
 For initial ngram groups via stemming
  Exemple:
@@ -26,7 +27,7 @@ def prepare_stemmers(corpus):
         # always get a generic stemmer in case language code unknown
         '__unknown__' : SnowballStemmer("english")
     }
-    for lang in corpus.hyperdata["languages"].keys():
+    for lang in corpus.languages.keys():
         print(lang)
         if (lang != '__skipped__'):
             lgname = languages[lang].name.lower()

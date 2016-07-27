@@ -117,7 +117,8 @@ def project(request, project_id):
         resources = corpus.resources()
         if len(resources):
             resource = resources[0]
-            resource_type_name = RESOURCETYPES[resource['type']]['name']
+            #resource_type_name = RESOURCETYPES[resource['type']]['name']
+            resource_type_name = get_resource(resource["type"])["name"]
         else:
             print("(WARNING) PROJECT view: no listed resource")
         # add some data for the viewer
@@ -172,5 +173,3 @@ def project(request, project_id):
             'query_size': QUERY_SIZE_N_DEFAULT,
         },
     )
-
-

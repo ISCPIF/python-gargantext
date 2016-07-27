@@ -8,44 +8,55 @@ from re          import sub
 def parse(corpus):
     try:
         documents_count = 0
-
         corpus.status('Docs', progress=0)
+        #get the sources capabilities for a given corpus
+        sources = [get_resource(resource["type"]) if not resource.has_attribute('extracted') for resource in corpus.resources()]
+        if len(sources) == 0:
+            #>>> documents have already been parsed?????
+            return
+        if len(sources) > 0:
+            #>>> necessairement 1 corpus = 1 source dans l'archi actuelle
+            source = sources[0]
+            if resource["parser"] is None:
+                #corpus.status(error)
+                raise ValueError("Resource '%s' has no Parser" %resource["name"])
+            else:
+                corpus.languages = defaultdict.from_keys(sources[0]["default_languages"], 0)
+                corpus.skipped_docs = []
+                #load the corresponding parser
+                resource_parser = load_parser(source)
+                skipped_languages = []
+                # extract and insert documents from resource.path into database
+                for hyperdata in resource_parser(resource["path"]):
+                    # indexed text fields defined in constants
+                    for k in DEFAULT_INDEX_FIELDS:
+                        if hyperdata.has_attribute(k):
+                            try:
+                                hyperdata[k] = normalize_chars(hyperdata[k])
+                            except Exception as error :
+                                hyperdata["error"] = "Error normalize_chars"
 
-        # will gather info about languages
-        observed_languages = defaultdict(int)
-
-        # retrieve resource information
-        for resource in corpus.resources():
-            # information about the resource
-            if resource['extracted']:
-                continue
-            #source store available module for a resource
-            source = get_resource(resource["type"])
-            resource_parser = load_parser(source)
-            resource_path = resource['path']
-            # extract and insert documents from corpus resource into database
-            for hyperdata in resource_parser(resource_path):
-
-                # uniformize the text values for easier POStagging and processing
-                for k in ['abstract', 'title']:
-                    if k in hyperdata:
-                        try :
-                            hyperdata[k] = normalize_chars(hyperdata[k])
-                        except Exception as error :
-                            print("Error normalize_chars", error)
-
+                    # a simple census to raise language info at corpus level
+                    if hyperdata.has_key("language_iso2"):
+                        try:
+                            corpus.languages[hyperdata["language_iso2"]] += 1
+                        except KeyError:
+                            hyperdata["error"] = "Error: unsupported language"
+                            skipped_languages.append(hyperdata["language_iso2"])
                 # save as DB child
                 # ----------------
+
+
                 document = corpus.add_child(
                     typename = 'DOCUMENT',
                     name = hyperdata.get('title', '')[:255],
                     hyperdata = hyperdata,
                 )
                 session.add(document)
+                if document.hyperdata.has_key("error"):
+                    #document.status("error")
+                    corpus.skipped_docs.append(document.id)
 
-                # a simple census to raise language info at corpus level
-                if "language_iso2" in hyperdata:
-                    observed_languages[hyperdata["language_iso2"]] += 1
 
                 # logging
                 if documents_count % BATCH_PARSING_SIZE == 0:
@@ -58,7 +69,7 @@ def parse(corpus):
         # add a corpus-level info about languages...
         corpus.hyperdata['languages'] = observed_languages
         # ...with a special key inside for skipped languages at ngrams_extraction
-        corpus.hyperdata['languages']['__skipped__'] = {}
+        corpus.hyperdata['languages']['__skipped__'] = Counter(skipped_languages)
         # commit all changes
         corpus.status('Docs', progress=documents_count, complete=True)
         corpus.save_hyperdata()

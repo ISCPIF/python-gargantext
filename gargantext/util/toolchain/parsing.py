@@ -10,7 +10,7 @@ def parse(corpus):
         documents_count = 0
         corpus.status('Docs', progress=0)
         #get the sources capabilities for a given corpus
-        sources = [get_resource(resource["type"]) if not resource.has_attribute('extracted') for resource in corpus.resources()]
+        sources = [get_resource(resource["type"]) for resource in corpus.resources() if not 'extracted' in resource.keys() ]
         if len(sources) == 0:
             #>>> documents have already been parsed?????
             return
@@ -30,19 +30,21 @@ def parse(corpus):
                 for hyperdata in resource_parser(resource["path"]):
                     # indexed text fields defined in constants
                     for k in DEFAULT_INDEX_FIELDS:
-                        if hyperdata.has_attribute(k):
+                        if k in hyperdata.keys():
                             try:
                                 hyperdata[k] = normalize_chars(hyperdata[k])
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
 
                     # a simple census to raise language info at corpus level
-                    if hyperdata.has_key("language_iso2"):
+                    if "language_iso2" in hyperdata.keys():
                         try:
                             corpus.languages[hyperdata["language_iso2"]] += 1
                         except KeyError:
                             hyperdata["error"] = "Error: unsupported language"
                             skipped_languages.append(hyperdata["language_iso2"])
+                    else:
+                        hyperdata["error"] = "Error: no language found"
                 # save as DB child
                 # ----------------
 
@@ -53,7 +55,7 @@ def parse(corpus):
                     hyperdata = hyperdata,
                 )
                 session.add(document)
-                if document.hyperdata.has_key("error"):
+                if "error" in document.hyperdata.keys():
                     #document.status("error")
                     document.status('Parsing', error= document.hyperdata["error"])
                     #session.delete(document)

@@ -155,7 +155,7 @@ def get_tagger(lang):
 
 RESOURCETYPES = [
     {   "type":1,
-        'name': 'Europress',
+        'name': 'Europress [EUROPRESS]',
         'format': 'Europress',
         'parser': "EuropressParser",
         'file_formats':["zip"],
@@ -163,7 +163,7 @@ RESOURCETYPES = [
         'default_languages': ['en', 'fr'],
     },
     {   'type': 2,
-        'name': 'Jstor',
+        'name': 'Jstor [RIS]',
         'format': 'RIS',
         'parser': "RISParser",
         'file_formats':["zip"],
@@ -171,7 +171,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type': 3,
-        'name': 'Pubmed',
+        'name': 'Pubmed [PUBMED]',
         'format': 'Pubmed',
         'parser': "PubmedParser",
         'file_formats':["zip", "xml"],
@@ -179,7 +179,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type':4,
-        'name': 'Scopus',
+        'name': 'Scopus [RIS]',
         'format': 'RIS',
         'parser': "RISParser",
         'file_formats':["zip"],
@@ -187,7 +187,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type':5,
-        'name': 'Web of Science',
+        'name': 'Web of Science [ISI]',
         'format': 'ISI',
         'parser': "ISIParser",
         'file_formats':["zip"],
@@ -196,7 +196,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type':6,
-        'name': 'Zotero',
+        'name': 'Zotero [RIS]',
         'format': 'RIS',
         'parser': 'RISParser',
         'file_formats':["zip"],
@@ -204,7 +204,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type':7,
-        'name': 'CSV',
+        'name': 'CSV [CSV]',
         'format': 'CSV',
         'parser': 'CSVParser',
         'file_formats':["zip", "csv"],
@@ -212,7 +212,7 @@ RESOURCETYPES = [
         'default_languages': ['en'],
     },
     {   'type': 8,
-        'name': 'ISTex',
+        'name': 'ISTex [ISI]',
         'format': 'ISI',
         'parser': "ISTexParser",
         'file_formats':["zip"],
@@ -221,7 +221,7 @@ RESOURCETYPES = [
         'default_languages': ['en', 'fr'],
     },
    {    "type":9,
-        "name": 'SCOAP (XML MARC21 Format)',
+        "name": 'SCOAP [XML]',
         "parser": "CernParser",
         "format": 'MARC21',
         'file_formats':["zip","xml"],
@@ -358,5 +358,3 @@ graph_constraints = {'corpusMax' : 400
                     ,'corpusMin' : 10
                     ,'mapList'   : 50
                     }
-
-

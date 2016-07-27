@@ -26,10 +26,11 @@ def prepare_stemmers(corpus):
         # always get a generic stemmer in case language code unknown
         '__unknown__' : SnowballStemmer("english")
     }
-    for lgiso2 in corpus.hyperdata['languages'].keys():
-        if (lgiso2 != '__skipped__'):
-            lgname = languages[lgiso2].name.lower()
-            stemmers_by_lg[lgiso2] = SnowballStemmer(lgname)
+    for lang in corpus.hyperdata["languages"].keys():
+        print(lang)
+        if (lang != '__skipped__'):
+            lgname = languages[lang].name.lower()
+            stemmers_by_lg[lang] = SnowballStemmer(lgname)
     return stemmers_by_lg
 
 def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
@@ -38,6 +39,7 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     2) Create an empty GROUPLIST node (for a list of "synonym" ngrams)
     3) Save the list to DB (list node + each grouping as listnode - ngram1 - ngram2)
     """
+    print(corpus.languages.keys())
 
     stop_ngrams_ids = {}
     # we will need the ngrams of the stoplist to filter

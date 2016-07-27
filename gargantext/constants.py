@@ -224,21 +224,24 @@ PARSERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["parser"] is not No
 CRAWLERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["crawler"] is not None]
 
 def load_parser(resource):
-    '''given a resource load the corresponding Crawler
+    '''given a resource load the corresponding Parser
     resource(dict) > Parser(object)
+    exemple with resource ISTexParser
+    PARSER filename: ISTEX
+    PARSER object: ISTexParser
     '''
-    if resource["parser"] is not None:
-        filename = resource["parser"].replace("Parser", '')
-        print(filename)
-        module = 'gargantext.util.parsers.%s' %(filename)
-        module = importlib.import_module(module)
-        return getattr(module, resource["parser"])
-    else:
-        return None
+    filename = resource["parser"].replace("Parser", '').upper()
+    module = 'gargantext.util.parsers.%s' %(filename)
+    module = importlib.import_module(module)
+    return getattr(module, resource["parser"])
+
 
 def load_crawler(resource):
     '''given a resource load the corresponding Parser()
     resource(dict) > Parser(object)
+    exemple with resource ISTexCrawler
+    PARSER filename: ISTEX
+    PARSER object: ISTexCrawler
     '''
     filename = resource["name"].replace("Crawler", "")
     module = 'gargantext.util.crawlers.%s' %(filename)

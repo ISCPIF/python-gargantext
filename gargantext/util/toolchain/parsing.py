@@ -9,24 +9,31 @@ def parse(corpus):
     try:
         documents_count = 0
         corpus.status('Docs', progress=0)
+        #print(corpus.resources())
         #get the sources capabilities for a given corpus
-        sources = [get_resource(resource["type"]) for resource in corpus.resources() if not 'extracted' in resource.keys() ]
+        resource = corpus.resources()[0]
+        print(resource)
+        sources = [get_resource(resource["type"]) for resource in corpus.resources()]
+        print(sources)
         if len(sources) == 0:
             #>>> documents have already been parsed?????
-            return
+            raise ValueError(len(sources))
         if len(sources) > 0:
             #>>> necessairement 1 corpus = 1 source dans l'archi actuelle
             source = sources[0]
-            if resource["parser"] is None:
+            if source["parser"] is None:
                 #corpus.status(error)
                 raise ValueError("Resource '%s' has no Parser" %resource["name"])
             else:
-                corpus.languages = defaultdict.from_keys(sources[0]["default_languages"], 0)
+                corpus.languages = defaultdict.fromkeys(sources[0]["default_languages"], 0)
                 corpus.skipped_docs = []
+                session.add(corpus)
+                session.commit()
                 #load the corresponding parser
                 resource_parser = load_parser(source)
                 skipped_languages = []
                 # extract and insert documents from resource.path into database
+                print(resource)
                 for hyperdata in resource_parser(resource["path"]):
                     # indexed text fields defined in constants
                     for k in DEFAULT_INDEX_FIELDS:
@@ -39,7 +46,7 @@ def parse(corpus):
                     # a simple census to raise language info at corpus level
                     if "language_iso2" in hyperdata.keys():
                         try:
-                            corpus.languages[hyperdata["language_iso2"]] += 1
+                            corpus.hyperdata["languages"][hyperdata["language_iso2"]] += 1
                         except KeyError:
                             hyperdata["error"] = "Error: unsupported language"
                             skipped_languages.append(hyperdata["language_iso2"])
@@ -47,8 +54,6 @@ def parse(corpus):
                         hyperdata["error"] = "Error: no language found"
                 # save as DB child
                 # ----------------
-
-
                 document = corpus.add_child(
                     typename = 'DOCUMENT',
                     name = hyperdata.get('title', '')[:255],
@@ -60,21 +65,21 @@ def parse(corpus):
                     document.status('Parsing', error= document.hyperdata["error"])
                     #session.delete(document)
                     corpus.skipped_docs.append(document.id)
-
-
                 # logging
                 if documents_count % BATCH_PARSING_SIZE == 0:
                     corpus.status('Docs', progress=documents_count)
                     corpus.save_hyperdata()
+                    session.add(corpus)
                     session.commit()
                 documents_count += 1
             # update info about the resource
             resource['extracted'] = True
         # add a corpus-level info about languages adding a __skipped__ info
-        corpus.hyperdata['languages']['__skipped__'] = Counter(skipped_languages)
+        corpus.languages['__skipped__'] = Counter(skipped_languages)
         # commit all changes
         corpus.status('Docs', progress=documents_count, complete=True)
         corpus.save_hyperdata()
+        session.add(corpus)
         session.commit()
     except Exception as error:
         corpus.status('Docs', error=error)

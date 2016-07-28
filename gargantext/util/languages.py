@@ -25,7 +25,8 @@ class Languages(dict):
         raise KeyError
 
 languages = Languages()
-def detect_lang(self, text):
+
+def detect_lang(text):
     DetectorFactory.seed = 0
     return languages[detect(text)].iso2
 

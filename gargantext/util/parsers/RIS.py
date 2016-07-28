@@ -36,6 +36,7 @@ class RISParser(Parser):
         last_values = []
         # browse every line of the file
         for line in file:
+
             if len(line) > 2 :
                 # extract the parameter key
                 parameter_key = line[:2]

@@ -40,26 +40,31 @@ class CernParser(Parser):
             "856": {"u":"pdf_source"},
             }
 
-    def format_date(self, hyperdata):
-        '''formatting pubdate'''
-        prefix = "publication"
-        date = datetime.strptime(hyperdata[prefix + "_date"], "%Y-%m-%d")
-        #hyperdata[prefix + "_year"]      = date.strftime('%Y')
-        hyperdata[prefix + "_month"]     = date.strftime("%m")
-        hyperdata[prefix + "_day"]       = date.strftime("%d")
-        hyperdata[prefix + "_hour"]      = date.strftime("%H")
-        hyperdata[prefix + "_minute"]    = date.strftime("%M")
-        hyperdata[prefix + "_second"]    = date.strftime("%S")
-        hyperdata[prefix + "_date"]  = date.strftime("%Y-%m-%d %H:%M:%S")
-        print("Date", hyperdata["publication_date"])
-        return hyperdata
+    # def format_date(self, hyperdata):
+    #     '''formatting pubdate'''
+    #     prefix = "publication"
+    #     try:
+    #         date = datetime.strptime(hyperdata[prefix + "_date"], "%Y-%m-%d")
+    #     except ValueError:
+    #         date = datetime.strptime(hyperdata[prefix + "_date"], "%Y-%m")
+    #         date.day = "01"
+    #     hyperdata[prefix + "_year"]      = date.strftime('%Y')
+    #     hyperdata[prefix + "_month"]     = date.strftime("%m")
+    #     hyperdata[prefix + "_day"]       = date.strftime("%d")
+    #
+    #     hyperdata[prefix + "_hour"]      = date.strftime("%H")
+    #     hyperdata[prefix + "_minute"]    = date.strftime("%M")
+    #     hyperdata[prefix + "_second"]    = date.strftime("%S")
+    #     hyperdata[prefix + "_date"]  = date.strftime("%Y-%m-%d %H:%M:%S")
+    #     #print("Date", hyperdata["publication_date"])
+    #     return hyperdata
 
     #@asyncio.coroutine
     def parse(self, file):
-        print("PARSING")
+        #print("PARSING")
         hyperdata_list = []
         doc = file.read()
-        print(doc[:35])
+        #print(doc[:35])
         soup = BeautifulSoup(doc, "lxml")
 
         #print(soup.find("record"))
@@ -93,8 +98,8 @@ class CernParser(Parser):
             hyperdata["authors_affiliations"] = (",").join(hyperdata["authors_affiliations"])
             hyperdata["authors"] = (",").join(hyperdata["authors"])
             hyperdata["authors_mails"] = (",").join(hyperdata["authors_mails"])
-            hyperdata = self.format_date(hyperdata)
+            #hyperdata = self.format_date(hyperdata)
+            hyperdata = self.format_hyperdata_languages(hyperdata)
+            hyperdata = self.format_hyperdata_dates(hyperdata)
             hyperdata_list.append(hyperdata)
         return hyperdata_list
-
-

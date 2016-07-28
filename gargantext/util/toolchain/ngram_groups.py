@@ -22,17 +22,13 @@ def prepare_stemmers(corpus):
     """
     Returns *several* stemmers (one for each language in the corpus)
          (as a dict of stemmers with key = language_iso2)
+         languages has been previously filtered by supported source languages
+         and formatted
     """
-    stemmers_by_lg = {
-        # always get a generic stemmer in case language code unknown
-        '__unknown__' : SnowballStemmer("english")
-    }
-    for lang in corpus.languages.keys():
-        print(lang)
-        if (lang != '__skipped__'):
-            lgname = languages[lang].name.lower()
-            stemmers_by_lg[lang] = SnowballStemmer(lgname)
-    return stemmers_by_lg
+    stemmers = {lang:SnowballStemmer(languages[lang].name.lower())  for lang \
+                    in corpus.languages.keys() if lang !="__skipped__"}
+    stemmers['__unknown__'] = SnowballStemmer("english")
+    return stemmers
 
 def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     """
@@ -40,7 +36,6 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     2) Create an empty GROUPLIST node (for a list of "synonym" ngrams)
     3) Save the list to DB (list node + each grouping as listnode - ngram1 - ngram2)
     """
-    print(corpus.languages.keys())
 
     stop_ngrams_ids = {}
     # we will need the ngrams of the stoplist to filter
@@ -60,16 +55,17 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     my_groups = defaultdict(Counter)
 
     # preloop per doc to sort ngrams by language
-    for doc in corpus.children():
-        if ('language_iso2' in doc.hyperdata):
-            lgid = doc.hyperdata['language_iso2']
-        else:
-            lgid = "__unknown__"
+    for doc in corpus.children('DOCUMENT'):
+        if doc.id not in corpus.skipped_docs:
+            if ('language_iso2' in doc.hyperdata):
+                lgid = doc.hyperdata['language_iso2']
+            else:
+                lgid = "__unknown__"
 
-        # doc.ngrams is an sql query (ugly but useful intermediate step)
-        # FIXME: move the counting and stoplist filtering up here
-        for ngram_pack in doc.ngrams.all():
-            todo_ngrams_per_lg[lgid].add(ngram_pack)
+            # doc.ngrams is an sql query (ugly but useful intermediate step)
+            # FIXME: move the counting and stoplist filtering up here
+            for ngram_pack in doc.ngrams.all():
+                todo_ngrams_per_lg[lgid].add(ngram_pack)
 
     # --------------------
     # long loop per ngrams

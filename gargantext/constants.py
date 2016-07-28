@@ -315,7 +315,9 @@ DEFAULT_INDEX_SUBGRAMS         = False        # False <=> traditional
                                              #  "cool example".
                                              #   (all 1 to n-1 length ngrams,
                                              #    at indexing after extraction)
-DEFAULT_INDEX_FIELDS            = ('title', 'abstract', ) #Defaults Fields for ngrams extraction
+# Defaults INDEXED Fields for ngrams extraction
+# put longest field first in order to make detection language more efficient
+DEFAULT_INDEX_FIELDS            = ('abstract','title' )
 # Grammar rules for chunking
 RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
 RULE_JJDTNN = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"

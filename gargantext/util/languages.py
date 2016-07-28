@@ -1,13 +1,15 @@
 from gargantext.constants import *
-
+from langdetect import detect
+from langdetect import DetectorFactory
 
 
 class Language:
-    def __init__(self, iso2=None, iso3=None, name=None):
+    def __init__(self, iso2=None, iso3=None,full_name=None, name=None):
         self.iso2 = iso2
         self.iso3 = iso3
         self.name = name
         self.implemented = iso2 in LANGUAGES
+
     def __str__(self):
         result = '<Language'
         for key, value in self.__dict__.items():
@@ -15,6 +17,10 @@ class Language:
         result += '>'
         return result
     __repr__ = __str__
+
+def detect_lang(self, text):
+    DetectorFactory.seed = 0
+    return Languages[detect(text)].iso2
 
 class Languages(dict):
     def __missing__(self, key):
@@ -49,3 +55,4 @@ languages['fre'] = languages['fr']
 languages['ger'] = languages['de']
 languages['Français'] = languages['fr']
 languages['en_US'] = languages['en']
+languages['english'] = languages['en']

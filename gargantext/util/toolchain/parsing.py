@@ -4,6 +4,7 @@ from gargantext.constants import *
 #from gargantext.util.parsers import *
 from collections import defaultdict, Counter
 from re          import sub
+from gargantext.util.languages import languages, detect_lang
 
 def parse(corpus):
     try:
@@ -27,8 +28,8 @@ def parse(corpus):
             else:
                 #observed langages in corpus docs
                 corpus.languages = defaultdict.fromkeys(source["default_languages"], 0)
-                skipped_languages = []
                 #remember the skipped docs in parsing
+                skipped_languages = []
                 corpus.skipped_docs = []
                 session.add(corpus)
                 session.commit()
@@ -43,34 +44,50 @@ def parse(corpus):
                                 hyperdata[k] = normalize_chars(hyperdata[k])
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
+                    indexed = False
                     # a simple census to raise language info at corpus level
-                    if "language_iso2" in hyperdata.keys():
-                        try:
-                            corpus.languages[hyperdata["language_iso2"]] += 1
-                        except KeyError:
-                            print("KeyError", hyperdata["language_iso2"])
-                            hyperdata["error"] = "Error: unsupported language"
-                            skipped_languages.append(hyperdata["language_iso2"])
-                    elif "language_fullname" in hyperdata.keys():
-                        try:
-                            #full => iso2
-                            lang = languages[hyperdata["language_fullname"]].name.lower()
-                            corpus.languages[lang] += 1
-                        except KeyError:
-                            print("KeyError", hyperdata["language_fullname"])
-                            hyperdata["error"] = "Error: unsupported language"
-                            skipped_languages.append(lang)
-                    else:
-                        pass
+                    for l in ["iso2", "iso3", "full_name"]:
+                        if hyperdata["indexed"] is True:
+                            break
+                        lang_field = "language_"+l
+                        if lang_field in hyperdata.keys():
+                            if l == "iso2":
+                                try:
+                                    corpus.languages[hyperdata["language_iso2"]] += 1
+                                    indexed = True
+                                except KeyError:
+                                    hyperdata["error"] = "Error: unsupported language"
+                                    skipped_languages.append(hyperdata["language_iso2"])
+                            else:
+
+                                try:
+                                    lang = languages(hyperdata[lang_field].lower()).iso2
+                                    corpus.languages[lang] += 1
+                                    indexed = True
+                                except KeyError:
+                                    hyperdata["error"] = "Error: unsupported language"
+                                    skipped_languages.append(lang)
+                    if indexed is False:
                         #no language have been indexed
                         #detectlang by index_fields
-                        # for k in DEFAULT_INDEX_FIELDS:
-                        #     if k in hyperdata.keys():
-                        #         try:
-                        #             hyperdata["language_iso2"] = langdetect(hyperdata[k])
-                        #         except Exception as error :
-                        #             pass
-                        #print(hyperdata.keys())
+                        for k in DEFAULT_INDEX_FIELDS:
+                            if indexed is True:
+                                break
+                            if k in hyperdata.keys():
+                                try:
+                                    hyperdata["language_iso2"] = detect_lang(hyperdata[k])
+                                    corpus.languages[lang] += 1
+                                    indexed = True
+                                    break
+                                except KeyError:
+                                    hyperdata["error"] = "Error: unsupported language"
+                                    skipped_languages.append(hyperdata["language_iso2"])
+                                    indexed = True
+                                except Exception as error :
+                                    print(error)
+                                    pass
+
+
                     # save as DB child
                     # ----------------
                     document = corpus.add_child(
@@ -95,10 +112,6 @@ def parse(corpus):
                     corpus.save_hyperdata()
                     session.add(corpus)
                     session.commit()
-
-
-
-
 
             # update info about the resource
             resource['extracted'] = True

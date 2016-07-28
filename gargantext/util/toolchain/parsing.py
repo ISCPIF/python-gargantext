@@ -47,7 +47,7 @@ def parse(corpus):
                     indexed = False
                     # a simple census to raise language info at corpus level
                     for l in ["iso2", "iso3", "full_name"]:
-                        if hyperdata["indexed"] is True:
+                        if indexed is True:
                             break
                         lang_field = "language_"+l
                         if lang_field in hyperdata.keys():

@@ -59,9 +59,8 @@ def parse(corpus):
                                     hyperdata["error"] = "Error: unsupported language"
                                     skipped_languages.append(hyperdata["language_iso2"])
                             else:
-
+                                lang = languages(hyperdata[lang_field].lower()).iso2
                                 try:
-                                    lang = languages(hyperdata[lang_field].lower()).iso2
                                     corpus.languages[lang] += 1
                                     indexed = True
                                 except KeyError:
@@ -76,10 +75,10 @@ def parse(corpus):
                             if k in hyperdata.keys():
                                 try:
                                     if len(hyperdata[k]) > 10:
-                                        print("> detected on",k, ":", detect_lang(hyperdata[k]))
+                                        #print("> detected on",k, ":", detect_lang(hyperdata[k]))
                                         hyperdata["language_iso2"] = detect_lang(hyperdata[k])
 
-                                        corpus.languages[lang] += 1
+                                        corpus.languages[hyperdata["language_iso2"]] += 1
                                         indexed = True
                                         break
                                 except KeyError:

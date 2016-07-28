@@ -1,7 +1,5 @@
 from gargantext.constants import *
-from langdetect import detect
-from langdetect import DetectorFactory
-
+from langdetect import detect, DetectorFactory
 
 class Language:
     def __init__(self, iso2=None, iso3=None,full_name=None, name=None):
@@ -18,9 +16,6 @@ class Language:
         return result
     __repr__ = __str__
 
-def detect_lang(self, text):
-    DetectorFactory.seed = 0
-    return Languages[detect(text)].iso2
 
 class Languages(dict):
     def __missing__(self, key):
@@ -30,6 +25,9 @@ class Languages(dict):
         raise KeyError
 
 languages = Languages()
+def detect_lang(self, text):
+    DetectorFactory.seed = 0
+    return languages[detect(text)].iso2
 
 import pycountry
 pycountry_keys = (

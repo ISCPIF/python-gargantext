@@ -60,9 +60,10 @@ def overview(request):
 
 class NewCorpusForm(forms.Form):
     #mapping choices based on ressource.type
-
+    source_list = [(resource["type"], resource["name"]) for resource in RESOURCETYPES]
+    source_list.insert(0, (0,"Select a database below"))
     type = forms.ChoiceField(
-        choices = [(resource["type"], resource["name"]) for resource in RESOURCETYPES],
+        choices = source_list,
         widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
     )
     name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))

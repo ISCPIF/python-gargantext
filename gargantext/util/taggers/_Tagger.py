@@ -9,7 +9,7 @@ import nltk
 
 class Tagger:
 
-    def __init__(self, text):
+    def __init__(self):
         # This regular expression is really good at tokenizing a text!
         self._re_sentence = re.compile(r'''(?x)  # set flag to allow verbose regexps
             (?:[A-Z])(?:\.[A-Z])+\.?        # abbreviations, e.g. U.S.A.
@@ -19,18 +19,18 @@ class Tagger:
             | [][.,;"'?!():-_`]             # these are separate tokens
             ''', re.UNICODE | re.MULTILINE | re.DOTALL)
         self.buffer = []
-        self.text = clean_text(text)
-        self.start()
+
+        #self.start()
 
 
-    def clean_text(text):
+    def clean_text(self, text):
         """Clean the text for better POS tagging.
         For now, only removes (short) XML tags.
         """
         return re.sub(r'<[^>]{0,45}>', '', text)
 
     def extract(self, text, rule=RULE_JJNN, label='NP', max_n_words=DEFAULT_MAX_NGRAM_LEN):
-        text = self.clean_text(text)
+        self.text = self.clean_text(text)
         grammar = nltk.RegexpParser(label + ': ' + rule)
         tagged_tokens = list(self.tag_text(self.text))
         if len(tagged_tokens):

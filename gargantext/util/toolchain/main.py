@@ -82,6 +82,7 @@ def parse_extract_indexhyperdata(corpus):
     favs = corpus.add_child(
             typename='FAVORITES', name='favorite docs in "%s"' % corpus.name
             )
+
     session.add(favs)
     session.commit()
     print('CORPUS #%d: [%s] new favorites node #%i' % (corpus.id, t(), favs.id))
@@ -265,7 +266,7 @@ def recount(corpus):
 
     # -> specclusion/genclusion: compute + write (=> NodeNodeNgram)
     (spec_id, gen_id) = compute_specgen(corpus, cooc_matrix = coocs,
-                                        spec_overwrite_id = old_spec_id, 
+                                        spec_overwrite_id = old_spec_id,
                                         gen_overwrite_id = old_gen_id)
 
     print('RECOUNT #%d: [%s] updated spec-clusion node #%i' % (corpus.id, t(), spec_id))

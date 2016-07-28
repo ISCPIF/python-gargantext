@@ -1,7 +1,7 @@
 from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
-from gargantext.util.parsers import *
+#from gargantext.util.parsers import *
 from collections import defaultdict, Counter
 from re          import sub
 
@@ -11,13 +11,11 @@ def parse(corpus):
         corpus.status('Docs', progress=0)
         #1 corpus => 1 resource
         resources = corpus.resources()
-        #get the sources capabilities for a given corpus
-        #print(resource)
+        #get the sources capabilities for a given corpus resource
         sources = [get_resource(resource["type"]) for resource in corpus.resources() if resource["extracted"] is False]
-        print(sources)
         if len(sources) == 0:
             #>>> documents have already been parsed?????
-            pass
+            return
         if len(sources) > 0:
             #>>> necessairement 1 corpus = 1 source dans l'archi actuelle
             source = sources[0]
@@ -27,25 +25,24 @@ def parse(corpus):
                 #corpus.status(error)
                 raise ValueError("Resource '%s' has no Parser" %resource["name"])
             else:
+                #observed langages in corpus docs
                 corpus.languages = defaultdict.fromkeys(source["default_languages"], 0)
+                skipped_languages = []
+                #remember the skipped docs in parsing
                 corpus.skipped_docs = []
                 session.add(corpus)
                 session.commit()
                 #load the corresponding parser
                 parserbot = load_parser(source)
-                skipped_languages = []
-
                 # extract and insert documents from resource.path into database
-                #print(resource["path"])
                 for hyperdata in parserbot(resource["path"]):
-                    # indexed text fields defined in constants
+                    # indexed text fields defined in CONSTANTS
                     for k in DEFAULT_INDEX_FIELDS:
                         if k in hyperdata.keys():
                             try:
                                 hyperdata[k] = normalize_chars(hyperdata[k])
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
-
                     # a simple census to raise language info at corpus level
                     if "language_iso2" in hyperdata.keys():
                         try:
@@ -54,33 +51,43 @@ def parse(corpus):
                             print("KeyError", hyperdata["language_iso2"])
                             hyperdata["error"] = "Error: unsupported language"
                             skipped_languages.append(hyperdata["language_iso2"])
-                    elif "language_iso3" in hyperdata.keys():
+                    elif "language_fullname" in hyperdata.keys():
                         try:
-                            lang = language[hyperdata["language_iso3"]]
+                            #full => iso2
+                            lang = languages[hyperdata["language_fullname"]].name.lower()
                             corpus.languages[lang] += 1
                         except KeyError:
-                            print("KeyError", lang)
+                            print("KeyError", hyperdata["language_fullname"])
                             hyperdata["error"] = "Error: unsupported language"
-                            skipped_languages.append(hyperdata["language_iso2"])
+                            skipped_languages.append(lang)
                     else:
-                        raise ValueError("PARSING ERROR: No lang detected")
+                        pass
+                        #no language have been indexed
+                        #detectlang by index_fields
+                        # for k in DEFAULT_INDEX_FIELDS:
+                        #     if k in hyperdata.keys():
+                        #         try:
+                        #             hyperdata["language_iso2"] = langdetect(hyperdata[k])
+                        #         except Exception as error :
+                        #             pass
+                        #print(hyperdata.keys())
+                    # save as DB child
+                    # ----------------
+                    document = corpus.add_child(
+                        typename = 'DOCUMENT',
+                        name = hyperdata.get('title', '')[:255],
+                        hyperdata = hyperdata,
+                    )
+                    session.add(document)
 
-                # save as DB child
-                # ----------------
-                document = corpus.add_child(
-                    typename = 'DOCUMENT',
-                    name = hyperdata.get('title', '')[:255],
-                    hyperdata = hyperdata,
-                )
-                session.add(document)
-
-                if "error" in hyperdata.keys():
-                    #document.status("error")
-                    print(hyperdata["error"])
-                    document.status('Parsing', error= document.hyperdata["error"])
-                    document.save_hyperdata()
-                    session.commit()
-                    corpus.skipped_docs.append(document.id)
+                    if "error" in hyperdata.keys():
+                        #document.status("error")
+                        document.status('Parsing', error= document.hyperdata["error"])
+                        document.save_hyperdata()
+                        session.commit()
+                        #adding skipped_docs for later processsing
+                        corpus.skipped_docs.append(document.id)
+                    documents_count += 1
 
                 # logging
                 if documents_count % BATCH_PARSING_SIZE == 0:
@@ -92,11 +99,13 @@ def parse(corpus):
 
 
 
-                documents_count += 1
+
             # update info about the resource
             resource['extracted'] = True
         # add a corpus-level info about languages adding a __skipped__ info
         corpus.languages['__skipped__'] = Counter(skipped_languages)
+        for n in corpus.languages.items():
+            print(n)
         # commit all changes
         corpus.status('Docs', progress=documents_count, complete=True)
         corpus.save_hyperdata()

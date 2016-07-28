@@ -3,7 +3,6 @@ from gargantext.models import *
 from gargantext.constants import *
 from collections import defaultdict
 from re          import sub
-
 from gargantext.util.scheduling import scheduled
 
 def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
@@ -44,51 +43,50 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         db, cursor = get_cursor()
         nodes_ngrams_count = defaultdict(int)
         ngrams_data = set()
-        # extract ngrams
+        #1 corpus = 1 resource
         resource = corpus.resources()[0]
-        source = get_resource(resource["type"])
         documents_count = 0
+        source = get_resource(resource["type"])
         #load available taggers for source default langage
-        #skipped documents that have been skipped previously for parsing error or unsupported language
-        tagger_bots = {lang: load_tagger(lang) for lang in corpus.languages if lang != "__skipped__"}
         docs = [doc for doc in corpus.children('DOCUMENT') if doc.id not in corpus.skipped_docs]
-
+        tagger_bots = {lang: load_tagger(lang)() for lang in corpus.languages if lang != "__skipped__"}
         #sort docs by lang?
-        for documents_count, document in enumerate(docs):
-            try:
-                lang_doc = document.hyperdata["language_iso2"]
-            except AttributeError:
-                print("NO LANG DETECTED")
-                document.status("NGRAMS", error="No lang detected?")
-                corpus.skipped_docs.append(document.id)
-                continue
-            for key in keys:
-                value = document.get(key, None)
-                print("VAL", value)
-                if not isinstance(value, str):
-                    continue
-                    # get ngrams
-                for ngram in tagger_bots[lang_doc](value):
-                    tokens = tuple(normalize_forms(token[0]) for token in ngram)
-                    print("tk", tokens)
-                    if do_subngrams:
-                        # ex tokens = ["very", "cool", "exemple"]
-                        #    subterms = [['very', 'cool'],
-                        #                ['very', 'cool', 'exemple'],
-                        #                ['cool', 'exemple']]
+        for lang, tagger in tagger_bots.items():
+            for documents_count, document in enumerate(docs):
+                language_iso2 = document.hyperdata.get('language_iso2', lang)
+                #print(language_iso2)
+                for key in keys:
+                    try:
+                        value = document[str(key)]
+                        if not isinstance(value, str):
+                            continue
+                            # get ngrams
+                        for ngram in tagger.extract(value):
+                            tokens = tuple(normalize_forms(token[0]) for token in ngram)
+                            if do_subngrams:
+                                # ex tokens = ["very", "cool", "exemple"]
+                                #    subterms = [['very', 'cool'],
+                                #                ['very', 'cool', 'exemple'],
+                                #                ['cool', 'exemple']]
 
-                        subterms = subsequences(tokens)
-                    else:
-                        subterms = [tokens]
+                                subterms = subsequences(tokens)
+                            else:
+                                subterms = [tokens]
 
-                    for seqterm in subterms:
-                        ngram = ' '.join(seqterm)
-                        if len(ngram) > 1:
-                            # doc <=> ngram index
-                            nodes_ngrams_count[(document.id, ngram)] += 1
-                            # add fields :   terms          n
-                            ngrams_data.add((ngram[:255], len(seqterm), ))
-
+                            for seqterm in subterms:
+                                ngram = ' '.join(seqterm)
+                                if len(ngram) > 1:
+                                    # doc <=> ngram index
+                                    nodes_ngrams_count[(document.id, ngram)] += 1
+                                    # add fields :   terms          n
+                                    ngrams_data.add((ngram[:255], len(seqterm), ))
+                    except:
+                        #value not in doc
+                        pass
+                # except AttributeError:
+                #     print("ERROR NO language_iso2")
+                #     document.status("NGRAMS", error="No lang detected skipped Ngrams")
+                #     corpus.skipped_docs.append(document.id)
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
@@ -97,6 +95,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
             if documents_count % BATCH_NGRAMSEXTRACTION_SIZE == 0:
                 corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
+                session.add(corpus)
                 session.commit()
             else:
                 # integrate ngrams and nodes-ngrams

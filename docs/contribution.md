@@ -28,6 +28,5 @@ see [install procedure](install.md)
     2. Create a new branch <username>-refactoring
     3. Run the gargantext-box
     4. Code
-    5.Test
+    5. Test
     6. Commit
-

@@ -66,5 +66,6 @@ sudo docker run \
         /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
 sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
+sudo cp ./run /srv/gargantext/start
 
 

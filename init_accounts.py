@@ -48,22 +48,22 @@ def notify_user(username, email, password):
     votre compte vient d'être créé.
 
     Vous pouvez désormais vous connecter ici:
-    http://gargantext.org
+    http://%sgargantext.org
 
     Votre login est: %s
     Votre mot de passe est : %s
 
-    Bientôt, il y aura une formation Gargantext (gratuite).
-    Inscription obligatoire pour les dernière places:
+    La nouvelle version de Gargantext sort en septembre prochain.
+    Vous êtes actuellement sur la version de développement, vos retours
+    seront précieux pour stabiliser la plateforme; merci d'avance!
 
-                    http://iscpif.fr/
 
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement
     --
         L'équipe de Gargantext (CNRS)
 
-    ''' % (username, password)
+    ''' % ("dev.",username, password)
 
     send_mail('[Gargantext] Votre accès à la plateforme', message, 'alexandre.delanoe@iscpif.fr', [email], fail_silently=False )
 

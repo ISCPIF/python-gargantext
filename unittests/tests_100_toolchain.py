@@ -1,21 +1,14 @@
 #!/usr/bin/python3 env
 """
-TOOLCHAIN INTEGRATION TESTS
-================
-A set of testing user interaction with datasets
-from login to NGRAMSlist creation
-integration test from API to BACKEND
-
-add a corpus
+TOOLCHAIN TEST SUITE
 """
 #switching to standard testing
 from unittest import TestCase
 #make http requests
 import requests
-
-
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+
 # test Nodes
 from gargantext.models import Node
 from gargantext.constants import RESOURCETYPES, NODETYPES
@@ -24,36 +17,18 @@ from unittests.framework import GargTestRunner
 #API capabilities
 #from rest_framework.test import APIRequestFactory
 
-class UserRecipes(TestCase):
+
+
+
+class ToolChainRecipes(TestCase):
     def setUp(self):
-        #before any test
         self.session = GargTestRunner.testdb_session
         self.client = Client()
-    def tearDown(self):
-        #after any test
-        pass
-    def test_000_create_user(self):
-        pass
-    def test_001_login(self):
-        pass
+        self.source_list = [(resource["type"], resource["name"]) for resource in RESOURCETYPES]
+        self.source_list.insert(0, (0,"Select a database below"))
 
-    def test_002_authenticate(self):
-        pass
-    def test_003_unlogin(self):
-        pass
 
-class ProjectsRecipes(TestCase):
-    def setUp(self):
-        #before anytest
-        self.session = GargTestRunner.testdb_session
-        self.client = Client()
-
-    def tearDown(self):
-        #after any test
-        pass
-
-    def _create_projet(self):
-        #resp = self.client.post('/projects/', data={"name":"test"})
+    def _create_project(self):
         self.project = Node(
             user_id = user.id,
             typename = 'PROJECT',
@@ -62,59 +37,28 @@ class ProjectsRecipes(TestCase):
         session.add(self.project)
         session.commit()
         return self.project
+    def create_corpus(self, source, name, file):
 
+    def create_test(self):
 
-    def test_001_get_projects(self):
-        '''get every projects'''
-        resp = self.client.get('/projects/')
-        self.assertEqual(resp.status_code, 200)
-
-    def test_002_delete_projects(self):
-        '''delete every projects'''
-        resp = self.client.delete('/projects/')
-        self.assertEqual(resp.status_code, 204)
-
-    def test_003_put_projects(self):
-        '''modify every projects'''
-        resp = self.client.put('/projects?name="test"')
-        self.assertEqual(resp.status_code, 202)
-
-    def test_004_post_project(self):
-        '''create a project'''
-        resp = self.client.post('/projects/', data={"name":"test"})
-        self.assertEqual(resp.status_code, 201)
-
-    def test_005_get_project(self):
-        '''get one project'''
-        project = self._create_projet()
-        resp = self.client.delete('/project/'+project.id)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_006_delete_project(self):
-        '''delete one project'''
-        project = self._create_projet()
-        #delete it
-        resp = self.client.delete('/project/'+project.id)
-        self.assertEqual(resp.status_code, 204)
-
-    def test_007_put_project(self):
-        project = self._create_projet()
-        resp = self.client.put('/project/'+project.id+"?name=newname")
-        self.assertEqual(resp.status_code, 204)
-        pass
-
-class CorpusRecipes(TestCase):
-    def setUp(self):
-        self.session = GargTestRunner.testdb_session
-        self.client = Client()
-    def _create_project(self):
-        self.project = Node(
-            user_id = user.id,
-            typename = 'PROJECT',
-            name = "test1",
+        type = forms.ChoiceField(
+            choices = source_list,
+            widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
         )
-    def _create_corpus(self):
-        self.project.add_child()
+        name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
+        file = forms.FileField()
+        def clean_resource(self):
+            file_ = self.cleaned_data.get('file')
+        def clean_file(self):
+            file_ = self.cleaned_data.get('file')
+            if len(file_) > 1024 ** 3 : # we don't accept more than 1GB
+                raise forms.ValidationError(ugettext_lazy('File too heavy! (>1GB).'))
+            return file_
+
+
+
+
+
 
 
 class CoporaRecipes(TestCase):

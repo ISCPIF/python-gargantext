@@ -26,7 +26,7 @@ git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
 
 
 ## Install
- ``` bash
+ ```bash
  # go into the directory
  user@computer: cd /srv/gargantext/
  #git inside installation folder
@@ -34,20 +34,31 @@ git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
  #execute the installation
  user@computer: ./install
  ```
-During installation an admin account for gargantext will be created by asking you a username and a password
-Remember it to accès to the Gargantext plateform
+The installation requires to create a user for gargantext,  it will be asked:
+
+```bash
+Username (leave blank to use 'gargantua'):
+#email is not mandatory
+Email address:
+Password:
+Password (again):
+```
+If successfully done this step you should see:
+```bash
+Superuser created successfully.
+[ ok ] Stopping PostgreSQL 9.5 database server: main.
+```
+
 
 ## Run
 Once you proceed to installation Gargantext plateforme will be available at localhost:8000
-by running the run executable file
+to start gargantext plateform:
  ``` bash
  # go into the directory
  user@computer: cd /srv/gargantext/
  #git inside installation folder
- user@computer: cd /install
- #execute the installation
- user@computer: ./run
- #type ctrl+d to exit or exit; command
+ user@computer: ./start
+ #type ctrl+d to exit or simply type exit in terminal;
  ```
 
 Then open up a chromium browser and go to localhost:8000
@@ -55,7 +66,3 @@ Click on "Enter Gargantext"
 Login in with you created username and pasword
 
 Enjoy! ;)
-
-
-
-

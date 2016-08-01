@@ -174,12 +174,28 @@
                                             title="Export terms table in CSV">
                                             Export terms table &nbsp; <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                                         </a>
+
+
                                         {% elif view == 'titles'  %}
+
+
+                                        <a href="https://gogs.iscpif.fr/humanities/faq_gargantext/wiki/FAQ#import--export-a-dataset" class="pull-right btn btn-lg">
+                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                        </a>
+
+
                                         <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
                                             title="Export full corpus in CSV">
-                                            Export corpus &nbsp; <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+
+                                            Export corpus &nbsp;
+
+                                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+
                                         </a>
+
+
+
                                         {% else  %}
                                         <!-- TODO export journal table -->
                                         {% endif %}
@@ -187,6 +203,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-1">
+                                      </span>
                                     </div>
                                     <div class="col-md-6">
                                             <h3>

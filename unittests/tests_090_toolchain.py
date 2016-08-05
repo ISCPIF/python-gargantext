@@ -29,8 +29,9 @@ class ToolChainRecipes(TestCase):
         # ---------------------------------------------------------
         self.source_list = [(resource["type"], resource["name"]) for resource in RESOURCETYPES]
         self.source_list.insert(0, (0,"Select a database below"))
-
         #self.files = for d in os.path.join("/home/")
+        self.sample_files = self._collect_samples_files()
+
     def tearDown(self):
         del self.session
         del self.client
@@ -82,9 +83,300 @@ class ToolChainRecipes(TestCase):
         '''get the status of the current Node'''
         self.statuses = Node.get_status()
 
-    def __get_last_status__(self, Node):
-        self.last_status = self._get_statuses(Node)[-1]
+        source_type = 1
 
-    def test_000_create_corpus(self):
-        for d in os.listdir(DATA_SAMPLE_DIR):
-            print(d)
+        for i,sample_file in enumerate(self.sample_files["europresse"]):
+            name = "testEuropress_"+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 4)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+
+    def tests_002(self):
+        #create a project
+        source_type = 2
+        source = get_resource(2)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_003(self):
+        #create a project
+        source_type = 3
+        source = get_resource(3)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 81)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_004(self):
+        #create a project
+        source_type = 4
+        source = get_resource(4)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_005(self):
+        #create a project
+        source_type = 5
+        source = get_resource(5)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_006(self):
+        #create a project
+        source_type = 6
+        source = get_resource(6)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_007(self):
+        #create a project
+        source_type = 7
+        source = get_resource(7)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 837)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_008(self):
+        #create a project
+        source_type = 8
+        source = get_resource(8)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+
+
+
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_009(self):
+        #create a project
+        source_type = 9
+        source = get_resource(9)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 10)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+    def tests_010(self):
+        #create a project
+        source_type = 10
+        source = get_resource(10)
+        source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
+        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        print("\n", __name__)
+        for i,sample_file in enumerate(self.sample_files[source_name]):
+            name = "test_"+source_name+str(i)
+            print("\t- Checking creation of corpus %s" %name)
+            self.corpus = self._create_corpus(name, source_type, sample_file)
+            db_corpus = self._get_corpus(name)
+            #corpus check
+
+            self.assertEqual(self.corpus.name, db_corpus.name)
+            print("\t- Checking creation of resource type '%s' " %get_resource(source_type)["name"])
+            self.assertEqual(self.corpus.resources()[0]["type"], db_corpus.resources()[0]["type"])
+            print("\t- Parsing and indexing corpus")
+            parse(self.corpus)
+            docs = self.__count_node_children__(self.corpus, "DOCUMENT")
+            self.assertEqual(docs, 50)
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])
+            print("\t- Extracting ngrams")
+            extract_ngrams(self.corpus)
+            ngrams = self.__count_node_children__(self.corpus, "NGRAMS")
+            status = self.corpus.status()
+            self.assertTrue(status["complete"])

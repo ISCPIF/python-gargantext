@@ -95,8 +95,9 @@ class ToolChainRecipes(TestCase):
     def tests_001_europresse(self):
         '''testing Europresse parsing'''
         #create a project
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +":"
+        print("tests_001_europresse, name:", self.test_name)
+        self.log.debug("\n" + self.test_name)
 
         source_type = 1
 
@@ -128,8 +129,8 @@ class ToolChainRecipes(TestCase):
         source = get_resource(2)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
 
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
         for i,sample_file in enumerate(self.sample_files[source_name]):
@@ -158,8 +159,8 @@ class ToolChainRecipes(TestCase):
         source_type = 3
         source = get_resource(3)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -189,8 +190,8 @@ class ToolChainRecipes(TestCase):
         source_type = 4
         source = get_resource(4)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -220,8 +221,8 @@ class ToolChainRecipes(TestCase):
         source_type = 5
         source = get_resource(5)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -251,8 +252,8 @@ class ToolChainRecipes(TestCase):
         source_type = 6
         source = get_resource(6)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -282,8 +283,8 @@ class ToolChainRecipes(TestCase):
         source_type = 7
         source = get_resource(7)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -313,8 +314,8 @@ class ToolChainRecipes(TestCase):
         source_type = 8
         source = get_resource(8)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
 
 
 
@@ -344,8 +345,8 @@ class ToolChainRecipes(TestCase):
         source_type = 9
         source = get_resource(9)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
         for i,sample_file in enumerate(self.sample_files[source_name]):
             name = "test_"+source_name+str(i)
             self.log.debug("\t- Checking creation of corpus %s" %name)
@@ -374,8 +375,8 @@ class ToolChainRecipes(TestCase):
         self.log.debug(source)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
         self.log.debug(source_name)
-        __name__ = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
-        self.log.debug("\n", __name__)
+        self.test_name = ">>  "+ sys._getframe().f_code.co_name +"_"+str(source_name)+":"
+        self.log.debug("\n" + self.test_name)
         for i,sample_file in enumerate(self.sample_files[source_name]):
             name = "test_"+source_name+str(i)
             self.log.debug("\t- Checking creation of corpus %s" %name)

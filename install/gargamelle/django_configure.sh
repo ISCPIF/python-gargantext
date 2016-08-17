@@ -16,13 +16,12 @@ echo "::::: DJANGO :::::"
 
 /bin/su gargantua -c 'source /env_3-5/bin/activate &&\
     echo "Activated env" &&\
-    ./srv/gargantext/manage.py makemigrations &&\
-    ./srv/gargantext/manage.py migrate && \
+    /srv/gargantext/manage.py makemigrations &&\
+    /srv/gargantext/manage.py migrate && \
     echo "migrations ok" &&\
-    ./srv/gargantext/dbmigrate.py && \
-    ./srv/gargantext/dbmigrate.py && \
-    ./srv/gargantext/dbmigrate.py && \
-    ./srv/gargantext/manage.py createsuperuser'
+    /srv/gargantext/dbmigrate.py && \
+    /srv/gargantext/dbmigrate.py && \
+    /srv/gargantext/dbmigrate.py && \
+    /srv/gargantext/manage.py createsuperuser'
 
 /usr/sbin/service postgresql stop
-

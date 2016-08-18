@@ -75,11 +75,12 @@ sudo docker build -t gargamelle:latest ./gargamelle
 echo ':::: CONFIGURE ::::'
 
 sudo docker run \
+        --name=gargamelle_box \
         -v /srv/:/srv/ \
         -p 8000:8000 \
         -p 5432 \
         -it gargamelle:latest \
         /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
-sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
+sudo docker rm gargamelle_box
 sudo cp ./run /srv/gargantext/start

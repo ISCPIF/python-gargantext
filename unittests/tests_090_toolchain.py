@@ -117,7 +117,7 @@ class ToolChainRecipes(TestCase):
 
         for i,sample_file in enumerate(self.sample_files[source_name]):
             print("... sample_file:", sample_file)
-            # expected_ndocs = expected_results[i]
+            expected_ndocs = expected_results[i]
             name = "test_"+source_name+str(i)
             self.log.debug("\t- Checking creation of corpus %s" %name)
             self.corpus = self._create_corpus(name, source_type, sample_file)
@@ -130,7 +130,7 @@ class ToolChainRecipes(TestCase):
             parse(self.corpus)
             real_ndocs = self.__count_node_children__(self.corpus, "DOCUMENT")
             print('==>\t'+str(source_type)+'\t'+str(i)+'\t'+sample_file+'\t'+str(real_ndocs))
-            self.assertEqual(real_ndocs, expected_number_of_docs)
+            self.assertEqual(real_ndocs, expected_ndocs)
             status = self.corpus.status()
             self.log.debug("\t- Extracting ngrams")
             extract_ngrams(self.corpus)

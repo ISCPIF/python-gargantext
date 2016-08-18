@@ -83,4 +83,7 @@ sudo docker run \
         /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
 sudo docker rm gargamelle_box
-sudo cp ./run /srv/gargantext/start
+
+# creating the "start" copy + giving it normal ownership (because we're probably sudo)
+cp ./run /srv/gargantext/start
+chown $current_user:gargantua /srv/gargantext/start

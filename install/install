@@ -76,7 +76,9 @@ echo ':::: CONFIGURE ::::'
 
 sudo docker run \
         --name=gargamelle_box \
-        -v /srv/:/srv/ \
+        -v /srv/gargantext:/srv/gargantext \
+        -v /srv/gargandata:/srv/gargandata \
+        -v /srv/gargantext_lib:/srv/gargantext_lib \
         -p 8000:8000 \
         -p 5432 \
         -it gargamelle:latest \

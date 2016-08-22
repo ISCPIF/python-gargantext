@@ -43,6 +43,22 @@ function uncompress_lib {
 #~ esac
 
 
+echo "::: CREATE GROUP :::";
+if grep -q 'gargantua' /etc/groups
+then
+    echo "Using existing group 'gargantua'"
+else
+    sudo groupadd gargantua
+fi
+
+# adding the users to the group
+current_user=$(who -m | cut -d' ' -f1)
+sudo usermod -G gargantua $current_user
+sudo usermod -G gargantua gargantua
+
+# changing the group of the sourcedir
+sudo chown -R :gargantua /srv/gargantext
+
 echo "::: SETUP ENV :::";
 for dir in "/srv/gargantext_lib" "/srv/gargantext_static" "/srv/gargantext_media"; do
     sudo mkdir -p $dir ;
@@ -59,12 +75,17 @@ sudo docker build -t gargamelle:latest ./gargamelle
 echo ':::: CONFIGURE ::::'
 
 sudo docker run \
-        -v /srv/:/srv/ \
+        --name=gargamelle_box \
+        -v /srv/gargantext:/srv/gargantext \
+        -v /srv/gargandata:/srv/gargandata \
+        -v /srv/gargantext_lib:/srv/gargantext_lib \
         -p 8000:8000 \
         -p 5432 \
         -it gargamelle:latest \
         /bin/bash -c "./psql_configure.sh; ./django_configure.sh ; exit"
 
-sudo docker rm -f `docker ps -a | grep -v CONTAINER | awk '{print $1 }'`
+sudo docker rm gargamelle_box
 
-
+# creating the "start" copy + giving it normal ownership (because we're probably sudo)
+cp ./run /srv/gargantext/start
+chown $current_user:gargantua /srv/gargantext/start

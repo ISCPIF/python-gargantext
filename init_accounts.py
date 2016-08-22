@@ -55,8 +55,13 @@ def notify_user(username, email, password):
 
     La nouvelle version de Gargantext sort en septembre prochain.
     Vous êtes actuellement sur la version de développement, vos retours
-    seront précieux pour stabiliser la plateforme; merci d'avance!
+    seront précieux pour stabiliser la plateforme: merci d'avance!
+    
+    Foire aux questions de Gargantext:
+    https://gogs.iscpif.fr/humanities/faq_gargantext/wiki/FAQ
 
+    Rapporter un bogue:
+    https://gogs.iscpif.fr/humanities/faq_gargantext/issues
 
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement

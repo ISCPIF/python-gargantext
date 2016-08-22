@@ -102,7 +102,7 @@ def do_maplist(corpus,
 
     if n_ngrams == 0:
         raise ValueError("No ngrams in cooc table ?")
-
+        #return
     # results, with same structure as quotas
     chosen_ngrams = {
                      'topgen':{'monograms':[], 'multigrams':[]},

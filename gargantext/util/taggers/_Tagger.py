@@ -3,9 +3,9 @@ When started, it initiates the parser;
 when passed text, the text is piped to the parser.
 When ended, the parser is closed and the tagged word returned as a tuple.
 """
-
+from gargantext.constants import RULE_JJNN, DEFAULT_MAX_NGRAM_LEN
 import re
-
+import nltk
 
 class Tagger:
 
@@ -19,7 +19,28 @@ class Tagger:
             | [][.,;"'?!():-_`]             # these are separate tokens
             ''', re.UNICODE | re.MULTILINE | re.DOTALL)
         self.buffer = []
-        self.start()
+
+        #self.start()
+
+
+    def clean_text(self, text):
+        """Clean the text for better POS tagging.
+        For now, only removes (short) XML tags.
+        """
+        return re.sub(r'<[^>]{0,45}>', '', text)
+
+    def extract(self, text, rule=RULE_JJNN, label='NP', max_n_words=DEFAULT_MAX_NGRAM_LEN):
+        self.text = self.clean_text(text)
+        grammar = nltk.RegexpParser(label + ': ' + rule)
+        tagged_tokens = list(self.tag_text(self.text))
+        if len(tagged_tokens):
+            grammar_parsed = grammar.parse(tagged_tokens)
+            for subtree in grammar_parsed.subtrees():
+                if subtree.label() == label:
+                    if len(subtree) < max_n_words:
+                        yield subtree.leaves()
+                            # ex: [('wild', 'JJ'), ('pollinators', 'NNS')]
+
 
     def __del__(self):
         self.stop()
@@ -29,6 +50,8 @@ class Tagger:
         This method is called by the constructor, and can be overriden by
         inherited classes.
         """
+        print("START")
+        self.extract(self.text)
 
     def stop(self):
         """Ends the tagger.

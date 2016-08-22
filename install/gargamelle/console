@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# opens a console + virtualenv inside the already active docker container
+# (to use after start)
+
+sudo docker exec -it gargamelle_box bash --rcfile 'env_3-5/bin/activate'

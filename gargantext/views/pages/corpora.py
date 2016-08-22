@@ -37,7 +37,7 @@ def docs_by_titles(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : resourcename(corpus),
+            'resourcename' : get_resource_by_name(corpus.resources()[0]),
             'view': 'titles',
             'user': request.user
         },
@@ -65,7 +65,7 @@ def docs_by_journals(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : resourcename(corpus),
+            'resourcename' : get_resource_by_name(corpus.resources()[0]),
             'view': 'journals'
         },
     )
@@ -84,11 +84,8 @@ def analytics(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : resourcename(corpus),
+            'resourcename' : get_resource_by_name(corpus.resources()[0]),
             'view': 'analytics',
             'user': request.user
         },
     )
-
-
-

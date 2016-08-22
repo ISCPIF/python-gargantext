@@ -1,11 +1,12 @@
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
-
+import importlib
 from gargantext.util.lists import *
 from gargantext.util.tools import datetime, convert_to_date
-
 import re
 
+
+# types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
 LISTTYPES = {
     'DOCUMENT'     : WeightedList,
     'GROUPLIST'    : Translations,   # todo remove "LIST" from name
@@ -19,16 +20,16 @@ LISTTYPES = {
     'TFIDF-CORPUS' : WeightedIndex,
     'TFIDF-GLOBAL' : WeightedIndex,
     'TIRANK-LOCAL' : WeightedIndex,   # could be WeightedList
-    'TIRANK-GLOBAL' : WeightedIndex,   # could be WeightedList
 }
 # 'OWNLIST'      : UnweightedList,    # £TODO use this for any term-level tags
 
 NODETYPES = [
     # TODO separate id not array index, read by models.node
-    None,
+    None,                    # 0
     # documents hierarchy
     'USER',                  # 1
     'PROJECT',               # 2
+    #RESOURCE should be here but last
     'CORPUS',                # 3
     'DOCUMENT',              # 4
     # lists
@@ -45,11 +46,12 @@ NODETYPES = [
     'TFIDF-GLOBAL',          # 14
     # docs subset
     'FAVORITES',             # 15
-
     # more scores (sorry!)
     'TIRANK-LOCAL',          # 16
     'TIRANK-GLOBAL',         # 17
+
     'GENCLUSION',            # 18
+    'RESOURCE',              # 19
 ]
 
 INDEXED_HYPERDATA = {
@@ -114,114 +116,178 @@ INDEXED_HYPERDATA = {
 
 }
 
+# resources ---------------------------------------------
+def get_resource(sourcetype):
+    '''resource :: type => resource dict'''
+    for n in RESOURCETYPES:
+        if int(n["type"]) == int(sourcetype):
+            return n
+    return None
+def get_resource_by_name(sourcename):
+    '''resource :: name => resource dict'''
+    for n in RESOURCETYPES:
+        if str(n["name"]) == str(sourcename):
+            return n
+# taggers -----------------------------------------------
+def get_tagger(lang):
+    '''
+    lang => default langage[0] => Tagger
 
-#from gargantext.util.taggers import FrenchMeltTagger, TurboTagger
-from gargantext.util.taggers import NltkTagger
+    '''
+    name = LANGUAGES[lang]["tagger"]
+    module = "gargantext.util.taggers.%s" %(name)
+    module = importlib.import_module(module, "")
+    tagger = getattr(module, name)
+    return tagger()
 
+
+
+
+RESOURCETYPES = [
+    {   "type":1,
+        'name': 'Europress',
+        'format': 'Europress',
+        'parser': "EuropressParser",
+        'file_formats':["zip"],
+        'crawler': None,
+        'default_languages': ['en', 'fr'],
+    },
+    {   'type': 2,
+        'name': 'Jstor [RIS]',
+        'format': 'RIS',
+        'parser': "RISParser",
+        'file_formats':["zip"],
+        'crawler': None,
+        'default_languages': ['en'],
+    },
+    {   'type': 3,
+        'name': 'Pubmed [XML]',
+        'format': 'Pubmed',
+        'parser': "PubmedParser",
+        'file_formats':["zip", "xml"],
+        'crawler': "PubmedCrawler",
+        'default_languages': ['en'],
+    },
+    {   'type':4,
+        'name': 'Scopus [RIS]',
+        'format': 'RIS',
+        'parser': "RISParser",
+        'file_formats':["zip"],
+        'crawler': None,
+        'default_languages': ['en'],
+    },
+    {   'type':5,
+        'name': 'Web of Science [ISI]',
+        'format': 'ISI',
+        'parser': "ISIParser",
+        'file_formats':["zip"],
+        #'crawler': "ISICrawler",
+        'crawler': None,
+        'default_languages': ['en'],
+    },
+    {   'type':6,
+        'name': 'Zotero [RIS]',
+        'format': 'RIS',
+        'parser': 'RISParser',
+        'file_formats':["zip", "ris", "txt"],
+        'crawler': None,
+        'default_languages': ['en'],
+    },
+    {   'type':7,
+        'name': 'CSV',
+        'format': 'CSV',
+        'parser': 'CSVParser',
+        'file_formats':["zip", "csv"],
+        'crawler': None,
+        'default_languages': ['en'],
+    },
+    {   'type': 8,
+        'name': 'ISTex [ISI]',
+        'format': 'ISI',
+        'parser': "ISTexParser",
+        'file_formats':["zip"],
+        #'crawler': "ISICrawler",
+        'crawler': None,
+        'default_languages': ['en', 'fr'],
+    },
+   {    "type":9,
+        "name": 'SCOAP [XML]',
+        "parser": "CernParser",
+        "format": 'MARC21',
+        'file_formats':["zip","xml"],
+        "crawler": "CernCrawler",
+        'default_languages': ['en'],
+   },
+   {    "type":10,
+        "name": 'REPEC [RIS]',
+        "parser": "RisParser",
+        "format": 'RIS',
+        'file_formats':["zip","ris", "txt"],
+        "crawler": None,
+        'default_languages': ['en'],
+   },
+]
+#shortcut for resources declaration in template
+PARSERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["parser"] is not None]
+CRAWLERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["crawler"] is not None]
+
+def load_parser(resource):
+    '''given a resource load the corresponding Parser
+    resource(dict) > Parser(object)
+    exemple with resource ISTexParser
+    PARSER filename: ISTEX
+    PARSER object: ISTexParser
+    '''
+    filename = resource["parser"].replace("Parser", '').upper()
+    module = 'gargantext.util.parsers.%s' %(filename)
+    module = importlib.import_module(module)
+    return getattr(module, resource["parser"])
+
+
+def load_crawler(resource):
+    '''given a resource load the corresponding Parser()
+    resource(dict) > Parser(object)
+    exemple with resource ISTexCrawler
+    PARSER filename: ISTEX
+    PARSER object: ISTexCrawler
+    '''
+    filename = resource["crawler"].replace("Crawler", "").upper()
+    module = 'gargantext.util.crawlers.%s' %(filename)
+    module = importlib.import_module(module)
+    return getattr(module, resource["crawler"])
+
+
+
+# Supported languages and taggers ---------------------------------------------
+#first declare the tagger using a string
+#and it will be imported into gargantext.utils.taggers
 LANGUAGES = {
     'en': {
-        #'tagger': EnglishMeltTagger,
-        #'tagger': TurboTagger,
-        'tagger': NltkTagger,
+        #'tagger': 'EnglishMeltTagger',
+        #'tagger': "TurboTagger",
+        'tagger': 'NltkTagger',
     },
     'fr': {
-        #'tagger': FrenchMeltTagger,
-        #'tagger': TreeTagger,
-        'tagger': NltkTagger,
+        #'tagger': "FrenchMeltTagger",
+        #'tagger': 'TreeTagger',
+        'tagger': 'NltkTagger',
     },
 }
 
-
-from gargantext.util.parsers import \
-    EuropressParser, RISParser, PubmedParser, ISIParser, CSVParser, ISTexParser, CernParser, RepecParser
-
-def resourcetype(name):
+def load_tagger(lang):
     '''
-    resourcetype :: String -> Int
-    Usage : resourcetype("Europress (English)") == 1
-    Examples in scrapers scripts (Pubmed or ISTex for instance).
+    given a LANG load the corresponding tagger
+    lang(str) > Tagger(Object)
     '''
-    return [n[0]  for n in enumerate(r['name'] for r in RESOURCETYPES) if n[1] == name][0]
 
-def resourcename(corpus):
-    '''
-    resourcetype :: Corpus -> String
-    Usage : resourcename(corpus) == "ISTex"
-    '''
-    resource = corpus.resources()[0]
-    resourcename = RESOURCETYPES[resource['type']]['name']
-    return re.sub(r'\(.*', '', resourcename)
+    filename = LANGUAGES[lang]["tagger"]
+    module = 'gargantext.util.taggers.%s' %(filename)
+    module = importlib.import_module(module)
+    return getattr(module, filename)
 
-RESOURCETYPES = [
-    # type 0
-    {   'name': 'Select database below',
-        'parser': None,
-        'default_language': None,
-    },
-    # type 1
-    {   'name': 'Europress (English)',
-        'parser': EuropressParser,
-        'default_language': 'en',
-    },
-    # type 2
-    {   'name': 'Europress (French)',
-        'parser': EuropressParser,
-        'default_language': 'fr',
-    },
-    # type 3
-    {   'name': 'Jstor (RIS format)',
-        'parser': RISParser,
-        'default_language': 'en',
-    },
-    # type 4
-    {   'name': 'Pubmed (XML format)',
-        'parser': PubmedParser,
-        'default_language': 'en',
-    },
-    # type 5
-    {   'name': 'Scopus (RIS format)',
-        'parser': RISParser,
-        'default_language': 'en',
-    },
-    # type 6
-    {   'name': 'Web of Science (ISI format)',
-        'parser': ISIParser,
-        'default_language': 'en',
-    },
-    # type 7
-    {   'name': 'Zotero (RIS format)',
-        'parser': RISParser,
-        'default_language': 'en',
-    },
-    # type 8
-    {   'name': 'CSV',
-        'parser': CSVParser,
-        'default_language': 'en',
-    },
-    # type 9
-    {   'name': 'ISTex',
-        'parser': ISTexParser,
-        'default_language': 'en',
-    },
-    # type 10
-    {    "type":10,
-         "name": 'SCOAP (XML MARC21 Format)',
-         "parser": CernParser,
-         "default_language": "en",
-         'accepted_formats':["zip","xml"],
-         #~ "scrapper": CernScrapper,
-         #~ "base_url": "http://api.scoap3.org/search?",
-    },
-
-    # type 11
-    {   'name': 'REPEC (RIS format)',
-        'parser': RepecParser,
-        'default_language': 'en',
-    },
-
-]
 
 # linguistic extraction parameters ---------------------------------------------
+
 DEFAULT_RANK_CUTOFF_RATIO      = .75         # MAINLIST maximum terms in %
 
 DEFAULT_RANK_HARD_LIMIT        = 5000        # MAINLIST maximum terms abs
@@ -257,19 +323,24 @@ DEFAULT_INDEX_SUBGRAMS         = False        # False <=> traditional
                                              #  "cool example".
                                              #   (all 1 to n-1 length ngrams,
                                              #    at indexing after extraction)
+# Defaults INDEXED Fields for ngrams extraction
+# put longest field first in order to make detection language more efficient
+DEFAULT_INDEX_FIELDS            = ('abstract','title' )
+# Grammar rules for chunking
+RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
+RULE_JJDTNN = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
+RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
+               +?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?\
+               ,){0,2}?(N.?.?,|\?,)+?)+?)*?$"
 
 
 # ngram lists import/export parameters -----------------------------------------
 DEFAULT_CSV_DELIM              = '\t'        # for import/export CSV defaults
 DEFAULT_CSV_DELIM_GROUP        = '|&|'
 
-# ------------------------------------------------------------------------------
 
-# other parameters
-# default number of docs POSTed to scrappers.views.py
-#  (at page  project > add a corpus > scan/process sample)
-QUERY_SIZE_N_DEFAULT = 1000
 
+# Files ----------------------------------------------------------------
 import os
 from .settings import BASE_DIR
 # uploads/.gitignore prevents corpora indexing
@@ -278,7 +349,7 @@ UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
 UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
-
+# Processing -----------------------------------------------------------
 # about batch processing...
 BATCH_PARSING_SIZE          = 256
 BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many distinct ngrams before INTEGRATE
@@ -305,5 +376,3 @@ graph_constraints = {'corpusMax' : 400
                     ,'corpusMin' : 10
                     ,'mapList'   : 50
                     }
-
-

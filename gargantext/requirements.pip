@@ -14,6 +14,7 @@ djangorestframework==3.3.2
 html5lib==0.9999999
 jdatetime==1.7.2
 kombu==3.0.33
+langdetect==1.0.6
 lxml==3.5.0
 networkx==1.11
 nltk==3.1

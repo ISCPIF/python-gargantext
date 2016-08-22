@@ -59,12 +59,17 @@ def overview(request):
 
 
 class NewCorpusForm(forms.Form):
+    #mapping choices based on ressource.type
+    source_list = [(resource["type"], resource["name"]) for resource in RESOURCETYPES]
+    source_list.insert(0, (0,"Select a database below"))
     type = forms.ChoiceField(
-        choices = enumerate(resource_type['name'] for resource_type in RESOURCETYPES),
+        choices = source_list,
         widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
     )
     name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
     file = forms.FileField()
+    def clean_resource(self):
+        file_ = self.cleaned_data.get('file')
     def clean_file(self):
         file_ = self.cleaned_data.get('file')
         if len(file_) > 1024 ** 3 : # we don't accept more than 1GB
@@ -117,7 +122,8 @@ def project(request, project_id):
         resources = corpus.resources()
         if len(resources):
             resource = resources[0]
-            resource_type_name = RESOURCETYPES[resource['type']]['name']
+            #resource_type_name = RESOURCETYPES[resource['type']]['name']
+            resource_type_name = get_resource(resource["type"])["name"]
         else:
             print("(WARNING) PROJECT view: no listed resource")
         # add some data for the viewer
@@ -172,5 +178,3 @@ def project(request, project_id):
             'query_size': QUERY_SIZE_N_DEFAULT,
         },
     )
-
-

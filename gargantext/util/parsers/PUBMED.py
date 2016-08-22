@@ -31,6 +31,7 @@ class PubmedParser(Parser):
         if isinstance(file, bytes):
             file = BytesIO(file)
         xml = etree.parse(file, parser=self.xml_parser)
+        #print(xml.find("PubmedArticle"))
         xml_articles = xml.findall('PubmedArticle')
         # initialize the list of hyperdata
         hyperdata_list = []

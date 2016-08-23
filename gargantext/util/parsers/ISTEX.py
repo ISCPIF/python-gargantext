@@ -93,7 +93,8 @@ class ISTexParser(Parser):
                     # (cf. api.istex.fr/document/?q=*&facet=language
                     #  et  tests langid sur les language=["unknown"])
 
-
+            hyperdata = self.format_hyperdata_languages(hyperdata)
+            
             if "publication_date" in hyperdata:
                 RealDate = hyperdata["publication_date"]
                 if "publication_date" in hyperdata:

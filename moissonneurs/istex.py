@@ -1,4 +1,4 @@
-# from datetime import datetime
+from datetime import datetime
 from time import sleep
 import datetime
 import threading
@@ -84,7 +84,8 @@ def save(request , project_id):
     if request.method == "POST":
         query = "-"
         query_string = "-"
-        N = 0
+
+        N = QUERY_SIZE_N_MAX
 
         if "query" in request.POST:
             query = request.POST["query"]

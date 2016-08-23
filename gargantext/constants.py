@@ -219,7 +219,7 @@ RESOURCETYPES = [
    },
    {    "type":10,
         "name": 'REPEC [RIS]',
-        "parser": "RisParser",
+        "parser": "RISParser",
         "format": 'RIS',
         'file_formats':["zip","ris", "txt"],
         "crawler": None,

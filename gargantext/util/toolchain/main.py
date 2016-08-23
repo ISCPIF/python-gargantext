@@ -36,8 +36,8 @@ def parse_extract(corpus):
     if corpus.status()['error']:
         print("ERROR: aborting parse_extract for corpus #%i" % corpus_id)
         return None
-
-    print('CORPUS #%d: parsed' % (corpus.id))
+    docs_count = corpus.children("DOCUMENT").count()
+    print('CORPUS #%d: parsed %d documents' % (corpus.id, docs_count))
     extract_ngrams(corpus)
     print('CORPUS #%d: extracted ngrams' % (corpus.id))
 

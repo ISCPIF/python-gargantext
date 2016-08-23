@@ -30,7 +30,10 @@ def query( request ):
 
     if request.method == "POST":
         query = request.POST["query"]
-        N = int(request.POST["N"])
+        if request.POST[N] == "NaN":
+            N = QUERY_SIZE_N_MAX
+        else:
+            N = int(request.POST["N"])
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
         print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
         query_string = query.replace(" ","+")
@@ -77,7 +80,7 @@ def save(request , project_id):
     if project.user_id != user.id:
         return HttpResponseForbidden()
 
-
+    query_string = ""
     if request.method == "POST":
         query = "-"
         query_string = "-"
@@ -88,7 +91,10 @@ def save(request , project_id):
             query_string = query.replace(" ","+")   # url encoded q
 
         if "N" in request.POST:
-            N = int(request.POST["N"])     # query_size from views_opti
+            if request.POST["N"] == "NaN":
+                N = QUERY_SIZE_N_MAX
+            else:
+                N = int(request.POST["N"])     # query_size from views_opti
             if N > QUERY_SIZE_N_MAX:
                 msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
                 print("ERROR (scrap: istex d/l ): ",msg)
@@ -133,7 +139,7 @@ def save(request , project_id):
             if filename!=False:
                 # add the uploaded resource to the corpus
                 corpus.add_resource(
-                  type = get_resource_by_name('ISTex [ISI]')["type"]
+                  type = get_resource_by_name('ISTex')["type"]
                 , path = filename
                                    )
                 dwnldsOK+=1

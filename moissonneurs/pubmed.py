@@ -48,7 +48,10 @@ def query( request ):
 
     if request.method == "POST":
         query = request.POST["query"]
-        N = int(request.POST["N"])
+        if request.POST["N"] == "NaN":
+            N = QUERY_SIZE_N_MAX
+        else:
+            N = int(request.POST["N"])
 
         if N > QUERY_SIZE_N_MAX:
             msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)

@@ -30,7 +30,7 @@ def query( request ):
 
     if request.method == "POST":
         query = request.POST["query"]
-        if request.POST[N] == "NaN":
+        if request.POST["N"] == "NaN":
             N = QUERY_SIZE_N_MAX
         else:
             N = int(request.POST["N"])

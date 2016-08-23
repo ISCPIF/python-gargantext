@@ -364,6 +364,7 @@
                         }
 
                         function getGlobalResults(value){
+
                             console.log("in getGlobalResults()")
                             // AJAX to django
                             var pubmedquery = $("#id_name").val()
@@ -376,7 +377,7 @@
 
                             var theType = $("#id_type option:selected").html();
 
-                            if(theType=="Pubmed (XML format)") {
+                            if(theType=="Pubmed [XML]") {
                                 $.ajax({
                                     // contentType: "application/json",
                                     url: window.location.origin+"/moissonneurs/pubmed/query",
@@ -388,7 +389,7 @@
                                     success: function(data) {
                                         console.log("SUCCESS")
                                         console.log("in getGlobalResults")
-                                        // console.log(data)
+                                        console.log(data)
                                         console.log("enabling "+"#"+value.id)
                                         $("#"+value.id).attr('onclick','getGlobalResults(this);');
                                         // $("#submit_thing").prop('disabled' , false)

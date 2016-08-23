@@ -18,7 +18,7 @@ from traceback                  import print_tb
 from django.shortcuts import redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
-from gargantext.constants       import get_resource, QUERY_SIZE_N_MAX
+from gargantext.constants       import get_resource_by_name, QUERY_SIZE_N_MAX
 from gargantext.models.nodes    import Node
 from gargantext.util.db         import session
 from gargantext.util.db_cache   import cache

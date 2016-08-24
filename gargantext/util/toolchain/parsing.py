@@ -175,12 +175,14 @@ def parse(corpus):
         session.commit()
         if len(corpus.skipped_docs) > 0:
             print (sum(languages["__skipped__"].values()), "docs with unsupported lang")
-            #assign main lang to unsupported languages docs
-            for d_id in corpus.skipped_docs:
-                document = session.query(Node).filter(Node.id == d_id, Node.typename == "DOCUMENT").first()
-                document.hyperdata["language_iso2"] = corpus.language_id
-                document.save_hyperdata()
-                session.commit()
+            #assign main lang of the corpus to unsupported languages docs
+            # for d_id in corpus.skipped_docs:
+            #     document = session.query(Node).filter(Node.id == d_id, Node.typename == "DOCUMENT").first()
+            #     if document.hyperdata["error"].startswith("Error: unsupported language"):
+            #         print(document.hyperdata["language_iso2"])
+            #     document.hyperdata["language_iso2"] = corpus.language_id
+            #     document.save_hyperdata()
+            #     session.commit()
 
 
 

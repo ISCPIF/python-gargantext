@@ -146,14 +146,7 @@ def parse(corpus):
                         session.commit()
                         #adding skipped_docs for later processsing
                         skipped_docs.append(document.id)
-
-
-
-
-
                 #documents for this resources
-
-
                 session.add(corpus)
                 session.commit()
                 # update info about the resource
@@ -161,20 +154,27 @@ def parse(corpus):
                 #print( "resource n°",i, ":", d, "docs inside this file")
 
 
-        # add a corpus-level info about languages adding a __skipped__ info
-        print(len(skipped_docs), "docs skipped")
+
+        #skipped_docs
+        corpus.skipped_docs = list(set(skipped_docs))
+        print(len(corpus.skipped_docs), "docs skipped")
+        skipped_langs = dict(Counter(skipped_languages))
+        if len(corpus.skipped_docs) > 0:
+            print ("INFO in which:")
+            print (sum(skipped_langs.values()), "docs with unsupported lang")
+
         print(corpus.children("DOCUMENT").count(), "docs parsed")
-        #main language of the corpus
+        #language of corpus
         print(languages.items())
         corpus.language_id = sorted(languages.items(), key = lambda x: x[1], reverse=True)[0][0]
-        print(corpus.language_id)
-        languages['__skipped__'] = dict(Counter(skipped_languages))
-        corpus.languages = languages
-        corpus.skipped_docs = list(set(skipped_docs))
+        print("Default MAIN language of CORPUS", corpus.language_id)
+        corpus.languages = dict(languages)
+        corpus.languages["__skipped__"] = list(skipped_langs.keys())
+        print("Languages of CORPUS", corpus.languages)
         corpus.save_hyperdata()
         session.commit()
-        if len(corpus.skipped_docs) > 0:
-            print (sum(languages["__skipped__"].values()), "docs with unsupported lang")
+
+
             #assign main lang of the corpus to unsupported languages docs
             # for d_id in corpus.skipped_docs:
             #     document = session.query(Node).filter(Node.id == d_id, Node.typename == "DOCUMENT").first()

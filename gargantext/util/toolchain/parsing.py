@@ -10,31 +10,33 @@ def parse(corpus):
     try:
         documents_count = 0
         corpus.status('Docs', progress=0)
-        #1 corpus => 1 resource
+
+        # shortcut to hyperdata's list of added resources (packs of docs)
         resources = corpus.resources()
-        #get the sources capabilities for a given corpus resource
-        sources = [get_resource(resource["type"]) for resource in corpus.resources() if resource["extracted"] is False]
-        if len(sources) == 0:
-            #>>> documents have already been parsed?????
-            return
-        if len(sources) > 0:
-            #>>> necessairement 1 corpus = 1 source dans l'archi actuelle
-            source = sources[0]
-            resource = resources[0]
-            #source.extend(resource)
-            if source["parser"] is None:
+
+        # each resource contains a path to a file with the docs
+        for i, resource in enumerate(resources):
+
+            # we'll only want the resources that have never been extracted
+            if resource["extracted"]:
+                continue
+
+            # the sourcetype's infos
+            source_infos = get_resource(resource['type'])
+
+            if source_infos["parser"] is None:
                 #corpus.status(error)
                 raise ValueError("Resource '%s' has no Parser" %resource["name"])
             else:
                 #observed langages in corpus docs
-                corpus.languages = defaultdict.fromkeys(source["default_languages"], 0)
+                corpus.languages = defaultdict.fromkeys(source_infos["default_languages"], 0)
                 #remember the skipped docs in parsing
                 skipped_languages = []
                 corpus.skipped_docs = []
                 session.add(corpus)
                 session.commit()
                 #load the corresponding parser
-                parserbot = load_parser(source)
+                parserbot = load_parser(source_infos)
                 # extract and insert documents from resource.path into database
                 default_lang_field = ["language_"+l for l in ["iso2", "iso3", "full_name"]]
 
@@ -46,7 +48,6 @@ def parse(corpus):
                                 hyperdata[k] = normalize_chars(hyperdata[k])
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
-
 
 
                     #any parser should implement a language_iso2
@@ -109,7 +110,9 @@ def parse(corpus):
                     session.commit()
 
             # update info about the resource
-            resource['extracted'] = True
+            corpus.hyperdata['resources'][i]['extracted'] = True
+            corpus.save_hyperdata()
+            session.commit()
         # add a corpus-level info about languages adding a __skipped__ info
         corpus.languages['__skipped__'] = Counter(skipped_languages)
         print("LANGUES")

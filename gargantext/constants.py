@@ -263,13 +263,13 @@ def load_crawler(resource):
 LANGUAGES = {
     'en': {
         #'tagger': 'EnglishMeltTagger',
-        #'tagger': "TurboTagger",
-        'tagger': 'NltkTagger',
+        'tagger': "TurboTagger",
+        #'tagger': 'NltkTagger',
     },
     'fr': {
-        #'tagger': "FrenchMeltTagger",
+        'tagger': "FrenchMeltTagger",
         #'tagger': 'TreeTagger',
-        'tagger': 'NltkTagger',
+        #'tagger': 'NltkTagger',
     },
 }
 

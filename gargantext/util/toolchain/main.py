@@ -62,7 +62,8 @@ def parse_extract_indexhyperdata(corpus):
     # apply actions
     print('CORPUS #%d' % (corpus.id))
     parse(corpus)
-    print('CORPUS #%d: parsed' % (corpus.id))
+    docs = corpus.children("DOCUMENT").count()
+    print('CORPUS #%d: parsed %d' % (corpus.id, docs))
     extract_ngrams(corpus)
 
     # Preparing Databse

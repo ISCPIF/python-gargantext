@@ -122,7 +122,8 @@ class Parser:
             if language_key in hyperdata:
                 try:
                     language_symbol = hyperdata[language_key]
-                    language = languages[language_symbol]
+                    if language_symbol is not None:
+                        language = languages[language_symbol]
                     if language:
                         break
                 except KeyError:

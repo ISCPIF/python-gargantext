@@ -26,7 +26,7 @@ def prepare_stemmers(corpus):
          and formatted
     """
     stemmers = {lang:SnowballStemmer(languages[lang].name.lower())  for lang \
-                    in corpus.languages.keys() if lang !="__skipped__"}
+                    in corpus.hyperdata['languages'].keys() if lang !="__skipped__"}
     stemmers['__unknown__'] = SnowballStemmer("english")
     return stemmers
 
@@ -56,7 +56,7 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
 
     # preloop per doc to sort ngrams by language
     for doc in corpus.children('DOCUMENT'):
-        if doc.id not in corpus.skipped_docs:
+        if doc.id not in corpus.hyperdata['skipped_docs']:
             if ('language_iso2' in doc.hyperdata):
                 lgid = doc.hyperdata['language_iso2']
             else:

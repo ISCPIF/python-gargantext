@@ -164,7 +164,6 @@ def parse(corpus):
     except Exception as error:
         corpus.status('Docs', error=error)
         corpus.save_hyperdata()
-        session.commit()
         raise error
 
 

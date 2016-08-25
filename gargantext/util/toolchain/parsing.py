@@ -6,37 +6,112 @@ from collections import defaultdict, Counter
 from re          import sub
 from gargantext.util.languages import languages, detect_lang
 
+def add_lang(languages, hyperdata, skipped_languages):
+    '''utility to add lang information
+    1. on language_iso2
+    2. on other format language_%f
+    3. on text from concatenation  of DEFAULT_INDEX_FIELDS
+    '''
+
+    if "language_iso2" in hyperdata.keys():
+        try:
+            languages[hyperdata["language_iso2"]] +=1
+            return languages,hyperdata, skipped_languages
+        except KeyError:
+            hyperdata["error"] = "Error: unsupported language %s" %hyperdata["language_iso2"]
+            skipped_languages.append(hyperdata["language_iso2"])
+            return languages,hyperdata, skipped_languages
+    # this should be the responsability of the parserbot
+    elif "language_iso3" in hyperdata.keys():
+        #convert
+        try:
+            lang =  languages[hyperdata["language_iso3"]].iso2
+            try:
+                corpus.languages[lang] +=1
+                return languages,hyperdata, skipped_languages
+            except KeyError:
+                hyperdata["error"] = "Error: unsupported language %s" %lang
+                skipped_languages.append(lang)
+                return languages,hyperdata, skipped_languages
+        except KeyError:
+            print ("LANG not referenced", (hyperdata["language_iso3"]))
+            #skipped_languages.append(hyperdata["language_iso3"])
+            #hyperdata["error"] = "Error: unsupported language '%s'" %hyperdata["language_fullname"]
+            return languages,hyperdata, skipped_languages
+
+    elif "language_fullname" in hyperdata.keys():
+
+        try:
+            #convert
+            lang = languages[hyperdata["language_fullname"]].iso2
+
+            try:
+                corpus.languages[lang] +=1
+                return corpus, hyperdata, skipped_languages
+            except KeyError:
+                hyperdata["error"] = "Error: unsupported language %s" %lang
+                skipped_languages.append(lang)
+                return languages,hyperdata, skipped_languages
+        except KeyError:
+            print ("LANG Not referenced", (hyperdata["language_fullname"]))
+            #hyperdata["error"] = "Error: unsupported language '%s'" %hyperdata["language_fullname"]
+            return languages,hyperdata, skipped_languages
+
+
+    else:
+        print("[WARNING] no language_* found in document [parsing.py]")
+        #no language have been indexed
+        #detectlang by index_fields
+
+        text = " ".join([getattr(hyperdata, k) for k in DEFAULT_INDEX_FIELDS])
+        if len(text) < 10:
+            hyperdata["error"] = "Error: no TEXT fields to index"
+            skipped_languages.append("__unknown__")
+            return languages,hyperdata, skipped_languages
+        #detect_lang return iso2
+        lang = detect_lang(text)
+        try:
+            languages[lang] += 1
+            return languages,hyperdata, skipped_languages
+        except KeyError:
+            hyperdata["error"] = "Error: unsupported language '%s'" %lang
+            skipped_languages.append(lang)
+            return languages,hyperdata, skipped_languages
+
+
 def parse(corpus):
     try:
-        documents_count = 0
+        print("PARSING")
+
         corpus.status('Docs', progress=0)
-
-        # shortcut to hyperdata's list of added resources (packs of docs)
+        #1 corpus => 1 or multi resources.path (for crawlers)
         resources = corpus.resources()
+        if len(resources) == 0:
+            return
+        #all the resources are of the same type for now
+        source = get_resource(resources[0]["type"])
+        #get the sources capabilities for a given corpus resource
+        #load the corresponding parserbot
+        if source["parser"] is None:
+            #corpus.status(error)
+            raise ValueError("Resource '%s' has no Parser" %resource["name"])
+        parserbot = load_parser(source)
+        #observed languages in default languages
+        languages = defaultdict.fromkeys(source["default_languages"], 0)
 
-        # vars to gather some infos during parsing (=> will end up in hyperdata)
-        skipped_docs = defaultdict(bool)
-        observed_languages = defaultdict(int)
+        #skipped_languages
+        skipped_languages = []
+        #skipped docs to remember for later processing
+        skipped_docs = []
 
-        # each resource contains a path to a file with the docs
-        for i, resource in enumerate(resources):
 
-            # we'll only want the resources that have never been extracted
-            if resource["extracted"]:
+        #BY RESOURCE
+        for i,resource in enumerate(resources):
+            if resource["extracted"] is True:
                 continue
-
-            # the sourcetype's infos
-            source_infos = get_resource(resource['type'])
-
-            if source_infos["parser"] is None:
-                #corpus.status(error)
-                raise ValueError("Resource '%s' has no Parser" %resource["name"])
             else:
-                # load the corresponding parser
-                parserbot = load_parser(source_infos)
-                # extract and insert documents from resource.path into database
-                default_lang_field = ["language_"+l for l in ["iso2", "iso3", "full_name"]]
-
+                # BY documents
+                d = 0
                 for hyperdata in parserbot(resource["path"]):
                     # indexed text fields defined in CONSTANTS
                     for k in DEFAULT_INDEX_FIELDS:
@@ -45,80 +120,68 @@ def parse(corpus):
                                 hyperdata[k] = normalize_chars(hyperdata[k])
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
-
-                    # any parserbot should implement a language_iso2
-                    if "language_iso2" in hyperdata.keys():
-                        observed_languages[hyperdata["language_iso2"]] +=1
-
-                    # this should be the responsability of the parserbot
-                    # elif "language_iso3" in hyperdata.keys():
-                    #     try:
-                    #         corpus.languages[languages(hyperdata["language_iso2"]).iso2] +=1
-                    #     except KeyError:
-                    #         hyperdata["error"] = "Error: unsupported language"
-                    #         skipped_languages.append(hyperdata["language_iso2"])
-
-                    else:
-                        print("[WARNING] no language_iso2 found in document [parsing.py]")
-                        # no language has been found by parserbot
-                        # => detectlang on index_fields
-                        text = " ".join([getattr(hyperdata, k, '') for k in DEFAULT_INDEX_FIELDS])
-                        if len(text) < 10:
-                            hyperdata["error"] = "Error: no TEXT fields to index"
-                        else:
-                            predicted_lang = detect_lang(text)
-                            hyperdata["language_iso2"] = predicted_lang
-                            observed_languages[predicted_lang] += 1
+                        #else:
+                            #print("[WARNING] No %s field found in hyperdata at parsing.py" %k)
+                        #    continue
+                    #adding lang into  record hyperdata
+                    languages, hyperdata, skipped_languages = add_lang(languages, hyperdata, skipped_languages)
 
                     # save as DB child
                     # ----------------
+                    #d += 1
+                    #print ("INSERT", d)
                     document = corpus.add_child(
                         typename = 'DOCUMENT',
                         name = hyperdata.get('title', '')[:255],
                         hyperdata = hyperdata,
                     )
+                    #corpus.save_hyperdata()
                     session.add(document)
+                    session.commit()
 
                     if "error" in hyperdata.keys():
                         #document.status("error")
                         document.status('Parsing', error= document.hyperdata["error"])
                         document.save_hyperdata()
+                        session.add(document)
                         session.commit()
+                        #adding skipped_docs for later processsing
+                        skipped_docs.append(document.id)
+                #documents for this resources
+                session.add(corpus)
+                session.commit()
+                # update info about the resource
+                resource['extracted'] = True
+                #print( "resource n°",i, ":", d, "docs inside this file")
 
-                        # adding to skipped_docs for later processing
-                        skipped_docs[document.id] = True
 
-                    documents_count += 1
 
-                # logging
-                if documents_count % BATCH_PARSING_SIZE == 0:
-                    corpus.status('Docs', progress=documents_count)
-                    corpus.save_hyperdata()
-                    session.add(corpus)
-                    session.commit()
+        #skipped_docs
+        corpus.skipped_docs = list(set(skipped_docs))
+        print(len(corpus.skipped_docs), "docs skipped")
+        skipped_langs = dict(Counter(skipped_languages))
+        if len(corpus.skipped_docs) > 0:
+            print ("in which:")
+            print (sum(skipped_langs.values()), "docs with unsupported lang")
 
-            # update info about the resource
-            corpus.hyperdata['resources'][i]['extracted'] = True
-            corpus.save_hyperdata()
-            session.commit()
-
-        print("PARSING:", len(skipped_docs), "docs skipped")
-
-        print("LANGUES")
-        for n in observed_languages.items():
-            print(n)
-
-        # add the infos to hyperdata at the end
-        corpus.hyperdata['skipped_docs'] = skipped_docs
-        corpus.hyperdata['languages'] = observed_languages
+        print(corpus.children("DOCUMENT").count(), "docs parsed")
+        #languages INFO of corpus
+        print(languages.items())
+        corpus.language_id = sorted(languages.items(), key = lambda x: x[1], reverse=True)[0][0]
+        print("Default MAIN language of CORPUS", corpus.language_id)
+        corpus.languages = dict(languages)
+        corpus.languages["__skipped__"] = list(skipped_langs.keys())
+        print("Languages of CORPUS", corpus.languages)
         corpus.save_hyperdata()
-
-        # commit all changes
-        corpus.status('Docs', progress=documents_count, complete=True)
-        corpus.save_hyperdata()
-        session.add(corpus)
         session.commit()
-
+        #TODO: assign main lang of the corpus to unsupported languages docs
+        # for d_id in corpus.skipped_docs:
+        #     document = session.query(Node).filter(Node.id == d_id, Node.typename == "DOCUMENT").first()
+        #     if document.hyperdata["error"].startswith("Error: unsupported language"):
+        #         print(document.hyperdata["language_iso2"])
+        #     document.hyperdata["language_iso2"] = corpus.language_id
+        #     document.save_hyperdata()
+        #     session.commit()
     except Exception as error:
         corpus.status('Docs', error=error)
         corpus.save_hyperdata()

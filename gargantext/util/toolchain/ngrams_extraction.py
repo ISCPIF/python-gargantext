@@ -47,99 +47,76 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         resource = corpus.resources()[0]
         documents_count = 0
         source = get_resource(resource["type"])
-
-        # preload available taggers for corpus languages
-        tagger_bots = {}
-        skipped_languages = {}
-
-        for lang in corpus.hyperdata['languages']:
-            try:
-                tagger_bots[lang] = load_tagger(lang)()
-            except KeyError:
-                skipped_languages[lang] = True
-                print("WARNING skipping language:", lang)
-
-        # the list of todo docs
-        docs = [doc for doc in corpus.children('DOCUMENT') if doc.id not in corpus.hyperdata['skipped_docs']]
-
-        # go for the loop
+        #load only the docs that have passed the parsing without error
+        docs = [doc for doc in corpus.children('DOCUMENT') if doc.id not in corpus.hyperdata["skipped_docs"]]
+        #load available taggers for source default langage
+        tagger_bots = {lang: load_tagger(lang)() for lang in corpus.hyperdata["languages"] if lang != "__skipped__"}
+        #sort docs by lang?
+        # for lang, tagger in tagger_bots.items():
         for documents_count, document in enumerate(docs):
 
             language_iso2 = document.hyperdata.get('language_iso2')
-            #print(language_iso2)
 
-            # skip case if no tagger available
-            if language_iso2 in skipped_languages:
-                corpus.hyperdata['skipped_docs'][document.id] = True
+            if language_iso2 in source["default_languages"]:
+            #filtering out skipped_docs of parsing not necessary in here filtered out in docs???
+            #if document.id not in corpus.skipped_docs:
+                tagger = tagger_bots[language_iso2]
+                #print(language_iso2)
+                #>>> romain-stable-patch
+                #to do verify if document has no KEYS to index
+                for key in keys:
+                    try:
+                        value = document.hyperdata[str(key)]
+                        if not isinstance(value, str):
+                            print("DBG wrong content in doc for key", key)
+                            continue
+                            # get ngrams
+                        for ngram in tagger.extract(value):
+                            tokens = tuple(normalize_forms(token[0]) for token in ngram)
+                            if do_subngrams:
+                                # ex tokens = ["very", "cool", "exemple"]
+                                #    subterms = [['very', 'cool'],
+                                #                ['very', 'cool', 'exemple'],
+                                #                ['cool', 'exemple']]
+
+                                subterms = subsequences(tokens)
+                            else:
+                                subterms = [tokens]
+
+                            for seqterm in subterms:
+                                ngram = ' '.join(seqterm)
+                                if len(ngram) > 1:
+                                    # doc <=> ngram index
+                                    nodes_ngrams_count[(document.id, ngram)] += 1
+                                    # add fields :   terms          n
+                                    ngrams_data.add((ngram[:255], len(seqterm), ))
+                    except:
+                        #value not in doc
+                        pass
+                # except AttributeError:
+                #     print("ERROR NO language_iso2")
+                #     document.status("NGRAMS", error="No lang detected skipped Ngrams")
+                #     corpus.skipped_docs.append(document.id)
+            # integrate ngrams and nodes-ngrams
+            if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
+                _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
+                nodes_ngrams_count.clear()
+                ngrams_data.clear()
+            if documents_count % BATCH_NGRAMSEXTRACTION_SIZE == 0:
+                corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
-                document.hyperdata["error"] = "Error: unsupported language"
-                document.save_hyperdata()
+                session.add(corpus)
                 session.commit()
-                continue
 
-            # NORMAL CASE
-            tagger = tagger_bots[language_iso2]
-            for key in keys:
-                key = str(key)
-                if key not in document.hyperdata:
-                    # print("DBG missing key in doc", key)
-                    # TODO test if document has no keys at all
-                    continue
+            # integrate ngrams and nodes-ngrams (le reste)
+            if len(nodes_ngrams_count) > 0:
+                _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
+                nodes_ngrams_count.clear()
+                ngrams_data.clear()
 
-                # get a text value
-                value = document[key]
-
-                if not isinstance(value, str):
-                    print("DBG wrong content in doc for key", key)
-                    continue
-
-                try:
-                    # get ngrams
-                    ngrams = tagger.extract(value)
-                    for ngram in ngrams:
-                        tokens = tuple(normalize_forms(token[0]) for token in ngram)
-                        if do_subngrams:
-                            # ex tokens = ["very", "cool", "exemple"]
-                            #    subterms = [['very', 'cool'],...]
-                            subterms = subsequences(tokens)
-                        else:
-                            subterms = [tokens]
-
-                        for seqterm in subterms:
-                            ngram = ' '.join(seqterm)
-                            if len(ngram) > 1:
-                                # doc <=> ngram index
-                                nodes_ngrams_count[(document.id, ngram)] += 1
-                                # add fields :   terms          n
-                                ngrams_data.add((ngram[:255], len(seqterm), ))
-                except Exception as e:
-                    print('NGRAMS EXTRACTION skipping doc %i because of unknown error:' % document.id, str(e))
-                    # TODO add info to document.hyperdata['error']
-                    pass
-
-        # integrate ngrams and nodes-ngrams
-        if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
-            _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
-            nodes_ngrams_count.clear()
-            ngrams_data.clear()
-        if documents_count % BATCH_NGRAMSEXTRACTION_SIZE == 0:
-            corpus.status('Ngrams', progress=documents_count+1)
+            corpus.status('Ngrams', progress=documents_count+1, complete=True)
             corpus.save_hyperdata()
-            session.add(corpus)
             session.commit()
-
-        # integrate ngrams and nodes-ngrams (le reste)
-        if len(nodes_ngrams_count) > 0:
-            _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
-            nodes_ngrams_count.clear()
-            ngrams_data.clear()
-
-        corpus.hyperdata['skipped_languages'] = skipped_languages
-        corpus.save_hyperdata()
-
-        corpus.status('Ngrams', progress=documents_count+1, complete=True)
-        corpus.save_hyperdata()
-        session.commit()
 
     except Exception as error:
         corpus.status('Ngrams', error=error)

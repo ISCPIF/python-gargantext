@@ -263,13 +263,13 @@ def load_crawler(resource):
 LANGUAGES = {
     'en': {
         #'tagger': 'EnglishMeltTagger',
-        'tagger': "TurboTagger",
-        #'tagger': 'NltkTagger',
+        #'tagger': "TurboTagger",
+        'tagger': 'NltkTagger',
     },
     'fr': {
-        'tagger': "FrenchMeltTagger",
+        #'tagger': "FrenchMeltTagger",
         #'tagger': 'TreeTagger',
-        #'tagger': 'NltkTagger',
+        'tagger': 'NltkTagger',
     },
 }
 
@@ -278,11 +278,13 @@ def load_tagger(lang):
     given a LANG load the corresponding tagger
     lang(str) > Tagger(Object)
     '''
-
-    filename = LANGUAGES[lang]["tagger"]
-    module = 'gargantext.util.taggers.%s' %(filename)
-    module = importlib.import_module(module)
-    return getattr(module, filename)
+    try:
+        filename = LANGUAGES[lang]["tagger"]
+        module = 'gargantext.util.taggers.%s' %(filename)
+        module = importlib.import_module(module)
+        return getattr(module, filename)()
+    except:
+        raise ImportError("No tagger for this lang %s TIP: declare a new parser in LANGUAGES" %lang)
 
 
 # linguistic extraction parameters ---------------------------------------------

@@ -8,7 +8,7 @@ from traceback                  import print_tb
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
-from gargantext.constants       import get_resource_by_name, QUERY_SIZE_N_MAX
+from gargantext.constants       import get_resource, QUERY_SIZE_N_MAX
 from gargantext.models.nodes    import Node
 from gargantext.util.db         import session
 from gargantext.util.http       import JsonHttpResponse
@@ -16,7 +16,7 @@ from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain  import parse_extract_indexhyperdata
 
 from moissonneurs.util              import Scraper
-
+RESOURCE_TYPE_ISTEX = 8
 
 
 def query( request ):
@@ -85,7 +85,7 @@ def save(request , project_id):
         query = "-"
         query_string = "-"
 
-        N = QUERY_SIZE_N_MAX
+        #N = QUERY_SIZE_N_MAX
 
         if "query" in request.POST:
             query = request.POST["query"]
@@ -96,10 +96,12 @@ def save(request , project_id):
                 N = QUERY_SIZE_N_MAX
             else:
                 N = int(request.POST["N"])     # query_size from views_opti
+
             if N > QUERY_SIZE_N_MAX:
-                msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
-                print("ERROR (scrap: istex d/l ): ",msg)
-                raise ValueError(msg)
+                N = QUERY_SIZE_N_MAX
+                #msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
+                #print("ERROR (scrap: istex d/l ): ",msg)
+                #raise ValueError(msg)
 
         print("Scrapping Istex: '%s' (%i)" % (query_string , N))
 
@@ -107,6 +109,7 @@ def save(request , project_id):
         pagesize = 50
         tasks = Scraper()
         chunks = list(tasks.chunks(range(N), pagesize))
+
         for k in chunks:
             if (k[0]+pagesize)>N: pagesize = N-k[0]
             urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
@@ -131,6 +134,7 @@ def save(request , project_id):
             t = threading.Thread(target=tasks.worker2) #thing to do
             t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
             t.start()
+
         for url in urlreqs:
             tasks.q.put( url ) #put a task in th queue
         tasks.q.join() # wait until everything is finished
@@ -140,21 +144,21 @@ def save(request , project_id):
             if filename!=False:
                 # add the uploaded resource to the corpus
                 corpus.add_resource(
-                  type = get_resource_by_name('ISTex')["type"]
+                  type = get_resource(RESOURCE_TYPE_ISTEX)["type"]
                 , path = filename
                                    )
                 dwnldsOK+=1
 
         session.add(corpus)
         session.commit()
-        corpus_id = corpus.id
+        #corpus_id = corpus.id
 
         if dwnldsOK == 0 :
             return JsonHttpResponse(["fail"])
         ###########################
         ###########################
         try:
-            scheduled(parse_extract_indexhyperdata)(corpus_id)
+            scheduled(parse_extract_indexhyperdata)(corpus.id)
         except Exception as error:
             print('WORKFLOW ERROR')
             print(error)
@@ -178,4 +182,5 @@ def save(request , project_id):
 
 
     data = [query_string,query,N]
+    print(data)
     return JsonHttpResponse(data)

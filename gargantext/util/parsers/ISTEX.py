@@ -27,7 +27,7 @@ class ISTexParser(Parser):
         }
 
         suma = 0
-
+        print(len(json_docs))
         for json_doc in json_docs:
 
             hyperdata = {}
@@ -92,9 +92,9 @@ class ISTexParser(Parser):
                     hyperdata["language_iso3"] = "eng"
                     # (cf. api.istex.fr/document/?q=*&facet=language
                     #  et  tests langid sur les language=["unknown"])
-
+            #just to be sure
             hyperdata = self.format_hyperdata_languages(hyperdata)
-            
+
             if "publication_date" in hyperdata:
                 RealDate = hyperdata["publication_date"]
                 if "publication_date" in hyperdata:

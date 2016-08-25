@@ -12,8 +12,8 @@ from gargantext.models        import Node, NodeNgramNgram
 from gargantext.util.db       import session
 from gargantext.util.lists    import Translations
 # to convert fr => french :/
+from gargantext.constants      import LANGUAGES
 from gargantext.util.languages import languages
-
 from re                       import split as resplit
 from collections              import defaultdict, Counter
 from nltk.stem.snowball       import SnowballStemmer
@@ -25,8 +25,11 @@ def prepare_stemmers(corpus):
          languages has been previously filtered by supported source languages
          and formatted
     """
+    supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"]\
+                                    if lang != "__unknown__" \
+                                    if lang in LANGUAGES.keys()]
     stemmers = {lang:SnowballStemmer(languages[lang].name.lower())  for lang \
-                    in corpus.hyperdata['languages'].keys() if lang !="__skipped__"}
+                    in supported_stemmers_lang}
     stemmers['__unknown__'] = SnowballStemmer("english")
     return stemmers
 
@@ -47,7 +50,9 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     # 1) compute stems/lemmas
     #    and group if same stem/lemma
     stemmers = prepare_stemmers(corpus)
-
+    supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"] \
+                                        if lang != "__unknown__" \
+                                        and  lang in LANGUAGES.keys()]
     # todo dict {lg => {ngrams_todo} }
     todo_ngrams_per_lg = defaultdict(set)
 
@@ -57,11 +62,16 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     # preloop per doc to sort ngrams by language
     for doc in corpus.children('DOCUMENT'):
         if doc.id not in corpus.hyperdata['skipped_docs']:
-            if ('language_iso2' in doc.hyperdata):
+            if ('language_iso2' in doc.hyperdata) \
+                    and doc.hyperdata['language_iso2'] in supported_stemmers_lang:
                 lgid = doc.hyperdata['language_iso2']
+
             else:
                 lgid = "__unknown__"
-
+                document.status("NGRAMS_GROUPS", error="Error: unsupported language for stemming")
+                document.save_hyperdata()
+                #corpus.hyperdata["skipped_docs"].append(doc.id)
+                #corpus.save_hyperdata()
             # doc.ngrams is an sql query (ugly but useful intermediate step)
             # FIXME: move the counting and stoplist filtering up here
             for ngram_pack in doc.ngrams.all():

@@ -1,6 +1,8 @@
 from gargantext.constants import *
 from langdetect import detect, DetectorFactory
 
+
+
 class Language:
     def __init__(self, iso2=None, iso3=None,full_name=None, name=None):
         self.iso2 = iso2
@@ -55,3 +57,5 @@ languages['ger'] = languages['de']
 languages['Français'] = languages['fr']
 languages['en_US'] = languages['en']
 languages['english'] = languages['en']
+languages['chi'] = languages['zh']
+languages['dut'] = languages['de']

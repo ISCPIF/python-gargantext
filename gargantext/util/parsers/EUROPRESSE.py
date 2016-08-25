@@ -29,7 +29,7 @@ import sys
 from ._Parser import Parser
 
 
-class EuropressParser(Parser):
+class EuropresseParser(Parser):
 
     def parse(self, file):
         #print("europr_parser file", file)
@@ -266,13 +266,3 @@ class EuropressParser(Parser):
 
         except:
             print('Something bad happened.')
-
-
-if __name__ == "__main__":
-    e = EuropressFileParser()
-    hyperdata = e.parse(str(sys.argv[1]))
-    for h in hyperdata:
-        try:
-            print(h['journal'], ":", h['publication_date'])
-        except:
-            pass

@@ -145,9 +145,9 @@ def get_tagger(lang):
 
 RESOURCETYPES = [
     {   "type":1,
-        'name': 'Europress',
-        'format': 'Europress',
-        'parser': "EuropressParser",
+        'name': 'Europresse',
+        'format': 'Europresse',
+        'parser': "EuropresseParser",
         'file_formats':["zip"],
         'crawler': None,
         'default_languages': ['en', 'fr'],

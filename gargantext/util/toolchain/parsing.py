@@ -47,8 +47,11 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         print("[WARNING] no language_* found in document [parsing.py]")
         #no language have been indexed
         #detectlang by joining on DEFAULT_INDEX_FIELDS
+        #text_fields = [k for k in DEFAULT_INDEX_FIELDS if k in hyperdata.keys()]
+        text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
+        print(len(text_fields2))
 
-        text = " ".join([getattr(hyperdata, k) for k in DEFAULT_INDEX_FIELDS])
+        text = " ".join([hyperdata[k] for k in text_fields2])
         if len(text) < 10:
             hyperdata["error"] = "Error: no TEXT fields to index"
             skipped_languages.append("__unknown__")
@@ -146,11 +149,13 @@ def parse(corpus):
         print(observed_langs)
         print("#LANGUAGES UNKNOWN")
         print(skipped_langs)
-        corpus.language_id = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)[0][0]
-        print("#MAIN language of the CORPUS", corpus.language_id)
+        corpus.hyperdata["language_id"] = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)[0][0]
+        print("#MAIN language of the CORPUS", corpus.hyperdata["language_id"])
+
         corpus.hyperdata["languages"] = dict(observed_langs)
         corpus.hyperdata["languages"]["__unknown__"] = list(skipped_langs.keys())
         print("OBSERVED_LANGUAGES", corpus.hyperdata["languages"])
+
         corpus.save_hyperdata()
 
         #TODO: assign main lang of the corpus to unsupported languages docs

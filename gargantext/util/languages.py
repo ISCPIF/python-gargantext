@@ -1,23 +1,12 @@
 from gargantext.constants import *
 from langdetect import detect, DetectorFactory
-import time
-
-def timing(f):
-    def wrap(*args):
-        time1 = time.time()
-        ret = f(*args)
-        time2 = time.time()
-        print ('function took %0.3f ms' %((time2-time1)*1000.0))
-        return ret
-    return wrap
-
-
 
 class Language:
     def __init__(self, iso2=None, iso3=None,full_name=None, name=None):
         self.iso2 = iso2
         self.iso3 = iso3
         self.name = name
+        self.full_name = full_name
         self.implemented = iso2 in LANGUAGES
 
     def __str__(self):
@@ -38,10 +27,10 @@ class Languages(dict):
 
 languages = Languages()
 
-@timing
+
 def detect_lang(text):
     DetectorFactory.seed = 0
-    return languages[detect(text)].iso2
+    return languages[detect(text)]
 
 import pycountry
 pycountry_keys = (

@@ -9,6 +9,8 @@ from urllib.parse import quote_plus as urlencode
 from gargantext import settings
 from sqlalchemy.orm.exc import DetachedInstanceError
 
+from traceback import print_tb
+
 # authentication
 
 def requires_auth(func):
@@ -23,13 +25,13 @@ def requires_auth(func):
             # normal return the subfunction when user ok
             return func(request, *args, **kwargs)
 
+        # user was authenticated but something made the session expire
         except DetachedInstanceError as die:
-            print("===\n" * 10)
+            print("===\n Detached instance error: trying to rollback session")
             print(die)
-            print("===\n" * 10)
-            # user was authenticated but something made it expire (session.commit ?)
+            from gargantext.util.db import session
             session.rollback()
-
+            print("=== session rollback ok!")
             # and relogin for safety
             url = '/auth/login/?next=%s' % urlencode(request.path)
             return redirect(url)

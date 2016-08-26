@@ -1,3 +1,7 @@
+"""
+Deserialize an external document collection with a parserbot
+then transfer it to our DB as document nodes within a corpus
+"""
 from gargantext.util.db import *
 from gargantext.models import *
 from gargantext.constants import *
@@ -7,82 +11,83 @@ from re          import sub
 from gargantext.util.languages import languages, detect_lang
 
 
-
-
 def add_lang(hyperdata, observed_languages, skipped_languages):
-    '''utility to add lang information
+    '''utility to gather corpus-level lang information
+       and also detect unknown languages (if constants.DETECT_LANG is true)
     1. on language_iso2
     2. on other format language_%f
     3. on text from concatenation  of DEFAULT_INDEX_FIELDS
+
+    TODO factorize with _Parser.format_hyperdata_languages()
     '''
 
-    if "language_iso2" in hyperdata.keys():
-        if hyperdata["language_iso2"] not in LANGUAGES.keys():
-            skipped_languages.append(hyperdata["language_iso2"])
-            return observed_languages,skipped_languages
-        observed_languages.append(hyperdata["language_iso2"])
-        return hyperdata, observed_languages,skipped_languages
+    # this will be our return value
+    lang_result = {
+             # the 2 global counts to update
+            'observed': observed_languages,
+            'skipped': skipped_languages,
 
+            # optional new value for doc
+            'doc_prediction': None,   # tuple with (iso2, iso3, name)
+
+            # optional error for doc
+            'doc_error': None         # str
+        }
+
+    if "language_iso2" in hyperdata.keys():
+        lang = hyperdata["language_iso2"]
+        if lang not in LANGUAGES.keys():
+            lang_result['skipped'].append(lang)   # FIXME: perhaps better to do this at ngrams_extraction
+        else:
+            lang_result['observed'].append(lang)
 
     elif "language_iso3" in hyperdata.keys():
         #convert
         try:
             lang =  languages[hyperdata["language_iso3"]].iso2
             if lang not in LANGUAGES.keys():
-                skipped_languages.append(lang)
-                return observed_languages,skipped_languages
-            observed_languages.append(lang)
-            return hyperdata, observed_languages,skipped_languages
+                lang_result['skipped'].append(lang)   # idem
+            else:
+                lang_result['observed'].append(lang)
+
         except KeyError:
-            print ("LANG not referenced", (hyperdata["language_iso3"]))
-            skipped_languages.append(hyperdata["language_iso3"])
-            return hyperdata, observed_languages,skipped_languages
+            print ("LANG not referenced", hyperdata["language_iso3"])
+            lang_result['skipped'].append(hyperdata["language_iso3"])
 
     elif "language_name" in hyperdata.keys():
-
         try:
             #convert
             lang = languages[hyperdata["language_name"]].iso2
             if lang not in LANGUAGES.keys():
-                skipped_languages.append(lang)
-                return hyperdata, observed_languages,skipped_languages
-            observed_languages.append(lang)
-            return hyperdata, observed_languages,skipped_languages
-        except KeyError:
-            print ("LANG Not referenced", (hyperdata["language_name"]))
-            skipped_languages.append(hyperdata["language_name"])
-            return hyperdata, observed_languages,skipped_languages
+                lang_result['skipped'].append(lang)   # idem
+            else:
+                lang_result['observed'].append(lang)
 
+        except KeyError:
+            print ("LANG Not referenced", hyperdata["language_name"])
+            lang_result['skipped'].append(hyperdata["language_name"])
 
     else:
         print("[WARNING] no language_* found in document [parsing.py]")
-        if DETECT_LANG is False:
-            #skipped_languages.append("__unknown__")
-            hyperdata["language_iso2"] = "__unknown__"
-            return hyperdata, observed_languages,skipped_languages
 
-        #no language have been indexed
-        #detectlang by joining on the DEFAULT_INDEX_FIELDS
-        text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
-        if len(text_fields2) < 2:
-            print("[WARNING] missing %s key" %text_fields)
+        if DETECT_LANG:
+            #no language have been indexed
+            #detectlang by joining on the DEFAULT_INDEX_FIELDS
+            text_fields = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
 
-        text = " ".join([hyperdata[k] for k in text_fields2])
-        if len(text) < 10:
-            hyperdata["error"] = "Error: no TEXT fields to index"
-            skipped_languages.append("__unknown__")
-            return hyperdata, observed_languages,skipped_languages
-        else:
-            #detect_lang return iso2
-            lang = detect_lang(text)
-            for k in ["iso2", "iso3", "name"]:
-                hyperdata["language_"+k] = getattr(lang, k)
-            if lang.iso2 not in LANGUAGES.keys():
-                #hyperdata["language_iso2"] = "__unknown__"
-                skipped_languages.append(lang.iso2)
-                return hyperdata, observed_languages,skipped_languages
-            observed_languages.append(lang.iso2)
-            return hyperdata, observed_languages,skipped_languages
+            text = " ".join([hyperdata[k] for k in text_fields])
+            if len(text) < 10:
+                lang_result["doc_error"] = "Error: not enough text to index"
+            else:
+                # detect_lang return object o with o.iso2, o.iso3 ...
+                lang = detect_lang(text)
+                lang_result["doc_prediction"] = (getattr(lang, k) for k in ["iso2", "iso3", "name"])
+                if lang.iso2 not in LANGUAGES.keys():
+                    lang_result['skipped'].append(lang.iso2)    # idem
+                else:
+                    lang_result['observed'].append(lang.iso2)
+
+    return lang_result
 
 
 def parse(corpus):
@@ -116,7 +121,7 @@ def parse(corpus):
             if resource["extracted"] is True:
                 continue
             else:
-                # BY documents
+                # BY documents (cf. _Parser.__iter__)
                 for hyperdata in parserbot(resource["path"]):
                     # indexed text fields defined in CONSTANTS
                     for k in DEFAULT_INDEX_FIELDS:
@@ -126,11 +131,28 @@ def parse(corpus):
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
 
-                    #adding lang into  record hyperdata JUST if not declared
-                    hyperdata,observed_languages, skipped_languages = add_lang(hyperdata, observed_languages, skipped_languages)
+                    # adding lang into record hyperdata JUST if not declared
+                    lang_infos = add_lang(hyperdata, observed_languages, skipped_languages)
 
+                    # update document
+                    if lang_infos['doc_error']:
+                        hyperdata['warning'] = lang_infos['doc_error']
+
+                    if lang_infos['doc_prediction']:
+                        prediction = lang_infos['doc_prediction']
+                        hyperdata['language_iso2'] = prediction[0]
+                        hyperdata['language_iso3'] = prediction[1]
+                        hyperdata['language_name'] = prediction[2]
+                        del prediction
+
+                    # update stats
+                    observed_languages = lang_infos['observed']
+                    skipped_languages = lang_infos['skipped']
+
+                    del lang_infos
+                    # -----------------------
                     # save as corpus DB child
-                    # ----------------
+                    # -----------------------
                     document = corpus.add_child(
                         typename = 'DOCUMENT',
                         name = hyperdata.get('title', '')[:255],
@@ -180,11 +202,7 @@ def parse(corpus):
         #skipped_docs
         corpus.hyperdata["skipped_docs"] = list(set(skipped_docs))
         print(len(corpus.hyperdata["skipped_docs"]), "docs skipped")
-        #les langues pas belles
-        skipped_langs = dict(Counter(skipped_languages))
-        #les jolis iso2
-        observed_langs = dict(Counter(observed_languages))
-        # les documents
+
         docs = corpus.children("DOCUMENT").count()
         if docs == 0:
             print("[WARNING] PARSING FAILED!!!!!")
@@ -192,11 +210,18 @@ def parse(corpus):
 
             #document.save_hyperdata()
         print(docs, "parsed")
-        #LANGUAGES INFO
+
+        # language stats
+        #les langues pas belles
+        skipped_langs = dict(Counter(skipped_languages))      # idem
+        #les jolis iso2
+        observed_langs = dict(Counter(observed_languages))
+
         print("#LANGAGES OK")
         print(observed_langs)
         print("#LANGUAGES UNKNOWN")
         print(skipped_langs)
+
         top_langs = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)
         if len(top_langs) > 0:
             corpus.hyperdata["language_id"] = top_langs[0][0]
@@ -204,9 +229,8 @@ def parse(corpus):
             corpus.hyperdata["language_id"] = "__unknown__"
         print("#MAIN language of the CORPUS", corpus.hyperdata["language_id"])
 
-        corpus.hyperdata["languages"] = dict(observed_langs)
+        corpus.hyperdata["languages"] = observed_langs
         corpus.hyperdata["languages"]["__unknown__"] = list(skipped_langs.keys())
-        print("OBSERVED_LANGUAGES", corpus.hyperdata["languages"])
         corpus.save_hyperdata()
 
 

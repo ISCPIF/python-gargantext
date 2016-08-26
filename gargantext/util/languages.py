@@ -1,5 +1,15 @@
 from gargantext.constants import *
 from langdetect import detect, DetectorFactory
+import time
+
+def timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print ('function took %0.3f ms' %((time2-time1)*1000.0))
+        return ret
+    return wrap
 
 
 
@@ -28,6 +38,7 @@ class Languages(dict):
 
 languages = Languages()
 
+@timing
 def detect_lang(text):
     DetectorFactory.seed = 0
     return languages[detect(text)].iso2

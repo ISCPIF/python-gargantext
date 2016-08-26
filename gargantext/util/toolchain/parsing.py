@@ -5,7 +5,8 @@ from gargantext.constants import *
 from collections import defaultdict, Counter
 from re          import sub
 from gargantext.util.languages import languages, detect_lang
-import time
+
+
 
 
 def add_lang(hyperdata, observed_languages, skipped_languages):
@@ -54,12 +55,11 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 
 
     else:
-        print("DETECT LANG:", DETECT_LANG)
+        print("[WARNING] no language_* found in document [parsing.py]")
         if DETECT_LANG is False:
             skipped_languages.append("__unknown__")
             return observed_languages,skipped_languages
 
-        print("[WARNING] no language_* found in document [parsing.py]")
         #no language have been indexed
         #detectlang by joining on the DEFAULT_INDEX_FIELDS
         text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
@@ -84,6 +84,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 def parse(corpus):
     try:
         print("PARSING")
+        print("DETECT_LANG?", DETECT_LANG)
         corpus.status('Docs', progress=0)
         #1 corpus => 1 or multi resources.path (for crawlers)
         resources = corpus.resources()

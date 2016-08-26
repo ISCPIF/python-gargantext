@@ -58,7 +58,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         # for lang, tagger in tagger_bots.items():
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
 
-            if doc.id not in corpus.hyperdata["skipped_docs"]:
+            if document.id not in corpus.hyperdata["skipped_docs"]:
                 language_iso2 = document.hyperdata.get('language_iso2')
                 if language_iso2 not in supported_taggers_lang:
                     #print("ERROR NO language_iso2")

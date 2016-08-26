@@ -68,8 +68,8 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
 
             else:
                 lgid = "__unknown__"
-                document.status("NGRAMS_GROUPS", error="Error: unsupported language for stemming")
-                document.save_hyperdata()
+                doc.status("NGRAMS_GROUPS", error="Error: unsupported language for stemming")
+                doc.save_hyperdata()
                 #corpus.hyperdata["skipped_docs"].append(doc.id)
                 #corpus.save_hyperdata()
             # doc.ngrams is an sql query (ugly but useful intermediate step)

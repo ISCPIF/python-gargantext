@@ -5,6 +5,8 @@ from gargantext.constants import *
 from collections import defaultdict, Counter
 from re          import sub
 from gargantext.util.languages import languages, detect_lang
+import time
+
 
 def add_lang(hyperdata, observed_languages, skipped_languages):
     '''utility to add lang information
@@ -52,10 +54,14 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 
 
     else:
+        print("DETECT LANG:", DETECT_LANG)
+        if DETECT_LANG is False:
+            skipped_languages.append("__unknown__")
+            return observed_languages,skipped_languages
+
         print("[WARNING] no language_* found in document [parsing.py]")
         #no language have been indexed
-        #detectlang by joining on DEFAULT_INDEX_FIELDS
-        #text_fields = [k for k in DEFAULT_INDEX_FIELDS if k in hyperdata.keys()]
+        #detectlang by joining on the DEFAULT_INDEX_FIELDS
         text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
         print(len(text_fields2))
 
@@ -66,6 +72,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             return observed_languages,skipped_languages
         else:
             #detect_lang return iso2
+
             lang = detect_lang(text)
             if lang not in LANGUAGES.keys():
                 skipped_languages.append(lang)
@@ -77,7 +84,6 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 def parse(corpus):
     try:
         print("PARSING")
-
         corpus.status('Docs', progress=0)
         #1 corpus => 1 or multi resources.path (for crawlers)
         resources = corpus.resources()
@@ -178,6 +184,7 @@ def parse(corpus):
         if docs == 0:
             print("[WARNING] PARSING FAILED!!!!!")
             corpus.status('Parsing', error= "No documents parsed")
+
             #document.save_hyperdata()
         print(docs, "parsed")
         #LANGUAGES INFO
@@ -195,7 +202,6 @@ def parse(corpus):
         corpus.hyperdata["languages"] = dict(observed_langs)
         corpus.hyperdata["languages"]["__unknown__"] = list(skipped_langs.keys())
         print("OBSERVED_LANGUAGES", corpus.hyperdata["languages"])
-
         corpus.save_hyperdata()
 
 

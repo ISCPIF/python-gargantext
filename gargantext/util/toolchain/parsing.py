@@ -39,7 +39,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 
         try:
             #convert
-            lang = hyperdata["language_fullname"].iso2
+            lang = languages[hyperdata["language_fullname"]].iso2
             if lang not in LANGUAGES.keys():
                 skipped_languages.append(lang)
                 return observed_languages,skipped_languages

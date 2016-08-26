@@ -30,7 +30,7 @@ class RISParser(Parser):
     }
 
     def parse(self, file):
-
+        print("=====> PARSING RIS")
         hyperdata = {}
         last_key = None
         last_values = []

@@ -81,6 +81,7 @@ class NewCorpusForm(forms.Form):
 def project(request, project_id):
     # current user
     user = cache.User[request.user.id]
+
     # viewed project
     project = session.query(Node).filter(Node.id == project_id).first()
     if project is None:

@@ -102,7 +102,7 @@ class MeltTagger(Tagger):
                 if len(token.string):
                     yield (token.string, token.label, )
 
-    def tag_text(self, text, lemmatize=False):
+    def extract(self, text, lemmatize=False):
         tagged_tokens = self._tag(text)
         if not lemmatize:
             # without lemmatization

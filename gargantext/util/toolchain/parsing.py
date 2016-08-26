@@ -150,6 +150,21 @@ def parse(corpus):
                     skipped_languages = lang_infos['skipped']
 
                     del lang_infos
+
+                    # init statuses
+                    hyperdata['statuses'] = []
+
+                    # only parsing errors can be written straight to statuses
+                    # because it's a new hyperdata for the DB
+                    if "error" in hyperdata.keys():
+                        hyperdata['statuses'].append({
+                            'action':'Parsing',
+                            'error': hyperdata['error']
+                            })
+
+                        #adding skipped_docs for later processsing if error in parsing
+                        skipped_docs.append(document.id)
+
                     # -----------------------
                     # save as corpus DB child
                     # -----------------------
@@ -160,16 +175,6 @@ def parse(corpus):
                     )
                     session.add(document)
                     session.commit()
-
-                    if "error" in hyperdata.keys():
-                        #document.status("error")
-                        #document.status('Parsing', error= document.hyperdata["error"])
-                        #document.save_hyperdata()
-                        #session.add(document)
-                        #session.commit()
-
-                        #adding skipped_docs for later processsing if error in parsing
-                        skipped_docs.append(document.id)
 
                     #BATCH_PARSING_SIZE
                     if documents_count % BATCH_PARSING_SIZE == 0:
@@ -183,32 +188,24 @@ def parse(corpus):
                 # update info about the resource
                 resource['extracted'] = True
                 #print( "resource n°",i, ":", d, "docs inside this file")
-        #finally store documents for this corpus
+
         corpus.status('Parsing', progress=documents_count+1, complete=True)
-        #corpus.status('Parsing', complete =True)
         corpus.save_hyperdata()
-        #session.add(corpus)
-        #session.commit()
-        #adding parsing error to document level
-        for node_id in skipped_docs:
-            node = session.query(Node).filter(Node.id== node_id).first()
-            node.status("Parsing", "Error in parsing")
-            node.save_hyperdata()
-            #session.flush()
-        #skipped_nodes = session.query(Node).filter(Node.id.in_(skipped_docs)).all()
-        #mods = [node.status('Parsing', "Error in parsing:skipped") for node in skipped_nodes]
+
+        # end of parsing
 
         #STORING AGREGATIONS INFO (STATS)
-        #skipped_docs
-        corpus.hyperdata["skipped_docs"] = list(set(skipped_docs))
-        print(len(corpus.hyperdata["skipped_docs"]), "docs skipped")
 
+        # skipped_docs (ie docs to be skipped in next steps)
+        print(len(skipped_docs), "docs skipped")
+        corpus.hyperdata["skipped_docs"] = list(skipped_docs)
+        corpus.save_hyperdata()
+
+        # documents info
         docs = corpus.children("DOCUMENT").count()
         if docs == 0:
-            print("[WARNING] PARSING FAILED!!!!!")
+            print("[ERROR] PARSING FAILED!!!!!")
             corpus.status('Parsing', error= "No documents parsed")
-
-            #document.save_hyperdata()
         print(docs, "parsed")
 
         # language stats

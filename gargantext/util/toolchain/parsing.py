@@ -45,7 +45,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             lang = languages[hyperdata["language_name"]].iso2
             if lang not in LANGUAGES.keys():
                 skipped_languages.append(lang)
-                return observed_languages,skipped_languages
+                return hyperdata, observed_languages,skipped_languages
             observed_languages.append(lang)
             return hyperdata, observed_languages,skipped_languages
         except KeyError:
@@ -74,10 +74,10 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             #detect_lang return iso2
             lang = detect_lang(text)
             for k in ["iso2", "iso3", "name"]:
-                hyperdata["language_"+k] = lang[k]
+                hyperdata["language_"+k] = getattr(lang, k)
             if lang.iso2 not in LANGUAGES.keys():
                 skipped_languages.append(lang.iso2)
-                return observed_languages,skipped_languages
+                return hyperdata, observed_languages,skipped_languages
             observed_languages.append(lang.iso2)
             return hyperdata, observed_languages,skipped_languages
 

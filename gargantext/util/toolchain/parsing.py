@@ -99,15 +99,14 @@ def parse(corpus):
         #skipped docs to remember for later processing
         skipped_docs = []
 
-
+        documents_count = 0
         #BY RESOURCE
         for i,resource in enumerate(resources):
             if resource["extracted"] is True:
                 continue
             else:
                 # BY documents
-                d = 0
-                for documents_count, hyperdata in enumerate(parserbot(resource["path"])):
+                for hyperdata in parserbot(resource["path"]):
                     # indexed text fields defined in CONSTANTS
                     for k in DEFAULT_INDEX_FIELDS:
                         if k in hyperdata.keys():
@@ -126,32 +125,45 @@ def parse(corpus):
                         name = hyperdata.get('title', '')[:255],
                         hyperdata = hyperdata,
                     )
-                    #corpus.save_hyperdata()
-                    # session.add(document)
-                    # session.commit()
+                    session.add(document)
+                    session.commit()
 
                     if "error" in hyperdata.keys():
                         #document.status("error")
-                        document.status('Parsing', error= document.hyperdata["error"])
-                        document.save_hyperdata()
-
+                        #document.status('Parsing', error= document.hyperdata["error"])
+                        #document.save_hyperdata()
+                        #session.add(document)
+                        #session.commit()
 
                         #adding skipped_docs for later processsing if error in parsing
                         skipped_docs.append(document.id)
 
+                    #BATCH_PARSING_SIZE
                     if documents_count % BATCH_PARSING_SIZE == 0:
                         corpus.status('Docs', progress=documents_count)
                         corpus.save_hyperdata()
-                        #session.add(corpus)
-                        #session.commit()
+                        session.add(corpus)
+                        session.commit()
 
+                    documents_count += 1
 
                 # update info about the resource
                 resource['extracted'] = True
                 #print( "resource n°",i, ":", d, "docs inside this file")
-            #finally store documents for this corpus
-            session.add(corpus)
-            session.commit()
+        #finally store documents for this corpus
+        corpus.status('Parsing', progress=documents_count+1, complete=True)
+        #corpus.status('Parsing', complete =True)
+        corpus.save_hyperdata()
+        #session.add(corpus)
+        #session.commit()
+        #adding parsing error to document level
+        for node_id in skipped_docs:
+            node = session.query(Node).filter(Node.id== node_id).first()
+            node.status("Parsing", "Error in parsing")
+            node.save_hyperdata()
+            #session.flush()
+        #skipped_nodes = session.query(Node).filter(Node.id.in_(skipped_docs)).all()
+        #mods = [node.status('Parsing', "Error in parsing:skipped") for node in skipped_nodes]
 
         #STORING AGREGATIONS INFO (STATS)
         #skipped_docs

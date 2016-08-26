@@ -9,7 +9,7 @@ def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
     """
     @param ngrams_data   a set like {('single word', 2), ('apple', 1),...}
     """
-    #print('INTEGRATE')
+    print('INTEGRATE')
     # integrate ngrams
     ngrams_ids = bulk_insert_ifnotexists(
         model = Ngram,
@@ -59,7 +59,6 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         #sort docs by lang?
         # for lang, tagger in tagger_bots.items():
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
-
             if document.id not in corpus.hyperdata["skipped_docs"]:
                 language_iso2 = document.hyperdata.get('language_iso2')
                 if language_iso2 not in supported_taggers_lang:
@@ -73,7 +72,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                 else:
 
                     tagger = tagger_bots[language_iso2]
-
+                    print(tagger)
                     #print(language_iso2)
                     #>>> romain-stable-patch
                     #to do verify if document has no KEYS to index
@@ -109,10 +108,11 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
 
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
+                print(len(nodes_ngrams_count),">=", BATCH_NGRAMSEXTRACTION_SIZE)
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
                 nodes_ngrams_count.clear()
                 ngrams_data.clear()
-            if documents_count % BATCH_NGRAMSEXTRACTION_SIZE == 0:
+            if documents_count % BATCH_PARSING_SIZE == 0:
                 corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
                 session.add(corpus)

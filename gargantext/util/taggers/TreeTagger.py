@@ -74,7 +74,6 @@ class TreeTagger(Tagger):
         self._input, self._output = self._popen.stdin, self._popen.stdout
         # self._thread = threading.Thread(target=_readOutput, args=(self._output, self.buffer, )).start()
         # self.buffer = OutputBuffer()
-        # self.extract(self.text)
 
     def stop(self):
         # terminates the 'treetagger' process

@@ -6,13 +6,12 @@ class TurboTagger:
 
     def start(self):
         self._nlpclient = NLPClient()
-        #self.extract(self.text)
 
     def stop(self):
         if hasattr(self, '_nlpclient'):
             del self._nlpclient
 
-    def extract(self, text):
+    def tag_text(self, text):
         if not hasattr(self, '_nlpclient'):
             self._nlpclient = NLPClient()
         try:

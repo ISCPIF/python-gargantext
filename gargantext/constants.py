@@ -131,8 +131,7 @@ def get_resource_by_name(sourcename):
 # taggers -----------------------------------------------
 def get_tagger(lang):
     '''
-    lang => default langage[0] => Tagger
-
+    lang => observed language[0] => Tagger
     '''
     name = LANGUAGES[lang]["tagger"]
     module = "gargantext.util.taggers.%s" %(name)
@@ -150,7 +149,6 @@ RESOURCETYPES = [
         'parser': "EuropresseParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
-        'default_languages': ['en', 'fr'],
     },
     {   'type': 2,
         'name': 'Jstor [RIS]',
@@ -158,7 +156,6 @@ RESOURCETYPES = [
         'parser': "RISParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
-        'default_languages': ['en'],
     },
     {   'type': 3,
         'name': 'Pubmed [XML]',
@@ -166,7 +163,6 @@ RESOURCETYPES = [
         'parser': "PubmedParser",
         'file_formats':["zip", "xml"],
         'crawler': "PubmedCrawler",
-        'default_languages': ['en'],
     },
     {   'type':4,
         'name': 'Scopus [RIS]',
@@ -174,7 +170,6 @@ RESOURCETYPES = [
         'parser': "RISParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
-        'default_languages': ['en'],
     },
     {   'type':5,
         'name': 'Web of Science [ISI]',
@@ -183,7 +178,6 @@ RESOURCETYPES = [
         'file_formats':["zip", "txt"],
         #'crawler': "ISICrawler",
         'crawler': None,
-        'default_languages': ['en'],
     },
     {   'type':6,
         'name': 'Zotero [RIS]',
@@ -191,7 +185,6 @@ RESOURCETYPES = [
         'parser': 'RISParser',
         'file_formats':["zip", "ris", "txt"],
         'crawler': None,
-        'default_languages': ['en'],
     },
     {   'type':7,
         'name': 'CSV',
@@ -199,7 +192,6 @@ RESOURCETYPES = [
         'parser': 'CSVParser',
         'file_formats':["zip", "csv"],
         'crawler': None,
-        'default_languages': ['en'],
     },
     {   'type': 8,
         'name': 'ISTex',
@@ -207,7 +199,6 @@ RESOURCETYPES = [
         'parser': "ISTexParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
-        'default_languages': ['en', 'fr'],
     },
    {    "type":9,
         "name": 'SCOAP [XML]',
@@ -215,7 +206,6 @@ RESOURCETYPES = [
         "format": 'MARC21',
         'file_formats':["zip","xml"],
         "crawler": "CernCrawler",
-        'default_languages': ['en'],
    },
    {    "type":10,
         "name": 'REPEC [RIS]',
@@ -223,7 +213,6 @@ RESOURCETYPES = [
         "format": 'RIS',
         'file_formats':["zip","ris", "txt"],
         "crawler": None,
-        'default_languages': ['en'],
    },
 ]
 #shortcut for resources declaration in template
@@ -278,13 +267,11 @@ def load_tagger(lang):
     given a LANG load the corresponding tagger
     lang(str) > Tagger(Object)
     '''
-    try:
-        filename = LANGUAGES[lang]["tagger"]
-        module = 'gargantext.util.taggers.%s' %(filename)
-        module = importlib.import_module(module)
-        return getattr(module, filename)()
-    except:
-        raise ImportError("No tagger for this lang %s TIP: declare a new parser in LANGUAGES" %lang)
+    filename = LANGUAGES[lang]["tagger"]
+    module = 'gargantext.util.taggers.%s' %(filename)
+    module = importlib.import_module(module)
+    return getattr(module, filename)()
+
 
 
 # linguistic extraction parameters ---------------------------------------------
@@ -359,14 +346,6 @@ BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many distinct ngrams before INTEGRATE
 # Scrapers config
 QUERY_SIZE_N_MAX     = 1000
 QUERY_SIZE_N_DEFAULT = 1000
-
-
-# Grammar rules for chunking
-RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
-RULE_NPN    = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
-RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
-               +?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?\
-               ,){0,2}?(N.?.?,|\?,)+?)+?)*?$"
 
 
 # ------------------------------------------------------------------------------

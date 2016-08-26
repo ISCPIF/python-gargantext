@@ -14,8 +14,10 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
     '''
 
     if "language_iso2" in hyperdata.keys():
-
-        observed_languages.append(hyperdata["language_iso2"])
+        if hyperdata["language_iso2"] not in LANGUAGES.keys():
+            skipped_languages.append(hyperdata["language_iso2"])
+            return observed_languages,skipped_languages
+        observed_languages[hyperdata["language_iso2"]]
         return observed_languages,skipped_languages
 
 
@@ -23,6 +25,9 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         #convert
         try:
             lang =  languages[hyperdata["language_iso3"]].iso2
+            if lang not in LANGUAGES.keys():
+                skipped_languages.append(lang)
+                return observed_languages,skipped_languages
             observed_languages.append(lang)
             return observed_languages,skipped_languages
         except KeyError:
@@ -35,6 +40,9 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         try:
             #convert
             lang = hyperdata["language_fullname"].iso2
+            if lang not in LANGUAGES.keys():
+                skipped_languages.append(lang)
+                return observed_languages,skipped_languages
             observed_languages.append(lang)
             return observed_languages,skipped_languages
         except KeyError:
@@ -59,6 +67,9 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         else:
             #detect_lang return iso2
             lang = detect_lang(text)
+            if lang not in LANGUAGES.keys():
+                skipped_languages.append(lang)
+                return observed_languages,skipped_languages
             observed_languages.append(lang)
             return observed_languages,skipped_languages
 
@@ -80,6 +91,7 @@ def parse(corpus):
             #corpus.status(error)
             raise ValueError("Resource '%s' has no Parser" %resource["name"])
         parserbot = load_parser(source)
+        print(parserbot)
         #observed languages in default languages
         observed_languages = []
         #skipped_languages
@@ -167,14 +179,7 @@ def parse(corpus):
 
         corpus.save_hyperdata()
 
-        #TODO: assign main lang of the corpus to unsupported languages docs
-        # for d_id in corpus.skipped_docs:
-        #     document = session.query(Node).filter(Node.id == d_id, Node.typename == "DOCUMENT").first()
-        #     if document.hyperdata["error"].startswith("Error: unsupported language"):
-        #         print(document.hyperdata["language_iso2"])
-        #     document.hyperdata["language_iso2"] = corpus.language_id
-        #     document.save_hyperdata()
-        #     session.commit()
+
     except Exception as error:
         corpus.status('Docs', error=error)
         corpus.save_hyperdata()

@@ -21,7 +21,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             skipped_languages.append(hyperdata["language_iso2"])
             return observed_languages,skipped_languages
         observed_languages.append(hyperdata["language_iso2"])
-        return observed_languages,skipped_languages
+        return hyperdata, observed_languages,skipped_languages
 
 
     elif "language_iso3" in hyperdata.keys():
@@ -32,53 +32,57 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
                 skipped_languages.append(lang)
                 return observed_languages,skipped_languages
             observed_languages.append(lang)
-            return observed_languages,skipped_languages
+            return hyperdata, observed_languages,skipped_languages
         except KeyError:
             print ("LANG not referenced", (hyperdata["language_iso3"]))
             skipped_languages.append(hyperdata["language_iso3"])
-            return observed_languages,skipped_languages
+            return hyperdata, observed_languages,skipped_languages
 
-    elif "language_fullname" in hyperdata.keys():
+    elif "language_name" in hyperdata.keys():
 
         try:
             #convert
-            lang = languages[hyperdata["language_fullname"]].iso2
+            lang = languages[hyperdata["language_name"]].iso2
             if lang not in LANGUAGES.keys():
                 skipped_languages.append(lang)
-                return observed_languages,skipped_languages
+                return hyperdata, observed_languages,skipped_languages
             observed_languages.append(lang)
-            return observed_languages,skipped_languages
+            return hyperdata, observed_languages,skipped_languages
         except KeyError:
-            print ("LANG Not referenced", (hyperdata["language_fullname"]))
-            skipped_languages.append(hyperdata["language_fullname"])
-            return observed_languages,skipped_languages
+            print ("LANG Not referenced", (hyperdata["language_name"]))
+            skipped_languages.append(hyperdata["language_name"])
+            return hyperdata, observed_languages,skipped_languages
 
 
     else:
         print("[WARNING] no language_* found in document [parsing.py]")
         if DETECT_LANG is False:
-            skipped_languages.append("__unknown__")
-            return observed_languages,skipped_languages
+            #skipped_languages.append("__unknown__")
+            hyperdata["language_iso2"] = "__unknown__"
+            return hyperdata, observed_languages,skipped_languages
 
         #no language have been indexed
         #detectlang by joining on the DEFAULT_INDEX_FIELDS
         text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
-        print(len(text_fields2))
+        if len(text_fields2) < 2:
+            print("[WARNING] missing %s key" %text_fields)
 
         text = " ".join([hyperdata[k] for k in text_fields2])
         if len(text) < 10:
             hyperdata["error"] = "Error: no TEXT fields to index"
             skipped_languages.append("__unknown__")
-            return observed_languages,skipped_languages
+            return hyperdata, observed_languages,skipped_languages
         else:
             #detect_lang return iso2
-
             lang = detect_lang(text)
-            if lang not in LANGUAGES.keys():
-                skipped_languages.append(lang)
-                return observed_languages,skipped_languages
-            observed_languages.append(lang)
-            return observed_languages,skipped_languages
+            for k in ["iso2", "iso3", "name"]:
+                hyperdata["language_"+k] = getattr(lang, k)
+            if lang.iso2 not in LANGUAGES.keys():
+                #hyperdata["language_iso2"] = "__unknown__"
+                skipped_languages.append(lang.iso2)
+                return hyperdata, observed_languages,skipped_languages
+            observed_languages.append(lang.iso2)
+            return hyperdata, observed_languages,skipped_languages
 
 
 def parse(corpus):
@@ -122,8 +126,8 @@ def parse(corpus):
                             except Exception as error :
                                 hyperdata["error"] = "Error normalize_chars"
 
-                    #adding lang into  record hyperdata
-                    observed_languages, skipped_languages = add_lang(hyperdata, observed_languages, skipped_languages)
+                    #adding lang into  record hyperdata JUST if not declared
+                    hyperdata,observed_languages, skipped_languages = add_lang(hyperdata, observed_languages, skipped_languages)
 
                     # save as corpus DB child
                     # ----------------

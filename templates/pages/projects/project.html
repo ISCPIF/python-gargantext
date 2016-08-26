@@ -24,6 +24,8 @@
 
 
 {% block content %}
+
+
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
         <div class="row">
@@ -35,6 +37,7 @@
                 <!--<h3> {{number}} corpora </h3>-->
                 {% endif %}
             </div>
+
             <div class="col-md-4">
                 <p>
                     {% if donut %}
@@ -68,6 +71,16 @@
 
 
 <div class="container">
+    <!-- Modal -->
+    <div id="wait" class="modal row col-md-6">
+      <div class="modal-dialog ">
+
+        <h2>Your file has been uploaded ! </h2>
+        <h2>Gargantext need some time to eat it.</h2>
+        <h2>Duration depends on the size of the dish.</h2>
+        <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}" title="Click and test by yourself">Continue on Gargantext</a>
+      </div>
+    </div>
 
     {% if list_corpora  %}
         {% for key, corpora in list_corpora.items %}
@@ -184,7 +197,9 @@
     {% endif %}
 
 
-                    <!-- Modal -->
+
+
+
                     <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
@@ -318,7 +333,9 @@
                                     // console.log(data)
                                     setTimeout(
                                         function() {
-                                            location.reload();
+                                            $('#addcorpus').modal('hide');
+                                            $("#wait").modal("show");
+
                                         }, 3000);
                                     },
                                     error: function(result) {
@@ -563,9 +580,11 @@
                                     // console.log(data)
                                     setTimeout(
                                         function() {
+                                            $('#addcorpus').modal('hide');
+                                            $("#wait").modal("show");
 
-                                            location.reload();
-                                        }, 5000);
+                                            //location.reload();
+                                        }, 3000);
                                     },
                                     error: function(result) {
                                         console.log("in testISTEX(). Data not found");

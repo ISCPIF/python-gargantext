@@ -127,8 +127,8 @@ def parse(corpus):
                         hyperdata = hyperdata,
                     )
                     #corpus.save_hyperdata()
-                    session.add(document)
-                    session.commit()
+                    # session.add(document)
+                    # session.commit()
 
                     if "error" in hyperdata.keys():
                         #document.status("error")
@@ -142,8 +142,8 @@ def parse(corpus):
                     if documents_count % BATCH_PARSING_SIZE == 0:
                         corpus.status('Docs', progress=documents_count)
                         corpus.save_hyperdata()
-                        session.add(corpus)
-                        session.commit()
+                        #session.add(corpus)
+                        #session.commit()
 
 
                 # update info about the resource

@@ -143,13 +143,22 @@ def parse(corpus):
         #les jolis iso2
         observed_langs = dict(Counter(observed_languages))
         # les documents
-        print(corpus.children("DOCUMENT").count(), "docs parsed")
+        docs = corpus.children("DOCUMENT").count()
+        if docs == 0:
+            print("[WARNING] PARSING FAILED!!!!!")
+            corpus.status('Parsing', error= "No documents parsed")
+            #document.save_hyperdata()
+        print(docs, "parsed")
         #LANGUAGES INFO
         print("#LANGAGES OK")
         print(observed_langs)
         print("#LANGUAGES UNKNOWN")
         print(skipped_langs)
-        corpus.hyperdata["language_id"] = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)[0][0]
+        top_langs = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)
+        if len(top_langs) > 0:
+            corpus.hyperdata["language_id"] = top_langs[0][0]
+        else:
+            corpus.hyperdata["language_id"] = "__unknown__"
         print("#MAIN language of the CORPUS", corpus.hyperdata["language_id"])
 
         corpus.hyperdata["languages"] = dict(observed_langs)

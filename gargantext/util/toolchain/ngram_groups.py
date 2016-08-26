@@ -50,9 +50,11 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     # 1) compute stems/lemmas
     #    and group if same stem/lemma
     stemmers = prepare_stemmers(corpus)
+    print("# STEMMERS LOADED", stemmers)
     supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"] \
                                         if lang != "__unknown__" \
                                         and  lang in LANGUAGES.keys()]
+    print("#SUPPORTED STEMMERS LANGS", supported_stemmers_lang)
     # todo dict {lg => {ngrams_todo} }
     todo_ngrams_per_lg = defaultdict(set)
 

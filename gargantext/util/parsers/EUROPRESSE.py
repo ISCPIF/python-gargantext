@@ -32,7 +32,6 @@ from ._Parser import Parser
 class EuropresseParser(Parser):
 
     def parse(self, file):
-        #print("europr_parser file", file)
 
         localeEncoding          = "fr_FR"
         codif                   = "UTF-8"
@@ -55,7 +54,7 @@ class EuropresseParser(Parser):
 
         contents = file.read()
         encoding = self.detect_encoding(contents)
-
+        #print(encoding)
         if encoding != "utf-8":
             try:
                 contents = contents.decode("latin1", errors='replace').encode(codif)
@@ -116,7 +115,7 @@ class EuropresseParser(Parser):
         try:
             for html_article in html_articles:
 
-                # print("==============================new article")
+                print("==============================new article")
 
                 # s'il n'y a pas du tout de header on doit skip
                 all_header = html_article.xpath(entire_header_xpath)
@@ -261,7 +260,7 @@ class EuropresseParser(Parser):
                         # most probably news_topic before beginning of date
                         hyperdata['rubrique']   = header_elts[0]
 
-
+                print(hyperdata)
                 yield hyperdata
 
         except:

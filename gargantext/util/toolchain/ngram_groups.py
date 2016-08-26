@@ -26,8 +26,7 @@ def prepare_stemmers(corpus):
          and formatted
     """
     supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"]\
-                                    if lang != "__unknown__" \
-                                    if lang in LANGUAGES.keys()]
+                                    if lang != "__unknown__" ]
     stemmers = {lang:SnowballStemmer(languages[lang].name.lower())  for lang \
                     in supported_stemmers_lang}
     stemmers['__unknown__'] = SnowballStemmer("english")
@@ -51,9 +50,8 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     #    and group if same stem/lemma
     stemmers = prepare_stemmers(corpus)
     print("# STEMMERS LOADED", stemmers)
-    supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"] \
-                                        if lang != "__unknown__" \
-                                        and  lang in LANGUAGES.keys()]
+    supported_stemmers_lang = [lang for lang in corpus.hyperdata["languages"] if lang != "__unknown__"]
+
     print("#SUPPORTED STEMMERS LANGS", supported_stemmers_lang)
     # todo dict {lg => {ngrams_todo} }
     todo_ngrams_per_lg = defaultdict(set)
@@ -64,8 +62,8 @@ def compute_groups(corpus, stoplist_id = None, overwrite_id = None):
     # preloop per doc to sort ngrams by language
     for doc in corpus.children('DOCUMENT'):
         if doc.id not in corpus.hyperdata['skipped_docs']:
-            if ('language_iso2' in doc.hyperdata) \
-                    and doc.hyperdata['language_iso2'] in supported_stemmers_lang:
+            if ('language_iso2' in doc.hyperdata) and doc.hyperdata['language_iso2'] \
+                                                    in supported_stemmers_lang:
                 lgid = doc.hyperdata['language_iso2']
 
             else:

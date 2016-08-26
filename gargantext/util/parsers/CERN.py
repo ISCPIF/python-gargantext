@@ -70,9 +70,9 @@ class CernParser(Parser):
         #print(soup.find("record"))
         for record in soup.find_all("record"):
             hyperdata = {v:[] for v in self.MARC21["100"].values()}
-            hyperdata["uid"] = soup.find("controlfield").text
+            hyperdata["uid"] = record.find("controlfield").text
             hyperdata["language_iso2"] = "en"
-            for data in soup.find_all("datafield"):
+            for data in record.find_all("datafield"):
                 tag = data.get("tag")
                 if tag in self.MARC21.keys():
                     for sub in data.find_all("subfield"):

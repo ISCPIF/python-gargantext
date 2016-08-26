@@ -313,7 +313,7 @@ DEFAULT_INDEX_SUBGRAMS         = False        # False <=> traditional
                                              #    at indexing after extraction)
 # TAGGING options   -----------------------------------------
 #activate lang detection?
-DETECT_LANG = True
+DETECT_LANG = False
 # Defaults INDEXED Fields for ngrams extraction
 # put longest field first in order to make detection language more efficient
 DEFAULT_INDEX_FIELDS            = ('abstract','title' )

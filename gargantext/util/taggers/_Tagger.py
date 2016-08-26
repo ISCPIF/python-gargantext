@@ -19,8 +19,7 @@ class Tagger:
             | [][.,;"'?!():-_`]             # these are separate tokens
             ''', re.UNICODE | re.MULTILINE | re.DOTALL)
         self.buffer = []
-
-        #self.start()
+        self.start()
 
 
     def clean_text(self, text):

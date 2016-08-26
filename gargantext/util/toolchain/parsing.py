@@ -63,7 +63,8 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         #no language have been indexed
         #detectlang by joining on the DEFAULT_INDEX_FIELDS
         text_fields2 = list(set(DEFAULT_INDEX_FIELDS) & set(hyperdata.keys()))
-        print(len(text_fields2))
+        if len(text_fields2) < 2:
+            print("[WARNING] missing %s key" %text_fields)
 
         text = " ".join([hyperdata[k] for k in text_fields2])
         if len(text) < 10:

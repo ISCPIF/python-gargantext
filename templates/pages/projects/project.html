@@ -563,6 +563,7 @@
                                     // console.log(data)
                                     setTimeout(
                                         function() {
+
                                             location.reload();
                                         }, 5000);
                                     },
@@ -571,23 +572,23 @@
                                     }
                                 });
                             }
-
+                            {% if donut %}
                             // Morris Donut Chart
                             Morris.Donut({
                                 element: 'hero-donut',
                                 data: [
-                                    {% if donut %}
+
                                     {% for part in donut %}
                                     {label: '{{ part.source }}', value: {{ part.part }} },
                                     {% endfor %}
-                                    {% endif %}
+
 
                                 ],
                                 colors: ["@white", "@white"],
                                 //colors: ["#30a1ec", "#76bdee"],
                                 formatter: function (y) { return y + "%" }
                             });
-
+                            {% endif %}
                     </script>
 
 

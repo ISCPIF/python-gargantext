@@ -107,7 +107,7 @@ def parse(corpus):
             else:
                 # BY documents
                 d = 0
-                for hyperdata in parserbot(resource["path"]):
+                for documents_count, hyperdata in enumerate(parserbot(resource["path"])):
                     # indexed text fields defined in CONSTANTS
                     for k in DEFAULT_INDEX_FIELDS:
                         if k in hyperdata.keys():

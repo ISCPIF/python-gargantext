@@ -39,7 +39,11 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_IMPORTS = ("gargantext.util.toolchain", "graph.cooccurrences")
+CELERY_IMPORTS = ("gargantext.util.toolchain",
+                    "graph.cooccurrences",
+                    "gargantext.util.toolchain.main.parse_extract_indexhyperdata",
+                    "gargantext.util.toolchain.main.parse_extract",
+                    )
 
 
 # garg's custom unittests runner (adapted to our db models)

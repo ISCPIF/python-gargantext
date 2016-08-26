@@ -53,6 +53,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         #print(LANGUAGES.keys())
         tagger_bots = {lang: load_tagger(lang) for lang in corpus.hyperdata["languages"] \
                                 if lang != "__unknown__"}
+        tagger_bots["__unknown__"] = load_tagger("en")
         print("#TAGGERS LOADED: ", tagger_bots)
         supported_taggers_lang = tagger_bots.keys()
         print("#SUPPORTED TAGGER LANGS", supported_taggers_lang)

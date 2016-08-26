@@ -17,7 +17,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
         if hyperdata["language_iso2"] not in LANGUAGES.keys():
             skipped_languages.append(hyperdata["language_iso2"])
             return observed_languages,skipped_languages
-        observed_languages[hyperdata["language_iso2"]]
+        observed_languages.append(hyperdata["language_iso2"])
         return observed_languages,skipped_languages
 
 

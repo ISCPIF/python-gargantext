@@ -72,7 +72,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                 else:
 
                     tagger = tagger_bots[language_iso2]
-                    print(tagger)
+
                     #print(language_iso2)
                     #>>> romain-stable-patch
                     #to do verify if document has no KEYS to index

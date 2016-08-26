@@ -138,13 +138,20 @@ def parse(corpus):
 
                         #adding skipped_docs for later processsing if error in parsing
                         skipped_docs.append(document.id)
-                #documents for this resources
-                session.add(corpus)
-                session.commit()
+
+                    if documents_count % BATCH_PARSING_SIZE == 0:
+                        corpus.status('Docs', progress=documents_count)
+                        corpus.save_hyperdata()
+                        session.add(corpus)
+                        session.commit()
+
+
                 # update info about the resource
                 resource['extracted'] = True
                 #print( "resource n°",i, ":", d, "docs inside this file")
-
+            #finally store documents for this corpus
+            session.add(corpus)
+            session.commit()
 
         #STORING AGREGATIONS INFO (STATS)
         #skipped_docs

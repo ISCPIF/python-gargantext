@@ -15,18 +15,18 @@ class RISParser(Parser):
 
     _begin = 6
     _parameters = {
-        b"ER":  {"type": "delimiter"},
-        b"TI":  {"type": "hyperdata", "key": "title", "separator": " "},
-        b"ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
-        b"AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
-        b"T2":  {"type": "hyperdata", "key": "journal"},
-        b"UR":  {"type": "hyperdata", "key": "doi"},
-        b"PY":  {"type": "hyperdata", "key": "publication_year"},
-        b"PD":  {"type": "hyperdata", "key": "publication_month"},
-        b"N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
-        b"LA":  {"type": "hyperdata", "key": "language_iso2"},
-        b"AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
-        b"WC":  {"type": "hyperdata", "key": "fields"},
+        "ER":  {"type": "delimiter"},
+        "TI":  {"type": "hyperdata", "key": "title", "separator": " "},
+        "ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
+        "AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
+        "T2":  {"type": "hyperdata", "key": "journal"},
+        "UR":  {"type": "hyperdata", "key": "doi"},
+        "PY":  {"type": "hyperdata", "key": "publication_year"},
+        "PD":  {"type": "hyperdata", "key": "publication_month"},
+        "N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
+        "LA":  {"type": "hyperdata", "key": "language_iso2"},
+        "A":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+        "WC":  {"type": "hyperdata", "key": "fields"},
     }
 
     def parse(self, file):
@@ -34,13 +34,13 @@ class RISParser(Parser):
         hyperdata = {}
         last_key = None
         last_values = []
-        # browse every line of the file
         for line in file:
-
+            # bytes ~~> str
+            line = line.decode("UTF-8").rstrip('\r\n')
             if len(line) > 2 :
                 # extract the parameter key
                 parameter_key = line[:2]
-                if parameter_key != b'  ' and parameter_key != last_key:
+                if parameter_key != '  ' and parameter_key != last_key:
                     if last_key in self._parameters:
                         # translate the parameter key
                         parameter = self._parameters[last_key]
@@ -57,7 +57,7 @@ class RISParser(Parser):
                     last_key = parameter_key
                     last_values = []
                 try:
-                    last_values.append(line[self._begin:-1].decode())
+                    last_values.append(line[self._begin:])
                 except Exception as error:
                     print(error)
         # if a hyperdata object is left in memory, yield it as well

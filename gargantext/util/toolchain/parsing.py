@@ -113,6 +113,7 @@ def parse(corpus):
         #skipped_languages
         skipped_languages = []
         #skipped docs to remember for later processing
+        pending_add_error_stats = False
         skipped_docs = []
 
         documents_count = 0
@@ -161,9 +162,7 @@ def parse(corpus):
                             'action':'Parsing',
                             'error': hyperdata['error']
                             })
-
-                        #adding skipped_docs for later processsing if error in parsing
-                        skipped_docs.append(document.id)
+                        pending_add_error_stats = True
 
                     # -----------------------
                     # save as corpus DB child
@@ -175,6 +174,12 @@ def parse(corpus):
                     )
                     session.add(document)
                     session.commit()
+                    documents_count += 1
+
+                    if pending_add_error_stats:
+                        #adding skipped_docs for later processing if error in parsing
+                        skipped_docs.append(document.id)
+                        pending_add_error_stats = False
 
                     #BATCH_PARSING_SIZE
                     if documents_count % BATCH_PARSING_SIZE == 0:
@@ -182,8 +187,6 @@ def parse(corpus):
                         corpus.save_hyperdata()
                         session.add(corpus)
                         session.commit()
-
-                    documents_count += 1
 
                 # update info about the resource
                 resource['extracted'] = True

@@ -263,5 +263,5 @@ class EuropresseParser(Parser):
                 print(hyperdata)
                 yield hyperdata
 
-        except:
-            print('Something bad happened.')
+        except Exception as err:
+            print('Europresse parser: Something bad happened:' + str(err))

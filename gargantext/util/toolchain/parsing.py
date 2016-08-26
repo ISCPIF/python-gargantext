@@ -57,7 +57,8 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
     else:
         print("[WARNING] no language_* found in document [parsing.py]")
         if DETECT_LANG is False:
-            skipped_languages.append("__unknown__")
+            #skipped_languages.append("__unknown__")
+            hyperdata["language_iso2"] = "__unknown__"
             return hyperdata, observed_languages,skipped_languages
 
         #no language have been indexed
@@ -77,6 +78,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             for k in ["iso2", "iso3", "name"]:
                 hyperdata["language_"+k] = getattr(lang, k)
             if lang.iso2 not in LANGUAGES.keys():
+                #hyperdata["language_iso2"] = "__unknown__"
                 skipped_languages.append(lang.iso2)
                 return hyperdata, observed_languages,skipped_languages
             observed_languages.append(lang.iso2)

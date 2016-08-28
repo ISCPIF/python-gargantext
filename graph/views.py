@@ -57,7 +57,7 @@ def myGraphs(request, project_id, corpus_id):
     project = cache.Node[project_id]
 
     coocs = corpus.children('COOCCURRENCES', order=True).all()
-    
+
     coocs_count = dict()
     for cooc in coocs:
         cooc_nodes = session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc.id).count()
@@ -72,11 +72,10 @@ def myGraphs(request, project_id, corpus_id):
             'user'         : request.user,
             'date'         : datetime.now(),
             'project'      : project,
-            'resourcename' : resourcename(corpus),
+            'resourcename' : get_resource_by_name(corpus),
             'corpus'       : corpus,
             'view'         : 'myGraph',
             'coocs'        : coocs,
             'coocs_count'  : coocs_count
         },
     )
-

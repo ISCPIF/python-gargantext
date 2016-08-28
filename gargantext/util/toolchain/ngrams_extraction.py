@@ -8,13 +8,15 @@ from gargantext.util.scheduling import scheduled
 def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
     """
     @param ngrams_data   a set like {('single word', 2), ('apple', 1),...}
+
+    £TODO: load whole word dictionary in ram and check existence before inserting to db => sequential insert => probably faster!
     """
     print('INTEGRATE')
-    # integrate ngrams
+    # integrate ngrams (aka new words)
     ngrams_ids = bulk_insert_ifnotexists(
-        model = Ngram,
-        uniquekey = 'terms',
-        fields = ('terms', 'n'),
+        model = Ngram,                # todo type should :str ~~> :str|:re) !!!
+        uniquekey = 'terms',          # todo col 'terms' should be renamed 'form' ?
+        fields = ('terms', 'n'),      # todo replace by type ?
         data = ngrams_data,
         cursor = cursor,
     )
@@ -77,6 +79,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                     #print(language_iso2)
                     #>>> romain-stable-patch
                     #to do verify if document has no KEYS to index
+                    # eg: use set intersect (+ loop becomes direct! with no continue)
                     for key in keys:
                         try:
                             value = document.hyperdata[str(key)]

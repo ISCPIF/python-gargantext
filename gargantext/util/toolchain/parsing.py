@@ -155,7 +155,7 @@ def parse(corpus):
                     # init statuses
                     hyperdata['statuses'] = []
 
-                    # only parsing errors can be written straight to statuses
+                    # only parsing errors can be written straight to doc statuses
                     # because it's a new hyperdata for the DB
                     if "error" in hyperdata.keys():
                         hyperdata['statuses'].append({
@@ -192,7 +192,8 @@ def parse(corpus):
                 resource['extracted'] = True
                 #print( "resource n°",i, ":", d, "docs inside this file")
 
-        corpus.status('Parsing', progress=documents_count+1, complete=True)
+        # mark *corpus-level* status as complete !
+        corpus.status('Docs', progress=documents_count+1, complete=True)
         corpus.save_hyperdata()
 
         # end of parsing
@@ -208,7 +209,7 @@ def parse(corpus):
         docs = corpus.children("DOCUMENT").count()
         if docs == 0:
             print("[ERROR] PARSING FAILED!!!!!")
-            corpus.status('Parsing', error= "No documents parsed")
+            corpus.status('Docs', error= "No documents parsed")
         print(docs, "parsed")
 
         # language stats

@@ -11,7 +11,7 @@ def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
 
     £TODO: load whole word dictionary in ram and check existence before inserting to db => sequential insert => probably faster!
     """
-    print('INTEGRATE')
+    print('INTEGRATE', len(ngrams_data), len(nodes_ngrams_count))
     # integrate ngrams (aka new words)
     ngrams_ids = bulk_insert_ifnotexists(
         model = Ngram,                # todo type should :str ~~> :str|:re) !!!
@@ -49,21 +49,29 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         resource = corpus.resources()[0]
         documents_count = 0
         source = get_resource(resource["type"])
-        #load only the docs that have passed the parsing without error
 
         #load available taggers for default langage of plateform
         #print(LANGUAGES.keys())
         tagger_bots = {lang: load_tagger(lang) for lang in corpus.hyperdata["languages"] \
                                 if lang != "__unknown__"}
         tagger_bots["__unknown__"] = load_tagger("en")
-        print("#TAGGERS LOADED: ", tagger_bots)
+        # print("#TAGGERS LOADED: ", tagger_bots)
         supported_taggers_lang = tagger_bots.keys()
-        print("#SUPPORTED TAGGER LANGS", supported_taggers_lang)
-        #sort docs by lang?
-        # for lang, tagger in tagger_bots.items():
+        # print("#SUPPORTED TAGGER LANGS", supported_taggers_lang)
+
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
+            #load only the docs that have passed the parsing without error
             if document.id not in corpus.hyperdata["skipped_docs"]:
-                language_iso2 = document.hyperdata.get('language_iso2')
+
+                if 'language_iso2' in document.hyperdata:
+                    language_iso2 = document.hyperdata['language_iso2']
+                else:
+                    language_iso2 = "__unknown__"
+
+                # debug
+                # print(language_iso2)
+
+                # do we have a tagger ?
                 if language_iso2 not in supported_taggers_lang:
                     #print("ERROR NO language_iso2")
                     document.status("NGRAMS", error="Error: unsupported language for tagging")
@@ -73,12 +81,10 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                     corpus.save_hyperdata()
                     continue
                 else:
-
+                    # ready !
                     tagger = tagger_bots[language_iso2]
 
-                    #print(language_iso2)
-                    #>>> romain-stable-patch
-                    #to do verify if document has no KEYS to index
+                    # to do verify if document has no KEYS to index
                     # eg: use set intersect (+ loop becomes direct! with no continue)
                     for key in keys:
                         try:
@@ -116,22 +122,27 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
                 nodes_ngrams_count.clear()
                 ngrams_data.clear()
+
+            # save corpus hyperdata regularly too
             if documents_count % BATCH_PARSING_SIZE == 0:
                 corpus.status('Ngrams', progress=documents_count+1)
                 corpus.save_hyperdata()
                 session.add(corpus)
                 session.commit()
 
-            # integrate ngrams and nodes-ngrams (le reste)
-            if len(nodes_ngrams_count) > 0:
-                _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
-                nodes_ngrams_count.clear()
-                ngrams_data.clear()
+        # end for doc
 
-            corpus.status('Ngrams', progress=documents_count+1, complete=True)
-            corpus.save_hyperdata()
+        # integrate remaining ngrams and nodes-ngrams (after loop)
+        if len(nodes_ngrams_count) > 0:
+            _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
+            nodes_ngrams_count.clear()
+            ngrams_data.clear()
 
+        # corpus-level status => complete
+        corpus.status('Ngrams', progress=documents_count+1, complete=True)
+        corpus.save_hyperdata()
 
+    # end try
     except Exception as error:
         corpus.status('Ngrams', error=error)
         corpus.save_hyperdata()

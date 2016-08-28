@@ -342,8 +342,8 @@ DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 
 # Processing -----------------------------------------------------------
 # about batch processing...
-BATCH_PARSING_SIZE          = 256
-BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many distinct ngrams before INTEGRATE
+BATCH_PARSING_SIZE          = 256    # how many new docs before db write
+BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many new node-ngram relations before INTEGRATE
 
 
 # Scrapers config

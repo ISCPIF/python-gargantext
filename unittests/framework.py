@@ -4,11 +4,7 @@ A test runner derived from default (DiscoverRunner) but adapted to our custom DB
 cf. docs.djangoproject.com/en/1.9/topics/testing/advanced/#using-different-testing-frameworks
 cf. gargantext/settings.py => TEST_RUNNER
 cf. dbmigrate.py
-
-FIXME url get will still give read access to original DB ?
-      cf. http://stackoverflow.com/questions/19714521
-      cf. http://stackoverflow.com/questions/11046039
-      cf. test_073_get_api_one_node
+cf ./session_and_db_remarks.md
 """
 
 # basic elements
@@ -43,10 +39,8 @@ class GargTestRunner(DiscoverRunner):
     We use the default test runner but we just add
     our own dbmigrate elements at db creation
 
-    => we let django.test.runner do the test db creation + auto migrations
-    => we retrieve the test db name from django.test.runner
-    => we create a test engine like in gargantext.db.create_engine but with the test db name
-    => we create tables for our models like in dbmigrate with the test engine
+    1) we let django.test.runner do the test db creation + auto migrations
+    2) we create tables for our models like in dbmigrate with the test engine
 
     POSSIBLE: definitions of tables to be created should be fully hard coded like the list in self.models
     => then remove django.setup() used to import models and DATABASES renaming to prevent its secondary effects

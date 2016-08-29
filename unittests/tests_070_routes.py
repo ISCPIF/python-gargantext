@@ -11,9 +11,8 @@ from gargantext.models import Node
 # to be able to compare in test_073_get_api_one_node()
 from gargantext.constants import NODETYPES
 
-# provides GargTestRunner.testdb_session
-from unittests.framework import GargTestRunner
-
+from gargantext.util.db   import session
+from gargantext.settings import DATABASES
 
 class RoutesChecker(TestCase):
     def setUp(self):
@@ -27,13 +26,12 @@ class RoutesChecker(TestCase):
                             '/auth/login/',
                             {'username': 'pcorser', 'password': 'peter'}
                             )
-        print(response.status_code)
-
-        session = GargTestRunner.testdb_session
+        # print(response.status_code) # expected: 302 FOUND
 
         new_project = Node(
             typename = 'PROJECT',
             name = "hello i'm a project",
+            user_id = 1                   # todo make sure it's the same user as login
         )
         session.add(new_project)
         session.commit()
@@ -47,7 +45,7 @@ class RoutesChecker(TestCase):
         self.assertIn('text/html', front_response.get('Content-Type'))
         # on suppose que la page contiendra toujours ce titre
         self.assertIn(b'<h1>Gargantext</h1>', front_response.content)
-    
+
     def test_071b_get_inexisting_page(self):
         ''' get the inexisting page /foo '''
         front_response = self.client.get('/foo')
@@ -64,20 +62,15 @@ class RoutesChecker(TestCase):
 
         # 2) let's try to get things in the json
         json_content = api_response.json()
+        print(json_content)
         json_count = json_content['count']
         json_nodes = json_content['records']
         self.assertEqual(type(json_count), int)
         self.assertEqual(type(json_nodes), list)
-        print("\ntesting nodecount: %i " % json_count)
-
 
     def test_073_get_api_one_node(self):
         ''' get "api/nodes/<node_id>" '''
-
-        # we first get one node id by re-running this bit from test_072
-        a_node_id = self.client.get('/api/nodes').json()['records'][0]['id']
-
-        one_node_route = '/api/nodes/%i' % a_node_id
+        one_node_route = '/api/nodes/%i' % self.a_node_id
         # print("\ntesting node route: %s" % one_node_route)
         api_response = self.client.get(one_node_route)
         self.assertTrue(api_response.has_header('Content-Type'))
@@ -89,6 +82,7 @@ class RoutesChecker(TestCase):
         print("\ntesting nodename:", nodename)
         print("\ntesting nodetype:", nodetype)
         self.assertIn(nodetype, NODETYPES)
+        self.assertEqual(nodename, "hello i'm a project")
 
     # TODO http://localhost:8000/api/nodes?types[]=CORPUS
 

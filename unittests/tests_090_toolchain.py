@@ -8,10 +8,7 @@ from django.test import TestCase, Client, RequestFactory
 from gargantext.models import Node, User
 from gargantext.util.db import session
 
-
 from gargantext.constants import RESOURCETYPES, NODETYPES, get_resource
-# provides GargTestRunner.testdb_session
-#from unittests.framework import GargTestRunner
 
 from gargantext.util.toolchain.main import *
 DATA_SAMPLE_DIR = "/srv/gargantext_lib/test_samples/"

@@ -175,7 +175,7 @@ RESOURCETYPES = [
         'name': 'Web of Science [ISI]',
         'format': 'ISI',
         'parser': "ISIParser",
-        'file_formats':["zip", "txt"],
+        'file_formats':["zip", "txt", "isi"],
         #'crawler': "ISICrawler",
         'crawler': None,
     },

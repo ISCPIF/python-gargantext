@@ -8,7 +8,10 @@ build-essential make \
 postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5 \
 postgresql-server-dev-9.5 libpq-dev libxml2 \
 postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5 \
-nginx rabbitmq-server
+nginx rabbitmq-server 
+
+# WARNING: uwsgi is not on stretch any more (get it from unstable)
+# uwsgi uwsgi-core uwsgi-plugin-python3
 
 
 ### Configure timezone and locale

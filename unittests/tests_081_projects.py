@@ -1,8 +1,11 @@
 #!/usr/bin/python3 env
+
+from django.test import TestCase
+
 class ProjectsRecipes(TestCase):
     def setUp(self):
         #before anytest
-        self.session = GargTestRunner.testdb_session
+        self.session = session
         self.client = Client()
 
     def tearDown(self):

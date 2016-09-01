@@ -1,12 +1,13 @@
 #!/usr/bin/python3 env
-# provides GargTestRunner.testdb_session
-from unittests.framework import GargTestRunner
-from Django import TestCase
+
+from gargantext.util.db import session
+from django import TestCase
+
 
 class UserRecipes(TestCase):
     def setUp(self):
         #before any test
-        self.session = GargTestRunner.testdb_session
+        self.session = session
         self.client = Client()
     def tearDown(self):
         #after any test

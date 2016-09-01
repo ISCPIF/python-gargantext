@@ -1,17 +1,7 @@
 from ._Parser import Parser
-
 from gargantext.util.languages import languages
 
-#from admin.utils import PrintException
-
 class RISParser(Parser):
-
-#    def __init__(self, language_cache=None):
-#
-#        #super(Parser, self).__init__()
-#        #super(Parser, self).__init__()
-#        self._languages_cache = LanguagesCache() if language_cache is None else language_cache
-
 
     _begin = 6
     _parameters = {
@@ -33,6 +23,7 @@ class RISParser(Parser):
         hyperdata = {}
         last_key = None
         last_values = []
+        current_value = None
 
         for line in file:
             # bytes ~~> str
@@ -69,15 +60,13 @@ class RISParser(Parser):
                     last_values = []
                     last_key = parameter_key
 
-                # 3 - new key or old: in any case we feed the value array "buffer"
-                try:
-                    last_values.append(current_value)
-                except Exception as error:
-                    print(error)
+                # 3 - new key or old: in any case we pass contents to
+                #     the value array buffer (=> for the next loop only)
+                last_values.append(current_value)
+                current_value = None
 
-            # empty line => we still need to check if PREVIOUS LINE was record delimiter
+            # empty line => we need to check if PREVIOUS LINE was record delimiter
             else:
-                # print("\n\n\nEMPTY LINE, with last_key", last_key)
                 if last_key in self._parameters:
                     if parameter["type"] == "delimiter":
                         if 'language_fullname' not in hyperdata.keys():
@@ -87,8 +76,14 @@ class RISParser(Parser):
                         yield hyperdata
                         last_key = None
                         hyperdata = {}
-
             # [end of loop per lines]
+
+        # if we have any values left on previous line => put them in hd
+        if last_key in self._parameters:
+            parameter = self._parameters[last_key]
+            if parameter["type"] == "hyperdata":
+                separator = parameter["separator"] if "separator" in parameter else ""
+                hyperdata[parameter["key"]] = separator.join(last_values)
 
         # if a hyperdata object is left in memory, yield it as well
         if hyperdata:

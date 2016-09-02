@@ -52,26 +52,13 @@ TEST_RUNNER = 'unittests.framework.GargTestRunner'
 
 Using a DB session
 ------------------
-To emulate a session the way we usually do it in gargantext, our `unittests.framework` also
-provides a session object to the test database via `GargTestRunner.testdb_session`
-
-To work correctly, it needs to be read *inside the test setup.*
+The GargTestRunner overrides default settings so that the test database is used in the way we usually do it in gargantext :
 
 **Example**
 ```
-from unittests.framework import GargTestRunner
+from gargantext.util.db import session
 
-class MyTestRecipes(TestCase):
-    def setUp(self):
-        # -------------------------------------
-        session = GargTestRunner.testdb_session
-        # -------------------------------------
-        new_project = Node(
-            typename = 'PROJECT',
-            name = "hello i'm a project",
-        )
-        session.add(new_project)
-        session.commit()
+session.query(Nodes).all()   # gives all the nodes of the testdb
 ```
 
 
@@ -123,12 +110,3 @@ class MyTestRecipes(TestCase):
 ```
 
 *Si vous aimez les aventures de Peter Corser, lisez l'album précédent ["Doors"](https://gogs.iscpif.fr/leclaire/doors)* (Scénario M. Leclaire, Dessins R. Loth) (disponible dans toutes les bonnes librairies)
-
-
-FIXME
------
-
-url client get will still give read access to original DB ?
-      cf. http://stackoverflow.com/questions/19714521
-      cf. http://stackoverflow.com/questions/11046039
-      cf. test_073_get_api_one_node

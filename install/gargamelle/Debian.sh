@@ -60,7 +60,7 @@ update-locale LC_ALL=fr_FR.UTF-8
 
 # su gargantua -c 'all commands below'
 # but nltk needs right access (so done in root, not really good for safety)
- source /srv/env_3-5/bin/activate && pip3 install -r requirements.txt && \
+ source /srv/env_3-5/bin/activate && pip3 install -r /srv/gargantext/install/gargamelle/requirements.txt && \
  pip3  install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1 && \
  python3 -m nltk.downloader averaged_perceptron_tagger -d /usr/local/share/nltk_data
  

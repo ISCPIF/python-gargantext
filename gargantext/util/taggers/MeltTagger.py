@@ -123,10 +123,14 @@ class MeltTagger(Tagger):
                         yield (values[0], self._tag_replacements[values[1]], values[2].replace('*', ''))
 
 
-def EnglishMeltTagger(*args, **kwargs):
-    kwargs['language'] = 'en'
-    return MeltTagger(*args, **kwargs)
+# 2016-09-02: these two constructors go outside
+#             to respect the new tagger import
+#             mecanism (1 tagger <=> 1 module)
 
-def FrenchMeltTagger(*args, **kwargs):
-    kwargs['language'] = 'fr'
-    return MeltTagger(*args, **kwargs)
+# def EnglishMeltTagger(*args, **kwargs):
+#     kwargs['language'] = 'en'
+#     return MeltTagger(*args, **kwargs)
+#
+# def FrenchMeltTagger(*args, **kwargs):
+#     kwargs['language'] = 'fr'
+#     return MeltTagger(*args, **kwargs)

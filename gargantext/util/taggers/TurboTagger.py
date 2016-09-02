@@ -1,8 +1,8 @@
-# from ._Tagger import Tagger
+from ._Tagger import Tagger
 from .lib.nlpserver.client import NLPClient
 
 
-class TurboTagger:
+class TurboTagger(Tagger):
 
     def start(self):
         self._nlpclient = NLPClient()

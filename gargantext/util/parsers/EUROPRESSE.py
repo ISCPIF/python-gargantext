@@ -4,8 +4,8 @@
 """
 
 __author__    = "Gargantext Team"
-__copyright__ = "Copyright 2014-15 ISCPIF-CNRS"
-__version__   = "0.1"
+__copyright__ = "Copyright 2014-16 ISCPIF-CNRS"
+__version__   = "0.2"
 __email__     = "romain.loth@iscpif.fr"
 __status__    = "Test"
 
@@ -27,6 +27,7 @@ import sys
 #from admin.env import *
 #from parsing.FileParsers.FileParser import FileParser
 from ._Parser import Parser
+from traceback import format_tb
 
 
 class EuropresseParser(Parser):
@@ -112,15 +113,17 @@ class EuropresseParser(Parser):
 
 
         # parse all the articles, one by one
-        try:
-            for html_article in html_articles:
-
+        for html_article in html_articles:
+            try:
                 print("==============================new article")
 
                 # s'il n'y a pas du tout de header on doit skip
                 all_header = html_article.xpath(entire_header_xpath)
-                if len(all_header) == 0:
-                    print("WARNING: europress (skip) article without header")
+                all_header_text = " ".join(scrap_text(all_header))
+                if len(all_header) == 0 or len(all_header_text) == 0:
+                    hyperdata['error']="Europresse: html doc with no header"
+                    yield(hyperdata)
+                    print("WARNING: europresse (skip) article without header")
                     continue
 
                 hyperdata = {}
@@ -134,7 +137,9 @@ class EuropresseParser(Parser):
                     hyperdata['title'] = title[0]
                 except:
                     # il y aura un problème d'affichage si pas de titre !
-                    print("WARNING: europress (skip) article without title")
+                    print("WARNING: europresse (skip) article without title")
+                    hyperdata['error']="Europresse: doc with no title"
+                    yield(hyperdata)
                     continue
 
 
@@ -189,12 +194,19 @@ class EuropresseParser(Parser):
                 else:
                     # occasionellment DocHeader absent
                     # (on se rabat sur le header entier)
-                    search_text = " ".join(scrap_text(all_header[0]))
+                    search_text = all_header_text
 
                     # print("---using all header: '%s'" % search_text)
 
+                # si on n'a pas trouvé de zone du tout
+                if not search_text:
+                    the_err = "europresse (skip) doc without detailed header"
+                    print("WARNING:" + the_err)
+                    hyperdata['error']= the_err
+                    yield(hyperdata)
+                    continue
 
-                # on poursuit date/langue avec la zone obtenue
+                # on poursuit date/langue avec la zone obtenue...
 
                 # 1) Une REGEXP identifie la langue ET attrape la date
                 test_date_fr = re.search(format_date_fr,search_text)
@@ -223,7 +235,7 @@ class EuropresseParser(Parser):
                         # match str
                         date_str = test_date_en.group()
                     else:
-                        print("WARNING europress: echec diagnostic date/langue header sur '%s'" % header)
+                        print("WARNING europresse: echec diagnostic date/langue header sur '%s'" % header)
                         # default lg value, used locally, not saved
                         doc_language = 'en'
                         # default date value, will be saved
@@ -260,8 +272,12 @@ class EuropresseParser(Parser):
                         # most probably news_topic before beginning of date
                         hyperdata['rubrique']   = header_elts[0]
 
-                print(hyperdata)
+                # print(hyperdata)
                 yield hyperdata
 
-        except Exception as err:
-            print('Europresse parser: Something bad happened:' + str(err))
+            except Exception as err:
+                print('WARNING: europresse (skip) unknown error:"' + str(err) + '"'
+                      + "\n>>>" + (">>>".join(format_tb(err.__traceback__))))
+                hyperdata['error']= err
+                yield(hyperdata)
+                continue

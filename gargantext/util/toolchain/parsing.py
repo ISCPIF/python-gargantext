@@ -68,7 +68,8 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             lang_result['skipped'].append(hyperdata["language_name"])
 
     else:
-        print("[WARNING] no language_* found in document [parsing.py]")
+        print("WARNING no language_* found in document [parsing.py] => "
+               + ("(detecting)" if DETECT_LANG else "(using default)"))
 
         if DETECT_LANG:
             #no language have been indexed
@@ -93,7 +94,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
 def parse(corpus):
     try:
         print("PARSING")
-        print("DETECT_LANG?", DETECT_LANG)
+        # print("DETECT_LANG?", DETECT_LANG)
         corpus.status('Docs', progress=0)
         #1 corpus => 1 or multi resources.path (for crawlers)
         resources = corpus.resources()
@@ -107,7 +108,9 @@ def parse(corpus):
             #corpus.status(error)
             raise ValueError("Resource '%s' has no Parser" %resource["name"])
         parserbot = load_parser(source)
-        print(parserbot)
+
+        # print(parserbot)
+
         #observed languages in default languages
         observed_languages = []
         #skipped_languages
@@ -218,10 +221,10 @@ def parse(corpus):
         #les jolis iso2
         observed_langs = dict(Counter(observed_languages))
 
-        print("#LANGAGES OK")
-        print(observed_langs)
-        print("#LANGUAGES UNKNOWN")
-        print(skipped_langs)
+        # print("#LANGAGES OK")
+        # print(observed_langs)
+        # print("#LANGUAGES UNKNOWN")
+        # print(skipped_langs)
 
         top_langs = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)
         if len(top_langs) > 0:

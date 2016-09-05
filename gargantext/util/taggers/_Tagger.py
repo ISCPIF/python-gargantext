@@ -32,7 +32,7 @@ class Tagger:
         self.text = self.clean_text(text)
         grammar = nltk.RegexpParser(label + ': ' + rule)
         tagged_tokens = list(self.tag_text(self.text))
-        print("the tagged_tokens", tagged_tokens)
+        # print("the tagged_tokens", tagged_tokens)
         if len(tagged_tokens):
             grammar_parsed = grammar.parse(tagged_tokens)
             for subtree in grammar_parsed.subtrees():

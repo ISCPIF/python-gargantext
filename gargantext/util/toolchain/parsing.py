@@ -68,8 +68,8 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             lang_result['skipped'].append(hyperdata["language_name"])
 
     else:
-        print("WARNING no language_* found in document [parsing.py] => "
-               + ("(detecting)" if DETECT_LANG else "(using default)"))
+        # print("WARNING no language_* found in document [parsing.py] => "
+        #        + ("(detecting)" if DETECT_LANG else "(using default)"))
 
         if DETECT_LANG:
             #no language have been indexed

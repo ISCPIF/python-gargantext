@@ -19,8 +19,7 @@ class Tagger:
             | [][.,;"'?!():-_`]             # these are separate tokens
             ''', re.UNICODE | re.MULTILINE | re.DOTALL)
         self.buffer = []
-
-        #self.start()
+        self.start()
 
 
     def clean_text(self, text):
@@ -33,6 +32,7 @@ class Tagger:
         self.text = self.clean_text(text)
         grammar = nltk.RegexpParser(label + ': ' + rule)
         tagged_tokens = list(self.tag_text(self.text))
+        print("the tagged_tokens", tagged_tokens)
         if len(tagged_tokens):
             grammar_parsed = grammar.parse(tagged_tokens)
             for subtree in grammar_parsed.subtrees():
@@ -46,12 +46,11 @@ class Tagger:
         self.stop()
 
     def start(self):
-        """Initializes the tagger.
+        """Initializes the tagger (once per corpus).
         This method is called by the constructor, and can be overriden by
         inherited classes.
         """
-        print("START")
-        self.extract(self.text)
+        # print("START")
 
     def stop(self):
         """Ends the tagger.
@@ -81,7 +80,7 @@ class Tagger:
         return []
 
 
-    # Not used right now
+    # Main function for extract()
     def tag_text(self, text):
         """Send a text to be tagged.
         """

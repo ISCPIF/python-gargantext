@@ -55,7 +55,7 @@ class MeltTagger(Tagger):
     def __init__(self, *args, **kwargs):
         self.language = kwargs.pop('language', 'fr')
         self._tag_replacements = _tag_replacements[self.language]
-        super(self.__class__, self).__init__(*args, **kwargs)
+        Tagger.__init__(self, *args, **kwargs)
 
     def start(self, melt_data_path='lib/melttagger'):
         language = self.language
@@ -102,7 +102,8 @@ class MeltTagger(Tagger):
                 if len(token.string):
                     yield (token.string, token.label, )
 
-    def extract(self, text, lemmatize=False):
+    def tag_text(self, text, lemmatize=False):
+        # print("IN MeltTagger.tag_text()")
         tagged_tokens = self._tag(text)
         if not lemmatize:
             # without lemmatization

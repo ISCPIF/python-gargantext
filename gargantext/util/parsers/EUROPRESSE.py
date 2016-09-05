@@ -115,8 +115,6 @@ class EuropresseParser(Parser):
         # parse all the articles, one by one
         for html_article in html_articles:
             try:
-                print("==============================new article")
-
                 # s'il n'y a pas du tout de header on doit skip
                 all_header = html_article.xpath(entire_header_xpath)
                 all_header_text = " ".join(scrap_text(all_header))

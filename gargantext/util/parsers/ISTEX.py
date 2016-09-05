@@ -27,7 +27,6 @@ class ISTexParser(Parser):
         }
 
         suma = 0
-        print(len(json_docs))
         for json_doc in json_docs:
 
             hyperdata = {}

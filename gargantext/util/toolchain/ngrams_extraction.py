@@ -11,7 +11,8 @@ def _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor):
 
     £TODO: load whole word dictionary in ram and check existence before inserting to db => sequential insert => probably faster!
     """
-    print('INTEGRATE', len(ngrams_data), len(nodes_ngrams_count))
+    # print('INTEGRATE', len(ngrams_data), len(nodes_ngrams_count))
+    print('INTEGRATE')
     # integrate ngrams (aka new words)
     ngrams_ids = bulk_insert_ifnotexists(
         model = Ngram,                # todo type should :str ~~> :str|:re) !!!
@@ -118,7 +119,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
 
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:
-                print(len(nodes_ngrams_count),">=", BATCH_NGRAMSEXTRACTION_SIZE)
+                # print(len(nodes_ngrams_count),">=", BATCH_NGRAMSEXTRACTION_SIZE)
                 _integrate_associations(nodes_ngrams_count, ngrams_data, db, cursor)
                 nodes_ngrams_count.clear()
                 ngrams_data.clear()

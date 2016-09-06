@@ -32,10 +32,15 @@ Tests
   5. ** tests ??? **
   6. ** tests ??? **
   7. **tests_070_routes**  
-     Checks the response types from the app url routes:  
-    - "/"
-    - "/api/nodes"
-    - "/api/nodes/<ID>"
+      Checks the response types from the app url routes:  
+     - "/"
+     - "/api/nodes"
+     - "/api/nodes/<ID>"
+  8. ** tests users ??? **
+  9. **tests_090_toolchain**  
+      Checks each data source parserbot (CSV, Pubmed, Zotero, Istex, etc.)
+      - correct parsing for a small sample
+
 
 
 GargTestRunner
@@ -109,4 +114,3 @@ class MyTestRecipes(TestCase):
         self.assertEqual(the_response.status_code, 200)
 ```
 
-*Si vous aimez les aventures de Peter Corser, lisez l'album précédent ["Doors"](https://gogs.iscpif.fr/leclaire/doors)* (Scénario M. Leclaire, Dessins R. Loth) (disponible dans toutes les bonnes librairies)

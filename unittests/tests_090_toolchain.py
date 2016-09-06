@@ -32,7 +32,7 @@ class ToolChainRecipes(TestCase):
     def setUp(self):
         #self.session = GargTestRunner.testdb_session
         self.session = session
-        self.log= logging.getLogger( "SomeTest.testSomething" )
+        self.log= logging.getLogger( "unitests.test_090_toolchain" )
         self.client = Client()
         self.user = User()
         self.project = self._create_project()
@@ -40,34 +40,27 @@ class ToolChainRecipes(TestCase):
         self.source_list.insert(0, (0,"Select a database below"))
         self.sample_files = self._collect_samples_files()
 
-    def tearDown(self):
-        #del self.session
-        del self.client
-        #del self.factory
-        del self.source_list
-        del self.sample_files
-        del self.project
-
     def _create_project(self):
-        self.project = Node(
+        project = Node(
             user_id = self.user.id,
             typename = 'PROJECT',
             name = "test1000",
         )
-        self.session.add(self.project)
+        self.session.add(project)
         self.session.commit()
-        return self.project
+        return project
 
     def __count_node_children__(self, CurrNode, typename=None):
-        '''find ALL the children of a given Node [optionnal filter TYPENAME] '''
+        '''count ALL the children of a given Node [optional filter TYPENAME] '''
         if typename is None:
-            self.children = CurrNode.children('', order=True).count()
+            children = CurrNode.children('').count()
         else:
-            self.children = CurrNode.children(typename, order=True).count()
-        return self.children
+            children = CurrNode.children(typename).count()
+        return children
+
     def __find_node_parent__(self, CurrNode):
         '''find the parent Node given a CurrNode '''
-        self.parent = self.session.query(Node).filter(Node.id == Node.parent_id, Node.name == name).first()
+        self.parent = self.session.query(Node).filter(Node.id == CurrNode.parent_id).first()
 
     def _collect_samples_files(self):
         from collections import defaultdict
@@ -79,22 +72,24 @@ class ToolChainRecipes(TestCase):
         for format_source in os.listdir(DATA_SAMPLE_DIR):
             #self.log.debug(format_source)
             full_path = join(DATA_SAMPLE_DIR, format_source)
-            if not os.path.isfile(full_path):
+            if not isfile(full_path):
                 if format_source in sources:
                     self.sample_files[format_source] = [join(full_path, samplef) for samplef in os.listdir(full_path)]
         return self.sample_files
+
     def _create_corpus(self,name, source_type, sample_file):
-        self.corpus = self.project.add_child(
+        corpus = self.project.add_child(
             name = name,
             typename = 'CORPUS',
         )
-        self.corpus.add_resource(
+        corpus.add_resource(
             type = int(source_type),
             path = sample_file,
         )
-        self.session.add(self.corpus)
+        self.session.add(corpus)
         self.session.commit()
-        return self.corpus
+        return corpus
+
     def _get_corpus(self, name):
         corpus = self.session.query(Node).filter(Node.typename == "CORPUS", Node.name == name).first()
         return corpus
@@ -104,7 +99,7 @@ class ToolChainRecipes(TestCase):
         Each of the resources input test can follow this common recipe base
 
         @param source_type:          int   (cf. constants.py RESOURCETYPES)
-        @param expected_results:   []int   (number of docs for each sample corpora of this source)
+        @param expected_results:    int[]   (number of docs for each sample corpora of this source)
         """
         source = get_resource(source_type)
         source_name = source["name"].split("[")[0].lower().strip().replace(" ", "_")
@@ -168,8 +163,3 @@ class ToolChainRecipes(TestCase):
 
     def tests_010(self):
         self._run_recipe(10, DATA_SAMPLE_NDOCS[10])
-
-if __name__ == "__main__":
-    logging.basicConfig( stream=sys.stderr )
-    logging.getLogger( "unitests.test_090_toolchain" ).setLevel( logging.DEBUG )
-    unittest.main()

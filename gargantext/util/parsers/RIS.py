@@ -7,21 +7,35 @@ class RISParser(Parser):
     _begin = 6
     _parameters = {
         "ER":  {"type": "delimiter"}, # the record delimiter
+
         "TI":  {"type": "hyperdata", "key": "title", "separator": " "},
+        # "T1": variant of TI but they're rarely together so we can keep both
+        #       (if together only the last will be kept)
+        "T1":  {"type": "hyperdata", "key": "title", "separator": " "},
+
         "ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
         "AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
-        "T2":  {"type": "hyperdata", "key": "journal"},
+        "JO":  {"type": "hyperdata", "key": "journal"},
+        # "T2": short journal name but JO is more frequent
+        # "T2":  {"type": "hyperdata", "key": "journal"},
         "UR":  {"type": "hyperdata", "key": "doi"},
 
         # RIS format specifications: PY is not only year but YYYY/MM/DD with MM and DD optional
         #                            cf. https://en.wikipedia.org/wiki/RIS_(file_format)
         "PY":  {"type": "hyperdata", "key": "publication_year"},
-        "PD":  {"type": "hyperdata", "key": "publication_month"},
 
-        "N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
+        "N1":  {"type": "hyperdata", "key": "references", "separator": ", "}, # more like notes in reality
         "LA":  {"type": "hyperdata", "key": "language_iso2"},
         "AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
-        "WC":  {"type": "hyperdata", "key": "fields"},
+
+        # TODO other interesting fields
+        # "KW"            (keywords)
+        # "A1", "A2"...   (variants of AU)
+        # "N2"            (variant of AB)
+
+        # previously mentioned here but in fact not in RIS specifications
+        # "PD":  {"type": "hyperdata", "key": "publication_month"},
+        # "WC":  {"type": "hyperdata", "key": "fields"},
     }
 
     def parse(self, file):

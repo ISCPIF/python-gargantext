@@ -57,9 +57,15 @@ class Parser:
 
 
         elif hyperdata.get('publication_year', None) is not None:
+
             prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_year"]
+            # eg prefixes : ['publication']
+
             for prefix in prefixes:
                 date_string = hyperdata[prefix + "_year"]
+
+                # FIXME: except for year is it necessary to test that key exists
+                #        when we have a default value in .get(key, "01") ??
                 key = prefix + "_month"
                 if key in hyperdata:
                     date_string += " " + hyperdata.get(key, "01")
@@ -79,19 +85,19 @@ class Parser:
                     hyperdata[prefix + "_date"] = dateutil.parser.parse(date_string).strftime("%Y-%m-%d %H:%M:%S")
                 except Exception as error:
                     try:
-                        print(error, date_string)
+                        print("_Parser: error in full date parse", error, date_string)
                         # Date format:  1994 NOV-DEC
                         hyperdata[prefix + "_date"] = date_parser.parse(str(date_string)[:8]).strftime("%Y-%m-%d %H:%M:%S")
 
                     except Exception as error:
                         try:
-                            print("error line 93", error)
+                            print("_Parser: error in short date parse", error)
                             # FIXME Date format:  1994 SPR
                             # By default, we take the year only
                             hyperdata[prefix + "_date"] = date_parser.parse(str(date_string)[:4]).strftime("%Y-%m-%d %H:%M:%S")
 
                         except Exception as error:
-                            print("error line 99", error)
+                            print("_Parser:", error)
         else:
             print("WARNING: Date unknown at _Parser level, using now()")
             hyperdata['publication_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

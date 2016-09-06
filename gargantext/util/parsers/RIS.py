@@ -1,5 +1,6 @@
 from ._Parser import Parser
 from gargantext.util.languages import languages
+from re import match
 
 class RISParser(Parser):
 
@@ -11,11 +12,15 @@ class RISParser(Parser):
         "AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
         "T2":  {"type": "hyperdata", "key": "journal"},
         "UR":  {"type": "hyperdata", "key": "doi"},
+
+        # RIS format specifications: PY is not only year but YYYY/MM/DD with MM and DD optional
+        #                            cf. https://en.wikipedia.org/wiki/RIS_(file_format)
         "PY":  {"type": "hyperdata", "key": "publication_year"},
         "PD":  {"type": "hyperdata", "key": "publication_month"},
+
         "N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
         "LA":  {"type": "hyperdata", "key": "language_iso2"},
-        "A":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+        "AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
         "WC":  {"type": "hyperdata", "key": "fields"},
     }
 
@@ -44,7 +49,11 @@ class RISParser(Parser):
                         # 1 - we record the previous value array...
                         if parameter["type"] == "hyperdata":
                             separator = parameter["separator"] if "separator" in parameter else ""
-                            hyperdata[parameter["key"]] = separator.join(last_values)
+                            final_value = separator.join(last_values)
+                            if last_key != 'PY':
+                                hyperdata[parameter["key"]] = final_value
+                            else:
+                                hyperdata = PY_values_decompose_and_save(final_value, hyperdata)
 
                         #... or even finish the record (rare here, most often after empty line)
                         elif parameter["type"] == "delimiter":
@@ -83,7 +92,11 @@ class RISParser(Parser):
             parameter = self._parameters[last_key]
             if parameter["type"] == "hyperdata":
                 separator = parameter["separator"] if "separator" in parameter else ""
-                hyperdata[parameter["key"]] = separator.join(last_values)
+                final_value = separator.join(last_values)
+                if last_key != 'PY':
+                    hyperdata[parameter["key"]] = final_value
+                else:
+                    hyperdata = PY_values_decompose_and_save(final_value, hyperdata)
 
         # if a hyperdata object is left in memory, yield it as well
         if hyperdata:
@@ -92,3 +105,51 @@ class RISParser(Parser):
                     if 'language_iso2' not in hyperdata.keys():
                         hyperdata['language_iso2'] = 'en'
             yield hyperdata
+
+
+
+
+
+# helper function for PY dates
+def PY_values_decompose_and_save(ris_date_str, hyperdata):
+    """
+    PY is associated to our publication_year, but the exact format is:
+              "YYYY/MM/DD/"         (with MM and DD optional)
+
+    exemple contents:
+        1948/07/01
+        1948/07/01/
+        1948/07//
+        1948//
+        1948
+
+    => This function does the necessary additional date subparsing
+       and saves the results in the 3 hyperdata slots: year, month, day
+    """
+    possible_fields = ['publication_year',
+                       'publication_month',
+                       'publication_day',
+                       None]
+    current_field_i = 0
+    buffr = ""
+
+    for char in ris_date_str:
+        if char != '/':
+            # continue reading
+            buffr += char
+        else:
+            # on '/' => we save and shift to next field
+            current_field = possible_fields[current_field_i]
+            if len(buffr):
+                hyperdata[current_field] = buffr
+            # prepare for next time
+            current_field_i += 1
+            buffr = ""
+
+    # save at the end too
+    current_field = possible_fields[current_field_i]
+    if len(buffr):
+        hyperdata[current_field] = buffr
+
+    # return updated meta
+    return hyperdata

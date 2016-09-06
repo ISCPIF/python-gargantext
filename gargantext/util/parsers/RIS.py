@@ -20,7 +20,7 @@ class RISParser(Parser):
 
         "N1":  {"type": "hyperdata", "key": "references", "separator": ", "},
         "LA":  {"type": "hyperdata", "key": "language_iso2"},
-        "A":  {"type": "hyperdata", "key": "abstract", "separator": " "},
+        "AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
         "WC":  {"type": "hyperdata", "key": "fields"},
     }
 

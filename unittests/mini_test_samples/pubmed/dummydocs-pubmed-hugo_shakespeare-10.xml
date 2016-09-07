@@ -1,0 +1,866 @@
+<?xml version="1.0"?>
+<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2014//EN" "http://www.ncbi.nlm.nih.gov/corehtml/query/DTD/pubmed_140101.dtd">
+<!--
+  pubmed structure dummy example
+        (for parsing tests)
+            (10 docs)
+
+  content is free of rights (Hugo, Shakespeare), structure is (c) Pubmed
+-->
+<PubmedArticleSet>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345678</PMID>
+        <DateCreated>
+            <Year>1910</Year>
+            <Month>12</Month>
+            <Day>24</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1234-567X</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>3</Volume>
+                    <Issue>33</Issue>
+                    <PubDate>
+                        <Year>1910</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>JB</Title>
+                <ISOAbbreviation>JB</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla titre 01 fr</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-33</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/JB.00999-33</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-33</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">L'hirondelle au printemps cherche les vieilles tours, Débris où n'est plus l'homme, où la vie est toujours ; La fauvette en avril cherche, ô ma bien-aimée, La forêt sombre et fraîche et l'épaisse ramée, La mousse, et, dans les noeuds des branches, les doux toits Qu'en se superposant font les feuilles des bois. Ainsi fait l'oiseau. Nous, nous cherchons, dans la ville, Le coin désert, l'abri solitaire et tranquille, Le seuil qui n'a pas d'yeux obliques et méchants, La rue où les volets sont fermés ; dans les champs, Nous cherchons le sentier du pâtre et du poëte ; Dans les bois, la clairière inconnue et muette Où le silence éteint les bruits lointains et sourds. L'oiseau cache son nid, nous cachons nos amours.</AbstractText>
+                <AbstractText Label="IMPORTANCE" NlmCategory="OBJECTIVE">Le coin désert, l'abri solitaire et tranquille, Le seuil qui n'a pas d'yeux obliques et méchants, La rue où les volets sont fermés ; dans les champs, Nous cherchons le sentier du pâtre et du poëte</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Hugo</LastName>
+                    <ForeName>Victor</ForeName>
+                    <Initials>VH</Initials>
+                </Author>
+            </AuthorList>
+            <Language>fre</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987654</AccessionNumber>
+                        <AccessionNumber>AB987655</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1910</Year>
+                <Month>12</Month>
+                <Day>24</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>JB</MedlineTA>
+            <NlmUniqueID>345345345</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <CommentsCorrectionsList>
+            <CommentsCorrections RefType="Cites">
+                <RefSource>J Blob Blub. 1905 Apr 1;4(204):1234-9</RefSource>
+                <PMID Version="1">23456789</PMID>
+            </CommentsCorrections>
+            <CommentsCorrections RefType="CommentIn">
+                <RefSource>JB. 1910;3(33):e00999-32</RefSource>
+                <PMID Version="1">23456790</PMID>
+            </CommentsCorrections>
+        </CommentsCorrectionsList>
+        <OtherID Source="FAKE">ABC1234567</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1911</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">JB.00999-33</ArticleId>
+            <ArticleId IdType="doi">10.1234/JB.00999-33</ArticleId>
+            <ArticleId IdType="pubmed">12345678</ArticleId>
+            <ArticleId IdType="pmc">ABC1234567</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345679</PMID>
+        <DateCreated>
+            <Year>1910</Year>
+            <Month>12</Month>
+            <Day>25</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1234-567X</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>3</Volume>
+                    <Issue>33</Issue>
+                    <PubDate>
+                        <Year>1910</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>JB</Title>
+                <ISOAbbreviation>JB</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla titre 02 fr</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-34</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/JB.00999-34</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-34</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">Il est nuit. La cabane est pauvre, mais bien close. Le logis est plein d'ombre et l'on sent quelque chose Qui rayonne à travers ce crépuscule obscur. Des filets de pêcheur sont accrochés au mur. Au fond, dans l'encoignure où quelque humble vaisselle Aux planches d'un bahut vaguement étincelle, On distingue un grand lit aux longs rideaux tombants. Tout près, un matelas s'étend sur de vieux bancs, Et cinq petits enfants, nid d'âmes, y sommeillent La haute cheminée où quelques flammes veillent Rougit le plafond sombre, et, le front sur le lit, Une femme à genoux prie, et songe, et pâlit. C'est la mère. Elle est seule. Et dehors, blanc d'écume, Au ciel, aux vents, aux rocs, à la nuit, à la brume, Le sinistre océan jette son noir sanglot.</AbstractText>
+                <AbstractText Label="IMPORTANCE" NlmCategory="OBJECTIVE">On distingue un grand lit aux longs rideaux tombants. Tout près, un matelas s'étend sur de vieux bancs, Et cinq petits enfants, nid d'âmes, y sommeillent</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Hugo</LastName>
+                    <ForeName>Victor</ForeName>
+                    <Initials>VH</Initials>
+                </Author>
+            </AuthorList>
+            <Language>fre</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987656</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1910</Year>
+                <Month>12</Month>
+                <Day>25</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>JB</MedlineTA>
+            <NlmUniqueID>345345345</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234568</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1911</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">JB.00999-34</ArticleId>
+            <ArticleId IdType="doi">10.1234/JB.00999-34</ArticleId>
+            <ArticleId IdType="pubmed">12345679</ArticleId>
+            <ArticleId IdType="pmc">ABC1234568</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345680</PMID>
+        <DateCreated>
+            <Year>1910</Year>
+            <Month>12</Month>
+            <Day>26</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1234-567X</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>3</Volume>
+                    <Issue>33</Issue>
+                    <PubDate>
+                        <Year>1910</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>JB</Title>
+                <ISOAbbreviation>JB</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla titre 03 fr</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-35</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/JB.00999-35</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-35</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">J'aime les soirs sereins et beaux, j'aime les soirs, Soit qu'ils dorent le front des antiques manoirs Ensevelis dans les feuillages ; Soit que la brume au loin s'allonge en bancs de feu ; Soit que mille rayons brisent dans un ciel bleu A des archipels de nuages.  Oh ! regardez le ciel ! cent nuages mouvants, Amoncelés là-haut sous le souffle des vents, Groupent leurs formes inconnues ; Sous leurs flots par moments flamboie un pâle éclair. Comme si tout à coup quelque géant de l'air Tirait son glaive dans les nues.</AbstractText>
+                <AbstractText Label="IMPORTANCE" NlmCategory="OBJECTIVE">Soit que la brume au loin s'allonge en bancs de feu ; Soit que mille rayons brisent dans un ciel bleu A des archipels de nuages.  Oh ! regardez le ciel ! cent nuages mouvants, Amoncelés là-haut sous le souffle des vents, Groupent leurs formes inconnues</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Hugo</LastName>
+                    <ForeName>Victor</ForeName>
+                    <Initials>VH</Initials>
+                </Author>
+            </AuthorList>
+            <Language>fre</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987657</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1910</Year>
+                <Month>12</Month>
+                <Day>26</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>JB</MedlineTA>
+            <NlmUniqueID>345345345</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234569</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1911</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">JB.00999-35</ArticleId>
+            <ArticleId IdType="doi">10.1234/JB.00999-35</ArticleId>
+            <ArticleId IdType="pubmed">12345680</ArticleId>
+            <ArticleId IdType="pmc">ABC1234569</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345681</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>20</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 04 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-37</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-37</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-37</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">Now all the youth of England are on fire, And silken dalliance in the wardrobe lies: Now thrive the armourers, and honour's thought Reigns solely in the breast of every man: They sell the pasture now to buy the horse, Following the mirror of all Christian kings, With winged heels, as English Mercuries. For now sits Expectation in the air, And hides a sword from hilts unto the point With crowns imperial, crowns and coronets, Promised to Harry and his followers. The French, advised by good intelligence Of this most dreadful preparation, Shake in their fear and with pale policy Seek to divert the English purposes. O England! model to thy inward greatness, Like little body with a mighty heart, What mightst thou do, that honour would thee do, Were all thy children kind and natural! But see thy fault! France hath in thee found out A nest of hollow bosoms, which he fills With treacherous crowns; and three corrupted men, One, Richard Earl of Cambridge, and the second, Henry Lord Scroop of Masham, and the third, Sir Thomas Grey, knight, of Northumberland, Have, for the gilt of France,--O guilt indeed! Confirm'd conspiracy with fearful France; And by their hands this grace of kings must die, If hell and treason hold their promises, Ere he take ship for France, and in Southampton.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987659</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>20</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345345</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234570</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-37</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-37</ArticleId>
+            <ArticleId IdType="pubmed">12345681</ArticleId>
+            <ArticleId IdType="pmc">ABC1234570</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345682</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>21</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 05 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-38</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-38</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-38</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">Nay, sure, he's not in hell: he's in Arthur's bosom, if ever man went to Arthur's bosom. A' made a finer end and went away an it had been any christom child; a' parted even just between twelve and one, even at the turning o' the tide: for after I saw him fumble with the sheets and play with flowers and smile upon his fingers' ends, I knew there was but one way; for his nose was as sharp as a pen, and a' babbled of green fields. 'How now, sir John!' quoth I 'what, man! be o' good cheer.' So a' cried out 'God, God, God!' three or four times. Now I, to comfort him, bid him a' should not think of God; I hoped there was no need to trouble himself with any such thoughts yet. So a' bade me lay more clothes on his feet: I put my hand into the bed and felt them, and they were as cold as any stone; then I felt to his knees, and they were as cold as any stone, and so upward and upward, and all was as cold as any stone.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987659</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>21</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345346</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234571</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-38</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-38</ArticleId>
+            <ArticleId IdType="pubmed">12345682</ArticleId>
+            <ArticleId IdType="pmc">ABC1234571</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345683</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>22</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 06 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-39</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-39</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-39</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">Thus comes the English with full power upon us; And more than carefully it us concerns To answer royally in our defences. Therefore the Dukes of Berri and of Bretagne, Of Brabant and of Orleans, shall make forth, And you, Prince Dauphin, with all swift dispatch, To line and new repair our towns of war With men of courage and with means defendant; For England his approaches makes as fierce As waters to the sucking of a gulf. It fits us then to be as provident As fear may teach us out of late examples Left by the fatal and neglected English Upon our fields.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987660</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>22</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345347</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234572</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-39</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-39</ArticleId>
+            <ArticleId IdType="pubmed">12345683</ArticleId>
+            <ArticleId IdType="pmc">ABC1234572</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345684</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>23</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 07 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-40</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-40</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-40</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">My most redoubted father, It is most meet we arm us 'gainst the foe; For peace itself should not so dull a kingdom, Though war nor no known quarrel were in question, But that defences, musters, preparations, Should be maintain'd, assembled and collected, As were a war in expectation. Therefore, I say 'tis meet we all go forth To view the sick and feeble parts of France: And let us do it with no show of fear; No, with no more than if we heard that England Were busied with a Whitsun morris-dance: For, my good liege, she is so idly king'd, Her sceptre so fantastically borne By a vain, giddy, shallow, humorous youth, That fear attends her not.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987661</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>23</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345348</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234573</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-40</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-40</ArticleId>
+            <ArticleId IdType="pubmed">12345684</ArticleId>
+            <ArticleId IdType="pmc">ABC1234573</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345685</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>24</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 08 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-41</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-41</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-41</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">Thus with imagined wing our swift scene flies In motion of no less celerity Than that of thought. Suppose that you have seen The well-appointed king at Hampton pier Embark his royalty; and his brave fleet With silken streamers the young Phoebus fanning: Play with your fancies, and in them behold Upon the hempen tackle ship-boys climbing; Hear the shrill whistle which doth order give To sounds confused; behold the threaden sails, Borne with the invisible and creeping wind, Draw the huge bottoms through the furrow'd sea, Breasting the lofty surge: O, do but think You stand upon the ravage and behold A city on the inconstant billows dancing; For so appears this fleet majestical, Holding due course to Harfleur. Follow, follow: Grapple your minds to sternage of this navy, And leave your England, as dead midnight still, Guarded with grandsires, babies and old women, Either past or not arrived to pith and puissance; For who is he, whose chin is but enrich'd With one appearing hair, that will not follow These cull'd and choice-drawn cavaliers to France? Work, work your thoughts, and therein see a siege; Behold the ordnance on their carriages, With fatal mouths gaping on girded Harfleur. Suppose the ambassador from the French comes back; Tells Harry that the king doth offer him Katharine his daughter, and with her, to dowry, Some petty and unprofitable dukedoms. The offer likes not: and the nimble gunner With linstock now the devilish cannon touches,  (Alarum, and chambers go off) And down goes all before them. Still be kind, And eke out our performance with your mind.a</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987663</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>24</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345349</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234574</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-41</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-41</ArticleId>
+            <ArticleId IdType="pubmed">12345685</ArticleId>
+            <ArticleId IdType="pmc">ABC1234574</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345686</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>25</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>22</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 09 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-42</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-42</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-42</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">As young as I am, I have observed these three swashers. I am boy to them all three: but all they three, though they would serve me, could not be man to me; for indeed three such antics do not amount to a man. For Bardolph, he is white-livered and red-faced; by the means whereof a' faces it out, but fights not. For Pistol, he hath a killing tongue and a quiet sword; by the means whereof a' breaks words, and keeps whole weapons. For Nym, he hath heard that men of few words are the best men; and therefore he scorns to say his prayers, lest a' should be thought a coward: but his few bad words are matched with as few good deeds; for a' never broke any man's head but his own, and that was against a post when he was drunk. They will steal any thing, and call it purchase. Bardolph stole a lute-case, bore it twelve leagues, and sold it for three half pence. Nym and Bardolph are sworn brothers in filching, and in Calais they stole a fire-shovel: I knew by that piece of service the men would carry coals. They would have me as familiar with men's pockets as their gloves or their handkerchers: which makes much against my manhood, if I should take from another's pocket to put into mine; for it is plain pocketing up of wrongs. I must leave them, and seek some better service: their villany goes against my weak stomach, and therefore I must cast it up.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987664</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>25</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345350</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234575</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-42</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-42</ArticleId>
+            <ArticleId IdType="pubmed">12345686</ArticleId>
+            <ArticleId IdType="pmc">ABC1234575</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+<PubmedArticle>
+    <MedlineCitation Owner="NONE" Status="In-Process">
+        <PMID Version="1">12345687</PMID>
+        <DateCreated>
+            <Year>1599</Year>
+            <Month>01</Month>
+            <Day>26</Day>
+        </DateCreated>
+        <Article PubModel="Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">5678-1234</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>2</Volume>
+                    <Issue>23</Issue>
+                    <PubDate>
+                        <Year>1599</Year>
+                    </PubDate>
+                </JournalIssue>
+                <Title>MITJ</Title>
+                <ISOAbbreviation>MITJ</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>blablabla title 10 en</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>e00999-43</MedlinePgn>
+            </Pagination>
+            <ELocationID EIdType="doi" ValidYN="Y">10.1234/MITJ.00999-43</ELocationID>
+            <ELocationID EIdType="pii" ValidYN="Y">e00999-43</ELocationID>
+            <Abstract>
+                <AbstractText Label="UNLABELLED">What's he that wishes so? My cousin Westmoreland? No, my fair cousin: If we are mark'd to die, we are enow To do our country loss; and if to live, The fewer men, the greater share of honour. God's will! I pray thee, wish not one man more. By Jove, I am not covetous for gold, Nor care I who doth feed upon my cost; It yearns me not if men my garments wear; Such outward things dwell not in my desires: But if it be a sin to covet honour, I am the most offending soul alive. No, faith, my coz, wish not a man from England: God's peace! I would not lose so great an honour As one man more, methinks, would share from me For the best hope I have. O, do not wish one more! Rather proclaim it, Westmoreland, through my host, That he which hath no stomach to this fight, Let him depart; his passport shall be made And crowns for convoy put into his purse: We would not die in that man's company That fears his fellowship to die with us. This day is called the feast of Crispian: He that outlives this day, and comes safe home, Will stand a tip-toe when the day is named, And rouse him at the name of Crispian. He that shall live this day, and see old age, Will yearly on the vigil feast his neighbours, And say 'To-morrow is Saint Crispian:' Then will he strip his sleeve and show his scars. And say 'These wounds I had on Crispin's day.' Old men forget: yet all shall be forgot, But he'll remember with advantages What feats he did that day: then shall our names. Familiar in his mouth as household words Harry the king, Bedford and Exeter, Warwick and Talbot, Salisbury and Gloucester, Be in their flowing cups freshly remember'd. This story shall the good man teach his son; And Crispin Crispian shall ne'er go by, From this day to the ending of the world, But we in it shall be remember'd; We few, we happy few, we band of brothers; For he to-day that sheds his blood with me Shall be my brother; be he ne'er so vile, This day shall gentle his condition: And gentlemen in England now a-bed Shall think themselves accursed they were not here, And hold their manhoods cheap whiles any speaks That fought with us upon Saint Crispin's day.</AbstractText>
+            </Abstract>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Shakespeare</LastName>
+                    <ForeName>William</ForeName>
+                    <Initials>WS</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <DataBankList CompleteYN="Y">
+                <DataBank>
+                    <DataBankName>FICTIVEBANK</DataBankName>
+                    <AccessionNumberList>
+                        <AccessionNumber>AB987665</AccessionNumber>
+                    </AccessionNumberList>
+                </DataBank>
+            </DataBankList>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+                <PublicationType>Lorem Ipsum</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>1599</Year>
+                <Month>01</Month>
+                <Day>25</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United Kingdom</Country>
+            <MedlineTA>MITJ</MedlineTA>
+            <NlmUniqueID>345345351</NlmUniqueID>
+        </MedlineJournalInfo>
+        <CitationSubset>AB</CitationSubset>
+        <OtherID Source="FAKE">ABC1234576</OtherID>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="medline">
+                <Year>1602</Year>
+                <Month>1</Month>
+                <Day>1</Day>
+                <Hour>12</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>epublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">MITJ.00999-43</ArticleId>
+            <ArticleId IdType="doi">10.1234/MITJ.00999-43</ArticleId>
+            <ArticleId IdType="pubmed">12345687</ArticleId>
+            <ArticleId IdType="pmc">ABC1234576</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+</PubmedArticleSet>

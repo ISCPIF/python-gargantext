@@ -9,15 +9,16 @@ class RISParser(Parser):
         "ER":  {"type": "delimiter"}, # the record delimiter
 
         "TI":  {"type": "hyperdata", "key": "title", "separator": " "},
-        # "T1": variant of TI but they're rarely together so we can keep both
-        #       (if together only the last will be kept)
         "T1":  {"type": "hyperdata", "key": "title", "separator": " "},
+        # "T1": variant of TI (if together only last will be kept)
 
         "ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
         "AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
+
         "JO":  {"type": "hyperdata", "key": "journal"},
-        # "T2": short journal name but JO is more frequent
-        # "T2":  {"type": "hyperdata", "key": "journal"},
+        "T2":  {"type": "hyperdata", "key": "journal"},
+        # "T2": variant of JO (if together only last will be kept)
+
         "UR":  {"type": "hyperdata", "key": "doi"},
 
         # RIS format specifications: PY is not only year but YYYY/MM/DD with MM and DD optional

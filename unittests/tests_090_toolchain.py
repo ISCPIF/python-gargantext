@@ -11,19 +11,21 @@ from gargantext.util.db import session
 from gargantext.constants import RESOURCETYPES, NODETYPES, get_resource
 
 from gargantext.util.toolchain.main import *
-DATA_SAMPLE_DIR = "/srv/gargantext_lib/test_samples/"
+DATA_SAMPLE_DIR = "/srv/gargantext/unittests/mini_test_samples/"
+
+# todo make it read NDOCS from a json overview to add in DATA_SAMPLE_DIR
 DATA_SAMPLE_NDOCS = [
                         None,     # RESOURCETYPES
-                   [50,4,50],     #  1-europresse
+                         [7],     #  1-europresse
                           [],     #  2-jstor
-                     [81,81],     #  3-pubmed
-                        [-1],     #  4-scopus
-                        [-1],     #  5-web_of_science
-                        [-1],     #  6-zotero
-                  [837,1000],     #  7-csv
-                        [-1],     #  8-istex
-                      [3,10],     #  9-scoap
-                        [-1],     # 10-repec
+                        [10],     #  3-pubmed
+                          [],     #  4-scopus
+                          [],     #  5-web_of_science
+                        [12],     #  6-zotero
+                          [],     #  7-csv
+                        [32],     #  8-istex
+                          [],     #  9-scoap
+                          [],     # 10-repec
                     ]
 
 
@@ -121,7 +123,7 @@ class ToolChainRecipes(TestCase):
             self.log.debug("\t- Parsing and indexing corpus")
             parse(self.corpus)
             real_ndocs = self.__count_node_children__(self.corpus, "DOCUMENT")
-            print('==>\t'+str(source_type)+'\t'+str(i)+'\t'+sample_file+'\t'+str(real_ndocs))
+            # print('==>\t'+str(source_type)+'\t'+str(i)+'\t'+sample_file+'\t'+str(real_ndocs))
             self.assertEqual(real_ndocs, expected_ndocs)
             status = self.corpus.status()
             self.log.debug("\t- Extracting ngrams")
@@ -137,29 +139,29 @@ class ToolChainRecipes(TestCase):
         '''testing Europresse parsing'''
         self._run_recipe(1, DATA_SAMPLE_NDOCS[1])
 
-    def tests_002(self):
-        self._run_recipe(2, DATA_SAMPLE_NDOCS[2])
+    # def tests_002_jstor(self):
+    #     self._run_recipe(2, DATA_SAMPLE_NDOCS[2])
 
-    def tests_003(self):
+    def tests_003_pubmed(self):
         self._run_recipe(3, DATA_SAMPLE_NDOCS[3])
 
-    def tests_004(self):
-        self._run_recipe(4, DATA_SAMPLE_NDOCS[4])
+    # def tests_004_scopus(self):
+    #     self._run_recipe(4, DATA_SAMPLE_NDOCS[4])
+    #
+    # def tests_005_web_of_science(self):
+    #     self._run_recipe(5, DATA_SAMPLE_NDOCS[5])
 
-    def tests_005(self):
-        self._run_recipe(5, DATA_SAMPLE_NDOCS[5])
-
-    def tests_006(self):
+    def tests_006_zotero(self):
         self._run_recipe(6, DATA_SAMPLE_NDOCS[6])
 
-    def tests_007(self):
-        self._run_recipe(7, DATA_SAMPLE_NDOCS[7])
+    # def tests_007_csv(self):
+    #     self._run_recipe(7, DATA_SAMPLE_NDOCS[7])
 
-    def tests_008(self):
+    def tests_008_istex(self):
         self._run_recipe(8, DATA_SAMPLE_NDOCS[8])
 
-    def tests_009(self):
-        self._run_recipe(9, DATA_SAMPLE_NDOCS[9])
-
-    def tests_010(self):
-        self._run_recipe(10, DATA_SAMPLE_NDOCS[10])
+    # def tests_009_scoap(self):
+    #     self._run_recipe(9, DATA_SAMPLE_NDOCS[9])
+    #
+    # def tests_010_repec(self):
+    #     self._run_recipe(10, DATA_SAMPLE_NDOCS[10])

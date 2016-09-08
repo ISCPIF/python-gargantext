@@ -5,28 +5,31 @@
 # ****************************
 # Author:c24b
 # Date: 27/05/2015
-
-from ._Crawler import Crawler
-
 import hmac, hashlib
 import requests
 import os
 import random
+
 import urllib.parse as uparse
 from lxml import etree
 from gargantext.settings import API_TOKENS
 
-#from gargantext.util.files import build_corpus_path
-from gargantext.util.db import session
-from gargantext.models          import Node
+from ._Crawler import Crawler
+from gargantext.util.timeit_damnit  import timing
+
 
 class CernCrawler(Crawler):
     '''CERN SCOAP3 API Interaction'''
+    def __init__(self):
+        API = API_TOKENS["CERN"]
+        self.apikey = API["APIKEY"].encode("utf-8")
+        self.secret  = bytearray(API["APISECRET"].encode("utf-8"))
+        self.BASE_URL = u"http://api.scoap3.org/search?"
 
     def __generate_signature__(self, url):
         '''creation de la signature'''
         #hmac-sha1 salted with secret
-        return hmac.new(self.secret,url, hashlib.sha1).hexdigest()
+        return hmac.new(self.secret,url.encode("utf-8"), hashlib.sha1).hexdigest()
 
     def __format_query__(self, query, of="xm", fields= None):
         ''' for query filters params
@@ -45,89 +48,71 @@ class CernCrawler(Crawler):
 
     def __format_url__(self, dict_q):
         '''format the url with encoded query'''
-        #add the apikey
-        dict_q["apikey"] = [self.apikey]
-        params = "&".join([(str(k)+"="+str(uparse.quote(v[0]))) for k,v in sorted(dict_q.items())])
+        #add the apikey at the end
+        dict_q["apikey"] = self.apikey
+        #dict_q["p"] = dict_q["p"].replace(" ", "+") >> quote_plus
+        params = ("&").join([(str(k)+"="+uparse.quote_plus(v)) for k,v in sorted(dict_q.items())])
         return self.BASE_URL+params
 
     def sign_url(self, dict_q):
         '''add signature'''
-        API = API_TOKENS["CERN"]
-        self.apikey = API["APIKEY"]
-        self.secret  = API["APISECRET"].encode("utf-8")
-        self.BASE_URL = u"http://api.scoap3.org/search?"
         url = self.__format_url__(dict_q)
-        return url+"&signature="+self.__generate_signature__(url.encode("utf-8"))
+        return url+"&signature="+self.__generate_signature__(url)
 
-
-    def create_corpus(self):
-        #create a corpus
-        corpus = Node(
-            name = self.query,
-            #user_id = self.user_id,
-            parent_id = self.project_id,
-            typename = 'CORPUS',
-                        hyperdata    = { "action"        : "Scrapping data"
-                                        , "language_id" : self.type["default_language"]
-                                        }
-        )
-        #add the resource
-        corpus.add_resource(
-          type = self.type["type"],
-          name = self.type["name"],
-          path = self.path)
-
-        try:
-            print("PARSING")
-            # p = eval(self.type["parser"])()
-            session.add(corpus)
-            session.commit()
-            self.corpus_id = corpus.id
-            parse_extract_indexhyperdata(corpus.id)
-            return self
-        except Exception as error:
-            print('WORKFLOW ERROR')
-            print(error)
-            session.rollback()
-            return self
-
-    def download(self):
-        import time
+    @timing
+    def download(self, query):
         self.path = "/tmp/results.xml"
-        query = self.__format_query__(self.query)
+        query = self.__format_query__(query)
         url = self.sign_url(query)
-        start = time.time()
         r = requests.get(url, stream=True)
         downloaded = False
         #the long part
         with open(self.path, 'wb') as f:
             print("Downloading file")
             for chunk in r.iter_content(chunk_size=1024):
-
                 if chunk: # filter out keep-alive new chunks
                     #print("===")
                     f.write(chunk)
             downloaded = True
-            end = time.time()
-            #print (">>>>>>>>>>LOAD results", end-start)
         return downloaded
 
+    def get_ids(self, query):
+        '''get results nb + individual ids of search query'''
+        dict_q = uparse.parse_qs(query)
+        #parameters for a global request
+        dict_q["p"] = query
+        dict_q["of"] = "id"
+        dict_q["rg"] = "10000"
+        #api key is added when formatting url
+        url = self.__format_url__(dict_q)
+        signed_url = url+"&signature="+self.__generate_signature__(url)
+        r = requests.get(signed_url)
+        print(signed_url)
+        self.ids = r.json()
+        #self.results_nb = len(self.ids)
+        #self.generate_urls()
+        return(self.ids)
+    def generate_urls(self):
+        ''' generate raw urls of ONE record'''
+        self.urls = ["http://repo.scoap3.org/record/%i/export/xm?ln=en" %rid for rid in self.ids]
+        return self.urls
+    def fetch_records(self, ids):
+        ''' for NEXT time'''
+        raise NotImplementedError
 
-    def scan_results(self):
-        '''scanner le nombre de resultat en récupérant 1 seul résultat
+
+    def scan_results(self, query):
+        '''[OLD]scanner le nombre de resultat en récupérant 1 seul résultat
         qui affiche uniquement l'auteur de la page 1
         on récupère le commentaire en haut de la page
         '''
-        import time
-
-
         self.results_nb = 0
-        query = self.__format_query__(self.query, of="hb")
+        query = self.__format_query__(query, of="hb")
         query["ot"] = "100"
         query["jrec"]='1'
         query["rg"]='1'
         url = self.sign_url(query)
-        print(url)
+        #print(url)
         #start = time.time()
         r = requests.get(url)
         #end = time.time()

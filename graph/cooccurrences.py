@@ -196,7 +196,7 @@ def countCooccurrences( corpus_id=None         , test= False
         # Cooc is symetric, take only the main cooccurrences and cut at the limit
         cooc_query = cooc_query.filter(NodeNgramX.ngram_id < NodeNgramY.ngram_id)
 
-    cooc_query = cooc_query.having(cooc_score > threshold)
+    cooc_query = cooc_query.having(cooc_score >= threshold)
 
     if isMonopartite:
         cooc_query = cooc_query.group_by(NodeNgramX.ngram_id, NodeNgramY.ngram_id)

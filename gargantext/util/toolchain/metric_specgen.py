@@ -23,10 +23,10 @@ def compute_specgen(corpus, cooc_id=None, cooc_matrix=None,
         P(j|i) = N(ij) / N(ii)
         P(i|j) = N(ij) / N(jj)
 
-        Gen(i) = Sum{j} P(j_k|i)
-        Spec(i)  = Sum{j} P(i|j_k)
+        Gen(i)  = Mean{j} P(j_k|i)
+        Spec(i) = Mean{j} P(i|j_k)
 
-        Gen-clusion(i) = (Spec(i) + Gen(i)) / 2
+        Gen-clusion(i)  = (Spec(i) + Gen(i)) / 2
         Spec-clusion(i) = (Spec(i) - Gen(i)) / 2
 
     Parameters:

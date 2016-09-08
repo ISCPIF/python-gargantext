@@ -26,9 +26,9 @@ def query( request):
         if source["crawler"] is not None:
             crawlerbot = load_crawler(source)()
             #old raw way to get results_nb
-            #results = crawlerbot.scan_results(query)
-            ids = crawlerbot.get_ids(query)
-            return JsonHttpResponse({"results_nb":int(len(ids)), "ids": ids})
+            results = crawlerbot.scan_results(query)
+            #ids = crawlerbot.get_ids(query)
+            return JsonHttpResponse({"results_nb":crawlerbot.results_nb})
 
 def save(request, project_id):
     '''save'''

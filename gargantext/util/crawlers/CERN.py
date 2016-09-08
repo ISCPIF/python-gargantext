@@ -77,7 +77,7 @@ class CernCrawler(Crawler):
         return downloaded
 
     def get_ids(self, query):
-        '''get results nb + individual ids of search query'''
+        '''get results nb + individual ids of search query return every time 200 ids'''
         dict_q = uparse.parse_qs(query)
         #parameters for a global request
         dict_q["p"] = query
@@ -89,7 +89,11 @@ class CernCrawler(Crawler):
         r = requests.get(signed_url)
         print(signed_url)
         self.ids = r.json()
-        #self.results_nb = len(self.ids)
+        print(type(self.ids), len(self.ids))
+        #self.ids = (",").split(j_ids.replace("[|]", ""))
+
+        self.results_nb = len(self.ids)
+        print(self.results_nb, "res")
         #self.generate_urls()
         return(self.ids)
     def generate_urls(self):
@@ -100,7 +104,7 @@ class CernCrawler(Crawler):
         ''' for NEXT time'''
         raise NotImplementedError
 
-
+    @timing
     def scan_results(self, query):
         '''[OLD]scanner le nombre de resultat en récupérant 1 seul résultat
         qui affiche uniquement l'auteur de la page 1

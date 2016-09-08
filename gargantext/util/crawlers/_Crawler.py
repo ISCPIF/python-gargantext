@@ -101,7 +101,7 @@ class Crawler:
                   )
             session.add(corpus)
             session.commit()
-            scheduled(parse_extract_indexhyperdata)(corpus.id)
+            scheduled(parse_extract_indexhyperdata(corpus.id))
         else:
             #add the resource
             corpus.add_resource(

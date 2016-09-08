@@ -1,179 +1,116 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ****************************
-# *****  CERN Scrapper    *****
+# *****  CERN Crawler    *****
 # ****************************
+RESOURCE_TYPE_SCOAP = 9
 
-import logging
+from django.shortcuts import redirect, render
+from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 
-from logging.handlers import RotatingFileHandler
-
-# création de l'objet logger qui va nous servir à écrire dans les logs
-logger = logging.getLogger()
-# on met le niveau du logger à DEBUG, comme ça il écrit tout
-logger.setLevel(logging.DEBUG)
-
-# création d'un formateur qui va ajouter le temps, le niveau
-# de chaque message quand on écrira un message dans le log
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-
-# création d'un handler qui va rediriger une écriture du log vers
-# un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
-#>>> Permission denied entre en conflit avec les los django
-#file_handler = RotatingFileHandler('.activity.log', 'a', 1000000, 1)
-# on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
-# créé précédement et on ajoute ce handler au logger
-#~ file_handler.setLevel(logging.DEBUG)
-#~ file_handler.setFormatter(formatter)
-#~ logger.addHandler(file_handler)
-
-# création d'un second handler qui va rediriger chaque écriture de log
-# sur la console
-steam_handler = logging.StreamHandler()
-steam_handler.setLevel(logging.DEBUG)
-logger.addHandler(steam_handler)
-
-import json
-import datetime
-from os import path
-import threading
-import hmac, hashlib
-import requests
-import lxml
-import subprocess
-import urllib.parse as uparse
-from lxml import etree
-from bs4 import BeautifulSoup, Comment
-from collections import defaultdict
+from gargantext.constants           import get_resource, load_crawler, QUERY_SIZE_N_MAX
+from gargantext.models.nodes        import Node
+from gargantext.util.db             import session
+from gargantext.util.db_cache       import cache
+from gargantext.util.http           import JsonHttpResponse
+from gargantext.util.scheduling     import scheduled
+from gargantext.util.toolchain      import parse_extract_indexhyperdata
 
 
 
-#from gargantext.util.files import download
-
-from gargantext.settings import API_TOKENS as API
-#from private import API_PERMISSIONS
-
-def save( request , project_id ) :
-    try:
-        project_id = int(project_id)
-    except ValueError:
-        raise Http404()
-    # do we have a valid project?
-    project = session.query( Node ).filter(Node.id == project_id).first()
-    if project is None:
-        raise Http404()
-    user = cache.User[request.user.id]
-    if not user.owns(project):
-        raise HttpResponseForbidden()
-
-
+def query( request):
+    '''get GlobalResults()'''
     if request.method == "POST":
         query = request.POST["query"]
+        source = get_resource(RESOURCE_TYPE_SCOAP)
+        if source["crawler"] is not None:
+            crawlerbot = load_crawler(source)()
+            #old raw way to get results_nb
+            #results = crawlerbot.scan_results(query)
+            ids = crawlerbot.get_ids(query)
+            return JsonHttpResponse({"results_nb":int(len(ids)), "ids": ids})
 
-        name    = request.POST["string"]
-        corpus = project.add_child( name=name
-                                , typename = "CORPUS"
-                                  )
-        corpus.add_resource( type = resourcetype('Cern (MARC21 XML)')
-                                   , path = filename
-                                   , url  = None
-                                   )
-        print("Adding the resource")
-
-def query( request ):
-    print(request.method)
-    alist = []
-
+def save(request, project_id):
+    '''save'''
     if request.method == "POST":
-        query = request.POST["query"]
-        N = int(request.POST["N"])
 
+        query = request.POST.get("query")
+        try:
+            N = int(request.POST.get("N"))
+        except:
+            N = 0
+        print(query, N)
+        #for next time
+        #ids = request.POST["ids"]
+        source = get_resource(RESOURCE_TYPE_SCOAP)
+        if N == 0:
+            raise Http404()
         if N > QUERY_SIZE_N_MAX:
-            msg = "Invalid sample size N = %i (max = %i)" % (N, QUERY_SIZE_N_MAX)
-            print("ERROR(scrap: pubmed stats): ",msg)
-            raise ValueError(msg)
+            N = QUERY_SIZE_N_MAX
 
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" query =", query )
-        print ("LOG::TIME:_ "+datetime.datetime.now().isoformat()+" N =", N )
-        #Here Requests API
-        #
-        #API_TOKEN = API["CERN"]
+        try:
+            project_id = int(project_id)
+        except ValueError:
+            raise Http404()
+        # do we have a valid project?
+        project = session.query( Node ).filter(Node.id == project_id).first()
+        if project is None:
+            raise Http404()
+        user = cache.User[request.user.id]
+        if not user.owns(project):
+            raise HttpResponseForbidden()
+        # corpus node instanciation as a Django model
 
-        #instancia = Scraper()
+        corpus = Node(
+            name = query,
+            user_id = request.user.id,
+            parent_id = project_id,
+            typename = 'CORPUS',
+                        hyperdata    = { "action"        : "Scrapping data"
+                                        , "language_id" : "en"
+                                        }
+        )
 
-        # serialFetcher (n_last_years, query, query_size)
-        #alist = instancia.serialFetcher( 5, query , N )
+        #download_file
+        crawler_bot = load_crawler(source)()
+        #for now no way to force downloading X records
 
-    data = alist
+        #the long running command
+        filename = crawler_bot.download(query)
+        corpus.add_resource(
+           type = source["type"]
+        #,  name = source["name"]
+        ,  path = crawler_bot.path
+                           )
+
+        session.add(corpus)
+        session.commit()
+        #corpus_id = corpus.id
+
+        try:
+            scheduled(parse_extract_indexhyperdata)(corpus.id)
+        except Exception as error:
+            print('WORKFLOW ERROR')
+            print(error)
+            try:
+                print_tb(error.__traceback__)
+            except:
+                pass
+            # IMPORTANT ---------------------------------
+            # sanitize session after interrupted transact
+            session.rollback()
+            # --------------------------------------------
+
+        return render(
+            template_name = 'pages/projects/wait.html',
+            request = request,
+            context = {
+                'user'   : request.user,
+                'project': project,
+            },
+        )
+
+
+    data = [query_string,query,N]
+    print(data)
     return JsonHttpResponse(data)
-
-
-class CERN_API(object):
-    '''CERN SCOAP3 Interaction'''
-    def __init__(self,query, filename= "./results.xml"):
-        self.query = query
-        self.apikey = API["TOKEN"]
-        self.secret  = API["SECRET"].encode("utf-8")
-        self.results = self.get_results(filename)
-        self.BASE_URL= u"http://api.scoap3.org/search?"
-    def __generate_signature__(self, url):
-        '''creation de la signature'''
-        #hmac-sha1 salted with secret
-        return hmac.new(self.secret,url, hashlib.sha1).hexdigest()
-
-    def __format_url__(self):
-        '''format the url with encoded query'''
-        dict_q = uparse.parse_qs(self.query)
-        #add the apikey
-        dict_q["apikey"] = [self.apikey]
-        params = "&".join([(str(k)+"="+str(uparse.quote(v[0]))) for k,v in sorted(dict_q.items())])
-        return self.BASE_URL+params
-
-    def sign_url(self):
-        '''add signature'''
-        url = self.__format_url__()
-        return url+"&signature="+self.__generate_signature__(url.encode("utf-8"))
-
-    def get_results(self, filename):
-        url = self.sign_url()
-        r = requests.get(url, stream=True)
-        with open(filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk: # filter out keep-alive new chunks
-                    f.write(chunk)
-        return filename
-
-    def parse_xml(filename,MARCXML):
-        parser = etree.XMLParser()
-        with open(self.filename, 'r') as f:
-            root = etree.tostring(f.read())
-            data = f.read()
-            records = []
-            for record in data.split("<record>")[1:]:
-                soup = BeautifulSoup("<record>"+record, "lxml")
-                r = {v:[] for v in self.MARC21["700"].values()}
-                r["uid"]  = soup.find("controlfield").text
-
-                for data in soup.find_all("datafield"):
-                    tag = data.get("tag")
-                    if tag in self.MARC21.keys():
-                        for sub in data.find_all("subfield"):
-                            code = sub.get("code")
-                            if code in self.MARC21[tag].keys():
-                                if tag == "700":
-                                    r[self.MARC21[tag][code]].append(sub.text)
-                                else:
-                                    r[self.MARC21[tag][code]] = sub.text
-                records.append(r.decode('utf-8'))
-        return JsonHttpResponse(records)
-
-
-#query="of=xm"
-#a = CERN_API(query, "./full.xml")
-#p = CERNParser("./full.xml")
-#print(p.MARC21.keys())
-#~ #p.parse()
-#~ with open("./results_full.json", "r") as f:
-    #~ data = json.load(f)
-    #~ for record in data["records"]:
-        #~ print(record.keys())

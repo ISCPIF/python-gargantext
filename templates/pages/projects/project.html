@@ -61,6 +61,23 @@
                 </p>
             </div>
     </div>
+    <!-- Modal -->
+    <div id="wait" class="modal" style="top:8%;">
+        <div class="jumbotron">
+          <div class="container theme-showcase jumbotron" role="main">
+            <div>
+              <div class="col-md-3"></div>
+              <div class="col-md-6">
+                <h2>Your file has been uploaded ! </h2>
+                <h2>Gargantext need some time to eat it.</h2>
+                <h2>Duration depends on the size of the dish.</h2>
+                <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}" title="Click and test by yourself">Continue on Gargantext</a>
+              </div>
+            <div class="col-md-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 
 
@@ -71,16 +88,7 @@
 
 
 <div class="container">
-    <!-- Modal -->
-    <div id="wait" class="modal row col-md-6">
-      <div class="modal-dialog ">
 
-        <h2>Your file has been uploaded ! </h2>
-        <h2>Gargantext need some time to eat it.</h2>
-        <h2>Duration depends on the size of the dish.</h2>
-        <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}" title="Click and test by yourself">Continue on Gargantext</a>
-      </div>
-    </div>
 
     {% if list_corpora  %}
         {% for key, corpora in list_corpora.items %}
@@ -258,8 +266,8 @@
                                                 <td>
                                                     <div id="pubmedcrawl" style="visibility: hidden;">
                                                         Do you have a file already? &nbsp;
-                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked>Yes </input>
-                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false">No </input>
+                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked> Yes </input>
+                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false"> No </input>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -336,7 +344,7 @@
                                             $('#addcorpus').modal('hide');
                                             $("#wait").modal("show");
 
-                                        }, 3000);
+                                        }, 600);
                                     },
                                     error: function(result) {
                                         console.log("in doTheQuery(). Data not found");
@@ -391,10 +399,11 @@
                             $("#theresults").html('<img width="30px" src="{% static "img/loading-bar.gif" %}"></img>')
                             console.log("disabling "+"#"+value.id)
                             $("#"+value.id).prop('onclick',null);
-
                             var theType = $("#id_type option:selected").html();
-
-                            if(theType=="Pubmed [XML]") {
+                            var SourceTypeId = $("#id_type").val()
+                            //alert(SourceTypeId);
+                            //PUBMED = 3
+                            if(SourceTypeId == "3") {
                                 $.ajax({
                                     // contentType: "application/json",
                                     url: window.location.origin+"/moissonneurs/pubmed/query",
@@ -434,7 +443,7 @@
                                 });
                             }
 
-                            if(theType=="ISTex") {
+                            if(SourceTypeId == "8") {
                                 console.log(window.location.origin+"moissonneurs/istex/query")
                                 $.ajax({
                                     // contentType: "application/json",
@@ -469,6 +478,64 @@
                                         console.log("Data not found");
                                     }
                                 });
+                            }
+                            //<option value="9">SCOAP [XML]</option>
+                            if (SourceTypeId == "9"){
+                              $.ajax({
+                                  // contentType: "application/json",
+                                  url: window.location.origin+"/moissonneurs/cern/query",
+                                  data: formData,
+                                  type: 'POST',
+                                  beforeSend: function(xhr) {
+                                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                  },
+                                  success: function(data) {
+                                      console.log("SUCCESS")
+                                      console.log("enabling "+"#"+value.id)
+                                      $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      $("#submit_thing").prop('disabled' , false)
+                                      //$("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                      N = data["results_nb"]
+
+
+
+                                      if(N > 0) {
+                                          if (N <= {{query_size}}){
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $("#submit_thing").html("Download!")
+                                            $("#submit_thing").prop('disabled' , false)
+                                            //$("#submit_thing").attr('onclick', testCERN(query, N));
+                                            $("#submit_thing").on("click", function(){
+                                              testCERN(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                          //(N > {{query_size}})
+                                          else {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                            $("#submit_thing").html("Processing a sample file")
+                                            $("#submit_thing").on("click", function(){
+                                              testCERN(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                      }
+
+
+                                      else {
+                                          $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                          if(data[0]==false)
+                                          $("#theresults").html(theType +" connection error!</i><br>")
+                                          $('#submit_thing').prop('disabled', false);
+                                      }
+
+                                  },
+                                  error: function(result) {
+                                      $("#theresults").html(theType +" connection error!</i><br>")
+                                      $('#submit_thing').prop('disabled', true);
+                                  }
+                              });
+
                             }
                         }
 
@@ -508,17 +575,20 @@
                         }
 
                         //CSS events for changing the Select element
+
                         function CustomForSelect( selected ) {
+
                             // show Radio-Inputs and trigger FileOrNotFile>@upload-file events
-                            selected = selected.toLowerCase()
-                            var is_pubmed = (selected.indexOf('pubmed') != -1);
-                            var is_istex = (selected.indexOf('istex') != -1);
-                            if (is_pubmed || is_istex) {
-                                // if(selected=="pubmed") {
+
+                            selectedId = $("#id_type").val()
+                            //alert(selectedId);
+                              //by typeID 3 = PUBMED 8 = ISTEX 9 = CERN
+                            if(selectedId =="3" || selectedId == "8" || selectedId == "9") {
                                 console.log("show the button for: " + selected)
                                 $("#pubmedcrawl").css("visibility", "visible");
                                 $("#pubmedcrawl").show();
-                                $("#file_yes").click();
+
+                                //$("#file_yes").click();
                                 $("#submit_thing").html("Process this!")
                             }
                             // hide Radio-Inputs and trigger @upload-file events
@@ -557,6 +627,51 @@
                             });
                             return false;
                         }
+                        function testCERN(query, N){
+                          //alert("CERN!")
+                          console.log("In testCern")
+                          if(!query || query=="") return;
+                          //var origQuery = query
+
+                          var data = { "query" : query , "N": N };
+                          var projectid = window.location.href.split("projects")[1].replace(/\//g, '')//replace all the slashes
+                          console.log(data)
+                          $.ajax({
+                              dataType: 'json',
+                              url: window.location.origin+"/moissonneurs/cern/save/"+projectid,
+                              data: data,
+                              type: 'POST',
+                              beforeSend: function(xhr) {
+                                  xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                              },
+                              success: function(data) {
+                                  console.log("ajax_success: in testCERN()")
+                                  console.log(data)
+                                  alert("OK")
+                                  setTimeout(
+                                      function() {
+                                        alert("TimeOut!")
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show")
+                                        //setTimeout(, 300)
+                                        //location.reload();
+                                      }, 600);
+                                },
+
+
+                              error: function(data) {
+                                console.log(data)
+                                setTimeout(
+                                    function() {
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show")
+                                        //setTimeout(, 300)
+                                        //location.reload();
+                                      }, 600);
+
+                                  },
+                              });
+                          }
 
                         function testISTEX(query,N) {
                             console.log("in testISTEX:");
@@ -584,10 +699,10 @@
                                             $("#wait").modal("show");
 
                                             //location.reload();
-                                        }, 3000);
+                                        }, 600);
                                     },
-                                    error: function(result) {
-                                        console.log("in testISTEX(). Data not found");
+                                error: function(result) {
+                                      console.log("in testISTEX(). Data not found");
                                     }
                                 });
                             }

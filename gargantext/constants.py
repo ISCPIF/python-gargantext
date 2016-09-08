@@ -355,7 +355,7 @@ QUERY_SIZE_N_DEFAULT = 1000
 # Graph constraints to compute the graph:
 # Modes: live graph generation, graph asynchronously computed or errors detected
 # here are the maximum size of corpus and maplist required to compute the graph
-graph_constraints = {'corpusMax' : 400
-                    ,'corpusMin' : 10
+graph_constraints = {'corpusMax' : 1001
+                    ,'corpusMin' : 40
                     ,'mapList'   : 50
                     }

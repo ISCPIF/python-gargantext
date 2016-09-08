@@ -26,7 +26,7 @@ SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 DEBUG = True
 MAINTENANCE = False
 
-ALLOWED_HOSTS = [ 'localhost', '.gargantext.org', '.iscpif.fr' ]
+ALLOWED_HOSTS = ["localhost", ".gargantext.org", ".iscpif.fr",]
 
 
 # Asynchronous tasks

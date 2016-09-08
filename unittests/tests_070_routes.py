@@ -14,28 +14,9 @@ from gargantext.constants import NODETYPES
 from gargantext.util.db   import session
 
 class RoutesChecker(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        """
-        Will be run *once* for all tests here
-
-        NEEDS TO HAVE TestCase.setUpClass()
-        """
-        TestCase.setUpClass()
-        new_project = Node(
-            typename = 'PROJECT',
-            name = "hello i'm a project",
-            user_id = 1                   # todo make sure it's the same user as login
-        )
-        session.add(new_project)
-        session.commit()
-        cls.a_node_id = new_project.id
-        print("created a project with id: %i" % new_project.id)
-
     def setUp(self):
         """
-        Will be run before *each* test here
+        Will be run before *each* test
         """
         self.client = Client()
 
@@ -45,6 +26,16 @@ class RoutesChecker(TestCase):
                             {'username': 'pcorser', 'password': 'peter'}
                             )
         # print(response.status_code) # expected: 302 FOUND
+
+        new_project = Node(
+            typename = 'PROJECT',
+            name = "hello i'm a project",
+            user_id = 1                   # todo make sure it's the same user as login
+        )
+        session.add(new_project)
+        session.commit()
+        self.a_node_id = new_project.id
+        print("created a project with id: %i" % new_project.id)
 
     def test_071a_get_front_page(self):
         ''' get the front page / '''
@@ -78,7 +69,7 @@ class RoutesChecker(TestCase):
 
     def test_073_get_api_one_node(self):
         ''' get "api/nodes/<node_id>" '''
-        one_node_route = '/api/nodes/%i' % RoutesChecker.a_node_id
+        one_node_route = '/api/nodes/%i' % self.a_node_id
         # print("\ntesting node route: %s" % one_node_route)
         api_response = self.client.get(one_node_route)
         self.assertTrue(api_response.has_header('Content-Type'))

@@ -95,7 +95,6 @@ def parse(corpus):
     try:
         print("PARSING")
         # print("DETECT_LANG?", DETECT_LANG)
-        corpus.status('Docs', progress=0)
         #1 corpus => 1 or multi resources.path (for crawlers)
         resources = corpus.resources()
         if len(resources) == 0:

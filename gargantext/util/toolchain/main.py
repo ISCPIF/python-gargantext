@@ -64,6 +64,7 @@ def parse_extract_indexhyperdata(corpus):
     
     corpus.status('Docs', progress=1)
     corpus.save_hyperdata()
+    session.commit()
     parse(corpus)
     
     docs = corpus.children("DOCUMENT").count()

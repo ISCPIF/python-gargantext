@@ -55,7 +55,7 @@ class RISParser(Parser):
                 # print("(nonemptyline)")
 
                 # test if key line (otherwise: continuation line)
-                if match(r'[A-Z][A-Z0-9]\s', line):
+                if match(r'[A-Z][A-Z0-9]', line):
                     parameter_key = line[:2]
                     # print("(matchparamline:"+parameter_key+")")
 

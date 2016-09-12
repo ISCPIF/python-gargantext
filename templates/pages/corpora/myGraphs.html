@@ -18,60 +18,65 @@
 
 <div class="container theme-showcase" role="main">
     <h2>My Graphs  </h2>
+        <ol>
         {% for cooc in coocs %}
-        <div id="graph_{{cooc.id}}">
-            <div class="row">
-                <div class="col-md-1 content"></div>
-                
-                <div class="col-md-5 content">
-                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}">
-                        {{cooc.id}} {{ cooc.name }} {{cooc.hyperdata}}
-                          
-                        (
-                            {% for key, value in coocs_count.items %} 
-                                {% if key == cooc.id %}
-                                {{value}}
-                                {% endif %}
-                            {% endfor %}
-                        nodes)
-                    </a>
-                </div>
-                <div class="col-md-3 content">
-                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}"
-                        title="View Graph">
-                        <button type="button" class="btn btn-default" aria-label="Left Align">
-                              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                        </button>
-
-                    </a>
-
-                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                    data-content="
+            <div id="graph_{{cooc.id}}">
+                <div class="row">
+                    <div class="col-md-1 content"></div>
+                    
+                    <div class="col-md-5 content">
+                        <li>
+                            Graph created at {{cooc.date}}
+                            <ul>
+                            <!-- <li>{{cooc.id}}</li> --!>
+                                <li>Start period: {{cooc.hyperdata.start}}</li>
+                                <li>End period:   {{cooc.hyperdata.end}}</li>
+                                <li>Distances:
                                     <ul>
-                                        <li
-                                        onclick=&quot;
-                                                garganrest.nodes.delete({{cooc.id}}, function(){$('#graph_'+{{cooc.id}}).remove()});
-                                                $(this).parent().parent().remove();
-                                            &quot;>
-                                            <a href='#'>Delete this</a>
-                                        </li>
+                                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional">Conditional</a></li>
+                                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional">Distributional</a></li>
                                     </ul>
-                                    ">
-                                    <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                                    title='Delete this graph'></span>
-                                    </button>
+                                <li>Nodes: 
+                                {% for key, value in coocs_count.items %} 
+                                    {% if key == cooc.id %}
+                                    {{value}}
+                                    {% endif %}
+                                {% endfor %}
+                                </li>
+                            </ul>
+                        </li>
+                    </div>
+                    <div class="col-md-3 content">
+                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}"
+                            title="View Graph">
+                            <button type="button" class="btn btn-default" aria-label="Left Align">
+                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                            </button>
+
+                        </a>
+
+                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                        data-content="
+                                        <ul>
+                                            <li
+                                            onclick=&quot;
+                                                    garganrest.nodes.delete({{cooc.id}}, function(){$('#graph_'+{{cooc.id}}).remove()});
+                                                    $(this).parent().parent().remove();
+                                                &quot;>
+                                                <a href='#'>Delete this</a>
+                                            </li>
+                                        </ul>
+                                        ">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                        title='Delete this graph'></span>
+                                        </button>
+
+                    </div>
 
                 </div>
-
             </div>
-        </div>
-      
-      
-      
-      
-      </li>
 
-      {% endfor %}
+          {% endfor %}
       </ul>
 
 {% endblock %}

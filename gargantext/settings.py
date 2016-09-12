@@ -26,6 +26,7 @@ SECRET_KEY = '!%ktkh981)piil1%t5r0g4$^0=uvdafk!=f2x8djxy7_gq(n5%'
 DEBUG = True
 MAINTENANCE = False
 
+BASE_URL = "testing.gargantext.org"
 ALLOWED_HOSTS = ["localhost", ".gargantext.org", ".iscpif.fr",]
 
 

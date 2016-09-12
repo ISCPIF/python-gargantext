@@ -28,6 +28,7 @@ django_models_names = set(model._meta.db_table for model in django_models)
 from gargantext.util.db      import session
 from gargantext.models.users import User
 from django.core.mail        import send_mail
+from gargantext.settings     import BASE_URL
 
 def make_random_password(length=10
                          , allowed_chars='abcdefghjkmnpqrstuvwxyz'
@@ -45,32 +46,27 @@ def make_random_password(length=10
 def notify_user(username, email, password):
     message = '''
     Bonjour,
-    votre compte vient d'être créé.
+    votre compte Gargantext vient d'être mis à jour.
 
-    Vous pouvez désormais vous connecter ici:
-    http://%sgargantext.org
-
+    Vous pouvez vous connecter à l'adresse:
+            http://%s
+    
+    Avec les identifiants suivants:
     Votre login est: %s
     Votre mot de passe est : %s
 
-    La nouvelle version de Gargantext sort en septembre prochain.
+    La nouvelle version de Gargantext sort très prochainement.
     Vous êtes actuellement sur la version de développement, vos retours
     seront précieux pour stabiliser la plateforme: merci d'avance!
-    
-    Foire aux questions de Gargantext:
-    https://gogs.iscpif.fr/humanities/faq_gargantext/wiki/FAQ
-
-    Rapporter un bogue:
-    https://gogs.iscpif.fr/humanities/faq_gargantext/issues
 
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement
     --
         L'équipe de Gargantext (CNRS)
 
-    ''' % ("dev.",username, password)
+    ''' % (BASE_URL,username, password)
 
-    send_mail('[Gargantext] Votre accès à la plateforme', message, 'alexandre.delanoe@iscpif.fr', [email], fail_silently=False )
+    send_mail('[Gargantext] Votre accès à la plateforme', message, 'team@gargantext.org', [email], fail_silently=False )
 
     # add option for mass sending email
 

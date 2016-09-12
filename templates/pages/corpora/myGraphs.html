@@ -33,8 +33,18 @@
                                 <li>End period:   {{cooc.hyperdata.end}}</li>
                                 <li>Distances:
                                     <ul>
-                                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional">Conditional</a></li>
-                                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional">Distributional</a></li>
+                                        <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        Conditional with bridgeness
+                                                            <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">5</a>
+                                                            or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
+                                                            or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
+                                        
+                                        <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        Distributional with bridgeness
+                                                            <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">5</a>
+                                                            or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
+                                                            or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
+                                        </li>
                                     </ul>
                                 <li>Nodes: 
                                 {% for key, value in coocs_count.items %} 
@@ -47,13 +57,15 @@
                         </li>
                     </div>
                     <div class="col-md-3 content">
-                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}"
+                    <!--
+                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional"
                             title="View Graph">
                             <button type="button" class="btn btn-default" aria-label="Left Align">
                                   <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                             </button>
 
                         </a>
+                    --!>
 
                         <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                         data-content="

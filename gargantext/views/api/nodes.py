@@ -1,6 +1,6 @@
 
 from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
-from gargantext.constants       import NODETYPES
+from gargantext.constants       import NODETYPES, DEFAULT_N_DOCS_HAVING_NGRAM
 from gargantext.util.db         import session, delete, func, bulk_insert
 from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
@@ -155,7 +155,7 @@ class NodeListHaving(APIView):
         except :
             raise ValidationException('"ngram_ids" needs integers separated by comma.')
 
-        limit=5
+        limit = DEFAULT_N_DOCS_HAVING_NGRAM
         nodes_list = []
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()

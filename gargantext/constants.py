@@ -352,6 +352,11 @@ QUERY_SIZE_N_DEFAULT = 1000
 
 
 # ------------------------------------------------------------------------------
+# Graph <=> nodes API parameters
+# number of relevant publications shown
+DEFAULT_N_DOCS_HAVING_NGRAM = 5
+
+# ------------------------------------------------------------------------------
 # Graph constraints to compute the graph:
 # Modes: live graph generation, graph asynchronously computed or errors detected
 # here are the maximum size of corpus and maplist required to compute the graph

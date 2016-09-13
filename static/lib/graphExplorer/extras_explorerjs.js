@@ -3,13 +3,13 @@
  */
 
 function newPopup(url) {
-    console.log('FUN extras_explorerjs:newPopup')
+    // console.log('FUN extras_explorerjs:newPopup')
 	popupWindow = window.open(url,'popUpWindow','height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no')
 }
 
 
 function getIDFromURL( item ) {
-    console.log('FUN extras_explorerjs:getIDFromURL')
+    // console.log('FUN extras_explorerjs:getIDFromURL')
     var pageurl = window.location.href.split("/")
     var cid;
     for(var i in pageurl) {
@@ -22,7 +22,7 @@ function getIDFromURL( item ) {
 }
 
 function modify_ngrams( classname ) {
-    console.log('FUN extras_explorerjs:modify_ngrams')
+    // console.log('FUN extras_explorerjs:modify_ngrams')
     console.clear()
 
     var corpus_id = getIDFromURL( "corpora" ) // not used
@@ -86,7 +86,14 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 }
 
 
+// general listener: shift key in the window <=> add to selection
+$(document).on('keyup keydown', function(e){
+  // changes the global boolean ("add node to selection" status) if keydown and SHIFT
+  checkBox = e.shiftKey
 
+  // show it in the real checkbox too
+  $('#checkboxdiv').prop("checked", e.shiftKey)
+} );
 
 // = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = //
 
@@ -95,7 +102,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //  then, add the button in the html with the sigmaUtils.clustersBy(x) listener.
     //TODO: move to ClustersPlugin.js or smntng
     function ChangeGraphAppearanceByAtt( manualflag ) {
-        console.log('FUN extras_explorerjs:ChangeGraphAppearanceByAtt')
+        // console.log('FUN extras_explorerjs:ChangeGraphAppearanceByAtt')
 
         if ( !isUndef(manualflag) && !colorByAtt ) colorByAtt = manualflag;
         if(!colorByAtt) return;
@@ -235,7 +242,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //  then, it runs external library jLouvain()
     //TODO: move to ClustersPlugin.js or smntng
     function RunLouvain() {
-      console.log('FUN extras_explorerjs:RunLouvain')
+      // console.log('FUN extras_explorerjs:RunLouvain')
 
       var node_realdata = []
       var nodesV = getVisibleNodes()
@@ -262,7 +269,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     // Highlight nodes belonging to cluster_i when you click in thecluster_i of the legend
     //TODO: move to ClustersPlugin.js or smntng
     function HoverCluster( ClusterCode ) {
-        console.log('FUN extras_explorerjs:HoverCluster')
+        // console.log('FUN extras_explorerjs:HoverCluster')
         console.log( ClusterCode )
 
         var raw = ClusterCode.split("||")
@@ -350,7 +357,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
     //      daclass = "clust_default" | "clust_louvain" | "clust_x" ...
     //TODO: move to ClustersPlugin.js or smntng
     function set_ClustersLegend ( daclass ) {
-        console.log('FUN extras_explorerjs:set_ClustersLegend')
+        // console.log('FUN extras_explorerjs:set_ClustersLegend')
         //partialGraph.states.slice(-1)[0].LouvainFait = true
 
         if( daclass=="clust_default" && Clusters.length==0)
@@ -412,7 +419,7 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 
 // PHP-mode when you've a cortext db.
 function getTopPapers_OriginalVersion(type){
-    console.log('FUN extras_explorerjs:getTopPapers_OriginalVersion')
+    // console.log('FUN extras_explorerjs:getTopPapers_OriginalVersion')
     if(getAdditionalInfo){
         jsonparams=JSON.stringify(getSelections());
         bi=(Object.keys(categories).length==2)?1:0;
@@ -444,7 +451,7 @@ function getTopPapers_OriginalVersion(type){
 
 // PHP-mode when you've a cortext db.
 function getTopProposals(type , jsonparams , thisgexf) {
-    console.log('FUN extras_explorerjs:getTopProposals')
+    // console.log('FUN extras_explorerjs:getTopProposals')
     type = "semantic";
     if(swclickActual=="social") {
         nodesA = []
@@ -500,7 +507,7 @@ function getTopProposals(type , jsonparams , thisgexf) {
 
 // Just for Garg
 function genericGetTopPapers(theids , corpus_id , thediv) {
-    console.log('FUN extras_explorerjs:genericGetTopPapers')
+    // console.log('FUN extras_explorerjs:genericGetTopPapers')
     if(getAdditionalInfo) {
         $("#"+thediv).show();
         $.ajax({
@@ -561,7 +568,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
 
 // Just for Garg: woops, override
 function getTopPapers(type){
-    console.log('FUN extras_explorerjs:getTopPapers')
+    // console.log('FUN extras_explorerjs:getTopPapers')
     if(getAdditionalInfo){
 
         $("#topPapers").show();
@@ -597,8 +604,10 @@ function getTopPapers(type){
                 // pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 // var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
-                for(var i in data) {
-                    var pub = data[i]
+                var nDocsHavingNgram = data.count ;
+                var nDocsShown = data.records.length ;
+                for(var i in data.records) {
+                    var pub = data.records[i]
                     if(pub["title"]) {
                         var gquery = "https://search.iscpif.fr/?categories=general&q="+pub["title"].replace(" "+"+")
 
@@ -645,6 +654,13 @@ function getTopPapers(type){
                 }
                 output += "</ul>"
                 $("#tab-container-top").show();
+
+                $("#pubs-count-info").remove()
+                var countInfo = $('<span />').attr('id', 'pubs-count-info')
+
+                countInfo.html(" ("+nDocsShown + "/" + nDocsHavingNgram+")")
+
+                $("#pubs-legend").append(countInfo)
                 // $('#tab-container-top').easytabs({updateHash:false});
                 $("#topPapers").html(output);
             },
@@ -664,7 +680,7 @@ function getTopPapers(type){
 }
 
 function getCookie(name) {
-    console.log('FUN extras_explorerjs:getCookie')
+    // console.log('FUN extras_explorerjs:getCookie')
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
         var cookies = document.cookie.split(';');
@@ -681,7 +697,7 @@ function getCookie(name) {
 }
 // Just for Garg
 function printCorpuses() {
-    console.log('FUN extras_explorerjs:printCorpuses')
+    // console.log('FUN extras_explorerjs:printCorpuses')
     console.clear()
     console.log( "!!!!!!!! Corpus chosen, going to make the diff !!!!!!!! " )
     pr(corpusesList)
@@ -803,7 +819,7 @@ function printCorpuses() {
 
 // Just for Garg
 function GetUserPortfolio() {
-    console.log('FUN extras_explorerjs:GetUserPortfolio')
+    // console.log('FUN extras_explorerjs:GetUserPortfolio')
     //http://localhost:8000/api/corpusintersection/1a50317a50145
     var pageurl = window.location.href.split("/")
     var pid;
@@ -921,7 +937,7 @@ function GetUserPortfolio() {
 }
 
 function camaraButton(){
-    console.log('FUN extras_explorerjs:camaraButton')
+    // console.log('FUN extras_explorerjs:camaraButton')
     $("#PhotoGraph").click(function (){
 
         //canvas=partialGraph._core.domElements.nodes;
@@ -973,8 +989,9 @@ function camaraButton(){
     });
 }
 
+
 function getTips(){
-    console.log('FUN extras_explorerjs:getTips')
+    // console.log('FUN extras_explorerjs:getTips')
     param='';
 
     text =

@@ -58,7 +58,7 @@
     <!-- this is the tweakbar -->
     <div class="container-fluid navbar-default">
       <div id="defaultop" class="row">
-            <div id="left" class="col-sm-9 col-md-9 col-lg-7">
+            <div id="left" class="col-sm-10 col-md-10 col-lg-7">
 
               <ul class="nav navbar-nav">
                 <!--
@@ -79,36 +79,6 @@
                     <button type="button" id="changelevel" class="btn btn-info btn-sm" disabled>Change Level</button>
                 </a></li>
 
-                <li class='basicitem'><a>
-                  Selector size<br>
-                  <div id="unranged-value" class="settingslider"></div>
-                </a></li>
-
-
-                 <li class='basicitem'><a>
-                   Colors<br>
-                   <div class="colorgraph_div"></div>
-                 </a></li>
-
-                 <li class='basicitem'><a>
-                   Sizes<br>
-                   <div class="sizegraph_div"></div>
-                 </a></li>
-
-                 <li class='basicitem'><a>
-                   <!-- TODO fix: category0 -> category1 switching -->
-                   Label size<br>
-                   <div id="slidercat0nodessize" class="settingslider"></div>
-                 </a></li>
-
-                <!--
-                <li>
-                   <a>
-                    <button type="button" onclick="partialGraph.stopForceAtlas2();" class="btn btn-sm">wu</button>
-                   </a>
-                </li>
-                -->
-
                 <!-- TODO fix: category0 -> category1 switching -->
                 <li class='basicitem'><a>
                   <!-- Create a subgraph -->
@@ -123,14 +93,50 @@
                     <img width="30" title="Compare with other corpus!" onclick="GetUserPortfolio(); $('#corpuses').modal('show');" src="{% static "img/INTER.png" %}"></img>
                 </a></li>
 
+                <li class='basicitem'><a>
+                  <!-- TODO fix: category0 -> category1 switching -->
+                  Label size<br>
+                  <div id="slidercat0nodessize" class="settingslider"></div>
+                </a></li>
+
+                 <li class='basicitem'><a>
+                   Colors<br>
+                   <div class="colorgraph_div"></div>
+                 </a></li>
+
+                 <li class='basicitem'><a>
+                   Sizes<br>
+                   <div class="sizegraph_div"></div>
+                 </a></li>
+
+                 <li class='basicitem'><a>
+                   Selector size<br>
+                   <div id="unranged-value" class="settingslider"></div>
+                 </a></li>
+                <!--
+                <li>
+                   <a>
+                    <button type="button" onclick="partialGraph.stopForceAtlas2();" class="btn btn-sm">wu</button>
+                   </a>
+                </li>
+                -->
+
               </ul>
             </div><!-- /div#left -->
 
-            <div id="right" class="col-sm-2 col-md-2 col-lg-4">
+            <div id="right" class="col-sm-1 col-md-1 col-lg-4">
 
                    <div class='row' id="searchnav">
+                     <div class="col-sm-1 col-md-1 col-lg-1" style="font-size:75%; line-height:90%; padding:0">
+                             <input id="checkboxdiv"  onclick="alertCheckBox(this);"
+                                     title="Add next search results to current selection"
+                                     class="btn btn-info"
+                                     type="checkbox"></input>
+                             Add
+                     </div>
+
                        <!-- the smaller the viewport, the larger the relative search box size -->
-                     <div class="col-sm-11 col-md-10 col-lg-10" >
+                     <div class="col-sm-11 col-md-11 col-lg-11" >
                        <div id="search_input_group" class="input-group input-group-sm">
                           <span class="input-group-btn">
                             <button id="searchbutton"
@@ -153,15 +159,6 @@
                        <!-- messages below the search bar -->
                        <div id="unused_msg"></div>
 
-                    </div>
-
-
-                    <div class="col-sm-1 col-md-2 col-lg-2">
-                            <input id="checkboxdiv"  onclick="alertCheckBox(this);"
-                                    title="Add next search results to current selection"
-                                    class="btn btn-info"
-                                    type="checkbox"></input>
-                            <p style="font-size:75%; line-height:90%">Add</p>
                     </div>
                 </div>
 
@@ -217,16 +214,12 @@
                   </li>
                   -->
 
-                   <li>
-                      <a href="#" id="snapicon" onclick="saveGraphIMG();" >
-                        <img title="Take a photo!" width="34px" src="{% static "img/camera.png" %}" ></img>
-                      </a>
+                  <li>
+                    <a href="#" id="edgesButton"> </a>
                   </li>
 
-                   <li>
-                      <a href="#" id="saveAs">
-                        <img width="30px" title="Save As..." src="{% static "img/save.png" %}" ></img>
-                      </a>
+                  <li>
+                      <a href="#" id="lensButton"> </a>
                   </li>
 
                   <li>
@@ -241,14 +234,18 @@
                       <a href="#" id="zoomMinusButton" title="S'éloigner"> </a>
                   </li>
 
+                  <li>
+                     <a href="#" id="snapicon" onclick="saveGraphIMG();" >
+                       <img title="Take a photo!" width="34px" src="{% static "img/camera.png" %}" ></img>
+                     </a>
+                 </li>
 
                   <li>
-                      <a href="#" id="lensButton"> </a>
-                  </li>
+                     <a href="#" id="saveAs">
+                       <img width="30px" title="Save As..." src="{% static "img/save.png" %}" ></img>
+                     </a>
+                 </li>
 
-                  <li>
-                      <a href="#" id="edgesButton"> </a>
-                  </li>
           </ul>
       </div>
 
@@ -287,7 +284,7 @@
         <div id="tab-container-top" class='tab-container' style="display: none;">
 
            <ul class='etabs'>
-             <li id="tabmed" class='tab active'><a href="#tabs3">Pubs</a></li>
+             <li id="tabmed" class='tab active'><a id="pubs-legend" href="#tabs3">Pubs</a></li>
              <li id="tabgps" class='tab'><a href="#tabs3"></a></li>
            </ul>
 

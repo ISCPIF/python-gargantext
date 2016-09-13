@@ -510,6 +510,7 @@ TinaWebJS = function ( sigmacanvas ) {
                 }
             }
         });
+
     }
 
     //  external usage: SelectorEngine*() , MultipleSelection2() ,
@@ -521,7 +522,6 @@ TinaWebJS = function ( sigmacanvas ) {
         $("#semLoader").hide();
 
         $("#closeloader").click();
-
 
         $('.etabs').click(function(){
             $.doTimeout(500,function () {

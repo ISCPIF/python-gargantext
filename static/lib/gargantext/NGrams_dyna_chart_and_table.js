@@ -2186,15 +2186,29 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // bind a filter named 'my_state_filter' to dynatable.queries.functions
     MyTable.data('dynatable').queries
         // selects on current state <=> shows only elements of specific list
-        // nb: possible value are in {0,1,2} (see terms.html > #picklistmenu)
+        // (see terms.html > #picklistmenu)
         .functions['my_state_filter'] = function(record,selectedValue) {
             if (selectedValue == 'reset') {
                 // return (AjaxRecords[record.id].state >= 0)
                 return true
             }
+            // for states, possible value are in {0,1,2}
+            else if (selectedValue <= 2) {
+              // return true or false
+              return (AjaxRecords[record.id].state == selectedValue)
+            }
+            // for values > max_state we can also select mono/multi
+            else if (selectedValue == 3) {
+                // one-word terms aka monograms aka monolexical terms
+                return (AjaxRecords[record.id]['name'].indexOf(" ") == -1)
+            }
+            else if (selectedValue == 4) {
+                // MWE aka multigrams aka polylexical terms
+                return (AjaxRecords[record.id]['name'].indexOf(" ") != -1)
+            }
             else {
-                // return true or false
-                return (AjaxRecords[record.id].state == selectedValue)
+              console.error("unknown value in #picklistmenu :", selectedValue)
+              return true
             }
         }
 

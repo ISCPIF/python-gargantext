@@ -29,33 +29,43 @@
                             Graph created at {{cooc.date}}
                             {% for key, value in coocs_count.items %} 
                                 {% if key == cooc.id %}
-                                {% if value > 0 %}
-                                with {{ value }} nodes :
-                                
-                                <ul>
-                                <!-- <li>{{cooc.id}}</li> --!>
-                                    <li>Start period: {% if not  cooc.hyperdata.start  %} begin of corpus {% else %} {{cooc.hyperdata.start}} {% endif %} </li>
-                                    <li>End period:   {% if not  cooc.hyperdata.end    %} end   of corpus {% else %} {{cooc.hyperdata.end}}   {% endif %} </li>
-                                    <li>Distances:
-                                        <ul>
-                                            <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                            Conditional with bridgeness
-                                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">5</a>
-                                                                or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
-                                                                or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
-                                            
-                                            <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                            Distributional with bridgeness
-                                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">5</a>
-                                                                or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
-                                                                or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
-                                            </li>
-                                        </ul>
-                                </ul>
-                                
-                                {% else %}
-                                    Still computing, waite a while please.
-                                {% endif %}
+                                    {% if value > 0 %}
+                                    with {{ value }} nodes :
+                                    
+                                    <ul>
+                                    <!-- <li>{{cooc.id}}</li> --!>
+                                        <li>Start period: {% if not  cooc.hyperdata.start  %} begin of corpus {% else %} {{cooc.hyperdata.start}} {% endif %} </li>
+                                        <li>End period:   {% if not  cooc.hyperdata.end    %} end   of corpus {% else %} {{cooc.hyperdata.end}}   {% endif %} </li>
+                                        <li>Distances:
+                                            <ul>
+                                                <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                Conditional with bridgeness
+                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">5</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
+                                                
+                                                <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                Distributional with bridgeness
+                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">5</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
+                                                </li>
+                                            </ul>
+                                    </ul>
+                                    
+                                    {% else %}
+                                    <!--
+                                                <br> Processing (wait and reload the page)
+                                     !-->
+                                        <div class="progress">
+                                            <div class=" progress-bar progress-bar-striped active" 
+                                                        role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
+                                                        <span>
+                                                        Processing (wait and reload the page)
+                                                        </span>
+                                            </div>
+                                            </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
 

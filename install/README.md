@@ -19,8 +19,8 @@ by cloning gargantext into /srv/gargantext
 ``` bash
 git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
         && cd /srv/gargantext \
-        && git fetch origin stable \
-        && git checkout stable \
+        && git fetch origin install \
+        && git checkout install \
 ```
 
 

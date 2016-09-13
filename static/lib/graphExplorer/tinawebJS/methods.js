@@ -1,7 +1,7 @@
 
 
 function cancelSelection (fromTagCloud) {
-    console.log('FUN t.methods:cancelSelection')
+    // console.log('FUN t.methods:cancelSelection')
     pr("\t***in cancelSelection");
     highlightSelectedNodes(false); //Unselect the selected ones :D
     opossites = [];
@@ -55,7 +55,7 @@ function cancelSelection (fromTagCloud) {
 }
 
 function highlightSelectedNodes(flag){
-    console.log('FUN t.methods:highlightSelectedNodes')
+    // console.log('FUN t.methods:highlightSelectedNodes')
     pr("\t***methods.js:highlightSelectedNodes(flag)"+flag+" selEmpty:"+is_empty(selections))
     if(!is_empty(selections)){
         for(var i in selections) {
@@ -78,7 +78,7 @@ function highlightSelectedNodes(flag){
 }
 
 function alertCheckBox(eventCheck){
-    console.log('FUN t.methods:alertCheckBox')
+    // console.log('FUN t.methods:alertCheckBox')
     if(!isUndef(eventCheck.checked)) checkBox=eventCheck.checked;
 }
 
@@ -91,7 +91,7 @@ function alertCheckBox(eventCheck){
 // b : Meso-Semantic
 // AaBb: Socio-Semantic
 function RefreshState(newNOW){
-    console.log('FUN t.methods:RefreshState')
+    // console.log('FUN t.methods:RefreshState')
     pr("\t\t\tin RefreshState newNOW:_"+newNOW+"_.")
 
 	if (newNOW!="") {
@@ -178,7 +178,7 @@ function RefreshState(newNOW){
 }
 
 function pushSWClick(arg){
-    console.log('FUN t.methods:pushSWClick')
+    // console.log('FUN t.methods:pushSWClick')
     swclickPrev = swclickActual;
     swclickActual = arg;
 }
@@ -186,7 +186,7 @@ function pushSWClick(arg){
 
 
 function manualForceLabel(nodeid,active) {
-    console.log('FUN t.methods:manualForceLabel')
+    // console.log('FUN t.methods:manualForceLabel')
 	// pr("manual|"+nodeid+"|"+active)
 	partialGraph._core.graph.nodesIndex[nodeid].active=active;
 	partialGraph.draw();
@@ -195,7 +195,7 @@ function manualForceLabel(nodeid,active) {
 
 // nodes information div
 function htmlfied_nodesatts(elems){
-    console.log('FUN t.methods:htmlfied_nodesatts')
+    // console.log('FUN t.methods:htmlfied_nodesatts')
     var socnodes=[]
     var semnodes=[]
     for(var i in elems) {
@@ -242,14 +242,14 @@ function htmlfied_nodesatts(elems){
 
 
 function manualSelectNode ( nodeid ) {
-    console.log('FUN t.methods:manualSelectNode')
+    // console.log('FUN t.methods:manualSelectNode')
     cancelSelection(false);
     var SelInst = new SelectionEngine();
     SelInst.MultipleSelection2({nodes:[nodeid]});
 }
 
 function htmlfied_tagcloud(elems , limit) {
-    console.log('FUN t.methods:htmlfied_tagcloud')
+    // console.log('FUN t.methods:htmlfied_tagcloud')
     if(elems.length==0) return false;
     var termNodes=[]
     js1="" //'onclick="graphTagCloudElem(\'';
@@ -282,7 +282,7 @@ function htmlfied_tagcloud(elems , limit) {
 //missing: getTopPapers for both node types
 //considering complete graphs case! <= maybe i should mv it
 function updateLeftPanel_fix( sels , oppos ) {
-    console.log('FUN t.methods:updateLeftPanel_fix')
+    // console.log('FUN t.methods:updateLeftPanel_fix')
     pr("updateLeftPanel() corrected version** ")
     var namesDIV=''
     var alterNodesDIV=''
@@ -354,7 +354,7 @@ function updateLeftPanel_fix( sels , oppos ) {
 }
 
 function printStates() {
-    console.log('FUN t.methods:printStates')
+    // console.log('FUN t.methods:printStates')
 	pr("\t\t\t\t---------"+getClientTime()+"---------")
 	pr("\t\t\t\tswMacro: "+swMacro)
 	pr("\t\t\t\tswActual: "+swclickActual+" |  swPrev: "+swclickPrev)
@@ -370,13 +370,13 @@ function printStates() {
 //true: button disabled
 //false: button enabled
 function LevelButtonDisable( TF ){
-    console.log('FUN t.methods:LevelButtonDisable')
+    // console.log('FUN t.methods:LevelButtonDisable')
 	$('#changelevel').prop('disabled', TF);
 }
 
 //Fixed! apres: refactor!
 function graphTagCloudElem(nodes) {
-    console.log('FUN t.methods:graphTagCloudElem')
+    // console.log('FUN t.methods:graphTagCloudElem')
     pr("in graphTagCloudElem, nodae_id: "+nodes);
     cancelSelection();
     partialGraph.emptyGraph();
@@ -486,7 +486,7 @@ function graphTagCloudElem(nodes) {
 
 
 function greyEverything(){
-    console.log('FUN t.methods:greyEverything')
+    // console.log('FUN t.methods:greyEverything')
     nds = partialGraph._core.graph.nodes.filter(function(n) {
                             return !n['hidden'];
                         });
@@ -515,7 +515,7 @@ function greyEverything(){
 
 
 function graphResetColor(){
-    console.log('FUN t.methods:graphResetColor')
+    // console.log('FUN t.methods:graphResetColor')
     nds = partialGraph._core.graph.nodes.filter(function(x) {
                             return !x['hidden'];
           });
@@ -538,7 +538,7 @@ function graphResetColor(){
 
 
 function hideEverything(){
-    console.log('FUN t.methods:hideEverything')
+    // console.log('FUN t.methods:hideEverything')
     pr("\thiding all");
     nodeslength=0;
     for(var n in partialGraph._core.graph.nodesIndex){
@@ -555,7 +555,7 @@ function hideEverything(){
 
 
 function add1Elem(id) {
-    console.log('FUN t.methods:add1Elem')
+    // console.log('FUN t.methods:add1Elem')
     id = ""+id;
     if(id.split(";").length==1) { // i've received a NODE
         id = parseInt(id)
@@ -605,7 +605,7 @@ function add1Elem(id) {
 
 
 function pushFilterValue(filtername,arg){
-    console.log('FUN t.methods:pushFilterValue')
+    // console.log('FUN t.methods:pushFilterValue')
     if(lastFilter[filtername]["orig"]=="-") {
         lastFilter[filtername]["orig"] = arg;
         lastFilter[filtername]["last"] = arg;
@@ -618,7 +618,7 @@ function pushFilterValue(filtername,arg){
 
 
 function saveGraph() {
-    console.log('FUN t.methods:saveGraph')
+    // console.log('FUN t.methods:saveGraph')
     size = getByID("check_size").checked
     color = getByID("check_color").checked
     atts = {"size":size,"color":color}
@@ -635,7 +635,7 @@ function saveGraph() {
 }
 
 function saveGEXF(nodes,edges,atts){
-    console.log('FUN t.methods:saveGEXF')
+    // console.log('FUN t.methods:saveGEXF')
     gexf = '<?xml version="1.0" encoding="UTF-8"?>\n';
     gexf += '<gexf xmlns="http://www.gexf.net/1.1draft" xmlns:viz="http://www.gephi.org/gexf/viz" version="1.1">\n';
     gexf += '<graph defaultedgetype="undirected" type="static">\n';
@@ -695,7 +695,7 @@ function saveGEXF(nodes,edges,atts){
 }
 
 function saveGraphIMG(){
-    console.log('FUN t.methods:saveGraphIMG')
+    // console.log('FUN t.methods:saveGraphIMG')
         var strDownloadMime = "image/octet-stream"
 
         var nodesDiv = partialGraph._core.domElements.nodes;

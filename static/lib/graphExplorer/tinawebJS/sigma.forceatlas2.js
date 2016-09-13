@@ -6,7 +6,7 @@ var first_time=true;
 
 sigma.forceatlas2 = sigma.forceatlas2 || {};
 sigma.forceatlas2.ForceAtlas2 = function(graph , V , E) {
-  console.log('FUN t.sigma.forceatlas2:ForceAtlas2')
+  // console.log('FUN t.sigma.forceatlas2:ForceAtlas2')
   sigma.classes.Cascade.call(this);
   var self = this;
   this.graph = graph;
@@ -983,7 +983,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph , V , E) {
 
 // The Region class, as used by the Barnes Hut optimization
 sigma.forceatlas2.Region = function(nodes, depth) {
-  console.log('FUN t.sigma.forceatlas2:Region')
+  // console.log('FUN t.sigma.forceatlas2:Region')
   sigma.classes.Cascade.call(this);
   this.depthLimit = 20;
   this.size = 0;
@@ -1001,7 +1001,7 @@ sigma.forceatlas2.Region = function(nodes, depth) {
 }
 
 sigma.forceatlas2.Region.prototype.updateMassAndGeometry = function() {
-  console.log('FUN t.sigma.forceatlas2:updateMassAndGeometry')
+  // console.log('FUN t.sigma.forceatlas2:updateMassAndGeometry')
   if (this.nodes.length > 1) {
     // Compute Mass
     var mass = 0;
@@ -1037,7 +1037,7 @@ sigma.forceatlas2.Region.prototype.updateMassAndGeometry = function() {
 };
 
 sigma.forceatlas2.Region.prototype.buildSubRegions = function() {
-  console.log('FUN t.sigma.forceatlas2:buildSubRegions')
+  // console.log('FUN t.sigma.forceatlas2:buildSubRegions')
   if (this.nodes.length > 1) {
     var leftNodes = [];
     var rightNodes = [];
@@ -1089,7 +1089,7 @@ sigma.forceatlas2.Region.prototype.buildSubRegions = function() {
 };
 
 sigma.forceatlas2.Region.prototype.applyForce = function(n, Force, theta) {
-  console.log('FUN t.sigma.forceatlas2:applyForce')
+  // console.log('FUN t.sigma.forceatlas2:applyForce')
   if (this.nodes.length < 2) {
     var regionNode = this.nodes[0];
     Force.apply_nn(n, regionNode);
@@ -1114,7 +1114,7 @@ sigma.forceatlas2.Region.prototype.applyForce = function(n, Force, theta) {
 
 
 sigma.publicPrototype.startForceAtlas2 = function() {
-  console.log('FUN t.sigma.forceatlas2:applyForce')
+  // console.log('FUN t.sigma.forceatlas2:applyForce')
   //if(!this.forceatlas2) {
   if(fa2enabled) {
 
@@ -1159,7 +1159,7 @@ sigma.publicPrototype.startForceAtlas2 = function() {
 };
 
 sigma.publicPrototype.stopForceAtlas2 = function() {
-  console.log('FUN t.sigma.forceatlas2:stopForceAtlas2')
+  // console.log('FUN t.sigma.forceatlas2:stopForceAtlas2')
   var present = partialGraph.states.slice(-1)[0]
   if(this.forceatlas2) {
     if(this.forceatlas2.count) {

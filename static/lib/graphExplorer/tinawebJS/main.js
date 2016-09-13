@@ -89,7 +89,7 @@ $.ajax({
 });
 
 function showDialog(url, hasError, status, msg) {
-    console.log('FUN t.main:showDialog' + 'hasError:'+hasError)
+    // console.log('FUN t.main:showDialog' + 'hasError:'+hasError)
     // hide loader gif etc
     $("#semLoader").hide();
     $("#closeloader").click();
@@ -111,7 +111,7 @@ function showDialog(url, hasError, status, msg) {
 
 function MainFunction( RES ) {
     console.log('           ------------')
-    console.log('FUN t.main:MainFunction')
+    // console.log('FUN t.main:MainFunction')
     console.log('           ------------')
     var fileparam;// = { db|api.json , somefile.json|gexf }
     var the_data = RES["data"];

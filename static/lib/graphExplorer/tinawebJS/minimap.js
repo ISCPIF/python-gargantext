@@ -1,6 +1,6 @@
 
 function draw1Circle(ctx , x , y , color) {
-    console.log('FUN t.minimap:draw1Circle')
+    // console.log('FUN t.minimap:draw1Circle')
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1;
     ctx.fillStyle = color;
@@ -15,7 +15,7 @@ function draw1Circle(ctx , x , y , color) {
 
 
 function trackMouse() {
-    console.log('FUN t.minimap:trackMouse')
+    // console.log('FUN t.minimap:trackMouse')
     if(!shift_key) {
         // $.doTimeout(300,function (){
             var ctx = partialGraph._core.domElements.mouse.getContext('2d');
@@ -76,7 +76,7 @@ function trackMouse() {
 };
 
 function changeGraphPosition(evt, echelle) {
-    console.log('FUN t.minimap:changeGraphPosition')
+    // console.log('FUN t.minimap:changeGraphPosition')
     document.body.style.cursor = "move";
     var _coord = {
         x : evt.pageX,
@@ -89,7 +89,7 @@ function changeGraphPosition(evt, echelle) {
 }
 
 function onOverviewMove(evt) {
-    console.log('FUN t.minimap:onOverviewMove')
+    // console.log('FUN t.minimap:onOverviewMove')
     /*
      pageX: 1247   pageY: 216
      screenX: 1188  screenY: 307
@@ -104,7 +104,7 @@ function onOverviewMove(evt) {
 }
 
 function startMove(evt){
-    console.log('FUN t.minimap:startMove')
+    // console.log('FUN t.minimap:startMove')
     evt.preventDefault();
     partialGraph.dragOn = true;
     partialGraph.lastMouse = {
@@ -115,14 +115,14 @@ function startMove(evt){
 }
 
 function endMove(evt){
-    console.log('FUN t.minimap:endMove')
+    // console.log('FUN t.minimap:endMove')
     document.body.style.cursor = "default";
     partialGraph.dragOn = false;
     partialGraph.mouseHasMoved = false;
 }
 
 function onGraphScroll(evt, delta) {
-    console.log('FUN t.minimap:onGraphScroll')
+    // console.log('FUN t.minimap:onGraphScroll')
     $("#zoomSlider").slider("value",partialGraph.position().ratio);
     // partialGraph.totalScroll += delta;
     // if (Math.abs(partialGraph.totalScroll) >= 1) {
@@ -178,7 +178,7 @@ function onGraphScroll(evt, delta) {
 }
 
 function initializeMap() {
-    console.log('FUN t.minimap:initializeMap')
+    // console.log('FUN t.minimap:initializeMap')
     clearInterval(partialGraph.timeRefresh);
     partialGraph.oldParams = {};
 
@@ -196,7 +196,7 @@ function initializeMap() {
 }
 
 function updateMap(){
-    console.log('FUN t.minimap:updateMap')
+    // console.log('FUN t.minimap:updateMap')
     if(minimap){
         partialGraph.imageMini="";
         partialGraph.ctxMini="";
@@ -222,7 +222,7 @@ function updateMap(){
 }
 
 function traceMap() {
-    console.log('FUN t.minimap:traceMap')
+    // console.log('FUN t.minimap:traceMap')
     //pr("\ttracingmap");
     partialGraph.echelleGenerale = Math.pow( Math.SQRT2, partialGraph.position().ratio );
     partialGraph.ctxMini.putImageData(partialGraph.imageMini, 0, 0);
@@ -242,7 +242,7 @@ function traceMap() {
 }
 
 function startMiniMap(){
-    console.log('FUN t.minimap:startMiniMap')
+    // console.log('FUN t.minimap:startMiniMap')
     if(minimap){
         partialGraph.ctxMini = document.getElementById('overview').getContext('2d');
         partialGraph.ctxMini.clearRect(0, 0, overviewWidth, overviewHeight);

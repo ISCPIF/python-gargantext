@@ -3,7 +3,7 @@
 //============================ < NEW BUTTONS > =============================//
 
 function changeType_old() {
-    console.log('FUN t.enviroment:changeType_old')
+    // console.log('FUN t.enviroment:changeType_old')
     pr("***swclickActual:"+swclickActual+" , swMacro:"+swMacro);
 
     if(swclickActual=="social") {
@@ -119,7 +119,7 @@ function changeType_old() {
 
 
 function changeType() {
-    console.log('FUN t.enviroment:changeType')
+    // console.log('FUN t.enviroment:changeType')
     var present = partialGraph.states.slice(-1)[0]; // Last
     var past = partialGraph.states.slice(-2)[0] // avant Last
     var lastpos = partialGraph.states.length-1;
@@ -377,7 +377,7 @@ function changeType() {
 }
 
 function changeLevel() {
-    console.log('FUN t.enviroment:changeLevel')
+    // console.log('FUN t.enviroment:changeLevel')
     var present = partialGraph.states.slice(-1)[0]; // Last
     var past = partialGraph.states.slice(-2)[0] // avant Last
     var lastpos = partialGraph.states.length-1;
@@ -504,7 +504,7 @@ function changeLevel() {
 }
 
 function changeLevel_old() {
-    console.log('FUN t.enviroment:changeLevel_old')
+    // console.log('FUN t.enviroment:changeLevel_old')
     bf=swclickActual
     pushSWClick(swclickActual);
     pr("swMacro: "+swMacro+" - [swclickPrev: "+bf+"] - [swclickActual: "+swclickActual+"]")
@@ -553,7 +553,7 @@ function changeLevel_old() {
 //	EdgeWeightFilter("#sliderAEdgeWeight", "label" , "nodes1", "weight");
 //	EdgeWeightFilter("#sliderBEdgeWeight", "label" , "nodes2", "weight");
 function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
-    console.log('FUN t.enviroment:EdgeWeightFilter')
+    // console.log('FUN t.enviroment:EdgeWeightFilter')
 	// console.log("")
 	// console.log("")
 	// console.log(" - - - - EdgeWeightFilter -  - - ")
@@ -765,7 +765,7 @@ function EdgeWeightFilter(sliderDivID , type_attrb , type ,  criteria) {
 // NodeWeightFilter ( "#sliderANodeWeight" ,  "Document" , "type" , "size")
 // NodeWeightFilter ( "#sliderBNodeWeight" ,  "NGram" , "type" , "size")
 function NodeWeightFilter( categories ,  sliderDivID , type_attrb , type ,  criteria) {
-    console.log('FUN t.enviroment:NodeWeightFilter')
+    // console.log('FUN t.enviroment:NodeWeightFilter')
 
 	// if ($(sliderDivID).html()!="") {
 	// 	pr("\t\t\t\t\t\t[[ algorithm not applied "+sliderDivID+" ]]")
@@ -879,7 +879,7 @@ function NodeWeightFilter( categories ,  sliderDivID , type_attrb , type ,  crit
 }
 
 function getGraphElement(elem) {
-    console.log('FUN t.enviroment:getGraphElement')
+    // console.log('FUN t.enviroment:getGraphElement')
     if(elem.split(";").length==1) return partialGraph._core.graph.nodesIndex[elem];
     else {
     	if(!isUndef(partialGraph._core.graph.edgesIndex[elem]))
@@ -896,7 +896,7 @@ function getGraphElement(elem) {
 // AlgorithmForSliders ( partialGraph._core.graph.nodes , "type" ,  "Document" ,  "size")
 // AlgorithmForSliders ( partialGraph._core.graph.nodes , "type" ,  "NGram" ,  "size")
 function AlgorithmForSliders( elements , type_attrb , type , criteria) {
-    console.log('FUN t.enviroment:AlgorithmForSliders')
+    // console.log('FUN t.enviroment:AlgorithmForSliders')
 	// console.clear()
 	// console.log( "\t - - - - - AlgorithmForSliders - - - - -" )
 	// console.log( "" )
@@ -1003,7 +1003,7 @@ function AlgorithmForSliders( elements , type_attrb , type , criteria) {
 
 //============================= < SEARCH > =============================//
 function updateSearchLabels(id,name,type){
-    console.log('FUN t.enviroment:updateSearchLabels')
+    // console.log('FUN t.enviroment:updateSearchLabels')
     labels.push({
         'id' : id,
         'label' : name,
@@ -1012,7 +1012,7 @@ function updateSearchLabels(id,name,type){
 }
 
 function extractContext(string, context) {
-    console.log('FUN t.enviroment:extractContext')
+    // console.log('FUN t.enviroment:extractContext')
     var matched = string.toLowerCase().indexOf(context.toLowerCase());
 
     if (matched == -1)
@@ -1043,7 +1043,7 @@ function extractContext(string, context) {
 }
 
 function searchLabel(string){
-    console.log('FUN t.enviroment:searchLabel')
+    // console.log('FUN t.enviroment:searchLabel')
     var id_node = '';
     var n;
 

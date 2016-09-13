@@ -2,12 +2,12 @@
 
 
 SigmaUtils = function () {
-    console.log('FUN t.SigmaUtils:SigmaUtils:new')
+    // console.log('FUN t.SigmaUtils:SigmaUtils:new')
     this.nbCats = 0;
 
     // input = GEXFstring
     this.FillGraph = function( initialState , catDict  , nodes, edges , graph ) {
-        console.log('FUN t.SigmaUtils:SigmaUtils:FillGraph')
+        // console.log('FUN t.SigmaUtils:SigmaUtils:FillGraph')
 
         print("Filling the graaaaph:")
         print(catDict)
@@ -66,7 +66,7 @@ SigmaUtils = function () {
 
 //for socialgraph
 function showMeSomeLabels(N){
-    console.log('FUN t.sigmaUtils:showMeSomeLabels')
+    // console.log('FUN t.sigmaUtils:showMeSomeLabels')
         /*======= Show some labels at the beginning =======*/
         minIn=50,
         maxIn=0,
@@ -108,34 +108,34 @@ function showMeSomeLabels(N){
 }
 
 function getnodes(){
-    console.log('FUN t.sigmaUtils:getnodes')
+    // console.log('FUN t.sigmaUtils:getnodes')
     return partialGraph._core.graph.nodes;
 }
 
 function getnodesIndex(){
-    console.log('FUN t.sigmaUtils:getnodesIndex')
+    // console.log('FUN t.sigmaUtils:getnodesIndex')
     return partialGraph._core.graph.nodesIndex;
 }
 
 function getedges(){
-    console.log('FUN t.sigmaUtils:getedges')
+    // console.log('FUN t.sigmaUtils:getedges')
     return partialGraph._core.graph.edges;
 }
 
 function getedgesIndex(){
-    console.log('FUN t.sigmaUtils:getedgesIndex')
+    // console.log('FUN t.sigmaUtils:getedgesIndex')
     return partialGraph._core.graph.edgesIndex;
 }
 
 function getVisibleEdges() {
-    console.log('FUN t.sigmaUtils:getVisibleEdges')
+    // console.log('FUN t.sigmaUtils:getVisibleEdges')
 	return partialGraph._core.graph.edges.filter(function(e) {
                 return !e['hidden'];
     });
 }
 
 function getVisibleNodes() {
-    console.log('FUN t.sigmaUtils:getVisibleNodes')
+    // console.log('FUN t.sigmaUtils:getVisibleNodes')
     return partialGraph._core.graph.nodes.filter(function(n) {
                 return !n['hidden'];
     });
@@ -143,25 +143,25 @@ function getVisibleNodes() {
 
 
 function getNodesByAtt(att) {
-    console.log('FUN t.sigmaUtils:getNodesByAtt')
+    // console.log('FUN t.sigmaUtils:getNodesByAtt')
     return partialGraph._core.graph.nodes.filter(function(n) {
                 return n['type']==att;
     });
 }
 
 function getn(id){
-    console.log('FUN t.sigmaUtils:getn')
+    // console.log('FUN t.sigmaUtils:getn')
     return partialGraph._core.graph.nodesIndex[id];
 }
 
 function gete(id){
-    console.log('FUN t.sigmaUtils:gete')
+    // console.log('FUN t.sigmaUtils:gete')
     return partialGraph._core.graph.edgesIndex[id];
 }
 
 
 function find(label){
-    console.log('FUN t.sigmaUtils:find')
+    // console.log('FUN t.sigmaUtils:find')
     var results=[];
     var nds=getnodesIndex();
     label=label.toLowerCase()
@@ -178,7 +178,7 @@ function find(label){
 }
 
 function exactfind(label) {
-    console.log('FUN t.sigmaUtils:exactfind')
+    // console.log('FUN t.sigmaUtils:exactfind')
     nds=getnodesIndex();
     for(var i in nds){
         n=nds[i];
@@ -193,7 +193,7 @@ function exactfind(label) {
 
 
 function getNodeLabels(elems){
-    console.log('FUN t.sigmaUtils:getNodeLabels')
+    // console.log('FUN t.sigmaUtils:getNodeLabels')
     var labelss=[]
     for(var i in elems){
         var id=(!isUndef(elems[i].key))?elems[i].key:i
@@ -203,13 +203,13 @@ function getNodeLabels(elems){
 }
 
 function getNodeIDs(elems){
-    console.log('FUN t.sigmaUtils:getNodeIDs')
+    // console.log('FUN t.sigmaUtils:getNodeIDs')
     return Object.keys(elems)
 }
 
 
 function getSelections(){
-    console.log('FUN t.sigmaUtils:getSelections')
+    // console.log('FUN t.sigmaUtils:getSelections')
         params=[];
         for(var i in selections){
             params.push(Nodes[i].label);
@@ -221,7 +221,7 @@ function getSelections(){
 //This receives an array not a dict!
 //  i added an excpt... why
 function getNeighs(sels,arr) {
-    console.log('FUN t.sigmaUtils:getNeighs')
+    // console.log('FUN t.sigmaUtils:getNeighs')
     neighDict={};
     for(var i in sels) {
         id = sels[i]
@@ -240,7 +240,7 @@ function getNeighs(sels,arr) {
 //Using bipartiteN2D or bipartiteD2N
 //This receives an array not a dict!
 function getNeighs2(sels,arr){
-    console.log('FUN t.sigmaUtils:getNeighs2')
+    // console.log('FUN t.sigmaUtils:getNeighs2')
     neighDict={};
     for(var i in sels) {
         id = sels[i]
@@ -257,7 +257,7 @@ function getNeighs2(sels,arr){
 
 //to general utils
 function getArrSubkeys(arr,id) {
-    console.log('FUN t.sigmaUtils:getArrSubkeys')
+    // console.log('FUN t.sigmaUtils:getArrSubkeys')
     var result = []
     for(var i in arr) {
         result.push(arr[i][id])
@@ -266,7 +266,7 @@ function getArrSubkeys(arr,id) {
 }
 
 function getCountries(){
-    console.log('FUN t.sigmaUtils:getCountries')
+    // console.log('FUN t.sigmaUtils:getCountries')
     var nodes = getVisibleNodes();
 
     var countries = {}
@@ -285,7 +285,7 @@ function getCountries(){
 
 
 function getAcronyms() {
-    console.log('FUN t.sigmaUtils:getAcronyms')
+    // console.log('FUN t.sigmaUtils:getAcronyms')
     var nodes = getVisibleNodes();
     var acrs = {}
     pr("in getAcronyms")
@@ -302,7 +302,7 @@ function getAcronyms() {
 
 
 function clustersBy(daclass , att2change ) {
-    console.log('FUN t.sigmaUtils:clustersBy')
+    // console.log('FUN t.sigmaUtils:clustersBy')
     cancelSelection(false);
     var v_nodes = getVisibleNodes();
 
@@ -422,7 +422,7 @@ function clustersBy(daclass , att2change ) {
 
 
 function colorsBy(daclass, att2change ) {
-    console.log('FUN t.sigmaUtils:colorsBy')
+    // console.log('FUN t.sigmaUtils:colorsBy')
     pr("")
     pr(" = = = = = = = = = = = = = = = = = ")
     pr(" = = = = = = = = = = = = = = = = = ")
@@ -471,7 +471,7 @@ function colorsBy(daclass, att2change ) {
 
 //just for fun
 function makeEdgeWeightUndef() {
-    console.log('FUN t.sigmaUtils:makeEdgeWeightUndef')
+    // console.log('FUN t.sigmaUtils:makeEdgeWeightUndef')
     for(var e in partialGraph._core.graph.edges) {
         partialGraph._core.graph.edges[e].weight=1;
     }

@@ -71,7 +71,7 @@ else {
 
 //just CSS
 function sigmaLimits(){
-    console.log('FUN t.main_backup:sigmaLimits')
+    // console.log('FUN t.main_backup:sigmaLimits')
     pr("\t*** sigmaLimits()")
 
     pw=$('#sigma-example').width();
@@ -92,7 +92,7 @@ function sigmaLimits(){
 }
 
 function bringTheNoise(pathfile,type){
-    console.log('FUN t.main_backup:bringTheNoise')
+    // console.log('FUN t.main_backup:bringTheNoise')
 
     $("#semLoader").hide();
 
@@ -307,7 +307,7 @@ function bringTheNoise(pathfile,type){
 
 
 function theListeners(){
-    console.log('FUN t.main_backup:theListeners')
+    // console.log('FUN t.main_backup:theListeners')
     pr("in THELISTENERS");
     // leftPanel("close");
     $("#closeloader").click();//modal.hide doesnt work :c
@@ -692,7 +692,7 @@ function theListeners(){
 //      Social Spatialization
 //          Semantic Spatialization
 function SigmaLayouting( URL, DATA, NAME) {
-    console.log('FUN t.main_backup:SigmaLayouting')
+    // console.log('FUN t.main_backup:SigmaLayouting')
 	pr(URL+"?"+DATA)
     return $.ajax({
         type: 'GET',

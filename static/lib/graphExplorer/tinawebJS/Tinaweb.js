@@ -1,7 +1,7 @@
 // Function.prototype.index
 (function(reComments, reParams, reNames) {
   Function.prototype.index = function(arrParamNames) {
-    console.log('FUN t.TinawebJS:Function=>index')
+    // console.log('FUN t.TinawebJS:Function=>index')
     var fnMe = this;
     arrParamNames = arrParamNames
       || (((fnMe + '').replace(reComments, '')
@@ -25,7 +25,7 @@
 // on window resize
 // @param canvasdiv: id of the div (without '#')
 function sigmaLimits( canvasdiv, SidecolumnIsInvisible ) {
-    console.log('FUN t.TinawebJS:sigmaLimits (div=' + canvasdiv + ')') ;
+    // console.log('FUN t.TinawebJS:sigmaLimits (div=' + canvasdiv + ')') ;
     var canvas = document.getElementById(canvasdiv) ;
     var sidecolumn = document.getElementById('sidecolumn') ;
 
@@ -52,10 +52,10 @@ function sigmaLimits( canvasdiv, SidecolumnIsInvisible ) {
 
 
 SelectionEngine = function() {
-    console.log('FUN t.TinawebJS:SelectionEngine:new')
+    // console.log('FUN t.TinawebJS:SelectionEngine:new')
     // Selection Engine!! finally...
     this.SelectorEngine_part01 = (function(cursorsize, area ) {
-        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part01')
+        // console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part01')
         var clickedNodes = []
         if(cursorsize>0) {
             clickedNodes = this.SelectThis2( area )
@@ -70,7 +70,7 @@ SelectionEngine = function() {
     }).index();
 
     this.SelectorEngine_part02 = (function( addvalue , clicktype , prevsels , currsels ) {
-        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part02')
+        // console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine_part02')
         print("Add[]:")
         print(addvalue)
         print("clicktype:")
@@ -127,7 +127,7 @@ SelectionEngine = function() {
     }).index();
 
     this.SelectorEngine = (function( cursorsize , area , addvalue , clicktype , prevsels , currsels ) {
-        console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine')
+        // console.log('FUN t.TinawebJS:SelectionEngine:SelectorEngine')
         var targeted = []
         var buffer = Object.keys(prevsels).map(Number).sort(this.sortNumber);
 
@@ -199,7 +199,7 @@ SelectionEngine = function() {
 
     // uses: SelectorEngine() and MultipleSelection2()
     this.search = function(string) {
-        console.log('FUN t.TinawebJS:SelectionEngine:search')
+        // console.log('FUN t.TinawebJS:SelectionEngine:search')
         var id_node = '';
         var results = find(string)
 
@@ -230,7 +230,7 @@ SelectionEngine = function() {
 
     //Util
     this.intersect_safe = function(a, b) {
-        console.log('FUN t.TinawebJS:SelectionEngine:intersect_safe')
+        // console.log('FUN t.TinawebJS:SelectionEngine:intersect_safe')
         var ai=0, bi=0;
         var result = new Array();
 
@@ -249,7 +249,7 @@ SelectionEngine = function() {
     // return Nodes-ids under the clicked Area
     //  external usage : partialGraph
     this.SelectThis2 = function( area ) {
-        console.log('FUN t.TinawebJS:SelectionEngine:SelectThis2')
+        // console.log('FUN t.TinawebJS:SelectionEngine:SelectThis2')
         var x1 = area.x1;
         var y1 = area.y1;
 
@@ -273,7 +273,7 @@ SelectionEngine = function() {
 
     //  external usage : partialGraph , updateLeftPanel_fix();
     this.MultipleSelection2 = (function(nodes,nodesDict,edgesDict) {
-        console.log('FUN t.TinawebJS:SelectionEngine:MultipleSelection2')
+        // console.log('FUN t.TinawebJS:SelectionEngine:MultipleSelection2')
         // pr("IN SelectionEngine.MultipleSelection2:")
         print(nodes)
         greyEverything();
@@ -370,7 +370,7 @@ SelectionEngine = function() {
 };
 
 TinaWebJS = function ( sigmacanvas ) {
-    console.log('FUN t.TinawebJS:TinaWebJS:new')
+    // console.log('FUN t.TinawebJS:TinaWebJS:new')
 
     // '#canvasid'
     this.sigmacanvas = sigmacanvas;
@@ -380,12 +380,12 @@ TinaWebJS = function ( sigmacanvas ) {
     }
 
     this.getSigmaCanvas = function () {
-        console.log('FUN t.TinawebJS:getSigmaCanvas')
+        // console.log('FUN t.TinawebJS:getSigmaCanvas')
         return this.sigmacanvas;
     }
 
     this.AdjustSigmaCanvas = function ( canvasdiv ) {
-        console.log('FUN t.TinawebJS:AdjustSigmaCanvas')
+        // console.log('FUN t.TinawebJS:AdjustSigmaCanvas')
         if (! canvasdiv)
             // '#canvasid' => 'canvasid'
             canvasdiv = sigmacanvas.substring(1);
@@ -394,7 +394,7 @@ TinaWebJS = function ( sigmacanvas ) {
     }
 
     this.SearchListeners = function () {
-        console.log('FUN t.TinawebJS:SearchListeners')
+        // console.log('FUN t.TinawebJS:SearchListeners')
         var SelInst = new SelectionEngine();
 
         $.ui.autocomplete.prototype._renderItem = function(ul, item) {
@@ -510,18 +510,18 @@ TinaWebJS = function ( sigmacanvas ) {
                 }
             }
         });
+
     }
 
     //  external usage: SelectorEngine*() , MultipleSelection2() ,
     //      enviroment.js:changeType()|changeLevel()|NodeWeightFilter()|EdgeWeightFilter
     this.initListeners = function (categories, partialGraph) {
-        console.log('FUN t.TinawebJS:initListeners')
+        // console.log('FUN t.TinawebJS:initListeners')
         var SelInst = new SelectionEngine();
 
         $("#semLoader").hide();
 
         $("#closeloader").click();
-
 
         $('.etabs').click(function(){
             $.doTimeout(500,function () {

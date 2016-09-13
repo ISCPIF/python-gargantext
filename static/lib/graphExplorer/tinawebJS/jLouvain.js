@@ -8,7 +8,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 */
 (function(){
 	jLouvain = function(){
-        console.log('FUN t.jLouvain:jLouvain')
+        // console.log('FUN t.jLouvain:jLouvain')
 		//Constants
 		var __PASS_MAX = -1
 		var __MIN 	 = 0.0000001
@@ -116,7 +116,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 		//Core-Algorithm Related
 		function init_status(graph, status, part){
-            console.log('FUN t.jLouvain:init_status')
+            // console.log('FUN t.jLouvain:init_status')
 			status['nodes_to_com'] = {};
 			status['total_weight'] = 0;
 			status['internals'] = {};
@@ -271,7 +271,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 		}
 
 		function induced_graph(partition, graph){
-            console.log('FUN t.jLouvain:induced_graph')
+            // console.log('FUN t.jLouvain:induced_graph')
 			var ret = {nodes:[], edges:[], _assoc_mat: {}};
 			var w_prec, weight;
 			//add nodes from partition values
@@ -289,7 +289,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 		}
 
 		function partition_at_level(dendogram, level){
-            console.log('FUN t.jLouvain:partition_at_level')
+            // console.log('FUN t.jLouvain:partition_at_level')
 			var partition = clone(dendogram[0]);
 			for(var i = 1; i < level + 1; i++ )
 				Object.keys(partition).forEach(function(key,j){
@@ -302,7 +302,7 @@ Based on https://bitbucket.org/taynaud/python-louvain/overview
 
 
 		function generate_dendogram(graph, part_init){
-            console.log('FUN t.jLouvain:generate_dendogram')
+            // console.log('FUN t.jLouvain:generate_dendogram')
 
 			if(graph.edges.length == 0){
 				var part = {};

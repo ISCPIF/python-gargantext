@@ -1,6 +1,6 @@
 
 from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
-from gargantext.constants       import NODETYPES
+from gargantext.constants       import NODETYPES, DEFAULT_N_DOCS_HAVING_NGRAM
 from gargantext.util.db         import session, delete, func, bulk_insert
 from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
@@ -144,7 +144,7 @@ class NodeListHaving(APIView):
     Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
 
-
+    2016-09: add total counts to output json
     '''
     def get(self, request, corpus_id):
         parameters = get_parameters(request)
@@ -155,7 +155,7 @@ class NodeListHaving(APIView):
         except :
             raise ValidationException('"ngram_ids" needs integers separated by comma.')
 
-        limit=5
+        limit = DEFAULT_N_DOCS_HAVING_NGRAM
         nodes_list = []
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
@@ -178,26 +178,18 @@ class NodeListHaving(APIView):
             .filter(Node.typename == 'DOCUMENT', Node.parent_id== corpus.id)
             .filter(or_(*[NodeNodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
             .group_by(Node)
-            .order_by(func.sum(NodeNodeNgram.score).desc())
-            .limit(limit)
         )
-        # print("\n")
-        # print("in TFIDF:")
-        # print("\tcorpus_id:",corpus_id)
-        # convert query result to a list of dicts
-#         if nodes_query is None:
-#             print("TFIDF error, juste take sums")
-#             nodes_query = (session
-#                 .query(Node, func.sum(NodeNgram.weight))
-#                 .join(NodeNgram, NodeNgram.node_id == Node.id)
-#                 .filter(Node.parent_id == corpus_id)
-#                 .filter(Node.typename == 'DOCUMENT')
-#                 .filter(or_(*[NodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
-#                 .group_by(Node)
-#                 .order_by(func.sum(NodeNgram.weight).desc())
-#                 .limit(limit)
-#             )
-        for node, score in nodes_query:
+
+        # get the total count before applying limit
+        nodes_count = nodes_query.count()
+
+        # now the query with the limit
+        nodes_results_query = (nodes_query
+                                .order_by(func.sum(NodeNodeNgram.score).desc())
+                                .limit(limit)
+                            )
+
+        for node, score in nodes_results_query:
             print(node,score)
             print("\t corpus:",corpus_id,"\t",node.name)
             node_dict = {
@@ -209,7 +201,10 @@ class NodeListHaving(APIView):
                     node_dict[key] = node.hyperdata[key]
             nodes_list.append(node_dict)
 
-        return JsonHttpResponse(nodes_list)
+        return JsonHttpResponse({
+                                    'count': nodes_count,
+                                    'records': nodes_list
+                                })
 
 
 

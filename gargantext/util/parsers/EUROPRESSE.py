@@ -65,12 +65,12 @@ class EuropresseParser(Parser):
         try:
             html_parser = html5parser.etree.HTMLParser(encoding=codif)
             html = html5parser.etree.fromstring(contents, html_parser)
-            
+
             html_articles = html.xpath('//article')
-        
+
         except Exception as error:
             html_articles = None
-            print ("Europresse lxml error:", error)
+            print ("Europresse lxml error:", str(error))
 
         # all except detail_header are mandatory to parse the article
         name_xpath  = "./header/div/span[@class = 'DocPublicationName']"
@@ -113,7 +113,10 @@ class EuropresseParser(Parser):
 
 
         # parse all the articles, one by one
-        if html_articles is not None:
+        if html_articles is None:
+            filename = file.name if hasattr(file, 'name') else 'unknown file'
+            print("WARNING: europresse (skip) 1 file with no parsable content: " + filename)
+        else:
             for html_article in html_articles:
                 try:
                     # s'il n'y a pas du tout de header on doit skip

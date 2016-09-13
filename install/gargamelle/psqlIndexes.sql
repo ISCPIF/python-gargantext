@@ -33,7 +33,7 @@ create INDEX on nodes_ngrams_ngrams (ngram1_id) ;
 create INDEX on nodes_ngrams_ngrams (ngram2_id) ;
 
 ----------------------------------------------------------------------
-DELETE optimization of Nodes -- todo on dev
+-- DELETE optimization of Nodes -- todo on dev
 create INDEX on nodes_nodes_ngrams (node1_id);
 create INDEX on nodes_nodes_ngrams (node2_id);
 
@@ -42,7 +42,7 @@ create INDEX on nodes_nodes (node1_id, node2_id);
 -- Maybe needed soon:
 -- create INDEX on nodes_nodes_ngrams (node1_id, node2_id);
 ----------------------------------------------------------------------
-Analytics
+-- Analytics
 
 create INDEX on nodes_hyperdata (node_id,value_utc);  -- remove ?
 create INDEX on nodes_hyperdata (node_id,key,value_utc);

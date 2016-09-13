@@ -2,7 +2,7 @@
 
 // Level-01
 ParseCustom = function ( format , data ) {
-    console.log('FUN t.sigma.parseCustom:ParseCustom')
+    // console.log('FUN t.sigma.parseCustom:ParseCustom')
     this.data = data;
     this.format = format;
     this.nbCats = 0;
@@ -39,7 +39,7 @@ ParseCustom = function ( format , data ) {
 
 // Level-02
 ParseCustom.prototype.scanFile = function() {
-    console.log('FUN t.sigma.parseCustom:scanFile')
+    // console.log('FUN t.sigma.parseCustom:scanFile')
     switch (this.format) {
         case "api.json":
             pr("scanFile: "+this.format)
@@ -66,7 +66,7 @@ ParseCustom.prototype.scanFile = function() {
 
 // Level-02
 ParseCustom.prototype.makeDicts = function(categories) {
-    console.log('FUN t.sigma.parseCustom:makeDicts')
+    // console.log('FUN t.sigma.parseCustom:makeDicts')
     console.warn("this.format:", this.format)
     switch (this.format) {
         case "api.json":
@@ -97,7 +97,7 @@ ParseCustom.prototype.makeDicts = function(categories) {
 
 // Level-00
 function scanGexf(gexf) {
-    console.log('FUN t.sigma.parseCustom:scanGexf')
+    // console.log('FUN t.sigma.parseCustom:scanGexf')
     var categoriesDict={}, categories=[];
     nodesNodes = gexf.getElementsByTagName('nodes');
     for(i=0; i<nodesNodes.length; i++){
@@ -146,7 +146,7 @@ function scanGexf(gexf) {
 // Level-00
 // for {1,2}partite graphs
 function dictfyGexf( gexf , categories ) {
-    console.log('FUN t.sigma.parseCustom:dictfyGexf')
+    // console.log('FUN t.sigma.parseCustom:dictfyGexf')
 
     var catDict = {}
     var catCount = {}
@@ -482,7 +482,7 @@ function dictfyGexf( gexf , categories ) {
 
 // Level-00
 function scanJSON( data, format ) {
-    console.log('FUN t.sigma.parseCustom:scanJSON')
+    // console.log('FUN t.sigma.parseCustom:scanJSON')
     var categoriesDict={}, categories=[];
     var nodes = data.nodes;
 
@@ -530,7 +530,7 @@ function scanJSON( data, format ) {
 // Level-00
 // for {1,2}partite graphs
 function dictfyJSON( data , categories, isCompact ) {
-    console.log('FUN t.sigma.parseCustom:dictfyJSON')
+    // console.log('FUN t.sigma.parseCustom:dictfyJSON')
     console.clear()
     console.log("IN DICTIFY JSON")
     var catDict = {}
@@ -765,7 +765,7 @@ function dictfyJSON( data , categories, isCompact ) {
 
 // to move
 function buildInitialState( categories ) {
-    console.log('FUN t.sigma.parseCustom:buildInitialState')
+    // console.log('FUN t.sigma.parseCustom:buildInitialState')
     var firstState = []
     for(var i=0; i<categories.length ; i++) {
         if(i==0) firstState.push(true)
@@ -776,7 +776,7 @@ function buildInitialState( categories ) {
 
 //to move
 function makeSystemStates (cats) {
-    console.log('FUN t.sigma.parseCustom:makeSystemStates')
+    // console.log('FUN t.sigma.parseCustom:makeSystemStates')
     var systemstates = {}
     var N=Math.pow(2 , cats.length);
 
@@ -810,7 +810,7 @@ function makeSystemStates (cats) {
 
 //to_del
 function parse(gexfPath) {
-    console.log('FUN t.sigma.parseCustom:parse')
+    // console.log('FUN t.sigma.parseCustom:parse')
     var gexfhttp;
     gexfhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
     gexfhttp.open('GET', gexfPath, false);
@@ -820,7 +820,7 @@ function parse(gexfPath) {
 
 //to_del
 function scanCategories() {
-    console.log('FUN t.sigma.parseCustom:scanCategories')
+    // console.log('FUN t.sigma.parseCustom:scanCategories')
     nodesNodes = gexf.getElementsByTagName('nodes');
     for(i=0; i<nodesNodes.length; i++){
         var nodesNode = nodesNodes[i];  // Each xml node 'nodes' (plural)
@@ -853,7 +853,7 @@ function scanCategories() {
 
 //to_del
 function onepartiteExtract(){
-    console.log('FUN t.sigma.parseCustom:onepartiteExtract')
+    // console.log('FUN t.sigma.parseCustom:onepartiteExtract')
     var i, j, k;
     //    partialGraph.emptyGraph();
     // Parse Attributes
@@ -1097,7 +1097,7 @@ function onepartiteExtract(){
 
 //to_del
 function fullExtract(){
-    console.log('FUN t.sigma.parseCustom:fullExtract')
+    // console.log('FUN t.sigma.parseCustom:fullExtract')
     var i, j, k;
     // Parse Attributes
     // This is confusing, so I'll comment heavily
@@ -1426,7 +1426,7 @@ function fullExtract(){
 
 //to_del
 function JSONFile( URL ) {
-    console.log('FUN t.sigma.parseCustom:JSONFile')
+    // console.log('FUN t.sigma.parseCustom:JSONFile')
 
 
     return $.ajax({
@@ -1452,7 +1452,7 @@ function JSONFile( URL ) {
 
 //to_del
 function parseSimpleJSON( data , seed ) {
-    console.log('FUN t.sigma.parseCustom:parseSimpleJSON')
+    // console.log('FUN t.sigma.parseCustom:parseSimpleJSON')
     var i, j, k;
     rand=new RVUniformC(seed);
     //partialGraph.emptyGraph();
@@ -1547,7 +1547,7 @@ function parseSimpleJSON( data , seed ) {
 //to_del
 // For CommunityExplorer API
 function extractFromJson(data,seed){
-    console.log('FUN t.sigma.parseCustom:extractFromJson')
+    // console.log('FUN t.sigma.parseCustom:extractFromJson')
     var i, j, k;
     rand=new RVUniformC(seed);
     //partialGraph.emptyGraph();

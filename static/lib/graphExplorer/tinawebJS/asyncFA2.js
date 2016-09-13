@@ -1,7 +1,7 @@
 // Mathieu Jacomy @ Sciences Po Médialab & WebAtlas
 
 var ForceAtlas2 = function(graph) {
-  console.log('FUN t.asyncFA2:ForceAtlas2')
+  // console.log('FUN t.asyncFA2:ForceAtlas2')
   var self = this;
   this.graph = graph;
 
@@ -32,7 +32,7 @@ var ForceAtlas2 = function(graph) {
 
   // Runtime (the ForceAtlas2 itself)
   this.init = function() {
-    console.log('FUN t.asyncFA2:init')
+    // console.log('FUN t.asyncFA2:init')
     self.state = {step: 0, index: 0};
     self.graph.nodes.forEach(function(n) {
       n.fa2 = {
@@ -48,12 +48,12 @@ var ForceAtlas2 = function(graph) {
   }
 
   this.go = function() {
-    console.log('FUN t.asyncFA2:go')
+    // console.log('FUN t.asyncFA2:go')
     while (self.onebucle()) {}
   }
 
   this.onebucle = function() {
-    console.log('FUN t.asyncFA2:onebucle')
+    // console.log('FUN t.asyncFA2:onebucle')
     var graph = self.graph;
     var nodes = graph.nodes;
     var edges = graph.edges;
@@ -350,7 +350,7 @@ var ForceAtlas2 = function(graph) {
   }
 
   this.end = function() {
-    console.log('FUN t.asyncFA2:end')
+    // console.log('FUN t.asyncFA2:end')
     this.graph.nodes.forEach(function(n) {
       n.fa2 = null;
     });
@@ -358,7 +358,7 @@ var ForceAtlas2 = function(graph) {
 
   // Auto Settings
   this.setAutoSettings = function() {
-    console.log('FUN t.asyncFA2:setAutoSettings')
+    // console.log('FUN t.asyncFA2:setAutoSettings')
     var graph = this.graph;
 
     // Tuning
@@ -839,7 +839,7 @@ var ForceAtlas2 = function(graph) {
 
 
 var updateMassAndGeometry = function() {
-  console.log('FUN t.asyncFA2:updateMassAndGeometry')
+  // console.log('FUN t.asyncFA2:updateMassAndGeometry')
   if (this.nodes.length > 1) {
     // Compute Mass
     var mass = 0;
@@ -892,7 +892,7 @@ var Region = function(nodes, depth) {
 
 
 var buildSubRegions = function() {
-  console.log('FUN t.asyncFA2:buildSubRegions')
+  // console.log('FUN t.asyncFA2:buildSubRegions')
   if (this.nodes.length > 1) {
     var leftNodes = [];
     var rightNodes = [];
@@ -944,7 +944,7 @@ var buildSubRegions = function() {
 };
 
 var applyForce = function(n, Force, theta) {
-  console.log('FUN t.asyncFA2:applyForce')
+  // console.log('FUN t.asyncFA2:applyForce')
   if (this.nodes.length < 2) {
     var regionNode = this.nodes[0];
     Force.apply_nn(n, regionNode);
@@ -967,7 +967,7 @@ var applyForce = function(n, Force, theta) {
 };
 
 var startForceAtlas2 = function(graph,limit_it) {
-    console.log('FUN t.asyncFA2:startForceAtlas2')
+    // console.log('FUN t.asyncFA2:startForceAtlas2')
 //    pr("inside FA2")
 ////  if(!this.forceatlas2) {
 //    pr(graph);

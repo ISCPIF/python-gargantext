@@ -1,6 +1,6 @@
 
 function scanDataFolder(){
-    console.log('FUN t.DataScanner:scanDataFolder')
+    // console.log('FUN t.DataScanner:scanDataFolder')
         $.ajax({
             type: 'GET',
             url: 'php/DirScan_main.php',
@@ -18,19 +18,19 @@ function scanDataFolder(){
 }
 
 function getGexfPath(v){
-    console.log('FUN t.DataScanner:getGexfPath')
+    // console.log('FUN t.DataScanner:getGexfPath')
 	gexfpath=(gexfDictReverse[v])?gexfDictReverse[v]:v;
         return gexfpath;
 }
 
 function getGexfLegend(gexfPath){
-    console.log('FUN t.DataScanner:getGexfLegend')
+    // console.log('FUN t.DataScanner:getGexfLegend')
     legend=(gexfDict[gexfPath])?gexfDict[gexfPath]:gexfPath;
     return legend;
 }
 
 function jsActionOnGexfSelector(gexfLegend){
-    console.log('FUN t.DataScanner:jsActionOnGexfSelector')
+    // console.log('FUN t.DataScanner:jsActionOnGexfSelector')
     if(getGexfPath[gexfLegend])
         window.location=window.location.origin+window.location.pathname+"?file="+encodeURIComponent(getGexfPath(gexfLegend));
     else
@@ -38,7 +38,7 @@ function jsActionOnGexfSelector(gexfLegend){
 }
 
 function listGexfs(){
-    console.log('FUN t.DataScanner:listGexfs')
+    // console.log('FUN t.DataScanner:listGexfs')
     divlen=$("#gexfs").length;
     if(divlen>0) {
         param = JSON.stringify(gexfDict);

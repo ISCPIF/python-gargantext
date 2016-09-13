@@ -98,9 +98,7 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                                 tokens = tuple(normalize_forms(token[0]) for token in ngram)
                                 if do_subngrams:
                                     # ex tokens = ["very", "cool", "exemple"]
-                                    #    subterms = [['very', 'cool'],
-                                    #                ['very', 'cool', 'exemple'],
-                                    #                ['cool', 'exemple']]
+                                    #    subterms = [['very', 'cool'],...]
 
                                     subterms = subsequences(tokens)
                                 else:
@@ -108,11 +106,16 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
 
                                 for seqterm in subterms:
                                     ngram = ' '.join(seqterm)
-                                    if len(ngram) > 1:
+                                    nbwords = len(seqterm)
+                                    nbchars = len(ngram)
+                                    if nbchars > 1:
+                                        if nbchars > 255:
+                                            # max ngram length (DB constraint)
+                                            ngram = ngram[:255]
                                         # doc <=> ngram index
                                         nodes_ngrams_count[(document.id, ngram)] += 1
                                         # add fields :   terms          n
-                                        ngrams_data.add((ngram[:255], len(seqterm), ))
+                                        ngrams_data.add((ngram, nbwords, ))
                         except:
                             #value not in doc
                             continue

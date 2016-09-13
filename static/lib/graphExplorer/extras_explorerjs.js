@@ -597,8 +597,10 @@ function getTopPapers(type){
                 // pr(window.location.origin+'/api/tfidf/'+corpus_id+'/'+theids.join("a") )
                 // var arraydata = $.parseJSON(data)
                 var output = "<ul style='padding: 0px; margin: 13px;'>"
-                for(var i in data) {
-                    var pub = data[i]
+                var nDocsHavingNgram = data.count ;
+                var nDocsShown = data.records.length ;
+                for(var i in data.records) {
+                    var pub = data.records[i]
                     if(pub["title"]) {
                         var gquery = "https://search.iscpif.fr/?categories=general&q="+pub["title"].replace(" "+"+")
 
@@ -645,6 +647,13 @@ function getTopPapers(type){
                 }
                 output += "</ul>"
                 $("#tab-container-top").show();
+
+                $("#pubs-count-info").remove()
+                var countInfo = $('<span />').attr('id', 'pubs-count-info')
+
+                countInfo.html(" ("+nDocsShown + "/" + nDocsHavingNgram+")")
+
+                $("#pubs-legend").append(countInfo)
                 // $('#tab-container-top').easytabs({updateHash:false});
                 $("#topPapers").html(output);
             },

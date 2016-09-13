@@ -86,7 +86,14 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 }
 
 
+// general listener: shift key in the window <=> add to selection
+$(document).on('keyup keydown', function(e){
+  // changes the global boolean ("add node to selection" status) if keydown and SHIFT
+  checkBox = e.shiftKey
 
+  // show it in the real checkbox too
+  $('#checkboxdiv').prop("checked", e.shiftKey)
+} );
 
 // = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = //
 
@@ -981,6 +988,7 @@ function camaraButton(){
         */
     });
 }
+
 
 function getTips(){
     console.log('FUN extras_explorerjs:getTips')

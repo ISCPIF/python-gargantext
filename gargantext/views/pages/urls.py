@@ -10,6 +10,7 @@ urlpatterns = [
     # presentation pages
     url(r'^$', main.home),
     url(r'^about/?$', main.about),
+    url(r'^robots.txt$', main.robots),
     # maintenance mode
     url(r'^maintenance/?$', main.maintenance),
     # authentication

@@ -26,6 +26,9 @@ urlpatterns = [
 
     # corpus by journals
     url(r'^projects/(\d+)/corpora/(\d+)/journals/?$', corpora.docs_by_journals),
+    
+    # corpus by journals
+    url(r'^projects/(\d+)/corpora/(\d+)/authors/?$', corpora.docs_by_authors),
 
     # terms table for the corpus
     url(r'^projects/(\d+)/corpora/(\d+)/terms/?$', terms.ngramtable),

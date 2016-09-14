@@ -438,7 +438,8 @@ class CorpusFacet(APIView):
         # check that the hyperfield parameter makes sense
         _facet_available_subfields = [
             'journal', 'publication_year', 'rubrique',
-            'language_iso2', 'language_iso3', 'language_name'
+            'language_iso2', 'language_iso3', 'language_name',
+            'authors'
         ]
         parameters = get_parameters(request)
 

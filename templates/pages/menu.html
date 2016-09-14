@@ -82,6 +82,7 @@
                                 <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
                                     onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
                                     data-target='#' href='#'>Documents
+                                    <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
                                 </a>
                         </li>
 
@@ -89,8 +90,19 @@
                                 <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
                                         onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
                                         data-target='#' href='#'>Journals
+                                    <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
                                 </a>
                         </li>
+
+<!--
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'authors' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/authors'"
+                                        data-target='#' href='#'>Authors
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                </a>
+                        </li>
+                        --!>
 
 
                         {% for state in corpus.hyperdata.statuses %}
@@ -101,6 +113,7 @@
                                         <a type="button" class="btn btn-default {% if view == 'terms' %} active {% endif %}"
                                             onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/terms'"
                                             data-target='#' href='#'>Terms
+                                            <span class="glyphicon glyphicon-text-width" aria-hidden="true"></span>
                                         </a>
                                     </li>
 
@@ -108,6 +121,7 @@
                                     <li class="dropdown">
                                         <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
                                         Graphs
+                                        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
                                         </a>
                                         <i class="caret"></i>
                                     <ul class="dropdown-menu">
@@ -134,7 +148,10 @@
                                     <li>
                                             <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
                                                 onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
-                                                data-target='#' href='#'>Analytics
+                                                data-target='#' href='#'>
+                                                
+                                                Analytics
+                                                <span class="glyphicon glyphicon-signal" aria-hidden="true"></span>
                                             </a>
                                     </li>
 

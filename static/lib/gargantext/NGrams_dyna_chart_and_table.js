@@ -194,6 +194,7 @@ function saveParamsToCache() {
 
   var search_filter_status = MyTable.data('dynatable').settings.dataset.queries['search']
   var state_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
+  var type_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter']
   // var page_status = document.getElementsByClassName("dynatable-page-link dynatable-active-page")[0].getAttribute("data-dynatable-page")
   var per_page_status = MyTable.data('dynatable').settings.dataset.perPage
 
@@ -210,6 +211,12 @@ function saveParamsToCache() {
   }
   else {
     localStorage.removeItem(corpusId+'/terms/state')
+  }
+  if (type_filter_status) {
+    localStorage[corpusId+'/terms/type'] = type_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/type')
   }
 
   // if (page_status) {
@@ -233,12 +240,16 @@ function saveParamsToCache() {
 function restoreSettingsFromCache() {
   var corpusId = getIDFromURL("corpora")
   // var had_page = localStorage[corpusId+'/terms/page']
+  var had_type = localStorage[corpusId+'/terms/type']
   var had_state = localStorage[corpusId+'/terms/state']
   var had_search = localStorage[corpusId+'/terms/search']
   var had_perPage = localStorage[corpusId+'/terms/perPage']
   // if (had_page) {
   //   MyTable.data('dynatable').paginationPage.set(had_page);
   // }
+  if (had_type) {
+    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = had_type
+  }
   if (had_state) {
     MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = had_state
   }
@@ -2215,8 +2226,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
                   // _cellWriter: customCellWriter
                 },
                 inputs: {
-                    queries: $('select#testquery'),
-                    queries: $('select#picklistmenu'),
+                    queries: $('select#picklistmenu, select#picktermtype'),
                 }
             })
 
@@ -2278,28 +2288,31 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
                 return true
             }
             // for states, possible value are in {0,1,2}
-            else if (selectedValue <= 2) {
+            else {
               // return true or false
               return (AjaxRecords[record.id].state == selectedValue)
             }
-            // for values > max_state we can also select mono/multi
-            else if (selectedValue == 3) {
+        }
+
+    // second filter named 'my_termtype_filter'
+    MyTable.data('dynatable').queries
+        .functions['my_termtype_filter'] = function(record,selectedValue) {
+            if (selectedValue == 'reset') {
+                return true
+            }
+            else if (selectedValue == 'mono') {
                 // one-word terms aka monograms aka monolexical terms
                 return (AjaxRecords[record.id]['name'].indexOf(" ") == -1)
             }
-            else if (selectedValue == 4) {
+            else if (selectedValue == 'multi') {
                 // MWE aka multigrams aka polylexical terms
                 return (AjaxRecords[record.id]['name'].indexOf(" ") != -1)
             }
-            else {
-              console.error("unknown value in #picklistmenu :", selectedValue)
-              return true
-            }
         }
 
-    // and set this filter's initial status to 'maplist' (aka state == 1)
-    // MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    // and set these filters' initial status
     MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
+    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = 'reset' ;
     MyTable.data('dynatable').process();
 
     // £todo factorize with previous with a param search_filters

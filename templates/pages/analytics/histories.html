@@ -86,7 +86,8 @@
                         <!-- filter ngrams -->
                         <li class="ngrams">
                             ...only consider documents containing the following expressions:
-                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an expression" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true">
+                            <tags-input ng-model="query_y.ngrams" display-property="terms" placeholder="Add an expression" on-tag-added="updateDataset()" on-tag-removed="updateDataset()" add-from-autocomplete-only="true"
+                                replace-spaces-with-dashes="false">
                                 <auto-complete source="getNgrams($query)"></auto-complete>
                             </tags-input ng-model="tags">
                         </li>

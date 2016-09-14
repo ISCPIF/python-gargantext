@@ -175,6 +175,87 @@ var corpusesList = {}
 
 
 // =============================================================================
+//                            CACHE MANAGEMENT
+// =============================================================================
+/**
+* a local cache to remember active filters and page after reload
+*   cf. saveParamsToCache()
+*       restoreSettingsFromCache()
+*
+*   TODO localStorage.clear() after expiry date
+*/
+
+window.onbeforeunload = saveParamsToCache;
+
+// always called at page close/quit
+// £TODO use url instead of corpusId+'/terms' as prefix
+function saveParamsToCache() {
+  var corpusId = getIDFromURL("corpora")
+
+  var search_filter_status = MyTable.data('dynatable').settings.dataset.queries['search']
+  var state_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
+  // var page_status = document.getElementsByClassName("dynatable-page-link dynatable-active-page")[0].getAttribute("data-dynatable-page")
+  var per_page_status = MyTable.data('dynatable').settings.dataset.perPage
+
+  // keys and values are str only so we use path-like keys
+  if (search_filter_status) {
+    localStorage[corpusId+'/terms/search'] = search_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/search')
+  }
+
+  if (state_filter_status) {
+    localStorage[corpusId+'/terms/state'] = state_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/state')
+  }
+
+  // if (page_status) {
+  //   localStorage[corpusId+'/terms/page'] = page_status
+  // }
+  // else {
+  //   localStorage.removeItem(corpusId+'/terms/page')
+  // }
+
+  if (per_page_status) {
+    localStorage[corpusId+'/terms/perPage'] = per_page_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/perPage')
+  }
+
+  return null;
+}
+
+// always called after MyTable init
+function restoreSettingsFromCache() {
+  var corpusId = getIDFromURL("corpora")
+  // var had_page = localStorage[corpusId+'/terms/page']
+  var had_state = localStorage[corpusId+'/terms/state']
+  var had_search = localStorage[corpusId+'/terms/search']
+  var had_perPage = localStorage[corpusId+'/terms/perPage']
+  // if (had_page) {
+  //   MyTable.data('dynatable').paginationPage.set(had_page);
+  // }
+  if (had_state) {
+    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = had_state
+  }
+  if (had_search) {
+    MyTable.data('dynatable').settings.dataset.queries['search'] = had_search
+  }
+  if (had_perPage) {
+    MyTable.data('dynatable').paginationPerPage.set(had_perPage)
+  }
+
+  // re-process to makes the changes visible
+  MyTable.data('dynatable').process()
+  return null;
+}
+
+
+// =============================================================================
 //                  ELEMENT CONTROLLERS AND ROW PROCESSORS
 // =============================================================================
 // Get all projects and corpuses of the user
@@ -1816,6 +1897,10 @@ function GROUPCRUDS( groupnode_id , send_data, http_method , callback) {
  * @param ngdata: OriginalNG['records']
  * @param initial: initial score type "occs" or "tfidf"
  * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
+ *
+ * TODO replace by new @param filters (multiple) for all cached values
+ *      (would allow us to use them directly in settings instead of a posteriori
+ *       with restoreSettingsFromCache)
  */
 function MainTableAndCharts( ngdata , initial , search_filter) {
 
@@ -2216,6 +2301,9 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
     MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
     MyTable.data('dynatable').process();
+
+    // £todo factorize with previous with a param search_filters
+    restoreSettingsFromCache(localStorage)
 
     // moves pagination over table
     if ( $(".imadiv").length>0 ) return 1;

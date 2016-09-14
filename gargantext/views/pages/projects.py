@@ -104,16 +104,9 @@ def project(request, project_id):
 
         # parse_extract: fileparsing -> ngram extraction -> lists
         scheduled(parse_extract_indexhyperdata)(corpus.id)
-
-        return render(
-            template_name = 'pages/projects/wait.html',
-            request = request,
-            context = {
-                'user'   : request.user,
-                'project': project,
-            },
-        )
-
+        wait = True
+    else:
+        wait = False
 
     # corpora within this project
     corpora = project.children('CORPUS', order=True).all()
@@ -161,6 +154,25 @@ def project(request, project_id):
         }
         for sourcename, count in sourcename2documentscount.items()
     ]
+    if wait:
+
+        return render(
+            template_name = 'pages/projects/wait.html',
+            request = request,
+            context = {
+                'form': NewCorpusForm,
+                'user': request.user,
+                'date': datetime.now(),
+                'project': project,
+                'donut': donut,
+                'list_corpora': dict(sourcename2corpora),
+                'whitelists': [],
+                'blacklists': [],
+                'cooclists': [],
+                'number': len(corpora),
+                'query_size': QUERY_SIZE_N_DEFAULT,
+            },
+        )
     # response!
     return render(
         template_name = 'pages/projects/project.html',

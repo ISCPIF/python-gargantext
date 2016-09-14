@@ -22,7 +22,6 @@ def home(request):
         },
     )
 
-
 def about(request):
     '''About Gargantext, its team and sponsors
     '''
@@ -40,14 +39,13 @@ def about(request):
     )
 
 def robots(request):
-    '''About Gargantext, its team and sponsors
+    '''Robots rules
     '''
     return render(
         template_name = 'pages/main/robots.txt',
         request = request,
-        context = {},
+        content_type='text/plain',
     )
-
 
 def maintenance(request):
     '''Gargantext out of service

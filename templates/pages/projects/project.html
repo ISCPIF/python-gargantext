@@ -61,23 +61,7 @@
                 </p>
             </div>
     </div>
-    <!-- Modal -->
-    <div id="wait" class="modal" style="top:8%;">
-        <div class="jumbotron">
-          <div class="container theme-showcase jumbotron" role="main">
-            <div>
-              <div class="col-md-3"></div>
-              <div class="col-md-6">
-                <h2>Your file has been uploaded ! </h2>
-                <h2>Gargantext need some time to eat it.</h2>
-                <h2>Duration depends on the size of the dish.</h2>
-                <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}" title="Click and test by yourself">Continue on Gargantext</a>
-              </div>
-            <div class="col-md-3"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+
 </div>
 
 
@@ -295,6 +279,29 @@
                             </div><!-- /.modal-content -->
                         </div><!-- /.modal-dialog -->
                     </div><!-- /.modal -->
+                    <!-- Modal -->
+                    <div id="wait" class="modal fade">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                        <h2 class="modal-title"><h2><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>  Uploading corpus...</h2>
+                      </div>
+                      <div class="modal-body">
+                        <p>
+                        Your file has been uploaded !
+                        Gargantext need some time to eat it.
+                        Duration depends on the size of the dish.
+                        </p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Continue on Gargantext</button>
+                      </div>
+                    </div><!-- /.modal-content -->
+                  </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
                     <script type="text/javascript" src="{% static "lib/jquery/1.11.2/jquery-ui.js" %}"></script>
                     <script type="text/javascript">
                         function getCookie(name) {
@@ -312,7 +319,7 @@
                             }
                             return cookieValue;
                         }
-
+                        
                         var thequeries = [] ;
 
                         // load the template's value for N scan size
@@ -657,9 +664,14 @@
                                   alert("OK")
                                   setTimeout(
                                       function() {
-                                        alert("TimeOut!")
                                         $('#addcorpus').modal('hide')
-                                        $("#wait").modal("show")
+                                        $("#wait").modal("show");
+                                        // setTimeout(
+                                        //   function(){
+                                        //     location.reload();
+                                        //
+                                        //   }, 600);
+                                        // )
                                         //setTimeout(, 300)
                                         //location.reload();
                                       }, 600);
@@ -730,6 +742,10 @@
                                 formatter: function (y) { return y + "%" }
                             });
                             {% endif %}
+                        $('#wait').on('hidden.bs.modal', function (e) {
+                          // reload page when dismiss the info box
+                          window.location.reload()
+                        })
                     </script>
 
 

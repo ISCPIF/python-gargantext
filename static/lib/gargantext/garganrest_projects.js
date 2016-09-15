@@ -66,10 +66,11 @@ function addFormStatus(status, form, msg){
   }
 }
 function resetStatusForm(form){
-  $(form).removeClass("alert-danger alert-info alert-success")
-  $("div#status-form").val("")
-  $("div#status-form").collapse("hide")
-  alert("reset")
+  $(form).removeClass("alert-danger alert-info alert-success");
+  $("div#status-form").val("");
+  $("div#status-form").collapse("hide");
+  //$(form).collapse("hide");
+  //window.location.reload()
 }
 //PAGES STATUSES
 function addPageStatus(status, msg){
@@ -203,7 +204,6 @@ function deleteOne(url){
   $.ajax({
     url: '/api'+url,
     type: 'delete',
-
     beforeSend: function(xhr) {
           xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
               },
@@ -214,9 +214,9 @@ function deleteOne(url){
        },
     error: function(xhr) {
       console.log("FAIL!");
-      console.log(xhr);
+      console.log(xhr.status);
       var status = xhr.status;
-      var info = xhr.responseJSON["detail"];
+      var info = xhr["detail"];
       var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
       addPageStatus("error", msg);
       },
@@ -350,9 +350,9 @@ $(document).on("click",".edit", function(){
   })
 //UNIQUE RECALC
 $(document).on("click",".refresh", function(){
-    //alert("refresh")
+    alert(refresh)
       //console.log( $(this))
-    var id = $(this).data("id")
+      var id = $(this).data("id")
       //var url = $( this ).data("url")
 
       recalculateOne(id)
@@ -376,15 +376,15 @@ function createProject() {
         beforeSend: function(xhr) {
                     xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
                 },
-        success: function(response) {
-            console.log(response.status);
+        success: function(xhr, response) {
+            console.log(xhr.status);
             console.log(response["detail"]);
             location.reload();
              },
         error: function(data) {
             console.log(data)
             status = data.status;
-            info = data["detail"];
+            info = data.responseJSON["detail"];
             msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
             addFormStatus("error","div#createForm", msg)
             },
@@ -392,7 +392,8 @@ function createProject() {
 };
 
 function createCorpus(url, method, form){
-
+    alert(method)
+    alert(url)
     console.log(form)
     console.log("POST corpus")
     $.ajax({
@@ -425,7 +426,7 @@ function createCorpus(url, method, form){
             status = data.status;
             info = data.responseJSON["detail"];
             msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-
+            alert(msg)
             addFormStatus("error","form#formCorpus", msg);
             //$(".collapse").collapse("hide");
             //_content = '<h2><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>Error while creating the corpus.</h2>'

@@ -54,8 +54,7 @@ class ProjectList(APIView):
         #    project = check_rights(request, project)
         uids = []
         for node in projects:
-            node.delete(synchronize_session=False)
-            #session.delete(node)
+            session.delete(node)
             session.commit()
             uids.append(node.id)
         return Response({"detail":"Deleted %i projects" %len(uids)}, status=HTTP_204_NO_CONTENT)
@@ -106,19 +105,20 @@ class ProjectView(APIView):
     def delete(self, request, project_id):
         '''DELETE project'''
         node = session.query(Node).filter(Node.id == project_id).first()
-        print("DELETE project")
+
         if node is None:
-            print("Not Found")
+
             return Response({'detail' : "PROJECT Node #%s not found" %(project_id) },
                                   status = HTTP_404_NOT_FOUND)
         else:
-            print(">", node)
-            check_rights(request, project_id)
+            try:
+                check_rights(request, project_id)
+            except Exception as e:
+                return Response({'detail' : "Unauthorized" %(project_id) },
+                                      status= 403)
             session.delete(node)
-            print("delete")
             session.commit()
-            print("commit")
-            return Response({"detail": "Successfully deleted Node #%s" %project_id}, 200)
+            return Response({"detail": "Successfully deleted Node #%s" %project_id}, status= 204)
 
     def put(self, request, project_id):
         '''UPDATE project '''
@@ -129,7 +129,7 @@ class ProjectView(APIView):
                                   status = HTTP_404_NOT_FOUND)
         check_rights(request, project_id)
         params = get_parameters(request)
-        print(params)
+        # print(params)
         #u_project = deepcopy(project)
         for key, val in params.items():
             if len(val) == 0:

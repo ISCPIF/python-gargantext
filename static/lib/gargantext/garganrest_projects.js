@@ -283,7 +283,6 @@ $(document).on("hover", "button", function(){
 // checkbox with BUTTON #delete, #edit #refresh
 //DELETE MULTI
 $(document).on("click","#delete", function(){
-      //alert("Delete");
       var selected = selectedUrls();
       selected.forEach(function(url) {
         deleteOne(url);
@@ -298,12 +297,12 @@ $(document).on("click","#edit", function(){
       // selected.forEach(function(url) {
       //   editOne(url, data);
       // });
-      alert("Not Implemented Yet")
+      //alert("Not Implemented Yet")
   });
 
 //RECALC MULTI
 $(document).on("click","#recalculate", function(){
-      alert("Recalculate");
+      //alert("Recalculate");
       var selected = selectedIds();
       selected.forEach(function(id) {
           recalculateOne(id);
@@ -316,9 +315,7 @@ $(document).on("click","#recalculate", function(){
 // UNIQUE DELETION
 $(document).on("click", ".delete", function() {
       var url = $( this ).data("url");
-      alert(url);
       deleteOne(url);
-      alert("delete");
 });
 
 //UNIQUE EDITION

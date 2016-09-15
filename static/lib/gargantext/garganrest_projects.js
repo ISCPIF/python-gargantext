@@ -217,8 +217,10 @@ function deleteOne(url){
       console.log(xhr.status);
       var status = xhr.status;
       var info = xhr["detail"];
-      var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-      addPageStatus("error", msg);
+      var msg = "ERROR deleting project"+ url
+      console.log(msg)
+      //addPageStatus("info", msg);
+      //window.location.reload();
       },
   });
 
@@ -255,17 +257,17 @@ function recalculateOne(id){
                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
                 },
       success: function(response) {
-          console.log("SUCCESS!");
+          console.log("RECALC SUCCESS!");
           window.location.reload();
          },
       error: function(xhr) {
-          console.log("FAIL!")
+          console.log("RECALC FAIL!")
           console.log(result)
           var status = xhr.status;
           var info = xhr["detail"];
           var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-        //no form error is sent to page status alert
-        addPageStatus("error", msg);
+          //no form error is sent to page status alert
+          addPageStatus("error", msg);
         },
     });
 };
@@ -316,19 +318,22 @@ $(document).on("click","#recalculate", function(){
 $(document).on("click", ".delete", function() {
       var url = $( this ).data("url");
       deleteOne(url);
+      window.location.reload();
 });
 
 //UNIQUE EDITION
 $(document).on("click",".edit", function(){
-    $('#editForm').collapse('show');
-    var url = $( this ).data("url");
+    var id = $(this).data("id")
+    var url = $( this ).data("url")
+    console.log(id)
+    //newform.collapse("show");
+    $('#editForm-'+id).collapse('toggle')
     $("#edit-submit").on('click', function(){
       //alert(url)
+
       name = $("input#name_p").val()
       data = {"name": name}
       editOne(url, data);
-
-
     })
     $("#edit-cancel").on('click', function(){
       //alert("cancel")

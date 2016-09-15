@@ -7,7 +7,6 @@
 <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest.js" %}"></script>
 <link rel="stylesheet" href="{% static "lib/jquery/1.11.2/jquery-ui.css" %}">
-
 <script type="text/javascript" src="{% static "lib/morris/morris.min.js" %}"></script>
 <link rel="stylesheet" href="{% static "lib/morris/morris.css" %}">
 
@@ -36,138 +35,121 @@
                 Projects
             </h1>
         </div>
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
+        <div class="col-md-3"></div>
+        <div class="col-md-5">
             <p>
             <br>
-                <button
-                type="button"
-                class="btn btn-primary btn-lg"
-                data-container="body"
-                data-toggle="popover"
-                data-placement="bottom"
-                >
-                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
-                </button>
-                <div id="popover-content" class="hide">
-                    <form enctype='multipart/form-data' action='/projects/' method='post'>
-                        {% csrf_token %}
-                        <p>
-                            <label for="id_name">Name:</label>
-                            <input id="id_name" maxlength="255" name="name" type="text" />
-                        </p>
-                        <input type='submit' class="btn" value='Add this project !'/>
-                    </form>
-                </div>
-            </p>
-        </div>
+            </button>
+            <div id="popover-content"  class="hide">
+                <div id="createForm" class="form-group">
+                    {% csrf_token %}
+                    <div id="status-form" class="collapse">
+                    </div>
+                    <div class="row inline">
+                      <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
+                      <input class="col-lg-8" type="text" id="inputName" class="form-control">
+                    </div>
+
+                    <div class="row inline">
+                      <div class="col-lg-3"></div>
+                      <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
+                      <div class="col-lg-2"></div>
+                    </div>
+                  </div>
+              </div>
+        </p>
         </div>
     </div>
 </div>
 
 <div class="container">
-    <div class="row">
-        <div class="container">
-            <div class="container">
-                <div class="container">
+    <!-- GENERIC STATUS INFO -->
+    <div id="status" class="row col-lg-12 collapse">
 
-                    {% if projects %}
-                    {% for project in projects %}
-                    <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-                    <div id="project_{{project.id}}" class="row">
-                        <h3>
+      <div id="status-msg" class="alert">
+      </div>
 
-                            <div class="col-md-5 content">
-                                <a
-                                href="/projects/{{ project.id }}">
-                                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
-                                    {{ project.name }}
-                                </a>
-                            </div>
+    </div>
+    <!-- CHECKBOX EDITION -->
+    <div class="row" id="editor">
+          <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
+            <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
+          </button>
+          <!--
+          <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
+            <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
+          </button> -->
+          <!-- <button type="button" class="btn btn-info" id="recalculate">
+                  <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
+          </button>
+          -->
 
-                            <div class="col-md-3 content">
-                                <a href="/projects/{{project.id}}" >
-                                    <button type="button" class="btn btn-default" aria-label="Left Align">
-                                          <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                    </button>
+    </div>
 
-                                </a>
+    <br />
 
-                                <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                    data-content="  <ul>
-                                                    <!--
-                                                    <li>Rename</li>
-                                                    --!>
-                                                    <li onclick=&quot;
-                                                            garganrest.nodes.delete({{project.id}}, function(){$('#project_'+{{project.id}}).remove()});
-                                                            $(this).parent().parent().remove();
-                                                        &quot;><a href=&quot;#&quot;>Delete</a>
-                                                    </li>
-                                                    </ul>
-                                    ">
-                                    <span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                            {% if common_users %}
-                            <!-- <a style="cursor:pointer;"><img class="share_button" data-id="{{ project.id }}" title="Share it!" width="20px" src="{% static "img/share.png" %}"></img></a> --!>
-                            {% endif %}
 
-                        </h3>
 
-                        <h4>{{ project.subtitle }}<h4>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-
-                    {% if common_projects %}
-                    <br><br><br><br><br><br>
-                    <h3><i> - - Shared projects - -</i></h3>
-                    {% for project in common_projects %}
-                    <!--<div class="col-md-offset-7 col-md-4 content" style="background-color:grey">!-->
-                    <div class="col-md-3 content">
-                        <h3><a href="/projects/{{ project.id }}">{{ project.name }}</a>
-                            <button type="button" class="btn btn-xs btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                            data-content='
-                            <ul>
-                                <li> Rename </li>
-                                <li><a href="/projects/{{ project.id }}">Add new corpus</a></li>
-                                <li><a href="/delete/{{ project.id }}">Delete</a></li>
-                            </ul>
-                            '>Manage</button>
-                        </h3>
-                        <h4>{{ project.subtitle }}<h4>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-
-                </div>
-            </div>
-        </div>
+    <div class="row container" id="projects">
+            <!--here loading projectlist from GET /projects-->
     </div>
 
 
-<div id="sharemodal" class="modal fade">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 class="modal-title">Share this Corpus with your Groups</h3>
-            </div>
-
-            <div class="modal-body form-horizontal">
-                <h4>List of available groups:</h4>
-                <div id="groups_list">here show the groups</div>
-                <div class="modal-footer">
-                    <button id="closesharemodal" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button id="send_share" type="button" class="btn btn-primary" >Share<span id="simpleloader"></span></button>
-                </div>
-            </div>
-
-        </div>
-    </div>
 </div>
+
+<script type="html/tpl" id="project_item">
+    <div id="{url}" class="item row">
+        <h3>
+            <div class="col-md-6 content">
+                <input id="checkbox" type="checkbox" value="{url}" data-id="{id}">
+                <a href="{url}">
+                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+                    <span class="item_name">{name}</span>
+                </a>
+            </div>
+        </h3>
+        <div id="project_detail" class="col-md-4 content">
+          <div id="item-editor">
+            <!-- GET Project -->
+            <a href="{url}">
+                <button type="button" title="see project" class="btn btn-default show pull-right" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                </button>
+            </a>
+            <!-- EDIT PROJECT-->
+
+            <button class="btn btn-default edit pull-right" data-url="{url}" data-toggle="collapse" data-target="#editForm" aria-expanded="false" aria-controls="editForm">
+              <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+            </button>
+
+            <!-- DELETE PROJECT -->
+            <button type="button" class="btn btn-default delete pull-right" data-url="{url}">
+            <span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
+            </button>
+            <!-- REFRESH PROJECT -->
+            <button type="button" class="btn btn-default refresh pull-right" data-id="{id}">
+              <span class="glyphicon glyphicon-refresh pull-right" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div id="project_status">
+        <!-- Here add nb of the corpus? -->
+        </div>
+
+      </div>
+    </div>
+    <div id="editForm" class="collapse col-lg-10 alert" >
+
+        <!-- status of the form -->
+        <div id="status-form" class="collapse">
+        </div>
+        <b>Name:</b><input  type="text" id="name_p" />
+        <button id="edit-submit" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-ok"  aria-hidden="true"></span></button>
+        <button id="edit-cancel" class="btn btn-danger btn-sm" ><span class="glyphicon glyphicon-remove"  aria-hidden="true"></span></button>
+    </div>
+</script>
 
 <style type="text/css">
     label {
@@ -181,80 +163,22 @@
     }
 </style>
 
-
+<script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
 <script type="text/javascript">
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+    getProjects();
+    $(document).on("click","#createProject", function(e){
+      //alert("clicked");
+      //
+      //resetStatusForm("#createForm");
+      //$('input#inputName').val("");
+      createProject();
+      $('#add').on('hidden.bs.popover', function () {
+      // do something…
+        resetStatusForm("#createForm");
+      })
 
-    var last_project = -1
+    })
 
-    function get_groups() {
-        console.log( "IN get_groups()!" )
-        var url_ = "/get_groups"
-        $.ajax({
-            type: "GET",
-            url: url_,
-            dataType: "json",
-            success : function(data, textStatus, jqXHR) {
-                var _content = ""
-                for(var i in data) {
-                    var g_id = data[i][0] , g_name=data[i][1]
-                    _content += '<label><input name="groups" data-id="'+g_id+'" type="checkbox" />&nbsp;'+g_name+'</label>'
-                }
-                $("#groups_list").html( _content )
-            },
-            error: function(exception) {
-                console.log("exception!:"+exception.status)
-            }
-
-        });
-    }
-
-    if( $(".share_button").length>0 ) {
-
-        $(".share_button").click(function(){
-            last_project = $(this).data("id")
-            get_groups()
-            $("#sharemodal").modal("show");
-        });
-
-        $("#send_share").click(function() {
-            $('input[name=groups]:checked').each(function () {
-                $("#send_share").attr("disabled","disabled")
-                console.log( $(this).data("id") );
-                $("#simpleloader").html('<img width="30px" src="{% static "img/loading-bar.gif" %}"></img>')
-                $.ajax({
-                    url: "/api/share/"+last_project+"/"+$(this).data("id"),
-                    type: 'POST',
-                    beforeSend: function(xhr) {
-                        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-                    },
-                    success: function(data) {
-                        console.log("SUCCESS!")
-                        window.location.reload();
-                    },
-                    error: function(result) {
-                        console.log("FAIL!")
-                        console.log(result)
-                    }
-                });
-            });
-        });
-
-    }
 </script>
 
 {% endblock %}

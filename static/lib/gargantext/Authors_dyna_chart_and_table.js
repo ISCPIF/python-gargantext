@@ -397,7 +397,7 @@ function Main_test( data , initial) {
       .title(function (d) {
                   var value = d.data.value.avg ? d.data.value.avg : d.data.value;
                   if (isNaN(value)) value = 0;
-                  return value+" journals with "+Number(d.key)+" publications";
+                  return value+" authors with "+Number(d.key)+" publications";
               })
       .xAxis();
     LineChart.yAxis().ticks(5)
@@ -494,21 +494,21 @@ console.log(window.location.href)
 
 // match corpus_id in the url
 var corpus_id ;
-rematch = window.location.href.match(/corpora\/(\d+)\/journals\/?$/)
+rematch = window.location.href.match(/corpora\/(\d+)\/authors\/?$/)
 if (rematch) {
     corpus_id = rematch[1] ;
     $.ajax({
       url: window.location.origin
             + "/api/nodes/"
             + corpus_id
-            + "/facets?hyperfield=journal",
+            + "/facets?hyperfield=authors",
       success: function(data){
 
 
         console.log(data)
         $("#content_loader").remove()
         // // Initializing the Charts and Table
-        var result = Main_test( data.by.journal , "FirstScore" )
+        var result = Main_test( data.by.authors , "FirstScore" )
         console.log( result )
 
         $("#content_loader").remove()

@@ -137,13 +137,17 @@ em {
                       </div>
                         <!-- see in javascript function queries.functions['my_state_filter'] -->
                         <div class="pull-right" style="margin-top:2.1em;padding-left:1em;">
-                            Filter:
                             <select id="picklistmenu" name="my_state_filter">
-                              <option value='reset'>All terms</option>
+                              <option value='reset'>All lists</option>
                               <option value='0'>Candidates only</option>
                               <!-- <option value='1' selected="selected">Map terms only</option> -->
                               <option value='1'>Map terms only</option>
                               <option value='2'>Stopwords only</option>
+                            </select>
+                            <select id="picktermtype" name="my_termtype_filter" style="margin-left:1em;">
+                              <option value='reset'>All types</option>
+                              <option value='mono'>One word terms only</option>
+                              <option value='multi'>Multiword terms only</option>
                             </select>
                         </div>
                       </h4>

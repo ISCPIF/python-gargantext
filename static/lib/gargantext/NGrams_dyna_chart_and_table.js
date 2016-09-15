@@ -175,6 +175,98 @@ var corpusesList = {}
 
 
 // =============================================================================
+//                            CACHE MANAGEMENT
+// =============================================================================
+/**
+* a local cache to remember active filters and page after reload
+*   cf. saveParamsToCache()
+*       restoreSettingsFromCache()
+*
+*   TODO localStorage.clear() after expiry date
+*/
+
+window.onbeforeunload = saveParamsToCache;
+
+// always called at page close/quit
+// £TODO use url instead of corpusId+'/terms' as prefix
+function saveParamsToCache() {
+  var corpusId = getIDFromURL("corpora")
+
+  var search_filter_status = MyTable.data('dynatable').settings.dataset.queries['search']
+  var state_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
+  var type_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter']
+  // var page_status = document.getElementsByClassName("dynatable-page-link dynatable-active-page")[0].getAttribute("data-dynatable-page")
+  var per_page_status = MyTable.data('dynatable').settings.dataset.perPage
+
+  // keys and values are str only so we use path-like keys
+  if (search_filter_status) {
+    localStorage[corpusId+'/terms/search'] = search_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/search')
+  }
+
+  if (state_filter_status) {
+    localStorage[corpusId+'/terms/state'] = state_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/state')
+  }
+  if (type_filter_status) {
+    localStorage[corpusId+'/terms/type'] = type_filter_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/type')
+  }
+
+  // if (page_status) {
+  //   localStorage[corpusId+'/terms/page'] = page_status
+  // }
+  // else {
+  //   localStorage.removeItem(corpusId+'/terms/page')
+  // }
+
+  if (per_page_status) {
+    localStorage[corpusId+'/terms/perPage'] = per_page_status
+  }
+  else {
+    localStorage.removeItem(corpusId+'/terms/perPage')
+  }
+
+  return null;
+}
+
+// always called after MyTable init
+function restoreSettingsFromCache() {
+  var corpusId = getIDFromURL("corpora")
+  // var had_page = localStorage[corpusId+'/terms/page']
+  var had_type = localStorage[corpusId+'/terms/type']
+  var had_state = localStorage[corpusId+'/terms/state']
+  var had_search = localStorage[corpusId+'/terms/search']
+  var had_perPage = localStorage[corpusId+'/terms/perPage']
+  // if (had_page) {
+  //   MyTable.data('dynatable').paginationPage.set(had_page);
+  // }
+  if (had_type) {
+    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = had_type
+  }
+  if (had_state) {
+    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = had_state
+  }
+  if (had_search) {
+    MyTable.data('dynatable').settings.dataset.queries['search'] = had_search
+  }
+  if (had_perPage) {
+    MyTable.data('dynatable').paginationPerPage.set(had_perPage)
+  }
+
+  // re-process to makes the changes visible
+  MyTable.data('dynatable').process()
+  return null;
+}
+
+
+// =============================================================================
 //                  ELEMENT CONTROLLERS AND ROW PROCESSORS
 // =============================================================================
 // Get all projects and corpuses of the user
@@ -1816,6 +1908,10 @@ function GROUPCRUDS( groupnode_id , send_data, http_method , callback) {
  * @param ngdata: OriginalNG['records']
  * @param initial: initial score type "occs" or "tfidf"
  * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
+ *
+ * TODO replace by new @param filters (multiple) for all cached values
+ *      (would allow us to use them directly in settings instead of a posteriori
+ *       with restoreSettingsFromCache)
  */
 function MainTableAndCharts( ngdata , initial , search_filter) {
 
@@ -2130,8 +2226,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
                   // _cellWriter: customCellWriter
                 },
                 inputs: {
-                    queries: $('select#testquery'),
-                    queries: $('select#picklistmenu'),
+                    queries: $('select#picklistmenu, select#picktermtype'),
                 }
             })
 
@@ -2186,22 +2281,42 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // bind a filter named 'my_state_filter' to dynatable.queries.functions
     MyTable.data('dynatable').queries
         // selects on current state <=> shows only elements of specific list
-        // nb: possible value are in {0,1,2} (see terms.html > #picklistmenu)
+        // (see terms.html > #picklistmenu)
         .functions['my_state_filter'] = function(record,selectedValue) {
             if (selectedValue == 'reset') {
                 // return (AjaxRecords[record.id].state >= 0)
                 return true
             }
+            // for states, possible value are in {0,1,2}
             else {
-                // return true or false
-                return (AjaxRecords[record.id].state == selectedValue)
+              // return true or false
+              return (AjaxRecords[record.id].state == selectedValue)
             }
         }
 
-    // and set this filter's initial status to 'maplist' (aka state == 1)
-    // MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = 1 ;
+    // second filter named 'my_termtype_filter'
+    MyTable.data('dynatable').queries
+        .functions['my_termtype_filter'] = function(record,selectedValue) {
+            if (selectedValue == 'reset') {
+                return true
+            }
+            else if (selectedValue == 'mono') {
+                // one-word terms aka monograms aka monolexical terms
+                return (AjaxRecords[record.id]['name'].indexOf(" ") == -1)
+            }
+            else if (selectedValue == 'multi') {
+                // MWE aka multigrams aka polylexical terms
+                return (AjaxRecords[record.id]['name'].indexOf(" ") != -1)
+            }
+        }
+
+    // and set these filters' initial status
     MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
+    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = 'reset' ;
     MyTable.data('dynatable').process();
+
+    // £todo factorize with previous with a param search_filters
+    restoreSettingsFromCache(localStorage)
 
     // moves pagination over table
     if ( $(".imadiv").length>0 ) return 1;

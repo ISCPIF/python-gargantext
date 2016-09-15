@@ -81,17 +81,30 @@
                         <li>
                                 <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
                                     onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
-                                    data-target='#' href='#'>Documents
+                                    data-target='#' href='#'>
+                                    <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                                     &nbsp;Documents
                                 </a>
                         </li>
 
                         <li>
                                 <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
                                         onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
-                                        data-target='#' href='#'>Journals
+                                        data-target='#' href='#'>
+                                    <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+                                    Journals
                                 </a>
                         </li>
 
+                        <!--
+                        <li>
+                                <a type="button" class="btn btn-default {% if view == 'authors' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/authors'"
+                                        data-target='#' href='#'>Authors
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                </a>
+                        </li>
+                        --!>
 
                         {% for state in corpus.hyperdata.statuses %}
                             {% if state.action == "Workflow" %}
@@ -100,13 +113,16 @@
                                     <li>
                                         <a type="button" class="btn btn-default {% if view == 'terms' %} active {% endif %}"
                                             onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/terms'"
-                                            data-target='#' href='#'>Terms
+                                            data-target='#' href='#'>
+                                            <span class="glyphicon glyphicon-text-width" aria-hidden="true"></span>
+                                            Terms
                                         </a>
                                     </li>
 
 
                                     <li class="dropdown">
                                         <a href="#graph" role="button" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="That is your username">
+                                        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
                                         Graphs
                                         </a>
                                         <i class="caret"></i>
@@ -134,7 +150,10 @@
                                     <li>
                                             <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
                                                 onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
-                                                data-target='#' href='#'>Analytics
+                                                data-target='#' href='#'>
+                                                
+                                                <span class="glyphicon glyphicon-signal" aria-hidden="true"></span>
+                                                Analytics
                                             </a>
                                     </li>
 
@@ -246,7 +265,7 @@
             <p>
                 Gargantext
                 <span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>
-                , version 3.0.5,
+                , version 3.0.5.1,
                 <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">
                     Copyrights
                     <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span>

@@ -26,29 +26,39 @@
                     
                     <div class="col-md-5 content">
                         <li>
-                            Graph created at {{cooc.date}}
+                            {{cooc.date}}
                             {% for key, value in coocs_count.items %} 
                                 {% if key == cooc.id %}
                                     {% if value > 0 %}
-                                    with {{ value }} nodes :
                                     
                                     <ul>
                                     <!-- <li>{{cooc.id}}</li> --!>
-                                        <li>Start period: {% if not  cooc.hyperdata.start  %} begin of corpus {% else %} {{cooc.hyperdata.start}} {% endif %} </li>
-                                        <li>End period:   {% if not  cooc.hyperdata.end    %} end   of corpus {% else %} {{cooc.hyperdata.end}}   {% endif %} </li>
-                                        <li>Distances:
+                                        <li>From: {% if not  cooc.hyperdata.start  %} begin of corpus {% else %} {{cooc.hyperdata.start}} {% endif %} 
+                                            , To:   {% if not  cooc.hyperdata.end    %} end   of corpus {% else %} {{cooc.hyperdata.end}}   {% endif %} 
+                                        </li>
+                                        <li> {{ value }} nodes with distances:
                                             <ul>
-                                                <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                                Conditional with bridgeness
-                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">5</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
+                                                <li> 
+                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
+                                                <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                Conditional 
+                                                </a>
+                                                (with bridgeness
+                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
                                                                     or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
-                                                
-                                                <li> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                                Distributional with bridgeness
-                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">5</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=30">30</a>
+                                                            )
+                                                            </li>
+                                                <li> 
+                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
+                                                <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                Distributional 
+                                                </a>
+                                                (with bridgeness
+                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
                                                                     or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
+                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=30">30</a>
+                                                            )
                                                 </li>
                                             </ul>
                                     </ul>

@@ -1,6 +1,8 @@
 from django.conf.urls import url
 
 from . import nodes
+from . import projects
+from . import corpora
 from . import ngrams
 from . import metrics
 from . import ngramlists
@@ -10,7 +12,33 @@ from graph.rest import Graph
 urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()     )
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view()         )
               , url(r'^nodes/(\d+)/having$'   , nodes.NodeListHaving.as_view()       )
-
+              , url(r'^nodes/(\d+)/status$'   , nodes.Status.as_view()     )
+              #Projects
+              , url(r'^projects$'                , projects.ProjectList.as_view()     )
+              , url(r'^projects/(\d+)$'                , projects.ProjectView.as_view()     )
+              #?view=resource
+              #?view=docs
+              #Corpora
+              , url(r'^projects/(\d+)/corpora/(\d+)$' , corpora.CorpusView.as_view()     )
+              #?view=journal
+              #?view=title
+              #?view=analytics
+              #Sources
+              #, url(r'^projects/(\d+)/corpora/(\d+)/sources$' , corpora.CorpusSources.as_view()     )
+              #, url(r'^projects/(\d+)/corpora/(\d+)/sources/(\d+)$' , corpora.CorpusSourceView.as_view()     )
+              #Facets
+              , url(r'^projects/(\d+)/corpora/(\d+)/facets$' , nodes.CorpusFacet.as_view()     )
+              #Favorites
+              , url(r'^projects/(\d+)/corpora/(\d+)/favorites$', nodes.CorpusFavorites.as_view()      )
+              #Metrics
+              , url(r'^projects/(\d+)/corpora/(\d+)/metrics$', metrics.CorpusMetrics.as_view()      )
+              #GraphExplorer
+              , url(r'^projects/(\d+)/corpora/(\d+)/explorer$'      , Graph.as_view())
+                # data for graph explorer (json)
+                #                 GET /api/projects/43198/corpora/111107/explorer?
+                # Corresponding view is : /projects/43198/corpora/111107/explorer?
+                # Parameters (example):
+                # explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5&start=1996-6-1&end=2002-10-5
                # Ngrams
                , url(r'^ngrams/?$'             , ngrams.ApiNgrams.as_view()          )
 
@@ -63,10 +91,5 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
               , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view() )
                 # fast access to maplist, similarly formatted for termtable
 
-              , url(r'^projects/(\d+)/corpora/(\d+)/explorer$'      , Graph.as_view())
-                # data for graph explorer (json)
-                #                 GET /api/projects/43198/corpora/111107/explorer?
-                # Corresponding view is : /projects/43198/corpora/111107/explorer?
-                # Parameters (example):
-                # explorer?field1=ngrams&field2=ngrams&distance=conditional&bridgeness=5&start=1996-6-1&end=2002-10-5
+
               ]

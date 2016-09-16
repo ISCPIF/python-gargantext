@@ -209,16 +209,18 @@ function deleteOne(url){
               },
     success: function(xhr) {
       console.log("SUCCESS!");
-      msg = "Sucessfully deleted"
-      addPageStatus("success", "#editForm", msg);
+      //msg = "Sucessfully deleted"
+      //addPageStatus("success", "#editForm", msg);
+      window.location.reload()
        },
     error: function(xhr) {
       console.log("FAIL!");
-      console.log(xhr.status);
-      var status = xhr.status;
-      var info = xhr["detail"];
-      var msg = "ERROR deleting project"+ url
-      console.log(msg)
+      window.location.reload()
+      //console.log(xhr.status);
+      //var status = xhr.status;
+      //var info = xhr["detail"];
+      //var msg = "ERROR deleting project"+ url
+      //console.log(msg)
       //addPageStatus("info", msg);
       //window.location.reload();
       },
@@ -289,7 +291,7 @@ $(document).on("click","#delete", function(){
       selected.forEach(function(url) {
         deleteOne(url);
       });
-    window.location.reload();
+    //window.location.reload();
   });
 
 //EDIT MULTI
@@ -318,7 +320,7 @@ $(document).on("click","#recalculate", function(){
 $(document).on("click", ".delete", function() {
       var url = $( this ).data("url");
       deleteOne(url);
-      window.location.reload();
+      //window.location.reload();
 });
 
 //UNIQUE EDITION
@@ -328,6 +330,13 @@ $(document).on("click",".edit", function(){
     console.log(id)
     //newform.collapse("show");
     $('#editForm-'+id).collapse('toggle')
+
+    $(document).bind('keypress', function(e) {
+        if(e.keyCode==13){
+             $('#edit-submit-'+id).trigger('click');
+         }
+    });
+
     $("#edit-submit-"+id).on('click', function(){
       //alert(url)
 
@@ -340,6 +349,7 @@ $(document).on("click",".edit", function(){
       //alert("cancel")
       $('input#name-'+id).val("");
       resetStatusForm("#editForm-"+id);
+
     });
 
     $("button").on("click", ".edit", function(){

@@ -226,7 +226,7 @@ function deleteOne(url){
 
 };
 
-function editOne(url, data){
+function editOne(url, id, data){
     $.ajax({
     url: '/api'+url+"?"+jQuery.param(data),
     type: 'PUT',
@@ -236,7 +236,7 @@ function editOne(url, data){
     success: function(response) {
         console.log(response);
         console.log("EDIT SUCCESS!");
-        addFormStatus("success", "div#editForm", response["detail"]);
+        addFormStatus("success", "div#editForm-"+id, response["detail"]);
         window.location.reload()
          },
     error: function(xhr) {
@@ -244,7 +244,7 @@ function editOne(url, data){
         var status = xhr.status;
         var info = xhr.responseJSON["detail"];
         var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-        addFormStatus("error", "div#editForm", msg);
+        addFormStatus("error", "div#editForm-"+id, msg);
         },
     });
 };
@@ -328,28 +328,27 @@ $(document).on("click",".edit", function(){
     console.log(id)
     //newform.collapse("show");
     $('#editForm-'+id).collapse('toggle')
-    $("#edit-submit").on('click', function(){
+    $("#edit-submit-"+id).on('click', function(){
       //alert(url)
 
-      name = $("input#name_p").val()
+      name = $("input#name-"+id).val()
       data = {"name": name}
-      editOne(url, data);
-    })
-    $("#edit-cancel").on('click', function(){
+      editOne(url, id, data);
+      //window.location.reload();
+    });
+    $("#edit-cancel-"+id).on('click', function(){
       //alert("cancel")
       $('input#name_p').val("");
-      resetStatusForm("#editForm");
+      resetStatusForm("#editForm-"+id);
+    });
 
-
-    })
-    if ($("#editForm").hasClass("collapse in")){
-      $("button").on("click", ".edit", function(){
+    $("button").on("click", ".edit", function(){
         $('input#name_p').val("");
-        resetStatusForm("#editForm");
-      })
-    }
+        resetStatusForm("#editForm-"+id);
+    })
 
-  })
+})
+
 //UNIQUE RECALC
 $(document).on("click",".refresh", function(){
     alert(refresh)

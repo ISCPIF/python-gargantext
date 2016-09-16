@@ -30,6 +30,7 @@ def _query_nodes(request, node_id=None):
         user = cache.User[request.user.id]
 
     # parameters validation
+    # fixme: this validation does not allow custom keys in url (eg '?name=' for rename action)
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {
         'formated': {'type': str, 'required' : False, 'default': 'json'},
@@ -237,6 +238,46 @@ class NodeResource(APIView):
         session.commit()
         return JsonHttpResponse({'deleted': result.rowcount})
 
+    def post(self, request, node_id):
+        """
+        For the moment, only used to rename a node
+
+        params in request.GET:
+            none (not allowed by _query_nodes validation)
+
+        params in request.DATA:
+            ["name": the_new_name_str]
+
+        TODO 1 factorize with .projects.ProjectView.put and .post (thx c24b)
+        TODO 2 allow other changes than name
+        """
+        # contains a check on user.id (within _query_nodes)
+        parameters, query, count = _query_nodes(request, node_id)
+
+        the_node = query.pop()
+
+        # retrieve the name
+        if 'name' in request.data:
+            new_name = request.data['name']
+        else:
+            return JsonHttpResponse({
+                "detail":"A 'name' parameter is required in data payload"
+                }, 400)
+
+        # check for conflicts
+        other = session.query(Node).filter(Node.name == new_name).count()
+        if other > 0:
+            return JsonHttpResponse({
+                "detail":"A node with this name already exists"
+                }, 409)
+
+        # normal case: do the renaming
+        else:
+            setattr(the_node, 'name', new_name)
+            session.commit()
+            return JsonHttpResponse({
+                'renamed': new_name
+            }, 200)
 
 
 class CorpusFavorites(APIView):

@@ -338,12 +338,12 @@ $(document).on("click",".edit", function(){
     });
     $("#edit-cancel-"+id).on('click', function(){
       //alert("cancel")
-      $('input#name_p').val("");
+      $('input#name-'+id).val("");
       resetStatusForm("#editForm-"+id);
     });
 
     $("button").on("click", ".edit", function(){
-        $('input#name_p').val("");
+        $('input#name-'+id).val("");
         resetStatusForm("#editForm-"+id);
     })
 

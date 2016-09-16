@@ -29,3 +29,25 @@
     /* glyphicons are always rendered too high within bootstrap buttons */
     vertical-align:middle
 }
+
+
+/* graph name => editable input => submitName() => minimsg */
+.editable {
+    color: grey ;
+}
+
+#graphname-edit {
+    color: white;
+    background-color: transparent;
+    border: none;
+    max-width: 8em;
+}
+
+.minimsg {
+  font-size: .7em ;
+  padding: 7p0x 9px;
+}
+
+.minimsg * {
+  line-height: 100%;
+}

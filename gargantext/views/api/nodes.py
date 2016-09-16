@@ -1,6 +1,6 @@
 
 from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
-from gargantext.constants       import NODETYPES, DEFAULT_N_DOCS_HAVING_NGRAM
+from gargantext.constants       import NODETYPES
 from gargantext.util.db         import session, delete, func, bulk_insert
 from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
@@ -8,7 +8,7 @@ from gargantext.util.http       import ValidationException, APIView \
                                      , get_parameters, JsonHttpResponse, Http404\
                                      , HttpResponse
 
-
+from .api import *
 from collections import defaultdict
 
 import csv
@@ -66,6 +66,48 @@ def _query_nodes(request, node_id=None):
         ]
     # return the result!
     return parameters, query, count
+
+class Status(APIView):
+    '''API endpoint that represent the current status of the node'''
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer)
+    def get(self, request, node_id):
+        user = cache.User[request.user.id]
+        check_rights(request, node_id)
+        node = session.query(Node).filter(Node.id == node_id, Node.user_id== user.id).first()
+        if node is None:
+            return Response({"detail":"Node not Found for this user"}, status=HTTP_404_NOT_FOUND)
+        else:
+            context = format_response(node, [n for n in node.children()])
+            try:
+                context["status"] = node.hyperdata["statuses"]
+            except KeyError:
+                context["status"] = None
+            return Response(context)
+    def post(self, request, data):
+        '''create a new status for node'''
+        raise NotImplementedError
+    def put(self, request, data):
+        '''update status for node'''
+        user = cache.User[request.user.id]
+        check_rights(request, node_id)
+        node = session.query(Node).filter(Node.id == node_id).first()
+
+        raise NotImplementedError
+
+        #return Response({"detail":"Udpated status for NODE #%i " %node.id}, status=HTTP_202_ACCEPTED)
+
+    def delete(self, request):
+        '''delete status for node'''
+        user = cache.User[request.user.id]
+        check_rights(request, node_id)
+        node = session.query(Node).filter(Node.id == node_id).first()
+        if node is None:
+            return Response({"detail":"Node not Found"}, status=HTTP_404_NOT_FOUND)
+        node.hyperdata["status"] = []
+        session.add(node)
+        session.commit()
+        return Response({"detail":"Deleted status for NODE #%i " %node.id}, status=HTTP_204_NO_CONTENT)
+
 
 
 class NodeListResource(APIView):
@@ -143,8 +185,6 @@ class NodeListHaving(APIView):
     Simple implementation:
     Takes IDs of corpus and ngram and returns list of relevent documents in json format
     according to TFIDF score (order is decreasing).
-
-    2016-09: add total counts to output json
     '''
     def get(self, request, corpus_id):
         parameters = get_parameters(request)
@@ -155,7 +195,7 @@ class NodeListHaving(APIView):
         except :
             raise ValidationException('"ngram_ids" needs integers separated by comma.')
 
-        limit = DEFAULT_N_DOCS_HAVING_NGRAM
+        limit=5
         nodes_list = []
 
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
@@ -178,18 +218,26 @@ class NodeListHaving(APIView):
             .filter(Node.typename == 'DOCUMENT', Node.parent_id== corpus.id)
             .filter(or_(*[NodeNodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
             .group_by(Node)
+            .order_by(func.sum(NodeNodeNgram.score).desc())
+            .limit(limit)
         )
-
-        # get the total count before applying limit
-        nodes_count = nodes_query.count()
-
-        # now the query with the limit
-        nodes_results_query = (nodes_query
-                                .order_by(func.sum(NodeNodeNgram.score).desc())
-                                .limit(limit)
-                            )
-
-        for node, score in nodes_results_query:
+        # print("\n")
+        # print("in TFIDF:")
+        # print("\tcorpus_id:",corpus_id)
+        # convert query result to a list of dicts
+#         if nodes_query is None:
+#             print("TFIDF error, juste take sums")
+#             nodes_query = (session
+#                 .query(Node, func.sum(NodeNgram.weight))
+#                 .join(NodeNgram, NodeNgram.node_id == Node.id)
+#                 .filter(Node.parent_id == corpus_id)
+#                 .filter(Node.typename == 'DOCUMENT')
+#                 .filter(or_(*[NodeNgram.ngram_id==ngram_id for ngram_id in ngram_ids]))
+#                 .group_by(Node)
+#                 .order_by(func.sum(NodeNgram.weight).desc())
+#                 .limit(limit)
+#             )
+        for node, score in nodes_query:
             print(node,score)
             print("\t corpus:",corpus_id,"\t",node.name)
             node_dict = {
@@ -201,10 +249,7 @@ class NodeListHaving(APIView):
                     node_dict[key] = node.hyperdata[key]
             nodes_list.append(node_dict)
 
-        return JsonHttpResponse({
-                                    'count': nodes_count,
-                                    'records': nodes_list
-                                })
+        return JsonHttpResponse(nodes_list)
 
 
 
@@ -438,8 +483,7 @@ class CorpusFacet(APIView):
         # check that the hyperfield parameter makes sense
         _facet_available_subfields = [
             'journal', 'publication_year', 'rubrique',
-            'language_iso2', 'language_iso3', 'language_name',
-            'authors'
+            'language_iso2', 'language_iso3', 'language_name'
         ]
         parameters = get_parameters(request)
 

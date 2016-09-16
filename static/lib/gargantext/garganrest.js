@@ -64,6 +64,9 @@ var Resource = function(url_path) {
             success: callback
         });
     };
+    // TODO allow also POST with params
+    // TODO this.post function(id, criteria OR params, callback)
+
     // change an item
     this.change = this.update = function(id, callback) {
         $.ajax({

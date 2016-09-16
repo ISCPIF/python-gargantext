@@ -22,7 +22,13 @@ _node_available_types = NODETYPES
 
 
 def _query_nodes(request, node_id=None):
-    user = cache.User[request.user.id]
+
+    if request.user.id is None:
+        raise TypeError("This API request must come from an authenticated user.")
+    else:
+        # we query among the nodes that belong to this user
+        user = cache.User[request.user.id]
+
     # parameters validation
     parameters = get_parameters(request)
     parameters = validate(parameters, {'type': dict, 'items': {
@@ -210,7 +216,7 @@ class NodeListHaving(APIView):
 
 class NodeResource(APIView):
 
-    # TODO either real authentification test or remove check on user.id
+    # contains a check on user.id (within _query_nodes)
     def get(self, request, node_id):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
@@ -220,6 +226,7 @@ class NodeResource(APIView):
             field: getattr(node, field) for field in parameters['fields']
         })
 
+    # contains a check on user.id (within _query_nodes)
     def delete(self, request, node_id):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):

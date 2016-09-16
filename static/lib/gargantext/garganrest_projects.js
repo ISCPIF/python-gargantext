@@ -331,11 +331,11 @@ $(document).on("click",".edit", function(){
     //newform.collapse("show");
     $('#editForm-'+id).collapse('toggle')
 
-    $(document).bind('keypress', function(e) {
-        if(e.keyCode==13){
-             $('#edit-submit-'+id).trigger('click');
-         }
-    });
+    // $(document).bind('keypress', function(e) {
+    //     if(e.keyCode==13){
+    //          $('#edit-submit-'+id).trigger('click');
+    //      }
+    // });
 
     $("#edit-submit-"+id).on('click', function(){
       //alert(url)
@@ -376,7 +376,7 @@ function createProject() {
     //onclick inside element because probleme of scope with modal
     //we recover the element by hand for the moment
     var project_name = $(".popover #inputName").val();
-    //alert(project_name);
+    alert(project_name);
     console.log("Create project #"+project_name);
     console.log("POST /api/projects");
     $.ajax({
@@ -393,6 +393,7 @@ function createProject() {
             location.reload();
              },
         error: function(data) {
+            alert(data)
             console.log(data)
             status = data.status;
             info = data.responseJSON["detail"];

@@ -169,12 +169,11 @@
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
 <script type="text/javascript">
     getProjects();
-    $(document).bind('keypress', function(e) {
-            if(e.keyCode==13){
-                 $('#createProject').trigger('click');
-             }
-        });
-
+    // $(document).on("input#inoutName").bind('keypress', function(e) {
+    //         if(e.keyCode==13){
+    //              $('#createProject').trigger('click');
+    //          }
+    //     });
     $(document).on("click","#createProject", function(e){
       //alert("clicked");
       //

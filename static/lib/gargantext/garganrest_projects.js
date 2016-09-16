@@ -99,6 +99,7 @@ function addPageStatus(status, msg){
 }
 
 function selectedUrls(){
+
   var selected = [];
   $('input:checked').each(function() {
       selected.push($(this).val());
@@ -285,6 +286,22 @@ $(document).on("hover", "button", function(){
 });
 //MULTIPLE SELECTION ACTION
 // checkbox with BUTTON #delete, #edit #refresh
+
+//Activate editor bar
+$(document).on('change', 'input[type=checkbox]', function() {
+  if ($("input:checkbox:checked").length > 0){
+    if (! $("#editor").hasClass("collapse in")){
+      $("#editor").collapse("show");
+    }
+  }
+
+  else{
+    if ($("#editor").hasClass("collapse in")){
+      $("#editor").collapse("hide");
+    }
+  }});
+
+
 //DELETE MULTI
 $(document).on("click","#delete", function(){
       var selected = selectedUrls();

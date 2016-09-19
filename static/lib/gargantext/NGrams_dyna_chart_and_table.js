@@ -198,6 +198,11 @@ function saveParamsToCache() {
   // var page_status = document.getElementsByClassName("dynatable-page-link dynatable-active-page")[0].getAttribute("data-dynatable-page")
   var per_page_status = MyTable.data('dynatable').settings.dataset.perPage
 
+  // ex: {'name':1} or {'score':-1}
+  var sorting_obj = MyTable.data('dynatable').settings.dataset.sorts
+  var sort_type_status = Object.keys(sorting_obj).pop()
+  var sort_direction_status = sorting_obj[sort_type_status]
+
   // keys and values are str only so we use path-like keys
   if (search_filter_status) {
     localStorage[corpusId+'/terms/search'] = search_filter_status
@@ -207,9 +212,11 @@ function saveParamsToCache() {
   }
 
   if (state_filter_status) {
+    // console.warn("state_filter_status is set")
     localStorage[corpusId+'/terms/state'] = state_filter_status
   }
   else {
+    // console.warn("state_filter_status is NOT set")
     localStorage.removeItem(corpusId+'/terms/state')
   }
   if (type_filter_status) {
@@ -219,19 +226,11 @@ function saveParamsToCache() {
     localStorage.removeItem(corpusId+'/terms/type')
   }
 
-  // if (page_status) {
-  //   localStorage[corpusId+'/terms/page'] = page_status
-  // }
-  // else {
-  //   localStorage.removeItem(corpusId+'/terms/page')
-  // }
+  localStorage[corpusId+'/terms/perPage'] = per_page_status
+  // localStorage[corpusId+'/terms/page'] = page_status
 
-  if (per_page_status) {
-    localStorage[corpusId+'/terms/perPage'] = per_page_status
-  }
-  else {
-    localStorage.removeItem(corpusId+'/terms/perPage')
-  }
+  localStorage[corpusId+'/terms/sortType'] = sort_type_status
+  localStorage[corpusId+'/terms/sortDirection'] = sort_direction_status
 
   return null;
 }
@@ -244,6 +243,8 @@ function restoreSettingsFromCache() {
   var had_state = localStorage[corpusId+'/terms/state']
   var had_search = localStorage[corpusId+'/terms/search']
   var had_perPage = localStorage[corpusId+'/terms/perPage']
+  var had_sortType = localStorage[corpusId+'/terms/sortType']
+  var sortDirection = localStorage[corpusId+'/terms/sortDirection']
   // if (had_page) {
   //   MyTable.data('dynatable').paginationPage.set(had_page);
   // }
@@ -258,6 +259,11 @@ function restoreSettingsFromCache() {
   }
   if (had_perPage) {
     MyTable.data('dynatable').paginationPerPage.set(had_perPage)
+  }
+  if (had_sortType) {
+    MyTable.data('dynatable').sorts.clear();
+    MyTable.data('dynatable').sorts.add(had_sortType, sortDirection)
+    console.log("added sort",had_sortType)
   }
 
   // re-process to makes the changes visible

@@ -76,10 +76,13 @@
                                 <i class="caret"></i>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a tabindex="-1" target="blank" href="http://www.iscpif.fr/gargantext-feedback-and-bug-report/" 
-                                        title="Send us a message (bug, thanks, congrats...)">
+                                <li><a 
+                                        tabindex="-1" target="blank" title="Send us a message (bug, thanks, congrats...)" 
+                                        href='http://www.iscpif.fr/gargantext-feedback-and-bug-report/' >
+                                        
                                         <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
                                         Report Feedback
+                                    
                                     </a>
                                 </li>
                                 <li class="divider"></li>
@@ -91,7 +94,10 @@
                                         Logout
                                     </a></li>
                                 {% else %}
-                                <li><a tabindex="-1" href="/auth/login">Login</a></li>
+                                <li><a tabindex="-1" href="/auth/login">
+                                        <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+                                        Login
+                                    </a></li>
                                 {% endif %}
                             </ul>
                         </li>

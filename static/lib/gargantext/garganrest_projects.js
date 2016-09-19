@@ -99,6 +99,7 @@ function addPageStatus(status, msg){
 }
 
 function selectedUrls(){
+
   var selected = [];
   $('input:checked').each(function() {
       selected.push($(this).val());
@@ -194,7 +195,7 @@ function getCorpora(){
 function getRessources(){
   var pathname = window.location.pathname;
   url_ = "/api"+pathname+"/resources"
-  alert(url_)
+  //alert(url_)
 }
 //// POST TO API
 
@@ -285,6 +286,22 @@ $(document).on("hover", "button", function(){
 });
 //MULTIPLE SELECTION ACTION
 // checkbox with BUTTON #delete, #edit #refresh
+
+//Activate editor bar
+$(document).on('change', 'input[type=checkbox]', function() {
+  if ($("input:checkbox:checked").length > 0){
+    if (! $("#editor").hasClass("collapse in")){
+      $("#editor").collapse("show");
+    }
+  }
+
+  else{
+    if ($("#editor").hasClass("collapse in")){
+      $("#editor").collapse("hide");
+    }
+  }});
+
+
 //DELETE MULTI
 $(document).on("click","#delete", function(){
       var selected = selectedUrls();
@@ -331,11 +348,11 @@ $(document).on("click",".edit", function(){
     //newform.collapse("show");
     $('#editForm-'+id).collapse('toggle')
 
-    $(document).bind('keypress', function(e) {
-        if(e.keyCode==13){
-             $('#edit-submit-'+id).trigger('click');
-         }
-    });
+    // $(document).bind('keypress', function(e) {
+    //     if(e.keyCode==13){
+    //          $('#edit-submit-'+id).trigger('click');
+    //      }
+    // });
 
     $("#edit-submit-"+id).on('click', function(){
       //alert(url)
@@ -361,7 +378,7 @@ $(document).on("click",".edit", function(){
 
 //UNIQUE RECALC
 $(document).on("click",".refresh", function(){
-    alert(refresh)
+    //alert(refresh)
       //console.log( $(this))
       var id = $(this).data("id")
       //var url = $( this ).data("url")
@@ -393,6 +410,7 @@ function createProject() {
             location.reload();
              },
         error: function(data) {
+            //alert(data)
             console.log(data)
             status = data.status;
             info = data.responseJSON["detail"];
@@ -403,8 +421,8 @@ function createProject() {
 };
 
 function createCorpus(url, method, form){
-    alert(method)
-    alert(url)
+    //alert(method)
+    //alert(url)
     console.log(form)
     console.log("POST corpus")
     $.ajax({
@@ -437,7 +455,7 @@ function createCorpus(url, method, form){
             status = data.status;
             info = data.responseJSON["detail"];
             msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-            alert(msg)
+            //alert(msg)
             addFormStatus("error","form#formCorpus", msg);
             //$(".collapse").collapse("hide");
             //_content = '<h2><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>Error while creating the corpus.</h2>'

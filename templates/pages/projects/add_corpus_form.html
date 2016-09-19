@@ -1,0 +1,90 @@
+<div class ="container">
+    <div id="addform" class="row collapse">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <center>
+            <div class="panel panel-info">
+            <div class="panel-heading">Add a corpus</div>
+            <div class="panel-body">
+                <form id="form" class="add" role="form" action="/project/{{ project_id }}/" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                <div id="radioBtn" class="btn-group">
+    					<a id="parse" class="btn btn-info active" data-toggle="method" data-title="parse">
+                        <span class="glyphicon glyphicon-download-alt" aria-hidden="true" > UPLOAD</span>
+                        </a>
+                        <div class="btn">
+                         OR
+                        </div>
+    					<a id="scan" class="btn btn-info notActive" data-toggle="method" data-title="scan">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true" >   SEARCH</span>
+                        </a>
+                </div>
+                <br />
+                <br />
+
+
+                 <div class="form-group" for="corpus_name">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name"/>
+                    <span class="help-block collapse" for="name">This field is required.</span>
+                </div>
+
+                <div id="source-group">
+                <label for="source">Select a database</label>
+
+                <select id="source" name="source" required>
+
+                    <option value=""> Select a database &dArr; </option>
+                {% for element in ressources %}
+                    {% if element.parser != None  and element.crawler != None %}
+                    <option value="{{element.type}}" data-parser ="true" data-crawler="true"  data-format={{element.file_formats|join:","}}>{{element.name}}</option>
+                    {% elif element.parser != None  and element.crawler == None %}
+                    <option value="{{element.type}}" data-parser ="true" data-crawler="false"  data-format ={{element.file_formats| join:","}}>{{element.name}}</option>
+                    {% elif element.parser == None  and element.crawler != None %}
+                    <option value="{{element.type}}" data-parser ="false" data-crawler="true"  data-format ={{element.file_formats|join:","}}>{{element.name}}</option>
+                    {%else%}
+                    <option value="{{element.type}}" data-parser ="false" data-crawler="false"  data-format ={{element.file_formats|join:","}}>{{element.name}}</option>
+                    {% endif %}
+                {% endfor %}
+                </select>
+                <span class="help-block collapse" for="source">This field is required</span>
+                </div>
+
+                <br />
+
+                <div id="parser" class="form-group">
+                    <input type="file" id="file"  data-validation="mime size" data-validation-allowing="csv, txt, xml, zip" data-validation-max-size="1M" name="file" class="form-control-file" accept="text/*,application/xml, application/zip">
+                    <span class="help-block collapse" for="file" class="danger">This field is required</span>
+
+                </div>
+                <br />
+                <div id="crawler" class="form-group">
+
+                    <label for="query">Query:</label>
+
+                    <textarea id="query" type="input" name="query" class="form-control col-xs-12"></textarea>
+                    <span class="help-block collapse" for="id_query" class="danger">This field is required</span>
+
+
+                    <br>
+
+                </div>
+                <br />
+
+                <div class="form-group" id="btnsubmit">
+
+                    <button type="button" id="create" class="btn btn-info" >
+                        Add corpus
+                    </button>
+
+                </div>
+                </form>
+                <span id="simpleloader"></span>
+            </div>
+            </div>
+            </center>
+        </div>
+
+        <div class="col-md-3"></div>
+        </div>
+</div>

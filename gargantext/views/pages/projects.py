@@ -64,10 +64,14 @@ class NewCorpusForm(forms.Form):
     source_list.insert(0, (0,"Select a database below"))
     type = forms.ChoiceField(
         choices = source_list,
-        widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
+        widget = forms.Select(attrs={ 'onchange' :'CustomForSelect(this.value); checkReady()'})
     )
-    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
-    file = forms.FileField()
+    name = forms.CharField( label='Name', max_length=199 ,
+        widget = forms.TextInput(attrs={ 'required': 'true', 'onkeyup':'checkReady()' })
+    )
+    file = forms.FileField(
+        widget = forms.FileInput(attrs={ 'onchange':'checkReady()' })
+    )
     def clean_resource(self):
         file_ = self.cleaned_data.get('file')
     def clean_file(self):

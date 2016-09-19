@@ -94,7 +94,6 @@
                                         </a>
                                     </div>
                                     <div class="col-md-3 content">
-                                        <!--  -->
                                         {% for state in corpus.hyperdata.statuses %}
                                             {% ifequal state.action "Workflow" %}
                                                 {% if state.complete %}
@@ -162,7 +161,7 @@
                                                                 </div>
 
                                                                 {% for state in corpus.hyperdata.statuses %}
-                                                                <!-- {% if state.action != "Workflow" %} --!>
+                                                                <!-- {% if state.action != "Workflow" %} -->
                                                                       <div class=" progress-bar progress-bar-striped
                                                                                         {% if state.complete %}
                                                                                             progress-bar-success
@@ -179,7 +178,7 @@
 
                                                                               </span>
                                                                       </div>
-                                                                      <!-- {% endif %} --!>
+                                                                      <!-- {% endif %} -->
                                                                 {% endfor %}
                                                             </div>
                                                         {% endif %}
@@ -255,17 +254,16 @@
                                             <tr>
                                                 <th></th>
                                                 <td>
-                                                    <div id="pubmedcrawl" style="visibility: hidden;">
+                                                    <div id="div-fileornot" style="visibility: hidden;">
                                                         Do you have a file already? &nbsp;
-                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked> Yes </input>
-                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false"> No </input>
+                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);checkReady()" class="file1" value="true" checked> Yes </input>
+                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);checkReady()" class="file1" value="false"> No </input>
                                                     </div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </form>
                                     <div class="modal-footer">
-                                        <!-- <div id="pubmedcrawl" align="right" style="visibility: hidden;"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div> -->
                                         <button type="button" class="btn btn-default" data-dismiss="modal">
                                             <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
                                             Close
@@ -319,7 +317,7 @@
                             }
                             return cookieValue;
                         }
-                        
+
                         var thequeries = [] ;
 
                         // load the template's value for N scan size
@@ -364,6 +362,31 @@
                                         console.log("in doTheQuery(). Data not found");
                                     }
                             });
+                        }
+
+                        function checkReady() {
+                          // checks if we allow [submit]
+                          // *after* any modification
+                          // in the form "Add a corpus"
+
+                          var type = $("#id_type").val()
+
+                          // 5 booleans
+                          var nameField = $("#id_name").val()!=""
+                          var typeField = (type!="") && (type!="0")
+                          var fileField = $("#id_file").val()!=""
+                          var wantfileField = $("#file_yes").prop("checked")
+                          var crawling = ((type==3)||(type==8)||(type==9)) && ! wantfileField
+
+                          // console.warn("bool nameField",nameField)
+                          // console.warn("bool typeField",typeField)
+                          // console.warn("bool fileField",fileField)
+                          // console.warn("bool wantfileField",wantfileField)
+                          // console.warn("bool crawling",crawling)
+
+                          if (! crawling) {
+                              $("#submit_thing").prop('disabled' , !(nameField && typeField && fileField))
+                          }
                         }
 
                         function bringDaNoise() {
@@ -512,8 +535,6 @@
 
                                       N = data["results_nb"]
 
-
-
                                       if(N > 0) {
                                           if (N <= {{query_size}}){
                                             $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
@@ -540,7 +561,7 @@
                                           $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
                                           if(data[0]==false)
                                           $("#theresults").html(theType +" connection error!</i><br>")
-                                          $('#submit_thing').prop('disabled', false);
+                                          $('#submit_thing').prop('disabled', true);
                                       }
 
                                   },
@@ -565,7 +586,7 @@
                                 $("#id_name").attr("placeholder", "");
                                 $("#scanpubmed").html("")
                                 $("#theresults").html("")
-                                $('#submit_thing').prop('disabled', false);
+                                // $('#submit_thing').prop('disabled', false); // cf. checkReady
                                 $( "#id_name" ).on('input',null);
                                 $("#submit_thing").html('<span class="glyphicon glyphicon-ok" aria-hidden="true" ></span> Process this!')
                             }
@@ -590,25 +611,31 @@
 
                         //CSS events for changing the Select element
 
-                        function CustomForSelect( selected ) {
-
+                        function CustomForSelect( selectedId ) {
                             // show Radio-Inputs and trigger FileOrNotFile>@upload-file events
 
-                            selectedId = $("#id_type").val()
-                            //alert(selectedId);
-                              //by typeID 3 = PUBMED 8 = ISTEX 9 = CERN
+                            // selectedId = $("#id_type").val()
+                            console.log("selected:", selectedId);
+
+                            // by typeID: 3 = PUBMED, 8 = ISTEX, 9 = CERN
                             if(selectedId =="3" || selectedId == "8" || selectedId == "9") {
-                                console.log("show the button for: " + selected)
-                                $("#pubmedcrawl").css("visibility", "visible");
-                                $("#pubmedcrawl").show();
+                                console.log("show the button for: " + selectedId)
+                                $("#div-fileornot").css("visibility", "visible");
+                                $("#div-fileornot").show();
 
                                 //$("#file_yes").click();
                                 $("#submit_thing").html("Process this!")
+
+                                // (todo factorize)
+                                // if not crawling, the submit_thing
+                                //   will be enabled by checkReady()
+                                // if crawling, submit_thing
+                                //   will be enabled by getGlobalResults()
                             }
                             // hide Radio-Inputs and trigger @upload-file events
                             else {
                                 console.log("hide the button")
-                                $("#pubmedcrawl").css("visibility", "hidden");
+                                $("#div-fileornot").css("visibility", "hidden");
                                 $("#id_file").show()
                                 $('label[for=id_file]').show();
                                 FileOrNotFile( "true" )

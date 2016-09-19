@@ -1,10 +1,46 @@
+"""
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
+
+
+abstract:
+---------
+         something between global params, constants,
+         configuration variables, ini file...
+
+
+contents:
+---------
+
+      + db constants/ontology
+         - nodetypes
+            (db int <=> named types <=> python code)
+
+      + input low-level limits
+         - query size
+         - max upload size
+         - doc parsing batch size
+         - word extraction batch size
+
+      + process config
+         - resourcetypes config (~ input ontology)
+         - wordlist generation params
+         - graph creation params
+         - £TODO sequence of transformations "custom pipeline"
+
+      + input process subclasses/subroutines
+         - crawling, import
+         - tagger services and functions
+         - parser services
+         - stemmer services
+
+"""
+import os
+import re
 import importlib
 from gargantext.util.lists import *
 from gargantext.util.tools import datetime, convert_to_date
-import re
-
+from .settings import BASE_DIR
 
 # types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
 LISTTYPES = {
@@ -330,8 +366,6 @@ DEFAULT_CSV_DELIM_GROUP        = '|&|'
 
 
 # Files ----------------------------------------------------------------
-import os
-from .settings import BASE_DIR
 # uploads/.gitignore prevents corpora indexing
 # copora can be either a folder or symlink towards specific partition
 UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')

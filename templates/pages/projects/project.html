@@ -18,6 +18,11 @@
     .ui-autocomplete .ui-menu-item {
         font-size:x-small;
     }
+
+    .statusinfo {
+        margin-top: .3em;
+        color: grey ;
+    }
 </style>
 {% endblock %}
 
@@ -93,7 +98,7 @@
                                             {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
                                         </a>
                                     </div>
-                                    <div class="col-md-3 content">
+                                    <div class="col-md-3 content"  id="corpus_{{corpus.id}}_tools">
                                         {% for state in corpus.hyperdata.statuses %}
                                             {% ifequal state.action "Workflow" %}
                                                 {% if state.complete %}
@@ -104,13 +109,11 @@
                                                         </button>
                                                     </a>
 
-                                                    <button type="button" class="btn btn-default yopla" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
                                                         data-content="
                                                         <ul>
                                                             <li
-                                                            onclick=&quot;
-                                                                    garganrest.metrics.update({{corpus.id}}, function(){alert('The corpus ({{corpus.name|escapejs}}) was updated')});
-                                                                    &quot;>
+                                                            onclick=&quot;updateCorpus({{corpus.id}})&quot;>
                                                                 <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
                                                             </li>
                                                         </ul>
@@ -139,7 +142,7 @@
                                             {% endifequal %}
                                         {% endfor %}
                                     </div>
-                                    <div class="col-md-3 content">
+                                    <div class="col-md-3 content" id="corpus_{{corpus.id}}_status">
                                         {% for state in corpus.hyperdata.statuses %}
                                                 {% ifequal state.action "Workflow" %}
                                                     {% if state.complete %}
@@ -752,6 +755,26 @@
                                     }
                                 });
                             }
+
+                        function updateCorpus(corpusId) {
+                          // show 'waiting'
+                          var statusDiv = document.getElementById("corpus_"+corpusId+"_status")
+                          var previousStatus = statusDiv.innerHTML
+                          statusDiv.innerHTML = '<img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>'
+
+                          // REST and callback
+                          garganrest.metrics.update(corpusId, function(){
+                            statusDiv.innerHTML = '<div class="statusinfo">Corpus updated</div>'
+
+                            // revert visual
+                            setTimeout(function(){ statusDiv.innerHTML = previousStatus }, 2000);
+                          })
+
+                        }
+
+
+
+
                             {% if donut %}
                             // Morris Donut Chart
                             Morris.Donut({
@@ -769,6 +792,7 @@
                                 formatter: function (y) { return y + "%" }
                             });
                             {% endif %}
+
                         $('#wait').on('hidden.bs.modal', function (e) {
                           // reload page when dismiss the info box
                           window.location.reload()

@@ -5,8 +5,10 @@
         <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
         <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
+
         {% block css %}
         {% endblock %}
+
     </head>
 
     <body>
@@ -45,8 +47,26 @@
                             </a>
                         </li>
                         {% endif %}
-                    </ul>
 
+                        {% if view == "graph" %}
+                        <li id="graph-rename" style="padding:15">
+                          <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                          <span id="graph-name" class="editable" ondblclick="makeEditable(this)">
+                            Name your graph
+                          </span>
+                        </li>
+                        <li style="padding:15">
+                          <button class="hide" onclick="submitName(this)"></button>
+                          <!-- £TODO put styles in a separate css file -->
+                          <div id="handmade-popover" class="hide popover right" style="height: 42px; top:4px; min-width:100px; width:135px; display:block">
+                            <div class="arrow"></div>
+                            <div id="handmade-popover-content" class="minimsg popover-content">
+                                Submitting...
+                            </div>
+                          </div>
+                        </li>
+                        {% endif %}
+                    </ul>
                     <ul class="nav pull-right">
                         <li class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
@@ -104,7 +124,7 @@
                                     <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
                                 </a>
                         </li>
-                        --!>
+                        -->
 
                         {% for state in corpus.hyperdata.statuses %}
                             {% if state.action == "Workflow" %}
@@ -151,7 +171,7 @@
                                             <a type="button" class="btn btn-default {% if view == 'analytics' %} active {% endif %}"
                                                 onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/analytics'"
                                                 data-target='#' href='#'>
-                                                
+
                                                 <span class="glyphicon glyphicon-signal" aria-hidden="true"></span>
                                                 Analytics
                                             </a>
@@ -298,6 +318,7 @@
         <script type="text/javascript" src="{% static "lib/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
 
         <script type="text/javascript">
+            // initializes the popover elements with jquery
             $(function () { $("[data-toggle='popover']").popover({
                 html: true,
                 title: function() {
@@ -346,8 +367,15 @@
 
 
 
+        {% if view == "graph" %}
+        <!-- garganrest could be used here to update node's names if we add POST -->
+        <script type="text/javascript" src="{% static "lib/gargantext/garganrest.js" %}"></script>
+        <!-- Graph renaming (load after garganrest)-->
+        <script type="text/javascript" src="{% static "lib/gargantext/graph_renamer.js" %}"></script>
+        {% endif %}
 
         {% if debug == False %}
+
         <!-- Piwik -->
         <script type="text/javascript">
             var _paq = _paq || [];

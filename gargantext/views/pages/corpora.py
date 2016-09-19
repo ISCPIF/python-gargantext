@@ -28,6 +28,8 @@ def docs_by_titles(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
+
+    source_type = corpus.resources()[0]['type']
     # response!
     return render(
         template_name = 'pages/corpora/titles.html',
@@ -37,7 +39,7 @@ def docs_by_titles(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'titles',
             'user': request.user
         },
@@ -56,6 +58,8 @@ def docs_by_journals(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
+    source_type = corpus.resources()[0]['type']
+
     # rendered page : journals.html
     return render(
         template_name = 'pages/corpora/journals.html',
@@ -65,7 +69,7 @@ def docs_by_journals(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'journals'
         },
     )
@@ -83,6 +87,8 @@ def docs_by_authors(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
+    source_type = corpus.resources()[0]['type']
+
     # rendered page : journals.html
     return render(
         template_name = 'pages/corpora/authors.html',
@@ -92,7 +98,7 @@ def docs_by_authors(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'authors'
         },
     )
@@ -103,6 +109,9 @@ def analytics(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
+
+    source_type = corpus.resources()[0]['type']
+
     # response!
     return render(
         template_name = 'pages/analytics/histories.html',
@@ -112,7 +121,7 @@ def analytics(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user
         },

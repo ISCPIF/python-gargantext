@@ -119,10 +119,8 @@ INDEXED_HYPERDATA = {
 # resources ---------------------------------------------
 def get_resource(sourcetype):
     '''resource :: type => resource dict'''
-    for n in RESOURCETYPES:
-        if int(n["type"]) == int(sourcetype):
-            return n
-    return None
+    return RESOURCETYPES[sourcetype-1]
+
 def get_resource_by_name(sourcename):
     '''resource :: name => resource dict'''
     for n in RESOURCETYPES:

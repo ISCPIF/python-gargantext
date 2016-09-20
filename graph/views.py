@@ -61,14 +61,20 @@ def myGraphs(request, project_id, corpus_id):
     coocs_count = dict()
     for cooc in coocs:
         # FIXME : approximativ number of nodes (not exactly what user sees in explorer)
-        cooc_nodes = (session.query(Ngram.id)
+        # Need to be connected with Graph Clustering
+        cooc_nodes = (session.query(Ngram.id,func.count(Ngram.id))
                              .join(NodeNgramNgram, NodeNgramNgram.ngram1_id == Ngram.id)
                              .filter(NodeNgramNgram.node_id==cooc.id)
-                             .filter(NodeNgramNgram.weight > 0)
+                             .filter(NodeNgramNgram.weight >= 1)
+                             .group_by(Ngram.id)
                              .all()
                      )
 
-        coocs_count[cooc.id] = len(set(cooc_nodes))
+        #for n in cooc_nodes:
+        #    print(n)
+
+        #coocs_count[cooc.id] = len(cooc_nodes)
+        coocs_count[cooc.id] = len([cooc_node for cooc_node in cooc_nodes if cooc_node[1] > 1])
 
     return render(
         template_name = 'pages/corpora/myGraphs.html',

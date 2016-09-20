@@ -50,6 +50,9 @@
 
       /*
       * Universal text selection
+      *
+      * "universal" <=> (Chrome, Firefox, IE, Safari, Opera...)
+      *                 cf. quirksmode.org/dom/range_intro.html
       */
       function getSelected() {
           if (window.getSelection) {
@@ -68,18 +71,20 @@
           return false;
       }
       // we only need one singleton at a time
+      // (<=> is only called once per doc, but value of annotation changes)
       var selection = getSelected();
 
       /*
-      * When mouse selection is started, we highlight it
+      * When mouse selection was started, this used to grey out the text panel
       */
-      function toggleSelectionHighlight(text) {
-        if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
-          $(".text-panel").addClass("selection");
-        } else {
-          $(".text-panel").removeClass("selection");
-        }
-      }
+      // function toggleSelectionChangePanelClass(text) {
+      //   // if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
+      //   if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
+      //     $(".text-panel").addClass("selection");
+      //   } else {
+      //     $(".text-panel").removeClass("selection");
+      //   }
+      // }
 
       /*
       * Dynamically construct the selection menu scope
@@ -107,10 +112,11 @@
             $scope.selection_text = angular.copy(annotation);
 
             // debug
+            // console.log("toggleMenu with context:", context) ;
+            // console.log("toggleMenu with annotation: '" + JSON.stringify(annotation) +"'") ;
             // console.log("toggleMenu with \$scope.selection_text: '" + JSON.stringify($scope.selection_text) +"'") ;
 
             if (angular.isObject(annotation) && !$element.hasClass('menu-is-opened')) {
-
               // existing ngram
               var ngramId = annotation.uuid
               var mainformId = annotation.group
@@ -210,7 +216,7 @@
             }
 
             // "add" actions for non-existing ngram
-            else if (annotation.trim() !== "" && !$element.hasClass('menu-is-opened')) {
+            else if (annotation.trim() !== "" && ! context) {
               var newNgramText = annotation.trim()
               // new ngram (first call creates then like previous case for list)
               $scope.menuItems.push({
@@ -252,12 +258,16 @@
               // show the menu
               $element.fadeIn(50);
               $element.addClass('menu-is-opened');
+              // console.warn("FADE IN menu", $element)
             }
             else {
+              console.warn("=> else")
+
               // close the menu
               $scope.menuItems = [];
               $element.fadeOut(50);
               $element.removeClass('menu-is-opened');
+              // console.warn("FADE OUT menu", $element)
             }
           });
         });
@@ -283,25 +293,14 @@
       });
 
       /*
-      * Finish positioning the menu then display the menu
+      * Toggle the menu when clicking on an existing ngram keyword
       */
       $(".text-container").mouseup(function(e){
         $(".text-container").unbind("mousemove", positionMenu);
         $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
-        toggleSelectionHighlight(selection.toString().trim());
-        toggleMenu(null, selection.toString().trim());
-      });
 
-      /*
-      * Toggle the menu when clicking on an existing ngram keyword
-      *
-      *  £TODO test: apparently this is never used ?
-      *  (superseded by TextSelectionController.onClick)
-      */
-      $(".text-container").delegate(':not("#selection")', "click", function(e) {
-        // if ($(e.target).hasClass("keyword-inline")) return;
         positionMenu(e);
-        toggleSelectionHighlight(selection.toString().trim());
+        // console.warn("calling toggleMenu from *mouseup*")
         toggleMenu(null, selection.toString().trim());
       });
 
@@ -322,9 +321,11 @@
         $rootScope.makeChainedCalls(0,   todoCrudCalls,   $rootScope.refresh)
         // syntax: (step_to_run_first,   list_of_steps,     lastCallback)
 
-        // hide the highlighted text and the menu element
-        $(".text-panel").removeClass("selection");
+        // hide the menu element
         $element.fadeOut(100);
+
+        // the highlighted text hides itself when deselected
+        // (thx to browser and css ::selection)
       };
     }
   ]);

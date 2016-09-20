@@ -106,6 +106,11 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None, do_stat
         mustcommit = False
     # create temporary table with given data
     sql_columns = 'id INTEGER'
+
+    cursor.execute('BEGIN WORK;')
+    cursor.execute('LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE;' % model.__tablename__)
+
+
     for field in fields:
         column = getattr(model, field)
         sql_columns += ', %s %s' % (field, column.type, )
@@ -160,3 +165,6 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None, do_stat
         return result, n_new
     else:
         return result
+
+    cursor.execute('COMMIT WORK;')
+

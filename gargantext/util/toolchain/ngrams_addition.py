@@ -19,6 +19,7 @@ procedure:
 
 from gargantext.models   import Ngram, Node, NodeNgram
 from gargantext.util.db  import session, bulk_insert
+from gargantext.util.db  import bulk_insert_ifnotexists # £TODO debug
 from sqlalchemy          import distinct
 from re                  import findall, IGNORECASE
 
@@ -41,20 +42,13 @@ def index_new_ngrams(ngram_ids, corpus, keys=('title', 'abstract', )):
     @param keys: the hyperdata fields to index
     """
 
-    # check the ngrams we won't process (those that were already indexed)
-    indexed_ngrams_subquery = (session
-                                .query(distinct(NodeNgram.ngram_id))
-                                .join(Node, Node.id == NodeNgram.node_id)
-                                .filter(Node.parent_id == corpus.id)
-                                .filter(Node.typename == 'DOCUMENT')
-                                .subquery()
-                                )
-
-    # retrieve the ngrams from our list, filtering out the already indexed ones
+    # retrieve *all* the ngrams from our list
+    # (even if some relations may be already indexed
+    #  b/c they were perhaps not extracted in all docs
+    #   => we'll use already_indexed later)
     todo_ngrams = (session
                     .query(Ngram)
                     .filter(Ngram.id.in_(ngram_ids))
-                    .filter(~ Ngram.id.in_(indexed_ngrams_subquery))
                     .all()
                     )
 
@@ -90,21 +84,48 @@ def index_new_ngrams(ngram_ids, corpus, keys=('title', 'abstract', )):
                     else:
                         node_ngram_to_write[doc.id][ngram.id] += n_occs
 
+    # debug
+    # print("new node_ngrams before filter:", node_ngram_to_write)
+
+    # check the relations we won't insert (those that were already indexed)
+    # NB costly but currently impossible with bulk_insert_ifnotexists
+    #                                         b/c double uniquekey
+    already_indexed = (session
+                        .query(NodeNgram.node_id, NodeNgram.ngram_id)
+                        .join(Node, Node.id == NodeNgram.node_id)
+                        .filter(Node.parent_id == corpus.id)
+                        .filter(Node.typename == 'DOCUMENT')
+                        .all()
+                        )
+    filter_out = {(nd_id,ng_id) for (nd_id,ng_id) in already_indexed}
+    # POSSIBLE update those that are filtered out if wei_previous != wei
+
     # integrate all at the end
     my_new_rows = []
     add_new_row = my_new_rows.append
     for doc_id in node_ngram_to_write:
         for ngram_id in node_ngram_to_write[doc_id]:
-            wei = node_ngram_to_write[doc_id][ngram_id]
-            add_new_row([doc_id, ngram_id, wei])
+            if (doc_id, ngram_id) not in filter_out:
+                wei = node_ngram_to_write[doc_id][ngram_id]
+                add_new_row([doc_id, ngram_id, wei])
 
     del node_ngram_to_write
+
+    # debug
+    # print("new node_ngrams after filter:", my_new_rows)
 
     bulk_insert(
         table = NodeNgram,
         fields = ('node_id', 'ngram_id', 'weight'),
         data = my_new_rows
     )
+
+    # bulk_insert_ifnotexists(
+    #     model = NodeNgram,
+    #     uniquekey = ('node_id','ngram_id'),        <= currently impossible
+    #     fields = ('node_id', 'ngram_id', 'weight'),
+    #     data = my_new_rows
+    # )
 
     n_added = len(my_new_rows)
     print("index_new_ngrams: added %i new NodeNgram rows" % n_added)

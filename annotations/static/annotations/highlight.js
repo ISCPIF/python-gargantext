@@ -219,9 +219,9 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':stoplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':stoplist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
               $scope.menuItems.push({
@@ -230,9 +230,9 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
               $scope.menuItems.push({
@@ -241,11 +241,11 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } },
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':maplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':maplist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
 

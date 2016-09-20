@@ -61,14 +61,14 @@ def myGraphs(request, project_id, corpus_id):
     coocs_count = dict()
     for cooc in coocs:
         # FIXME : approximativ number of nodes (not exactly what user sees in explorer)
-        cooc_nodes = (session.query(Ngram)
+        cooc_nodes = (session.query(Ngram.id)
                              .join(NodeNgramNgram, NodeNgramNgram.ngram1_id == Ngram.id)
                              .filter(NodeNgramNgram.node_id==cooc.id)
                              .filter(NodeNgramNgram.weight > 0)
                              .all()
                      )
-        coocs_count[cooc.id] = len(cooc_nodes)
-        #coocs_count[cooc.id] = len(list(set(cooc_nodes)))
+
+        coocs_count[cooc.id] = len(set(cooc_nodes))
 
     return render(
         template_name = 'pages/corpora/myGraphs.html',

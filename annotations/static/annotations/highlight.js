@@ -70,21 +70,15 @@
           }
           return false;
       }
-      // we only need one singleton at a time
-      // (<=> is only called once per doc, but value of annotation changes)
-      var selection = getSelected();
 
-      /*
-      * When mouse selection was started, this used to grey out the text panel
-      */
-      // function toggleSelectionChangePanelClass(text) {
-      //   // if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
-      //   if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
-      //     $(".text-panel").addClass("selection");
-      //   } else {
-      //     $(".text-panel").removeClass("selection");
-      //   }
-      // }
+      // £TODO extend "double click selection" on hyphen words
+      //       and reduce it on apostrophe ones (except firefox)
+      //       cf. stackoverflow.com/a/39005881/2489184
+      //           jsfiddle.net/avvhsruu/
+
+      // we only need one singleton at a time
+      // (<=> is only created once per doc, but value of annotation changes)
+      var selectionObj = getSelected();
 
       /*
       * Dynamically construct the selection menu scope
@@ -261,7 +255,7 @@
               // console.warn("FADE IN menu", $element)
             }
             else {
-              console.warn("=> else")
+              // console.warn("=> else")
 
               // close the menu
               $scope.menuItems = [];
@@ -293,7 +287,7 @@
       });
 
       /*
-      * Toggle the menu when clicking on an existing ngram keyword
+      * Toggle the menu when clicking on an existing ngram or a free selection
       */
       $(".text-container").mouseup(function(e){
         $(".text-container").unbind("mousemove", positionMenu);
@@ -301,7 +295,7 @@
 
         positionMenu(e);
         // console.warn("calling toggleMenu from *mouseup*")
-        toggleMenu(null, selection.toString().trim());
+        toggleMenu(null, selectionObj.toString().trim());
       });
 
       $rootScope.$on("positionAnnotationMenu", positionElement);

@@ -50,6 +50,9 @@
 
       /*
       * Universal text selection
+      *
+      * "universal" <=> (Chrome, Firefox, IE, Safari, Opera...)
+      *                 cf. quirksmode.org/dom/range_intro.html
       */
       function getSelected() {
           if (window.getSelection) {
@@ -67,19 +70,15 @@
           }
           return false;
       }
-      // we only need one singleton at a time
-      var selection = getSelected();
 
-      /*
-      * When mouse selection is started, we highlight it
-      */
-      function toggleSelectionHighlight(text) {
-        if (text.trim() !== "" && !$element.hasClass('menu-is-opened')) {
-          $(".text-panel").addClass("selection");
-        } else {
-          $(".text-panel").removeClass("selection");
-        }
-      }
+      // £TODO extend "double click selection" on hyphen words
+      //       and reduce it on apostrophe ones (except firefox)
+      //       cf. stackoverflow.com/a/39005881/2489184
+      //           jsfiddle.net/avvhsruu/
+
+      // we only need one singleton at a time
+      // (<=> is only created once per doc, but value of annotation changes)
+      var selectionObj = getSelected();
 
       /*
       * Dynamically construct the selection menu scope
@@ -107,10 +106,11 @@
             $scope.selection_text = angular.copy(annotation);
 
             // debug
+            // console.log("toggleMenu with context:", context) ;
+            // console.log("toggleMenu with annotation: '" + JSON.stringify(annotation) +"'") ;
             // console.log("toggleMenu with \$scope.selection_text: '" + JSON.stringify($scope.selection_text) +"'") ;
 
             if (angular.isObject(annotation) && !$element.hasClass('menu-is-opened')) {
-
               // existing ngram
               var ngramId = annotation.uuid
               var mainformId = annotation.group
@@ -210,7 +210,7 @@
             }
 
             // "add" actions for non-existing ngram
-            else if (annotation.trim() !== "" && !$element.hasClass('menu-is-opened')) {
+            else if (annotation.trim() !== "" && ! context) {
               var newNgramText = annotation.trim()
               // new ngram (first call creates then like previous case for list)
               $scope.menuItems.push({
@@ -219,9 +219,9 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':stoplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':stoplist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
               $scope.menuItems.push({
@@ -230,9 +230,9 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
               $scope.menuItems.push({
@@ -241,23 +241,27 @@
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
                        'params' : {'ngramStr':newNgramText, corpusId: $rootScope.corpusId},
-                       'dataPropertiesToCache': ['id'] },
+                       'dataPropertiesToCache': ['id', 'group'] },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCache': 'id'} } },
+                       'params' : {'listId':mainlist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } },
                       {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                       'params' : {'listId':maplist_id, 'ngramIdList': {'fromCache': 'id'} } }
+                       'params' : {'listId':maplist_id, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
                       ]
                   }) ;
 
               // show the menu
               $element.fadeIn(50);
               $element.addClass('menu-is-opened');
+              // console.warn("FADE IN menu", $element)
             }
             else {
+              // console.warn("=> else")
+
               // close the menu
               $scope.menuItems = [];
               $element.fadeOut(50);
               $element.removeClass('menu-is-opened');
+              // console.warn("FADE OUT menu", $element)
             }
           });
         });
@@ -283,26 +287,15 @@
       });
 
       /*
-      * Finish positioning the menu then display the menu
+      * Toggle the menu when clicking on an existing ngram or a free selection
       */
       $(".text-container").mouseup(function(e){
         $(".text-container").unbind("mousemove", positionMenu);
         $rootScope.$emit("positionAnnotationMenu", e.pageX, e.pageY);
-        toggleSelectionHighlight(selection.toString().trim());
-        toggleMenu(null, selection.toString().trim());
-      });
 
-      /*
-      * Toggle the menu when clicking on an existing ngram keyword
-      *
-      *  £TODO test: apparently this is never used ?
-      *  (superseded by TextSelectionController.onClick)
-      */
-      $(".text-container").delegate(':not("#selection")', "click", function(e) {
-        // if ($(e.target).hasClass("keyword-inline")) return;
         positionMenu(e);
-        toggleSelectionHighlight(selection.toString().trim());
-        toggleMenu(null, selection.toString().trim());
+        // console.warn("calling toggleMenu from *mouseup*")
+        toggleMenu(null, selectionObj.toString().trim());
       });
 
       $rootScope.$on("positionAnnotationMenu", positionElement);
@@ -322,9 +315,11 @@
         $rootScope.makeChainedCalls(0,   todoCrudCalls,   $rootScope.refresh)
         // syntax: (step_to_run_first,   list_of_steps,     lastCallback)
 
-        // hide the highlighted text and the menu element
-        $(".text-panel").removeClass("selection");
+        // hide the menu element
         $element.fadeOut(100);
+
+        // the highlighted text hides itself when deselected
+        // (thx to browser and css ::selection)
       };
     }
   ]);
@@ -407,10 +402,68 @@
         var template = templateBegin + templateEnd;
         var templateBeginRegexp = "<span ng-controller='TextSelectionController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
 
-        var startPattern = "\\b((?:"+templateBeginRegexp+")*";
+        var startPattern = "(\\W|^)((?:"+templateBeginRegexp+")*";
         var middlePattern = "(?:<\/span>)*\\s(?:"+templateBeginRegexp+")*";
         var middlePattern = " ";
-        var endPattern = "(?:<\/span>)*)\\b";
+        var endPattern = "(?:<\/span>)*)(?=\\W|$)";
+
+        // --------------------------------------------------------------------------------
+        // Remarks about /\b/ and /(\W|^)/ and /(?=\W|$)/  etc.
+        //
+        // -----------------
+        // 1) we need to match entire words only
+        //
+        //  ex: "the manifestation manifest".match(/manifest/g)
+        //
+        //      => not good because it would hilight the substr
+        //         inside 2nd word "the manifestation manifest"
+        //                              ^^^^^^^^      ^^^^^^^^
+        //
+        //   so in this situation one usually uses \b (boundary)
+        //
+        //  ex: "the manifestation manifest".match(/\bmanifest\b/g)
+        //
+        //       ok: now only 3rd word is highlighted:
+        //               "the manifestation manifest"
+        //                                  ^^^^^^^^
+        // -----------------
+        //
+        // 2) but we can't really use boundary \b when we have accented chars
+        // ex:
+        //  no accent: "la moitié".match(/la/)         => ["la"]
+        //             "la moitié".match(/\bla\b/)     => ["la"]
+        //
+        //  but      "la moitié".match(/moitié/)     => ["moitié"]
+        //           "la moitié".match(/\bmoitié\b/) => []           <~~~ problem !
+        //
+        // cf. stackoverflow.com/questions/23458872/javascript-regex-word-boundary-b-issue
+        //     stackoverflow.com/questions/2881445/utf-8-word-boundary-regex-in-javascript
+        // -----------------
+        //
+        // 3) normally the typical replacement for \b would be:
+        //      - at start of string: /(?<=\W|^)/  (lookbehind boundary)
+        //      - at end  of string:  /(?=\W|$)/   (lookahead boundary)
+        //
+        //   ...
+        //    but lookbehind not supported in js !! (sept 2016)
+        //    cf. stackoverflow.com/questions/30118815
+        // -----------------
+        //
+        // 4) so in conclusion we will use this strategy:
+        //
+        //      - at start of string:  /(\W|^)/        (boundary, may capture ' ' or '' into $1)
+        //      - for the html+word:   /<aa>bla</aa>/  (same pattern as before)
+        //      - at end  of string:   /(?=\W|$)/      (lookahead boundary)
+        //      - in replacement:     $1+anchor
+        //
+        //  => This way if $1 was ' ' (or other non word char),
+        //       then we re-add the char that we are replacing,
+        //     and if $1 was '' (beginning of str)
+        //       then we re-add nothing ;) )
+        //
+        // ex: "la moitié".replace(/(\s|^)moitié(?=\s|$)/, '$1hello') => "la hello"
+        //     "moitié la".replace(/(\s|^)moitié(?=\s|$)/, '$1hello') => "hello la"
+        // ---------------------------------------------------------------------------------
 
         // hash of flags filled in first pass loop : (== did annotation i match ?)
         var isDisplayedIntraText = {};
@@ -453,8 +506,8 @@
           //  var myPattern = new RegExp("\\b"+escapeRegExp(annotation.text)+"\\b", 'igm');
           // previously:
               var words = annotation.text.split(" ").map(escapeRegExp);
-              var myPattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
 
+              var myPattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
 
           // -------------------------------------------
           // replace in text: matched annots by anchors
@@ -472,6 +525,7 @@
                   // £dbgcount here unnecessary nbMatches (can go straight to ICI)
                   var matches = eltLongtext.match(myPattern)
                   var nbMatches = matches ? eltLongtext.match(myPattern).length : 0
+
                   if (nbMatches > 0) {
                       k += nbMatches ;
 
@@ -480,7 +534,7 @@
                       l ++ ;
                   // ------------------------------------------------------------
                       // ICI we update each time
-                      textMapping[eltId] = eltLongtext.replace(myPattern, myAnchor);
+                      textMapping[eltId] = eltLongtext.replace(myPattern, "$1"+myAnchor);
 
                       // ex longtext -- "Background Few previous studies have
                       //                 examined non-wealth-based inequalities etc"

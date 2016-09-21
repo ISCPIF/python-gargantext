@@ -24,7 +24,7 @@ class CernParser(Parser):
             "773":{
                     "c": "pages",
                     "n": "issue",
-                    "p": "journal",
+                    "p": "source",
                     "v": "volume",
                     "y": "publication_year"
                     },

@@ -159,11 +159,11 @@ class EuropresseParser(Parser):
                     try:
                         pub_name = html_article.xpath(name_xpath)[0].text
                         name = pub_name.split(', ')
-                        hyperdata['journal']    =  name[0]
-                        hyperdata['number']     =  name[1]
+                        hyperdata['source']    =  name[0]
+                        hyperdata['number']    =  name[1]
                     except:
                         try:
-                            hyperdata['journal']    =  pub_name.strip()
+                            hyperdata['source']    =  pub_name.strip()
                         except:
                             pass
 

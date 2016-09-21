@@ -78,6 +78,11 @@ class Status(APIView):
     '''API endpoint that represent the current status of the node'''
     renderer_classes = (JSONRenderer, BrowsableAPIRenderer)
     def get(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id, Node.user_id== user.id).first()
@@ -92,9 +97,19 @@ class Status(APIView):
             return Response(context)
     def post(self, request, data):
         '''create a new status for node'''
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         raise NotImplementedError
+    
     def put(self, request, data):
         '''update status for node'''
+        
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -105,6 +120,11 @@ class Status(APIView):
 
     def delete(self, request):
         '''delete status for node'''
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -122,6 +142,11 @@ class NodeListResource(APIView):
     def get(self, request):
         """Displays the list of nodes corresponding to the query.
         """
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request)
 
         if parameters['formated'] == 'json':
@@ -165,10 +190,15 @@ class NodeListResource(APIView):
         """
 
 
+
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
         TODO : Should be a delete method!
         """
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters = get_parameters(request)
         parameters = validate(parameters, {'ids': list} )
         try :
@@ -196,6 +226,11 @@ class NodeListHaving(APIView):
     2016-09: add total counts to output json
     '''
     def get(self, request, corpus_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters = get_parameters(request)
         parameters = validate(parameters, {'score': str, 'ngram_ids' : list} )
 
@@ -261,6 +296,11 @@ class NodeResource(APIView):
 
     # contains a check on user.id (within _query_nodes)
     def get(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
@@ -271,6 +311,11 @@ class NodeResource(APIView):
 
     # contains a check on user.id (within _query_nodes)
     def delete(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
@@ -293,6 +338,11 @@ class NodeResource(APIView):
         TODO 1 factorize with .projects.ProjectView.put and .post (thx c24b)
         TODO 2 allow other changes than name
         """
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         # contains a check on user.id (within _query_nodes)
         parameters, query, count = _query_nodes(request, node_id)
 
@@ -365,6 +415,11 @@ class CorpusFavorites(APIView):
         (will test if docs 53 and 54 are among the favorites of corpus 2)
         (returns the intersection of fav docs with [53,54])
         """
+        
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+        
         fav_node = self._get_fav_node(corpus_id)
 
         req_params = validate(
@@ -516,6 +571,11 @@ class CorpusFacet(APIView):
     def get(self, request, node_id):
         # check that the node is a corpus
         #   ? faster from cache than: corpus = session.query(Node)...
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         corpus = cache.Node[node_id]
         if corpus.typename != 'CORPUS':
             raise ValidationException(

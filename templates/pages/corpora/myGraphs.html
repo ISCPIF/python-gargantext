@@ -37,7 +37,7 @@
                                         <li>From: {% if not  cooc.hyperdata.start  %} begin of corpus {% else %} {{cooc.hyperdata.start}} {% endif %}
                                             , To:   {% if not  cooc.hyperdata.end    %} end   of corpus {% else %} {{cooc.hyperdata.end}}   {% endif %}
                                         </li>
-                                        <li> {{ value }} nodes with distances:
+                                        <li> ~{{ value }} nodes with distances:
                                             <ul>
                                                 <li>
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">

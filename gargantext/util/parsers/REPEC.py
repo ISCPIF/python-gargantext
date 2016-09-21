@@ -19,7 +19,7 @@ class RepecParser(Parser):
         b"T1":  {"type": "hyperdata", "key": "title", "separator": " "},
         b"ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
         b"A1":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
-        b"JO":  {"type": "hyperdata", "key": "journal"},
+        b"JO":  {"type": "hyperdata", "key": "source"},
         b"UR":  {"type": "hyperdata", "key": "doi"},
         b"Y1":  {"type": "hyperdata", "key": "publication_year"},
         b"PD":  {"type": "hyperdata", "key": "publication_month"},

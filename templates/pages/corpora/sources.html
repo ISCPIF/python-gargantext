@@ -28,8 +28,8 @@
             <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
             <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
             <!-- <p style="font-size:70%">
-                <b>x</b>: amount of documents for the journal
-                <b>y</b>: number of journals with that amount
+                <b>x</b>: amount of documents for the source
+                <b>y</b>: number of sources with that amount
             </p> -->
             <div class="clearfix"></div>
             </center>
@@ -70,7 +70,7 @@
 
             <div class="panel-body">
               <div id="div-table">
-                  <!-- (table id="my-ajax-table") dynamically set by Journals_dyna_chart_and_table -->
+                  <!-- (table id="my-ajax-table") dynamically set by Sources_dyna_chart_and_table -->
               </div>
             </div>
 
@@ -86,6 +86,6 @@
 <script type="text/javascript" src="{% static "lib/jquery/dynatable/jquery.dynatable.js" %}"></script>
 
 <!-- custom-lib for dynatable.js and dc.js -->
-<script type="text/javascript" src="{% static "lib/gargantext/Journals_dyna_chart_and_table.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/gargantext/Sources_dyna_chart_and_table.js" %}"></script>
 
 {% endblock %}

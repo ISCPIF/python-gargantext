@@ -7,7 +7,7 @@ from io import BytesIO
 class PubmedParser(Parser):
 
     hyperdata_path = {
-        "journal"           : 'MedlineCitation/Article/Journal/Title',
+        "source"            : 'MedlineCitation/Article/Journal/Title',
         "title"             : 'MedlineCitation/Article/ArticleTitle',
         "abstract"          : 'MedlineCitation/Article/Abstract/AbstractText',
         "title2"            : 'MedlineCitation/Article/VernacularTitle',

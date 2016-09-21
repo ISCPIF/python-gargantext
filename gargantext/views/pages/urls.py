@@ -24,10 +24,10 @@ urlpatterns = [
     # corpora
     url(r'^projects/(\d+)/corpora/(\d+)/?$', corpora.docs_by_titles),
 
-    # corpus by journals
-    url(r'^projects/(\d+)/corpora/(\d+)/journals/?$', corpora.docs_by_journals),
+    # corpus by sources
+    url(r'^projects/(\d+)/corpora/(\d+)/sources/?$', corpora.docs_by_sources),
     
-    # corpus by journals
+    # corpus by authors
     url(r'^projects/(\d+)/corpora/(\d+)/authors/?$', corpora.docs_by_authors),
 
     # terms table for the corpus

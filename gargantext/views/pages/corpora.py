@@ -46,11 +46,11 @@ def docs_by_titles(request, project_id, corpus_id):
     )
 
 @requires_auth
-def docs_by_journals(request, project_id, corpus_id):
+def docs_by_sources(request, project_id, corpus_id):
     '''
-    Browse journal titles for a given corpus
-    NB: javascript in page will GET counts from our api: facets?subfield=journal
-    # TODO refactor Journals_dyna_charts_and_table.js
+    Browse source titles for a given corpus
+    NB: javascript in page will GET counts from our api: facets?subfield=source
+    # TODO refactor Sources_dyna_charts_and_table.js
     '''
     # we pass our corpus to mark it's a corpora page
     corpus = cache.Node[corpus_id]
@@ -60,9 +60,9 @@ def docs_by_journals(request, project_id, corpus_id):
 
     source_type = corpus.resources()[0]['type']
 
-    # rendered page : journals.html
+    # rendered page : sources.html
     return render(
-        template_name = 'pages/corpora/journals.html',
+        template_name = 'pages/corpora/sources.html',
         request = request,
         context = {
             'debug': settings.DEBUG,
@@ -70,7 +70,7 @@ def docs_by_journals(request, project_id, corpus_id):
             'project': project,
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
-            'view': 'journals'
+            'view': 'sources'
         },
     )
 
@@ -79,7 +79,7 @@ def docs_by_authors(request, project_id, corpus_id):
     '''
     Browse authors for a given corpus
     NB: javascript in page will GET counts from our api: facets?subfield=author
-    # TODO refactor Author && Journals_dyna_charts_and_table.js
+    # TODO refactor Author && Sources_dyna_charts_and_table.js
     '''
     # we pass our corpus to mark it's a corpora page
     corpus = cache.Node[corpus_id]
@@ -89,7 +89,7 @@ def docs_by_authors(request, project_id, corpus_id):
 
     source_type = corpus.resources()[0]['type']
 
-    # rendered page : journals.html
+    # rendered page : sources.html
     return render(
         template_name = 'pages/corpora/authors.html',
         request = request,

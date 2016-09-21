@@ -165,7 +165,7 @@ class NodeListResource(APIView):
 
             writer = csv.writer(response, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
-            keys =  [ 'title'   , 'journal'
+            keys =  [ 'title'   , 'source'
                     , 'publication_year', 'publication_month', 'publication_day'
                     , 'abstract', 'authors']
 
@@ -280,7 +280,7 @@ class NodeListHaving(APIView):
                 'id': node.id,
                 'score': score,
             }
-            for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
+            for key in ('title', 'publication_date', 'source', 'authors', 'fields'):
                 if key in node.hyperdata:
                     node_dict[key] = node.hyperdata[key]
             nodes_list.append(node_dict)
@@ -558,12 +558,12 @@ class CorpusFavorites(APIView):
 
 class CorpusFacet(APIView):
     """Loop through a corpus node's docs => do counts by a hyperdata field
-        (url: /api/nodes/<node_id>/facets?hyperfield=<journal>)
+        (url: /api/nodes/<node_id>/facets?hyperfield=<source>)
     """
-    # - old url: '^project/(\d+)/corpus/(\d+)/journals/journals.json$',
-    # - old view: tests.ngramstable.views.get_journals_json()
+    # - old url: '^project/(\d+)/corpus/(\d+)/source/sources.json$',
+    # - old view: tests.ngramstable.views.get_sourcess_json()
     # - now generalized for various hyperdata field:
-    #    -> journal
+    #    -> source
     #    -> publication_year
     #    -> rubrique
     #    -> language...
@@ -587,7 +587,7 @@ class CorpusFacet(APIView):
 
         # check that the hyperfield parameter makes sense
         _facet_available_subfields = [
-            'journal', 'publication_year', 'rubrique',
+            'source', 'publication_year', 'rubrique',
             'language_iso2', 'language_iso3', 'language_name',
             'authors'
         ]
@@ -609,8 +609,8 @@ class CorpusFacet(APIView):
             'by': { subfield: xcounts }
         })
 
-    def _ndocs_by_facet(self, subfield='journal'):
-        """for example on 'journal'
+    def _ndocs_by_facet(self, subfield='source'):
+        """for example on 'source'
          xcounts = {'j good sci' : 25, 'nature' : 32, 'j bla bla' : 1... }"""
 
         xcounts = defaultdict(int)

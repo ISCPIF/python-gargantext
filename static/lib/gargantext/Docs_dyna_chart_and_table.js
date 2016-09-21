@@ -143,7 +143,7 @@ var RecDict={};
 var AjaxRecords = []
 var Garbage = {}
 var countByTitles = {}  // useful for title duplicates
-var countByMeta = {}  //         for title + date + journal duplicates
+var countByMeta = {}  //         for title + date + source duplicates
 var favorites = {}
 
 function getRecord(rec_id) {
@@ -197,7 +197,7 @@ function transformContent2(rec_id, trClass) {
   if (elem["del"]) {
     result["id"] = elem["id"]
     result["short_date"] = '<strike>'+elem["short_date"]+'</strike>'
-    result["hyperdata.journal"] = '<strike><small><i>'+elem["hyperdata"]["journal"]+'</small></i></strike>'
+    result["hyperdata.source"] = '<strike><small><i>'+elem["hyperdata"]["source"]+'</small></i></strike>'
     result["docurl"] = '<strike>'+elem["docurl"]+'</strike>'
     result["isFavorite"] = favstatusToStar(rec_id, elem["isFavorite"], boolStrike=true)
     result["rawtitle"] = elem["rawtitle"]
@@ -211,7 +211,7 @@ function transformContent2(rec_id, trClass) {
   } else {
     result["id"] = elem["id"]
     result["short_date"] = elem["short_date"]
-    result["hyperdata.journal"] = '<small><i>'+elem["hyperdata"]["journal"]+'</i></small>'
+    result["hyperdata.source"] = '<small><i>'+elem["hyperdata"]["source"]+'</i></small>'
     result["docurl"] = elem["docurl"]
     result["isFavorite"] =  favstatusToStar(rec_id, elem["isFavorite"])
     result["rawtitle"] = elem["rawtitle"]
@@ -350,7 +350,7 @@ function metaSignature(docRecord) {
     var keyStr = ""
     keyStr = (docRecord.rawtitle
                 +"--"+
-              docRecord.hyperdata.journal
+              docRecord.hyperdata.source
                 +"--"+
               docRecord.hyperdata.publication_date
           )
@@ -376,7 +376,7 @@ function Main_test(Data) {
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-calendar"></span> Date</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="docurl">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-text-size"></span> Title</th>'+"\n"
-    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="hyperdata.journal">'+"\n"
+    div_table += "\t"+"\t"+'<th width="100px;" data-dynatable-column="hyperdata.source">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-book"></span> Source</th>'+"\n"
     div_table += "\t"+"\t"+'<th data-dynatable-column="isFavorite">'+"\n"
     div_table += "\t"+"\t"+'<span class="glyphicon glyphicon-star"></span>'+"\n"
@@ -553,7 +553,7 @@ function Main_test(Data) {
                 sortTypes: {
                     signature: 'signatureSort',
                     docurl: 'rawtitleSort',
-                    'hyperdata.journal': 'journalSort'
+                    'hyperdata.source': 'sourceSort'
                 }
               },
               features: {
@@ -628,10 +628,10 @@ function Main_test(Data) {
 
     MyTable.data('dynatable').sorts.functions["rawtitleSort"] = makeAlphaSortFunctionOnProperty('rawtitle')
     MyTable.data('dynatable').sorts.functions["signatureSort"] = makeAlphaSortFunctionOnProperty('signature')
-    MyTable.data('dynatable').sorts.functions["journalSort"] = function journalSort (rec1,rec2, attr, direction) {
+    MyTable.data('dynatable').sorts.functions["sourceSort"] = function sourceSort (rec1,rec2, attr, direction) {
         // like rawtitle but nested property
-        if (direction == 1) return rec1.hyperdata.journal.localeCompare(rec2.hyperdata.journal)
-        else                return rec2.hyperdata.journal.localeCompare(rec1.hyperdata.journal)
+        if (direction == 1) return rec1.hyperdata.source.localeCompare(rec2.hyperdata.source)
+        else                return rec2.hyperdata.source.localeCompare(rec1.hyperdata.source)
     }
 
     // hook on page change

@@ -17,7 +17,11 @@ _node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'n
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
 _node_available_types = NODETYPES
 
-#_hyperdata_available_fields = ['title', 'resourcetype']
+_hyperdata_available_fields = ['title', 'source', 'abstract', 'statuses',
+                               'language_name', 'language_iso3','language_iso2','language_id',
+                               'publication_date',
+                               'publication_year','publication_month', 'publication_day',
+                               'publication_hour','publication_minute','publication_second']
 #_node_available_formats = ['json', 'csv', 'bibex']
 
 
@@ -32,24 +36,38 @@ def _query_nodes(request, node_id=None):
     # parameters validation
     # fixme: this validation does not allow custom keys in url (eg '?name=' for rename action)
     parameters = get_parameters(request)
+
     parameters = validate(parameters, {'type': dict, 'items': {
         'formated': {'type': str, 'required' : False, 'default': 'json'},
-#        'hyperdata': {'type': list, 'default' : _hyperdata_available_fields, 'items': {
-#            'type': str, 'range' : _node_available_fields,
-#        }},
+
         'pagination_limit': {'type': int, 'default': 10},
         'pagination_offset': {'type': int, 'default': 0},
         'fields': {'type': list, 'default': _node_default_fields, 'items': {
             'type': str, 'range': _node_available_fields,
         }},
+        # choice of hyperdata fields
+        'hyperdata_filter': {'type': list, 'required':False,
+            'items': {
+                'type': str, 'range': _hyperdata_available_fields,
+            }},
         # optional filtering parameters
         'types': {'type': list, 'required': False, 'items': {
             'type': str, 'range': _node_available_types,
         }},
         'parent_id': {'type': int, 'required': False},
     }})
+
+    # debug
+    # print('PARAMS', parameters)
+
+    # additional validation for hyperdata_filter
+    if (('hyperdata_filter' in parameters)
+        and (not ('hyperdata' in parameters['fields']))):
+        raise ValidationException("Using the hyperdata_filter filter requires fields[]=hyperdata")
+
     # start the query
     query = user.nodes()
+
     # filter by id
     if node_id is not None:
         query = query.filter(Node.id == node_id)
@@ -63,6 +81,7 @@ def _query_nodes(request, node_id=None):
     count = query.count()
     # order
     query = query.order_by(Node.hyperdata['publication_date'], Node.id)
+
     # paginate the query
     if parameters['pagination_limit'] == -1:
         query = query[parameters['pagination_offset']:]
@@ -72,7 +91,53 @@ def _query_nodes(request, node_id=None):
             parameters['pagination_limit']
         ]
     # return the result!
+    # (the receiver function does the filtering of fields and hyperdata_filter)
     return parameters, query, count
+
+
+def _filter_node_fields(node, parameters):
+    """
+    Filters the properties of a Node object before sending them to response
+
+    @parameters: a dict comming from get_parameters
+                 that must only contain a 'fields' key
+
+    Usually the dict looks like this :
+               {'fields': ['parent_id', 'id', 'name', 'typename', 'hyperdata'],
+                'hyperdata_filter': ['title'], 'parent_id': '55054',
+                'types': ['DOCUMENT'], 'pagination_limit': '15'}
+
+    History:
+        1) this used to be single line:
+           res = {field: getattr(node, field) for field in parameters['fields']}
+
+        2) it was in both NodeResource.get() and NodeListResource.get()
+
+        3) it's now expanded to add support for parameters['hyperdata_filter']
+            - if absent, entire hyperdata is considered as one field
+                (as before)
+            - if present, the hyperdata subfields are picked
+                (new)
+    """
+    # FIXME all this filtering
+    #       could be done in rawsql
+    #       (in _query_nodes)
+
+    result = {}
+    for field in parameters['fields']:
+        # normal field or entire hyperdata
+        if field != 'hyperdata' or (not 'hyperdata_filter' in parameters):
+            result[field] = getattr(node,field)
+
+        # hyperdata if needs to be filtered
+        else:
+            this_filtered_hyp = {}
+            for hfield in parameters['hyperdata_filter']:
+                if hfield in node.hyperdata:
+                    this_filtered_hyp[hfield] = node.hyperdata[hfield]
+            result['hyperdata'] = this_filtered_hyp
+
+    return result
 
 class Status(APIView):
     '''API endpoint that represent the current status of the node'''
@@ -125,16 +190,22 @@ class NodeListResource(APIView):
         parameters, query, count = _query_nodes(request)
 
         if parameters['formated'] == 'json':
+            records_array = []
+            add_record = records_array.append
+
+            # FIXME filter in rawsql in _query_nodes
+            for node in query:
+                add_record(_filter_node_fields(node, parameters))
+
             return JsonHttpResponse({
                 'parameters': parameters,
                 'count': count,
-                'records': [
-                    { field: getattr(node, field) for field in parameters['fields'] }
-                    for node in query
-                ]
+                'records': records_array
             })
 
         elif parameters['formated'] == 'csv':
+            # TODO add support for fields and hyperdata_filter
+
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="Gargantext_Corpus.csv"'
 
@@ -265,9 +336,8 @@ class NodeResource(APIView):
         if not len(query):
             raise Http404()
         node = query[0]
-        return JsonHttpResponse({
-            field: getattr(node, field) for field in parameters['fields']
-        })
+
+        return JsonHttpResponse(_filter_node_fields(node, parameters))
 
     # contains a check on user.id (within _query_nodes)
     def delete(self, request, node_id):

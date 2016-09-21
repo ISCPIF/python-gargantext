@@ -117,11 +117,11 @@
                         </li>
 
                         <li>
-                                <a type="button" class="btn btn-default {% if view == 'journals' %} active {% endif %}"
-                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/journals'"
+                                <a type="button" class="btn btn-default {% if view == 'sources' %} active {% endif %}"
+                                        onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/sources'"
                                         data-target='#' href='#'>
                                     <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
-                                    Journals
+                                    Sources
                                 </a>
                         </li>
 
@@ -245,7 +245,7 @@
 
 
                                         {% else  %}
-                                        <!-- TODO export journal table -->
+                                        <!-- TODO export source table -->
                                         {% endif %}
                                     </div>
                                 </div>

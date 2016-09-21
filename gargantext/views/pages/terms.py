@@ -2,7 +2,7 @@ from gargantext.util.http     import requires_auth, render, settings
 from gargantext.util.db       import session
 from gargantext.util.db_cache import cache
 from gargantext.models        import Node
-from gargantext.constants     import get_resource_by_name
+from gargantext.constants     import get_resource
 from datetime                 import datetime
 
 @requires_auth
@@ -31,6 +31,7 @@ def ngramtable(request, project_id, corpus_id):
                                # .filter(Node.id != corpus_id)
     corpora_infos = corpora_infos_q.all()
 
+    source_type = corpus.resources()[0]['type']
 
     # rendered page : terms.html
     return render(
@@ -42,7 +43,7 @@ def ngramtable(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : get_resource_by_name(corpus),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'terms',
 
             # for the CSV import modal

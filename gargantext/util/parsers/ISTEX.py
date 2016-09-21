@@ -64,7 +64,7 @@ class ISTexParser(Parser):
                     hyperdata["publication_date"].append( hyperdata["host"]["pubdate"] )
 
                 if "title" in hyperdata["host"]:
-                    hyperdata["journal"] = hyperdata["host"]["title"]
+                    hyperdata["source"] = hyperdata["host"]["title"]
 
             authors=False
             if "authorsRAW" in hyperdata:

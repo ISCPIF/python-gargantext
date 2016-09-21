@@ -143,6 +143,11 @@ class Status(APIView):
     '''API endpoint that represent the current status of the node'''
     renderer_classes = (JSONRenderer, BrowsableAPIRenderer)
     def get(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id, Node.user_id== user.id).first()
@@ -157,9 +162,19 @@ class Status(APIView):
             return Response(context)
     def post(self, request, data):
         '''create a new status for node'''
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         raise NotImplementedError
+    
     def put(self, request, data):
         '''update status for node'''
+        
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -170,6 +185,11 @@ class Status(APIView):
 
     def delete(self, request):
         '''delete status for node'''
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         user = cache.User[request.user.id]
         check_rights(request, node_id)
         node = session.query(Node).filter(Node.id == node_id).first()
@@ -187,6 +207,11 @@ class NodeListResource(APIView):
     def get(self, request):
         """Displays the list of nodes corresponding to the query.
         """
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request)
 
         if parameters['formated'] == 'json':
@@ -211,7 +236,7 @@ class NodeListResource(APIView):
 
             writer = csv.writer(response, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
-            keys =  [ 'title'   , 'journal'
+            keys =  [ 'title'   , 'source'
                     , 'publication_year', 'publication_month', 'publication_day'
                     , 'abstract', 'authors']
 
@@ -236,10 +261,15 @@ class NodeListResource(APIView):
         """
 
 
+
     def delete(self, request):
         """Removes the list of nodes corresponding to the query.
         TODO : Should be a delete method!
         """
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters = get_parameters(request)
         parameters = validate(parameters, {'ids': list} )
         try :
@@ -267,6 +297,11 @@ class NodeListHaving(APIView):
     2016-09: add total counts to output json
     '''
     def get(self, request, corpus_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters = get_parameters(request)
         parameters = validate(parameters, {'score': str, 'ngram_ids' : list} )
 
@@ -316,7 +351,7 @@ class NodeListHaving(APIView):
                 'id': node.id,
                 'score': score,
             }
-            for key in ('title', 'publication_date', 'journal', 'authors', 'fields'):
+            for key in ('title', 'publication_date', 'source', 'authors', 'fields'):
                 if key in node.hyperdata:
                     node_dict[key] = node.hyperdata[key]
             nodes_list.append(node_dict)
@@ -332,6 +367,11 @@ class NodeResource(APIView):
 
     # contains a check on user.id (within _query_nodes)
     def get(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
@@ -341,6 +381,11 @@ class NodeResource(APIView):
 
     # contains a check on user.id (within _query_nodes)
     def delete(self, request, node_id):
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
@@ -363,6 +408,11 @@ class NodeResource(APIView):
         TODO 1 factorize with .projects.ProjectView.put and .post (thx c24b)
         TODO 2 allow other changes than name
         """
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         # contains a check on user.id (within _query_nodes)
         parameters, query, count = _query_nodes(request, node_id)
 
@@ -435,6 +485,11 @@ class CorpusFavorites(APIView):
         (will test if docs 53 and 54 are among the favorites of corpus 2)
         (returns the intersection of fav docs with [53,54])
         """
+        
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+        
         fav_node = self._get_fav_node(corpus_id)
 
         req_params = validate(
@@ -573,12 +628,12 @@ class CorpusFavorites(APIView):
 
 class CorpusFacet(APIView):
     """Loop through a corpus node's docs => do counts by a hyperdata field
-        (url: /api/nodes/<node_id>/facets?hyperfield=<journal>)
+        (url: /api/nodes/<node_id>/facets?hyperfield=<source>)
     """
-    # - old url: '^project/(\d+)/corpus/(\d+)/journals/journals.json$',
-    # - old view: tests.ngramstable.views.get_journals_json()
+    # - old url: '^project/(\d+)/corpus/(\d+)/source/sources.json$',
+    # - old view: tests.ngramstable.views.get_sourcess_json()
     # - now generalized for various hyperdata field:
-    #    -> journal
+    #    -> source
     #    -> publication_year
     #    -> rubrique
     #    -> language...
@@ -586,6 +641,11 @@ class CorpusFacet(APIView):
     def get(self, request, node_id):
         # check that the node is a corpus
         #   ? faster from cache than: corpus = session.query(Node)...
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
+
         corpus = cache.Node[node_id]
         if corpus.typename != 'CORPUS':
             raise ValidationException(
@@ -597,7 +657,7 @@ class CorpusFacet(APIView):
 
         # check that the hyperfield parameter makes sense
         _facet_available_subfields = [
-            'journal', 'publication_year', 'rubrique',
+            'source', 'publication_year', 'rubrique',
             'language_iso2', 'language_iso3', 'language_name',
             'authors'
         ]
@@ -619,8 +679,8 @@ class CorpusFacet(APIView):
             'by': { subfield: xcounts }
         })
 
-    def _ndocs_by_facet(self, subfield='journal'):
-        """for example on 'journal'
+    def _ndocs_by_facet(self, subfield='source'):
+        """for example on 'source'
          xcounts = {'j good sci' : 25, 'nature' : 32, 'j bla bla' : 1... }"""
 
         xcounts = defaultdict(int)

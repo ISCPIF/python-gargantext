@@ -56,7 +56,6 @@ def format_html(link):
 
 
 # TODO check authentication
-
 class Graph(APIView):
     '''
     REST part for graphs.
@@ -68,6 +67,10 @@ class Graph(APIView):
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
         '''
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
 
         # Get the node we are working with
         corpus = session.query(Node).filter(Node.id==corpus_id).first()

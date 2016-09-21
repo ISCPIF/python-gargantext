@@ -15,8 +15,8 @@ class RISParser(Parser):
         "ST":  {"type": "hyperdata", "key": "subtitle", "separator": " "},
         "AU":  {"type": "hyperdata", "key": "authors", "separator": "\n"},
 
-        "JO":  {"type": "hyperdata", "key": "journal"},
-        "T2":  {"type": "hyperdata", "key": "journal"},
+        "JO":  {"type": "hyperdata", "key": "source"},
+        "T2":  {"type": "hyperdata", "key": "source"},
         # "T2": variant of JO (if together only last will be kept)
 
         "UR":  {"type": "hyperdata", "key": "doi"},

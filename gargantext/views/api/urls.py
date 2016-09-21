@@ -20,7 +20,7 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
               #?view=docs
               #Corpora
               , url(r'^projects/(\d+)/corpora/(\d+)$' , corpora.CorpusView.as_view()     )
-              #?view=journal
+              #?view=source
               #?view=title
               #?view=analytics
               #Sources

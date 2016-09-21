@@ -418,15 +418,14 @@ function Main_test( data , initial) {
             // // .xUnits(d3.time.months)
             .renderlet(function (chart) {
                 chart.select("g.y").style("display", "none");
-                LineChart.filter(chart.filter());
-                console.log("lalaal moveChart.focus(chartfilt);")
             })
             .on("filtered", function (chart) {
                 dc.events.trigger(function () {
                     var chartfilt = chart.filter()
+                    console.log("lalaal move chart", chartfilt)
                     // tricky part: identifying when the moveChart changes.
                     if(chartfilt) {
-                        Push2Buffer ( chart.filter() )
+                        Push2Buffer ( chartfilt )
                     } else {
                         if(TheBuffer) {
                             Push2Buffer ( false )

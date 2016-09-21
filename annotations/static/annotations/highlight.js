@@ -402,10 +402,68 @@
         var template = templateBegin + templateEnd;
         var templateBeginRegexp = "<span ng-controller='TextSelectionController' ng-click='onClick\(\$event\)' class='keyword-inline'>";
 
-        var startPattern = "\\b((?:"+templateBeginRegexp+")*";
+        var startPattern = "(\\W|^)((?:"+templateBeginRegexp+")*";
         var middlePattern = "(?:<\/span>)*\\s(?:"+templateBeginRegexp+")*";
         var middlePattern = " ";
-        var endPattern = "(?:<\/span>)*)\\b";
+        var endPattern = "(?:<\/span>)*)(?=\\W|$)";
+
+        // --------------------------------------------------------------------------------
+        // Remarks about /\b/ and /(\W|^)/ and /(?=\W|$)/  etc.
+        //
+        // -----------------
+        // 1) we need to match entire words only
+        //
+        //  ex: "the manifestation manifest".match(/manifest/g)
+        //
+        //      => not good because it would hilight the substr
+        //         inside 2nd word "the manifestation manifest"
+        //                              ^^^^^^^^      ^^^^^^^^
+        //
+        //   so in this situation one usually uses \b (boundary)
+        //
+        //  ex: "the manifestation manifest".match(/\bmanifest\b/g)
+        //
+        //       ok: now only 3rd word is highlighted:
+        //               "the manifestation manifest"
+        //                                  ^^^^^^^^
+        // -----------------
+        //
+        // 2) but we can't really use boundary \b when we have accented chars
+        // ex:
+        //  no accent: "la moitié".match(/la/)         => ["la"]
+        //             "la moitié".match(/\bla\b/)     => ["la"]
+        //
+        //  but      "la moitié".match(/moitié/)     => ["moitié"]
+        //           "la moitié".match(/\bmoitié\b/) => []           <~~~ problem !
+        //
+        // cf. stackoverflow.com/questions/23458872/javascript-regex-word-boundary-b-issue
+        //     stackoverflow.com/questions/2881445/utf-8-word-boundary-regex-in-javascript
+        // -----------------
+        //
+        // 3) normally the typical replacement for \b would be:
+        //      - at start of string: /(?<=\W|^)/  (lookbehind boundary)
+        //      - at end  of string:  /(?=\W|$)/   (lookahead boundary)
+        //
+        //   ...
+        //    but lookbehind not supported in js !! (sept 2016)
+        //    cf. stackoverflow.com/questions/30118815
+        // -----------------
+        //
+        // 4) so in conclusion we will use this strategy:
+        //
+        //      - at start of string:  /(\W|^)/        (boundary, may capture ' ' or '' into $1)
+        //      - for the html+word:   /<aa>bla</aa>/  (same pattern as before)
+        //      - at end  of string:   /(?=\W|$)/      (lookahead boundary)
+        //      - in replacement:     $1+anchor
+        //
+        //  => This way if $1 was ' ' (or other non word char),
+        //       then we re-add the char that we are replacing,
+        //     and if $1 was '' (beginning of str)
+        //       then we re-add nothing ;) )
+        //
+        // ex: "la moitié".replace(/(\s|^)moitié(?=\s|$)/, '$1hello') => "la hello"
+        //     "moitié la".replace(/(\s|^)moitié(?=\s|$)/, '$1hello') => "hello la"
+        // ---------------------------------------------------------------------------------
 
         // hash of flags filled in first pass loop : (== did annotation i match ?)
         var isDisplayedIntraText = {};
@@ -448,8 +506,8 @@
           //  var myPattern = new RegExp("\\b"+escapeRegExp(annotation.text)+"\\b", 'igm');
           // previously:
               var words = annotation.text.split(" ").map(escapeRegExp);
-              var myPattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
 
+              var myPattern = new RegExp(startPattern + words.join(middlePattern) + endPattern, 'gmi');
 
           // -------------------------------------------
           // replace in text: matched annots by anchors
@@ -467,6 +525,7 @@
                   // £dbgcount here unnecessary nbMatches (can go straight to ICI)
                   var matches = eltLongtext.match(myPattern)
                   var nbMatches = matches ? eltLongtext.match(myPattern).length : 0
+
                   if (nbMatches > 0) {
                       k += nbMatches ;
 
@@ -475,7 +534,7 @@
                       l ++ ;
                   // ------------------------------------------------------------
                       // ICI we update each time
-                      textMapping[eltId] = eltLongtext.replace(myPattern, myAnchor);
+                      textMapping[eltId] = eltLongtext.replace(myPattern, "$1"+myAnchor);
 
                       // ex longtext -- "Background Few previous studies have
                       //                 examined non-wealth-based inequalities etc"

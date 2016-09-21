@@ -7,6 +7,9 @@ from collections              import defaultdict
 from networkx.readwrite           import json_graph
 
 def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
+    '''
+    What is bridgeness ?
+    '''
     # Data are stored in a dict(), (== hashmap by default for Python)
     data = dict()
     if type == "node_link":

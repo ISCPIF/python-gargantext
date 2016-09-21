@@ -71,8 +71,8 @@ def get_graph( request=None         , corpus=None
             return {'state': "mapListError", "length" : mapList_size}
 
 
-        # case of corpus not big enough
-        # ==============================
+        # Instantiate query for case of corpus not big enough
+        # ===================================================
         corpus_size_query = (session.query(Node)
                                     .filter(Node.typename=="DOCUMENT")
                                     .filter(Node.parent_id == corpus.id)

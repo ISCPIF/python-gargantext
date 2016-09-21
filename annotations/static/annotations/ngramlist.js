@@ -141,9 +141,9 @@
             crudCallsToMake = [
                 {'service': MainApiAddNgramHttpService, 'action': 'put',
                 'params' : {'ngramStr':value, corpusId: $rootScope.corpusId},
-                'dataPropertiesToCache': ['id'] },
+                'dataPropertiesToCache': ['id', 'group'] },
                 {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                'params' : {'listId':tgtListId, 'ngramIdList': {'fromCache': 'id'} } }
+                'params' : {'listId':tgtListId, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
             ];
             break;
 
@@ -151,9 +151,9 @@
             crudCallsToMake = [
                 {'service': MainApiAddNgramHttpService, 'action': 'put',
                  'params' : {'ngramStr':value, corpusId: $rootScope.corpusId},
-                 'dataPropertiesToCache': ['id'] },
+                 'dataPropertiesToCache': ['id', 'group'] },
                 {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                 'params' : {'listId':tgtListId, 'ngramIdList': {'fromCache': 'id'} } }
+                 'params' : {'listId':tgtListId, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
             ];
             break;
 
@@ -161,11 +161,11 @@
             crudCallsToMake = [
                 {'service': MainApiAddNgramHttpService, 'action': 'put',
                 'params' : {'ngramStr':value, corpusId: $rootScope.corpusId},
-                'dataPropertiesToCache': ['id'] },
+                'dataPropertiesToCache': ['id', 'group'] },
                 {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                 'params' : {'listId':$rootScope.listIds.MAINLIST, 'ngramIdList': {'fromCache': 'id'} } },
+                 'params' : {'listId':$rootScope.listIds.MAINLIST, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } },
                 {'service': MainApiChangeNgramHttpService, 'action': 'put',
-                'params' : {'listId':tgtListId, 'ngramIdList': {'fromCache': 'id'} } }
+                'params' : {'listId':tgtListId, 'ngramIdList': {'fromCacheIfElse': ['group','id']} } }
             ];
             break;
       }

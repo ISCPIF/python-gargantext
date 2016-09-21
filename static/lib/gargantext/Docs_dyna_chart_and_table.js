@@ -524,16 +524,16 @@ function Main_test(Data) {
           .xUnits(d3.time.months)
           .renderlet(function (chart) {
               chart.select("g.y").style("display", "none");
-              moveChart.filter(chart.filter());
           })
           .on("filtered", function (chart) {
               dc.events.trigger(function () {
                   var chartfilt = chart.filter()
+                  console.log("lalaal move chart", chartfilt)
                   // tricky part: identifying when the moveChart changes.
                   if(chartfilt) {
                       console.log("chart.filter()")
-                      console.log(chart.filter())
-                      Push2Buffer ( chart.filter() )
+                      console.log(chartfilt)
+                      Push2Buffer (chartfilt)
                   } else {
                       if(TheBuffer) {
                           Push2Buffer ( false )

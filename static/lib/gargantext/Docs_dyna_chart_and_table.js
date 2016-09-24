@@ -592,7 +592,7 @@ function Main_test(Data) {
           // by default we always decide to search in the title
           matchInTexts = [record.rawtitle]
 
-          // if box is checked we'll also search in the abstracts
+          // if box is checked we'll also search in the abstracts (todo: via ajax)
           if (doAbstractsSearch) {
               if (typeof record.hyperdata.abstract !== 'undefined') {
                   matchInTexts.push(record.hyperdata.abstract)
@@ -768,7 +768,10 @@ function tidyAfterPageSet() {
 $.ajax({
   url: '/api/nodes?types[]=DOCUMENT&pagination_limit=-1&parent_id='
         + corpus_id
-        +'&fields[]=parent_id&fields[]=id&fields[]=name&fields[]=typename&fields[]=hyperdata',
+        +'&fields[]=parent_id&fields[]=id&fields[]=name&fields[]=typename&fields[]=hyperdata'
+        // +'&hyperdata_filter[]=title&hyperdata_filter[]=source&hyperdata_filter[]=language_iso2'
+        +'&hyperdata_filter[]=title&hyperdata_filter[]=source&hyperdata_filter[]=language_iso2&hyperdata_filter[]=abstract'
+        +'&hyperdata_filter[]=publication_year&hyperdata_filter[]=publication_month&hyperdata_filter[]=publication_day',
   success: function(maindata){
       // unfortunately favorites info is in a separate request (other nodes)
       $.ajax({
@@ -837,6 +840,10 @@ $.ajax({
                                 +"/"+
                                  rec.hyperdata.publication_day
                                 )
+
+              // and a bool property for remote search results
+              // (will be updated by ajax)
+              rec.matched_remote_search = false      // TODO use it
 
           }
 

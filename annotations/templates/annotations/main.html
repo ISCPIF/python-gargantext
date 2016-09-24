@@ -24,7 +24,7 @@
     <div id="annotationsApp" ng-cloak>
       <div class="container-fluid">
         <div class="row-fluid main-panel" ng-controller="NGramHighlightController">
-          <div class="col-md-4 col-xs-4 tabbable words-panel">
+          <div ng-if="workflow_finished" class="col-md-4 col-xs-4 tabbable words-panel">
               <div class="list-selector">
                 <h5>Select highlighted list(s)
                 <select class="selectpicker" multiple ng-change="activeListsChange()" ng-model="lists" ng-controller="ActiveListsController">
@@ -89,7 +89,7 @@
             </div>
             <div class="row-fluid">
               <ul class="list-group clearfix">
-                <li class="list-group-item small"><span class="badge">journal</span>{[{journal}]}</li>
+                <li class="list-group-item small"><span class="badge">source</span>{[{journal}]}</li>
                 <li class="list-group-item small"><span class="badge">authors</span>{[{authors}]}</li>
                 <li class="list-group-item small"><span class="badge">date</span>{[{publication_date}]}</li>
               </ul>
@@ -108,12 +108,14 @@
                 <span class="badge">abstract</span>
             </div>
             <p id="abstract-text" class="text-container">
+                {[{abstract_text}]}
                 <div ng-if="abstract_text == null" class="alert alert-info small" role="alert">Empty abstract text</div>
             </p>
             <div ng-if="full_text != null">
                 <span class="badge">full article</span>
             </div>
             <p id="full-text" class="text-container">
+                {[{full_text}]}
                 <div ng-if="full_text == null" class="alert alert-info small" role="alert">Empty full text</div>
             </p>
           </div>

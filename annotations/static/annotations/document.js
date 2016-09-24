@@ -23,25 +23,34 @@
           $rootScope.docId = data.id;
           $rootScope.full_text = data.full_text;
           $rootScope.abstract_text = data.abstract_text;
-          console.log("annotations.document.DocController.getannotations")
-          // GET the annotationss
-          NgramListHttpService.get(
-            {
-              'corpusId': $rootScope.corpusId,
-              'docId': $rootScope.docId
-            },
-            function(data) {
-              $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
-              // eg id => 'MAPLIST'
-              $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
-              // inverted 'MAPLIST' => id
-              $rootScope.listIds = _.invert($rootScope.lists)
-              $scope.dataLoading = false ;
-            },
-            function(data) {
-              console.error("unable to get the list of ngrams");
-            }
-          );
+          $rootScope.workflow_finished = data.corpus_status['complete'] ;
+
+          console.log("workflow status", $rootScope.workflow_finished)
+
+          if ($scope.workflow_finished) {
+            console.log("annotations.document.DocController.getannotations")
+            // GET the annotationss
+            NgramListHttpService.get(
+              {
+                'corpusId': $rootScope.corpusId,
+                'docId': $rootScope.docId
+              },
+              function(data) {
+                $rootScope.annotations = data[$rootScope.corpusId.toString()][$rootScope.docId.toString()];
+                // eg id => 'MAPLIST'
+                $rootScope.lists = data[$rootScope.corpusId.toString()].lists;
+                // inverted 'MAPLIST' => id
+                $rootScope.listIds = _.invert($rootScope.lists)
+                $scope.dataLoading = false ;
+              },
+              function(data) {
+                console.error("unable to get the list of ngrams");
+              }
+            );
+          }
+          else {
+            $scope.dataLoading = false ;
+          }
 
       });
 

@@ -630,9 +630,23 @@ function Main_test(Data) {
     MyTable.data('dynatable').sorts.functions["signatureSort"] = makeAlphaSortFunctionOnProperty('signature')
     MyTable.data('dynatable').sorts.functions["sourceSort"] = function sourceSort (rec1,rec2, attr, direction) {
         // like rawtitle but nested property
-        if (direction == 1) return rec1.hyperdata.source.localeCompare(rec2.hyperdata.source)
-        else                return rec2.hyperdata.source.localeCompare(rec1.hyperdata.source)
-    }
+        if (rec1.hyperdata && rec1.hyperdata.source
+            && rec2.hyperdata && rec2.hyperdata.source) {
+            // the alphabetic sort
+            if (direction == 1) return rec1.hyperdata.source.localeCompare(rec2.hyperdata.source)
+            else                return rec2.hyperdata.source.localeCompare(rec1.hyperdata.source)
+        }
+        else if (rec1.hyperdata && rec1.hyperdata.source) {
+            cmp = direction
+        }
+        else if (rec2.hyperdata && rec2.hyperdata.source) {
+            cmp = -direction
+        }
+        else {
+          cmp = 0
+        }
+        if (cmp == 0)       cmp = RecDict[rec1.id] < RecDict[rec2.id] ? -1 : 1
+      }
 
     // hook on page change
     MyTable.bind('dynatable:page:set', tidyAfterPageSet)
@@ -736,9 +750,20 @@ function makeAlphaSortFunctionOnProperty(property) {
     return function (rec1,rec2, attr, direction) {
         var cmp = null
 
-        // the alphabetic sort
-        if (direction == 1) cmp = rec1[property].localeCompare(rec2[property])
-        else                cmp = rec2[property].localeCompare(rec1[property])
+        if (rec1[property] && rec2[property]) {
+            // the alphabetic sort
+            if (direction == 1) cmp = rec1[property].localeCompare(rec2[property])
+            else                cmp = rec2[property].localeCompare(rec1[property])
+        }
+        else if (rec1[property]) {
+            cmp = direction
+        }
+        else if (rec2[property]) {
+            cmp = -direction
+        }
+        else {
+          cmp = 0
+        }
 
         // second level sorting on key = id in records array
         // (this one volontarily not reversable by direction

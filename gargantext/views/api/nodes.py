@@ -149,17 +149,27 @@ class Status(APIView):
             return HttpResponse('Unauthorized', status=401)
 
         user = cache.User[request.user.id]
-        check_rights(request, node_id)
+        # check_rights(request, node_id)
+        # I commented check_rights because filter on user_id below does the job
+
         node = session.query(Node).filter(Node.id == node_id, Node.user_id== user.id).first()
         if node is None:
             return Response({"detail":"Node not Found for this user"}, status=HTTP_404_NOT_FOUND)
         else:
-            context = format_response(node, [n for n in node.children()])
+
+            # FIXME using the more generic strategy ---------------------------
+            # context = format_response(node, [n for n in node.children()])
+            # or perhaps ? context = format_response(None, [node])
+            # -----------------------------------------------------------------
+
+            # using a more direct strategy
+            context = {}
             try:
-                context["status"] = node.hyperdata["statuses"]
+               context["statuses"] = node.hyperdata["statuses"]
             except KeyError:
-                context["status"] = None
+               context["statuses"] = None
             return Response(context)
+
     def post(self, request, data):
         '''create a new status for node'''
         if not request.user.is_authenticated():
@@ -167,17 +177,17 @@ class Status(APIView):
             return HttpResponse('Unauthorized', status=401)
 
         raise NotImplementedError
-    
+
     def put(self, request, data):
         '''update status for node'''
-        
+
         if not request.user.is_authenticated():
             # can't use @requires_auth because of positional 'self' within class
             return HttpResponse('Unauthorized', status=401)
 
         user = cache.User[request.user.id]
-        check_rights(request, node_id)
-        node = session.query(Node).filter(Node.id == node_id).first()
+        # check_rights(request, node_id)
+        node = session.query(Node).filter(Node.id == node_id, Node.user_id== user.id).first()
 
         raise NotImplementedError
 
@@ -191,8 +201,8 @@ class Status(APIView):
             return HttpResponse('Unauthorized', status=401)
 
         user = cache.User[request.user.id]
-        check_rights(request, node_id)
-        node = session.query(Node).filter(Node.id == node_id).first()
+        # check_rights(request, node_id)
+        node = session.query(Node).filter(Node.id == node_id, Node.user_id == user.id).first()
         if node is None:
             return Response({"detail":"Node not Found"}, status=HTTP_404_NOT_FOUND)
         node.hyperdata["status"] = []
@@ -485,11 +495,11 @@ class CorpusFavorites(APIView):
         (will test if docs 53 and 54 are among the favorites of corpus 2)
         (returns the intersection of fav docs with [53,54])
         """
-        
+
         if not request.user.is_authenticated():
             # can't use @requires_auth because of positional 'self' within class
             return HttpResponse('Unauthorized', status=401)
-        
+
         fav_node = self._get_fav_node(corpus_id)
 
         req_params = validate(

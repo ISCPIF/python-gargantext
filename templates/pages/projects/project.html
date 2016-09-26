@@ -127,7 +127,14 @@
                                                         <ul>
                                                             <li
                                                             onclick=&quot;
-                                                                    garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                                                                    trashedIds[{{corpus.id}}] = true ;
+                                                                    garganrest.nodes.delete(
+                                                                        {{corpus.id}},
+                                                                        function(){
+                                                                            $('#corpus_'+{{corpus.id}}).remove()
+                                                                            delete trashedIds[{{corpus.id}}]
+                                                                          }
+                                                                        );
                                                                     $(this).parent().parent().remove();
                                                                 &quot;>
                                                                 <a href='#'>Delete this</a>
@@ -313,6 +320,9 @@
 
                         var corporaIds = []
 
+                        // for corpora ids whose delete is pending
+                        var trashedIds = {}
+
                         for (var i = 0 ; i < corporaDivs.length ; i++) {
                           // ex: corpus_1198
                           divId = corporaDivs[i].id
@@ -328,7 +338,6 @@
                           // initial checks if page reloaded with active corpora
                           keepCheckingProjectStatus()
                         }
-
 
                         // cookie ajax helper ==================================
                         function getCookie(name) {
@@ -969,9 +978,8 @@
                           var activeCorporaIds = []
                           for (var i in corporaIds) {
                             var crid = corporaIds[i]
-                            if (! document.getElementById(
-                                'corpus_'+crid+'_status_ok')
-                              ) {
+                            if ((! document.getElementById('corpus_'+crid+'_status_ok'))
+                                && (! trashedIds[crid])) {
                               activeCorporaIds.push(crid)
                             }
                           }
@@ -1002,7 +1010,7 @@
                             }
                             else {
                               // decreasing intervals (preserving DB while "loosing interest")
-                              nextTime = nChecks * 3000
+                              nextTime = (nChecks+1) * 3000
                               // schedule next check
                               setTimeout(keepCheckingProjectStatus, nextTime)
                               console.log("next status check in", nextTime/1000, "s" )

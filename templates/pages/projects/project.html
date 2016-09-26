@@ -101,15 +101,14 @@
                                     <div class="col-md-3 content"  id="corpus_{{corpus.id}}_tools">
                                         {% for state in corpus.hyperdata.statuses %}
                                             {% ifequal state.action "Workflow" %}
-                                                {% if state.complete %}
-
-                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
+                                                    <a class="{% if not state.complete %}hidden{% endif %}"
+                                                       href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
                                                         <button type="button" class="btn btn-default" aria-label="Left Align">
                                                               <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                         </button>
                                                     </a>
 
-                                                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                    <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
                                                         data-content="
                                                         <ul>
                                                             <li
@@ -121,7 +120,6 @@
                                                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"
                                                         title='Recalculate ngram scores and similarities'></span>
                                                     </button>
-                                                {% endif %}
 
                                                     <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
                                                     <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
@@ -845,15 +843,25 @@
                             // 0 is status of whole WORKFLOW
                             var statusW = statuses[0]
                             if (statusW.complete) {
+                              // show checkbox
                               $('#corpus_'+crid+'_status').html(
                                   '<span id="corpus_'+crid+'_status_ok" '
                                   + ' class="glyphicon glyphicon-ok"></span>'
                               )
+
+                              // show all tools
+                              var cTools = document.getElementById('corpus_'+crid+'_tools').children
+                              for (var i in cTools) {
+                                var elt = cTools[i]
+                                if (elt.classList) {
+                                  elt.classList.remove("hidden")
+                                }
+                              }
                             }
                             // workflow incomplete: we check each action in [1,4]
                             else {
                               var subStatuses = statuses.slice(1,5)
-                              console.warn(subStatuses)
+                              // console.warn(subStatuses)
                               for (var j in subStatuses) {
                                 // stepName parmi 'Docs','Ngrams','Index','Lists'
                                 var stepOk = subStatuses[j]['complete']
@@ -881,15 +889,16 @@
 
                                 // normal cases: update progressbar ------------
                                 else {
-                                  progressbar = document.getElementById(pgbarId)
+                                  var progressbar = document.getElementById(pgbarId)
 
                                   if (progressbar) {
-                                    // console.log('updating '+pgbarId)
+                                    console.log('updating '+pgbarId, "stepOk:", stepOk)
 
                                     // A: done
                                     if (stepOk || stepOk == "true") {
                                       // make progressbar segment green
-                                      if (progressbar.class && progressbar.class.match('active')) {
+                                      if (progressbar.className
+                                          && progressbar.className.match('active')) {
                                         progressbar.classList.remove("active")
                                         progressbar.classList.add("progress-bar-success")
                                       }
@@ -903,14 +912,13 @@
                                   }
                                   // C: new action => new bar segment
                                   else {
-                                    // console.log('creating '+pgbarId)
+                                    console.log('creating '+pgbarId)
 
                                     barSegmentHtml = '<div class="progress-bar progress-bar-striped'
                                     barSegmentHtml += (stepOk ? ' progress-bar-success' : ' active') + '"'
                                     barSegmentHtml += 'role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"'
                                     barSegmentHtml += 'id="corpus_'+crid+'_status_'+stepName+'" style="width: 20%">'
                                     barSegmentHtml +=  '<span>'+stepName
-                                    barSegmentHtml += (stepOk ? 'Processing' : '')
                                     barSegmentHtml += '</span></div>'
 
                                     $('#corpus_'+crid+'_status > .progress')
@@ -1002,7 +1010,7 @@
                             }
                           }
                           else {
-                            console.warn("OK, all corpora ingestion complete")
+                            console.info("OK, all corpora ingestion complete")
                             nChecks = 0
                             return true
                           }

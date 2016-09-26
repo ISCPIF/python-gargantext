@@ -189,7 +189,7 @@ class Document(APIView):
             'corpus_status': corpus_workflow_status,
             'title': node.hyperdata.get('title'),
             'authors': node.hyperdata.get('authors'),
-            'journal': node.hyperdata.get('journal'),
+            'source': node.hyperdata.get('source'),
             'publication_date': pub_date,
             'full_text': node.hyperdata.get('full_text'),
             'abstract_text': node.hyperdata.get('abstract'),

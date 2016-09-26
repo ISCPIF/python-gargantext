@@ -383,8 +383,8 @@ QUERY_SIZE_N_MAX     = 1000
 QUERY_SIZE_N_DEFAULT = 1000
 
 # Refresh corpora workflow status for project view's progressbar
-PROJECT_VIEW_REFRESH_INTERVAL = 3000  # in ms
-PROJECT_VIEW_MAX_REFRESH_ATTEMPTS = 5          # how many times before we give up
+PROJECT_VIEW_REFRESH_INTERVAL  = 3000     # 1st refresh in ms (then increasing arithmetically)
+PROJECT_VIEW_MAX_REFRESH_ATTEMPTS = 10    # how many times before we give up
 
 # ------------------------------------------------------------------------------
 # Graph <=> nodes API parameters

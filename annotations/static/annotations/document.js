@@ -15,7 +15,7 @@
         {'docId': $rootScope.docId},
         function(data, responseHeaders) {
           $scope.authors = data.authors;
-          $scope.journal = data.journal;
+          $scope.source = data.source;
           $scope.publication_date = data.publication_date;
           //$scope.current_page_number = data.current_page_number;
           //$scope.last_page_number = data.last_page_number;

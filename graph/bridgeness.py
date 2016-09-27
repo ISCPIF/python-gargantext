@@ -9,8 +9,9 @@ from networkx.readwrite           import json_graph
 def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
     '''
     What is bridgeness ?
+    Measure to control links (bridges) between communities.
     '''
-    # Data are stored in a dict(), (== hashmap by default for Python)
+    # Data are stored in a dict(), (== hashmap by default with Python)
     data = dict()
     if type == "node_link":
         nodesB_dict = {}

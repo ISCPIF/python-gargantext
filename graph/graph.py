@@ -51,9 +51,8 @@ def get_graph( request=None         , corpus=None
 
     '''
 
-
     before_cooc = datetime.now()
-    
+
 
     # case of Cooccurrences have not been computed already
     if cooc_id == None:
@@ -108,8 +107,7 @@ def get_graph( request=None         , corpus=None
                                     .filter( End.key == 'publication_date')
                                     .filter( End.value_utc <= date_end_utc )
                           )
-        
-        
+
 
         # Finally test if the size of the corpora is big enough
         # --------------------------------
@@ -121,6 +119,7 @@ def get_graph( request=None         , corpus=None
                                         , start=start           , end =end
                                         , mapList_id=mapList_id , groupList_id=groupList_id
                                         , isMonopartite=True    , threshold = threshold
+                                        , distance=distance     , bridgeness=bridgeness
                                         , save_on_db = True
                                        #, limit=size
                                         )
@@ -133,57 +132,46 @@ def get_graph( request=None         , corpus=None
                                         , start=start           , end =end
                                         , mapList_id=mapList_id , groupList_id=groupList_id
                                         , isMonopartite=True    , threshold = threshold
+                                        , distance=distance     , bridgeness=bridgeness
                                         , save_on_db = True
                                        #, limit=size
                                         )
-            # Dic to inform user that corpus maximum is reached then
+            # Dict to inform user that corpus maximum is reached then
             # graph is computed asynchronously
             return {"state" : "corpusMax", "length" : corpus_size}
-        
+
         elif corpus_size <= graph_constraints['corpusMin']:
             # Do not compute the graph if corpus is not big enough
             return {"state" : "corpusMin", "length" : corpus_size}
-  
+
         else:
             # If graph_constraints are ok then compute the graph in live
-            cooc_matrix = countCooccurrences( corpus_id=corpus.id
-                                       #, field1="ngrams", field2="ngrams"
-                                        , start=start           , end =end
-                                        , mapList_id=mapList_id , groupList_id=groupList_id
-                                        , isMonopartite=True    , threshold = threshold
-                                        , save_on_db = True
-                                       #, limit=size
-                                        )
+            data = countCooccurrences( corpus_id=corpus.id
+                                      #, field1="ngrams", field2="ngrams"
+                                       , start=start           , end =end
+                                       , mapList_id=mapList_id , groupList_id=groupList_id
+                                       , isMonopartite=True    , threshold = threshold
+                                       , distance=distance     , bridgeness=bridgeness
+                                       , save_on_db = True
+                                      #, limit=size
+                                       )
+
+
+        # case when 0 coocs are observed (usually b/c not enough ngrams in maplist)
+
+        if len(data) == 0:
+            print("GET_GRAPH: 0 coocs in matrix")
+            data = {'nodes':[], 'links':[]}  # empty data
+
+           
     else:
         print("Getting data for matrix %d", int(cooc_id))
-        matrix      = WeightedMatrix(int(cooc_id))
+        node = session.query(Node).filter(Node.id == cooc_id).first()
+        data = node.hyperdata[distance]["data"]
+        #print(data)
+        #matrix      = WeightedMatrix(int(cooc_id))
         #print(matrix)
-        cooc_matrix = filterMatrix(matrix, mapList_id, groupList_id)
-
-
-    # fyi
-    after_cooc = datetime.now()
-    print("... Cooccurrences took %f s." % (after_cooc - before_cooc).total_seconds())
-
-
-    # case when 0 coocs are observed (usually b/c not enough ngrams in maplist)
-    if len(cooc_matrix.items) == 0:
-        print("GET_GRAPH: 0 coocs in matrix")
-        data = {'nodes':[], 'links':[]}  # empty data
+        #cooc_matrix = filterMatrix(matrix, mapList_id, groupList_id)
 
     # normal case
-    else:
-        G, partition, ids, weight = clusterByDistances ( cooc_matrix
-                                                       , field1="ngrams", field2="ngrams"
-                                                       , distance=distance
-                                                       )
-
-        after_cluster = datetime.now()
-        print("... Clustering took %f s." % (after_cluster - after_cooc).total_seconds())
-
-        data = filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2)
-
-        after_filter = datetime.now()
-        print("... Filtering took %f s." % (after_filter - after_cluster).total_seconds())
-
     return data

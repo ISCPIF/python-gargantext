@@ -16,16 +16,16 @@ import networkx as nx
 
 def clusterByDistances( cooc_matrix
                , field1=None, field2=None
-               , distance='conditional'):
+               , distance=None):
     '''
-    do_distance :: Coocs[nga, ngb => ccweight] -> (Graph, Partition, {ids}, {weight})
+    clusterByDistance :: Coocs[nga, ngb => ccweight] -> (Graph, Partition, {ids}, {weight})
     '''
 
     # implicit global session
 
     authorized = ['conditional', 'distributional', 'cosine']
     if distance not in authorized:
-        distance = 'conditional'
+        raise ValueError("Distance must be in %s" % str(authorized))
 
     matrix = defaultdict(lambda : defaultdict(float))
     ids    = defaultdict(lambda : defaultdict(int))

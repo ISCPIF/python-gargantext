@@ -3,19 +3,42 @@ from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
 from gargantext.util.db    import session, aliased, bulk_insert, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
+from graph.distances       import clusterByDistances
+from graph.bridgeness      import filterByBridgeness
 
 from sqlalchemy            import desc, asc, or_, and_
 
 #import inspect
-import datetime
+from datetime import datetime
 
 from celery               import shared_task
 
 def filterMatrix(matrix, mapList_id, groupList_id):
-    mapList   = UnweightedList( mapList_id  )
+    mapList    = UnweightedList( mapList_id  )
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
     return cooc
+
+
+def cooc2graph( cooc_id, cooc_matrix, field1="ngrams", field2="ngrams", distance=None, bridgeness=None):
+            
+            print("GRAPH#%d ... Clustering with distance %s ." % (cooc_id,distance))
+            G, partition, ids, weight = clusterByDistances ( cooc_matrix
+                                                           , field1="ngrams", field2="ngrams"
+                                                           , distance=distance
+                                                           )
+
+            print("GRAPH#%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
+            data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
+
+            print("GRAPH#%d ... Saving Graph in hyperdata as json." % cooc_id)
+            node = session.query(Node).filter(Node.id == cooc_id).first()
+
+            node.hyperdata[distance] = dict()
+            node.hyperdata[distance]["data"] = data
+            node.save_hyperdata()
+            session.commit()
+            return data
 
 
 @shared_task
@@ -26,12 +49,13 @@ def countCooccurrences( corpus_id=None         , test= False
                       , n_min=1, n_max=None , limit=1000
                       , coocNode_id=None    , reset=True
                       , isMonopartite=True  , threshold = 3
-                      , save_on_db= False,  # just return the WeightedMatrix,
+                      , distance=None       , bridgeness=None
+                      , save_on_db= True,  # just return the WeightedMatrix,
                                                  #    (don't write to DB)
                       ):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
-    For the moment list of paramters are not supported because, lists need to
+    For the moment list of parameters are not supported because, lists need to
     be merged before.
     corpus           :: Corpus
 
@@ -162,7 +186,7 @@ def countCooccurrences( corpus_id=None         , test= False
     if start is not None:
         #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
         # TODO : more complexe date format here.
-        date_start = datetime.datetime.strptime (str(start), "%Y-%m-%d")
+        date_start = datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
 
         Start=aliased(NodeHyperdata)
@@ -178,7 +202,7 @@ def countCooccurrences( corpus_id=None         , test= False
 
     if end is not None:
         # TODO : more complexe date format here.
-        date_end = datetime.datetime.strptime (str(end), "%Y-%m-%d")
+        date_end = datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
 
         End=aliased(NodeHyperdata)
@@ -208,22 +232,29 @@ def countCooccurrences( corpus_id=None         , test= False
     #cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
+    
+    print("Node #%d Filtering the matrix with Map and Group Lists." % coocNode_id)
     cooc = filterMatrix(matrix, mapList_id, groupList_id)
-
-    parameters['MapList_id'] = str(mapList_id)
-    parameters['GroupList_id'] = str(mapList_id)
+    
+    parameters['MapList_id']   = str(mapList_id)
+    parameters['GroupList_id'] = str(groupList_id)
 
     if save_on_db:
-        # Saving cooc Matrix
         cooc.save(coocNode_id)
+        print("Node Cooccurrence Matrix saved")
         
         # Saving the parameters
+        print("Saving parameters in Node %d" % coocNode_id)
         coocNode = session.query(Node).filter(Node.id==coocNode_id).first()
-        coocNode.hyperdata = parameters
+        coocNode.hyperdata[distance] = dict()
+        coocNode.hyperdata[distance]["parameters"] = parameters
         session.add(coocNode)
         session.commit()
         
+        data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
+        print(data)
         # Log message
-        print("Cooccurrence Matrix saved")
     
-    return cooc
+    else:
+        data = cooc2graph(coocNode_id, cooc, distance=distance)
+        return data

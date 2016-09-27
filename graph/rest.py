@@ -123,18 +123,17 @@ class Graph(APIView):
             groupList_id  = groupList_id[0]
 
             if groupList_id == None :
-                # todo add as an error msg ?
                 raise ValueError("GROUPLIST node needed for cooccurrences")
 
 
-        # Check the options
+        # Declare accepted fields
         accepted_field1 = ['ngrams', 'journal', 'source', 'authors']
         accepted_field2 = ['ngrams',                               ]
         options         = ['start', 'end', 'threshold', 'distance', 'cooc_id' ]
 
 
         try:
-            # Test params
+            # Check if parameters are accepted
             if (field1 in accepted_field1) and (field2 in accepted_field2):
                 if start is not None and end is not None :
                     data = get_graph( corpus=corpus, cooc_id = cooc_id

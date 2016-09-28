@@ -1,6 +1,6 @@
 from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
                                   NodeHyperdata, HyperdataKey
-from gargantext.util.db    import session, aliased, bulk_insert, func
+from gargantext.util.db    import session, aliased, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
 from graph.distances       import clusterByDistances
@@ -19,48 +19,61 @@ def filterMatrix(matrix, mapList_id, groupList_id):
     cooc       = matrix & (mapList * group_list)
     return cooc
 
-# computeGraph
-def cooc2graph( cooc_id, cooc_matrix, field1="ngrams", field2="ngrams", distance=None, bridgeness=None):
-            
-            print("GRAPH#%d ... Computing cooccurrences." % (cooc_id))
-            # Check if already computed cooc
-            # (cooc_id, cooc) = count(countCooccurrences)
-            
-            print("GRAPH#%d ... Clustering with distance %s ." % (cooc_id,distance))
-            G, partition, ids, weight = clusterByDistances ( cooc_matrix
-                                                           , field1="ngrams", field2="ngrams"
-                                                           , distance=distance
-                                                           )
-
-            print("GRAPH#%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
-            data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
-
-            print("GRAPH#%d ... Saving Graph in hyperdata as json." % cooc_id)
-            node = session.query(Node).filter(Node.id == cooc_id).first()
-
-            if node.hyperdata.get(distance, None) is None:
-                node.hyperdata[distance] = dict()
-            
-            node.hyperdata[distance][bridgeness] = data
-            
-            node.save_hyperdata()
-            session.commit()
-            
-            print("GRAPH#%d ... Returning data as json." % cooc_id)
-            return data
-
-
 @shared_task
-def countCooccurrences( corpus_id=None      , test= False
+def computeGraph( corpus_id=None, cooc_id=None    
+                , field1='ngrams'     , field2='ngrams'
+                , start=None          , end=None
+                , mapList_id=None     , groupList_id=None
+                , distance=None       , bridgeness=None
+                , n_min=1, n_max=None , limit=1000
+                , isMonopartite=True  , threshold = 3
+                , save_on_db= True    , reset=True
+                ):
+
+        print("GRAPH# ... Computing cooccurrences.")
+        (cooc_id, cooc_matrix) = countCooccurrences( corpus_id=corpus_id, cooc_id=cooc_id
+                                    , field1=field1, field2=field2
+                                    , start=start           , end =end
+                                    , mapList_id=mapList_id , groupList_id=groupList_id
+                                    , isMonopartite=True    , threshold = threshold
+                                    , distance=distance     , bridgeness=bridgeness
+                                    , save_on_db = True
+                                    )
+        print("GRAPH#%d ... Cooccurrences computed." % (cooc_id))
+
+        
+        print("GRAPH#%d ... Clustering with distance %s ." % (cooc_id,distance))
+        G, partition, ids, weight = clusterByDistances ( cooc_matrix
+                                                       , field1="ngrams", field2="ngrams"
+                                                       , distance=distance
+                                                       )
+
+        print("GRAPH#%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
+        data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
+
+        print("GRAPH#%d ... Saving Graph in hyperdata as json." % cooc_id)
+        node = session.query(Node).filter(Node.id == cooc_id).first()
+
+        if node.hyperdata.get(distance, None) is None:
+            node.hyperdata[distance] = dict()
+        
+        node.hyperdata[distance][bridgeness] = data
+        
+        node.save_hyperdata()
+        session.commit()
+            
+        print("GRAPH#%d ... Returning data as json." % cooc_id)
+        return data
+
+
+def countCooccurrences( corpus_id=None, cooc_id=None    
                       , field1='ngrams'     , field2='ngrams'
                       , start=None          , end=None
                       , mapList_id=None     , groupList_id=None
-                      , n_min=1, n_max=None , limit=1000
-                      , coocNode_id=None    , reset=True
-                      , isMonopartite=True  , threshold = 3
                       , distance=None       , bridgeness=None
-                      , save_on_db= True,  # just return the WeightedMatrix,
-                                                 #    (don't write to DB)
+                      , n_min=1, n_max=None , limit=1000
+                      , isMonopartite=True  , threshold = 3
+                      , save_on_db= True    , reset=True
                       ):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
@@ -71,15 +84,13 @@ def countCooccurrences( corpus_id=None      , test= False
     mapList_id       :: Int
     groupList_id     :: Int
 
-    For the moment, start and end are simple, only year is implemented yet
     start :: TimeStamp -- example: '2010-05-30 02:00:00+02'
     end   :: TimeStamp
     limit :: Int
 
     '''
-    # TODO : add hyperdata here
 
-    # Parameters to save in hyperdata of the Node Cooc
+    # FIXME remove the lines below after factorization of parameters
     parameters = dict()
     parameters['field1'] = field1
     parameters['field2'] = field2
@@ -88,16 +99,16 @@ def countCooccurrences( corpus_id=None      , test= False
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
     # Get node of the Graph
-    if not coocNode_id:
-        
-        coocNode_id  = ( session.query( Node.id )
+    if not cooc_id:
+
+        cooc_id  = ( session.query( Node.id )
                                 .filter( Node.typename  == "COOCCURRENCES"
                                        , Node.name      == "GRAPH EXPLORER"
                                        , Node.parent_id == corpus.id
                                        )
                                 .first()
                         )
-        if not coocNode_id:
+        if not cooc_id:
             coocNode = corpus.add_child(
             typename  = "COOCCURRENCES",
             name = "GRAPH (in corpus %s)" % corpus.id
@@ -105,12 +116,12 @@ def countCooccurrences( corpus_id=None      , test= False
 
             session.add(coocNode)
             session.commit()
-            coocNode_id = coocNode.id
+            cooc_id = coocNode.id
         else :
-            coocNode_id = int(coocNode_id[0])
+            cooc_id = int(cooc_id[0])
     
     if reset == True :
-        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
+        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == cooc_id ).delete()
         session.commit()
 
 
@@ -191,7 +202,7 @@ def countCooccurrences( corpus_id=None      , test= False
     # Cooc between the dates start and end
     if start is not None:
         #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
-        # TODO : more complexe date format here.
+        # TODO : more precise date format here (day is smaller grain actually).
         date_start = datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -207,7 +218,7 @@ def countCooccurrences( corpus_id=None      , test= False
 
 
     if end is not None:
-        # TODO : more complexe date format here.
+        # TODO : more precise date format here (day is smaller grain actually).
         date_end = datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -239,28 +250,27 @@ def countCooccurrences( corpus_id=None      , test= False
 
     matrix = WeightedMatrix(cooc_query)
     
-    print("GRAPH #%s Filtering the matrix with Map and Group Lists." % coocNode_id)
+    print("GRAPH #%s Filtering the matrix with Map and Group Lists." % cooc_id)
     cooc = filterMatrix(matrix, mapList_id, groupList_id)
     
     parameters['MapList_id']   = str(mapList_id)
     parameters['GroupList_id'] = str(groupList_id)
-
+    
+    # TODO factorize savings on db
     if save_on_db:
         # Saving the cooccurrences
-        cooc.save(coocNode_id)
-        print("GRAPH#%s ... Node Cooccurrence Matrix saved" % coocNode_id)
+        cooc.save(cooc_id)
+        print("GRAPH#%s ... Node Cooccurrence Matrix saved" % cooc_id)
         
         # Saving the parameters
-        print("GRAPH#%s ... Parameters saved in Node." % coocNode_id)
-        coocNode = session.query(Node).filter(Node.id==coocNode_id).first()
+        print("GRAPH#%s ... Parameters saved in Node." % cooc_id)
+        coocNode = session.query(Node).filter(Node.id==cooc_id).first()
         coocNode.hyperdata[distance] = dict()
         coocNode.hyperdata[distance]["parameters"] = parameters
         session.add(coocNode)
         session.commit()
         
-        data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
-        return data
+        #data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
+        #return data
     
-    else:
-        data = cooc2graph(coocNode_id, cooc, distance=distance)
-        return data
+    return(coocNode.id, cooc)

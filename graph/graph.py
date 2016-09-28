@@ -5,7 +5,7 @@ from gargantext.util.http         import JsonHttpResponse
 from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
 
 #from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graph.cooccurrences  import countCooccurrences, filterMatrix
+from graph.cooccurrences  import computeGraph, filterMatrix
 from graph.distances      import clusterByDistances
 from graph.bridgeness     import filterByBridgeness
 
@@ -19,12 +19,9 @@ def get_graph( request=None         , corpus=None
             , mapList_id = None     , groupList_id = None
             , cooc_id=None          , type='node_link'
             , start=None            , end=None
-            , threshold=1
-            , distance='conditional'
-            , isMonopartite=True                # By default, we compute terms/terms graph
-            , bridgeness=5
-            , saveOnly=None
-            #, size=1000
+            , distance='conditional', bridgeness=5
+            , threshold=1           , isMonopartite=True
+            , saveOnly=True
         ):
     '''
     Get_graph : main steps:
@@ -54,7 +51,7 @@ def get_graph( request=None         , corpus=None
 
     # Case of graph has been computed already
     if cooc_id is not None:
-        print("Getting data for matrix %d", int(cooc_id))
+        print("GRAPH#%d ... Loading data already computed." % int(cooc_id))
         node = session.query(Node).filter(Node.id == cooc_id).first()
         
         # Structure of the Node.hyperdata[distance][bridbeness]
@@ -64,8 +61,6 @@ def get_graph( request=None         , corpus=None
         # Check distance of the graph
         if node.hyperdata.get(distance, None) is not None:
             graph = node.hyperdata[distance]
-
-            print(node.hyperdata[distance].keys())
 
             # Check bridgeness of the graph
             if graph.get(str(bridgeness), None) is not None:
@@ -133,7 +128,7 @@ def get_graph( request=None         , corpus=None
     corpus_size = corpus_size_query.count()
 
     if saveOnly is not None and saveOnly == "True":
-        scheduled(countCooccurrences)( corpus_id=corpus.id, coocNode_id=cooc_id
+        scheduled(computeGraph)( corpus_id=corpus.id, cooc_id=cooc_id
                                    #, field1="ngrams", field2="ngrams"
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
@@ -144,9 +139,9 @@ def get_graph( request=None         , corpus=None
                                     )
         return {"state" : "saveOnly"}
 
-    if corpus_size > graph_constraints['corpusMax']:
+    elif corpus_size > graph_constraints['corpusMax']:
         # Then compute cooc asynchronously with celery
-        scheduled(countCooccurrences)( corpus_id=corpus.id, coocNode_id=cooc_id
+        scheduled(computeGraph)( corpus_id=corpus.id, cooc_id=cooc_id
                                    #, field1="ngrams", field2="ngrams"
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
@@ -155,8 +150,8 @@ def get_graph( request=None         , corpus=None
                                     , save_on_db = True
                                    #, limit=size
                                     )
-        # Dict to inform user that corpus maximum is reached then
-        # graph is computed asynchronously
+        # Dict to inform user that corpus maximum is reached 
+        # then graph is computed asynchronously
         return {"state" : "corpusMax", "length" : corpus_size}
 
     elif corpus_size <= graph_constraints['corpusMin']:
@@ -165,7 +160,7 @@ def get_graph( request=None         , corpus=None
 
     else:
         # If graph_constraints are ok then compute the graph in live
-        data = countCooccurrences( corpus_id=corpus.id, coocNode_id=cooc_id
+        data = computeGraph( corpus_id=corpus.id, cooc_id=cooc_id
                                   #, field1="ngrams", field2="ngrams"
                                    , start=start           , end =end
                                    , mapList_id=mapList_id , groupList_id=groupList_id

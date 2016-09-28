@@ -1,5 +1,3 @@
-#from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-
 from gargantext.util.db      import session
 from gargantext.models.nodes import Node
 from graph.graph             import get_graph
@@ -8,7 +6,7 @@ from gargantext.util.http    import APIView, APIException\
                                   , JsonHttpResponse, requires_auth
 
 from gargantext.constants    import graph_constraints
-from traceback import format_tb
+from traceback               import format_tb
 
 class Graph(APIView):
     '''
@@ -29,6 +27,16 @@ class Graph(APIView):
         # Get the node we are working with
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
+
+        # TODO Parameters to save in hyperdata of the Node Cooc
+        # WARNING: we could factorize the parameters as dict but ...
+        #         ...  it causes a bug in asynchronous function !
+        # Check celery upgrades before.
+        # Example (for the future):
+        #        parameters = dict()
+        #        parameters['field1'] = field1
+        #        parameters['field2'] = field2
+
         # Get all the parameters in the URL
         cooc_id      = request.GET.get     ('cooc_id'   , None         )
         saveOnly     = request.GET.get     ('saveOnly'  , None         )
@@ -47,6 +55,7 @@ class Graph(APIView):
         format_      = str(request.GET.get ('format'    , 'json'       ))
         type_        = str(request.GET.get ('type'      , 'node_link'  ))
         distance     = str(request.GET.get ('distance'  , 'conditional'))
+
 
         # Get default map List of corpus
         if mapList_id == 0 :

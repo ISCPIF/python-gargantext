@@ -57,15 +57,24 @@ def get_graph( request=None         , corpus=None
         print("Getting data for matrix %d", int(cooc_id))
         node = session.query(Node).filter(Node.id == cooc_id).first()
         
-        # Check if 
+        # Structure of the Node.hyperdata[distance][bridbeness]
+        # All parameters (but distance and bridgeness)
+        # are in Node.hyperdata["parameters"]
+
+        # Check distance of the graph
         if node.hyperdata.get(distance, None) is not None:
-            data = node.hyperdata[distance]["data"]
-            return data
+            graph = node.hyperdata[distance]
+
+            print(node.hyperdata[distance].keys())
+
+            # Check bridgeness of the graph
+            if graph.get(str(bridgeness), None) is not None:
+                return graph[str(bridgeness)]
 
 
     # Case of graph has not been computed already
-    
     # First, check the parameters
+    
     # Case of mapList not big enough
     # ==============================
 

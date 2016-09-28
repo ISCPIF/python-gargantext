@@ -91,7 +91,8 @@ class Graph(APIView):
                                , field1=field1           , field2=field2
                                , mapList_id = mapList_id , groupList_id = groupList_id
                                , start=start             , end=end
-                               , threshold =threshold    , distance=distance
+                               , threshold =threshold    
+                               , distance=distance       , bridgeness=bridgeness
                                , saveOnly=saveOnly
                                )
 

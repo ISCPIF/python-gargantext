@@ -38,8 +38,10 @@ def cooc2graph( cooc_id, cooc_matrix, field1="ngrams", field2="ngrams", distance
             print("GRAPH#%d ... Saving Graph in hyperdata as json." % cooc_id)
             node = session.query(Node).filter(Node.id == cooc_id).first()
 
-            node.hyperdata[distance] = dict()
-            node.hyperdata[distance]["data"] = data
+            if node.hyperdata.get(distance, None) is None:
+                node.hyperdata[distance] = dict()
+            
+            node.hyperdata[distance][bridgeness] = data
             
             node.save_hyperdata()
             session.commit()

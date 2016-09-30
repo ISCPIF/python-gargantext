@@ -264,10 +264,10 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
     if save_on_db:
         # Saving the cooccurrences
         cooc.save(cooc_id)
-        print("GRAPH#%s ... Node Cooccurrence Matrix saved" % cooc_id)
+        print("GRAPH #%s ... Node Cooccurrence Matrix saved" % cooc_id)
         
         # Saving the parameters
-        print("GRAPH#%s ... Parameters saved in Node." % cooc_id)
+        print("GRAPH #%s ... Parameters saved in Node." % cooc_id)
         coocNode = session.query(Node).filter(Node.id==cooc_id).first()
         coocNode.hyperdata[distance] = dict()
         coocNode.hyperdata[distance]["parameters"] = parameters

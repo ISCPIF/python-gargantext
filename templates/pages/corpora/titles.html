@@ -21,12 +21,12 @@
     <div class="col-md-3 col-md-offset-2">
         <div id="monthly-move-chart">
             <center>
-              Select a time range in the chart with blue bars to zoom in
-              <p align="center">
+                   Select a time range in the chart with blue bars to zoom in
+                <p align="center">
                 <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
-                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a>
-              </p>
-              <div class="clearfix"></div>
+                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
+
+                <div class="clearfix"></div>
             </center>
         </div>
 
@@ -68,14 +68,10 @@
                     <span style="font-size:70%;">
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
                       <!-- Used by the #doubleSearch associated function -->
-                      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">
-                        TI&nbsp;
-                      </input>
-                      <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">
-                        AB&nbsp;&nbsp;
-                      </input>
-                    </span>
+                      <input title="Search in Titles" id="searchTI" name="searchTI" type="checkbox" checked onclick="return false">TI&nbsp;
+                    <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
+                      <input title="Search in Abstracts" id="searchAB" name="searchAB" type="checkbox">AB
+                    </span>&nbsp;&nbsp;
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
                     <select id="docFilter" name="docFilter">
                         <option value="filter_all">All</option>

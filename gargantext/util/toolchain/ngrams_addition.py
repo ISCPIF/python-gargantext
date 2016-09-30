@@ -23,8 +23,6 @@ from gargantext.util.db  import bulk_insert_ifnotexists # £TODO debug
 from sqlalchemy          import distinct
 from re                  import findall, IGNORECASE
 
-from gargantext.util.toolchain.main import t   # timer
-
 # TODO from gargantext.constants import LIST_OF_KEYS_TO_INDEX = title, abstract
 
 def index_new_ngrams(ngram_ids, corpus, keys=('title', 'abstract', )):
@@ -42,8 +40,6 @@ def index_new_ngrams(ngram_ids, corpus, keys=('title', 'abstract', )):
     @param corpus: the CORPUS node
 
     @param keys: the hyperdata fields to index
-
-    # FIXME too slow: index_new_ngrams should be faster via tsvector on DB
     """
 
     # retrieve *all* the ngrams from our list
@@ -60,11 +56,7 @@ def index_new_ngrams(ngram_ids, corpus, keys=('title', 'abstract', )):
     node_ngram_to_write = {}
 
     # loop throught the docs and their text fields
-    for (i, doc) in enumerate(corpus.children('DOCUMENT')):
-
-        if (i % 100 == 0):
-            print('CORPUS #%d: [%s] ngrams_addition: doc %i' % (corpus.id, t(), i))
-            print()
+    for doc in corpus.children('DOCUMENT'):
 
         # a new empty counting subdict
         node_ngram_to_write[doc.id] = {}

@@ -46,9 +46,6 @@ class ModelCache(dict):
 class Cache:
 
     def __getattr__(self, key):
-        '''
-        lazy init of new modelcaches: self.Node, self.User...
-        '''
         try:
             model = getattr(models, key)
         except AttributeError:
@@ -56,16 +53,5 @@ class Cache:
         modelcache = ModelCache(model)
         setattr(self, key, modelcache)
         return modelcache
-
-
-    def clean_all(self):
-        '''
-        re-init any existing modelcaches
-        '''
-        for modelname in self.__dict__:
-            old_modelcache = getattr(cache, modelname)
-            new_modelcache = ModelCache(old_modelcache._model)
-            del old_modelcache
-            setattr(cache, modelname, new_modelcache)
 
 cache = Cache()

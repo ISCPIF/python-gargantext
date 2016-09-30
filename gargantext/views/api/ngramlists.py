@@ -373,6 +373,10 @@ class ListChange(APIView):
     def put(self, request):
         """
         Adds one or more ngrams to a list.
+
+        NB: we assume ngram_ids don't contain subforms !!
+            (this assumption is not checked here because it would be
+             slow: if you want to add a subform, send the mainform's id)
         """
         # union of items ----------------------------
         new_list = self.base_list + self.change_list

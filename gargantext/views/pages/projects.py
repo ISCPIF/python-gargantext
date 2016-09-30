@@ -54,6 +54,9 @@ def overview(request):
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
+            # status refreshing params (when active workflows)
+            'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+            'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
         },
     )
 

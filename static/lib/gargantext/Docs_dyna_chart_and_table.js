@@ -592,7 +592,7 @@ function Main_test(Data) {
           // by default we always decide to search in the title
           matchInTexts = [record.rawtitle]
 
-          // if box is checked we'll also search in the abstracts
+          // if box is checked we'll also search in the abstracts (todo: via ajax)
           if (doAbstractsSearch) {
               if (typeof record.hyperdata.abstract !== 'undefined') {
                   matchInTexts.push(record.hyperdata.abstract)
@@ -630,9 +630,23 @@ function Main_test(Data) {
     MyTable.data('dynatable').sorts.functions["signatureSort"] = makeAlphaSortFunctionOnProperty('signature')
     MyTable.data('dynatable').sorts.functions["sourceSort"] = function sourceSort (rec1,rec2, attr, direction) {
         // like rawtitle but nested property
-        if (direction == 1) return rec1.hyperdata.source.localeCompare(rec2.hyperdata.source)
-        else                return rec2.hyperdata.source.localeCompare(rec1.hyperdata.source)
-    }
+        if (rec1.hyperdata && rec1.hyperdata.source
+            && rec2.hyperdata && rec2.hyperdata.source) {
+            // the alphabetic sort
+            if (direction == 1) return rec1.hyperdata.source.localeCompare(rec2.hyperdata.source)
+            else                return rec2.hyperdata.source.localeCompare(rec1.hyperdata.source)
+        }
+        else if (rec1.hyperdata && rec1.hyperdata.source) {
+            cmp = direction
+        }
+        else if (rec2.hyperdata && rec2.hyperdata.source) {
+            cmp = -direction
+        }
+        else {
+          cmp = 0
+        }
+        if (cmp == 0)       cmp = RecDict[rec1.id] < RecDict[rec2.id] ? -1 : 1
+      }
 
     // hook on page change
     MyTable.bind('dynatable:page:set', tidyAfterPageSet)
@@ -736,9 +750,20 @@ function makeAlphaSortFunctionOnProperty(property) {
     return function (rec1,rec2, attr, direction) {
         var cmp = null
 
-        // the alphabetic sort
-        if (direction == 1) cmp = rec1[property].localeCompare(rec2[property])
-        else                cmp = rec2[property].localeCompare(rec1[property])
+        if (rec1[property] && rec2[property]) {
+            // the alphabetic sort
+            if (direction == 1) cmp = rec1[property].localeCompare(rec2[property])
+            else                cmp = rec2[property].localeCompare(rec1[property])
+        }
+        else if (rec1[property]) {
+            cmp = direction
+        }
+        else if (rec2[property]) {
+            cmp = -direction
+        }
+        else {
+          cmp = 0
+        }
 
         // second level sorting on key = id in records array
         // (this one volontarily not reversable by direction
@@ -768,7 +793,10 @@ function tidyAfterPageSet() {
 $.ajax({
   url: '/api/nodes?types[]=DOCUMENT&pagination_limit=-1&parent_id='
         + corpus_id
-        +'&fields[]=parent_id&fields[]=id&fields[]=name&fields[]=typename&fields[]=hyperdata',
+        +'&fields[]=parent_id&fields[]=id&fields[]=name&fields[]=typename&fields[]=hyperdata'
+        // +'&hyperdata_filter[]=title&hyperdata_filter[]=source&hyperdata_filter[]=language_iso2'
+        +'&hyperdata_filter[]=title&hyperdata_filter[]=source&hyperdata_filter[]=language_iso2&hyperdata_filter[]=abstract'
+        +'&hyperdata_filter[]=publication_year&hyperdata_filter[]=publication_month&hyperdata_filter[]=publication_day',
   success: function(maindata){
       // unfortunately favorites info is in a separate request (other nodes)
       $.ajax({
@@ -837,6 +865,10 @@ $.ajax({
                                 +"/"+
                                  rec.hyperdata.publication_day
                                 )
+
+              // and a bool property for remote search results
+              // (will be updated by ajax)
+              rec.matched_remote_search = false      // TODO use it
 
           }
 

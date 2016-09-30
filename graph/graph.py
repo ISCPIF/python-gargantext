@@ -4,15 +4,16 @@ from gargantext.util.lists        import WeightedMatrix, UnweightedList, Transla
 from gargantext.util.http         import JsonHttpResponse
 from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
 
-from graph.cooccurrences  import countCooccurrences
-from graph.distances      import clusterByDistances
-from graph.bridgeness     import filterByBridgeness
+from graph.cooccurrences          import countCooccurrences
+from graph.distances              import clusterByDistances
+from graph.bridgeness             import filterByBridgeness
+from graph.mail_notification      import notify_owner
 
-from gargantext.util.scheduling import scheduled
-from gargantext.constants import graph_constraints
+from gargantext.util.scheduling   import scheduled
+from gargantext.constants         import graph_constraints
 
-from celery               import shared_task
-from datetime             import datetime
+from celery                       import shared_task
+from datetime                     import datetime
 
 
 @shared_task
@@ -73,6 +74,10 @@ def compute_graph( corpus_id=None      , cooc_id=None
         node.hyperdata[distance][bridgeness] = data
         node.save_hyperdata()
         session.commit()
+        
+        print("GRAPH #%d ... Notify by email owner of the graph." % cooc_id)
+        corpus = session.query(Node).filter(Node.id==corpus_id).first()
+        notify_owner(corpus, cooc_id, distance, bridgeness)
 
         print("GRAPH #%d ... Returning data as json." % cooc_id)
         return data

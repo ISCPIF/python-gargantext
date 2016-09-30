@@ -4,15 +4,78 @@ from gargantext.util.lists        import WeightedMatrix, UnweightedList, Transla
 from gargantext.util.http         import JsonHttpResponse
 from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
 
-#from gargantext.util.toolchain.ngram_coocs import compute_coocs
-from graph.cooccurrences  import computeGraph, filterMatrix
+from graph.cooccurrences  import countCooccurrences
 from graph.distances      import clusterByDistances
 from graph.bridgeness     import filterByBridgeness
 
 from gargantext.util.scheduling import scheduled
 from gargantext.constants import graph_constraints
 
-from datetime import datetime
+from celery               import shared_task
+from datetime             import datetime
+
+
+@shared_task
+def compute_graph( corpus_id=None      , cooc_id=None
+                , field1='ngrams'     , field2='ngrams'
+                , start=None          , end=None
+                , mapList_id=None     , groupList_id=None
+                , distance=None       , bridgeness=None
+                , n_min=1, n_max=None , limit=1000
+                , isMonopartite=True  , threshold = 3
+                , save_on_db= True    , reset=True
+                ) :
+        '''
+        All steps to compute a graph:
+
+        1) count Cooccurrences  (function countCooccurrences)
+                main parameters: threshold, isMonopartite
+
+        2) filter and cluster By Distances (function clusterByDistances)
+                main parameter: distance
+                TODO option clustering='louvain'
+                     or 'percolation' or 'random walk' or ...
+
+        3) filter By Bridgeness (function filterByBridgeness)
+                main parameter: bridgeness
+
+        4) format the graph     (formatGraph)
+                main parameter: format_
+        '''
+
+        print("GRAPH # ... Computing cooccurrences.")
+        (cooc_id, cooc_matrix) = countCooccurrences( corpus_id=corpus_id, cooc_id=cooc_id
+                                    , field1=field1, field2=field2
+                                    , start=start           , end =end
+                                    , mapList_id=mapList_id , groupList_id=groupList_id
+                                    , isMonopartite=True    , threshold = threshold
+                                    , distance=distance     , bridgeness=bridgeness
+                                    , save_on_db = True
+                                    )
+        print("GRAPH #%d ... Cooccurrences computed." % (cooc_id))
+
+
+        print("GRAPH #%d ... Clustering with %s distance." % (cooc_id,distance))
+        G, partition, ids, weight = clusterByDistances ( cooc_matrix
+                                                       , field1="ngrams", field2="ngrams"
+                                                       , distance=distance
+                                                       )
+
+        print("GRAPH #%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
+        data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
+
+        print("GRAPH #%d ... Saving Graph in hyperdata as json." % cooc_id)
+        node = session.query(Node).filter(Node.id == cooc_id).first()
+
+        if node.hyperdata.get(distance, None) is None:
+            node.hyperdata[distance] = dict()
+
+        node.hyperdata[distance][bridgeness] = data
+        node.save_hyperdata()
+        session.commit()
+
+        print("GRAPH #%d ... Returning data as json." % cooc_id)
+        return data
 
 def get_graph( request=None         , corpus=None
             , field1='ngrams'       , field2='ngrams'
@@ -22,7 +85,7 @@ def get_graph( request=None         , corpus=None
             , distance='conditional', bridgeness=5
             , threshold=1           , isMonopartite=True
             , saveOnly=True
-        ):
+            ) :
     '''
     Get_graph : main steps:
     0) Check the parameters
@@ -33,18 +96,9 @@ def get_graph( request=None         , corpus=None
     get_graph first checks the parameters and return either graph data or a dict with 
     state "type" with an integer to indicate the size of the parameter 
     (maybe we could add a String in that step to factor and give here the error message)
-
-    1) count Cooccurrences  (function countCooccurrences)
-            main parameters: threshold
-
-    2) filter and cluster By Distances (function clusterByDistances)
-            main parameter: distance
-
-    3) filter By Bridgeness (function filterByBridgeness)
-            main parameter: bridgeness
-
-    4) format the graph     (formatGraph)
-            main parameter: format_
+    
+    1) compute_graph (see function above)
+    2) return graph
 
     '''
 
@@ -69,7 +123,7 @@ def get_graph( request=None         , corpus=None
 
     # Case of graph has not been computed already
     # First, check the parameters
-    
+
     # Case of mapList not big enough
     # ==============================
 
@@ -128,7 +182,7 @@ def get_graph( request=None         , corpus=None
     corpus_size = corpus_size_query.count()
 
     if saveOnly is not None and saveOnly == "True":
-        scheduled(computeGraph)( corpus_id=corpus.id, cooc_id=cooc_id
+        scheduled(compute_graph)( corpus_id=corpus.id, cooc_id=cooc_id
                                    #, field1="ngrams", field2="ngrams"
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
@@ -141,7 +195,7 @@ def get_graph( request=None         , corpus=None
 
     elif corpus_size > graph_constraints['corpusMax']:
         # Then compute cooc asynchronously with celery
-        scheduled(computeGraph)( corpus_id=corpus.id, cooc_id=cooc_id
+        scheduled(compute_graph)( corpus_id=corpus.id, cooc_id=cooc_id
                                    #, field1="ngrams", field2="ngrams"
                                     , start=start           , end =end
                                     , mapList_id=mapList_id , groupList_id=groupList_id
@@ -160,7 +214,7 @@ def get_graph( request=None         , corpus=None
 
     else:
         # If graph_constraints are ok then compute the graph in live
-        data = computeGraph( corpus_id=corpus.id, cooc_id=cooc_id
+        data = compute_graph( corpus_id=corpus.id, cooc_id=cooc_id
                                   #, field1="ngrams", field2="ngrams"
                                    , start=start           , end =end
                                    , mapList_id=mapList_id , groupList_id=groupList_id
@@ -173,7 +227,7 @@ def get_graph( request=None         , corpus=None
     # case when 0 coocs are observed (usually b/c not enough ngrams in maplist)
 
     if len(data) == 0:
-        print("GET_GRAPH: 0 coocs in matrix")
+        print("GRAPH #   ... GET_GRAPH: 0 coocs in matrix")
         data = {'nodes':[], 'links':[]}  # empty data
 
     return data

@@ -32,10 +32,6 @@ def requires_auth(func):
             from gargantext.util.db import session
             session.rollback()
             print("=== session rollback ok!")
-            # re init the global cache (it must still have detached instances)
-            from gargantext.util.db_cache import cache
-            cache.clean_all()
-            print("=== cache reinit ok!")
             # and relogin for safety
             url = '/auth/login/?next=%s' % urlencode(request.path)
             return redirect(url)

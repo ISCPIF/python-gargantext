@@ -172,9 +172,8 @@ class Document(APIView):
 
     def get(self, request, doc_id):
         """Document by ID"""
+        # implicit global session
         node = session.query(Node).filter(Node.id == doc_id).first()
-        corpus = session.query(Node).filter(Node.id == node.parent_id).first()
-        corpus_workflow_status = corpus.hyperdata['statuses'][0]
         if node is None:
             raise APIException('This node does not exist', 404)
 
@@ -186,10 +185,9 @@ class Document(APIView):
             pub_date = node.hyperdata.get('publication_date')
 
         data = {
-            'corpus_status': corpus_workflow_status,
             'title': node.hyperdata.get('title'),
             'authors': node.hyperdata.get('authors'),
-            'source': node.hyperdata.get('source'),
+            'journal': node.hyperdata.get('journal'),
             'publication_date': pub_date,
             'full_text': node.hyperdata.get('full_text'),
             'abstract_text': node.hyperdata.get('abstract'),

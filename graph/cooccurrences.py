@@ -3,67 +3,16 @@ from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
 from gargantext.util.db    import session, aliased, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
-from graph.distances       import clusterByDistances
-from graph.bridgeness      import filterByBridgeness
 
 from sqlalchemy            import desc, asc, or_, and_
+from datetime              import datetime
 
-#import inspect
-from datetime import datetime
-
-from celery               import shared_task
 
 def filterMatrix(matrix, mapList_id, groupList_id):
     mapList    = UnweightedList( mapList_id  )
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
     return cooc
-
-@shared_task
-def computeGraph( corpus_id=None      , cooc_id=None
-                , field1='ngrams'     , field2='ngrams'
-                , start=None          , end=None
-                , mapList_id=None     , groupList_id=None
-                , distance=None       , bridgeness=None
-                , n_min=1, n_max=None , limit=1000
-                , isMonopartite=True  , threshold = 3
-                , save_on_db= True    , reset=True
-                ):
-
-        print("GRAPH # ... Computing cooccurrences.")
-        (cooc_id, cooc_matrix) = countCooccurrences( corpus_id=corpus_id, cooc_id=cooc_id
-                                    , field1=field1, field2=field2
-                                    , start=start           , end =end
-                                    , mapList_id=mapList_id , groupList_id=groupList_id
-                                    , isMonopartite=True    , threshold = threshold
-                                    , distance=distance     , bridgeness=bridgeness
-                                    , save_on_db = True
-                                    )
-        print("GRAPH #%d ... Cooccurrences computed." % (cooc_id))
-
-        
-        print("GRAPH #%d ... Clustering with %s distance." % (cooc_id,distance))
-        G, partition, ids, weight = clusterByDistances ( cooc_matrix
-                                                       , field1="ngrams", field2="ngrams"
-                                                       , distance=distance
-                                                       )
-
-        print("GRAPH #%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
-        data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
-
-        print("GRAPH #%d ... Saving Graph in hyperdata as json." % cooc_id)
-        node = session.query(Node).filter(Node.id == cooc_id).first()
-
-        if node.hyperdata.get(distance, None) is None:
-            node.hyperdata[distance] = dict()
-        
-        node.hyperdata[distance][bridgeness] = data
-        
-        node.save_hyperdata()
-        session.commit()
-            
-        print("GRAPH #%d ... Returning data as json." % cooc_id)
-        return data
 
 
 def countCooccurrences( corpus_id=None      , cooc_id=None
@@ -269,8 +218,10 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
         # Saving the parameters
         print("GRAPH #%s ... Parameters saved in Node." % cooc_id)
         coocNode = session.query(Node).filter(Node.id==cooc_id).first()
+        
         coocNode.hyperdata[distance] = dict()
         coocNode.hyperdata[distance]["parameters"] = parameters
+        
         session.add(coocNode)
         session.commit()
         

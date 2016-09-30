@@ -17,13 +17,18 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
         for node_id in G.nodes():
             #node,type(labels[node])
             nodesB_dict [ ids[node_id][1] ] = True
+            
             # TODO the query below is not optimized (do it do_distance).
             the_label = session.query(Ngram.terms).filter(Ngram.id==node_id).first()
             the_label = ", ".join(the_label)
+            
+            
             G.node[node_id]['label']        = the_label
 
             G.node[node_id]['size']         = weight[node_id]
+            
             G.node[node_id]['type']         = ids[node_id][0].replace("ngrams","terms")
+            
             G.node[node_id]['attributes']   = { "clust_default": partition[node_id]} # new format
             # G.add_edge(node, "cluster " + str(partition[node]), weight=3)
 
@@ -65,12 +70,20 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
         if bridgeness > 0:
             for c1 in com_link.keys():
                 for c2 in com_link[c1].keys():
-                    index = round(bridgeness*len(com_link[c1][c2]) / (len(com_ids[c1]) + len(com_ids[c2])))
+                    index = round(
+                                     bridgeness * len( com_link[c1][c2] )
+                                   / #----------------------------------#
+                                   ( len(com_ids[c1]) + len(com_ids[c2] ))
+                                 )
                     #print((c1,len(com_ids[c1])), (c2,len(com_ids[c2])), index)
                     if index > 0:
-                        for link in sorted(com_link[c1][c2], key=lambda x: x[2], reverse=True)[:index]:
+                        for link in sorted( com_link[c1][c2]
+                                          , key=lambda x: x[2]
+                                          , reverse=True)[:index]:
                             #print(c1, c2, link[2])
+                            
                             info = {"s": link[0], "t": link[1], "w": link[2]}
+                            
                             links.append(info)
 
 

@@ -14,6 +14,8 @@ def explorer(request, project_id, corpus_id):
     Graph explorer, also known as TinaWebJS, using SigmaJS.
     Nodes are ngrams (from title or abstract or journal name.
     Links represent proximity measure.
+
+    Data are received in RESTfull mode (see rest.py).
     '''
 
     # we pass our corpus
@@ -46,7 +48,10 @@ def explorer(request, project_id, corpus_id):
 @requires_auth
 def myGraphs(request, project_id, corpus_id):
     '''
-    List all of my Graphs
+    List all of my Graphs.
+
+    Each Graphs as one Node of Cooccurrences.
+    Each Graph is save in hyperdata of each Node.
     '''
 
     user = cache.User[request.user.id]

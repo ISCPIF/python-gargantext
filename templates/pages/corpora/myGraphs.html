@@ -26,7 +26,7 @@
 
                     <div class="col-md-5 content">
                         <li>
-                            <h5>{{cooc.name}}</h5>
+                            <h4>{{cooc.name}}</h4>
                             {{cooc.date}}
                             {% for key, value in coocs_count.items %}
                                 {% if key == cooc.id %}
@@ -40,7 +40,7 @@
                                         <li> ~{{ value }} nodes with distances:
                                             <ul>
                                                 <li>
-                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
+                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                 Conditional
                                                 </a>

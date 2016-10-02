@@ -6,17 +6,14 @@ from rest_framework.views       import APIView
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
 from gargantext.constants       import RESOURCETYPES, NODETYPES, get_resource
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
 from gargantext.util.db         import session, delete, func, bulk_insert
 from gargantext.util.db_cache   import cache, or_
-from gargantext.util.validation import validate
-from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
-from gargantext.constants       import RESOURCETYPES, NODETYPES, get_resource
-from gargantext.util.http       import ValidationException, APIView, JsonHttpResponse, get_parameters
 from gargantext.util.files      import upload
-from gargantext.util.db         import session, delete, func, bulk_insert
+from gargantext.util.http       import ValidationException, APIView, JsonHttpResponse, get_parameters
 from gargantext.util.scheduling import scheduled
+from gargantext.util.validation import validate
 
 #import
 

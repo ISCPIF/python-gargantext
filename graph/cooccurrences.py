@@ -1,55 +1,45 @@
 from gargantext.models     import Node, Ngram, NodeNgram, NodeNgramNgram, \
                                   NodeHyperdata, HyperdataKey
-from gargantext.util.db    import session, aliased, bulk_insert, func
+from gargantext.util.db    import session, aliased, func
 
 from gargantext.util.lists import WeightedMatrix, UnweightedList, Translations
 
 from sqlalchemy            import desc, asc, or_, and_
+from datetime              import datetime
 
-#import inspect
-import datetime
-
-from celery               import shared_task
 
 def filterMatrix(matrix, mapList_id, groupList_id):
-    mapList   = UnweightedList( mapList_id  )
+    mapList    = UnweightedList( mapList_id  )
     group_list = Translations  ( groupList_id )
     cooc       = matrix & (mapList * group_list)
     return cooc
 
 
-@shared_task
-def countCooccurrences( corpus_id=None         , test= False
+def countCooccurrences( corpus_id=None      , cooc_id=None
                       , field1='ngrams'     , field2='ngrams'
                       , start=None          , end=None
                       , mapList_id=None     , groupList_id=None
+                      , distance=None       , bridgeness=None
                       , n_min=1, n_max=None , limit=1000
-                      , coocNode_id=None    , reset=True
                       , isMonopartite=True  , threshold = 3
-                      , save_on_db= False,  # just return the WeightedMatrix,
-                                                 #    (don't write to DB)
+                      , save_on_db= True    , reset=True
                       ):
     '''
     Compute the cooccurence matrix and save it, returning NodeNgramNgram.node_id
-    For the moment list of paramters are not supported because, lists need to
+    For the moment list of parameters are not supported because, lists need to
     be merged before.
     corpus           :: Corpus
 
     mapList_id       :: Int
     groupList_id     :: Int
 
-    For the moment, start and end are simple, only year is implemented yet
     start :: TimeStamp -- example: '2010-05-30 02:00:00+02'
     end   :: TimeStamp
     limit :: Int
 
     '''
-    # TODO : add hyperdata here
 
-    # Security test
-    field1,field2 = str(field1), str(field2)
-
-    # Parameters to save in hyperdata of the Node Cooc
+    # FIXME remove the lines below after factorization of parameters
     parameters = dict()
     parameters['field1'] = field1
     parameters['field2'] = field2
@@ -57,17 +47,17 @@ def countCooccurrences( corpus_id=None         , test= False
     # Get corpus as Python object
     corpus = session.query(Node).filter(Node.id==corpus_id).first()
 
-    # Get node
-    if not coocNode_id:
-        
-        coocNode_id0  = ( session.query( Node.id )
+    # Get node of the Graph
+    if not cooc_id:
+
+        cooc_id  = ( session.query( Node.id )
                                 .filter( Node.typename  == "COOCCURRENCES"
                                        , Node.name      == "GRAPH EXPLORER"
                                        , Node.parent_id == corpus.id
                                        )
                                 .first()
                         )
-        if not coocNode_id:
+        if not cooc_id:
             coocNode = corpus.add_child(
             typename  = "COOCCURRENCES",
             name = "GRAPH (in corpus %s)" % corpus.id
@@ -75,12 +65,16 @@ def countCooccurrences( corpus_id=None         , test= False
 
             session.add(coocNode)
             session.commit()
-            coocNode_id = coocNode.id
+            cooc_id = coocNode.id
         else :
-            coocNode_id = coocNode_id[0]
-
+            cooc_id = int(cooc_id[0])
+    else:
+        print("GRAPH #%s ... Loading cooccurrences computed already." % cooc_id)
+        cooc = session.query( NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id, NodeNgramNgram.weight ).filter( NodeNgramNgram.node_id == cooc_id ).all()
+        return(int(cooc_id),WeightedMatrix(cooc))
+    
     if reset == True :
-        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == coocNode_id ).delete()
+        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == cooc_id ).delete()
         session.commit()
 
 
@@ -161,8 +155,8 @@ def countCooccurrences( corpus_id=None         , test= False
     # Cooc between the dates start and end
     if start is not None:
         #date_start = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
-        # TODO : more complexe date format here.
-        date_start = datetime.datetime.strptime (str(start), "%Y-%m-%d")
+        # TODO : more precise date format here (day is smaller grain actually).
+        date_start = datetime.strptime (str(start), "%Y-%m-%d")
         date_start_utc = date_start.strftime("%Y-%m-%d %H:%M:%S")
 
         Start=aliased(NodeHyperdata)
@@ -177,8 +171,8 @@ def countCooccurrences( corpus_id=None         , test= False
 
 
     if end is not None:
-        # TODO : more complexe date format here.
-        date_end = datetime.datetime.strptime (str(end), "%Y-%m-%d")
+        # TODO : more precise date format here (day is smaller grain actually).
+        date_end = datetime.strptime (str(end), "%Y-%m-%d")
         date_end_utc = date_end.strftime("%Y-%m-%d %H:%M:%S")
 
         End=aliased(NodeHyperdata)
@@ -208,22 +202,30 @@ def countCooccurrences( corpus_id=None         , test= False
     #cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
+    
+    print("GRAPH #%s Filtering the matrix with Map and Group Lists." % cooc_id)
     cooc = filterMatrix(matrix, mapList_id, groupList_id)
-
-    parameters['MapList_id'] = str(mapList_id)
-    parameters['GroupList_id'] = str(mapList_id)
-
+    
+    parameters['MapList_id']   = str(mapList_id)
+    parameters['GroupList_id'] = str(groupList_id)
+    
+    # TODO factorize savings on db
     if save_on_db:
-        # Saving cooc Matrix
-        cooc.save(coocNode_id)
+        # Saving the cooccurrences
+        cooc.save(cooc_id)
+        print("GRAPH #%s ... Node Cooccurrence Matrix saved" % cooc_id)
         
         # Saving the parameters
-        coocNode = session.query(Node).filter(Node.id==coocNode_id).first()
-        coocNode.hyperdata = parameters
+        print("GRAPH #%s ... Parameters saved in Node." % cooc_id)
+        coocNode = session.query(Node).filter(Node.id==cooc_id).first()
+        
+        coocNode.hyperdata[distance] = dict()
+        coocNode.hyperdata[distance]["parameters"] = parameters
+        
         session.add(coocNode)
         session.commit()
         
-        # Log message
-        print("Cooccurrence Matrix saved")
+        #data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
+        #return data
     
-    return cooc
+    return(coocNode.id, cooc)

@@ -1,5 +1,5 @@
 #!/bin/bash
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/srv/gargantext_lib/taggers/nlpserver/TurboParser/deps/local/lib:"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/srv/gargantext_lib/taggers/nlpserver:/srv/gargantext_lib/taggers/nlpserver/TurboParser/deps/local/lib:"
 
 if [[ ! "$VIRTUAL_ENV" ]]
 then

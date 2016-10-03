@@ -169,6 +169,7 @@ var gexf;
 //var zoom=0;
 
 var checkBox=false;
+var manuallyChecked = false;
 var overNodes=false;
 var shift_key=false;
 

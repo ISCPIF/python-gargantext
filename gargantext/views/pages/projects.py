@@ -175,6 +175,9 @@ def project(request, project_id):
                 'cooclists': [],
                 'number': len(corpora),
                 'query_size': QUERY_SIZE_N_DEFAULT,
+                # status refreshing params (when active workflows)
+                'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+                'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
             },
         )
     # response!
@@ -193,5 +196,8 @@ def project(request, project_id):
             'cooclists': [],
             'number': len(corpora),
             'query_size': QUERY_SIZE_N_DEFAULT,
+            # status refreshing params (when active workflows)
+            'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+            'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
         },
     )

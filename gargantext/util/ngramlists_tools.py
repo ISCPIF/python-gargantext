@@ -462,6 +462,9 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
             for j, colname in enumerate(csv_row):
                 if colname in ['label', 'status', 'forms']:
                     columns[colname] = j
+                # skip empty columns
+                elif match(r'^\s*$',colname):
+                    pass
                 else:
                     raise ValueError('Wrong header "%s" on line %i (only possible headers are "label", "forms" and "status")' % (colname, n_read_lines))
             if 'label' not in columns:
@@ -548,7 +551,9 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
         imported_ngrams_dbdata.append((ngram_str, n_words))
 
     # returns a dict {term => id} and a count of inserted ones
+    #                             -------------------------
     (new_ngrams_ids, n_added_ng) = bulk_insert_ifnotexists(
+    #                             -------------------------
         model = Ngram,
         uniquekey = 'terms',
         fields = ('terms', 'n'),
@@ -612,7 +617,7 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
        - resolves conflicts if terms belong in different lists
           > map wins over both other types
           > main wins over stop
-          > stop never wins
+          > stop never wins   £TODO STOP wins over candidates from main
 
     @param new_lists:     a dict of *new* imported lists with format:
                                 {'stop':     UnweightedList,
@@ -667,7 +672,10 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             for ng_id in new_lists[list_type].items:
                 collect(ng_id)
 
+    from gargantext.util.toolchain.main import t
+    print("MERGE DEBUG: starting index_new_ngrams", t())
     n_added = index_new_ngrams(all_possibly_new_ngram_ids, onto_corpus)
+    print("MERGE DEBUG: finished index_new_ngrams", t())
 
     my_log.append("MERGE: added %i new ngram occurrences in docs" % n_added)
 
@@ -677,7 +685,7 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     # DB nodes stored with same indices 0,1,2 (resp. stop, miam and map)
     # find target ids of the list node objects
     tgt_nodeids = [
-                    onto_corpus.children("STOPLIST").first().id,
+                    onto_corpus.children("STOPLIST").first().id,    # £todo via parent project?
                     onto_corpus.children("MAINLIST").first().id,
                     onto_corpus.children("MAPLIST").first().id
                 ]

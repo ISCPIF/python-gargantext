@@ -75,9 +75,6 @@ def myGraphs(request, project_id, corpus_id):
                              .all()
                      )
 
-        #for n in cooc_nodes:
-        #    print(n)
-
         #coocs_count[cooc.id] = len(cooc_nodes)
         coocs_count[cooc.id] = len([cooc_node for cooc_node in cooc_nodes if cooc_node[1] > 1])
 

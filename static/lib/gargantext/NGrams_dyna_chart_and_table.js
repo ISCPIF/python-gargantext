@@ -2168,6 +2168,7 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
       // .interpolate("monotone")
       // .renderDataPoints({radius: 2, fillOpacity: 0.8, strokeOpacity: 0.8})
       .brushOn(false)
+      .rangeChart(volumeChart)
       .title(function (d) {
           if (isNaN(d.data.value))  {
               console.warn(JSON.stringify(d))
@@ -2228,6 +2229,9 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
     LineChart.filterAll();
     volumeChart.filterAll();
     dc.redrawAll();
+
+    // expose selection brush
+    var ourBrush = volumeChart.brush()
 
     // --------------------------
     // DYNATABLE initialization
@@ -2346,7 +2350,7 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
     MyTable.data('dynatable').sorts.clear();
 
     MyTable.data('dynatable').sorts.add( filtersParams.sortk || "score",
-                                         filtersParams.sortdirec || 0
+                                         filtersParams.sortdirec || 1
                                          // 1=DESCENDING,
                                        )
 
@@ -2364,11 +2368,15 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
     // restore chart filters
     if (typeof(filtersParams.from) != 'undefined'
         && typeof(filtersParams.to) != 'undefined') {
-      var fromto_status = [filtersParams.from, filtersParams.to]
-      volumeChart.filterAll()               // re-init
-      volumeChart.filter(fromto_status)   // also does Push2Buffer
 
-      // TODO show selection brush on the same interval
+      var fromVal = filtersParams.from
+      var toVal = filtersParams.to
+
+      if (fromVal != oldest || toVal != latest) {
+        // volumeChart.filterAll()               // re-init
+        placeBrush(ourBrush, fromVal, toVal)
+        // placeBrush also does volumeChart.filter([fromVal, toVal]) and Push2Buffer
+      }
     }
 
 
@@ -2388,6 +2396,24 @@ function doATest() {
     MyTable.data('dynatable').queries.add('group_exists',true);
     MyTable.data('dynatable').process();
     console.log("^---------- /TEST -----------^")
+}
+
+/**
+ * placeBrush cf. http://bl.ocks.org/timelyportfolio/5c136de85de1c2abb6fc:
+ *     -----------
+ *  Adds the brush (aka "chart's selection zone") programmatically
+ *  (for instance at initialize if we want to restore previous selection)
+ */
+function placeBrush(myBrush, min, max) {
+
+  // define our brush extent
+  myBrush.extent([min, max])
+
+  // now draw the brush to match our extent
+  myBrush(d3.select(".brush"));
+
+  // now fire the brushstart, brushmove, and brushend events
+  myBrush.event(d3.select(".brush"))
 }
 
 /**

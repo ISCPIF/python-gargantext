@@ -219,10 +219,9 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
         print("GRAPH #%s ... Parameters saved in Node." % cooc_id)
         coocNode = session.query(Node).filter(Node.id==cooc_id).first()
         
-        coocNode.hyperdata[distance] = dict()
-        coocNode.hyperdata[distance]["parameters"] = parameters
-        
-        session.add(coocNode)
+        coocNode.hyperdata["parameters"] = dict()
+        coocNode.hyperdata["parameters"] = parameters
+        coocNode.save_hyperdata()
         session.commit()
         
         #data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)

@@ -69,9 +69,14 @@ def compute_graph( corpus_id=None      , cooc_id=None
         node = session.query(Node).filter(Node.id == cooc_id).first()
 
         if node.hyperdata.get(distance, None) is None:
+            print("GRAPH #%d ... Distance %s has not been computed already." % (cooc_id, distance))
             node.hyperdata[distance] = dict()
 
         node.hyperdata[distance][bridgeness] = data
+        
+        node.hyperdata[distance]["nodes"]    = len(G.nodes())
+        node.hyperdata[distance]["edges"]    = len(G.edges())
+        
         node.save_hyperdata()
         session.commit()
         

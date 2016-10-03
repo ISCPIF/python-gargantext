@@ -200,8 +200,34 @@ function getRessources(){
 //// POST TO API
 
 
+
 //// PUT AND PATCH TO API
-function deleteOne(url){
+function deleteOne(url, thatButton){
+
+
+  // we just show wait image before ajax
+  var $thatButton = $(thatButton)
+  var alreadyWaiting = $thatButton.has($('.wait-img-active')).length
+
+  if (! alreadyWaiting) {
+    var previousButtonContent = $thatButton.html()
+    var availableWidth = $thatButton.width()
+    var $myWaitImg = $('#wait-img').clone()
+    $myWaitImg.attr("id", null)
+              .attr("class","wait-img-active pull-right")
+              .width(availableWidth)
+              .css("display", "block") ;
+    $thatButton.append($myWaitImg)
+  }
+  else {
+    // uncomment if user should stop clicking ;)
+    // $thatButton.addClass("btn-danger")
+
+    // uncomment to prevent a 2nd ajax
+    return false
+  }
+
+  // now the real ajax
   $.ajax({
     url: '/api'+url,
     type: 'delete',
@@ -306,7 +332,7 @@ $(document).on('change', 'input[type=checkbox]', function() {
 $(document).on("click","#delete", function(){
       var selected = selectedUrls();
       selected.forEach(function(url) {
-        deleteOne(url);
+        deleteOne(url, this);
       });
     //window.location.reload();
   });
@@ -336,7 +362,7 @@ $(document).on("click","#recalculate", function(){
 // UNIQUE DELETION
 $(document).on("click", ".delete", function() {
       var url = $( this ).data("url");
-      deleteOne(url);
+      deleteOne(url, this);
       //window.location.reload();
 });
 

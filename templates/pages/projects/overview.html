@@ -18,6 +18,11 @@
     .ui-autocomplete .ui-menu-item {
         font-size:x-small;
     }
+
+    /* for wait gif in buttons */
+    .wait-img-active {
+        margin-left: .5em;
+    }
 </style>
 
 {% endblock %}
@@ -97,6 +102,7 @@
             <!--here loading projectlist from GET /projects-->
     </div>
 
+    <img id="wait-img" width="90%" style="display:none" src="{% static "img/ajax-loader.gif"%}"></img>
 
 </div>
 
@@ -116,10 +122,10 @@
 
             <!-- DELETE PROJECT -->
             <button type="button" class="btn btn-default delete pull-right" data-url="{url}" >
-              <span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
             </button>
-            <!-- EDIT PROJECT-->
 
+            <!-- EDIT PROJECT-->
             <button class="btn btn-default edit pull-right" data-id="{id}" data-url="{url}" data-toggle="collapse">
               <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
             </button>

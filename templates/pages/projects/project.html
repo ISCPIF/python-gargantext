@@ -23,6 +23,11 @@
         margin-top: .3em;
         color: grey ;
     }
+
+    ul.inside-popover {
+      padding: .5em ;
+      list-style-type: none ;
+    }
 </style>
 {% endblock %}
 
@@ -111,9 +116,9 @@
 
                                                     <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
                                                         data-content="
-                                                        <ul>
+                                                        <ul class=&quot;inside-popover&quot;>
                                                             <li
-                                                            onclick=&quot;updateCorpus({{corpus.id}})&quot;>
+                                                            onclick=&quot;updateCorpus(event, {{corpus.id}})&quot;>
                                                                 <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
                                                             </li>
                                                         </ul>
@@ -125,19 +130,9 @@
                                                     <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
                                                     <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                                         data-content="
-                                                        <ul>
+                                                        <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
                                                             <li
-                                                            onclick=&quot;
-                                                                    trashedIds[{{corpus.id}}] = true ;
-                                                                    garganrest.nodes.delete(
-                                                                        {{corpus.id}},
-                                                                        function(){
-                                                                            $('#corpus_'+{{corpus.id}}).remove()
-                                                                            delete trashedIds[{{corpus.id}}]
-                                                                          }
-                                                                        );
-                                                                    $(this).parent().parent().remove();
-                                                                &quot;>
+                                                            onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
                                                                 <a href='#'>Delete this</a>
                                                             </li>
                                                         </ul>
@@ -798,7 +793,36 @@
                                 });
                             }
 
-                        function updateCorpus(corpusId) {
+                        function deleteCorpus(e, corpusId) {
+                          // prevents scroll back to top of page
+                          e.preventDefault()
+
+                          // register pending operation
+                          trashedIds[corpusId] = true ;
+
+                          // visual loader wheel
+                          var statusDiv = document.getElementById("corpus_"+corpusId+"_status")
+                          statusDiv.innerHTML = '<img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>'
+                          var trashMsgDiv = document.getElementById(corpusId+"_trash_msg")
+                          trashMsgDiv.innerHTML = '<h5>Deleting corpus, please wait</h5>'
+
+                          // REST and callback
+                          garganrest.nodes.delete(
+                              corpusId,
+                              function(){
+                                  $('#corpus_'+corpusId).remove()
+                                  delete trashedIds[corpusId]
+                                  // remove any popover too
+                                  $('.popover').remove();
+                                }
+                              );
+                        }
+
+
+                        function updateCorpus(e, corpusId) {
+                          // prevents scroll back to top of page
+                          e.preventDefault()
+
                           // show 'waiting'
                           var statusDiv = document.getElementById("corpus_"+corpusId+"_status")
                           var previousStatus = statusDiv.innerHTML

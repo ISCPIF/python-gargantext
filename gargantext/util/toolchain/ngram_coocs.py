@@ -1,3 +1,7 @@
+"""
+COOCS
+    (this is the full sqlalchemy version, from "refactored" toolchain march-may 2016)
+"""
 from gargantext.models         import Node, NodeNgram, NodeNgramNgram, \
                                       NodeHyperdata, Ngram
 from gargantext.util.lists     import WeightedMatrix

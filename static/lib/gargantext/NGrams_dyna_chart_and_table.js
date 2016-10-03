@@ -47,8 +47,9 @@
  *           - simplify UpdateTable
  *           - clarify cruds
  *           - fine-grained "created groups" handling
+ *           - local cache for user params
  *
- * @version 1.3
+ * @version 1.4
  *
  * @requires jquery.dynatable
  * @requires d3
@@ -59,6 +60,7 @@
 //                      GLOBALS  <=> INTERACTIVE STATUS etc
 // =============================================================================
 
+var corpusId = getIDFromURL("corpora")
 
 // current ngram infos (<-> row data)
 // ----------------------------------
@@ -174,6 +176,34 @@ var tableSpan ;
 var corpusesList = {}
 
 
+// TABLE'S PARAMS' getter
+// -----------------------
+// Fetch all current user params for sorting, filtering...
+// @param aDynatable   (eg: MyTable.data('dynatable'))
+function getSelectedParams(aDynatable) {
+  var tbsettings = aDynatable.settings.dataset
+
+  var sorting_obj= tbsettings.sorts
+
+  var sort_type = null
+  if (sorting_obj) {
+    sort_type = Object.keys(sorting_obj).pop()
+  }
+
+  // returns a "picklistParams object"
+  return {
+    'search' : tbsettings.queries['search'],
+    'multiw' : tbsettings.queries['my_termtype_filter'],
+    'gtlists': tbsettings.queries['my_state_filter'],
+    'perpp'  : tbsettings.perPage,
+    'sortk'  : sort_type,
+    'sortdirec': sorting_obj ? sorting_obj[sort_type] : null,
+    'from' : TheBuffer ? TheBuffer[0] : null,
+    'to' :   TheBuffer ? TheBuffer[1] : null
+  }
+}
+
+
 // =============================================================================
 //                            CACHE MANAGEMENT
 // =============================================================================
@@ -190,18 +220,17 @@ window.onbeforeunload = saveParamsToCache;
 // always called at page close/quit
 // £TODO use url instead of corpusId+'/terms' as prefix
 function saveParamsToCache() {
-  var corpusId = getIDFromURL("corpora")
 
-  var search_filter_status = MyTable.data('dynatable').settings.dataset.queries['search']
-  var state_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
-  var type_filter_status = MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter']
-  // var page_status = document.getElementsByClassName("dynatable-page-link dynatable-active-page")[0].getAttribute("data-dynatable-page")
-  var per_page_status = MyTable.data('dynatable').settings.dataset.perPage
+  var params = getSelectedParams(MyTable.data('dynatable'))
 
-  // ex: {'name':1} or {'score':-1}
-  var sorting_obj = MyTable.data('dynatable').settings.dataset.sorts
-  var sort_type_status = Object.keys(sorting_obj).pop()
-  var sort_direction_status = sorting_obj[sort_type_status]
+  var search_filter_status = params.search
+  var state_filter_status = params.gtlists
+  var type_filter_status = params.multiw
+  var per_page_status = params.perpp
+  var sort_type_status = params.sortk
+  var sort_direction_status = params.sortdirec
+  var from_status = params.from
+  var to_status = params.to
 
   // keys and values are str only so we use path-like keys
   if (search_filter_status) {
@@ -226,6 +255,13 @@ function saveParamsToCache() {
     localStorage.removeItem(corpusId+'/terms/type')
   }
 
+  if (typeof(from_status) != "undefined"
+      && typeof(to_status) != "undefined") {
+    console.log("saving STAT")
+    localStorage[corpusId+'/terms/fromVal'] = from_status
+    localStorage[corpusId+'/terms/toVal'] = to_status
+  }
+
   localStorage[corpusId+'/terms/perPage'] = per_page_status
   // localStorage[corpusId+'/terms/page'] = page_status
 
@@ -235,40 +271,19 @@ function saveParamsToCache() {
   return null;
 }
 
-// always called after MyTable init
+// called after 1st Ajax and given to table init in Main as filtersParams
 function restoreSettingsFromCache() {
-  var corpusId = getIDFromURL("corpora")
-  // var had_page = localStorage[corpusId+'/terms/page']
-  var had_type = localStorage[corpusId+'/terms/type']
-  var had_state = localStorage[corpusId+'/terms/state']
-  var had_search = localStorage[corpusId+'/terms/search']
-  var had_perPage = localStorage[corpusId+'/terms/perPage']
-  var had_sortType = localStorage[corpusId+'/terms/sortType']
-  var sortDirection = localStorage[corpusId+'/terms/sortDirection']
-  // if (had_page) {
-  //   MyTable.data('dynatable').paginationPage.set(had_page);
-  // }
-  if (had_type) {
-    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = had_type
+  // also returns a "picklistParams object"
+  return {
+    'search' : localStorage[corpusId+'/terms/search'],
+    'multiw' : localStorage[corpusId+'/terms/type'],
+    'gtlists': localStorage[corpusId+'/terms/state'],
+    'perpp'  : localStorage[corpusId+'/terms/perPage'],
+    'sortk'  : localStorage[corpusId+'/terms/sortType'],
+    'sortdirec':localStorage[corpusId+'/terms/sortDirection'],
+    'from':     localStorage[corpusId+'/terms/fromVal'],
+    'to':       localStorage[corpusId+'/terms/toVal']
   }
-  if (had_state) {
-    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = had_state
-  }
-  if (had_search) {
-    MyTable.data('dynatable').settings.dataset.queries['search'] = had_search
-  }
-  if (had_perPage) {
-    MyTable.data('dynatable').paginationPerPage.set(had_perPage)
-  }
-  if (had_sortType) {
-    MyTable.data('dynatable').sorts.clear();
-    MyTable.data('dynatable').sorts.add(had_sortType, sortDirection)
-    console.log("added sort",had_sortType)
-  }
-
-  // re-process to makes the changes visible
-  MyTable.data('dynatable').process()
-  return null;
 }
 
 
@@ -346,54 +361,57 @@ function GetUserPortfolio() {
 }
 
 //Getting a corpusB-list and intersecting it with current corpusA-miamlist.
-function printCorpuses() {
-    console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
-    pr(corpusesList)
+// function printCorpuses() {
+//     console.log( "!!!!!!!! in printCorpuses() !!!!!!!! " )
+//     pr(corpusesList)
+//
+//     var selected = $('input[name=optradio]:checked')[0].id.split("_")
+//     var sel_p = selected[0], sel_c=selected[1]
+//
+//     var current_corpus =  getIDFromURL("corpora")
+//
+//     var selected_corpus = corpusesList[sel_p]["corpuses"][sel_c]["id"]
+//     pr("current corpus: "+current_corpus)
+//     var the_ids = []
+//     the_ids.push( current_corpus )
+//     the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
+//
+//     $("#closecorpuses").click();
+//
+//     // EXTERNAL CORPUS TO COMPARE:
+//     var whichlist = $('input[name=whichlist]:checked').val()
+//       var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist//+"?custom"
+//       console.log( url )
+//
+//
+//       GET_( url , function(results, url) {
+//           if(Object.keys( results ).length>0) {
+//          var sub_ngrams_data = {
+//            "ngrams":[],
+//            "scores": $.extend({}, OriginalNG.scores)
+//          }
+//         for(var i in OriginalNG["records"].ngrams) {
+//           if( results[ OriginalNG["records"].ngrams[i].id] ) {
+//             var a_ngram = OriginalNG["records"].ngrams[i]
+//             sub_ngrams_data["records"].push( a_ngram )
+//           }
+//           // if( results[ OriginalNG["records"][i].id] && OriginalNG["records"][i].name.split(" ").length==1 ) {
+//           //   if( OriginalNG["map"][ i ] ) {
+//           //     var a_ngram = OriginalNG["records"][i]
+//           //     // a_ngram["state"] = System[0]["statesD"]["delete"]
+//           //     sub_ngrams_data["ngrams"].push( a_ngram )
+//           //   }
+//           // }
+//         }
+//         var result = MainTableAndCharts(sub_ngrams_data , OriginalNG.scores.initial , {})
+//           }
+//       });
+// }
 
-    var selected = $('input[name=optradio]:checked')[0].id.split("_")
-    var sel_p = selected[0], sel_c=selected[1]
 
-    var current_corpus =  getIDFromURL("corpora")
-
-    var selected_corpus = corpusesList[sel_p]["corpuses"][sel_c]["id"]
-    pr("current corpus: "+current_corpus)
-    var the_ids = []
-    the_ids.push( current_corpus )
-    the_ids.push( corpusesList[sel_p]["corpuses"][sel_c]["id"] )
-
-    $("#closecorpuses").click();
-
-    // EXTERNAL CORPUS TO COMPARE:
-    var whichlist = $('input[name=whichlist]:checked').val()
-      var url = window.location.origin+"/api/node/"+selected_corpus+"/ngrams/list/"+whichlist//+"?custom"
-      console.log( url )
-
-
-      GET_( url , function(results, url) {
-          if(Object.keys( results ).length>0) {
-         var sub_ngrams_data = {
-           "ngrams":[],
-           "scores": $.extend({}, OriginalNG.scores)
-         }
-        for(var i in OriginalNG["records"].ngrams) {
-          if( results[ OriginalNG["records"].ngrams[i].id] ) {
-            var a_ngram = OriginalNG["records"].ngrams[i]
-            sub_ngrams_data["records"].push( a_ngram )
-          }
-          // if( results[ OriginalNG["records"][i].id] && OriginalNG["records"][i].name.split(" ").length==1 ) {
-          //   if( OriginalNG["map"][ i ] ) {
-          //     var a_ngram = OriginalNG["records"][i]
-          //     // a_ngram["state"] = System[0]["statesD"]["delete"]
-          //     sub_ngrams_data["ngrams"].push( a_ngram )
-          //   }
-          // }
-        }
-        var result = MainTableAndCharts(sub_ngrams_data , OriginalNG.scores.initial , "filter_all")
-          }
-      });
-}
-
-
+// Updates most global var TheBuffer
+// TODO should be distinct from time range (of doc view)
+//      and adapt more for freq ranges
 function Push2Buffer( NewVal ) {
     if ( TheBuffer == false) {
         if( ! NewVal ) {
@@ -460,6 +478,7 @@ function Final_UpdateTable( action ) {
         }
     }
 
+    // todo: check if necessary to re-init like this
     MyTable = $('#my-ajax-table').dynatable({
         dataset: {
             records: TimeRange
@@ -573,13 +592,9 @@ function removeActiveGroupFrameAndUpdate() {
     // we also close the open sublists in case some of them don't exist any more
     vizopenGroup = {}
 
-    // reprocess from current record states
-    var currentStateFilter = MyTable.data('dynatable').settings.dataset.queries['my_state_filter']
-
-    // TODO when several scores, use cache like currentStateFilter
-    var FirstScore = OriginalNG.scores.initial
-    // console.log("full re-create table")
-    MainTableAndCharts(AjaxRecords, FirstScore , currentStateFilter)
+    // reprocess from current record states and params
+    var FirstScoreParam = OriginalNG.scores.initial // £TODO use when several scores
+    MainTableAndCharts(AjaxRecords, FirstScoreParam , getSelectedParams(MyTable.data('dynatable')),"removeActiveGroupFrameAndUpdate")
 }
 
 // for click open/close
@@ -1909,17 +1924,14 @@ function GROUPCRUDS( groupnode_id , send_data, http_method , callback) {
  *       - AfterAjax for map items
  *       - ??? for stop items
  * 3. Creates the scores distribution chart over table
- * 4. Set up Search div
+ * 4. Set up Search div and initialize user filter statuses
  *
- * @param ngdata: OriginalNG['records']
- * @param initial: initial score type "occs" or "tfidf"
- * @param search_filter: value among {0,1,2,'reset'} (see #picklistmenu options)
- *
- * TODO replace by new @param filters (multiple) for all cached values
- *      (would allow us to use them directly in settings instead of a posteriori
- *       with restoreSettingsFromCache)
+ * @param ngdata:        OriginalNG['records']
+ * @param initial:       initial score type "occs" or "tfidf" => £TODO multiscore
+ * @param filtersParams: contains the option values in a "picklistParams object"
+ *                       It can be {} or custom/cached keys for init of filters
  */
-function MainTableAndCharts( ngdata , initial , search_filter) {
+function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
 
     // debug
     // alert("refresh main")
@@ -1930,8 +1942,10 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     // console.log(ngdata)
     // console.log("initial:")   //
     // console.log(initial)
-    // console.log("search_filter:")        // eg 'filter_all'
-    // console.log(search_filter)
+    console.log("filtersParams:")        // eg {'lists': filter_all'}
+    if(typeof(filtersParams) != 'undefined') {console.log(filtersParams)} else {console.log('pas de params')}
+    console.log("callerLabel:")
+    if(typeof(callerLabel) != 'undefined') {console.log(callerLabel)} else {console.log('pas de callerLabel')}
     // console.log(" = = = = / MainTableAndCharts: = = = = ")
     // console.log("")
 
@@ -2173,6 +2187,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     LineChart.render()
 
 
+    // selectable barchart
     volumeChart.width(800)
             .height(100)
             .margins({top: 30, right: 50, bottom: 20, left: 40})
@@ -2188,6 +2203,9 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
             .renderlet(function (chart) {
                 chart.select("g.y").style("display", "none");
             })
+            // ------------------------------------------------------
+            // main hook between Chart => Buffer => Final_UpdateTable
+            // ------------------------------------------------------
             .on("filtered", function (chart) {
                 dc.events.trigger(function () {
                     var chartfilt = chart.filter()
@@ -2211,8 +2229,10 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
     volumeChart.filterAll();
     dc.redrawAll();
 
-
+    // --------------------------
     // DYNATABLE initialization
+    // --------------------------
+    // writes in the app scope var MyTable
     MyTable = []
     MyTable = $('#my-ajax-table').dynatable({
                 dataset: {
@@ -2267,19 +2287,13 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         }
     }
 
-    MyTable.data('dynatable').sorts.clear();
-    MyTable.data('dynatable').sorts.add('score', 1) // 1=DESCENDING,
-    // MyTable.data('dynatable').process();
-    MyTable.data('dynatable').paginationPage.set(1);
-    MyTable.data('dynatable').paginationPerPage.set(50);  // default:10
-    MyTable.data('dynatable').process();
-
     // hook on page change
     MyTable.bind('dynatable:page:set', tidyAfterPageSetUpdate)
 
     // hook on any type of update
     MyTable.bind('dynatable:afterUpdate', tidyAfterUpdate)
 
+    // £TODO multiscore
     // // // $("#score_column_id").children()[0].text = FirstScore
     // // // // MyTable.data('dynatable').process();
 
@@ -2299,7 +2313,7 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
             }
         }
 
-    // second filter named 'my_termtype_filter'
+    // second filter named 'my_termtype_filter' for gargantext lists (map, )
     MyTable.data('dynatable').queries
         .functions['my_termtype_filter'] = function(record,selectedValue) {
             if (selectedValue == 'reset') {
@@ -2316,18 +2330,47 @@ function MainTableAndCharts( ngdata , initial , search_filter) {
         }
 
     // and set these filters' initial status
-    MyTable.data('dynatable').settings.dataset.queries['my_state_filter'] = search_filter ;
-    MyTable.data('dynatable').settings.dataset.queries['my_termtype_filter'] = 'reset' ;
-    MyTable.data('dynatable').process();
+    var MyTablesQueries = MyTable.data('dynatable').settings.dataset.queries
 
-    // £todo factorize with previous with a param search_filters
-    restoreSettingsFromCache(localStorage)
+    MyTablesQueries['my_state_filter'] = filtersParams.gtlists || 'reset' ;
+    MyTablesQueries['my_termtype_filter'] = filtersParams.multiw || 'reset' ;
+
+    // set main text-search value
+    MyTablesQueries['search'] = filtersParams.search || ''
+
+    // set table pagination
+    MyTable.data('dynatable').paginationPage.set(1);
+    MyTable.data('dynatable').paginationPerPage.set(filtersParams.perpp || 50) ;
+
+    // also set sorts
+    MyTable.data('dynatable').sorts.clear();
+
+    MyTable.data('dynatable').sorts.add( filtersParams.sortk || "score",
+                                         filtersParams.sortdirec || 0
+                                         // 1=DESCENDING,
+                                       )
+
+    // go ! ------------------------------
+    MyTable.data('dynatable').process();
+    // -----------------------------------
 
     // moves pagination over table
+    // £TODO pagination copy instead (hard!)
     if ( $(".imadiv").length>0 ) return 1;
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
+
+    // restore chart filters
+    if (typeof(filtersParams.from) != 'undefined'
+        && typeof(filtersParams.to) != 'undefined') {
+      var fromto_status = [filtersParams.from, filtersParams.to]
+      volumeChart.filterAll()               // re-init
+      volumeChart.filter(fromto_status)   // also does Push2Buffer
+
+      // TODO show selection brush on the same interval
+    }
+
 
     return "OK"
 }
@@ -2526,6 +2569,7 @@ var final_url = window.location.origin+"/api/ngramlists/family?corpus="+corpus_i
 
 // faster call: just the maplist, will return first
 // 2016-05-13: deactivated because it causes a lag before the table is updated
+//             FIXME: probably because of != nb of records ?
 // GET_(prefetch_url, HandleAjax);
 
 // longer call (full list of terms) to return when ready and refresh all data
@@ -2589,10 +2633,7 @@ function HandleAjax(res, sourceUrl) {
 }
 
 
-
-// throws errors when ngram in list has no infos
-// (can't assign state and copy to AjaxRecords)
-
+// unpack ajax values, read table settings from cache if any, and run Main
 function AfterAjax(sourceUrl) {
   // -------------------------------------------------------------------
   // console.log(JSON.stringify(OriginalNG))
@@ -2657,7 +2698,7 @@ function AfterAjax(sourceUrl) {
 
     // Building the Score-Selector //OriginalNG["scores"]
     var FirstScore = OriginalNG.scores.initial
-    // TODO scores_div
+    // TODO scores_div multiscore
     //       Recreate possible_scores from some constants (tfidf, occs)
     //       and not from ngrams[0], to keep each ngram's info smaller
 
@@ -2670,11 +2711,17 @@ function AfterAjax(sourceUrl) {
     //   }
     // }
 
-    // show only map (option = 1) or all terms (option = "reset")
-    termsfilter = (sourceUrl == final_url) ? "reset" : "1"
+    // show only map (option = 1, good for waiting if async records)
+    // or all terms (option = "reset")
+
+    // table settings for filters etc.
+    var configIfAny = {}
+    configIfAny = restoreSettingsFromCache()
+
+    // configIfAny.gtlists = (sourceUrl == final_url) ? "reset" : "1"  // condition useful for prefetch
 
     // Initializing the Charts and Table ---------------------------------------
-    var result = MainTableAndCharts(OriginalNG["records"], FirstScore , termsfilter) ;
+    var result = MainTableAndCharts(OriginalNG["records"], FirstScore , configIfAny, "AfterAjax") ;
 
     console.log( result ) // OK
     // -------------------------------------------------------------------------

@@ -10,7 +10,7 @@ for resource in RESOURCETYPES:
         try:
             name =resource["crawler"]
             #crawler is type basename+"Crawler"
-            filename = name.replace("Crawler", "").lower()
+            filename = name.replace("Crawler", "").upper()
             module = base_parser+".%s" %(filename)
             importlib.import_module(module)
 

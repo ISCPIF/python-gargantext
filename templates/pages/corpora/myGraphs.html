@@ -19,133 +19,170 @@
 <div class="container theme-showcase" role="main">
     <h2>My Graphs  </h2>
         <ol>
-        {% for cooc in coocs %}
-            <div id="graph_{{cooc.id}}">
-                <div class="row">
-                    <div class="col-md-1 content"></div>
+        {% if coocs %}
+            {% for cooc in coocs %}
+                <div id="graph_{{cooc.id}}">
+                    <div class="row">
+                        <div class="col-md-1 content"></div>
 
-                    <div class="col-md-5 content">
-                        <li>
-                            <h4>{{cooc.name}}</h4>
-                            {{cooc.date}}<br>
-                            {% for key, value in coocs_count.items %}
-                                {% if key == cooc.id %}
-                                    {% if value > 0 %}
-                                            From: {% if not  cooc.hyperdata.parameters.start  %} begin of corpus {% else %} {{cooc.hyperdata.parameters.start}} {% endif %}
-                                            , To: {% if not  cooc.hyperdata.parameters.end    %} end   of corpus {% else %} {{cooc.hyperdata.parameters.end}}   {% endif %}
-                                            <br>
-                                    
-                                    <ul>
-                                        <li>
-                                            <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
-                                            <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                            {% if cooc.hyperdata.conditional %}
-                                                    ~{{ cooc.hyperdata.conditional.nodes }} nodes, 
-                                                    ~{{ cooc.hyperdata.conditional.edges }} edges
-                                                    
-                                                    with <b>Conditional</b> distance
-                                                {% else %}
-                                                    Compute this graph with Conditional distance
-                                            {% endif %}
-                                            </a>
-                                        </li>
-
-                                        <li>
-                                            <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
-                                            <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                            {% if cooc.hyperdata.distributional %}
-                                                    ~{{ cooc.hyperdata.distributional.nodes }} nodes, 
-                                                    ~{{ cooc.hyperdata.distributional.edges }} edges
-                                                    
-                                                    with <b>Distributional</b> distance
-                                                {% else %}
-                                                    Compute this graph with Distributional distance
-                                            {% endif %}
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <br>
-
-
-                                    <!-- <li>{{cooc.id}}</li> 
-                                            <ul>
-
-                                                <li>
+                        <div class="col-md-5 content">
+                            <li>
+                                <h4>{{cooc.name}}</h4>
+                                {{cooc.date}}<br>
+                                {% for key, value in coocs_count.items %}
+                                    {% if key == cooc.id %}
+                                        {% if value > 0 %}
+                                                From: {% if not  cooc.hyperdata.parameters.start  %} begin of corpus {% else %} {{cooc.hyperdata.parameters.start}} {% endif %}
+                                                , To: {% if not  cooc.hyperdata.parameters.end    %} end   of corpus {% else %} {{cooc.hyperdata.parameters.end}}   {% endif %}
+                                                <br>
+                                        
+                                        <ul>
+                                            <li>
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                                Conditional
+                                                {% if cooc.hyperdata.conditional %}
+                                                        ~{{ cooc.hyperdata.conditional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.conditional.edges }} edges
+                                                        
+                                                        with <b>Conditional</b> distance
+                                                    {% else %}
+                                                        Compute this graph with Conditional distance
+                                                {% endif %}
                                                 </a>
-                                                (with bridgeness
-                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=30">30</a>
-                                                            )
-                                                            </li>
-                                                <li>
+                                            </li>
+
+                                            <li>
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                                                Distributional
+                                                {% if cooc.hyperdata.distributional %}
+                                                        ~{{ cooc.hyperdata.distributional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.distributional.edges }} edges
+                                                        
+                                                        with <b>Distributional</b> distance
+                                                    {% else %}
+                                                        Compute this graph with Distributional distance
+                                                {% endif %}
                                                 </a>
-                                                (with bridgeness
-                                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
-                                                                    or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=30">30</a>
-                                                            )
-                                                </li>
-                                            </ul>
-                                    -->
-
-                                    {% else %}
-                                    <!--
-                                                <br> Processing (wait and reload the page)
-                                     !-->
-                                        <div class="progress">
-                                            <div class=" progress-bar progress-bar-striped active"
-                                                        role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
-                                                        <span>
-                                                        Processing (wait and reload the page)
-                                                        </span>
-                                            </div>
-                                            </div>
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-
-                        </li>
-                    </div>
-                    <div class="col-md-3 content">
-                    <!--
-                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional"
-                            title="View Graph">
-                            <button type="button" class="btn btn-default" aria-label="Left Align">
-                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                            </button>
-
-                        </a>
-                    --!>
-
-                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                        data-content="
-                                        <ul>
-                                            <li
-                                            onclick=&quot;
-                                                    garganrest.nodes.delete({{cooc.id}}, function(){$('#graph_'+{{cooc.id}}).remove()});
-                                                    $(this).parent().parent().remove();
-                                                &quot;>
-                                                <a href='#'>Delete this</a>
                                             </li>
                                         </ul>
-                                        ">
-                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                                        title='Delete this graph'></span>
-                                        </button>
+                                        <br>
+
+
+                                        <!-- <li>{{cooc.id}}</li> 
+                                                <ul>
+
+                                                    <li>
+                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
+                                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                    Conditional
+                                                    </a>
+                                                    (with bridgeness
+                                                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=10">10</a>
+                                                                        or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=20">20</a>
+                                                                        or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=30">30</a>
+                                                                )
+                                                                </li>
+                                                    <li>
+                                                    <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
+                                                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                    Distributional
+                                                    </a>
+                                                    (with bridgeness
+                                                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=10">10</a>
+                                                                        or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=20">20</a>
+                                                                        or <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=30">30</a>
+                                                                )
+                                                    </li>
+                                                </ul>
+                                        -->
+
+                                        {% else %}
+                                        <!--
+                                                    <br> Processing (wait and reload the page)
+                                         !-->
+                                            <div class="progress">
+                                                <div class=" progress-bar progress-bar-striped active"
+                                                            role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
+                                                            <span>
+                                                            Processing (wait and reload the page)
+                                                            </span>
+                                                </div>
+                                                </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+
+                            </li>
+                        </div>
+                        <div class="col-md-3 content">
+                        <!--
+                            <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional"
+                                title="View Graph">
+                                <button type="button" class="btn btn-default" aria-label="Left Align">
+                                      <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                </button>
+
+                            </a>
+                        --!>
+
+                            <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                            data-content="
+                                            <ul>
+                                                <li
+                                                onclick=&quot;
+                                                        garganrest.nodes.delete({{cooc.id}}, function(){$('#graph_'+{{cooc.id}}).remove()});
+                                                        $(this).parent().parent().remove();
+                                                    &quot;>
+                                                    <a href='#'>Delete this</a>
+                                                </li>
+                                            </ul>
+                                            ">
+                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                            title='Delete this graph'></span>
+                                            </button>
+
+                        </div>
 
                     </div>
-
                 </div>
-            </div>
 
-          {% endfor %}
+              {% endfor %}
+            {% else %}
+            <h3>
+            <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+            You have not computed any graph already</h3>
+            <h4>
+            <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+            What is Graph ?
+            </h4>
+            <ul>
+                <li>Graph is a tool to explore and represent your corpus (which is a set of documents)</li>
+                <li>Nodes are multi-terms selected in your Map List</li>
+                <li>Edges between nodes represent its proximities in texts according to a specific distance.</li>
+                    <ul>
+                    <li>Conditional distance between the terms X and Y is the probability to have both terms X <b> and </b> Y in the same context of text.</li>
+                        <li>Distributional distance between the terms X and Y is the probability to have same others terms in the same context as X <b>or</b> Y.</li>
+                    </ul>
+            </ul>
+
+
+            <h4>
+            <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
+            How to compute a new graph ?
+            </h4>
+            <ol>
+                <li>Look at the menu</li>
+                <li>Click on Graphs</li>
+                <li>Choose a distance</li>
+                <li>Click on the distance or on MyGraph which is this page</li>
+            </ol>
+           
+            <h4>
+            <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+            Do you want to test ?</h4>
+            </li>
+            <a href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5">Compute a new graph with conditional distance!</a>
+            {% endif %}
       </ul>
 
 {% endblock %}

@@ -97,6 +97,21 @@
             //             +propToRead+" ("+cache[propToRead]+")")
             params[key] = cache[propToRead]
           }
+          else if (typeof val == "object" && val["fromCacheIfElse"]) {
+            var propToReadIf = val["fromCacheIfElse"][0]
+            var propToReadElse = val["fromCacheIfElse"][1]
+            // console.log("reading from cache: response data property " +
+            //             "if:"+propToReadIf+" ("+cache[propToReadIf]+")"+
+            //             " else:"+propToReadElse+" ("+cache[propToReadElse]+")")
+            var valueIf = cache[propToReadIf]
+            var valueElse = cache[propToReadElse]
+            if (valueIf && valueIf != 'null' && valueIf != '') {
+              params[key] = valueIf
+            }
+            else {
+              params[key] = valueElse
+            }
+          }
       }
 
       // Now we run the call
@@ -149,8 +164,8 @@
     // -------------------------------------------------------------------------
 
     // debug
-    // console.log("==> $rootScope <==")
-    // console.log($rootScope)
+    console.log("==> $rootScope <==")
+    console.log($rootScope)
   });
 
 })(window);

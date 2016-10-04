@@ -83,12 +83,17 @@ $.ajax({
             MainFunction( Result )
         },
         error: function(exception) {
-            // console.warn(JSON.stringify(exception, null, 2))
-            showDialog(file, true, exception.status, exception.responseJSON.msg)
+            if (exception.status && exception.responseJSON && exception.responseJSON.msg) {
+                showDialog(file, true, exception.status, exception.responseJSON.msg)
+            }
+            else {
+                showDialog(file, true, "unknown error", JSON.stringify(exception, null, 2))
+            }
         }
 });
 
 function showDialog(url, hasError, status, msg) {
+    // TODO use status
     // console.log('FUN t.main:showDialog' + 'hasError:'+hasError)
     // hide loader gif etc
     $("#semLoader").hide();

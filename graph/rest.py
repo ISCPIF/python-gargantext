@@ -1,61 +1,12 @@
-#from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-
 from gargantext.util.db      import session
 from gargantext.models.nodes import Node
 from graph.graph             import get_graph
+from graph.utils             import compress_graph, format_html
 from gargantext.util.http    import APIView, APIException\
                                   , JsonHttpResponse, requires_auth
 
 from gargantext.constants    import graph_constraints
-from traceback import format_tb
-
-def compress_graph(graphdata):
-    """
-    graph data is usually a dict with 2 slots:
-      "nodes": [{"id":4103, "type":"terms", "attributes":{"clust_default": 0}, "size":29, "label":"regard"},...]
-      "links": [{"t": 998,"s": 768,"w": 0.0425531914893617},...]
-
-    To send this data over the net, this function can reduce a lot of its size:
-      - keep less decimals for float value of each link's weight
-      - use shorter names for node properties (eg: s/clust_default/cl/)
-
-    result format:
-        "nodes": [{"id":4103, "at":{"cl": 0}, "s":29, "lb":"regard"},...]
-        "links": [{"t": 998,"s": 768,"w": 0.042},...]
-    """
-    for link in graphdata['links']:
-        link['w'] = format(link['w'], '.3f')   # keep only 3 decimals
-
-    for node in graphdata['nodes']:
-        node['lb'] = node['label']
-        del node['label']
-
-        node['at'] = node['attributes']
-        del node['attributes']
-
-        node['at']['cl'] = node['at']['clust_default']
-        del node['at']['clust_default']
-
-        node['s'] = node['size']
-        del node['size']
-
-        if node['type'] == "terms":
-            # its the default type for our format: so we don't need it
-            del node['type']
-        else:
-            node['t'] = node['type']
-            del node['type']
-
-    return graphdata
-
-def format_html(link):
-    """
-    Build an html link adapted to our json message format
-    """
-    return "<a class='msglink' href='%s'>%s</a>" % (link, link)
-
-
-# TODO check authentication
+from traceback               import format_tb
 
 class Graph(APIView):
     '''
@@ -67,10 +18,29 @@ class Graph(APIView):
         Get all the parameters first
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
+
+        NB  save new graph mode
+          (option saveOnly=True without a cooc_id)
+           can return the new cooc id in the json
+           before counting + filling data in async
         '''
+
+        if not request.user.is_authenticated():
+            # can't use @requires_auth because of positional 'self' within class
+            return HttpResponse('Unauthorized', status=401)
 
         # Get the node we are working with
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
+
+
+        # TODO Parameters to save in hyperdata of the Node Cooc
+        # WARNING: we could factorize the parameters as dict but ...
+        #         ...  it causes a bug in asynchronous function !
+        # Check celery upgrades before.
+        # Example (for the future):
+        #        parameters = dict()
+        #        parameters['field1'] = field1
+        #        parameters['field2'] = field2
 
         # Get all the parameters in the URL
         cooc_id      = request.GET.get     ('cooc_id'   , None         )
@@ -91,8 +61,7 @@ class Graph(APIView):
         type_        = str(request.GET.get ('type'      , 'node_link'  ))
         distance     = str(request.GET.get ('distance'  , 'conditional'))
 
-        # Get default value if no map list
-
+        # Get default map List of corpus
         if mapList_id == 0 :
             mapList_id = ( session.query ( Node.id )
                                     .filter( Node.typename  == "MAPLIST"
@@ -104,7 +73,6 @@ class Graph(APIView):
             mapList_id = mapList_id[0]
 
             if mapList_id == None :
-                # todo add as an error msg ?
                 raise ValueError("MAPLIST node needed for cooccurrences")
 
 
@@ -120,36 +88,26 @@ class Graph(APIView):
             groupList_id  = groupList_id[0]
 
             if groupList_id == None :
-                # todo add as an error msg ?
                 raise ValueError("GROUPLIST node needed for cooccurrences")
 
 
-        # Check the options
+        # Declare accepted fields
         accepted_field1 = ['ngrams', 'journal', 'source', 'authors']
         accepted_field2 = ['ngrams',                               ]
         options         = ['start', 'end', 'threshold', 'distance', 'cooc_id' ]
 
 
         try:
-            # Test params
+            # Check if parameters are accepted
             if (field1 in accepted_field1) and (field2 in accepted_field2):
-                if start is not None and end is not None :
-                    data = get_graph( corpus=corpus, cooc_id = cooc_id
-                                  #, field1=field1           , field2=field2
-                                   , mapList_id = mapList_id , groupList_id = groupList_id
-                                   , start=start             , end=end
-                                   , threshold =threshold    , distance=distance
-                                   , saveOnly=saveOnly
-                                   )
-                else:
-                    data = get_graph( corpus = corpus, cooc_id = cooc_id
-                                  #, field1=field1, field2=field2
-                                   , mapList_id = mapList_id , groupList_id = groupList_id
-                                   , threshold  = threshold
-                                   , distance   = distance
-                                   , bridgeness = bridgeness
-                                   , saveOnly=saveOnly
-                                   )
+                data = get_graph( corpus=corpus, cooc_id = cooc_id
+                               , field1=field1           , field2=field2
+                               , mapList_id = mapList_id , groupList_id = groupList_id
+                               , start=start             , end=end
+                               , threshold =threshold
+                               , distance=distance       , bridgeness=bridgeness
+                               , saveOnly=saveOnly
+                               )
 
 
                 # data :: Either (Dic Nodes Links) (Dic State Length)
@@ -173,10 +131,12 @@ class Graph(APIView):
                         # async data case
                         link = "http://%s/projects/%d/corpora/%d/myGraphs" % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
-                            'msg': '''Your graph is saved:
-
+                            'id': data["target_id"],
+                            'name': data["target_name"],
+                            'date': data["target_date"],
+                            'msg': '''Your graph is being saved:
                                       %s
-                                      ''' % format_html(link),
+                                      ''' % format_html(link)
                             }, status=200)
 
                     elif data["state"] == "corpusMin":

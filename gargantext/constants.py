@@ -1,10 +1,46 @@
+"""
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
+
+
+abstract:
+---------
+         something between global params, constants,
+         configuration variables, ini file...
+
+
+contents:
+---------
+
+      + db constants/ontology
+         - nodetypes
+            (db int <=> named types <=> python code)
+
+      + input low-level limits
+         - query size
+         - max upload size
+         - doc parsing batch size
+         - word extraction batch size
+
+      + process config
+         - resourcetypes config (~ input ontology)
+         - wordlist generation params
+         - graph creation params
+         - £TODO sequence of transformations "custom pipeline"
+
+      + input process subclasses/subroutines
+         - crawling, import
+         - tagger services and functions
+         - parser services
+         - stemmer services
+
+"""
+import os
+import re
 import importlib
 from gargantext.util.lists import *
 from gargantext.util.tools import datetime, convert_to_date
-import re
-
+from .settings import BASE_DIR
 
 # types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
 LISTTYPES = {
@@ -119,10 +155,8 @@ INDEXED_HYPERDATA = {
 # resources ---------------------------------------------
 def get_resource(sourcetype):
     '''resource :: type => resource dict'''
-    for n in RESOURCETYPES:
-        if int(n["type"]) == int(sourcetype):
-            return n
-    return None
+    return RESOURCETYPES[sourcetype-1]
+
 def get_resource_by_name(sourcename):
     '''resource :: name => resource dict'''
     for n in RESOURCETYPES:
@@ -332,8 +366,6 @@ DEFAULT_CSV_DELIM_GROUP        = '|&|'
 
 
 # Files ----------------------------------------------------------------
-import os
-from .settings import BASE_DIR
 # uploads/.gitignore prevents corpora indexing
 # copora can be either a folder or symlink towards specific partition
 UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
@@ -350,6 +382,9 @@ BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many new node-ngram relations before 
 QUERY_SIZE_N_MAX     = 1000
 QUERY_SIZE_N_DEFAULT = 1000
 
+# Refresh corpora workflow status for project view's progressbar
+PROJECT_VIEW_REFRESH_INTERVAL  = 3000     # 1st refresh in ms (then increasing arithmetically)
+PROJECT_VIEW_MAX_REFRESH_ATTEMPTS = 10    # how many times before we give up
 
 # ------------------------------------------------------------------------------
 # Graph <=> nodes API parameters
@@ -360,7 +395,7 @@ DEFAULT_N_DOCS_HAVING_NGRAM = 5
 # Graph constraints to compute the graph:
 # Modes: live graph generation, graph asynchronously computed or errors detected
 # here are the maximum size of corpus and maplist required to compute the graph
-graph_constraints = {'corpusMax' : 599
+graph_constraints = {'corpusMax' : 100
                     ,'corpusMin' : 40
                     ,'mapList'   : 50
                     }

@@ -40,7 +40,7 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 CELERY_IMPORTS = (
                     "gargantext.util.toolchain",
                     "gargantext.util.crawlers",
-                    "graph.cooccurrences",
+                    "graph.graph",
                     "moissonneurs.pubmed",
                     "moissonneurs.istex",
                     )

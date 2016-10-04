@@ -151,12 +151,15 @@
   transition: all 0.25s linear;
 }
 
-.selection {
+/* this was used for the p or div that *contained* a selection */
+/*.selection {
   color: #aaa;
-}
+}*/
+
+/* this is used for the selected text itself */
 ::selection {
   color: black;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: #aaa;
 }
 
 .noselection {

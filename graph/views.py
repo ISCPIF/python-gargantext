@@ -14,6 +14,8 @@ def explorer(request, project_id, corpus_id):
     Graph explorer, also known as TinaWebJS, using SigmaJS.
     Nodes are ngrams (from title or abstract or journal name.
     Links represent proximity measure.
+
+    Data are received in RESTfull mode (see rest.py).
     '''
 
     # we pass our corpus
@@ -46,7 +48,10 @@ def explorer(request, project_id, corpus_id):
 @requires_auth
 def myGraphs(request, project_id, corpus_id):
     '''
-    List all of my Graphs
+    List all of my Graphs.
+
+    Each Graphs as one Node of Cooccurrences.
+    Each Graph is save in hyperdata of each Node.
     '''
 
     user = cache.User[request.user.id]
@@ -60,8 +65,20 @@ def myGraphs(request, project_id, corpus_id):
 
     coocs_count = dict()
     for cooc in coocs:
-        cooc_nodes = session.query(NodeNgramNgram).filter(NodeNgramNgram.node_id==cooc.id).count()
-        coocs_count[cooc.id] = cooc_nodes
+        # FIXME : approximativ number of nodes (not exactly what user sees in explorer)
+        # Need to be connected with Graph Clustering
+        cooc_nodes = (session.query(Ngram.id,func.count(Ngram.id))
+                             .join(NodeNgramNgram, NodeNgramNgram.ngram1_id == Ngram.id)
+                             .filter(NodeNgramNgram.node_id==cooc.id)
+                             .filter(NodeNgramNgram.weight >= 1)
+                             .group_by(Ngram.id)
+                             .all()
+                     )
+
+        #coocs_count[cooc.id] = len(cooc_nodes)
+        coocs_count[cooc.id] = len([cooc_node for cooc_node in cooc_nodes if cooc_node[1] > 1])
+
+        print("coocs_count a posteriori", coocs_count)
 
     return render(
         template_name = 'pages/corpora/myGraphs.html',

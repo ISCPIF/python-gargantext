@@ -56,15 +56,15 @@
                 <div class="clearfix"></div>
               </div>
               <div class="center">
-                <button type="submit" class="btn btn-primary btn-rounded">Login</button>
-              </div>
-                <div>
-                    <p>
-                    <center>
-                    By submitting I accept the terms of uses [DOC1] [DOC2].
-                    </center>
-                    </p>
+                <div class="checkbox">
+                  <label>
+                    <input id="terms-accept" type="checkbox" value="" onclick="enableAuth(this)">
+                      I accept the terms of uses <a href="http://gitlab.iscpif.fr/humanities/tofu/blob/master/TOFU.pdf" target=blank>[Read the terms of use]</a>.
+                    </input>
+                  </label>
                 </div>
+                <button id="login-button" type="submit" class="btn btn-primary btn-rounded" disabled>Login</button>
+              </div>
             </form>
           </div>
         </div>
@@ -78,6 +78,16 @@
 
   <!-- Bootstrap -->
   <script src="{% static "lib/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
+
+  <!-- checkbox => submit -->
+  <script type="text/javascript">
+    var okButton = document.getElementById('login-button')
+
+    function enableAuth(box) {
+      okButton.disabled = ! box.checked
+    }
+
+  </script>
 
 </body>
 

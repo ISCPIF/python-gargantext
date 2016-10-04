@@ -28,6 +28,8 @@ def docs_by_titles(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
+
+    source_type = corpus.resources()[0]['type']
     # response!
     return render(
         template_name = 'pages/corpora/titles.html',
@@ -37,18 +39,18 @@ def docs_by_titles(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'titles',
             'user': request.user
         },
     )
 
 @requires_auth
-def docs_by_journals(request, project_id, corpus_id):
+def docs_by_sources(request, project_id, corpus_id):
     '''
-    Browse journal titles for a given corpus
-    NB: javascript in page will GET counts from our api: facets?subfield=journal
-    # TODO refactor Journals_dyna_charts_and_table.js
+    Browse source titles for a given corpus
+    NB: javascript in page will GET counts from our api: facets?subfield=source
+    # TODO refactor Sources_dyna_charts_and_table.js
     '''
     # we pass our corpus to mark it's a corpora page
     corpus = cache.Node[corpus_id]
@@ -56,17 +58,19 @@ def docs_by_journals(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
-    # rendered page : journals.html
+    source_type = corpus.resources()[0]['type']
+
+    # rendered page : sources.html
     return render(
-        template_name = 'pages/corpora/journals.html',
+        template_name = 'pages/corpora/sources.html',
         request = request,
         context = {
             'debug': settings.DEBUG,
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
-            'view': 'journals'
+            'resourcename' : get_resource(source_type)['name'],
+            'view': 'sources'
         },
     )
 
@@ -75,7 +79,7 @@ def docs_by_authors(request, project_id, corpus_id):
     '''
     Browse authors for a given corpus
     NB: javascript in page will GET counts from our api: facets?subfield=author
-    # TODO refactor Author && Journals_dyna_charts_and_table.js
+    # TODO refactor Author && Sources_dyna_charts_and_table.js
     '''
     # we pass our corpus to mark it's a corpora page
     corpus = cache.Node[corpus_id]
@@ -83,7 +87,9 @@ def docs_by_authors(request, project_id, corpus_id):
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
 
-    # rendered page : journals.html
+    source_type = corpus.resources()[0]['type']
+
+    # rendered page : sources.html
     return render(
         template_name = 'pages/corpora/authors.html',
         request = request,
@@ -92,7 +98,7 @@ def docs_by_authors(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus' : corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'authors'
         },
     )
@@ -103,6 +109,9 @@ def analytics(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
+
+    source_type = corpus.resources()[0]['type']
+
     # response!
     return render(
         template_name = 'pages/analytics/histories.html',
@@ -112,7 +121,7 @@ def analytics(request, project_id, corpus_id):
             'date': datetime.now(),
             'project': project,
             'corpus': corpus,
-            'resourcename' : get_resource_by_name(corpus.resources()[0]),
+            'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user
         },

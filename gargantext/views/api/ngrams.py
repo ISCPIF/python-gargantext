@@ -2,8 +2,8 @@ from gargantext.util.http       import ValidationException, APIView \
                                      , get_parameters, JsonHttpResponse\
                                      , HttpResponse
 from gargantext.util.db         import session, func
-from gargantext.util.db_cache   import cache 
-from gargantext.models          import Node, Ngram, NodeNgram
+from gargantext.util.db_cache   import cache
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNgramNgram
 from sqlalchemy.orm             import aliased
 from re                         import findall
 
@@ -21,7 +21,7 @@ class ApiNgrams(APIView):
         """
         Used for analytics
         ------------------
-        
+
         Get ngram listing + counts in a given scope
         """
         # parameters retrieval and validation
@@ -83,24 +83,30 @@ class ApiNgrams(APIView):
 
          1 - checks user authentication before any changes
 
-         2 - adds the ngram to Ngram table in DB
+         2 - checks if ngram to Ngram table in DB
+              if yes returns ngram_id and optionally mainform_id
+              otherwise continues
 
-         3 - (if corpus param is present)
+         3 - adds the ngram to Ngram table in DB
+
+         4 - (if corpus param is present)
              adds the ngram doc counts to NodeNgram table in DB
              (aka "index the ngram" throught the docs of the corpus)
 
-         4 - returns json with:
-             'msg'   => a success msg 
+         5 - returns json with:
+             'msg'   => a success msg
              'text'  => the initial text content
              'term'  => the normalized text content
              'id'    => the new ngram_id
              'count' => the number of docs with the ngram in the corpus
                         (if corpus param is present)
+             'group' => the mainform_id if applicable
 
         possible inline parameters
         --------------------------
         @param    text=<ngram_string>         [required]
         @param    corpus=<CORPUS_ID>          [optional]
+        @param    testgroup (true if present) [optional, requires corpus]
         """
 
         # 1 - check user authentication
@@ -121,6 +127,9 @@ class ApiNgrams(APIView):
             raise ValidationException('The route PUT /api/ngrams/ is used to create a new ngram\
                                         It requires a "text" parameter,\
                                         for instance /api/ngrams?text=hydrometallurgy')
+
+        if ('testgroup' in params) and (not ('corpus' in params)):
+            raise ValidationException("'testgroup' param requires 'corpus' param")
 
         # if we have a 'corpus' param (to do the indexing)...
         do_indexation = False
@@ -143,10 +152,33 @@ class ApiNgrams(APIView):
         try:
             log_msg = ""
             ngram_id = None
+            mainform_id = None
+
             preexisting = session.query(Ngram).filter(Ngram.terms==ngram_str).first()
+
             if preexisting is not None:
                 ngram_id = preexisting.id
                 log_msg += "ngram already existed (id %i)\n" % ngram_id
+
+                # in the context of a corpus we can also check if has mainform
+                # (useful for)
+                if 'testgroup' in params:
+                    groupings_id = (session.query(Node.id)
+                                           .filter(Node.parent_id == corpus_id)
+                                           .filter(Node.typename == 'GROUPLIST')
+                                           .first()
+                                    )
+                    had_mainform = (session.query(NodeNgramNgram.ngram1_id)
+                                          .filter(NodeNgramNgram.node_id == groupings_id)
+                                          .filter(NodeNgramNgram.ngram2_id == preexisting.id)
+                                          .first()
+                                    )
+                    if had_mainform:
+                        mainform_id = had_mainform[0]
+                        log_msg += "ngram had mainform (id %i) in this corpus" % mainform_id
+                    else:
+                        log_msg += "ngram was not in any group for this corpus"
+
             else:
                 # 2 - insert into Ngrams
                 new_ngram = Ngram(terms=ngram_str, n=ngram_size)
@@ -165,6 +197,7 @@ class ApiNgrams(APIView):
                 'text': original_text,
                 'term': ngram_str,
                 'id' : ngram_id,
+                'group' : mainform_id,
                 'count': n_added if do_indexation else 'no corpus provided for indexation'
                 }, 200)
 

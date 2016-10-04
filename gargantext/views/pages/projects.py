@@ -54,6 +54,9 @@ def overview(request):
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
+            # status refreshing params (when active workflows)
+            'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+            'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
         },
     )
 
@@ -64,10 +67,14 @@ class NewCorpusForm(forms.Form):
     source_list.insert(0, (0,"Select a database below"))
     type = forms.ChoiceField(
         choices = source_list,
-        widget = forms.Select(attrs={ 'onchange' :'CustomForSelect( $("option:selected", this).text() );'})
+        widget = forms.Select(attrs={ 'onchange' :'CustomForSelect(this.value); checkReady()'})
     )
-    name = forms.CharField( label='Name', max_length=199 , widget=forms.TextInput(attrs={ 'required': 'true' }))
-    file = forms.FileField()
+    name = forms.CharField( label='Name', max_length=199 ,
+        widget = forms.TextInput(attrs={ 'required': 'true', 'onkeyup':'checkReady()' })
+    )
+    file = forms.FileField(
+        widget = forms.FileInput(attrs={ 'onchange':'checkReady()' })
+    )
     def clean_resource(self):
         file_ = self.cleaned_data.get('file')
     def clean_file(self):
@@ -171,6 +178,9 @@ def project(request, project_id):
                 'cooclists': [],
                 'number': len(corpora),
                 'query_size': QUERY_SIZE_N_DEFAULT,
+                # status refreshing params (when active workflows)
+                'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+                'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
             },
         )
     # response!
@@ -189,5 +199,8 @@ def project(request, project_id):
             'cooclists': [],
             'number': len(corpora),
             'query_size': QUERY_SIZE_N_DEFAULT,
+            # status refreshing params (when active workflows)
+            'status_refresh_initial_interval': PROJECT_VIEW_REFRESH_INTERVAL,
+            'status_refresh_max_attempts': PROJECT_VIEW_MAX_REFRESH_ATTEMPTS,
         },
     )

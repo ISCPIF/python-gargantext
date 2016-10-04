@@ -90,17 +90,20 @@
   * MainApiAddNgramHttpService: Create and index a new ngram
   * ===========================
   * route: PUT api/ngrams?text=mynewngramstring&corpus=corpus_id
-  * ------
+  *
+  * NB it also checks if ngram exists (returns the preexisting id)
+  *    and if it has a mainform/group (via 'testgroup' option)
+  *                                   (useful if we add it to a list afterwards)
   *
   */
   http.factory('MainApiAddNgramHttpService', function($resource) {
     return $resource(
        // adding explicit "http://" b/c this a cross origin request
       'http://' + window.GARG_ROOT_URL
-                + "/api/ngrams?text=:ngramStr&corpus=:corpusId",
+                + "/api/ngrams?text=:ngramStr&corpus=:corpusId&testgroup",
       {
         ngramStr: '@ngramStr',
-        corpusId: '@corpusId'
+        corpusId: '@corpusId',
       },
       {
         put: {

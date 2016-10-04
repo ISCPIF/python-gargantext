@@ -89,10 +89,10 @@ function CRUD( list_id , ngram_ids , http_method , callback) {
 // general listener: shift key in the window <=> add to selection
 $(document).on('keyup keydown', function(e){
   // changes the global boolean ("add node to selection" status) if keydown and SHIFT
-  checkBox = e.shiftKey
+  checkBox = manuallyChecked || e.shiftKey
 
   // show it in the real checkbox too
-  $('#checkboxdiv').prop("checked", e.shiftKey)
+  $('#checkboxdiv').prop("checked", manuallyChecked || e.shiftKey)
 } );
 
 // = = = = = = = = = = = [ Clusters Plugin ] = = = = = = = = = = = //
@@ -524,9 +524,9 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                     var gquery = "https://search.iscpif.fr/?categories=general&q="+pub["title"].replace(" "+"+")
                     var getpubAPI = window.location.origin+"/nodeinfo/"+pub["id"]
 
-                    var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
+                    var ifsource="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 
-                    if(pub["journal"]) ifjournal = "<br>Published in <a>"+pub["journal"]+"</a>";
+                    if(pub["source"]) ifsource = "<br>Published in <a>"+pub["source"]+"</a>";
                     if(pub["authors"]) {
                         ifauthors = "By "+pub["authors"]+"";
                         if(pub["authors"] == "not found") {
@@ -542,7 +542,7 @@ function genericGetTopPapers(theids , corpus_id , thediv) {
                     var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
                     jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
-                    output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
+                    output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifsource+". "+ifkeywords+". "+ifdate+"\n";
                     output += '<a href="'+gquery+'" target=_blank><img title="Query the anonymous web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                     output +="</li>\n";
                     // for(var j in pub) {
@@ -624,9 +624,9 @@ function getTopPapers(type){
                         // link to matching document (with focus=selections_ids param)
                         var getpubAPI = window.location.origin+'/projects/'+url_mainIDs["projects"]+'/corpora/'+ url_mainIDs["corpora"] + '/documents/'+pub["id"]+'/focus='+theids.join(",")
 
-                        var ifjournal="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
+                        var ifsource="",ifauthors="",ifkeywords="",ifdate="",iftitle="";
 
-                        if(pub["journal"]) ifjournal = "<br>Published in <a>"+pub["journal"]+"</a>";
+                        if(pub["source"]) ifsource = "<br>Published in <a>"+pub["source"]+"</a>";
                         if(pub["authors"]) {
                             ifauthors = "By "+pub["authors"]+"";
                             if(pub["authors"] == "not found") {
@@ -642,7 +642,7 @@ function getTopPapers(type){
                         var jsparams = 'height=700,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no'
                         jsstuff += "wnws_buffer = window.open('"+getpubAPI+"', 'popUpWindow' , '"+jsparams+"')";
 
-                        output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifjournal+". "+ifkeywords+". "+ifdate+"\n";
+                        output += "<li><a onclick=\""+jsstuff+"\" target=_blank>"+pub["title"]+"</a>. "+ifauthors+". "+ifsource+". "+ifkeywords+". "+ifdate+"\n";
                         output += '<a href="'+gquery+'" target=_blank><img title="Query the web" src="'+window.location.origin+'/static/img/searx.png"></img></a>'
                         output +="</li>\n";
                         // for(var j in pub) {

@@ -131,7 +131,7 @@ em {
                           &nbsp;
                           <!-- save/import button -->
                           <button id="ImportListOrSaveAll" class="btn btn-warning" style="font-size:120%"
-                                   onclick="$('#csvimport').modal('show');">
+                                   onclick="$('#csvimport').modal('show'); document.getElementById('importsubmit').disabled = false ;">
                               <b>Import a Termlist</b>
                           </button>
                       </div>
@@ -139,15 +139,15 @@ em {
                         <div class="pull-right" style="margin-top:2.1em;padding-left:1em;">
                             <select id="picklistmenu" name="my_state_filter">
                               <option value='reset'>All lists</option>
-                              <option value='0'>Candidates only</option>
+                              <option value='0'>Candidates terms</option>
                               <!-- <option value='1' selected="selected">Map terms only</option> -->
-                              <option value='1'>Map terms only</option>
-                              <option value='2'>Stopwords only</option>
+                              <option value='1'>Map terms</option>
+                              <option value='2'>Stop terms</option>
                             </select>
                             <select id="picktermtype" name="my_termtype_filter" style="margin-left:1em;">
                               <option value='reset'>All types</option>
-                              <option value='mono'>One word terms only</option>
-                              <option value='multi'>Multiword terms only</option>
+                              <option value='mono'>One-word terms</option>
+                              <option value='multi'>Multi-word terms</option>
                             </select>
                         </div>
                       </h4>
@@ -437,13 +437,22 @@ function listmergeCsvPost(theFile){
                  // reload after 3s
                  setTimeout("location.reload(true)", 3000);
                  },
-              error: function(result) {
-                  my_html  = '<h3 style="color:red">Error</h3>'
-                  my_html += "<p class='note'>please correct your CSV file and retry</p>"
-                  my_html += "<p>"+ result.responseJSON['err']+"</p>"
+              error: function(result, t) {
+                  if (t != 'timeout') {
+                    my_html  = '<h3 style="color:red">Error</h3>'
+                    my_html += "<p class='note'>please correct your CSV file and retry</p>"
+                    my_html += "<p>"+ result.responseJSON['err']+"</p>"
+                  }
+                  else {
+                    my_html  = '<h3 style="color:red">Timeout</h3>'
+                    my_html += "<p>The CSV import timed out.</p>"
+                    my_html += "<p>(This bug is currently being fixed. <br/>The import and indexation are now continuing in background on our servers. Results will show in a few minutes.)</p>"
+                    document.getElementById('importsubmit').disabled = true
+                  }
                   $('#formanswer').html(my_html);
                   console.error(result);
                  },
+              timeout: 15000  // 15s
             });
     }
 };

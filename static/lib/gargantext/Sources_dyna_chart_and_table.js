@@ -397,7 +397,7 @@ function Main_test( data , initial) {
       .title(function (d) {
                   var value = d.data.value.avg ? d.data.value.avg : d.data.value;
                   if (isNaN(value)) value = 0;
-                  return value+" journals with "+Number(d.key)+" publications";
+                  return value+" sources with "+Number(d.key)+" publications";
               })
       .xAxis();
     LineChart.yAxis().ticks(5)
@@ -418,15 +418,14 @@ function Main_test( data , initial) {
             // // .xUnits(d3.time.months)
             .renderlet(function (chart) {
                 chart.select("g.y").style("display", "none");
-                LineChart.filter(chart.filter());
-                console.log("lalaal moveChart.focus(chartfilt);")
             })
             .on("filtered", function (chart) {
                 dc.events.trigger(function () {
                     var chartfilt = chart.filter()
+                    console.log("lalaal move chart", chartfilt)
                     // tricky part: identifying when the moveChart changes.
                     if(chartfilt) {
-                        Push2Buffer ( chart.filter() )
+                        Push2Buffer ( chartfilt )
                     } else {
                         if(TheBuffer) {
                             Push2Buffer ( false )
@@ -494,21 +493,21 @@ console.log(window.location.href)
 
 // match corpus_id in the url
 var corpus_id ;
-rematch = window.location.href.match(/corpora\/(\d+)\/journals\/?$/)
+rematch = window.location.href.match(/corpora\/(\d+)\/sources\/?$/)
 if (rematch) {
     corpus_id = rematch[1] ;
     $.ajax({
       url: window.location.origin
             + "/api/nodes/"
             + corpus_id
-            + "/facets?hyperfield=journal",
+            + "/facets?hyperfield=source",
       success: function(data){
 
 
         console.log(data)
         $("#content_loader").remove()
         // // Initializing the Charts and Table
-        var result = Main_test( data.by.journal , "FirstScore" )
+        var result = Main_test( data.by.source , "FirstScore" )
         console.log( result )
 
         $("#content_loader").remove()

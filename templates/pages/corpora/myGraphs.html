@@ -10,6 +10,43 @@
 
 <script src="{% static "lib/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
 
+<script type="text/javascript">
+
+  /**
+  * function goFirstGraph()
+  *
+  *      1) run a "save new graph" ajax on graph api
+  *      2) retrieve the new cooc_id in immediate response
+  *      3) monitor status of the async generation
+  */
+  function goFirstGraph() {
+
+    var graphApi = "/api/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer"
+    var graphParams = "saveOnly=True&distance=conditional&bridgeness=5"
+
+    var coocId = null
+
+    // run a "save new graph" ajax
+    $.ajax({
+      method: "GET",
+      url: graphApi + '?' + graphParams,
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+      success: function(data){
+            // retrieve the new coocId
+            console.log("data", data)
+            console.log("data.id", data.id)
+      },
+      error: function(result) {
+          console.log("result", result)
+      }
+    });
+  }
+//
+</script>
+
+
 {% endblock %}
 
 
@@ -35,15 +72,15 @@
                                                 From: {% if not  cooc.hyperdata.parameters.start  %} begin of corpus {% else %} {{cooc.hyperdata.parameters.start}} {% endif %}
                                                 , To: {% if not  cooc.hyperdata.parameters.end    %} end   of corpus {% else %} {{cooc.hyperdata.parameters.end}}   {% endif %}
                                                 <br>
-                                        
+
                                         <ul>
                                             <li>
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                 {% if cooc.hyperdata.conditional %}
-                                                        ~{{ cooc.hyperdata.conditional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.conditional.nodes }} nodes,
                                                         ~{{ cooc.hyperdata.conditional.edges }} edges
-                                                        
+
                                                         with <b>Conditional</b> distance
                                                     {% else %}
                                                         Compute this graph with Conditional distance
@@ -55,9 +92,9 @@
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                 {% if cooc.hyperdata.distributional %}
-                                                        ~{{ cooc.hyperdata.distributional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.distributional.nodes }} nodes,
                                                         ~{{ cooc.hyperdata.distributional.edges }} edges
-                                                        
+
                                                         with <b>Distributional</b> distance
                                                     {% else %}
                                                         Compute this graph with Distributional distance
@@ -68,7 +105,7 @@
                                         <br>
 
 
-                                        <!-- <li>{{cooc.id}}</li> 
+                                        <!-- <li>{{cooc.id}}</li>
                                                 <ul>
 
                                                     <li>
@@ -123,7 +160,7 @@
                                 </button>
 
                             </a>
-                        --!>
+                        -->
 
                             <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
@@ -176,12 +213,14 @@
                 <li>Choose a distance</li>
                 <li>Click on the distance or on MyGraph which is this page</li>
             </ol>
-           
+
             <h4>
             <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
             Do you want to test ?</h4>
             </li>
-            <a href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5">Compute a new graph with conditional distance!</a>
+            <btn class="btn btn-info" onclick="goFirstGraph()">
+              <span style="font-size:120%">Compute a new graph</span> <br/> with conditional distance
+            </btn>
             {% endif %}
       </ul>
 

@@ -18,6 +18,11 @@ class Graph(APIView):
         Get all the parameters first
         graph?field1=ngrams&field2=ngrams&
         graph?field1=ngrams&field2=ngrams&start=''&end=''
+
+        NB  save new graph mode
+          (option saveOnly=True without a cooc_id)
+           can return the new cooc id in the json
+           before counting + filling data in async
         '''
 
         if not request.user.is_authenticated():
@@ -55,7 +60,6 @@ class Graph(APIView):
         format_      = str(request.GET.get ('format'    , 'json'       ))
         type_        = str(request.GET.get ('type'      , 'node_link'  ))
         distance     = str(request.GET.get ('distance'  , 'conditional'))
-
 
         # Get default map List of corpus
         if mapList_id == 0 :
@@ -100,7 +104,7 @@ class Graph(APIView):
                                , field1=field1           , field2=field2
                                , mapList_id = mapList_id , groupList_id = groupList_id
                                , start=start             , end=end
-                               , threshold =threshold    
+                               , threshold =threshold
                                , distance=distance       , bridgeness=bridgeness
                                , saveOnly=saveOnly
                                )
@@ -127,10 +131,12 @@ class Graph(APIView):
                         # async data case
                         link = "http://%s/projects/%d/corpora/%d/myGraphs" % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
-                            'msg': '''Your graph is saved:
-
+                            'id': data["target_id"],
+                            'name': data["target_name"],
+                            'date': data["target_date"],
+                            'msg': '''Your graph is being saved:
                                       %s
-                                      ''' % format_html(link),
+                                      ''' % format_html(link)
                             }, status=200)
 
                     elif data["state"] == "corpusMin":

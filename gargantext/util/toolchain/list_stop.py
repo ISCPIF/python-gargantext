@@ -38,7 +38,7 @@ def is_stop_word(ngram, stop_words=None):
             , "(.*)(travers)(.*)"
             # academic stamps
             , ".*\belsevier\b.*"
-            , ".*\bwiley\b.*)"
+            , ".*\bwiley\b.*"
             , ".*\bspringer\b.*"
             , ".*university press\b.*"
             , ".*\bstudy\b.*"

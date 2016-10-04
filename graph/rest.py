@@ -132,6 +132,8 @@ class Graph(APIView):
                         link = "http://%s/projects/%d/corpora/%d/myGraphs" % (request.get_host(), corpus.parent_id, corpus.id)
                         return JsonHttpResponse({
                             'id': data["target_id"],
+                            'name': data["target_name"],
+                            'date': data["target_date"],
                             'msg': '''Your graph is being saved:
                                       %s
                                       ''' % format_html(link)

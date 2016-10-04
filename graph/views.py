@@ -78,6 +78,8 @@ def myGraphs(request, project_id, corpus_id):
         #coocs_count[cooc.id] = len(cooc_nodes)
         coocs_count[cooc.id] = len([cooc_node for cooc_node in cooc_nodes if cooc_node[1] > 1])
 
+        print("coocs_count a posteriori", coocs_count)
+
     return render(
         template_name = 'pages/corpora/myGraphs.html',
         request = request,

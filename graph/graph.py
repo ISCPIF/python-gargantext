@@ -142,6 +142,8 @@ def get_graph( request=None         , corpus=None
         session.add(new_node)
         session.commit()
         cooc_id = new_node.id
+        cooc_name = new_node.name
+        cooc_date = new_node.date
         # and the empty content will need redoing by countCooccurrences
         overwrite_node_contents = True
         print("GRAPH #%d ... Created new empty data node for saveOnly" % int(cooc_id))
@@ -218,7 +220,11 @@ def get_graph( request=None         , corpus=None
                                     , save_on_db = True     , reset=overwrite_node_contents
                                    #, limit=size
                                     )
-        return {"state" : "saveOnly", "target_id" : cooc_id}
+
+        return {"state" : "saveOnly",
+                "target_id" : cooc_id,
+                "target_name": cooc_name,
+                "target_date": cooc_date}
 
     elif corpus_size > graph_constraints['corpusMax']:
         # Then compute cooc asynchronously with celery

@@ -13,7 +13,7 @@ from collections import defaultdict
 
 import csv
 
-_node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams']
+_node_available_fields = ['id', 'parent_id', 'name', 'typename', 'hyperdata', 'ngrams', 'date']
 _node_default_fields = ['id', 'parent_id', 'name', 'typename']
 _node_available_types = NODETYPES
 

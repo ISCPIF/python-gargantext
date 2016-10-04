@@ -132,12 +132,13 @@
           return false
       }
 
+
       // also replace template variables (thx c24b!)
       resultHtml = resultHtml.replace(/%%project_id%%/g, projectId);
       resultHtml = resultHtml.replace(/%%corpus_id%%/g, corpusId);
       resultHtml = resultHtml.replace(/%%cooc_id%%/g, coocId);
       resultHtml = resultHtml.replace(/%%cooc_name%%/g, coocName);
-      resultHtml = resultHtml.replace(/%%cooc_date%%/g, coocDate);
+      resultHtml = resultHtml.replace(/%%cooc_date%%/g, formatDateLikeDjango(coocDate));
 
       if (typeof nbEdges != 'undefined' && typeof nbNodes != 'undefined') {
         resultHtml = resultHtml.replace(/%%nb_nodes%%/g, nbNodes);
@@ -290,6 +291,37 @@
   function stopCheckingGraphStatus() {
     clearTimeout(currentJob)
   }
+
+  // raw DB format: "2016-10-04T15:00:35Z"   (ISOString)
+  //                -----------------------
+  //
+  // but django default format: Oct. 4, 2016, 3:00 p.m.
+  //                           ------------------------
+  // cf. docs.djangoproject.com/en/dev/ref/settings/#date-format
+  //
+  // POSSIBLE: remove UTC from django and here (current timezone more practical)
+  function formatDateLikeDjango(isoDateTimeStr) {
+      asDate = new Date(isoDateTimeStr)
+
+      // ex: "Oct 4, 2016"
+      var newDateStr = asDate.toLocaleDateString(
+                                      'en-US',
+                                          { 'year': 'numeric',
+                                            'month': 'short',
+                                            'day': 'numeric' })
+
+      // ex: 3:00 pm
+      var newTimeStr = asDate.toLocaleTimeString(
+                                      'en-US',
+                                          { 'hour12': true,
+                                            'timeZone': 'UTC',
+                                            'hour': '2-digit',
+                                            'minute':'numeric'})
+                                      .toLowerCase()
+
+      // ex Oct 4, 2016, 3:00 pm      => close enough !
+      return newDateStr + ', ' + newTimeStr
+    }
 
 </script>
 

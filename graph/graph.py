@@ -51,7 +51,7 @@ def compute_graph( corpus_id=None      , cooc_id=None
                                     , mapList_id=mapList_id , groupList_id=groupList_id
                                     , isMonopartite=True    , threshold = threshold
                                     , distance=distance     , bridgeness=bridgeness
-                                    , save_on_db = True
+                                    , save_on_db = True     , reset = reset
                                     )
         print("GRAPH #%d ... Cooccurrences computed." % (cooc_id))
 
@@ -73,13 +73,13 @@ def compute_graph( corpus_id=None      , cooc_id=None
             node.hyperdata[distance] = dict()
 
         node.hyperdata[distance][bridgeness] = data
-        
+
         node.hyperdata[distance]["nodes"]    = len(G.nodes())
         node.hyperdata[distance]["edges"]    = len(G.edges())
-        
+
         node.save_hyperdata()
         session.commit()
-        
+
         print("GRAPH #%d ... Notify by email owner of the graph." % cooc_id)
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
         notify_owner(corpus, cooc_id, distance, bridgeness)
@@ -99,25 +99,25 @@ def get_graph( request=None         , corpus=None
     '''
     Get_graph : main steps:
     0) Check the parameters
-    
+
     get_graph :: GraphParameters -> Either (Dic Nodes Links) (Dic State Length)
         where type Length = Int
 
-    get_graph first checks the parameters and return either graph data or a dict with 
-    state "type" with an integer to indicate the size of the parameter 
+    get_graph first checks the parameters and return either graph data or a dict with
+    state "type" with an integer to indicate the size of the parameter
     (maybe we could add a String in that step to factor and give here the error message)
-    
+
     1) compute_graph (see function above)
     2) return graph
 
     '''
-
+    overwrite_node_contents = False
 
     # Case of graph has been computed already
     if cooc_id is not None:
         print("GRAPH#%d ... Loading data already computed." % int(cooc_id))
         node = session.query(Node).filter(Node.id == cooc_id).first()
-        
+
         # Structure of the Node.hyperdata[distance][bridbeness]
         # All parameters (but distance and bridgeness)
         # are in Node.hyperdata["parameters"]
@@ -129,6 +129,25 @@ def get_graph( request=None         , corpus=None
             # Check bridgeness of the graph
             if graph.get(str(bridgeness), None) is not None:
                 return graph[str(bridgeness)]
+
+    # new graph: we give it an empty node with new id and status
+    elif saveOnly:
+        # NB: we do creation already here (instead of same in countCooccurrences)
+        #     to guarantee a unique ref id to the saveOnly graph (async generation)
+        new_node = corpus.add_child(
+                            typename  = "COOCCURRENCES",
+                            name = "GRAPH (in corpus %s)" % corpus.id
+                            )
+
+        session.add(new_node)
+        session.commit()
+        cooc_id = new_node.id
+        cooc_name = new_node.name
+        cooc_date = new_node.date
+        # and the empty content will need redoing by countCooccurrences
+        overwrite_node_contents = True
+        print("GRAPH #%d ... Created new empty data node for saveOnly" % int(cooc_id))
+
 
 
     # Case of graph has not been computed already
@@ -198,10 +217,14 @@ def get_graph( request=None         , corpus=None
                                     , mapList_id=mapList_id , groupList_id=groupList_id
                                     , isMonopartite=True    , threshold = threshold
                                     , distance=distance     , bridgeness=bridgeness
-                                    , save_on_db = True
+                                    , save_on_db = True     , reset=overwrite_node_contents
                                    #, limit=size
                                     )
-        return {"state" : "saveOnly"}
+
+        return {"state" : "saveOnly",
+                "target_id" : cooc_id,
+                "target_name": cooc_name,
+                "target_date": cooc_date}
 
     elif corpus_size > graph_constraints['corpusMax']:
         # Then compute cooc asynchronously with celery
@@ -211,10 +234,10 @@ def get_graph( request=None         , corpus=None
                                     , mapList_id=mapList_id , groupList_id=groupList_id
                                     , isMonopartite=True    , threshold = threshold
                                     , distance=distance     , bridgeness=bridgeness
-                                    , save_on_db = True
+                                    , save_on_db = True     , reset=overwrite_node_contents
                                    #, limit=size
                                     )
-        # Dict to inform user that corpus maximum is reached 
+        # Dict to inform user that corpus maximum is reached
         # then graph is computed asynchronously
         return {"state" : "corpusMax", "length" : corpus_size}
 
@@ -230,7 +253,7 @@ def get_graph( request=None         , corpus=None
                                    , mapList_id=mapList_id , groupList_id=groupList_id
                                    , isMonopartite=True    , threshold = threshold
                                    , distance=distance     , bridgeness=bridgeness
-                                   , save_on_db = True
+                                   , save_on_db = True     , reset=overwrite_node_contents
                                   #, limit=size
                                    )
 

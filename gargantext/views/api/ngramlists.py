@@ -85,8 +85,8 @@ class CSVLists(APIView):
         # import the csv
         try:
             new_lists = import_ngramlists(csv_file)
-            print("===============================!!!")
-            print(new_lists)
+            print("======new_lists=========================!!!")
+            # print(new_lists) # very long
             del csv_file
 
             # merge the new_lists onto those of the target corpus

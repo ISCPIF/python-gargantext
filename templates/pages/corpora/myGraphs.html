@@ -10,6 +10,290 @@
 
 <script src="{% static "lib/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
 
+<style type="text/css">
+    .first-graph {
+        padding-top: 3em;
+    }
+</style>
+
+<script type="text/javascript">
+
+  // initial vars
+  var projectId = "{{project.id | escapejs}}"
+  var corpusId  = "{{corpus.id | escapejs }}"
+
+  /**
+  * Some html block templates to render responses after the ajax of goFirstGraph
+  *
+  * TODO use template_literals returned by lazy function or any other better templating
+  */
+  var processingHtml='\
+      <div class="progress">\
+          <div class=" progress-bar progress-bar-striped active"\
+                      role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">\
+                      <span>\
+                      Processing\
+                      </span>\
+          </div>\
+      </div>'
+
+  var finishedHtmlTemplate='\
+      <br>\
+          From: begin of corpus\
+          , To: end   of corpus\
+      <br>\
+      <ul>\
+          <li>\
+              <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
+              <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
+                  ~%%nb_nodes%% nodes,\
+                  ~%%nb_edges%% edges\
+                  with <b>Conditional</b> distance\
+              </a>\
+          </li>\
+          <li>\
+              <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=distributional&amp;bridgeness=5">\
+              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
+                  Compute this graph with Distributional distance\
+              </a>\
+          </li>\
+      </ul>\
+      <br>'
+
+  var baseSkeletonTemplate='\
+      <div id="graph_%%cooc_id%%" class="first-graph">\
+          <div class="row">\
+              <div class="col-md-1 content"></div>\
+              <div class="col-md-5 content">\
+                  <li>\
+                      <h4 title="%%cooc_id%%">%%cooc_name%%</h4>\
+                      %%cooc_date%%\
+                      \
+                      %%HERE_RESPONSE_DEPENDANT%%\
+                      \
+                  </li>\
+              </div>\
+              <div class="col-md-3 content">\
+                  <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"\
+                                  data-content="\
+                                  <ul>\
+                                      <li\
+                                      onclick=&quot;\
+                                              garganrest.nodes.delete(%%cooc_id%%, function(){$(\'#graph_\'+%%cooc_id%%).remove()});\
+                                              $(this).parent().parent().remove();\
+                                          &quot;>\
+                                          <a href=\'#\'>Delete this</a>\
+                                      </li>\
+                                  </ul>\
+                                  ">\
+                      <span class="glyphicon glyphicon-trash" aria-hidden="true"\
+                      title=\'Delete this graph\'></span>\
+                  </button>\
+              </div>\
+          </div>\
+      </div>'
+
+
+  /**
+  * function showNewCoocDiv(status_code, cooc_id, cooc_name, cooc_date)
+  *
+  * (uses the templates to make a new cooc html appear)
+  *
+  *  @param 'progress_status' || 'finished_status'
+  *  @param projectId
+  *  @param corpusId
+  *  @param coocId
+  *  @param coocName
+  *  @param coocDate
+  *  @param nNodes    (optional <=> if finished_status)
+  *  @param nEdges    (optional <=> if finished_status)
+  */
+  function showNewCoocDiv(statusCode,
+                            coocId, coocName, coocDate,
+                                nbNodes, nbEdges) {
+      var resultHtml = baseSkeletonTemplate
+
+      // initial if
+      switch (statusCode) {
+        case "progress_status":
+          resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                          processingHtml
+                                         )
+          break;
+
+        case "finished_status":
+          resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                          finishedHtmlTemplate
+                                         )
+          break;
+
+        default:
+          console.warning("showNewCoocDiv: can't show div (Unknown statusCode", statusCode,")");
+          return false
+      }
+
+      // also replace template variables (thx c24b!)
+      resultHtml = resultHtml.replace(/%%project_id%%/g, projectId);
+      resultHtml = resultHtml.replace(/%%corpus_id%%/g, corpusId);
+      resultHtml = resultHtml.replace(/%%cooc_id%%/g, coocId);
+      resultHtml = resultHtml.replace(/%%cooc_name%%/g, coocName);
+      resultHtml = resultHtml.replace(/%%cooc_date%%/g, coocDate);
+
+      if (typeof nbEdges != 'undefined' && typeof nbNodes != 'undefined') {
+        resultHtml = resultHtml.replace(/%%nb_nodes%%/g, nbNodes);
+        resultHtml = resultHtml.replace(/%%nb_edges%%/g, nbEdges);
+      }
+
+      // what do we do with those results ?
+      switch (statusCode) {
+        case "progress_status":
+          // render the result in DOM
+          $('#graph-list').append(resultHtml)
+          return null
+
+        case "finished_status":
+          // replace the previous results
+          var previousDiv = document.getElementById('graph_'+coocId)
+          previousDiv.innerHTML = resultHtml
+          return true
+      }
+  }
+
+  /**
+  * function goFirstGraph()
+  *
+  *      1) run a "save new graph" ajax on graph api
+  *      2) retrieve the new cooc_id in immediate response
+  *      3) monitor status of the async generation
+  */
+  function goFirstGraph() {
+    // ajax config vars
+    var graphApi = "/api/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer"
+    var graphParams = "saveOnly=True&distance=conditional&bridgeness=5"
+
+    // vars we'll get at creation steps (1: graph init, 2: graph finish)
+    var coocId    = null    // 1 & 2
+    var coocName  = null    // 1 & 2
+    var coocDate  = null    // 1 & 2
+    var nbNodes   = null    // 2
+    var nbEdges   = null    // 2
+
+    // run the "save new graph" ajax
+    // -----------------------------
+    // cf. data["state"] == "saveOnly"
+    $.ajax({
+      method: "GET",
+      url: graphApi + '?' + graphParams,
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+      success: function(data){
+            // console.log("data", data)
+
+            // 1 - retrieve the new coocId etc
+            if (data.id && data.name && data.date) {
+              coocId   = data['id']
+              coocName = data['name']
+              coocDate = data['date']
+            }
+
+            // 2 - show the node with basic info and progressbar
+            showNewCoocDiv("progress_status",
+                              coocId, coocName, coocDate)
+
+            // 3 - run status updating
+            //     (it will call next step of
+            //      showNewCoocDiv when ready)
+            keepCheckingGraphStatus(coocId)
+      },
+      error: function(result) {
+          console.log("result", result)
+      }
+    });
+  }
+
+
+  /**
+  * function keepCheckingGraphStatus(coocId)
+  *
+  *      1) keeps checking an API of cooc status
+  *      2) triggers showNewCoocDiv('finished_status') if ready
+  *         or abandons after 5 attempts
+  */
+  var nChecks = 0
+  var currentJob = null
+  var graphReadyFlag = false
+  function keepCheckingGraphStatus(coocNodeId) {
+    console.log("checking status", nChecks)
+    nChecks ++
+
+    // var the_status_url = "/api/nodes/"+coocNodeId+"/status?format=json"
+    var the_url_to_check = "/api/nodes/"+coocNodeId+"?fields[]=hyperdata&fields[]=name&fields[]=date"
+    // we get all hyperdata instead of just statuses because
+    // we'll need hyperdata.conditional.nodes and edges
+
+    // remote call
+    $.ajax({
+      type: 'GET',
+      url: the_url_to_check,
+      success: function(data) {
+        // TODO hyperdata would contains statuses too
+        // var statuses = data['hyperdata']['statuses']
+
+        var coocNodeName = data['name']
+        var coocNodeDate = data['date']
+
+        // test if ready like this for the moment
+        if (typeof data['hyperdata']['conditional'] != "undefined") {
+          console.log("GRAPH is READY", coocNodeId)
+          graphReadyFlag = true
+
+          var nbNodes = data['hyperdata']['conditional']['nodes']
+          var nbEdges = data['hyperdata']['conditional']['edges']
+
+          // console.warn("running callback for graph id:" + coocNodeId)
+          showNewCoocDiv("finished_status", coocNodeId,
+                            coocNodeName, coocNodeDate,
+                                 nbNodes, nbEdges)
+        }
+
+        // stopping conditions
+        if (graphReadyFlag || nChecks > 5) {
+          // we abandon after 5 checks
+          console.warn("stopping status checks for graph:",
+                        coocNodeId)
+          nChecks = 0
+          return null
+        }
+        // scheduled recursion
+        else {
+          console.log("GRAPH not ready yet...", coocNodeId)
+          // decreasing intervals (preserving DB while "loosing interest")
+          var nextTime = nChecks * 3000
+          // schedule next check
+          currentJob = setTimeout(function(){keepCheckingGraphStatus(coocNodeId)}, nextTime)
+          console.log("next status check in", nextTime/1000, "s" )
+          return false
+        }
+
+      },
+      error: function(data, s) {
+        console.warn("status GET: ajax err (s="+s+")")
+        console.log(data)
+      },
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      }
+    })
+  }
+
+  function stopCheckingGraphStatus() {
+    clearTimeout(currentJob)
+  }
+
+</script>
+
+
 {% endblock %}
 
 
@@ -18,7 +302,7 @@
 
 <div class="container theme-showcase" role="main">
     <h2>My Graphs  </h2>
-        <ol>
+        <ol id="graph-list">
         {% if coocs %}
             {% for cooc in coocs %}
                 <div id="graph_{{cooc.id}}">
@@ -35,15 +319,15 @@
                                                 From: {% if not  cooc.hyperdata.parameters.start  %} begin of corpus {% else %} {{cooc.hyperdata.parameters.start}} {% endif %}
                                                 , To: {% if not  cooc.hyperdata.parameters.end    %} end   of corpus {% else %} {{cooc.hyperdata.parameters.end}}   {% endif %}
                                                 <br>
-                                        
+
                                         <ul>
                                             <li>
-                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=conditional&bridgeness=5">
+                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&amp;distance=conditional&amp;bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                 {% if cooc.hyperdata.conditional %}
-                                                        ~{{ cooc.hyperdata.conditional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.conditional.nodes }} nodes,
                                                         ~{{ cooc.hyperdata.conditional.edges }} edges
-                                                        
+
                                                         with <b>Conditional</b> distance
                                                     {% else %}
                                                         Compute this graph with Conditional distance
@@ -52,12 +336,12 @@
                                             </li>
 
                                             <li>
-                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&distance=distributional&bridgeness=5">
+                                                <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&amp;distance=distributional&amp;bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
                                                 {% if cooc.hyperdata.distributional %}
-                                                        ~{{ cooc.hyperdata.distributional.nodes }} nodes, 
+                                                        ~{{ cooc.hyperdata.distributional.nodes }} nodes,
                                                         ~{{ cooc.hyperdata.distributional.edges }} edges
-                                                        
+
                                                         with <b>Distributional</b> distance
                                                     {% else %}
                                                         Compute this graph with Distributional distance
@@ -68,7 +352,7 @@
                                         <br>
 
 
-                                        <!-- <li>{{cooc.id}}</li> 
+                                        <!-- <li>{{cooc.id}}</li>
                                                 <ul>
 
                                                     <li>
@@ -123,7 +407,7 @@
                                 </button>
 
                             </a>
-                        --!>
+                        -->
 
                             <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
                                             data-content="
@@ -176,13 +460,14 @@
                 <li>Choose a distance</li>
                 <li>Click on the distance or on MyGraph which is this page</li>
             </ol>
-           
+
             <h4>
             <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
             Do you want to test ?</h4>
-            </li>
-            <a href="/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer?field1=ngrams&amp;field2=ngrams&amp;distance=conditional&amp;bridgeness=5">Compute a new graph with conditional distance!</a>
+            <btn class="btn btn-info" onclick="goFirstGraph()">
+              <span style="font-size:120%">Compute a new graph</span> <br/> with conditional distance
+            </btn>
             {% endif %}
-      </ul>
+      </ol>
 
 {% endblock %}

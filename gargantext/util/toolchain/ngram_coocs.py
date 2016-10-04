@@ -200,8 +200,20 @@ def compute_coocs(  corpus,
          """
 
     if stoplist_id:
-        pass
-        # TODO reverse join
+        # used for reverse join
+        sql_statement +="""
+        LEFT JOIN (
+            SELECT * FROM nodes_ngrams
+            WHERE nodes_ngrams.node_id = %i
+            ) AS stoplistA
+          ON stoplistA.ngram_id = cooc.ngA
+
+        LEFT JOIN (
+            SELECT * FROM nodes_ngrams
+            WHERE nodes_ngrams.node_id = %i
+            ) AS stoplistB
+          ON stoplistA.ngram_id = cooc.ngA
+         """ % (stoplist_id, stoplist_id)
 
     # 7) FILTERS
 
@@ -212,6 +224,11 @@ def compute_coocs(  corpus,
     if on_list_id:
         sql_statement += "\n AND whitelistA.node_id = %i" % on_list_id
         sql_statement += "\n AND whitelistB.node_id = %i" % on_list_id
+
+    if stoplist_id:
+        sql_statement += "\n AND stoplistA.ngram_id IS NULL"
+        sql_statement += "\n AND stoplistB.ngram_id IS NULL"
+
 
     # don't compute ngram with itself
     # NB: this option is bad for main toolchain
@@ -227,6 +244,9 @@ def compute_coocs(  corpus,
 
     # 6) EXECUTE QUERY
     # ----------------
+    # debug
+    print(sql_statement)
+
     # executing the SQL statement
     results = connection.execute(sql_statement)
 

@@ -10,7 +10,17 @@
 
 <script src="{% static "lib/jquery/1.11.1/jquery.min.js" %}" type="text/javascript"></script>
 
+<style type="text/css">
+    .first-graph {
+        padding-top: 3em;
+    }
+</style>
+
 <script type="text/javascript">
+
+  // initial vars
+  var projectId = "{{project.id | escapejs}}"
+  var corpusId  = "{{corpus.id | escapejs }}"
 
   /**
   * Some html block templates to render responses after the ajax of goFirstGraph
@@ -35,7 +45,7 @@
       <ul>\
           <li>\
               <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
-              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
+              <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
                   ~%%nb_nodes%% nodes,\
                   ~%%nb_edges%% edges\
                   with <b>Conditional</b> distance\
@@ -51,12 +61,12 @@
       <br>'
 
   var baseSkeletonTemplate='\
-      <div id="graph_%%cooc_id%%">\
+      <div id="graph_%%cooc_id%%" class="first-graph">\
           <div class="row">\
               <div class="col-md-1 content"></div>\
               <div class="col-md-5 content">\
                   <li>\
-                      <h4>%%cooc_name%%</h4>\
+                      <h4 title="%%cooc_id%%">%%cooc_name%%</h4>\
                       %%cooc_date%%\
                       \
                       %%HERE_RESPONSE_DEPENDANT%%\
@@ -99,9 +109,8 @@
   *  @param nEdges    (optional <=> if finished_status)
   */
   function showNewCoocDiv(statusCode,
-                              projectId, corpusId,
-                                  coocId, coocName, coocDate,
-                                        nNodes, nEdges) {
+                            coocId, coocName, coocDate,
+                                nbNodes, nbEdges) {
       var resultHtml = baseSkeletonTemplate
 
       // initial if
@@ -135,9 +144,19 @@
         resultHtml = resultHtml.replace(/%%nb_edges%%/g, nbEdges);
       }
 
-      // render the result in DOM
-      $('#graph-list').append(resultHtml)
-      return true
+      // what do we do with those results ?
+      switch (statusCode) {
+        case "progress_status":
+          // render the result in DOM
+          $('#graph-list').append(resultHtml)
+          return null
+
+        case "finished_status":
+          // replace the previous results
+          var previousDiv = document.getElementById('graph_'+coocId)
+          previousDiv.innerHTML = resultHtml
+          return true
+      }
   }
 
   /**
@@ -152,14 +171,10 @@
     var graphApi = "/api/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer"
     var graphParams = "saveOnly=True&distance=conditional&bridgeness=5"
 
-    // initial vars
-    var projectId = "{{project.id | escapejs}}"
-    var corpusId  = "{{corpus.id | escapejs }}"
-
-    // vars we'll get at creation steps
-    var coocId    = null    // 1
-    var coocName  = null    // 1
-    var coocDate  = null    // 1
+    // vars we'll get at creation steps (1: graph init, 2: graph finish)
+    var coocId    = null    // 1 & 2
+    var coocName  = null    // 1 & 2
+    var coocDate  = null    // 1 & 2
     var nbNodes   = null    // 2
     var nbEdges   = null    // 2
 
@@ -184,15 +199,98 @@
 
             // 2 - show the node with basic info and progressbar
             showNewCoocDiv("progress_status",
-                                projectId, corpusId,
-                                  coocId, coocName, coocDate)
+                              coocId, coocName, coocDate)
+
+            // 3 - run status updating
+            //     (it will call next step of
+            //      showNewCoocDiv when ready)
+            keepCheckingGraphStatus(coocId)
       },
       error: function(result) {
           console.log("result", result)
       }
     });
   }
-//
+
+
+  /**
+  * function keepCheckingGraphStatus(coocId)
+  *
+  *      1) keeps checking an API of cooc status
+  *      2) triggers showNewCoocDiv('finished_status') if ready
+  *         or abandons after 5 attempts
+  */
+  var nChecks = 0
+  var currentJob = null
+  var graphReadyFlag = false
+  function keepCheckingGraphStatus(coocNodeId) {
+    console.log("checking status", nChecks)
+    nChecks ++
+
+    // var the_status_url = "/api/nodes/"+coocNodeId+"/status?format=json"
+    var the_url_to_check = "/api/nodes/"+coocNodeId+"?fields[]=hyperdata&fields[]=name&fields[]=date"
+    // we get all hyperdata instead of just statuses because
+    // we'll need hyperdata.conditional.nodes and edges
+
+    // remote call
+    $.ajax({
+      type: 'GET',
+      url: the_url_to_check,
+      success: function(data) {
+        // TODO hyperdata would contains statuses too
+        // var statuses = data['hyperdata']['statuses']
+
+        var coocNodeName = data['name']
+        var coocNodeDate = data['date']
+
+        // test if ready like this for the moment
+        if (typeof data['hyperdata']['conditional'] != "undefined") {
+          console.log("GRAPH is READY", coocNodeId)
+          graphReadyFlag = true
+
+          var nbNodes = data['hyperdata']['conditional']['nodes']
+          var nbEdges = data['hyperdata']['conditional']['edges']
+
+          // console.warn("running callback for graph id:" + coocNodeId)
+          showNewCoocDiv("finished_status", coocNodeId,
+                            coocNodeName, coocNodeDate,
+                                 nbNodes, nbEdges)
+        }
+
+        // stopping conditions
+        if (graphReadyFlag || nChecks > 5) {
+          // we abandon after 5 checks
+          console.warn("stopping status checks for graph:",
+                        coocNodeId)
+          nChecks = 0
+          return null
+        }
+        // scheduled recursion
+        else {
+          console.log("GRAPH not ready yet...", coocNodeId)
+          // decreasing intervals (preserving DB while "loosing interest")
+          var nextTime = nChecks * 3000
+          // schedule next check
+          currentJob = setTimeout(function(){keepCheckingGraphStatus(coocNodeId)}, nextTime)
+          console.log("next status check in", nextTime/1000, "s" )
+          return false
+        }
+
+      },
+      error: function(data, s) {
+        console.warn("status GET: ajax err (s="+s+")")
+        console.log(data)
+      },
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      }
+    })
+  }
+
+  function stopCheckingGraphStatus() {
+    clearTimeout(currentJob)
+  }
+
 </script>
 
 

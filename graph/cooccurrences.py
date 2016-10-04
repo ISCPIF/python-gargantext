@@ -38,7 +38,6 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
     limit :: Int
 
     '''
-
     # FIXME remove the lines below after factorization of parameters
     parameters = dict()
     parameters['field1'] = field1
@@ -68,14 +67,20 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
             cooc_id = coocNode.id
         else :
             cooc_id = int(cooc_id[0])
+
+    # when cooc_id preexisted, but we want to continue  (reset = True)
+    #    (to give new contents to this cooc_id)
+    elif reset:
+        print("GRAPH #%s ... Counting new cooccurrences data." % cooc_id)
+        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == cooc_id ).delete()
+        session.commit()
+
+    # when cooc_id preexisted and we just want to load it (reset = False)
     else:
         print("GRAPH #%s ... Loading cooccurrences computed already." % cooc_id)
         cooc = session.query( NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id, NodeNgramNgram.weight ).filter( NodeNgramNgram.node_id == cooc_id ).all()
         return(int(cooc_id),WeightedMatrix(cooc))
-    
-    if reset == True :
-        session.query( NodeNgramNgram ).filter( NodeNgramNgram.node_id == cooc_id ).delete()
-        session.commit()
+
 
 
     NodeNgramX = aliased(NodeNgram)
@@ -202,29 +207,29 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
     #cooc_query = cooc_query.order_by(desc('cooc_score'))
 
     matrix = WeightedMatrix(cooc_query)
-    
+
     print("GRAPH #%s Filtering the matrix with Map and Group Lists." % cooc_id)
     cooc = filterMatrix(matrix, mapList_id, groupList_id)
-    
+
     parameters['MapList_id']   = str(mapList_id)
     parameters['GroupList_id'] = str(groupList_id)
-    
+
     # TODO factorize savings on db
     if save_on_db:
         # Saving the cooccurrences
         cooc.save(cooc_id)
         print("GRAPH #%s ... Node Cooccurrence Matrix saved" % cooc_id)
-        
+
         # Saving the parameters
         print("GRAPH #%s ... Parameters saved in Node." % cooc_id)
         coocNode = session.query(Node).filter(Node.id==cooc_id).first()
-        
+
         coocNode.hyperdata["parameters"] = dict()
         coocNode.hyperdata["parameters"] = parameters
         coocNode.save_hyperdata()
         session.commit()
-        
+
         #data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
         #return data
-    
+
     return(coocNode.id, cooc)

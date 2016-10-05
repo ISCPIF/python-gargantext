@@ -37,11 +37,10 @@ def is_stop_word(ngram, stop_words=None):
             , "(.*)(différent)(.*)"
             , "(.*)(travers)(.*)"
             # academic stamps
-            , ".*\belsevier\b.*"
-            , ".*\bwiley\b.*"
-            , ".*\bspringer\b.*"
-            , ".*university press\b.*"
-            , ".*\bstudy\b.*"
+            , ".*elsevier.*"
+            , ".*wiley.*"
+            , ".*springer.*"
+            , ".*university press.*"
             # academic terms when alone ~~> usually not informative
             , "hypothes[ie]s$"
             , "analys[ie]s$"

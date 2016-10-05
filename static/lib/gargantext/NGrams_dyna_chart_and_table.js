@@ -1818,14 +1818,25 @@ function SaveLocalChanges() {
 // For list modifications (add/delete), all http-requests
 function CRUD( list_id , ngram_ids , http_method , callback) {
     // ngramlists/change?node_id=42&ngram_ids=1,2
-    var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id+"&ngrams="+ngram_ids.join(",");
+    // var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id+"&ngrams="+ngram_ids.join(",");
+    var the_url = window.location.origin+"/api/ngramlists/change?list="+list_id;
 
     // debug
     // console.log("  ajax target: " + the_url + " (" + http_method + ")")
 
+    // 2016-10-05 pass PUT and DELETE ngrams in payload as if it was POSTs
+    // (to avoid too long urls that trigger Bad Gateway in production)
+
+    var myNgramsData = new FormData();
+    myNgramsData.append("ngrams", ngram_ids.join(","))
+
     if(ngram_ids.length>0) {
         $.ajax({
           method: http_method,
+          async: true,
+          contentType: false,
+          processData: false,
+          data: myNgramsData,
           url: the_url,
             //    data: args,   // currently all data explicitly in the url (like a GET)
           beforeSend: function(xhr) {

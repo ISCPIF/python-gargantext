@@ -16,316 +16,6 @@
     }
 </style>
 
-<script type="text/javascript">
-
-  // initial vars
-  var projectId = "{{project.id | escapejs}}"
-  var corpusId  = "{{corpus.id | escapejs }}"
-
-  /**
-  * Some html block templates to render responses after the ajax of goFirstGraph
-  *
-  * TODO use template_literals returned by lazy function or any other better templating
-  */
-  var processingHtml='\
-      <div class="progress">\
-          <div class=" progress-bar progress-bar-striped active"\
-                      role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">\
-                      <span>\
-                      Processing\
-                      </span>\
-          </div>\
-      </div>'
-
-  var finishedHtmlTemplate='\
-      <br>\
-          From: begin of corpus\
-          , To: end   of corpus\
-      <br>\
-      <ul>\
-          <li>\
-              <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
-              <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
-                  ~%%nb_nodes%% nodes,\
-                  ~%%nb_edges%% edges\
-                  with <b>Conditional</b> distance\
-              </a>\
-          </li>\
-          <li>\
-              <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=distributional&amp;bridgeness=5">\
-              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
-                  Compute this graph with Distributional distance\
-              </a>\
-          </li>\
-      </ul>\
-      <br>'
-
-  var baseSkeletonTemplate='\
-      <div id="graph_%%cooc_id%%" class="first-graph">\
-          <div class="row">\
-              <div class="col-md-1 content"></div>\
-              <div class="col-md-5 content">\
-                  <li>\
-                      <h4 title="%%cooc_id%%">%%cooc_name%%</h4>\
-                      %%cooc_date%%\
-                      \
-                      %%HERE_RESPONSE_DEPENDANT%%\
-                      \
-                  </li>\
-              </div>\
-              <div class="col-md-3 content">\
-                  <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"\
-                                  data-content="\
-                                  <ul>\
-                                      <li\
-                                      onclick=&quot;\
-                                              garganrest.nodes.delete(%%cooc_id%%, function(){$(\'#graph_\'+%%cooc_id%%).remove()});\
-                                              $(this).parent().parent().remove();\
-                                          &quot;>\
-                                          <a href=\'#\'>Delete this</a>\
-                                      </li>\
-                                  </ul>\
-                                  ">\
-                      <span class="glyphicon glyphicon-trash" aria-hidden="true"\
-                      title=\'Delete this graph\'></span>\
-                  </button>\
-              </div>\
-          </div>\
-      </div>'
-
-
-  /**
-  * function showNewCoocDiv(status_code, cooc_id, cooc_name, cooc_date)
-  *
-  * (uses the templates to make a new cooc html appear)
-  *
-  *  @param 'progress_status' || 'finished_status'
-  *  @param projectId
-  *  @param corpusId
-  *  @param coocId
-  *  @param coocName
-  *  @param coocDate
-  *  @param nNodes    (optional <=> if finished_status)
-  *  @param nEdges    (optional <=> if finished_status)
-  */
-  function showNewCoocDiv(statusCode,
-                            coocId, coocName, coocDate,
-                                nbNodes, nbEdges) {
-      var resultHtml = baseSkeletonTemplate
-
-      // initial if
-      switch (statusCode) {
-        case "progress_status":
-          resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
-                                          processingHtml
-                                         )
-          break;
-
-        case "finished_status":
-          resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
-                                          finishedHtmlTemplate
-                                         )
-          break;
-
-        default:
-          console.warning("showNewCoocDiv: can't show div (Unknown statusCode", statusCode,")");
-          return false
-      }
-
-
-      // also replace template variables (thx c24b!)
-      resultHtml = resultHtml.replace(/%%project_id%%/g, projectId);
-      resultHtml = resultHtml.replace(/%%corpus_id%%/g, corpusId);
-      resultHtml = resultHtml.replace(/%%cooc_id%%/g, coocId);
-      resultHtml = resultHtml.replace(/%%cooc_name%%/g, coocName);
-      resultHtml = resultHtml.replace(/%%cooc_date%%/g, formatDateLikeDjango(coocDate));
-
-      if (typeof nbEdges != 'undefined' && typeof nbNodes != 'undefined') {
-        resultHtml = resultHtml.replace(/%%nb_nodes%%/g, nbNodes);
-        resultHtml = resultHtml.replace(/%%nb_edges%%/g, nbEdges);
-      }
-
-      // what do we do with those results ?
-      switch (statusCode) {
-        case "progress_status":
-          // render the result in DOM
-          $('#graph-list').append(resultHtml)
-          return null
-
-        case "finished_status":
-          // replace the previous results
-          var previousDiv = document.getElementById('graph_'+coocId)
-          previousDiv.innerHTML = resultHtml
-          return true
-      }
-  }
-
-  /**
-  * function goFirstGraph()
-  *
-  *      1) run a "save new graph" ajax on graph api
-  *      2) retrieve the new cooc_id in immediate response
-  *      3) monitor status of the async generation
-  */
-  function goFirstGraph() {
-    // ajax config vars
-    var graphApi = "/api/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer"
-    var graphParams = "saveOnly=True&distance=conditional&bridgeness=5"
-
-    // vars we'll get at creation steps (1: graph init, 2: graph finish)
-    var coocId    = null    // 1 & 2
-    var coocName  = null    // 1 & 2
-    var coocDate  = null    // 1 & 2
-    var nbNodes   = null    // 2
-    var nbEdges   = null    // 2
-
-    // run the "save new graph" ajax
-    // -----------------------------
-    // cf. data["state"] == "saveOnly"
-    $.ajax({
-      method: "GET",
-      url: graphApi + '?' + graphParams,
-      beforeSend: function(xhr) {
-        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-      },
-      success: function(data){
-            // console.log("data", data)
-
-            // 1 - retrieve the new coocId etc
-            if (data.id && data.name && data.date) {
-              coocId   = data['id']
-              coocName = data['name']
-              coocDate = data['date']
-            }
-
-            // 2 - show the node with basic info and progressbar
-            showNewCoocDiv("progress_status",
-                              coocId, coocName, coocDate)
-
-            // 3 - run status updating
-            //     (it will call next step of
-            //      showNewCoocDiv when ready)
-            keepCheckingGraphStatus(coocId)
-      },
-      error: function(result) {
-          console.log("result", result)
-      }
-    });
-  }
-
-
-  /**
-  * function keepCheckingGraphStatus(coocId)
-  *
-  *      1) keeps checking an API of cooc status
-  *      2) triggers showNewCoocDiv('finished_status') if ready
-  *         or abandons after 5 attempts
-  */
-  var nChecks = 0
-  var currentJob = null
-  var graphReadyFlag = false
-  function keepCheckingGraphStatus(coocNodeId) {
-    console.log("checking status", nChecks)
-    nChecks ++
-
-    // var the_status_url = "/api/nodes/"+coocNodeId+"/status?format=json"
-    var the_url_to_check = "/api/nodes/"+coocNodeId+"?fields[]=hyperdata&fields[]=name&fields[]=date"
-    // we get all hyperdata instead of just statuses because
-    // we'll need hyperdata.conditional.nodes and edges
-
-    // remote call
-    $.ajax({
-      type: 'GET',
-      url: the_url_to_check,
-      success: function(data) {
-        // TODO hyperdata would contains statuses too
-        // var statuses = data['hyperdata']['statuses']
-
-        var coocNodeName = data['name']
-        var coocNodeDate = data['date']
-
-        // test if ready like this for the moment
-        if (typeof data['hyperdata']['conditional'] != "undefined") {
-          console.log("GRAPH is READY", coocNodeId)
-          graphReadyFlag = true
-
-          var nbNodes = data['hyperdata']['conditional']['nodes']
-          var nbEdges = data['hyperdata']['conditional']['edges']
-
-          // console.warn("running callback for graph id:" + coocNodeId)
-          showNewCoocDiv("finished_status", coocNodeId,
-                            coocNodeName, coocNodeDate,
-                                 nbNodes, nbEdges)
-        }
-
-        // stopping conditions
-        if (graphReadyFlag || nChecks > 5) {
-          // we abandon after 5 checks
-          console.warn("stopping status checks for graph:",
-                        coocNodeId)
-          nChecks = 0
-          return null
-        }
-        // scheduled recursion
-        else {
-          console.log("GRAPH not ready yet...", coocNodeId)
-          // decreasing intervals (preserving DB while "loosing interest")
-          var nextTime = nChecks * 3000
-          // schedule next check
-          currentJob = setTimeout(function(){keepCheckingGraphStatus(coocNodeId)}, nextTime)
-          console.log("next status check in", nextTime/1000, "s" )
-          return false
-        }
-
-      },
-      error: function(data, s) {
-        console.warn("status GET: ajax err (s="+s+")")
-        console.log(data)
-      },
-      beforeSend: function(xhr) {
-        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-      }
-    })
-  }
-
-  function stopCheckingGraphStatus() {
-    clearTimeout(currentJob)
-  }
-
-  // raw DB format: "2016-10-04T15:00:35Z"   (ISOString)
-  //                -----------------------
-  //
-  // but django default format: Oct. 4, 2016, 3:00 p.m.
-  //                           ------------------------
-  // cf. docs.djangoproject.com/en/dev/ref/settings/#date-format
-  //
-  // POSSIBLE: remove UTC from django and here (current timezone more practical)
-  function formatDateLikeDjango(isoDateTimeStr) {
-      asDate = new Date(isoDateTimeStr)
-
-      // ex: "Oct 4, 2016"
-      var newDateStr = asDate.toLocaleDateString(
-                                      'en-US',
-                                          { 'year': 'numeric',
-                                            'month': 'short',
-                                            'day': 'numeric' })
-
-      // ex: 3:00 pm
-      var newTimeStr = asDate.toLocaleTimeString(
-                                      'en-US',
-                                          { 'hour12': true,
-                                            'timeZone': 'UTC',
-                                            'hour': '2-digit',
-                                            'minute':'numeric'})
-                                      .toLowerCase()
-
-      // ex Oct 4, 2016, 3:00 pm      => close enough !
-      return newDateStr + ', ' + newTimeStr
-    }
-
-</script>
-
-
 {% endblock %}
 
 
@@ -337,7 +27,7 @@
         <ol id="graph-list">
         {% if coocs %}
             {% for cooc in coocs %}
-                <div id="graph_{{cooc.id}}">
+                <div id="graph_{{cooc.id}}" class="graph-elt">
                     <div class="row">
                         <div class="col-md-1 content"></div>
 
@@ -352,7 +42,7 @@
                                                 , To: {% if not  cooc.hyperdata.parameters.end    %} end   of corpus {% else %} {{cooc.hyperdata.parameters.end}}   {% endif %}
                                                 <br>
 
-                                        <ul>
+                                        <ul id="graph_{{cooc.id}}_finished">
                                             <li>
                                                 <a href="/projects/{{project.id}}/corpora/{{corpus.id}}/explorer?cooc_id={{cooc.id}}&amp;distance=conditional&amp;bridgeness=5">
                                                 <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
@@ -420,7 +110,7 @@
                                                 <div class=" progress-bar progress-bar-striped active"
                                                             role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
                                                             <span>
-                                                            Processing (wait and reload the page)
+                                                            Processing (please wait)
                                                             </span>
                                                 </div>
                                                 </div>
@@ -445,10 +135,7 @@
                                             data-content="
                                             <ul>
                                                 <li
-                                                onclick=&quot;
-                                                        garganrest.nodes.delete({{cooc.id}}, function(){$('#graph_'+{{cooc.id}}).remove()});
-                                                        $(this).parent().parent().remove();
-                                                    &quot;>
+                                                onclick=&quot;deleteGraph(event, {{cooc.id}})&quot;>
                                                     <a href='#'>Delete this</a>
                                                 </li>
                                             </ul>
@@ -503,5 +190,392 @@
             </center>
             {% endif %}
       </ol>
+
+
+
+
+      <script type="text/javascript">
+
+        // initial vars
+        var projectId = "{{project.id | escapejs}}"
+        var corpusId  = "{{corpus.id | escapejs }}"
+
+        /**
+        * Some html block templates to render responses after the ajax of goFirstGraph
+        *
+        * TODO use template_literals returned by lazy function or any other better templating
+        */
+        var processingHtml='\
+            <div class="progress">\
+                <div class=" progress-bar progress-bar-striped active"\
+                            role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 70%">\
+                            <span>\
+                            Processing\
+                            </span>\
+                </div>\
+            </div>'
+
+        var finishedHtmlTemplate='\
+            <br>\
+                From: begin of corpus\
+                , To: end   of corpus\
+            <br>\
+            <ul id="graph_%%cooc_id%%_finished">\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
+                        ~%%nb_nodes%% nodes,\
+                        ~%%nb_edges%% edges\
+                        with <b>Conditional</b> distance\
+                    </a>\
+                </li>\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=distributional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
+                        Compute this graph with Distributional distance\
+                    </a>\
+                </li>\
+            </ul>\
+            <br>'
+
+        var baseSkeletonTemplate='\
+            <div id="graph_%%cooc_id%%" class="graph-elt first-graph">\
+                <div class="row">\
+                    <div class="col-md-1 content"></div>\
+                    <div class="col-md-5 content">\
+                        <li>\
+                            <h4 title="%%cooc_id%%">%%cooc_name%%</h4>\
+                            %%cooc_date%%\
+                            \
+                            %%HERE_RESPONSE_DEPENDANT%%\
+                            \
+                        </li>\
+                    </div>\
+                    <div class="col-md-3 content">\
+                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"\
+                                        data-content="\
+                                        <ul>\
+                                            <li\
+                                            onclick=&quot;\
+                                                    garganrest.nodes.delete(%%cooc_id%%, function(){$(\'#graph_\'+%%cooc_id%%).remove()});\
+                                                    $(this).parent().parent().remove();\
+                                                &quot;>\
+                                                <a href=\'#\'>Delete this</a>\
+                                            </li>\
+                                        </ul>\
+                                        ">\
+                            <span class="glyphicon glyphicon-trash" aria-hidden="true"\
+                            title=\'Delete this graph\'></span>\
+                        </button>\
+                    </div>\
+                </div>\
+            </div>'
+
+        // -----------------------------------------------------
+        // for testing on client side which need refresh
+        // -----------------------------------------------------
+
+        function testActiveGraphs() {
+          var activeGraphIds = []
+          for (var i in graphIds) {
+            var grid = graphIds[i]
+            if ((! document.getElementById('graph_'+grid+'_finished'))
+                && (! trashedIds[grid])) {
+              activeGraphIds.push(grid)
+            }
+          }
+          return activeGraphIds
+        }
+        /**
+        * function showNewCoocDiv(status_code, cooc_id, cooc_name, cooc_date)
+        *
+        * (uses the templates to make a new cooc html appear)
+        *
+        *  @param 'progress_status' || 'finished_status'
+        *  @param projectId
+        *  @param corpusId
+        *  @param coocId
+        *  @param coocName
+        *  @param coocDate
+        *  @param nNodes    (optional <=> if finished_status)
+        *  @param nEdges    (optional <=> if finished_status)
+        */
+        function showNewCoocDiv(statusCode,
+                                  coocId, coocName, coocDate,
+                                      nbNodes, nbEdges) {
+            var resultHtml = baseSkeletonTemplate
+
+            // initial if
+            switch (statusCode) {
+              case "progress_status":
+                resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                                processingHtml
+                                               )
+                break;
+
+              case "finished_status":
+                resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                                finishedHtmlTemplate
+                                               )
+                break;
+
+              default:
+                console.warning("showNewCoocDiv: can't show div (Unknown statusCode", statusCode,")");
+                return false
+            }
+
+
+            // also replace template variables (thx c24b!)
+            resultHtml = resultHtml.replace(/%%project_id%%/g, projectId);
+            resultHtml = resultHtml.replace(/%%corpus_id%%/g, corpusId);
+            resultHtml = resultHtml.replace(/%%cooc_id%%/g, coocId);
+            resultHtml = resultHtml.replace(/%%cooc_name%%/g, coocName);
+            resultHtml = resultHtml.replace(/%%cooc_date%%/g, formatDateLikeDjango(coocDate));
+
+            if (typeof nbEdges != 'undefined' && typeof nbNodes != 'undefined') {
+              resultHtml = resultHtml.replace(/%%nb_nodes%%/g, nbNodes);
+              resultHtml = resultHtml.replace(/%%nb_edges%%/g, nbEdges);
+            }
+
+            // what do we do with those results ?
+            switch (statusCode) {
+              case "progress_status":
+                // render the result in DOM
+                $('#graph-list').append(resultHtml)
+                return null
+
+              case "finished_status":
+                // replace the previous results
+                var previousDiv = document.getElementById('graph_'+coocId)
+                previousDiv.innerHTML = resultHtml
+                return true
+            }
+        }
+
+        /**
+        * function goFirstGraph()
+        *
+        *      1) run a "save new graph" ajax on graph api
+        *      2) retrieve the new cooc_id in immediate response
+        *      3) monitor status of the async generation
+        */
+        function goFirstGraph() {
+          // ajax config vars
+          var graphApi = "/api/projects/{{project.id}}/corpora/{{ corpus.id }}/explorer"
+          var graphParams = "saveOnly=True&distance=conditional&bridgeness=5"
+
+          // vars we'll get at creation steps (1: graph init, 2: graph finish)
+          var coocId    = null    // 1 & 2
+          var coocName  = null    // 1 & 2
+          var coocDate  = null    // 1 & 2
+          var nbNodes   = null    // 2
+          var nbEdges   = null    // 2
+
+          // run the "save new graph" ajax
+          // -----------------------------
+          // cf. data["state"] == "saveOnly"
+          $.ajax({
+            method: "GET",
+            url: graphApi + '?' + graphParams,
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            },
+            success: function(data){
+                  // console.log("data", data)
+
+                  // 1 - retrieve the new coocId etc
+                  if (data.id && data.name && data.date) {
+                    coocId   = data['id']
+                    coocName = data['name']
+                    coocDate = data['date']
+                  }
+
+                  // 2 - show the node with basic info and progressbar
+                  showNewCoocDiv("progress_status",
+                                    coocId, coocName, coocDate)
+
+                  // 3 - run status updating
+                  //     (it will call next step of
+                  //      showNewCoocDiv when ready)
+                  console.log("goFirstGraph => keepCheckingGraphStatus on:", coocId)
+                  keepCheckingGraphStatus(coocId)
+            },
+            error: function(result) {
+                console.log("result", result)
+            }
+          });
+        }
+
+
+        /**
+        * function keepCheckingGraphStatus(coocId)
+        *
+        *      1) keeps checking an API of cooc status
+        *      2) triggers showNewCoocDiv('finished_status') if ready
+        *         or abandons after 5 attempts
+        */
+        var currentJob = null
+        function keepCheckingGraphStatus(coocNodeId, nChecksArg) {
+          var graphReadyFlag = false
+          var nChecks = 0
+          if (typeof nChecksArg != 'undefined') {
+            nChecks = nChecksArg
+          }
+          console.log("checking status", nChecks)
+          nChecks ++
+
+          // var the_status_url = "/api/nodes/"+coocNodeId+"/status?format=json"
+          var the_url_to_check = "/api/nodes/"+coocNodeId+"?fields[]=hyperdata&fields[]=name&fields[]=date"
+          // we get all hyperdata instead of just statuses because
+          // we'll need hyperdata.conditional.nodes and edges
+
+          // remote call
+          $.ajax({
+            type: 'GET',
+            url: the_url_to_check,
+            success: function(data) {
+              // TODO hyperdata would contains statuses too
+              // var statuses = data['hyperdata']['statuses']
+
+              var coocNodeName = data['name']
+              var coocNodeDate = data['date']
+
+              // test if ready like this for the moment
+              if (typeof data['hyperdata']['conditional'] != "undefined") {
+                console.log("GRAPH is READY", coocNodeId)
+                graphReadyFlag = true
+
+                var nbNodes = data['hyperdata']['conditional']['nodes']
+                var nbEdges = data['hyperdata']['conditional']['edges']
+
+                // console.warn("running callback for graph id:" + coocNodeId)
+                showNewCoocDiv("finished_status", coocNodeId,
+                                  coocNodeName, coocNodeDate,
+                                       nbNodes, nbEdges)
+              }
+
+              // stopping conditions
+              if (graphReadyFlag || nChecks > 5) {
+                // we abandon after 5 checks
+                console.warn("stopping status checks for graph:",
+                              coocNodeId)
+                return null
+              }
+              // scheduled recursion
+              else {
+                console.log("GRAPH not ready yet...", coocNodeId)
+                // decreasing intervals (preserving DB while "loosing interest")
+                var nextTime = nChecks * 3000
+                // schedule next check
+                currentJob = setTimeout(function(){keepCheckingGraphStatus(coocNodeId, nChecks)}, nextTime)
+                console.log("next status check in", nextTime/1000, "s" )
+                return false
+              }
+
+            },
+            error: function(data, s) {
+              console.warn("status GET: ajax err (s="+s+")")
+              console.log(data)
+            },
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            }
+          })
+        }
+
+        function stopCheckingGraphStatus() {
+          clearTimeout(currentJob)
+        }
+
+        // raw DB format: "2016-10-04T15:00:35Z"   (ISOString)
+        //                -----------------------
+        //
+        // but django default format: Oct. 4, 2016, 3:00 p.m.
+        //                           ------------------------
+        // cf. docs.djangoproject.com/en/dev/ref/settings/#date-format
+        //
+        // POSSIBLE: remove UTC from django and here (current timezone more practical)
+        function formatDateLikeDjango(isoDateTimeStr) {
+            asDate = new Date(isoDateTimeStr)
+
+            // ex: "Oct 4, 2016"
+            var newDateStr = asDate.toLocaleDateString(
+                                            'en-US',
+                                                { 'year': 'numeric',
+                                                  'month': 'short',
+                                                  'day': 'numeric' })
+
+            // ex: 3:00 pm
+            var newTimeStr = asDate.toLocaleTimeString(
+                                            'en-US',
+                                                { 'hour12': true,
+                                                  'timeZone': 'UTC',
+                                                  'hour': '2-digit',
+                                                  'minute':'numeric'})
+                                            .toLowerCase()
+
+            // ex Oct 4, 2016, 3:00 pm      => close enough !
+            return newDateStr + ', ' + newTimeStr
+          }
+
+
+          function deleteGraph(e, graphId) {
+            // prevents scroll back to top of page
+            e.preventDefault()
+
+            // register pending operation
+            trashedIds[graphId] = true ;
+            // POSSIBLE visual loader wheel
+
+            // REST and callback
+            garganrest.nodes.delete(
+                graphId,
+                function(){
+                    $('#graph_'+graphId).remove()
+                    delete trashedIds[graphId]
+                    // remove any popover too
+                    $('.popover').remove();
+                  }
+                );
+          }
+
+
+          // main
+
+          // all graph ids
+
+          var graphDivs = document.getElementsByClassName('graph-elt')
+
+          var graphIds = []
+
+          // for graph ids whose delete is pending
+          var trashedIds = {}
+
+          for (var i = 0 ; i < graphDivs.length ; i++) {
+            // ex: graph_48
+            divId = graphDivs[i].id
+            if (divId) {
+              var graphId = divId.match(/[0-9]+$/).pop()
+              graphIds.push(graphId)
+            }
+          }
+
+          var activeGraphIds = testActiveGraphs()
+
+          if (activeGraphIds.length) {
+            // initial checks if page reloaded with active corpora
+            for (var i in activeGraphIds) {
+              // !careful with closure, async function & loop on i
+              // cf stackoverflow.com/a/21819961/2489184
+              (function(i) {
+                var myCoocId = activeGraphIds[i]
+                keepCheckingGraphStatus(activeGraphIds, 0)
+              })(i)
+            }
+          }
+
+          console.warn("hello", activeGraphIds)
+
+      </script>
 
 {% endblock %}

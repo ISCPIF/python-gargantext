@@ -1,7 +1,7 @@
 #!/bin/bash
 #name:01-setup
 #TODO clone the repo into /srv/gargantext/ and reduce the different steps
-#git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+#git clone ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git /srv/gargantext \
 #        && cd /srv/gargantext \
 #        && git fetch origin stable \
 #        && git checkout stable
@@ -11,7 +11,7 @@ function clone_repo {
     read -e -r -p "Please provide you ssh keys full directory:" response;
 
     ssh-agent bash -c 'ssh-add ' $response '';
-    git clone ssh://gitolite@delanoe.org:1979/gargantext -o /srv/gargantext;
+    git clone ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git -o /srv/gargantext;
     cd /srv/gargantext
     git fetch origin stable
     git pull

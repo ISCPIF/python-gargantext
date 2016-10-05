@@ -7,7 +7,6 @@ from gargantext.settings import *
 
 from datetime import datetime
 
-
 @requires_auth
 def explorer(request, project_id, corpus_id):
     '''
@@ -20,6 +19,13 @@ def explorer(request, project_id, corpus_id):
 
     # we pass our corpus
     corpus = cache.Node[corpus_id]
+    
+    # security check
+    user = cache.User[request.user.id]
+    if corpus is None:
+        raise Http404()
+    if not user.owns(corpus):
+        return HttpResponseForbidden()
 
     # get the maplist_id for modifications
     maplist_id = corpus.children(typename="MAPLIST").first().id

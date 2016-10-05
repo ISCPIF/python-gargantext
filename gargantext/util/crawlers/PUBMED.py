@@ -251,7 +251,7 @@ def save( request , project_id ) :
 
     user = cache.User[request.user.id]
     if not user.owns(project):
-        raise HttpResponseForbidden()
+        return HttpResponseForbidden()
 
 
     if request.method == "POST":

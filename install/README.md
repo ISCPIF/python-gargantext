@@ -17,7 +17,7 @@ See [http://gargantext.org/about](http://gargantext.org/about) and [tools](./con
 by cloning gargantext into /srv/gargantext
 
 ``` bash
-git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
+git clone ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git /srv/gargantext \
         && cd /srv/gargantext \
         && git fetch origin install \
         && git checkout install \

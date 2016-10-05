@@ -58,7 +58,7 @@ def save(request, project_id):
             raise Http404()
         user = cache.User[request.user.id]
         if not user.owns(project):
-            raise HttpResponseForbidden()
+            return HttpResponseForbidden()
         # corpus node instanciation as a Django model
 
         corpus = Node(

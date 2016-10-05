@@ -86,15 +86,16 @@ class NewCorpusForm(forms.Form):
 
 @requires_auth
 def project(request, project_id):
-    # current user
-    user = cache.User[request.user.id]
 
-    # viewed project
+    # security check
     project = session.query(Node).filter(Node.id == project_id).first()
+    user = cache.User[request.user.id]
+    
     if project is None:
         raise Http404()
     if not user.owns(project):
-        raise HttpResponseForbidden()
+        return HttpResponseForbidden()
+    # end of security check
 
     # new corpus
     if request.method == 'POST':

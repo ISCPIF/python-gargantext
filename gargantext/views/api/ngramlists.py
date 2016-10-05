@@ -12,12 +12,13 @@ from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
 from gargantext.util.db       import session, aliased, bulk_insert
 from gargantext.util.db_cache import cache
 from sqlalchemy               import tuple_
-from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
+from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram, Node
 from gargantext.util.lists    import UnweightedList, Translations
 
 # useful subroutines
 from gargantext.util.ngramlists_tools import query_list, export_ngramlists, \
-                                             import_ngramlists, merge_ngramlists
+                                             import_ngramlists, merge_ngramlists, \
+                                             import_and_merge_ngramlists
 from gargantext.util.group_tools      import query_grouped_ngrams
 
 
@@ -82,23 +83,22 @@ class CSVLists(APIView):
         #                                                 ----------------------
         csv_file = request.data['csvfile']
 
+        csv_contents = csv_file.read().decode("UTF-8").split("\n")
+        csv_file.close()
+        del csv_file
+
         # import the csv
-        try:
-            new_lists = import_ngramlists(csv_file)
-            print("======new_lists=========================!!!")
-            # print(new_lists) # very long
-            del csv_file
+        # try:
+        log_msg = import_and_merge_ngramlists(csv_contents,
+                                              onto_corpus_id = corpus_node.id)
+        return JsonHttpResponse({
+            'log': log_msg,
+            }, 200)
 
-            # merge the new_lists onto those of the target corpus
-            log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
-            return JsonHttpResponse({
-                'log': log_msg,
-                }, 200)
-
-        except Exception as e:
-            return JsonHttpResponse({
-                'err': str(e),
-                }, 400)
+        # except Exception as e:
+        #     return JsonHttpResponse({
+        #         'err': str(e),
+        #         }, 400)
 
     def patch(self,request):
         """

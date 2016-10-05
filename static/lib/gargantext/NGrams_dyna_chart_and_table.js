@@ -2378,7 +2378,9 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
 
     // restore chart filters
     if (typeof(filtersParams.from) != 'undefined'
-        && typeof(filtersParams.to) != 'undefined') {
+        && typeof(filtersParams.to) != 'undefined'
+        && ! (filtersParams.from == null)
+        && ! (filtersParams.to == null)) {
 
       var fromVal = filtersParams.from
       var toVal = filtersParams.to

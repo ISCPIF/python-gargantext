@@ -215,6 +215,52 @@
                 </div>\
             </div>'
 
+        var finishedHtmlCondi='\
+            <br>\
+                From: begin of corpus\
+                , To: end   of corpus\
+            <br>\
+            <ul id="graph_%%cooc_id%%_finished">\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
+                        ~%%co_nb_nodes%% nodes,\
+                        ~%%co_nb_edges%% edges\
+                        with <b>Conditional</b> distance\
+                    </a>\
+                </li>\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=distributional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
+                        Compute this graph with Distributional distance\
+                    </a>\
+                </li>\
+            </ul>\
+            <br>'
+
+        var finishedHtmlDistri='\
+            <br>\
+                From: begin of corpus\
+                , To: end   of corpus\
+            <br>\
+            <ul id="graph_%%cooc_id%%_finished">\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
+                        Compute this graph with Conditional distance\
+                    </a>\
+                </li>\
+                <li>\
+                    <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
+                    <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
+                        ~%%di_nb_nodes%% nodes,\
+                        ~%%di_nb_edges%% edges\
+                        with <b>Distributional</b> distance\
+                    </a>\
+                </li>\
+            </ul>\
+            <br>'
+
         var finishedHtmlTemplate='\
             <br>\
                 From: begin of corpus\
@@ -224,15 +270,17 @@
                 <li>\
                     <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=conditional&amp;bridgeness=5">\
                     <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
-                        ~%%nb_nodes%% nodes,\
-                        ~%%nb_edges%% edges\
+                        ~%%co_nb_nodes%% nodes,\
+                        ~%%co_nb_edges%% edges\
                         with <b>Conditional</b> distance\
                     </a>\
                 </li>\
                 <li>\
                     <a href="/projects/%%project_id%%/corpora/%%corpus_id%%/explorer?cooc_id=%%cooc_id%%&amp;distance=distributional&amp;bridgeness=5">\
-                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>\
-                        Compute this graph with Distributional distance\
+                    <span class="glyphicon glyphicon-eye-open" style="font-size:150%"></span>\
+                        ~%%di_nb_nodes%% nodes,\
+                        ~%%di_nb_edges%% edges\
+                        with <b>Distributional</b> distance\
                     </a>\
                 </li>\
             </ul>\
@@ -297,12 +345,15 @@
         *  @param coocId
         *  @param coocName
         *  @param coocDate
-        *  @param nNodes    (optional <=> if finished_status)
-        *  @param nEdges    (optional <=> if finished_status)
+        *  @param coNbNodes    (optional <=> if finished_status on conditional)
+        *  @param coNbEdges    (optional <=> if finished_status on conditional)
+        *  @param diNbNodes    (optional <=> if finished_status on distributional)
+        *  @param diNbEdges    (optional <=> if finished_status on distributional)
         */
         function showNewCoocDiv(statusCode,
                                   coocId, coocName, coocDate,
-                                      nbNodes, nbEdges) {
+                                      coNbNodes, coNbEdges,
+                                        diNbNodes, diNbEdges) {
             var resultHtml = baseSkeletonTemplate
 
             // initial if
@@ -314,9 +365,22 @@
                 break;
 
               case "finished_status":
-                resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
-                                                finishedHtmlTemplate
-                                               )
+                if ((typeof coNbNodes != 'undefined') && coNbNodes
+                      && (typeof diNbNodes != 'undefined') && diNbNodes) {
+                    resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                                    finishedHtmlTemplate
+                                                    )
+                } else if ((typeof coNbNodes != 'undefined') && ! (coNbNodes == null)) {
+                  console.log("condi case", coNbNodes)
+                  resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                                  finishedHtmlCondi
+                                                  )
+                } else if ((typeof diNbNodes != 'undefined') && ! (diNbNodes == null)) {
+                  console.log("distri case")
+                  resultHtml = resultHtml.replace(/%%HERE_RESPONSE_DEPENDANT%%/,
+                                                  finishedHtmlDistri
+                                                  )
+                }
                 break;
 
               default:
@@ -332,9 +396,13 @@
             resultHtml = resultHtml.replace(/%%cooc_name%%/g, coocName);
             resultHtml = resultHtml.replace(/%%cooc_date%%/g, formatDateLikeDjango(coocDate));
 
-            if (typeof nbEdges != 'undefined' && typeof nbNodes != 'undefined') {
-              resultHtml = resultHtml.replace(/%%nb_nodes%%/g, nbNodes);
-              resultHtml = resultHtml.replace(/%%nb_edges%%/g, nbEdges);
+            if (typeof coNbEdges != 'undefined' && typeof coNbNodes != 'undefined') {
+              resultHtml = resultHtml.replace(/%%co_nb_nodes%%/g, coNbNodes);
+              resultHtml = resultHtml.replace(/%%co_nb_edges%%/g, coNbEdges);
+            }
+            if (typeof diNbEdges != 'undefined' && typeof diNbNodes != 'undefined') {
+              resultHtml = resultHtml.replace(/%%di_nb_nodes%%/g, diNbNodes);
+              resultHtml = resultHtml.replace(/%%di_nb_edges%%/g, diNbEdges);
             }
 
             // what do we do with those results ?
@@ -368,8 +436,8 @@
           var coocId    = null    // 1 & 2
           var coocName  = null    // 1 & 2
           var coocDate  = null    // 1 & 2
-          var nbNodes   = null    // 2
-          var nbEdges   = null    // 2
+          var coNbNodes   = null    // 2
+          var coNbEdges   = null    // 2
 
           // run the "save new graph" ajax
           // -----------------------------
@@ -441,17 +509,45 @@
               var coocNodeDate = data['date']
 
               // test if ready like this for the moment
-              if (typeof data['hyperdata']['conditional'] != "undefined") {
+              if ((typeof data['hyperdata']['conditional'] != "undefined")
+                  && (typeof data['hyperdata']['distributional'] != "undefined")){
                 console.log("GRAPH is READY", coocNodeId)
                 graphReadyFlag = true
 
-                var nbNodes = data['hyperdata']['conditional']['nodes']
-                var nbEdges = data['hyperdata']['conditional']['edges']
+                var coNbNodes = data['hyperdata']['conditional']['nodes']
+                var coNbEdges = data['hyperdata']['conditional']['edges']
+                var diNbNodes = data['hyperdata']['distributional']['nodes']
+                var diNbEdges = data['hyperdata']['distributional']['edges']
 
                 // console.warn("running callback for graph id:" + coocNodeId)
                 showNewCoocDiv("finished_status", coocNodeId,
                                   coocNodeName, coocNodeDate,
-                                       nbNodes, nbEdges)
+                                       coNbNodes, coNbEdges,
+                                       diNbNodes, diNbEdges)
+              } else if (typeof data['hyperdata']['conditional'] != "undefined"){
+                console.log("conditional GRAPH is READY", coocNodeId)
+                graphReadyFlag = true
+
+                var coNbNodes = data['hyperdata']['conditional']['nodes']
+                var coNbEdges = data['hyperdata']['conditional']['edges']
+
+                // console.warn("running callback for graph id:" + coocNodeId)
+                showNewCoocDiv("finished_status", coocNodeId,
+                                  coocNodeName, coocNodeDate,
+                                       coNbNodes, coNbEdges,
+                                          null, null)
+              } else if (typeof data['hyperdata']['distributional'] != "undefined"){
+                console.log("distributional GRAPH is READY", coocNodeId)
+                graphReadyFlag = true
+
+                var diNbNodes = data['hyperdata']['distributional']['nodes']
+                var diNbEdges = data['hyperdata']['distributional']['edges']
+
+                // console.warn("running callback for graph id:" + coocNodeId)
+                showNewCoocDiv("finished_status", coocNodeId,
+                                      coocNodeName, coocNodeDate,
+                                         null, null,
+                                       diNbNodes, diNbEdges)
               }
 
               // stopping conditions

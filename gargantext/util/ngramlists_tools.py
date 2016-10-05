@@ -11,7 +11,7 @@ from gargantext.util.group_tools import query_groups, group_union
 from gargantext.util.db          import session, desc, func, \
                                         bulk_insert_ifnotexists
 from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
-                                        NodeNgramNgram
+                                        NodeNgramNgram, Node
 
 from gargantext.util.lists       import UnweightedList, Translations
 
@@ -327,7 +327,7 @@ def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
 
 
 
-def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
+def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
                              group_delimiter=DEFAULT_CSV_DELIM_GROUP):
     '''
     This function reads a CSV of an ngrams table for a Corpus,
@@ -385,7 +385,7 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
     -------
         3 x UnweightedList + 1 x Translations
 
-    @param fname            a local filename or a filehandle-like
+    @param the_file         a local filename or file contents or a filehandle-like
     @param delimiter        a character used as separator in the CSV
     @param group_delimiter  a character used as grouped subforms separator
                             (in the last column)
@@ -418,21 +418,27 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
 
     # =============== READ CSV ===============
 
-    if isinstance(fname, str):
-        fh = open(fname, "r")
-    elif callable(getattr(fname, "read", None)):
-        fh = fname
+    if isinstance(the_file, list):
+        fname = 'imported_file'
+        contents = the_file
     else:
-        raise TypeError("IMPORT: fname argument has unknown type %s" % type(fh))
+        if isinstance(the_file, str):
+            fh = open(the_file, "r")
+            fname = the_file
+        elif callable(getattr(the_file, "read", None)):
+            fh = the_file
+            fname = the_file
+        else:
+            raise TypeError("IMPORT: the_file argument has unknown type %s" % type(the_file))
 
 
-    # reading all directly b/c csv.reader takes only lines or a real fh in bytes
-    # and we usually have a "false" fh (uploadedfile.InMemoryUploadedFile) in strings
-    # (but we checked its size before!)
-    contents = fh.read().decode("UTF-8").split("\n")
+        # reading all directly b/c csv.reader takes only lines or a real fh in bytes
+        # and we usually have a "false" fh (uploadedfile.InMemoryUploadedFile) in strings
+        # (but we checked its size before!)
+        contents = fh.read().decode("UTF-8").split("\n")
 
-    # end of CSV read
-    fh.close()
+        # end of CSV read
+        fh.close()
 
     # <class 'django.core.files.uploadedfile.InMemoryUploadedFile'>
 
@@ -607,7 +613,6 @@ def import_ngramlists(fname, delimiter=DEFAULT_CSV_DELIM,
 
     # print("IMPORT RESULT", result)
     return result
-
 
 
 def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
@@ -832,3 +837,16 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
 
     # return a log
     return("\n".join(my_log))
+
+def import_and_merge_ngramlists(file_contents, onto_corpus_id):
+    """
+    A single function to run import_ngramlists and merge_ngramlists together
+    """
+    new_lists = import_ngramlists(file_contents)
+
+    corpus_node = session.query(Node).filter(Node.id == onto_corpus_id).first()
+
+    # merge the new_lists onto those of the target corpus
+    log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+
+    return log_msg

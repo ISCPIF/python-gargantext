@@ -12,12 +12,13 @@ from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
 from gargantext.util.db       import session, aliased, bulk_insert
 from gargantext.util.db_cache import cache
 from sqlalchemy               import tuple_
-from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram
+from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram, Node
 from gargantext.util.lists    import UnweightedList, Translations
 
 # useful subroutines
 from gargantext.util.ngramlists_tools import query_list, export_ngramlists, \
-                                             import_ngramlists, merge_ngramlists
+                                             import_ngramlists, merge_ngramlists, \
+                                             import_and_merge_ngramlists
 from gargantext.util.group_tools      import query_grouped_ngrams
 
 
@@ -82,23 +83,22 @@ class CSVLists(APIView):
         #                                                 ----------------------
         csv_file = request.data['csvfile']
 
+        csv_contents = csv_file.read().decode("UTF-8").split("\n")
+        csv_file.close()
+        del csv_file
+
         # import the csv
-        try:
-            new_lists = import_ngramlists(csv_file)
-            print("======new_lists=========================!!!")
-            # print(new_lists) # very long
-            del csv_file
+        # try:
+        log_msg = import_and_merge_ngramlists(csv_contents,
+                                              onto_corpus_id = corpus_node.id)
+        return JsonHttpResponse({
+            'log': log_msg,
+            }, 200)
 
-            # merge the new_lists onto those of the target corpus
-            log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
-            return JsonHttpResponse({
-                'log': log_msg,
-                }, 200)
-
-        except Exception as e:
-            return JsonHttpResponse({
-                'err': str(e),
-                }, 400)
+        # except Exception as e:
+        #     return JsonHttpResponse({
+        #         'err': str(e),
+        #         }, 400)
 
     def patch(self,request):
         """
@@ -361,6 +361,7 @@ class ListChange(APIView):
         1) Checks current user authentication to prevent remote DB manipulation
         2) Prepares self.list_objects from params
         """
+
         if not request.user.is_authenticated():
             raise Http404()
             # can't use return in initial() (although 401 maybe better than 404)
@@ -368,7 +369,19 @@ class ListChange(APIView):
 
         # get validated params
         self.params = get_parameters(request)
+
         (self.base_list, self.change_list) = ListChange._validate(self.params)
+
+        if not len(self.change_list.items):
+            payload_ngrams = request.data['ngrams']
+            # print("no change_list in params but we got:", payload_ngrams)
+            # change_list can be in payload too
+            change_ngram_ids = [int(n) for n in payload_ngrams.split(',')]
+            if (not len(change_ngram_ids)):
+                raise ValidationException('The "ngrams" parameter requires one or more ngram_ids separated by comma')
+            else:
+                self.change_list = UnweightedList(change_ngram_ids)
+
 
     def put(self, request):
         """
@@ -406,6 +419,7 @@ class ListChange(APIView):
             'count_removed': len(self.base_list.items) - len(new_list.items),
         }, 200)
 
+
     @staticmethod
     def _validate(params):
         """
@@ -420,9 +434,9 @@ class ListChange(APIView):
         if 'list' not in params:
             raise ValidationException('The route /api/ngramlists/change requires a "list" \
                                        parameter, for instance /api/ngramlists/change?list_id=42')
-        if 'ngrams' not in params:
-            raise ValidationException('The route /api/ngramlists/change requires an "ngrams"\
-                                       parameter, for instance /api/ngramlists/change?ngrams=1,2,3,4')
+        # if 'ngrams' not in params:
+        #     raise ValidationException('The route /api/ngramlists/change requires an "ngrams"\
+        #                                parameter, for instance /api/ngramlists/change?ngrams=1,2,3,4')
 
         # 2 x retrieval => 2 x UnweightedLists
         # ------------------------------------
@@ -430,17 +444,18 @@ class ListChange(APIView):
         try:
             base_list_id = int(params['list'])
             # UnweightedList retrieved by id
-            base_list = UnweightedList(base_list_id)
         except:
             raise ValidationException('The "list" parameter requires an existing list id.')
+        base_list = UnweightedList(base_list_id)
 
         change_ngram_ids = []
         try:
             change_ngram_ids = [int(n) for n in params['ngrams'].split(',')]
             # UnweightedList created from items
-            change_list = UnweightedList(change_ngram_ids)
         except:
-            raise ValidationException('The "ngrams" parameter requires one or more ngram_ids separated by comma')
+            # ngrams no longer mandatory inline, see payload check afterwards
+            pass
+        change_list = UnweightedList(change_ngram_ids)
 
         return(base_list, change_list)
 

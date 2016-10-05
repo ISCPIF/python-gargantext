@@ -204,27 +204,24 @@ function getRessources(){
 //// PUT AND PATCH TO API
 function deleteOne(url, thatButton){
 
+  console.warn("thatButton",thatButton)
 
-  // we just show wait image before ajax
-  var $thatButton = $(thatButton)
-  var alreadyWaiting = $thatButton.has($('.wait-img-active')).length
+  if (typeof thatButton != 'undefined' && thatButton.id) {
+    // we just show wait image before ajax
+    var $thatButton = $(thatButton)
+    var alreadyWaiting = $thatButton.has($('.wait-img-active')).length
 
-  if (! alreadyWaiting) {
-    var previousButtonContent = $thatButton.html()
-    var availableWidth = $thatButton.width()
-    var $myWaitImg = $('#wait-img').clone()
-    $myWaitImg.attr("id", null)
-              .attr("class","wait-img-active pull-right")
-              .width(availableWidth)
-              .css("display", "block") ;
-    $thatButton.append($myWaitImg)
-  }
-  else {
-    // uncomment if user should stop clicking ;)
-    // $thatButton.addClass("btn-danger")
 
-    // uncomment to prevent a 2nd ajax
-    return false
+    if (! alreadyWaiting ) {
+      var previousButtonContent = $thatButton.html()
+      var availableWidth = $thatButton.width()
+      var $myWaitImg = $('#wait-img').clone()
+      $myWaitImg.attr("id", null)
+                .attr("class","wait-img-active pull-right")
+                .width(availableWidth)
+                .css("display", "block") ;
+      $thatButton.append($myWaitImg)
+    }
   }
 
   // now the real ajax

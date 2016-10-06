@@ -1,12 +1,15 @@
-from gargantext.models         import Node, NodeNgram, NodeNgramNgram, \
-                                      NodeHyperdata, Ngram
+"""
+COOCS
+    (this is the full SQL version, should be more reliable on outerjoin)
+"""
+from gargantext                import settings
+from sqlalchemy                import create_engine
 from gargantext.util.lists     import WeightedMatrix
-from gargantext.util.db        import session, aliased, func
+# from gargantext.util.db        import session, aliased, func
 from gargantext.util.db_cache  import cache
 from gargantext.constants      import DEFAULT_COOC_THRESHOLD
-from datetime                  import datetime
-
-from sqlalchemy.sql.expression import case # for choice if ngram has mainform or not
+from gargantext.constants      import INDEXED_HYPERDATA
+from gargantext.util.tools     import datetime, convert_to_date
 
 def compute_coocs(  corpus,
                     overwrite_id    = None,
@@ -58,190 +61,49 @@ def compute_coocs(  corpus,
                           this convention: "2001-01-01" aka "%Y-%m-%d")
       - symmetry_filter: prevent calculating where ngram1_id  > ngram2_id
       - diagonal_filter: prevent calculating where ngram1_id == ngram2_id
-
-
-     (deprecated parameters)
-      - field1,2: allowed to count other things than ngrams (eg tags) but no use case at present
-      - isMonopartite: ?? used a nodes_hyperdata_ngrams table ???
-
-    basic idea for one doc
-    ======================
-    each pair of ngrams sharing same doc (node_id)
-        SELEC idxa.ngram_id, idxb.ngram_id
-        FROM nodes_ngrams AS idxa
-        ---------------------------------
-        JOIN nodes_ngrams AS idxb
-        ON idxa.node_id = idxb.node_id      <== that's cooc
-        ---------------------------------
-        AND idxa.ngram_id <> idxb.ngram_id   (diagonal_filter)
-        AND idxa.node_id = MY_DOC ;
-
-    on entire corpus
-    =================
-    coocs for each doc :
-      - each given pair like (termA, termB) will likely appear several times
-        => we do GROUP BY (Xindex.ngram_id, Yindex.ngram_id)
-      - we count unique appearances of the pair (cooc)
-
-
     """
 
-        #   - TODO cvalue_id: allow a metric as additional  input filter
-        #   - TODO n_min, n_max : filter on Ngram.n (aka length of ngram)
-        #   - TODO weighted: if False normal cooc to be saved as result
-        #                    if True  weighted cooc (experimental)
-
-    # /!\ big combinatorial complexity /!\
-    # pour 8439 lignes dans l'index nodes_ngrams dont 1442 avec occ > 1
-    #  1.859.408 lignes pour la requête cooc simple
-    #     71.134 lignes en se limitant aux ngrammes qui ont une occ > 1 (weight)
-
-    # 2 x the occurrence index table
-    Xindex = aliased(NodeNgram)
-    Yindex = aliased(NodeNgram)
-
-    # for debug (1/4)
-    # Xngram = aliased(Ngram)
-    # Yngram = aliased(Ngram)
-
-    # 1) prepare definition of counted forms
-    if not groupings_id:
-
-        # no groupings => the counted forms are the ngrams
-        Xindex_ngform_id = Xindex.ngram_id
-        Yindex_ngform_id = Yindex.ngram_id
-
-
-    # groupings: cf commentaire détaillé dans compute_occs() + todo facto
-    else:
-        # prepare translations
-        Xsyno = (session.query(NodeNgramNgram.ngram1_id,
-                             NodeNgramNgram.ngram2_id)
-                .filter(NodeNgramNgram.node_id == groupings_id)
-                .subquery()
-               )
-
-        # further use as anon tables prevent doing Ysyno = Xsyno
-        Ysyno = (session.query(NodeNgramNgram.ngram1_id,
-                             NodeNgramNgram.ngram2_id)
-                .filter(NodeNgramNgram.node_id == groupings_id)
-                .subquery()
-               )
-
-        # groupings => define the counted form depending on the existence of a synonym
-        Xindex_ngform_id = case([
-                            (Xsyno.c.ngram1_id != None, Xsyno.c.ngram1_id),
-                            (Xsyno.c.ngram1_id == None, Xindex.ngram_id)
-                            #     condition               value
-                        ])
-
-        Yindex_ngform_id = case([
-                            (Ysyno.c.ngram1_id != None, Ysyno.c.ngram1_id),
-                            (Ysyno.c.ngram1_id == None, Yindex.ngram_id)
-                        ])
-        # ---
-
-
-
-    # 2) BASE DB QUERY
-
-    # cooccurrences columns definition ----------------
-    ucooc = func.count(Xindex_ngform_id).label("ucooc")
-    # NB could be X or Y in this line
-    #    (we're counting grouped rows and just happen to do it on this column)
-    base_query = (
-        session.query(
-                    Xindex_ngform_id,
-                    Yindex_ngform_id,
-                    ucooc
-
-                    # for debug (2/4)
-                    # , Xngram.terms.label("w_x")
-                    # , Yngram.terms.label("w_y")
-                    )
-               .join(Yindex, Xindex.node_id == Yindex.node_id )   # <- by definition of cooc
-
-               .join(Node, Node.id == Xindex.node_id) # <- b/c within corpus
-               .filter(Node.parent_id == corpus.id)   # <- b/c within corpus
-               .filter(Node.typename == "DOCUMENT")   # <- b/c within corpus
+    # 1) prepare direct connection to the DB
+    url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
+            **settings.DATABASES['default']
         )
 
-    # outerjoin the synonyms if needed
-    if groupings_id:
-        base_query = (base_query
-               .outerjoin(Xsyno,                 # <- synonyms for Xindex.ngrams
-                          Xsyno.c.ngram2_id == Xindex.ngram_id)
-               .outerjoin(Ysyno,                 # <- synonyms for Yindex.ngrams
-                          Ysyno.c.ngram2_id == Yindex.ngram_id)
-            )
+    engine = create_engine( url )
+    connection = engine.connect()
+
+    # string vars for our SQL query
+    sql_statement     = ""
+    doc_idx_statement = ""
+
+    # 2a) prepare the document selection (normal case)
+    doc_idx_statement = """
+    SELECT node_id, ngram_id
+    FROM nodes_ngrams
+    JOIN nodes
+        ON node_id = nodes.id
+    WHERE nodes.parent_id = {corpus_id}
+    AND nodes.typename = 4
+    """.format(corpus_id=corpus.id)
 
 
-    # 3) counting clause in any case
-    coocs_query = (base_query
-               .group_by(
-                    Xindex_ngform_id, Yindex_ngform_id # <- what we're counting
-                    # for debug (3/4)
-                    # ,"w_x", "w_y"
-                    )
-
-            # for debug (4/4)
-            # .join(Xngram, Xngram.id == Xindex_ngform_id)
-            # .join(Yngram, Yngram.id == Yindex_ngform_id)
-
-            .order_by(ucooc)
-           )
-
-
-    # 4) INPUT FILTERS (reduce N before O(N²))
-    if on_list_id:
-        # £TODO listes différentes ou bien une liste pour x et tous les ngrammes pour y
-        #       car permettrait expansion de liste aux plus proches voisins (MacLachlan)
-        #       (avec une matr rectangulaire)
-
-        m1 = aliased(NodeNgram)
-        m2 = aliased(NodeNgram)
-
-        coocs_query = ( coocs_query
-            .join(m1, m1.ngram_id == Xindex_ngform_id)
-            .join(m2, m2.ngram_id == Yindex_ngform_id)
-
-            .filter( m1.node_id == on_list_id )
-            .filter( m2.node_id == on_list_id )
-        )
-
-    if stoplist_id:
-        s1 = (session.query(NodeNgram.ngram_id)
-                .filter(NodeNgram.node_id == stoplist_id)
-                .subquery()
-               )
-
-        # further use as anon tables prevent doing s2 = s1
-        s2 = (session.query(NodeNgram.ngram_id)
-                .filter(NodeNgram.node_id == stoplist_id)
-                .subquery()
-               )
-
-        coocs_query = ( coocs_query
-            .outerjoin(s1, s1.c.ngram_id == Xindex_ngform_id)
-            .outerjoin(s2, s2.c.ngram_id == Yindex_ngform_id)
-
-            # équivalent NOT IN stoplist
-            .filter( s1.c.ngram_id == None )
-            .filter( s2.c.ngram_id == None )
-
-        )
-
-    if diagonal_filter:
-        # don't compute ngram with itself
-        coocs_query = coocs_query.filter(Xindex_ngform_id != Yindex_ngform_id)
-
+    # 2b) same if document filters
     if start or end:
-        Time = aliased(NodeHyperdata)
+        date_type_id = INDEXED_HYPERDATA['publication_date']['id']
 
-        coocs_query = (coocs_query
-                            .join(Time, Time.node_id == Xindex.node_id)
-                            .filter(Time.key=="publication_date")
-                            )
+        doc_idx_statement = """
+        SELECT node_id, ngram_id
+        FROM nodes_ngrams
+        JOIN nodes
+            ON node_id = nodes.id
+        -- preparing for date filter (1/2)
+        JOIN nodes_hyperdata
+            ON nodes_hyperdata.node_id = nodes_ngrams.node_id
+        WHERE nodes.parent_id = {corpus_id}
+        AND nodes.typename = 4
+
+        -- preparing for date filter (2/2)
+        AND nodes_hyperdata.key = {date_type_id}
+        """.format(corpus_id=corpus.id, date_type_id = date_type_id)
 
         if start:
             if not isinstance(start, datetime):
@@ -250,8 +112,11 @@ def compute_coocs(  corpus,
                 except:
                     raise TypeError("'start' param expects datetime object or %%Y-%%m-%%d string")
 
+            # datetime object ~> date db formatted filter (2013-09-16 00:00:00+02)
+            start_filter = "AND nodes_hyperdata.value_utc >= %s::date" % start.strftime('%Y-%m-%d %H:%M:%S%z')
+
             # the filtering by start limit
-            coocs_query = coocs_query.filter(Time.value_utc >= start)
+            doc_idx_statement += "\n" + start_filter
 
         if end:
             if not isinstance(end, datetime):
@@ -260,31 +125,133 @@ def compute_coocs(  corpus,
                 except:
                     raise TypeError("'end' param expects datetime object or %%Y-%%m-%%d string")
 
-            # the filtering by start limit
-            coocs_query = coocs_query.filter(Time.value_utc <= end)
+            # datetime object ~> date db formatted filter
+            end_filter = "AND nodes_hyperdata.value_utc <= %s::date" % end.strftime('%Y-%m-%d %H:%M:%S%z')
+
+            # the filtering by end limit
+            doc_idx_statement += "\n" + end_filter
+
+    # 4) prepare the synonyms
+    if groupings_id:
+        syn_statement = """
+         SELECT * FROM nodes_ngrams_ngrams
+         WHERE node_id = {groupings_id}
+        """.format(groupings_id = groupings_id)
 
 
+    # 5a) MAIN DB QUERY SKELETON (no groupings) --------------------------------
+    if not groupings_id:
+        sql_statement = """
+        SELECT cooc.*
+        FROM (
+         SELECT idxA.ngram_id AS ngA,
+                idxB.ngram_id AS ngB,
+          count((idxA.ngram_id,
+                 idxB.ngram_id)) AS cwei
+          -- read doc index x 2
+          FROM ({doc_idx}) AS idxA
+          JOIN ({doc_idx}) AS idxB
+          -- cooc <=> in same doc node
+          ON idxA.node_id = idxB.node_id
+
+          GROUP BY ((idxA.ngram_id,idxB.ngram_id))
+        ) AS cooc
+        """.format(doc_idx = doc_idx_statement)
+    # --------------------------------------------------------------------------
+
+    # 5b) MAIN DB QUERY SKELETON (with groupings)
+    # groupings: we use additional Translation (synonyms) for ngA and ngB
+    else:
+        sql_statement = """
+        SELECT cooc.*
+        FROM (
+         SELECT COALESCE(synA.ngram1_id, idxA.ngram_id) AS ngA,
+                COALESCE(synB.ngram1_id, idxB.ngram_id) AS ngB,
+          count((COALESCE(synA.ngram1_id, idxA.ngram_id),
+                COALESCE(synB.ngram1_id, idxB.ngram_id))) AS cwei
+          -- read doc index x 2
+          FROM ({doc_idx}) AS idxA
+          JOIN ({doc_idx}) AS idxB
+          -- cooc <=> in same doc node
+          ON idxA.node_id = idxB.node_id
+
+          -- when idxA.ngram_id is a subform
+          LEFT JOIN ({synonyms}) as synA
+          ON synA.ngram2_id = idxA.ngram_id
+          -- when idxB.ngram_id is a subform
+          LEFT JOIN ({synonyms}) as synB
+          ON synB.ngram2_id = idxB.ngram_id
+
+          GROUP BY (COALESCE(synA.ngram1_id, idxA.ngram_id),
+                    COALESCE(synB.ngram1_id, idxB.ngram_id))
+        ) AS cooc
+        """.format(doc_idx = doc_idx_statement,
+                   synonyms = syn_statement)
+
+
+    # 6) prepare 2 x node_ngrams alias if whitelist
+    if on_list_id:
+        sql_statement +="""
+        JOIN nodes_ngrams AS whitelistA
+          ON whitelistA.ngram_id = cooc.ngA
+
+        JOIN nodes_ngrams AS whitelistB
+          ON whitelistB.ngram_id = cooc.ngB
+         """
+
+    if stoplist_id:
+        # used for reverse join
+        sql_statement +="""
+        LEFT JOIN (
+            SELECT * FROM nodes_ngrams
+            WHERE nodes_ngrams.node_id = %i
+            ) AS stoplistA
+          ON stoplistA.ngram_id = cooc.ngA
+
+        LEFT JOIN (
+            SELECT * FROM nodes_ngrams
+            WHERE nodes_ngrams.node_id = %i
+            ) AS stoplistB
+          ON stoplistA.ngram_id = cooc.ngA
+         """ % (stoplist_id, stoplist_id)
+
+    # 7) FILTERS
+
+    # the inclusive threshold filter is always here
+    sql_statement += "\n WHERE cooc.cwei >= %i" % threshold
+
+    # the optional whitelist perimeters
+    if on_list_id:
+        sql_statement += "\n AND whitelistA.node_id = %i" % on_list_id
+        sql_statement += "\n AND whitelistB.node_id = %i" % on_list_id
+
+    if stoplist_id:
+        sql_statement += "\n AND stoplistA.ngram_id IS NULL"
+        sql_statement += "\n AND stoplistB.ngram_id IS NULL"
+
+
+    # don't compute ngram with itself
+    # NB: this option is bad for main toolchain
+    if diagonal_filter:
+        sql_statement += "\n AND ngA != ngB"
+
+    # 1 filtre tenant en compte de la symétrie
+    # NB: this option is also bad for main toolchain
     if symmetry_filter:
-        # 1 filtre tenant en compte de la symétrie
-        #  -> réduit le travail de moitié !!
-        #  -> mais récupération sera plus couteuse via des requêtes OR comme:
-        #       WHERE ngram1 = mon_ngram OR ngram2 = mon_ngram
-        coocs_query = coocs_query.filter(Xindex_ngform_id  < Yindex_ngform_id)
+        sql_statement += "\n AND ngA <= ngB"
 
-
-    # 5) OUTPUT FILTERS
-    # ------------------
-    # threshold
-    # £TODO adjust COOC_THRESHOLD a posteriori:
-    # ex: sometimes 2 sometimes 4 depending on sparsity
-    print("COOCS: filtering pairs under threshold:", threshold)
-    coocs_query = coocs_query.having(ucooc >= threshold)
 
 
     # 6) EXECUTE QUERY
     # ----------------
+    # debug
+    print(sql_statement)
+
+    # executing the SQL statement
+    results = connection.execute(sql_statement)
+
     #  => storage in our matrix structure
-    matrix = WeightedMatrix(coocs_query.all())
+    matrix = WeightedMatrix(results)
     #                      -------------------
 
     # fyi

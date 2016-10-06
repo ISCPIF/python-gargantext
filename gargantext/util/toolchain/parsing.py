@@ -34,14 +34,14 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             'doc_error': None         # str
         }
 
-    if "language_iso2" in hyperdata.keys():
+    if "language_iso2" in hyperdata and hyperdata["language_iso2"]:
         lang = hyperdata["language_iso2"]
         if lang not in LANGUAGES.keys():
             lang_result['skipped'].append(lang)   # FIXME: perhaps better to do this at ngrams_extraction
         else:
             lang_result['observed'].append(lang)
 
-    elif "language_iso3" in hyperdata.keys():
+    elif "language_iso3" in hyperdata and hyperdata["language_iso3"]:
         #convert
         try:
             lang =  languages[hyperdata["language_iso3"]].iso2
@@ -54,7 +54,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
             print ("LANG not referenced", hyperdata["language_iso3"])
             lang_result['skipped'].append(hyperdata["language_iso3"])
 
-    elif "language_name" in hyperdata.keys():
+    elif "language_name" in hyperdata and hyperdata["language_name"]:
         try:
             #convert
             lang = languages[hyperdata["language_name"]].iso2

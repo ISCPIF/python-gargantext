@@ -8,11 +8,13 @@ collaborative state-of-the-art, portfolio analysis and many other crazy
 things. Say good-bye to headaches in front of thousands of document to
 analyze and launch yourself into the Gargantext adventure.
 
-This software is free and open source, developed by the CNRS Complex
-Systems Institute of Paris Île-de-France (ISC-PIF) and its partners.
+This software is free software, developed by the CNRS Complex Systems
+Institute of Paris Île-de-France (ISC-PIF) and its partners.
 
 Developers willing to join the Gargantext community are welcome.
 
+[Gargantext plateforme](http://gargantext.org)
+[Official code repository](http://code.gargantext.org)
 
 # History of Gargantext
 Gargantext project is a continuation of the TINA project (Chavalarias D.
@@ -33,8 +35,8 @@ The core team at the origin of Gargantext is :
 * Constance de Quatrebarbes, developer
 
 # Host institutions of this project
-* CNRS labs ISC-PIF
-* CAMS
+* CNRS labs ISC-PIF (Institut des Systèmes Complexes de Paris Île de France)
+* CAMS (Centre d'Analyse et de Mathématiques Sociales)
 
 # This project has received the support from the following institutional partners are :
 

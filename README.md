@@ -14,6 +14,7 @@ Institute of Paris Île-de-France (ISC-PIF) and its partners.
 Developers willing to join the Gargantext community are welcome.
 
 [Gargantext plateforme](http://gargantext.org)
+
 [Official code repository](http://code.gargantext.org)
 
 # History of Gargantext

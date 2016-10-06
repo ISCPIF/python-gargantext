@@ -8,7 +8,7 @@
     <div class="container">
     <h3>
     <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
-    Small tutorial here and links toward documentation.
+    Filter your documents with terms and watch histories (you can compare all your corpora).
     </h3>
     </div>
     <!-- All the templates used by the Javascript framework -->
@@ -52,6 +52,9 @@
 
         <div ng-app="Gargantext" ng-controller="GraphController" class="controller">
 
+            <!-- add a new dataset -->
+            <button ng-click="addDataset()">Add a dataset</button>
+
             <ul class="datasets">
                 <li class="dataset" ng-controller="DatasetController" ng-repeat="dataset in datasets" style="background-color:{{ getColor($index, datasets.length) }}">
                     <!-- main part -->
@@ -62,7 +65,9 @@
                         <!-- description of Y values -->
                         Evolution of the
                         <select ng-model="query_y.value" ng-options="value as key for (key, value) in {'documents count': 'documents_count', 'expressions count': 'ngrams_count'}" ng-change="updateDataset()"></select>
-                        <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false, 'relative to the': true}" ng-change="updateDataset()"></select>
+                        <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false}" ng-change="updateDataset()"></select>
+                        <!-- <select ng-model="query_y.is_relative" ng-options="value as key for (key, value) in {'in absolute terms': false, 'relative to the': true}" ng-change="updateDataset()"></select>
+                        -->
                         <span ng-if="query_y.is_relative">
                             <select ng-model="query_y.divided_by" ng-options="value as key for (key, value) in {'total expressions count': 'total_ngrams_count', 'total documents count': 'total_documents_count'}" ng-change="updateDataset()"></select>
                         </span>
@@ -91,11 +96,11 @@
                                 <auto-complete source="getNgrams($query)"></auto-complete>
                             </tags-input ng-model="tags">
                         </li>
-                        <!-- filter hyperdata -->
+                        <!-- filter hyperdata 
                         <li>
                             <ul>
                                 <li ng-repeat="hyperdata in hyperdataList">
-                                    ...where
+                                    ...with
                                     <span ng-if="!hyperdata.operator &amp;&amp; (!hyperdata.values || !hyperdata.value)">"{{ hyperdata.name }}"</span>
                                     <strong ng-if="hyperdata.operator || (hyperdata.values &amp;&amp; hyperdata.value)">{{ hyperdata.name }}</strong>
 
@@ -111,13 +116,10 @@
                                 </li>
                             </ul>
                         </li>
+                        -->
                     </ul>
                 </li>
             </ul>
-
-            <!-- add a new dataset -->
-            <button ng-click="addDataset()">Add a dataset</button>
-
             <!-- X-axis (time) resolution -->
             <p>
                 (group results by

@@ -55,9 +55,13 @@ def notify_user(username, email, password):
     Votre login est: %s
     Votre mot de passe est : %s
 
-    La nouvelle version de Gargantext sort très prochainement.
-    Vous êtes actuellement sur la version de développement, vos retours
-    seront précieux pour stabiliser la plateforme: merci d'avance!
+    La nouvelle version, Blue Jasmin, est sortie!
+
+    Vous êtes actuellement sur cette version stabilisée pour une
+    expérience unique dans l'exploration de vos thèmes de recherche.
+
+    Cependant, vos retours seront précieux pour poursuivre le
+    développement de la plateforme: merci d'avance!
 
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement

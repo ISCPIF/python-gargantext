@@ -26,8 +26,9 @@
                                 About
                             </a>
                         </li>
+
                         {% if user.is_authenticated %}
-                        <li><a href="/projects/" title="All your projects are here.">
+                        <li><a href="/projects/" class="help" title="All your projects are here.">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                                 Projects
                             </a>
@@ -67,7 +68,13 @@
                         </li>
                         {% endif %}
                     </ul>
-
+                    <ul class="nav navbar-nav pull-right">
+                      <li>
+                        <a id="guided_tour" role="button" content="<p>Activate contextual help and discover how Gargantext works step by step</p>">
+                              <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
+                              Guided Tour
+                        </a>
+                      </li>
                     <ul class="nav navbar-nav pull-right">
                         <li class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
@@ -334,15 +341,43 @@
 
         <script type="text/javascript">
             // initializes the popover elements with jquery
-            $(function () { $("[data-toggle='popover']").popover({
-                html: true,
-                title: function() {
-                    return $("#popover-head").html();
-                },
-                content: function() {
-                    return $("#popover-content").html();
-                }
-            });});
+            // $(function () { $("[data-toggle='popover']").popover({
+            //     html: true,
+            //     title: function() {
+            //         return $("#popover-head").html();
+            //     },
+            //     content: function() {
+            //         return $("#popover-content").html();
+            //     }
+            // });});
+            // function popOverFactory(selector, pos){
+            //   $(selector).attr({  "type": "button",
+            //                       "data-toggle": "popover",
+            //                       "data-placement": pos,
+            //                       "data-trigger": "focus",
+            //                     });
+            //
+            //   $(selector).popover({
+            //     html:true,
+            //     trigger:'toogle',
+            //     title: selector.attr("title"),
+            //     content: selector.attr("content"),
+            //   });
+            // };
+            //
+            // $(document).on("click", "a#guided_tour", function(e){
+            //   //make tab active
+            //   $(this).parent().addClass("active");
+            //   popOverFactory($(this), "bottom");
+            //   $(this).popover("show");
+            //
+            //
+            //   //$('[data-toggle="popover"]').popover()
+            // });
+            // $(document).on("hover", ".help", function(e){
+            //   popOverFactory($(this), "top");
+            //   $(this).popover('show');
+            // });
         </script>
 
 

@@ -5,7 +5,7 @@
         <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
         <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
-
+        <script type="text/javascript" src="{% static "lib/gargantext/guided_tour.js" %}"></script>
         {% block css %}
         {% endblock %}
 
@@ -70,7 +70,7 @@
                     </ul>
                     <ul class="nav navbar-nav pull-right">
                       <li>
-                        <a id="guided_tour" role="button" content="<p>Activate contextual help and discover how Gargantext works step by step</p>">
+                        <a id="guided_tour" role="button" title="Guided Tour" content="Activate the discovery mode">
                               <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                               Guided Tour
                         </a>
@@ -341,43 +341,35 @@
 
         <script type="text/javascript">
             // initializes the popover elements with jquery
-            // $(function () { $("[data-toggle='popover']").popover({
-            //     html: true,
-            //     title: function() {
-            //         return $("#popover-head").html();
-            //     },
-            //     content: function() {
-            //         return $("#popover-content").html();
-            //     }
-            // });});
-            // function popOverFactory(selector, pos){
-            //   $(selector).attr({  "type": "button",
-            //                       "data-toggle": "popover",
-            //                       "data-placement": pos,
-            //                       "data-trigger": "focus",
-            //                     });
-            //
-            //   $(selector).popover({
-            //     html:true,
-            //     trigger:'toogle',
-            //     title: selector.attr("title"),
-            //     content: selector.attr("content"),
-            //   });
-            // };
-            //
-            // $(document).on("click", "a#guided_tour", function(e){
-            //   //make tab active
-            //   $(this).parent().addClass("active");
-            //   popOverFactory($(this), "bottom");
-            //   $(this).popover("show");
-            //
-            //
-            //   //$('[data-toggle="popover"]').popover()
-            // });
-            // $(document).on("hover", ".help", function(e){
-            //   popOverFactory($(this), "top");
-            //   $(this).popover('show');
-            // });
+            $(function () { $("[data-toggle='popover']").popover({
+                html: true,
+                title: function() {
+                    return $("#popover-head").html();
+                },
+                content: function() {
+                    return $("#popover-content").html();
+                }
+            });});
+            $(document).on("click", "a#guided_tour", function(e){
+              //make tab active
+              $(this).parent().addClass("active");
+              popOverFactory($(this), "bottom", true);
+              $(this).popover("show");
+
+            });
+            $(document).on("click", "button#close", function(e){
+
+              $(this).popover("hide");
+            });
+            $(document).on("click", "button#ok", function(e){
+
+              popOverFactory($("p#add_help"), "left", false);
+              $("p#add_help").popover("show");
+              //$("button#add").popover("show");
+
+              $(this).parent().parent().parent().remove();
+            });
+
         </script>
 
 

@@ -105,43 +105,61 @@
                                         </a>
                                     </div>
                                     <div class="col-md-3 content"  id="corpus_{{corpus.id}}_tools">
-                                        {% for state in corpus.hyperdata.statuses %}
-                                            {% ifequal state.action "Workflow" %}
-                                                    <a class="{% if not state.complete %}hidden{% endif %}"
-                                                       href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
-                                                        <button type="button" class="btn btn-default" aria-label="Left Align">
-                                                              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        {% if corpus.hyperdata.statuses %}
+                                            {% for state in corpus.hyperdata.statuses %}
+                                                {% ifequal state.action "Workflow" %}
+                                                        <a class="{% if not state.complete %}hidden{% endif %}"
+                                                           href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
+                                                            <button type="button" class="btn btn-default" aria-label="Left Align">
+                                                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                            </button>
+                                                        </a>
+
+                                                        <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                            data-content="
+                                                            <ul class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;updateCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-repeat" aria-hidden="true"
+                                                            title='Recalculate ngram scores and similarities'></span>
                                                         </button>
-                                                    </a>
 
-                                                    <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
-                                                        data-content="
-                                                        <ul class=&quot;inside-popover&quot;>
-                                                            <li
-                                                            onclick=&quot;updateCorpus(event, {{corpus.id}})&quot;>
-                                                                <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
-                                                            </li>
-                                                        </ul>
-                                                        ">
-                                                        <span class="glyphicon glyphicon-repeat" aria-hidden="true"
-                                                        title='Recalculate ngram scores and similarities'></span>
-                                                    </button>
+                                                        <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
+                                                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                            data-content="
+                                                            <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Delete this</a>
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                            title='Delete this corpus'></span>
+                                                        </button>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        {% else %}
 
-                                                    <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
-                                                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                                        data-content="
-                                                        <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
-                                                            <li
-                                                            onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
-                                                                <a href='#'>Delete this</a>
-                                                            </li>
-                                                        </ul>
-                                                        ">
-                                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                                                        title='Delete this corpus'></span>
-                                                    </button>
-                                            {% endifequal %}
-                                        {% endfor %}
+                                                       <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                            data-content="
+                                                            <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Delete this</a>
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                            title='Delete this corpus'></span>
+                                                        </button>
+
+
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-3 content" id="corpus_{{corpus.id}}_status">
                                         {% for state in corpus.hyperdata.statuses %}

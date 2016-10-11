@@ -6,10 +6,22 @@ function nextStep(num) {
 function previousStep(num) {
   return p[($.inArray(num, p) - 1) % p.length];
 }
+function isPopover(e){
+  if e.hasClass("popover"){
+    return True
+  }
+  else{
+    return False
+  }
+}
 function buildTour(){
-  $(".class").get().forEach(function(entry, index, array) {
+  steps = $(".tour")
+  console.log(steps.length)
+  $(".tour").each(function(i, obj){
     var me = $(this);
-    console.log(entry, index, array);
+    //alert($(this));
+    console.log(obj)
+    console.log(i, me.text());
   });
 };
 

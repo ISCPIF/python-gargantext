@@ -1,3 +1,18 @@
+var steps = {}
+
+function nextStep(num) {
+  return p[($.inArray(num, p) + 1) % p.length];
+}
+function previousStep(num) {
+  return p[($.inArray(num, p) - 1) % p.length];
+}
+function buildTour(){
+  $(".class").get().forEach(function(entry, index, array) {
+    var me = $(this);
+    console.log(entry, index, array);
+  });
+};
+
 modal_tpl = '<div id={modal_id} class="modal">'+
   <!-- Modal content -->
   '<div class="modal-content">'+

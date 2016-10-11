@@ -350,11 +350,13 @@
                     return $("#popover-content").html();
                 }
             });});
+
             $(document).on("click", "a#guided_tour", function(e){
               //make tab active
               $(this).parent().addClass("active");
               popOverFactory($(this), "bottom", true);
               $(this).popover("show");
+              buildTour();
 
             });
             $(document).on("click", "button#close", function(e){
@@ -366,7 +368,6 @@
               popOverFactory($("p#add_help"), "left", false);
               $("p#add_help").popover("show");
               //$("button#add").popover("show");
-
               $(this).parent().parent().parent().remove();
             });
 

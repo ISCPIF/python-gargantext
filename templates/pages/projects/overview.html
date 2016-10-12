@@ -42,27 +42,27 @@
     <div class="jumbotron">
         <div class="row">
         <div class="col-md-4">
-            <h1 class="tour" title="" content="">
+            <h1 class="tour" title="Projects" content="This is the page for all your project">
                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                 Projects
             </h1>
         </div>
         <div class="col-md-3"></div>
         <div class="col-md-5">
-            <p class="tour" id="add_help" title="STEP 1: create a New Project" content="<p>Click on the button to create a project</p>">
+            <p class="tour" title="Create a New Project" content="<p>Click on the button to create a project</p>">
             <br>
             <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
             </button>
             <div id="popover-content"  class="hide">
-                <div id="createForm" class="form-group tour">
+                <div id="createForm" class="form-group tour" title="Project" content="Add a name for your project">
                     {% csrf_token %}
                     <div id="status-form" class="collapse">
                     </div>
                     <div class="row inline">
                       <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
-                      <input class="col-lg-8" type="text" id="inputName" class="form-control tour">
+                      <input class="col-lg-8" type="text" id="inputName" class="form-control">
                     </div>
 
                     <div class="row inline">

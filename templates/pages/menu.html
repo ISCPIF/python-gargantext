@@ -70,7 +70,7 @@
                     </ul>
                     <ul class="nav navbar-nav pull-right">
                       <li>
-                        <a id="guided_tour" role="button" title="Guided Tour" content="Activate the discovery mode">
+                        <a id="guided_tour" role="button" title="Guided Tour" content="Welcome to Guided Tour of Gargantext plateform. Deactivate the tour by clicking on the main nav button. Navigate throught step using previous and next">
                               <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                               Guided Tour
                         </a>
@@ -350,27 +350,8 @@
                     return $("#popover-content").html();
                 }
             });});
-
-            $(document).on("click", "a#guided_tour", function(e){
-              //make tab active
-              $(this).parent().addClass("active");
-              popOverFactory($(this), "bottom", true);
-              $(this).popover("show");
-              buildTour();
-
-            });
-            $(document).on("click", "button#close", function(e){
-
-              $(this).popover("hide");
-            });
-            $(document).on("click", "button#ok", function(e){
-
-              popOverFactory($("p#add_help"), "left", false);
-              $("p#add_help").popover("show");
-              //$("button#add").popover("show");
-              $(this).parent().parent().parent().remove();
-            });
-
+            activateTour();
+            
         </script>
 
 

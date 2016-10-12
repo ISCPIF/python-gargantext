@@ -63,6 +63,10 @@ def notify_user(username, email, password):
     Cependant, vos retours seront précieux pour poursuivre le
     développement de la plateforme: merci d'avance!
 
+    Si vous souhaitez accéder à vos anciens corpus, vos codes d'accès
+    sont valides à cette adresse jusqu'en 30 juin 2017 minuit:
+            http://old.gargantext.org
+
     Nous restons à votre disposition pour tout complément d'information.
     Cordialement
     --
@@ -108,15 +112,17 @@ def mass_account_creation(fichier=None,init=False):
     accounts = open(fichier, "r")
     for line in accounts.readlines():
         username, email, password, fin = line.split(',')
-        try:
-            user = session.query(User).filter(User.username == username).first()
+        user = session.query(User).filter(User.username == username).first()
+
+        if user is not None:
             print("User %s does exist already" % (username))
             if init == True:
                 create_user(username, email, user=user, password=password, active=True, notify=True)
                 print("User %s updated" % (username))
-        except:
+        else:
             print("User %s does not exist already" % (username))
             create_user(username, email, password=password, active=True, notify=True)
+            print("User %s createed" % (username))
         #delete_user(username)
     accounts.close()
 

@@ -48,13 +48,17 @@
             </h1>
         </div>
         <div class="col-md-3"></div>
+
         <div class="col-md-5">
-            <p class="tour" title="Create a New Project" content="<p>Click on the button to create a project</p>">
+          <p class="tour" title="Create a New Project" content="Create a new project by clicking on +'Add a new project'">
             <br>
+
             <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
+
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
             </button>
+
             <div id="popover-content"  class="hide">
                 <div id="createForm" class="form-group">
                     {% csrf_token %}
@@ -62,7 +66,7 @@
                     </div>
                     <div class="row inline">
                       <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
-                      <input class="col-lg-8" type="text" id="inputName" class="form-control">
+                      <input class="col-lg-8 help" data-toogle="tooltip" type="text" id="inputName"  text="Add the name of your project">
                     </div>
 
                     <div class="row inline">
@@ -72,8 +76,9 @@
                     </div>
                   </div>
               </div>
-        </p>
+            </p>
         </div>
+
     </div>
 </div>
 
@@ -87,7 +92,7 @@
     </div>
     <!-- CHECKBOX EDITION -->
     <div class="row collapse" id="editor">
-          <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
+          <button title="delete selected project" type="button" class="btn btn-danger" id="delete" title="Projects" content="You can select and delete the corresponding project">
             <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
           </button>
           <!--
@@ -105,7 +110,7 @@
 
 
 
-    <div class="row container" id="projects">
+    <div class="row container" id="projects" class="tour" title="Project Detail" content="You can access to the project by clicking on the link, edit or delete the corresponding project using the button">
             <!--here loading projectlist from GET /projects-->
     </div>
 

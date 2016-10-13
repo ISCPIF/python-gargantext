@@ -26,48 +26,82 @@ function popOverFactory(selector, pos, confirmation){
 
 var steps = {}
 
+function getStep(element, i){
+  steps = $(document).find(".tour")
+  console.log("curr", element);
 
+  $(document).on("click", "button[data-role='next']", function(e){
+    $(element).popover("hide");
+    native_pop = $(element).children()
+    native_pop.popover("show");
+    i = i+1
+    return i
+  })
+  $(document).on("click", "button[data-role='prev']", function(i){
+
+    $(element).popover("hide");
+    native_pop = $(element).children()
+    native_pop.popover("show");
+    i = i-1
+    return i
+  })
+
+  element = steps[i]
+  popOverFactory(element, "right");
+  $(element).popover("show");
+  alert(i);
+  return [element, i];
+}
 function nextStep(element, i){
   steps = $(document).find(".tour")
   $(document).on("click", "button[data-role='next']", function(e){
     console.log("curr", element);
-    $(element).popover("hide");
+
     native_pop = $(element).children()
 
+    //native_pop.addClass("tour")
     native_pop.popover("show");
-    i = i+1
-    active = $.find(".in")
+    //$("div.status-form").appendTo("Enter a name and click on add project")
+    //addFormStatus("success","div#createForm", "Enter a name and click on add project")
 
-    if (active.length > 0){
-      return [native_pop, i]
+
+    $(element).popover("hide");
+
+    active = $.find(".in")
+    submit = $(active).find("button")
+    if (submit.length >= 1){
+      $(document).on("click", submit, function(e){
+        i = i+1
+        "clicked"
+      })
     }
     else{
-      element = steps[i]
-      console.log("next", element);
-
-      popOverFactory(element, "right");
-      $(element).popover("show");
-
-      return [element, i];
+        i = i+1
     }
-  });
 
-}
-function prevStep(element, i){
-  steps = $(document).find(".tour")
-  $(document).on("click", "button[data-role='prev']", function(e){
-    console.log("curr", element);
-    $(element).popover("hide");
-    alert(i)
-    i = i-1
-    alert(i)
+    // if (active.length > 0){
+    //   $("button")
+    //   i = i+2
+      //native_pop.popover("hide")
+      //return [native_pop, i]
+      //$(document).on("change keyup paste", function(){
+      //  alert("typing...")
+      //})
+    // }
+    // else{
+    //   i = i+2
+    // }
+
     element = steps[i]
-    console.log("prev", element);
-    console.log("child", $(document).find(".popover"));
+    console.log("next", element);
+
     popOverFactory(element, "right");
     $(element).popover("show");
+
     return [element, i];
+
   });
+
 }
 
 function activateTour(){
@@ -89,6 +123,7 @@ function activateTour(){
       //buildTour
       curr = $(this)
       i = -1
+      //curr, i  = getStep(curr,i)
       curr, i = nextStep(curr, i)
       console.log(i, curr)
       if (i > steps.lenght){

@@ -28,21 +28,21 @@
                         </li>
 
                         {% if user.is_authenticated %}
-                        <li><a href="/projects/" class="help" title="All your projects are here.">
+                        <li class="tour" title="Projects" content="This tabs show you all the projects"><a href="/projects/">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                                 Projects
                             </a>
                         </li>
                         {% endif %}
                         {% if project %}
-                        <li><a href="/projects/{{project.id}}">
+                        <li class="tour" title="Corpus" content="This tabs show you all the corpora of your project"><a href="/projects/{{project.id}}">
                                 <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                                 {{project.name | truncatechars:15}}
                             </a>
                         </li>
                         {% endif %}
                         {% if corpus %}
-                        <li><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                        <li class="tour" title="Documents" content="This tabs show you all the documents of your corpus"><a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
                                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                                 {{corpus.name | truncatechars:25}}
                             </a>
@@ -50,7 +50,7 @@
                         {% endif %}
 
                         {% if view == "graph" %}
-                        <li id="graph-rename" style="padding:15">
+                        <li class="tour" title="Graph" content="This tabs show you all your graphs"id="graph-rename" style="padding:15">
                           <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                           <span id="graph-name" class="editable" ondblclick="makeEditable(this)">
                             Name your graph
@@ -115,7 +115,7 @@
             {% if corpus %}
             <div class="container">
                     <ul id="corporatop" class="nav nav-tabs navbar-static-top nav-justified">
-                        <li>
+                        <li">
                                 <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
                                     onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
                                     data-target='#' href='#'>
@@ -351,7 +351,7 @@
                 }
             });});
             activateTour();
-            
+
         </script>
 
 

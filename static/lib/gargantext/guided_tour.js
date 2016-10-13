@@ -1,22 +1,23 @@
 function popOverFactory(selector, pos, confirmation){
   //Factory for popover indicated by class tour
   // transforming into btn and mapping title and content
-  $(selector).attr({  "type": "button",
-                      "data-toggle": "popover",
-                      "data-placement": pos,
-                      "data-trigger": "toogle",
-
-                    });
+  // $(selector).attr({  "type": "button",
+  //                     "data-toggle": "popover",
+  //                     "data-placement": pos,
+  //                     "data-trigger": "toogle",
+  //
+  //                   });
   $(selector).popover({
     html:true,
-    title: '<h1>'+selector.attr("title")+'</h1>',
-    content: '<p class="text-center">'+selector.attr("content")+'</p>'+
+    title: '<h1>'+$(selector).attr("title")+'</h1>',
+    content: '<p class="text-center">'+$(selector).attr("content")+'</p>'+
     '<div class="btn-group col-sm-12">'+
               '<button class="col-sm-6 btn btn-sm btn-danger" data-role="prev">&laquo; Prev</button>'+
               '<button class="col-sm-6 btn btn-sm  btn-success" data-role="next">Next &raquo;</button>'+
             '</div><br>',
     container: 'body',
-    trigger:"toogle"
+    trigger:"toogle",
+    placement: pos
   });
   //$('.btn').not(this).popover('hide');
   //$(selector).popover('toggle');
@@ -31,11 +32,30 @@ function nextStep(p, val) {
 function previousStep(p, num) {
   return p[($.inArray(val, p) - 1) % p.length];
 }
+function nextStep(element, i){
+  steps = $(document).find(".tour")
+  $(document).on("click", "button[data-role='next']", function(e){
+    console.log("curr", element);
+    $(element).popover("hide");
+    i = i+1
+    element = steps[i]
+    console.log("next", element);
+    popOverFactory(element, "right");
+    $(element).popover("show");
+    return [i, element];
+  });
+}
+function prevStep(){
+  steps = $(document).find(".tour")
+  $(document).on("click", "button[data-role=next]", function(e){
+    alert("prev");
+  });
+}
+
 function activateTour(){
   $(document).on("click", "a#guided_tour", function(e){
     if ($(this).parent().hasClass("active")){
         $(this).parent().removeClass("active");
-
         //$(this).popover("hide");
         $('.popover').popover('hide');
         //$(this).popover("destroy");
@@ -49,12 +69,13 @@ function activateTour(){
       //show the popover
       $(this).popover('toggle');
       //buildTour()
-      steps = $(document).find(".tour")
-      console.log(steps)
-      $(".tour").each(function(i, obj, steps){
-          popOverFactory($(this), "right", true)
-          $(this).popover("show");
 
-        })
-      }
-  })};
+      curr = nextStep($(this), -1)
+      console.log(curr)
+      // while ($(document).hasClass("collapse in tour")){
+      //     curr, i = nextStep(curr, i)
+      //     console.log(curr, i)
+      //
+    }
+  })
+}

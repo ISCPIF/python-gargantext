@@ -5,7 +5,7 @@
         <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
         <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
-        <script type="text/javascript" src="{% static "lib/gargantext/guided_tour.js" %}"></script>
+
         {% block css %}
         {% endblock %}
 
@@ -69,10 +69,10 @@
                         {% endif %}
                     </ul>
                     <ul class="nav navbar-nav pull-right">
-                      <li>
-                        <a id="guided_tour" role="button" title="Guided Tour" content="Welcome to Guided Tour of Gargantext plateform. Deactivate the tour by clicking on the main nav button. Navigate throught step using previous and next">
+                      <li {% if not project %} class="disabled"{% endif %}>
+                        <a id="guided_tour" role="tooltip" title="Demo of Gargantext" content="Welcome to the demo Tour! Let's have a look on Gargantext plateform.">
                               <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
-                              Guided Tour
+                              Demo
                         </a>
                       </li>
                     <ul class="nav navbar-nav pull-right">
@@ -115,7 +115,7 @@
             {% if corpus %}
             <div class="container">
                     <ul id="corporatop" class="nav nav-tabs navbar-static-top nav-justified">
-                        <li">
+                        <li>
                                 <a type="button" class="btn btn-default {% if view == 'titles' %} active {% endif %}"
                                     onclick="javascript:location.href='/projects/{{project.id}}/corpora/{{ corpus.id }}/'"
                                     data-target='#' href='#'>
@@ -338,7 +338,7 @@
         -->
 
         <script type="text/javascript" src="{% static "lib/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
-
+        <script type="text/javascript" src="{% static "lib/gargantext/demo.js" %}"></script>
         <script type="text/javascript">
             // initializes the popover elements with jquery
             $(function () { $("[data-toggle='popover']").popover({
@@ -350,7 +350,10 @@
                     return $("#popover-content").html();
                 }
             });});
-            activateTour();
+
+            initTour();
+
+
 
         </script>
 

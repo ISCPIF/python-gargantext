@@ -54,7 +54,7 @@
                     <div id="hero-donut" style="height: 200px;"></div>
                     {% endif %}
                     <center>
-                        <p class="tour" title="CORPUS" content="add a corpus to your project">
+                        <p class="tour" title="CORPUS" content="add a corpus to your project by clicking on +Add Corpus">
                         <a data-toggle="modal" href="#addcorpus">
                             <button
                             type="button"
@@ -84,10 +84,14 @@
 <div class="container">
 
 
+
     {% if list_corpora  %}
+
+
         {% for key, corpora in list_corpora.items %}
             <h2>
                 <div class="row">
+
                 <div class="col-md-1 content"></div>
                     <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
                     {{ key }}
@@ -95,6 +99,7 @@
                     {% for corpus in corpora %}
                         <div id="corpus_{{corpus.id}}" class="corpusElt">
                             <div class="row">
+
                                 <h4>
                                     <div class="col-md-1 content"></div>
                                     <div class="col-md-5 content">
@@ -105,6 +110,7 @@
                                         </a>
                                     </div>
                                     <div class="col-md-3 content"  id="corpus_{{corpus.id}}_tools">
+                                      <span class="tour" placement="left" type="popover" title="Corpus Detail" content="Here you can see, edit or delete your corpus"></span>
                                         {% if corpus.hyperdata.statuses %}
                                             {% for state in corpus.hyperdata.statuses %}
                                                 {% ifequal state.action "Workflow" %}

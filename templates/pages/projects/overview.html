@@ -182,58 +182,9 @@
 </style>
 
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
 <script type="text/javascript">
-    help = {"#add":{
-              "title": "Ajouter un projet",
-              "content":"Clickez sur le bouton pour créer un nouveau projet",
-              "placement":"bottom",
-              },
-              "#test":{
-              "title": "This is a title",
-              "content": "This is a content",
-              "placement": "top",
-              },
-            }
 
-    $( ".help" ).each(function(i, el) {
-      id = el.id
-      div_id = "#"+id
-      console.log(div_id)
-      btn = id+"-help"
-      info = help[div_id]
-      console.log(info)
-      help_icon = '<span type="button" id="'+btn+'"role="button" onclick="get_help();" class="glyphicon glyphicon-question-sign"></span>'
-      // help_button = '<button '+
-      //                 'data-toogle="popover"'+
-      //                 'data-placement="'+ info["placement"]+'"'+
-      //                 'title="'+ info["title"]+'"'+
-      //                 'data-content="'+ info["content"]+'"'+
-      //                 'data-container="body"'+
-      //                 'data-trigger="click"'+
-      //                 'id="'+btn+'"><span class="glyphicon glyphicon-question-sign"></span></button>'
-
-
-      $(this).after(help_icon);
-    })
-    function get_help(){
-      console.log($(this.attr('id'));
-    };
-      // console.log($("#"+btn))
-      // pop = $("#"+btn)
-      // $(pop).popover({
-      //   html:true,
-      //   title : info["title"],
-      //   content: '<p class="text-center">'+info["content"]+'</p>',
-      //   container: 'body',
-      //   trigger:"focus",
-      //   placement: info["title"]["placement"],
-      // });
-      // $('#'+btn).popover("toogle");
-
-      // $(next_el).on("click", function(e){
-      //   next_el
-      // })
-    // });
     getProjects();
     // $(document).on("input#inoutName").bind('keypress', function(e) {
     //         if(e.keyCode==13){

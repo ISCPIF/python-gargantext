@@ -56,9 +56,9 @@
                     <center>
 
                         <a data-toggle="modal" href="#addcorpus">
-                            <button
+                            <button id="#corpus"
                             type="button"
-                            class="btn btn-primary btn-lg"
+                            class="btn btn-primary btn-lg help"
                             data-container="body"
                             data-toggle="popover"
                             data-placement="bottom"
@@ -331,6 +331,7 @@
                   </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->
                     <script type="text/javascript" src="{% static "lib/jquery/1.11.2/jquery-ui.js" %}"></script>
+                    <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
                     <script type="text/javascript">
 
                         var corporaDivs = document.getElementsByClassName('corpusElt')

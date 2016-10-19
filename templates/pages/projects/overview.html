@@ -51,7 +51,7 @@
         <div class="col-md-5">
             <p>
             <br>
-            <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
+            <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
             </button>
@@ -183,6 +183,35 @@
 
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
 <script type="text/javascript">
+    help = {"#add":
+              {"title": "Ajouter un projet",
+              "content":"Clickez sur le bouton pour créer un nouveau projet",
+              "placement":"bottom"
+              },
+            }
+    $( ".help" ).each(function(el) {
+      console.log(el)
+      id = $(this).attr["id"]
+      btn = id+"-help"
+      help_button = '<span role="button" class="glyphicon glyphicon-question-sign" id="'+btn+'"></span>'
+
+      //info = help['#'+$(this).attr["id"]];
+      //console.log(info["title"]);
+      next_el = $(this).after(help_button);
+      $('span'+'#'+btn).popover({
+        html:true,
+        title : help['#'+$(this).attr["id"]]["title"],
+        content: '<p class="text-center">'+help['#'+$(this).attr["id"]]["content"]+'</p>',
+        container: 'body',
+        trigger:"focus",
+        placement: help['#'+$(this).attr["id"]]["title"]["placement"],
+      });
+      $('span'+'#'+btn).popover("toogle")
+
+      // $(next_el).on("click", function(e){
+      //   next_el
+      // })
+    });
     getProjects();
     // $(document).on("input#inoutName").bind('keypress', function(e) {
     //         if(e.keyCode==13){

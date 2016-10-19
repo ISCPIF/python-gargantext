@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{% static "lib/morris/morris.css" %}">
 
 <script src="{% static "lib/raphael/raphael-min.js"%}"></script>
+
 <style type="text/css">
     .ui-autocomplete {
         z-index: 5000;
@@ -55,10 +56,10 @@
                     {% endif %}
                     <center>
 
-                        <a data-toggle="modal" href="#addcorpus">
-                            <button id="#corpus"
+                        <a   data-toggle="modal" href="#addcorpus" >
+                            <button
                             type="button"
-                            class="btn btn-primary btn-lg help"
+                            class="btn btn-primary btn-lg"
                             data-container="body"
                             data-toggle="popover"
                             data-placement="bottom"
@@ -256,8 +257,7 @@
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 
-                                    <h3>Add a Corpus <a href="http://gitlab.iscpif.fr/humanities/gargantext/wikis/faq/exportImport">
-                                      <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                    <h3 id="corpus" class="help">Add a Corpus
                                     </a>
                                   </h3>
                                 </div>

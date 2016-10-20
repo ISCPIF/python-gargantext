@@ -222,8 +222,11 @@
                                     </div>
                                     <!-- export button -->
                                     <div class="col-md-6">
+
                                         {% if view == 'terms'  %}
-                                        <a  id="export_terms" class="help btn btn-primary exportbtn pull-right" role="button"
+                                        <a  id="export_terms" class="help btn pull-right">
+                                        </a>
+                                        <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/ngramlists/export?corpus={{corpus.id}}"
                                             title="Export terms table in CSV">
                                             Export terms table &nbsp; <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
@@ -234,12 +237,12 @@
                                         {% elif view == 'titles'  %}
 
 
-                                        <!-- <a href="http://gitlab.iscpif.fr/humanities/gargantext/wikis/faq/exportImport" class="pull-right btn btn-lg">
-                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                                        </a> -->
+                                        <a  id="export_titles" class="help btn pull-right">
+
+                                        </a>
 
 
-                                        <a id="export_corpus" class="help btn btn-primary exportbtn pull-right" role="button"
+                                        <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
                                             title="Export full corpus in CSV">
 
@@ -253,6 +256,9 @@
 
                                         {% else  %}
                                         <!-- TODO export source table -->
+                                        <!-- <a  id="export_sources" class="help">
+
+                                        </a> -->
                                         <!-- <a id="export_sources" class="help btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
                                             title="Export full corpus in CSV">

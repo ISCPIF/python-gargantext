@@ -19,30 +19,34 @@
 
 <div class="container">
     <div class="col-md-3 col-md-offset-2">
-        <div id="monthly-move-chart">
-            <center >
-              <p class="help" id="titles_time">Select a time range in the chart with blue bars to zoom in </p>
-              <p align="center">
-                <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
-                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a>
-              </p>
-              <div class="clearfix"></div>
-            </center>
-        </div>
+      <div class="bs-callout">
+          <div class="row">
 
-        <div class="bs-callout">
-            <div class="row">
-                <div id="monthly-volume-chart"></div>
-            </div>
+              <div id="monthly-volume-chart"></div>
+          </div>
+          <div id="monthly-move-chart">
+              <center>
+                <p class="help" id="titles_time">Select a time range in the chart with blue bars to zoom in </p>
+                <p align="center">
+                  <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
+                  <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a>
+                </p>
+                <div class="clearfix"></div>
+              </center>
+          </div>
+          <div id="content_loader">
+                <br>
+                <center>
 
-            <div id="content_loader">
-                  <br>
-                  <center>
-                    <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
-                  </center>
-                  <br>
-            </div>
-        </div>
+                  <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+                </center>
+                <br>
+
+          </div>
+      </div>
+
+
+
     </div>
 </div>
 

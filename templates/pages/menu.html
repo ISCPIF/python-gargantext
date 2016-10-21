@@ -236,12 +236,8 @@
 
                                         {% elif view == 'titles'  %}
 
-
-                                        <a  id="export_titles" class="help btn pull-right">
-
+                                        <a  id="export_corpus" class="help btn pull-right">
                                         </a>
-
-
                                         <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
                                             title="Export full corpus in CSV">

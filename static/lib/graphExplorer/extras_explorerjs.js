@@ -995,24 +995,34 @@ function getTips(){
     param='';
 
     text =
-        "<br>"+
-        "Basic Interactions:"+
+
+        "<b>Basic Interactions:</b>"+
         "<ul>"+
-        "<li>Click on a node to select/unselect and get its information. In case of multiple selection, the button unselect clears all selections.</li>"+
-        "<li>The switch button switch allows to change the view type.</li>"+
-        "</ul>"+
+        "<li>With the selector, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
+				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+
+				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
+				"</ul>"+
         "<br>"+
-        "Graph manipulation:"+
+        "<b>Graph manipulation:</b>"+
         "<ul>"+
         "<li>Link and node sizes indicate their strength.</li>"+
-        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' sliders.</li>"+
-        "<li>To select a more of less specific area of the graph, use the 'nodes filter' slider.</li>"+
+        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' sliders.:</li> <img src='/static/img/slider_edges.png'/>"+
+				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider.</li><img src='/static/img/slider_nodes.png'/>"+
+				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> <img src='/static/img/slider_label.png'/>"+
+				"<li>Change cluster coloration using a different algorithm in the options<img class='float: right' src='/static/img/slider_color.png'/></li> "+
+				"<li>Change size of cluster using the options <img class='float: right' src='/static/img/slider_size.png'/></li>"+
         "</ul>"+
-        "<br>"+
-        "Micro/Macro view:"+
+
+        "<b>Micro/Macro view:</b>"+
         "<ul>"+
-        "<li>To explore the neighborhood of a selection, either double click on the selected nodes, either click on the macro/meso level button. Zoom out in meso view return to macro view.</li>"+
-        "<li>Click on the 'all nodes' tab below to view the full clickable list of nodes.</li>"+
+				"<a style='float: right;' class='btn-xs' href='' id='lensButton'></a>"+
+				"<li>To center the graph, click on the center button. </li>"+
+        "<li>To explore the neighborhood of a selection, double click on the selected nodes</li>"+
+				"<a style='float: right;' class='btn-xs' href='' id='zoomPlusButton'></a>"+
+				"<a style='float: right;' class='btn-xs' href='' id='zoomMinusButton'></a>"+
+				"<li>You can explore the graph using the slider and the  macro/mesolevel button.</li>"+
+				"<a style='float:right;' href='#' id='edgesButton'> </a>"+
+        "<li>Recalculate the clusters of your graph using the edge button</li>"+
         "</ul>";
 
     $("#tab-container").hide();

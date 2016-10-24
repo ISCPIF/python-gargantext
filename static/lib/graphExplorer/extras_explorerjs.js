@@ -1012,8 +1012,8 @@ function getTips(){
 				"</ul>"+
         "<ul><b>Graph manipulation:</b>"+
         "<li>Link and node sizes indicate their strength.</li>"+
-        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' sliders.:</li> <img src='/static/img/slider_edges.png'/>"+
-				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider.</li><img src='/static/img/slider_nodes.png'/>"+
+        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' slider:</li> <img src='/static/img/slider_edges.png'/>"+
+				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider :</li><img src='/static/img/slider_nodes.png'/>"+
 				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> <img src='/static/img/slider_label.png'/>"+
 				"<li>Change cluster coloration using a different algorithm in the options<img class='float: right' src='/static/img/slider_color.png'/></li> "+
 				"<li>Change size of cluster using the options <img class='float: right' src='/static/img/slider_size.png'/></li>"+

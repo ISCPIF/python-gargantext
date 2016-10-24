@@ -995,16 +995,13 @@ function getTips(){
     param='';
 
     text =
-
-        "<b>Basic Interactions:</b>"+
-        "<ul>"+
-        "<li>With the selector, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
+				"<center><b>Graph Explorer  <span class='glyphicon glyphicon-question-sign'></span></b></center>"+
+        "<ul><b>Basic Interactions:</b>"+
+        "<li>With the mouse selector, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
 				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+
 				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
 				"</ul>"+
-        "<br>"+
-        "<b>Graph manipulation:</b>"+
-        "<ul>"+
+        "<ul><b>Graph manipulation:</b>"+
         "<li>Link and node sizes indicate their strength.</li>"+
         "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' sliders.:</li> <img src='/static/img/slider_edges.png'/>"+
 				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider.</li><img src='/static/img/slider_nodes.png'/>"+
@@ -1012,9 +1009,7 @@ function getTips(){
 				"<li>Change cluster coloration using a different algorithm in the options<img class='float: right' src='/static/img/slider_color.png'/></li> "+
 				"<li>Change size of cluster using the options <img class='float: right' src='/static/img/slider_size.png'/></li>"+
         "</ul>"+
-
-        "<b>Micro/Macro view:</b>"+
-        "<ul>"+
+        "<ul><b>Micro/Macro view:</b>"+
 				"<a style='float: right;' class='btn-xs' href='' id='lensButton'></a>"+
 				"<li>To center the graph, click on the center button. </li>"+
         "<li>To explore the neighborhood of a selection, double click on the selected nodes</li>"+

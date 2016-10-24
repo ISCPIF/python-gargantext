@@ -169,8 +169,16 @@ $(document).on('keyup keydown', function(e){
             var att_c = AttsDict_sorted[i].value;
             var the_method = "clustersBy"
             if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
-            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>'
-            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+						var method_label = att_s
+						if (att_s == "clust_default"){
+							method_label = "default";
+						}
+						else if (att_s == "clust_louvain"){
+							method_label = "community (louvain)"
+						}
+
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+method_label+'</a></li>'
+            // pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>')
         }
         div_info += '  </ul>'
         div_info += ' </li>'
@@ -217,11 +225,12 @@ $(document).on('keyup keydown', function(e){
             var att_c = AttsDict_sorted[i].value;
             var the_method = "clustersBy"
             if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
-            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>'
-            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+						console.log(att_s)
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'</a></li>'
+            // pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'</a></li>')
         }
-        div_info += '<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>'
-        console.log('<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>' )
+        div_info += '<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'</a></li>'
+        //console.log('<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>' )
         div_info += '  </ul>'
         div_info += ' </li>'
 

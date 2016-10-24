@@ -8,17 +8,17 @@ help = {"#project":{
         "#corpus":{
           "title": "Ajouter un corpus",
           "content": "<p>Pour ajouter un corpus à votre projet"+
-                      "<br><b>Selectionnez une base de données</b>"+
-                      "<ol><h4>&#x1f59b; Si vous avez déjà un fichier :</h4>"+
-                      "<li>Vérifier que votre fichier est <a href=''>compressé au format .zip </a> et dans le bon <a href=''>format</a></li>"+
+                      "<br><b>Sélectionnez une base de données</b>"+
+                      "<ol><h4>&#x1f59b; Si vous avez déjà un fichier à téléverser :</h4>"+
+                      "<li>Vérifier que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
                       "<li>Cliquez sur 'Choisir un fichier...'</li>"+
                       "<li>Puis donnez un nom à votre corpus</li>"+
                       "<li>Cliquez sur 'Process this!'</li></ol>"+
-                      "<ol><h4>&#x1f59b; Si vous souhaitez faire une recherche:</h4>"+
+                      "<ol><h4>&#x1f59b; Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte :</h4>"+
                       "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
-                      "<li>Entrez votre recherche</li>"+
+                      "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
                       "<li>Clickez ensuite sur Scan</li>"+
-                      "<li>Une fois le nombre de résultats affichés, clickez sur 'Download!''</li>"+
+                      "<li>Gargantext vous affiche le nombre de résultats correspondant à votre requête. Clickez sur 'Download!' pour importer et analyser un échantillon</li>"+
                       "</ul>"+
                       "</p>",
           "placement": "right",
@@ -26,28 +26,28 @@ help = {"#project":{
           },
           '#docFilter':{
             "title": "Filtrer les documents",
-            "content": "Vous pouvez afficher ici tous les documents, les favoris ou encore les doublons en selectionnant l'option dans le menu déroulant",
+            "content": "En selectionnant l'option correspondante dans le menu déroulant, vous pouvez afficher ici tous les documents, uniquement vos favoris ou encore rechercher les doublons pour les supprimer",
             "placement":"right",
             "position": "after",
           },
           '#titles_time':{
             "title": "Filtrer par date",
-            "content": "Selectionnez une plage d'occurence sur une période spécifique en utilisant le curseur sur l'histogramme ci dessus."+
-            "La répartition des documents et leur occurence  pour la période selectionnée s'affiche dans le graphe ci-dessous",
+            "content": "Selectionnez une période spécifique en utilisant le curseur sur l'histogramme ci-dessus."+
+            "La répartition des documents et leurs occurences pour cette période s'affichera dans la partie inférieure.",
             "placement": "right",
             "position": "inside",
           },
           '#sources_time':{
-            "title": "Filtrer par date",
-            "content": "Selectionnez une plage d'occurence sur une période spécifique en utilisant le curseur sur l'histogramme ci dessus."+
-            "La répartition des sources et leur occurence  pour la péridoe selectionnée s'affiche dans le graphe ci-dessous",
+            "title": "Filtrer par nombre de publications",
+            "content": "Selectionnez une plage de nombre minimal et maximal de publications par source en utilisant le curseur sur l'histogramme ci-dessus."+
+            "Les sources correspondant à cette plage avec leur nombre de publications s'affichera dans la partie inférieure.",
             "placement": "right",
             "position": "inside",
           },
           '#terms_time':{
-            "title": "Filtrer par date",
-            "content": "Selectionnez une plage d'occurence sur une période spécifique en utilisant le curseur sur l'histogramme ci dessus."+
-            "La répartition des termes et leur occurence pour la période selectionnée s'affiche dans le graphe ci-dessous",
+            "title": "Filtrer occurrences",
+            "content": "Selectionnez une plage d'occurences en utilisant le curseur sur l'histogramme ci dessus."+
+            "La liste des termes dont le nombre d'occurrences tombe dans cette place s'affichera dans la partie inférieure.",
             "placement": "right",
             "position": "inside",
           },
@@ -60,7 +60,7 @@ help = {"#project":{
           },
           '#export_terms':{
             "title": "Exporter",
-            "content": "Vous pouvez exporter votre liste de termes <a href=''>format CSV</a>",
+            "content": "Vous pouvez exporter votre liste de termes au format csv. <a href=''>format CSV</a>",
             "placement": "right",
             "position": "inside",
           },
@@ -73,17 +73,17 @@ help = {"#project":{
           // }
           "#filter_analytics":{
             "title": "Filtrer",
-            "content": "Vous pouvez filtrer vos documents par expression de recherche et consulter leur évolution",
+            "content": "Vous pouvez filtrer les documents contenant un certain type de données (termes, auteurs, etc.) et consulter l'évolution de leur nombre au cours du temps",
             "placement": "right",
             "position": "inside",
           },
           "#filter_terms":{
             "title": "Filtrer",
-            "content": "<p>Vous pouvez filtrer et afficher <ul>les différentes <b>listes</b>:"+
-            "<li>Stop list: tous les termes de la liste qui ont été écartés dans le graphe</li>"+
-            "<li>Map list: tous les termes de la liste qui sont inclus dans le graphe</li>"+
-            "<li>Other: les autres termes non blacklistés et non présents dans le graphe</li></ul></p>"+
-            "<p>Vous pouvez aussi filtrer <ul>les <b>termes</b> en fonction de leur forme:"+
+            "content": "<p>Vous pouvez filtrer et afficher selectivement <ul>les différents types de <b>listes</b>:"+
+            "<li>Stop list: toutes les expressions identifiées comme non pertinentes a priori (termes creux),</li>"+
+            "<li>Map list: ensemble d'expressions qui consitueront les labels des noeuds de la carte thématique. Chaque label peut potentiellement regrouper plusieurs expressions (ex. singuliers et pluriels).</li>"+
+            "<li>Other: ensemble d'expressions bien formées susceptibles d'être ajoutées à la carte thématique.</li></ul></p>"+
+            "<p>Vous pouvez aussi filtrer <ul>les <b>termes</b> en fonction de leur forme (ils se comportent différemment):"+
             "<li>'One-word Terms': selectionner les termes qui ont une forme simple</li>"+
             "<li>'Multi-word Terms': selectionner les termes qui ont une forme composée</li></ul></p>",
             "placement": "right",
@@ -91,12 +91,11 @@ help = {"#project":{
           },
           "#filter_graph":{
             "title": "Filtrer",
-            "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez la barre glissante",
+            "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
             "placement": "right",
             "position":"after",
           }
         }
-
 $( ".help" ).each(function(i, el) {
 
   console.log("This", el)

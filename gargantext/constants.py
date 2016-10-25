@@ -151,6 +151,9 @@ INDEXED_HYPERDATA = {
     #     },
 
 }
+# user parameters----------------------------------------
+USER_LANG = ("fr", "en")
+
 
 # resources ---------------------------------------------
 def get_resource(sourcetype):

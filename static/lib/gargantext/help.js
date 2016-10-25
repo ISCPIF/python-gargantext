@@ -1,6 +1,6 @@
 //Function that creates contextual help button
 help = {"#project":{
-          "title": "Ajouter un projet",
+          "title": "Pour ajouter un projet",
           "content":"Cliquez sur le bouton et donnez un nom à votre projet",
           "placement":"bottom",
           "position": "inside",
@@ -9,16 +9,16 @@ help = {"#project":{
           "title": "Ajouter un corpus",
           "content": "<p>Pour ajouter un corpus à votre projet"+
                       "<br><b>Sélectionnez une base de données</b>"+
-                      "<ol><h4>&#x1f59b; Si vous avez déjà un fichier à téléverser :</h4>"+
-                      "<li>Vérifier que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+                      "<ol><h4>Si vous avez déjà un fichier à téléverser :</h4>"+
+                      "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
                       "<li>Cliquez sur 'Choisir un fichier...'</li>"+
                       "<li>Puis donnez un nom à votre corpus</li>"+
                       "<li>Cliquez sur 'Process this!'</li></ol>"+
-                      "<ol><h4>&#x1f59b; Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte :</h4>"+
+                      "<ol><h4>Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</h4>"+
                       "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
                       "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
-                      "<li>Clickez ensuite sur Scan</li>"+
-                      "<li>Gargantext vous affiche le nombre de résultats correspondant à votre requête. Clickez sur 'Download!' pour importer et analyser un échantillon</li>"+
+                      "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
+                      "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
                       "</ul>"+
                       "</p>",
           "placement": "right",
@@ -78,14 +78,14 @@ help = {"#project":{
             "position": "inside",
           },
           "#filter_terms":{
-            "title": "Filtrer",
-            "content": "<p>Vous pouvez filtrer et afficher selectivement <ul>les différents types de <b>listes</b>:"+
-            "<li>Stop list: toutes les expressions identifiées comme non pertinentes a priori (termes creux),</li>"+
-            "<li>Map list: ensemble d'expressions qui consitueront les labels des noeuds de la carte thématique. Chaque label peut potentiellement regrouper plusieurs expressions (ex. singuliers et pluriels).</li>"+
-            "<li>Other: ensemble d'expressions bien formées susceptibles d'être ajoutées à la carte thématique.</li></ul></p>"+
-            "<p>Vous pouvez aussi filtrer <ul>les <b>termes</b> en fonction de leur forme (ils se comportent différemment):"+
-            "<li>'One-word Terms': selectionner les termes qui ont une forme simple</li>"+
-            "<li>'Multi-word Terms': selectionner les termes qui ont une forme composée</li></ul></p>",
+            "title": "Filtrer les termes",
+            "content": "<p>Vous pouvez filtrer et afficher selectivement les différents types de <b>listes</b>:<ul>"+
+            "<li><b>Stop list</b>: toutes les expressions identifiées comme non pertinentes a priori (termes creux),</li>"+
+            "<li><b>Map list</b>: ensemble d'expressions qui consitueront les labels des noeuds de la carte thématique. Chaque label peut potentiellement regrouper plusieurs expressions (ex. singuliers et pluriels).</li>"+
+            "<li><b>Others</b>: ensemble d'expressions bien formées susceptibles d'être ajoutées à la carte thématique.</li></ul></p>"+
+            "<p>Vous pouvez aussi filtrer les <b>termes</b> en fonction de leur forme (ils se comportent différemment):<ul>"+
+            "<li><b>'One-word Terms'</b>: selectionner les termes qui ont une forme simple</li>"+
+            "<li><b>'Multi-word Terms'</b>: selectionner les termes qui ont une forme composée</li></ul></p>",
             "placement": "right",
             "position": "inside",
           },

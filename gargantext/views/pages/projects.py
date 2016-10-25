@@ -26,6 +26,8 @@ def overview(request):
     node_user_id = session.query(Node.id).filter(Node.user_id == user.id & Node.typename== "USER")
     if node_user_id is None:
         node_user = Node(typename== "USER", user_id = user.id, name= request.user.name)
+        #default language for now is  'fr'
+        node_user.hyperdata["language"] = "fr"
         session.add(node_user)
         session.commit()
         node_user_id = node_user.id
@@ -42,7 +44,8 @@ def overview(request):
             )
             session.add(new_project)
             session.commit()
-
+    user_parameters = session.query(Node).filter(Node.id == node_user_id
+                                        & Node.typename == "USER")["hyperdata"]
     # list of projects created by the logged user
     user_projects = user.nodes(typename='PROJECT', order=True)
 
@@ -59,6 +62,7 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
+            "user_parameters":user_parameters,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -176,8 +180,10 @@ def project(request, project_id):
             template_name = 'pages/projects/wait.html',
             request = request,
             context = {
+
                 'form': NewCorpusForm,
                 'user': request.user,
+                "user_parameters":user_parameters,
                 'date': datetime.now(),
                 'project': project,
                 'donut': donut,
@@ -197,6 +203,7 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
+            "user_parameters":user_parameters,
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

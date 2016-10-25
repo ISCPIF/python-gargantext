@@ -4,6 +4,7 @@ help = {"#project":
           "fr":{
           "title": "Ajouter un projet",
           "content":"Cliquez sur le bouton et donnez un nom à votre projet",}
+          ,
           "placement":"bottom",
           "position": "inside",
           },
@@ -128,10 +129,9 @@ help = {"#project":
         }
 
 $( ".help" ).each(function(i, el) {
-
+  lang = $("a#lang").data("lang")
   //console.log("This", el)
   id = el.id
-
   div_id = "#"+id
   help_steps = Object.keys(help)
   console.log(help_steps)
@@ -144,7 +144,7 @@ $( ".help" ).each(function(i, el) {
   info = help[div_id]
 
   //console.log(info)
-  help_btn = '<span class="glyphicon glyphicon-question-sign" tab-index=0 data-toggle="popover" data-placement="'+info["placement"]+'"  title="'+info["title"]+'" data-content="'+info["content"]+'"></span>'
+  help_btn = '<span class="glyphicon glyphicon-question-sign" tab-index=0 data-toggle="popover" data-placement="'+info["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
 
 
   if (info["position"] == "inside"){

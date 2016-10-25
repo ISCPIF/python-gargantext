@@ -21,7 +21,7 @@ class User(Base):
     is_active    = Column(Boolean(), default=True)
     last_login   = Column(DateTime(timezone=False))
     date_joined  = Column(DateTime(timezone=False), default=datetime.now)
-
+    
     def contacts(self):
         """get all contacts in relation with the user"""
         Friend = aliased(User)

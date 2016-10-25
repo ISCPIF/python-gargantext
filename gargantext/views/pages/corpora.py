@@ -82,7 +82,7 @@ def docs_by_sources(request, project_id, corpus_id):
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
             'user': request.user,
-            'user_parameters': get_node_user(user)["hyperdata"]
+            'user_parameters': get_node_user(user)["hyperdata"],
             'view': 'sources'
         },
     )

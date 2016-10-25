@@ -14,9 +14,12 @@ from django.utils.translation import ugettext_lazy
 import re
 
 def get_node_user(user):
-    node_user = session.query(Node).filter(Node.user_id == user.id & Node.typename== "USER")
+    node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename == "USER").first()
     if node_user is None:
-        node_user = Node(typename== "USER", user_id = user.id, name= user.name)
+        node_user = Node(user_id = user.id,
+        typename = 'USER',
+        # username = user.name,
+        )
         #default language for now is  'fr'
         node_user.hyperdata["language"] = "fr"
         session.add(node_user)
@@ -31,6 +34,7 @@ def overview(request):
     '''
 
     user = cache.User[request.user.id]
+    print(user)
     node_user = get_node_user(user)
     # If POST method, creates a new project...
     if request.method == 'POST':
@@ -62,7 +66,7 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
-            "user_parameters":node_user["hyperdata"],
+            "user_parameters":node_user.hyperdata,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -184,7 +188,7 @@ def project(request, project_id):
 
                 'form': NewCorpusForm,
                 'user': request.user,
-                "user_parameters":node_user["hyperdata"],
+                "user_parameters":node_user.hyperdata,
                 'date': datetime.now(),
                 'project': project,
                 'donut': donut,
@@ -204,7 +208,7 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
-            "user_parameters":node_user["hyperdata"],
+            "user_parameters":node_user.hyperdata,
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

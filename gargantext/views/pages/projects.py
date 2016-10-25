@@ -23,6 +23,12 @@ def overview(request):
 
     user = cache.User[request.user.id]
 
+    node_user_id = session.query(Node.id).filter(Node.user_id == user.id & Node.typename== "USER")
+    if node_user_id is None:
+        node_user = Node(typename== "USER", user_id = user.id, name= request.user.name)
+        session.add(node_user)
+        session.commit()
+        node_user_id = node_user.id
     # If POST method, creates a new project...
     if request.method == 'POST':
         name = str(request.POST['name'])
@@ -31,6 +37,8 @@ def overview(request):
                 user_id = user.id,
                 typename = 'PROJECT',
                 name = name,
+                parent_id = node_user_id,
+
             )
             session.add(new_project)
             session.commit()
@@ -90,7 +98,7 @@ def project(request, project_id):
     # security check
     project = session.query(Node).filter(Node.id == project_id).first()
     user = cache.User[request.user.id]
-    
+
     if project is None:
         raise Http404()
     if not user.owns(project):

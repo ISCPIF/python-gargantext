@@ -7,6 +7,16 @@ from gargantext.settings import *
 
 from datetime import datetime
 
+def get_node_user(user):
+    node_user = session.query(Node).filter(Node.user_id == user.id & Node.typename== "USER")
+    if node_user is None:
+        node_user = Node(typename== "USER", user_id = user.id, name= user.name)
+        #default language for now is  'fr'
+        node_user.hyperdata["language"] = "fr"
+        session.add(node_user)
+        session.commit()
+    return node_user
+
 
 def _get_user_project_corpus(request, project_id, corpus_id):
     """Helper method to get a corpus, knowing the project's and corpus' ID.
@@ -42,7 +52,7 @@ def docs_by_titles(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'titles',
             'user': request.user,
-            'user_parameters': node_user.hyperdata
+            'user_parameters': get_node_user(user)["hyperdata"]
         },
     )
 
@@ -58,9 +68,9 @@ def docs_by_sources(request, project_id, corpus_id):
 
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
-
+    user = cache.User[request.user.id]
     source_type = corpus.resources()[0]['type']
-    node_user = session.query(Node).filter(Node.user_id == user.id & Node.typename== "USER")
+
     # rendered page : sources.html
     return render(
         template_name = 'pages/corpora/sources.html',
@@ -72,7 +82,7 @@ def docs_by_sources(request, project_id, corpus_id):
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
             'user': request.user,
-            "user_parameters": node_user.hyperdata,
+            'user_parameters': get_node_user(user)["hyperdata"]
             'view': 'sources'
         },
     )
@@ -89,9 +99,9 @@ def docs_by_authors(request, project_id, corpus_id):
 
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
-
+    user = cache.User[request.user.id]
     source_type = corpus.resources()[0]['type']
-    node_user = session.query(Node).filter(Node.user_id == user.id & Node.typename== "USER")
+
     # rendered page : sources.html
     return render(
         template_name = 'pages/corpora/authors.html',
@@ -104,7 +114,7 @@ def docs_by_authors(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'authors',
             'user': request.user,
-            "user_parameters": node_user.hyperdata
+            'user_parameters': get_node_user(user)["hyperdata"]
         },
     )
 
@@ -116,7 +126,7 @@ def analytics(request, project_id, corpus_id):
         return HttpResponseForbidden()
 
     source_type = corpus.resources()[0]['type']
-    node_user = session.query(Node).filter(Node.user_id == user.id & Node.typename== "USER")
+
     # response!
     return render(
         template_name = 'pages/analytics/histories.html',
@@ -129,6 +139,6 @@ def analytics(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user,
-            'user_parameters': node_user.hyperdata,
+            'user_parameters': get_node_user(user)["hyperdata"]
         },
     )

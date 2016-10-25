@@ -1004,7 +1004,7 @@ function getTips(){
     param='';
 
     text =
-				"<center><b>Graph Explorer  <span class='glyphicon glyphicon-question-sign'></span></b></center>"+
+				"<center><b>Graph Explorer  </b></center>"+
         "<ul><b>Basic Interactions:</b>"+
         "<li>With the mouse selector, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
 				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+

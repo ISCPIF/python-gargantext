@@ -1,0 +1,318 @@
+# all the corpus of this project
+  corpora = project.children('CORPUS', order=True).all()
+  if len(corpora) == 0:
+      return render(
+          template_name = 'pages/projects/project.html',
+          request = request,
+          context = {
+              'user': request.user,
+              'date': datetime.now(),
+              'project': project,
+              'resources': RESOURCETYPES,
+              'list_corpora': None,
+              'whitelists': [],
+              'blacklists': [],
+              'cooclists': [],
+              'number': 0,
+              'query_size': QUERY_SIZE_N_DEFAULT,
+          },
+      )
+
+
+
+  total_docs = sum([corpus.children('DOCUMENT').count() for corpus in corpora])
+  #all the possible resources
+  sources = [resource["name"] for resource in RESOURCETYPES]
+  sources_count = defaultdict.fromkeys(sources, 0)
+
+  sourcename2corpora = defaultdict.fromkeys(sources, [])
+  sourcename2corpora["default"] = []
+  for corpus in corpora:
+
+      resource = corpus.children('RESOURCE', order=True).first()
+      if resource is not None:
+      #print(resource["name"])
+      #counting docs by resource
+          sources_count[resource["name"]]=+ corpus.children('DOCUMENT').count()
+      #corpus.sources = corpus.children('RESOURCE', order=True).all()
+      else:
+      # if len(corpus.sources) < 1:
+           print("(WARNING) PROJECT view: no resources found for this corpus")
+
+      #GET  DOCS
+      #One  corpus has multiples docs
+      corpus.count = corpus.children('DOCUMENT').count()
+      # if len(corpus.count) < 1:
+      #     print("(WARNING) PROJECT view: no documents found for this corpus")
+
+      #GET STATUS
+      #One corpus has a current status
+      #TO DO a method to get current status of the corpus
+      status = corpus.status()
+      if status is not None and not status['complete']:
+          if not status['error']:
+              corpus.status_message = '(in progress: %s, %d complete)' % (
+                  status['action'].replace('_', ' '),
+                  status['progress'],
+              )
+          else:
+              corpus.status_message = '(aborted: "%s" after %i docs)' % (
+                  status['error'][-1],
+                  status['progress']
+              )
+      else:
+          corpus.status_message = ''
+      #
+      try:
+          sourcename2corpora[resource["name"]].append(corpus)
+      except:
+          sourcename2corpora["default"].append(corpus)
+
+  #calculate repartition
+  donut = []
+  for name, count in sources_count.items():
+      if not count == 0:
+          donut.append({"source": name.strip().split("[")[0], "count": count, "part": round(count*100.0 /total_docs)})
+  corpus_list = {}
+  for name, corpora in sourcename2corpora.items():
+      if not len(corpora) == 0:
+          corpus_list[name] = corpora
+
+
+
+
+
+
+  #TO DO all the resources of this project
+  # One project has multiple resource  that has multiple corpus that has multiple documents
+  #sources = project.children('RESOURCE', order=True).all()
+  #total_docs = 0
+  #for source in resources:
+      # source.docs_nb = 0
+      #corpora = source.children('CORPUS', order=True).all()s
+      #for corpus in corpora:
+          #docs = corpus.children('DOCUMENT').count()
+          # total_docs=+ docs
+          # source.docs_nb =+docs
+
+
+  return render(
+      template_name = 'pages/projects/project.html',
+      request = request,
+      context = {
+          'user': request.user,
+          'date': datetime.now(),
+          'project': project,
+          'resources': RESOURCETYPES,
+          'donut': donut,
+          'list_corpora' : corpora,
+          #'list_corpora': dict(corpus_list),
+          'whitelists': [],
+          'blacklists': [],
+          'cooclists': [],
+          'number': len(corpora),
+          'query_size': QUERY_SIZE_N_DEFAULT,
+      },
+  )
+
+
+
+
+</div>
+    <!-- {% if list_corpora != None %}
+        {% for key, corpora in list_corpora.items %}
+            <h2>
+                <div class="row">
+                <div class="col-md-1 content"></div>
+                    <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
+                    {{ key }}
+            </h2>
+                    {% for corpus in corpora %}
+                        <div id="corpus_{{corpus.id}}">
+                            <div class="row">
+                                <h4>
+                                    <div class="col-md-1 content"></div>
+                                    <div class="col-md-5 content">
+                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}">
+                                            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                            {{corpus.name}}, {{ corpus.count }} documents {{ corpus.status_message }}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 content">
+                                        <a href="/projects/{{project.id}}/corpora/{{corpus.id}}"
+                                        title="View the corpus">
+                                        <button type="button" class="btn btn-default" aria-label="Left Align">
+                                              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        </button>
+
+                                        </a>
+
+                                        {% for state in corpus.hyperdata.statuses %}
+                                            {% ifequal state.action "Workflow" %}
+                                                {% if state.complete %}
+                                                    <button type="button" class="btn btn-default yopla" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                        data-content="
+                                                        <ul>
+                                                            <li
+                                                            onclick=&quot;
+                                                                    garganrest.metrics.update({{corpus.id}}, function(){alert('The corpus ({{corpus.name|escapejs}}) was updated')});
+                                                                    &quot;>
+                                                                <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
+                                                            </li>
+                                                        </ul>
+                                                        ">
+                                                        <span class="glyphicon glyphicon-repeat" aria-hidden="true"
+                                                        title='Recalculate ngram scores and similarities'></span>
+                                                    </button>
+                                                {% endif %}
+                                              -->
+                                                    <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
+                                                    <!-- <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                        data-content="
+                                                        <ul>
+                                                            <li
+                                                            onclick=&quot;
+                                                                    garganrest.nodes.delete({{corpus.id}}, function(){$('#corpus_'+{{corpus.id}}).remove()});
+                                                                    $(this).parent().parent().remove();
+                                                                &quot;>
+                                                                <a href='#'>Delete this</a>
+                                                            </li>
+                                                        </ul>
+                                                        ">
+                                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                        title='Delete this corpus'></span>
+                                                    </button>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-md-3 content">
+                                        {% for state in corpus.hyperdata.statuses %}
+                                                {% ifequal state.action "Workflow" %}
+                                                    {% if state.complete %}
+                                                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+
+                                                    {% else %}
+                                                        {% if state.error %}
+                                                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                                            {{ state.error }}
+                                                        {% else %}
+                                                            <div class="progress">
+                                                                {% for state in corpus.hyperdata.statuses %}
+                                                                    {% if state.action != "Workflow" %}
+                                                                      <div class=" progress-bar progress-bar-striped
+                                                                                        {% if state.complete %}
+                                                                                            progress-bar-success
+                                                                                            {% else %}
+                                                                                            active
+                                                                                        {% endif %}
+                                                                                     "
+                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 25%">
+                                                                              <span>
+                                                                                  {{ state.action }}
+                                                                                        {% if state.complete %}
+                                                                                            Ok
+                                                                                            {% else %}
+                                                                                            Processing
+                                                                                        {% endif %}
+
+                                                                              </span>
+                                                                      </div>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endifequal %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-md-1 content"></div>
+                                </h4>
+                            </div>
+                        </div>
+                    {% endfor %}
+        {% endfor %}
+    {% endif %} -->
+
+
+                    <!-- Modal -->
+                    <!-- <div class="modal fade" id="stack1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h3>Query to PubMed</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <p>One fine body…</p>
+                                    <input id="daquery" type="text" class="input-lg" data-tabindex="2">
+                                    <a onclick="getGlobalResults();" class="btn">Scan</a>
+                                    <div id="results"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button onclick="doTheQuery();" disabled id="id_thebutton" type="button" class="btn btn-primary">Explore a sample!</button>
+                                </div>
+                            </div> /.modal-content -->
+                        <!-- </div><!-- /.modal-dialog -->
+                    <!-- </div> -->
+                    <!-- /.modal -->
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="addcorpus" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                                    <h3>Add a Corpus <a href="https://gogs.iscpif.fr/humanities/faq_gargantext/wiki/FAQ#import--export-a-dataset">
+                                      <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                    </a>
+                                  </h3>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="id_form" enctype="multipart/form-data" action="/projects/{{project.id}}/" method="post">
+                                        {% csrf_token %}
+                                        <table cellpadding="5">
+
+
+                                            {% for field in form %}
+                                            <tr>
+                                                <th>{{field.label_tag}}</th>
+                                                <td>
+                                                    {{ field.errors }}
+                                                    {{ field }}
+                                                    {% if field.name == 'name' %}
+                                                    <span onclick="getGlobalResults(this);" id="scanpubmed"></span>
+                                                    <div id="theresults"></div>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <th></th>
+                                                <td>
+                                                    <div id="pubmedcrawl" style="visibility: hidden;">
+                                                        Do you have a file already? &nbsp;
+                                                        <input type="radio" id="file_yes" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="true" checked>Yes </input>
+                                                        <input type="radio" id="file_no" name="file1" onclick="FileOrNotFile(this.value);" class="file1" value="false">No </input>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </form>
+                                    <div class="modal-footer">
+                                        <!-- <div id="pubmedcrawl" align="right" style="visibility: hidden;"><a data-toggle="modal" href="#stack1">&#10142; Query directly in PubMed</a></div> -->
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>
+                                            Close
+                                        </button>
+                                        <button onclick='bringDaNoise();' id="submit_thing" disabled class="btn btn-primary" >
+                                            <span class="glyphicon glyphicon-ok" aria-hidden="true" ></span>
+                                            Process this!
+                                        </button><span id="simpleloader"></span>
+                                    </div>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal --> -->

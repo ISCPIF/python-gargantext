@@ -68,6 +68,8 @@
                         {% endif %}
                     </ul>
 
+
+
                     <ul class="nav navbar-nav pull-right">
                         <li class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
@@ -102,10 +104,21 @@
                                 {% endif %}
                             </ul>
                         </li>
+                        <li class="lang">
+
+                          <a href="#" role="button" class="dropdown-toggle navbar-text">
+                            {% if user_parameters.language == "fr" %}
+                              <img value="{{user_parameters.language}}" src= "{% static "img/fr.png"%}" width="45%"/>
+                              {%else %}
+
+                              <img value="{{user_parameters.language}}"  src= "{% static "img/en.png"%}" width="45%"/>
+
+                              {%endif%}
+                              {{user_parameters.language}}
+                            </a>
+                          </li>
                     </ul>
-                    <ul class="nav navbar-nav pull-right">
-                      <button class="btn primary_keylang">{{user_parameters["language"]}}</button>
-                    </ul>
+
                 </div>
             </div>
             {% if corpus %}

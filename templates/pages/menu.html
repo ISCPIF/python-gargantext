@@ -105,7 +105,7 @@
                             </ul>
                         </li>
                         <li class="dropdown">
-                          <a id="lang" href="#" role="button" data-lang="{{user_parameters.language}}" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="This is your chosen language">
+                          <a tabindex="-1" id="lang" href="#" role="button" data-lang="{{user_parameters.language}}" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="This is your chosen language">
                             {% if user_parameters.language == "fr" %}
 
                               <img value="{{user_parameters.language}}" src= "{% static "img/fr.png"%}" width="25%"/>
@@ -117,18 +117,19 @@
                               {{user_parameters.language}}
                               <i class="caret"></i>
                             </a>
+
                             <ul class="dropdown-menu">
                                 <li class="dropdown">
-                                  <!-- <a href="/{{user.username}}/parameters/" > -->
-                                  {% if user_parameters.language == "fr" %}
-                                  <button id="new_lang" data-lang="en">
 
+                                  {% if user_parameters.language == "fr" %}
+                                  <a role="button" id="new_lang" data-lang="en">
                                     <img value="en"  src= "{% static "img/en.png"%}" width="25%"/>
-                                      en
+                                      en</a>
                                   {%else%}
+                                  <a role="button" id="new_lang" data-lang="fr">
                                     <img value="fr"  src= "{% static "img/fr.png"%}" width="25%"/>
                                       fr
-                                    <!-- </a> -->
+                                    </a>
                                   {%endif%}
                                   </button>
                                 </li>

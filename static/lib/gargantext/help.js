@@ -153,7 +153,27 @@ lang = $("a#lang").data("lang")
 $("a.new_lang").on("click", function(){
 
   new_lang = $(this).data("lang"))
-  $
+  // $.ajax({
+  // url: '/api/users?lang='+new_lang,
+  // type: 'PUT',
+  // beforeSend: function(xhr) {
+  //       xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+  //             },
+  // success: function(response) {
+  //     console.log(response);
+  //     console.log("EDIT SUCCESS!");
+  //     //addFormStatus("success", "div#editForm-"+id, response["detail"]);
+  //     window.location.reload()
+  //      },
+  // error: function(xhr) {
+  //     console.log("EDIT FAIL!")
+  //     var status = xhr.status;
+  //     var info = xhr.responseJSON["detail"];
+  //     var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
+  //     addFormStatus("error", "div#editForm-"+id, msg);
+  //     },
+  // });
+// };
 });
 
 

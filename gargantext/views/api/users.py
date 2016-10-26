@@ -16,10 +16,10 @@ class UserItem(APIView):
             user = cache.User[request.user.id]
         node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
         if node_user is None:
-            raise TypeError("This API request must come from an authenticated user.")
+            return Response({"detail":"Not Allowed"}, status=HTTP_401_UNAUTHORIZED)
         for k, v in request.data.items():
             setattr(node_user.hyperdata, key, val)
 
         session.add(node_user)
         session.commit()
-        return Response({"detail":"Updated user parameters", status=HTTP_202_ACCEPTED)
+        return Response({"detail":"Updated user parameters"}, status=HTTP_202_ACCEPTED)

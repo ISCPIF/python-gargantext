@@ -24,6 +24,7 @@ def get_node_user(user):
         node_user.hyperdata["language"] = "fr"
         session.add(node_user)
         session.commit()
+        print(node_user.hyperdata)
     return node_user
 
 @requires_auth
@@ -66,7 +67,7 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
-            "user_parameters":node_user["hyperdata"],
+            "user_parameters":node_user.hyperdata,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -188,7 +189,7 @@ def project(request, project_id):
 
                 'form': NewCorpusForm,
                 'user': request.user,
-                "user_parameters":node_user["hyperdata"],
+                "user_parameters":node_user.hyperdata,
                 'date': datetime.now(),
                 'project': project,
                 'donut': donut,
@@ -208,7 +209,7 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
-            "user_parameters":node_user["hyperdata"],
+            "user_parameters":node_user.hyperdata,
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

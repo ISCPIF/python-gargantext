@@ -116,7 +116,7 @@ def docs_by_authors(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'authors',
             'user': request.user,
-            'user_parameters': node_user["hyperdata"]
+            'user_parameters': node_user.hyperdata
         },
     )
 
@@ -141,6 +141,6 @@ def analytics(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user,
-            'user_parameters': node_user["hyperdata"]
+            'user_parameters': node_user.hyperdata
         },
     )

@@ -49,7 +49,7 @@ def explorer(request, project_id, corpus_id):
             'maplist_id': maplist_id       ,
             'view'      : 'graph'          ,
             'user_parameters': node_user.hyperdata,
-            'USER_LANG': USER_LANG
+            'languages': USER_LANG
         },
     )
 

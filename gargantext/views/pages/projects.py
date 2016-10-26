@@ -4,7 +4,6 @@ from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
-from gargantext.constants       import USER_LANG
 from .main import get_node_user
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain import parse_extract_indexhyperdata
@@ -69,7 +68,7 @@ def overview(request):
             'number': user_projects.count(),
             'projects': user_projects,
             "user_parameters":node_user.hyperdata,
-            'USER_LANG': USER_LANG,
+            'languages': USER_LANG,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -213,6 +212,7 @@ def project(request, project_id):
         request = request,
         context = {
             "user_parameters":node_user.hyperdata,
+            "languages": USER_LANG,
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

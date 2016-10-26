@@ -150,6 +150,13 @@ help = {"#project":{
 lang = $("a#lang").data("lang")
 //change lang
 
+$("a.new_lang").on("click", function(){
+
+  new_lang = $(this).data("lang"))
+  $
+});
+
+
 $( ".help" ).each(function(i, el) {
   console.log("This", el);
   id = el.id

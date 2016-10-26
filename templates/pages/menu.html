@@ -104,10 +104,10 @@
                                 {% endif %}
                             </ul>
                         </li>
-                        
+
                         {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                          <a class="nav-link dropdown-toggle" id="lang" data-lang="{{user_parameters.languages}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <li class="nav-item dropdown lang">
+                          <a class="nav-link dropdown-toggle" id="lang" data-lang="{{user_parameters.language}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img value="{{user_parameters.language}}" src="/static/img/{{user_parameters.language}}.png" width="25%"/>
                             {{user_parameters.language}}
                             <i class="caret"></i>
@@ -116,7 +116,7 @@
 
                             {% for lang in languages %}
                             {% if lang != user_parameters.language %}
-                            <li class="dropdown-item"><a class="new_lang" data-lang="{{lang}}"><img value="{{user_parameters.language}}" src="/static/img/{{lang}}.png" width="25%"/> {{lang}} </a></li>
+                            <li class="dropdown-item new_lang"><a class="new_lang" data-lang="{{lang}}"><img value="{{user_parameters.language}}" src="/static/img/{{lang}}.png" width="25%"/> {{lang}} </a></li>
                             {% endif %}
                             {% endfor %}
 

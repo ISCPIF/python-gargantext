@@ -3,6 +3,7 @@ from gargantext.util.db         import session
 from gargantext.models          import Node, User
 import datetime
 from gargantext.util.generators import paragraphs, credits
+from gargantext.constants       import USER_LANG
 
 def get_node_user(user):
     #load user parameters from User(Node).hyperdata from request.user or cache.
@@ -43,15 +44,15 @@ def home(request):
             'paragraph_gargantua': paragraphs.gargantua(),
             'paragraph_lorem' : paragraphs.lorem(),
             'paragraph_tutoreil': paragraphs.tutoreil(),
-            'user_parameters': user_node.hyperdata
-
+            'user_parameters': user_node.hyperdata,
+            'languages': USER_LANG,
         },
     )
 
 def about(request):
     '''About Gargantext, its team and sponsors
     '''
-    user_node = get_user_node(request.user)
+    user_node = get_node_user(request.user)
     return render(
         template_name = 'pages/main/about.html',
         request = request,
@@ -62,7 +63,8 @@ def about(request):
             'institutions': credits.institutions(),
             'labos': credits.labs(),
             'grants': credits.grants(),
-            'user_parameters': user_node.hyperdata
+            'user_parameters': user_node.hyperdata,
+            'languages': USER_LANG,
         },
     )
 

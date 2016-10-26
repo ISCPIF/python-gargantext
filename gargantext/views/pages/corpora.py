@@ -6,6 +6,7 @@ from gargantext.constants       import *
 from gargantext.settings        import *
 from datetime                   import datetime
 from .main                      import get_node_user
+from gargantext.constants       import USER_LANG
 
 def _get_user_project_corpus(request, project_id, corpus_id):
     """Helper method to get a corpus, knowing the project's and corpus' ID.
@@ -42,6 +43,7 @@ def docs_by_titles(request, project_id, corpus_id):
             'view': 'titles',
             'user': request.user,
             'user_parameters': node_user.hyperdata,
+            'languages': USER_LANG
         },
     )
 
@@ -73,7 +75,8 @@ def docs_by_sources(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'user': request.user,
             'user_parameters': node_user,
-            'view': 'sources'
+            'view': 'sources',
+            'USER_LANG': USER_LANG
         },
     )
 
@@ -104,7 +107,8 @@ def docs_by_authors(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'authors',
             'user': request.user,
-            'user_parameters': node_user.hyperdata
+            'user_parameters': node_user.hyperdata,
+            'USER_LANG': USER_LANG
         },
     )
 
@@ -129,6 +133,7 @@ def analytics(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user,
-            'user_parameters': node_user.hyperdata
+            'user_parameters': node_user.hyperdata,
+            'USER_LANG': USER_LANG
         },
     )

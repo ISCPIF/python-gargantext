@@ -3,6 +3,7 @@ from gargantext.util.db       import session
 from gargantext.util.db_cache import cache
 from gargantext.models        import Node
 from gargantext.constants     import get_resource
+from gargantext.constants     import USER_LANG
 from .main                    import get_node_user
 from datetime                 import datetime
 
@@ -51,6 +52,8 @@ def ngramtable(request, project_id, corpus_id):
             # for the CSV import modal
             'importroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id,
             'corporainfos' : corpora_infos,
+            #user params
             'user_parameters': user_node.hyperdata,
+            'USER_LANG': USER_LANG
         },
     )

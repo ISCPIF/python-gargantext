@@ -4,9 +4,9 @@ from gargantext.util.db_cache import cache
 from gargantext.models import *
 from gargantext.constants import *
 from gargantext.settings import *
-from gargantext.views.pages.main import get_node_user
-
+from gargantext.constants import USER_LANG
 from datetime import datetime
+from gargantext.views.pages.main import get_node_user
 
 @requires_auth
 def explorer(request, project_id, corpus_id):
@@ -49,6 +49,7 @@ def explorer(request, project_id, corpus_id):
             'maplist_id': maplist_id       ,
             'view'      : 'graph'          ,
             'user_parameters': node_user.hyperdata,
+            'USER_LANG': USER_LANG
         },
     )
 
@@ -64,7 +65,7 @@ def myGraphs(request, project_id, corpus_id):
     '''
 
     user = cache.User[request.user.id]
-    node_user = get_node_user(user)
+    user_node = get_node_user(user)
     # we pass our corpus
     corpus = cache.Node[corpus_id]
 
@@ -105,5 +106,6 @@ def myGraphs(request, project_id, corpus_id):
             'coocs'        : coocs,
             'coocs_count'  : coocs_count,
             'user_parameters': user_node.hyperdata,
+            'languages': USER_LANG,
         },
     )

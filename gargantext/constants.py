@@ -152,7 +152,7 @@ INDEXED_HYPERDATA = {
 
 }
 # user parameters----------------------------------------
-USER_LANG = ("fr", "en")
+USER_LANG = ["fr", "en"]
 
 
 # resources ---------------------------------------------

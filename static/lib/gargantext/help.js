@@ -146,6 +146,9 @@ help = {"#project":{
             "position":"after",
           }
         };
+//define lang
+lang = $("a#lang").data("lang")
+//change lang
 
 $( ".help" ).each(function(i, el) {
   console.log("This", el);
@@ -160,7 +163,6 @@ $( ".help" ).each(function(i, el) {
   }
   btn = id+"-help"
   info = help[div_id]
-  lang = $("a#lang").data("lang");
   console.log(lang)
   console.log(info[lang]["content"])
   help_btn = '<span class="glyphicon glyphicon-question-sign" tab-index=0 data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'

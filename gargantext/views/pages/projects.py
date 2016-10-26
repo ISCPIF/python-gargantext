@@ -18,7 +18,7 @@ def get_node_user(user):
     if node_user is None:
         node_user = Node(user_id = user.id,
         typename = 'USER',
-        # username = user.name,
+        username = user.name,
         )
         #default language for now is  'fr'
         node_user.hyperdata["language"] = "fr"
@@ -66,7 +66,7 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
-            "user_parameters":node_user.hyperdata,
+            "user_parameters":node_user["hyperdata"],
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -188,7 +188,7 @@ def project(request, project_id):
 
                 'form': NewCorpusForm,
                 'user': request.user,
-                "user_parameters":node_user.hyperdata,
+                "user_parameters":node_user["hyperdata"],
                 'date': datetime.now(),
                 'project': project,
                 'donut': donut,
@@ -208,7 +208,7 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
-            "user_parameters":node_user.hyperdata,
+            "user_parameters":node_user["hyperdata"],
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

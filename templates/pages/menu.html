@@ -5,7 +5,7 @@
         <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
         <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
-
+        <!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
         {% block css %}
         {% endblock %}
 
@@ -104,17 +104,36 @@
                                 {% endif %}
                             </ul>
                         </li>
-                        <li class="lang">
-                          <a href="#" id="lang" data-lang="{{user_parameters.language}}" role="button" class="dropdown-toggle navbar-text">
+                        <li class="dropdown">
+                          <a id="lang" href="#" role="button" data-lang="{{user_parameters.language}}" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="This is your chosen language">
                             {% if user_parameters.language == "fr" %}
-                              <img value="{{user_parameters.language}}" src= "{% static "img/fr.png"%}" width="45%"/>
+
+                              <img value="{{user_parameters.language}}" src= "{% static "img/fr.png"%}" width="25%"/>
                               {%else %}
 
-                              <img value="{{user_parameters.language}}"  src= "{% static "img/en.png"%}" width="45%"/>
+                              <img value="{{user_parameters.language}}"  src= "{% static "img/en.png"%}" width="25%"/>
 
                               {%endif%}
                               {{user_parameters.language}}
+                              <i class="caret"></i>
                             </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown">
+                                  <!-- <a href="/{{user.username}}/parameters/" > -->
+                                  {% if user_parameters.language == "fr" %}
+                                  <button id="new_lang" data-lang="en">
+
+                                    <img value="en"  src= "{% static "img/en.png"%}" width="25%"/>
+                                      en
+                                  {%else%}
+                                    <img value="fr"  src= "{% static "img/fr.png"%}" width="25%"/>
+                                      fr
+                                    <!-- </a> -->
+                                  {%endif%}
+                                  </button>
+                                </li>
+                                <li></li>
+                              </ul>
                           </li>
                     </ul>
 
@@ -359,7 +378,7 @@
         -->
 
         <script type="text/javascript" src="{% static "lib/bootstrap/3.2.0/bootstrap.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
+
         <script type="text/javascript">
             // initializes the popover elements with jquery
             $(function () { $("[data-toggle='popover']").popover({
@@ -417,7 +436,7 @@
         <script type="text/javascript" src="{% static "lib/gargantext/graph_renamer.js" %}"></script>
         <!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
         {% endif %}
-
+        <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
         {% if debug == False %}
 
         <!-- Piwik -->

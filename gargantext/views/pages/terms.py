@@ -5,6 +5,18 @@ from gargantext.models        import Node
 from gargantext.constants     import get_resource
 from datetime                 import datetime
 
+def get_node_user(user):
+    #load user parameters
+    node_user = session.query(Node).filter(Node.user_id == user.id,  Node.typename== "USER").first()
+
+    if node_user is None:
+        node_user = Node(typename== "USER", user_id = user.id, name= user.name)
+        #default language for now is  'fr'
+        node_user["hyperdata"]["language"] = "fr"
+        session.add(node_user)
+        session.commit()
+    return node_user
+
 @requires_auth
 def ngramtable(request, project_id, corpus_id):
     '''
@@ -32,7 +44,7 @@ def ngramtable(request, project_id, corpus_id):
     corpora_infos = corpora_infos_q.all()
 
     source_type = corpus.resources()[0]['type']
-
+    user_node = get_node_user(request.user)
     # rendered page : terms.html
     return render(
         template_name = 'pages/corpora/terms.html',
@@ -48,6 +60,7 @@ def ngramtable(request, project_id, corpus_id):
 
             # for the CSV import modal
             'importroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id,
-            'corporainfos' : corpora_infos
+            'corporainfos' : corpora_infos,
+            'user_parameters': user_node.hyperdata,
         },
     )

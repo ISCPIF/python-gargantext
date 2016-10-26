@@ -145,31 +145,22 @@ help = {"#project":{
             "placement": "right",
             "position":"after",
           }
-        }
-//define lang
-lang = $("a#lang").data("lang")
-//change lang
-
-$('li#new_lang').on('click', function (e) {
-  alert("click");
-}
+        };
 
 $( ".help" ).each(function(i, el) {
-
-  console.log("This", el)
+  console.log("This", el);
   id = el.id
-
   div_id = "#"+id
   help_steps = Object.keys(help)
   //console.log(help_steps)
   //console.log("div help:", div_id)
   if (help_steps.includes(div_id) == false){
-    console.log("Step",id,"not described in help")
+    console.log("Step #",id,"class='help' not described in help")
     return
   }
   btn = id+"-help"
   info = help[div_id]
-
+  lang = $("a#lang").data("lang");
   console.log(lang)
   console.log(info[lang]["content"])
   help_btn = '<span class="glyphicon glyphicon-question-sign" tab-index=0 data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
@@ -197,7 +188,7 @@ $( ".help" ).each(function(i, el) {
     //$(help_btn).insertBefore(el);
   }
 
-})
+});
 
 $(document).on('click', function (e) {
     $('[data-toggle="popover"],[data-original-title]').each(function () {

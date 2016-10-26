@@ -4,7 +4,7 @@ from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
-
+from .main import get_node_user
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain import parse_extract_indexhyperdata
 

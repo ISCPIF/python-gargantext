@@ -4,6 +4,7 @@ from gargantext.util.db_cache import cache
 from gargantext.models import *
 from gargantext.constants import *
 from gargantext.settings import *
+from gargantext.views.pages.main import get_node_user
 
 from datetime import datetime
 
@@ -19,9 +20,10 @@ def explorer(request, project_id, corpus_id):
 
     # we pass our corpus
     corpus = cache.Node[corpus_id]
-    
+
     # security check
     user = cache.User[request.user.id]
+    node_user = get_node_user(user)
     if corpus is None:
         raise Http404()
     if not user.owns(corpus):
@@ -46,6 +48,7 @@ def explorer(request, project_id, corpus_id):
             'corpus'    : corpus           ,
             'maplist_id': maplist_id       ,
             'view'      : 'graph'          ,
+            'user_parameters': node_user.hyperdata,
         },
     )
 
@@ -61,6 +64,7 @@ def myGraphs(request, project_id, corpus_id):
     '''
 
     user = cache.User[request.user.id]
+    node_user = get_node_user(user)
     # we pass our corpus
     corpus = cache.Node[corpus_id]
 
@@ -99,6 +103,7 @@ def myGraphs(request, project_id, corpus_id):
             'corpus'       : corpus,
             'view'         : 'myGraph',
             'coocs'        : coocs,
-            'coocs_count'  : coocs_count
+            'coocs_count'  : coocs_count,
+            'user_parameters': user_node.hyperdata,
         },
     )

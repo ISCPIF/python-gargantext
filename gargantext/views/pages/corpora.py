@@ -1,23 +1,11 @@
-from gargantext.util.http import *
-from gargantext.util.db import *
-from gargantext.util.db_cache import cache
-from gargantext.models import *
-from gargantext.constants import *
-from gargantext.settings import *
-
-from datetime import datetime
-
-def get_node_user(user):
-    node_user = session.query(Node).filter(Node.user_id == user.id,  Node.typename== "USER").first()
-
-    if node_user is None:
-        node_user = Node(typename== "USER", user_id = user.id, name= user.name)
-        #default language for now is  'fr'
-        node_user["hyperdata"]["language"] = "fr"
-        session.add(node_user)
-        session.commit()
-    return node_user
-
+from gargantext.util.http       import *
+from gargantext.util.db         import *
+from gargantext.util.db_cache   import cache
+from gargantext.models          import *
+from gargantext.constants       import *
+from gargantext.settings        import *
+from datetime                   import datetime
+from .main                      import get_node_user
 
 def _get_user_project_corpus(request, project_id, corpus_id):
     """Helper method to get a corpus, knowing the project's and corpus' ID.

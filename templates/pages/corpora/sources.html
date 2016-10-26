@@ -1,11 +1,10 @@
-{% extends "pages/menu.html"}
-
-{% block css %}
+{% extends "pages/menu.html"%}
 {% load staticfiles %}
 
-<link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
+{% block css %}
 <link rel="stylesheet" type="text/css" href="{% static "lib/d3/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "lib/jquery/dynatable/jquery.dynatable.css"%}"/>
+
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/tables.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/charts.css"%}"/>
 

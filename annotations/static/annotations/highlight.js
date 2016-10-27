@@ -214,7 +214,7 @@
               var newNgramText = annotation.trim()
               // new ngram (first call creates then like previous case for list)
               $scope.menuItems.push({
-                      'comment'  : "Create and add to STOPLIST",
+                      'comment'  : "Create and add to stop list",
                       'tgtListName': "STOPLIST",
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
@@ -225,7 +225,7 @@
                       ]
                   }) ;
               $scope.menuItems.push({
-                      'comment'  : "Create and add to MAINLIST",
+                      'comment'  : "Create and add to candidate list",
                       'tgtListName': "MAINLIST",
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',
@@ -236,7 +236,7 @@
                       ]
                   }) ;
               $scope.menuItems.push({
-                      'comment'  : "Create and add to MAPLIST",
+                      'comment'  : "Create and add to map list",
                       'tgtListName': "MAPLIST",
                       'crudCalls':[
                       {'service': MainApiAddNgramHttpService, 'action': 'put',

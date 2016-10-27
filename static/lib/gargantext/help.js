@@ -15,7 +15,22 @@ help = {"#project":{
           "#corpus-btn":{
             "en":
               { "title":"Adding a corpus",
-              "content": "First, select a database",
+              "content": "<p>To add a corpus to your project"+
+                        "<br><b>Select a database</b></br>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'></span>  If you have a file to upload already :</b>"+
+                        "<ol>"+
+                        "<li>Check your file is <a href=''>zipped (.zip archive) </a> and with the right <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+                        "<li>Click on 'Chose a file...'</li>"+
+                        "<li>And give a name to your corpus</li>"+
+                        "<li>Click on 'Process this!'</li></ol>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database (only supported by PubMed or IsTex right now):</b>"+
+                        "<ol>"+
+                        "<li>Select No option to the question 'Do you have a file already?'</li>"+
+                        "<li>Enter your query (syntax of the database is still the same)</li>"+
+                        "<li>Then click on 'Scan' to discover the number of results to your query</li>"+
+                        "<li>Click on 'Download!' ton import et analyze a random set of document</li>"+
+                        "</ul>"+
+                        "</p>",
               },
             "fr":
               { "title": "Ajouter un corpus",
@@ -32,7 +47,7 @@ help = {"#project":{
                         "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
                         "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
                         "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
-                        "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
+                        "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon prélevé de manière aléatoire</li>"+
                         "</ul>"+
                         "</p>",
                       },
@@ -80,8 +95,9 @@ help = {"#project":{
           },
           '#titles_time':{
             "en":{
-              "title":"Filter document",
-              "content": ""
+              "title":"Filter by date",
+              "content": "Select a specific period using the cursor on the above histogram."+
+              "The distribution of documents and their occurrences for this period will be displayed in the lower part",
             },
             "fr":{
               "title": "Filtrer par date",
@@ -92,7 +108,11 @@ help = {"#project":{
             "position": "inside",
           },
           '#sources_time':{
-            "en":{"title": "Filter sources"},
+            "en":{"title": "Filter sources",
+                  "content":"Select a range of minimum and maximum number of source publications by using the cursor on the above histogram."+
+                  "The sources for this range with the number of publications will appear in the lower part.",
+                ,
+            },
             "fr":{
               "title": "Filtrer par nombre de publications",
               "content": "Selectionnez une plage de nombre minimal et maximal de publications par source en utilisant le curseur sur l'histogramme ci-dessus."+
@@ -102,7 +122,10 @@ help = {"#project":{
             "position": "inside",
           },
           '#terms_time':{
-            "en":{"title":"Filter terms"},
+            "en":{"title":"Filter terms",
+                  "content":"Select a range of occurrences by using the cursor on the histogram above."+
+                            "The list of terms which the number of occurrences falls into this range will appear at the bottom.",
+            },
             "fr":{
               "title": "Filtrer occurrences",
               "content": "Selectionnez une plage d'occurences en utilisant le curseur sur l'histogramme ci dessus."+
@@ -112,20 +135,24 @@ help = {"#project":{
             "position": "inside",
           },
           '#export_corpus':{
-            "en":{},
+            "en":{"title":"Export",
+                  "content":"You can export your corpus in <a href='https://en.wikipedia.org/wiki/Comma-separated_values'>CSV format</a>",
+            },
             "fr":{
               "title": "Exporter",
-              "content": "Vous pouvez exporter les données <a href=''>format CSV</a>",
+              "content": "Vous pouvez exporter les données <a href='https://fr.wikipedia.org/wiki/Comma-separated_values'>format CSV</a>",
               },
             "placement": "right",
             "position": "inside",
 
           },
           '#export_terms':{
-            "en":{},
+            "en":{"title":"Export",
+                  "content":"You can export your list of terms in <a href='https://en.wikipedia.org/wiki/Comma-separated_values'>CSV format</a>.",
+            },
             "fr":{
               "title": "Exporter",
-              "content": "Vous pouvez exporter votre liste de termes au format csv. <a href=''>format CSV</a>",
+              "content": "Vous pouvez exporter votre liste de termes au <a href='https://fr.wikipedia.org/wiki/Comma-separated_values'>format CSV</a>",
             },
             "placement": "right",
             "position": "inside",
@@ -138,7 +165,9 @@ help = {"#project":{
           //   "class":"push-right"
           // }
           "#filter_analytics":{
-            "en":{},
+            "en":{"title":"Filter",
+                  "content":"You can filter the documents containing a certain type of data (words, authors, etc.) and see the changes in their number over time",
+            },
             "fr":{
               "title": "Filtrer",
               "content": "Vous pouvez filtrer les documents contenant un certain type de données (termes, auteurs, etc.) et consulter l'évolution de leur nombre au cours du temps",
@@ -147,7 +176,15 @@ help = {"#project":{
             "position": "inside",
           },
           "#filter_terms":{
-            "en":{},
+            "en":{"title":"Filter the terms",
+                  "content": "<p>You can selectively filter and display different types of <b>lists</b>:<ul>"+
+                    "<li><b>Stop list</b>:all expressions identified as irrelevant a priori (hollow words),</li>"+
+                    "<li><b>Map list</b>:set of expressions which are the labels of the nodes of the thematic map. Each label can potentially combine several expressions (eg. Singular and plural).</li>"+
+                    "<li><b>Others</b>: all well-formed expressions may be added to the thematic map.</li></ul></p>"+
+                    "<p> You can also filter the <b> words </b> based on their form (they behave differently): <ul>"+
+                    "<li> <b> 'One-word Terms </b>: select the terms that have a simple form </li>"+
+                    "<li> <b> 'Multi-word Terms </ b>: select the words that have a compound form </li> </ul> </p>",
+            },
             "fr":{
               "title": "Filtrer les termes",
               "content": "<p>Vous pouvez filtrer et afficher selectivement les différents types de <b>listes</b>:<ul>"+
@@ -163,8 +200,8 @@ help = {"#project":{
           },
           "#filter_graph":{
             "en":{
-              "title":"",
-              "content":"",
+              "title":"Filter",
+              "content":"Filter the links and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
             },
             "fr":{
               "title": "Filtrer",

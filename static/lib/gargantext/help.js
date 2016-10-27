@@ -111,7 +111,6 @@ help = {"#project":{
             "en":{"title": "Filter sources",
                   "content":"Select a range of minimum and maximum number of source publications by using the cursor on the above histogram."+
                   "The sources for this range with the number of publications will appear in the lower part.",
-                ,
             },
             "fr":{
               "title": "Filtrer par nombre de publications",

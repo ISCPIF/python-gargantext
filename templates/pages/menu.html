@@ -109,14 +109,15 @@
                         <li class="nav-item dropdown lang">
                           <a class="nav-link dropdown-toggle" id="lang" data-lang="{{user_parameters.language}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img value="{{user_parameters.language}}" src="/static/img/{{user_parameters.language}}.png" width="25%"/>
-                            {{user_parameters.language}}
+                            <span class="label">{{user_parameters.language}}</span>
                             <i class="caret"></i>
                           </a>
                           <ul class="dropdown-menu" aria-labelledby="lang">
 
                             {% for lang in languages %}
                             {% if lang != user_parameters.language %}
-                            <li class="dropdown-item new_lang"><a class="new_lang" data-lang="{{lang}}"><img value="{{user_parameters.language}}" src="/static/img/{{lang}}.png" width="25%"/> {{lang}} </a></li>
+                            <li class="dropdown-item new_lang">
+                              <a class="new_lang" data-lang="{{lang}}"><img value="{{user_parameters.language}}" src="/static/img/{{lang}}.png" width="25%"/> <span>{{lang}}</span> </a></li>
                             {% endif %}
                             {% endfor %}
 

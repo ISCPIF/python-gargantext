@@ -155,25 +155,44 @@ $("a.new_lang").on("click", function(){
   new_lang = $(this).data("lang")
   //new_lang.setAttr("data-lang", lang)
   loadHelp(new_lang);
+  //current lang in tab
+  $("a#lang").attr("data-lang", new_lang);
 
-  console.log("AJAX")
-  $.ajax({
-    url: '/api/users/?'+jQuery.param({"default_language":new_lang}),
-    type: 'PUT',
-    beforeSend: function(xhr) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-               },
-  success: function(response) {
-       console.log(response);
-       console.log("EDIT SUCCESS!");
-       
-       //window.location.reload()
-        },
-  error: function(xhr) {
-      console.log("EDIT FAIL!")
-
-       },
-  });
+  image = $("a#lang > img")
+  image.attr({"value":new_lang, "src":"/static/img/"+new_lang+".png"})
+  label = $("a#lang > span")
+  label.text(new_lang)
+  //console.log(label)
+  //$('a#lang').text(new_lang)
+  //$("img[value=]").attr("value", new_lang)
+  //$("img").attr("src", "/static/img/"+new_lang+."png")
+  $("a.new_lang").attr("data-lang", lang);
+  image = $("a.new_lang > img")
+  image.attr({"value":lang, "src":"/static/img/"+lang+".png"})
+  label = $("a.new_lang > span")
+  label.text(lang)
+  // console.log("AJAX")
+  // $.ajax({
+  //   url: '/api/users/?'+jQuery.param({"default_language":new_lang}),
+  //   type: 'PUT',
+  //   beforeSend: function(xhr) {
+  //        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+  //              },
+  // success: function(response) {
+  //      console.log(response);
+  //      console.log("EDIT SUCCESS!");
+  //      $("a#lang").attr("data-lang", new_lang);
+  //      console.log("a#lang")
+  //      //$("a#lang").next("img").attr({"value": new_lang, "src":"/static/img/"+new_lang+".png")
+  //      //$("a.new_lang").attr("data-lang", new_lang);
+  //      //$("a.new_lang").next("img").attr({"value": lang, "src":"/static/img/"+lang+".png")
+  //      //window.location.reload()
+  //       },
+  // error: function(xhr) {
+  //     console.log("EDIT FAIL!")
+  //
+  //      },
+  // });
 
 });
 

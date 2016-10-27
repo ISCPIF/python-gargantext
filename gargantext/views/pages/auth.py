@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import FormView
 from django.shortcuts import redirect
+from gargantext.util.db import session
 from gargantext.models.users import User
 from django import forms
 from gargantext.models          import Node, User

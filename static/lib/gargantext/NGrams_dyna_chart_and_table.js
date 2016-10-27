@@ -2016,7 +2016,7 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
                             + ' title="Selected terms will be removed from all lists."'
                             + ' style="width:3em;"'
                             + '>'
-                            + 'Del'
+                            + 'Stop'
                             + '<p class="note">'
                             + '<input type="checkbox" id="delAll"'
                             + ' onclick="SelectPage(\'delete\',this)" title="Check to select all currently visible terms"></input>'

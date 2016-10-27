@@ -15,7 +15,7 @@ help = {"#project":{
           "#corpus-btn":{
             "en":
               { "title":"Adding a corpus",
-              "content": "Click on the button and give a name to your projet",
+              "content": "First, select a database",
               },
             "fr":
               { "title": "Ajouter un corpus",
@@ -69,7 +69,7 @@ help = {"#project":{
           '#docFilter':{
             "en":{
                 "title":"Filter document",
-                "content": ""
+                "content": "Given the option you selected in the menu all the documents, favorites or duplicates will appear"
                 },
             "fr": {
               "title": "Filtrer les documents",
@@ -180,6 +180,9 @@ lang = $("a#lang").data("lang")
 loadHelp(lang)
 //change lang
 $("a.new_lang").on("click", function(){
+  //close all popo
+  
+  $('.popover').popover('hide');
   new_lang = $(this).data("lang")
   //new_lang.setAttr("data-lang", lang)
   loadHelp(new_lang);

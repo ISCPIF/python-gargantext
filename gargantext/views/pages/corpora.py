@@ -76,7 +76,7 @@ def docs_by_sources(request, project_id, corpus_id):
             'user': request.user,
             'user_parameters': node_user,
             'view': 'sources',
-            'USER_LANG': USER_LANG
+            'languages': USER_LANG
         },
     )
 
@@ -108,7 +108,7 @@ def docs_by_authors(request, project_id, corpus_id):
             'view': 'authors',
             'user': request.user,
             'user_parameters': node_user.hyperdata,
-            'USER_LANG': USER_LANG
+            'languages': USER_LANG
         },
     )
 
@@ -134,6 +134,6 @@ def analytics(request, project_id, corpus_id):
             'view': 'analytics',
             'user': request.user,
             'user_parameters': node_user.hyperdata,
-            'USER_LANG': USER_LANG
+            'languages': USER_LANG
         },
     )

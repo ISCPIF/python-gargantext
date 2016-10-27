@@ -1,4 +1,5 @@
 //Function that creates contextual help button
+
 help = {"#project":{
           "en":
             { "title":"Adding a project",
@@ -79,7 +80,7 @@ help = {"#project":{
           },
           '#titles_time':{
             "en":{
-              "title":"",
+              "title":"Filter document",
               "content": ""
             },
             "fr":{
@@ -91,7 +92,7 @@ help = {"#project":{
             "position": "inside",
           },
           '#sources_time':{
-            "en":{},
+            "en":{"title": "Filter sources"},
             "fr":{
               "title": "Filtrer par nombre de publications",
               "content": "Selectionnez une plage de nombre minimal et maximal de publications par source en utilisant le curseur sur l'histogramme ci-dessus."+
@@ -101,7 +102,7 @@ help = {"#project":{
             "position": "inside",
           },
           '#terms_time':{
-            "en":{},
+            "en":{"title":"Filter terms"},
             "fr":{
               "title": "Filtrer occurrences",
               "content": "Selectionnez une plage d'occurences en utilisant le curseur sur l'histogramme ci dessus."+
@@ -175,7 +176,7 @@ help = {"#project":{
         };
 //define lang
 lang = $("a#lang").data("lang")
-
+//load help
 loadHelp(lang)
 //change lang
 $("a.new_lang").on("click", function(){

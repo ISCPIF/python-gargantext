@@ -54,6 +54,6 @@ def ngramtable(request, project_id, corpus_id):
             'corporainfos' : corpora_infos,
             #user params
             'user_parameters': user_node.hyperdata,
-            'USER_LANG': USER_LANG
+            'languages': USER_LANG
         },
     )

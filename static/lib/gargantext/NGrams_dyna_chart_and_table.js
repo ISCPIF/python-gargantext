@@ -2025,7 +2025,7 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
                             + '</th>'+"\n" ;
       // main name and score columns
       div_table += "\t"+"\t"+'<th data-dynatable-column="name">Terms</th>'+"\n";
-      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Score</th>'+"\n";
+      div_table += "\t"+"\t"+'<th id="score_column_id" data-dynatable-sorts="score" data-dynatable-column="score">Occurences (nb)</th>'+"\n";
       div_table += "\t"+"\t"+'</th>'+"\n";
       div_table += "\t"+'</tr>'+"\n";
       div_table += "\t"+'</thead>'+"\n";
@@ -2373,6 +2373,10 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
     // £TODO pagination copy instead (hard!)
     if ( $(".imadiv").length>0 ) return 1;
     $('<br><br><div class="imadiv"></div>').insertAfter(".dynatable-per-page")
+    $(".dynatable-record-count").insertAfter(".imadiv")
+    $(".dynatable-pagination-links").insertAfter(".imadiv")
+
+    $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
 

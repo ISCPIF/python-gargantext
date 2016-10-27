@@ -49,11 +49,12 @@
         </div>
         <div class="col-md-3"></div>
         <div class="col-md-5">
-            <p>
+            <p id="project" class="help">
             <br>
-            <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
+            <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
+
             </button>
             <div id="popover-content"  class="hide">
                 <div id="createForm" class="form-group">
@@ -182,7 +183,9 @@
 </style>
 
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
+<!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
 <script type="text/javascript">
+
     getProjects();
     // $(document).on("input#inoutName").bind('keypress', function(e) {
     //         if(e.keyCode==13){

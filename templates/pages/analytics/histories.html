@@ -6,7 +6,7 @@
 
 {% load staticfiles %}
     <div class="container">
-    <h3>
+    <h3 class="help" id="filter_analytics">
     <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>
     Filter your documents with terms and watch histories (you can compare all your corpora).
     </h3>
@@ -96,7 +96,7 @@
                                 <auto-complete source="getNgrams($query)"></auto-complete>
                             </tags-input ng-model="tags">
                         </li>
-                        <!-- filter hyperdata 
+                        <!-- filter hyperdata
                         <li>
                             <ul>
                                 <li ng-repeat="hyperdata in hyperdataList">

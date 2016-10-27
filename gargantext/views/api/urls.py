@@ -3,6 +3,7 @@ from django.conf.urls import url
 from . import nodes
 from . import projects
 from . import corpora
+from . import users
 from . import ngrams
 from . import metrics
 from . import ngramlists
@@ -90,6 +91,6 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
 
               , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view() )
                 # fast access to maplist, similarly formatted for termtable
-
+                , url(r'^user/parameters/$', users.UserParameters.as_view())
 
               ]

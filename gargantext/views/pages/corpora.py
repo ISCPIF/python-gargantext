@@ -5,7 +5,7 @@ from gargantext.models          import *
 from gargantext.constants       import *
 from gargantext.settings        import *
 from datetime                   import datetime
-from .main                      import get_node_user
+from .main                      import get_user_params
 from gargantext.constants       import USER_LANG
 
 def _get_user_project_corpus(request, project_id, corpus_id):

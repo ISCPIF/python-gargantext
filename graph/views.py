@@ -6,7 +6,7 @@ from gargantext.constants import *
 from gargantext.settings import *
 from gargantext.constants import USER_LANG
 from datetime import datetime
-from gargantext.views.pages.main import get_node_user
+from gargantext.views.pages.main import get_user_params
 
 @requires_auth
 def explorer(request, project_id, corpus_id):
@@ -48,7 +48,7 @@ def explorer(request, project_id, corpus_id):
             'corpus'    : corpus           ,
             'maplist_id': maplist_id       ,
             'view'      : 'graph'          ,
-            'user_parameters': node_user.hyperdata,
+            'user_parameters': get_user_params(request.user),
             'languages': USER_LANG
         },
     )

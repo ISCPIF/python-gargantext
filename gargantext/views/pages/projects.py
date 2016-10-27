@@ -4,7 +4,7 @@ from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
-from .main import get_node_user
+from .main import get_user_params
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain import parse_extract_indexhyperdata
 
@@ -18,7 +18,7 @@ def get_node_user(user):
     if node_user is None:
         node_user = Node(user_id = user.id,
         typename = 'USER',
-        username = user.name,
+        name = user.name,
         )
         #default language for now is  'fr'
         node_user.hyperdata["language"] = "fr"
@@ -67,7 +67,7 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
-            "user_parameters":node_user.hyperdata,
+            'user_parameters': get_user_params(request.user),
             'languages': USER_LANG,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
@@ -190,7 +190,7 @@ def project(request, project_id):
 
                 'form': NewCorpusForm,
                 'user': request.user,
-                "user_parameters":node_user.hyperdata,
+                'user_parameters': get_user_params(request.user),
                 'languages': USER_LANG,
                 'date': datetime.now(),
                 'project': project,
@@ -211,7 +211,7 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
-            "user_parameters":node_user.hyperdata,
+            'user_parameters': get_user_params(request.user),
             "languages": USER_LANG,
             'form': NewCorpusForm,
             'user': request.user,

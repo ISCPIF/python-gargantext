@@ -91,6 +91,6 @@ urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view()
 
               , url(r'^ngramlists/maplist$'     , ngramlists.MapListGlance.as_view() )
                 # fast access to maplist, similarly formatted for termtable
-                , url(r'^users/$', users.UserItem.as_view())
+                , url(r'^user/parameters/$', users.UserParameters.as_view())
 
               ]

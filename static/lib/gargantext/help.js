@@ -180,11 +180,9 @@ lang = $("a#lang").data("lang")
 loadHelp(lang)
 //change lang
 $("a.new_lang").on("click", function(){
-  //close all popo
-  
+  //close all popover while changing lang
   $('.popover').popover('hide');
   new_lang = $(this).data("lang")
-  //new_lang.setAttr("data-lang", lang)
   loadHelp(new_lang);
   //current lang in tab
   $("a#lang").attr("data-lang", new_lang);
@@ -203,27 +201,28 @@ $("a.new_lang").on("click", function(){
   label = $("a.new_lang > span")
   label.text(lang)
   // console.log("AJAX")
-  // $.ajax({
-  //   url: '/api/users/?'+jQuery.param({"default_language":new_lang}),
-  //   type: 'PUT',
-  //   beforeSend: function(xhr) {
-  //        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-  //              },
-  // success: function(response) {
-  //      console.log(response);
-  //      console.log("EDIT SUCCESS!");
-  //      $("a#lang").attr("data-lang", new_lang);
+  $.ajax({
+     url: '/api/user/parameters/',
+     type: 'PUT',
+     data: {"language":new_lang},
+    beforeSend: function(xhr) {
+         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+               },
+    success: function(response) {
+       console.log(response);
+       console.log("EDIT SUCCESS!");
+       //$("a#lang").attr("data-lang", new_lang);
   //      console.log("a#lang")
   //      //$("a#lang").next("img").attr({"value": new_lang, "src":"/static/img/"+new_lang+".png")
   //      //$("a.new_lang").attr("data-lang", new_lang);
   //      //$("a.new_lang").next("img").attr({"value": lang, "src":"/static/img/"+lang+".png")
   //      //window.location.reload()
-  //       },
-  // error: function(xhr) {
-  //     console.log("EDIT FAIL!")
-  //
-  //      },
-  // });
+        },
+  error: function(xhr) {
+      console.log("EDIT FAIL!")
+
+       },
+  });
 
 });
 
@@ -244,7 +243,7 @@ function loadHelp(lang){
     info = help[div_id]
     console.log(lang)
     console.log(info[lang]["content"])
-    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
+    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
 
 
     if (info["position"] == "inside"){

@@ -4,6 +4,7 @@ from django.views.generic import FormView
 from django.shortcuts import redirect
 from gargantext.models.users import User
 from django import forms
+from gargantext.models          import Node, User
 
 from gargantext.views.pages.projects import overview
 
@@ -21,6 +22,25 @@ class LoginView(FormView):
 
         if user is not None and user.is_active:
             login(self.request, user)
+
+            node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
+            if "language" not in node_user["hyperdata"].keys():
+                node_user.hyperdata["language"] = "fr"
+                session.add(node_user)
+                session.commit()
+            #user hasn't been found inside Node table
+            #create it from auth table => node table
+            if node_user is None:
+                node_user = Node(
+                            typename = 'USER',
+                            #in node = > name
+                            #in user = > username
+                            name = user.name,
+                            user_id = user.id,
+                        )
+                node_user.hyperdata = {"language":"fr"}
+                session.add(node_user)
+                session.commit()
             return super(LoginView, self).form_valid(form)
         else:
             return self.form_invalid(form)

@@ -4,7 +4,7 @@ from gargantext.util.db_cache import cache
 from gargantext.models        import Node
 from gargantext.constants     import get_resource
 from gargantext.constants     import USER_LANG
-from .main                    import get_node_user
+from .main                    import get_user_params
 from datetime                 import datetime
 
 
@@ -53,7 +53,7 @@ def ngramtable(request, project_id, corpus_id):
             'importroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id,
             'corporainfos' : corpora_infos,
             #user params
-            'user_parameters': user_node.hyperdata,
+            'user_parameters': get_user_params(request.user),
             'languages': USER_LANG
         },
     )

@@ -21,7 +21,7 @@ class User(Base):
     is_active    = Column(Boolean(), default=True)
     last_login   = Column(DateTime(timezone=False))
     date_joined  = Column(DateTime(timezone=False), default=datetime.now)
-    
+
     def contacts(self):
         """get all contacts in relation with the user"""
         Friend = aliased(User)
@@ -61,7 +61,9 @@ class User(Base):
         """check if a given node is owned by the user"""
         return (node.user_id == self.id) or \
                 node.id in (contact.id for contact in self.contacts())
-
+    def get_params(self, username=None):
+        print(self.__dict__.items())
+        return self.hyperdata
 
 class Contact(Base):
     __tablename__ = 'contacts'

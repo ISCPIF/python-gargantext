@@ -5,35 +5,23 @@ import datetime
 from gargantext.util.generators import paragraphs, credits
 from gargantext.constants       import USER_LANG
 
-def get_node_user(user):
-    #load user parameters from User(Node).hyperdata from request.user or cache.
-    node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
-
-    if node_user is None:
-        try:
-            node_user = Node(
-                user_id = user.id,
-                typename = 'USER',
-                name = user.name,
-            )
-        except AttributeError:
-            node_user = Node(
-                user_id = user.id,
-                typename = 'USER',
-                name = "Anne Aunime",
-            )
-        #default language for now is  'fr'
-        node_user.hyperdata.language = "fr"
-        session.add(node_user)
-        session.commit()
-    return node_user
+def get_user_node(user):
+    if user.is_authenticated:
+        node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
+        return node_user
+    else:
+        return None
+def get_user_params(user):
+    node_user = get_user_node(user)
+    if node_user is not None:
+        return node_user.hyperdata
+    return {}
 
 def home(request):
     '''Home describes the platform.
     A video draws the narratives.
     If not logged a project test is shown.
     '''
-    user_node = get_node_user(request.user)
     return render(
         template_name = 'pages/main/home.html',
         request = request,
@@ -44,15 +32,15 @@ def home(request):
             'paragraph_gargantua': paragraphs.gargantua(),
             'paragraph_lorem' : paragraphs.lorem(),
             'paragraph_tutoreil': paragraphs.tutoreil(),
-            'user_parameters': user_node.hyperdata,
             'languages': USER_LANG,
+            'user_parameters': get_user_params(request.user)
         },
     )
 
 def about(request):
     '''About Gargantext, its team and sponsors
     '''
-    user_node = get_node_user(request.user)
+
     return render(
         template_name = 'pages/main/about.html',
         request = request,
@@ -63,7 +51,7 @@ def about(request):
             'institutions': credits.institutions(),
             'labos': credits.labs(),
             'grants': credits.grants(),
-            'user_parameters': user_node.hyperdata,
+            'user_parameters': get_user_params(request.user),
             'languages': USER_LANG,
         },
     )
@@ -87,6 +75,6 @@ def maintenance(request):
         context = {
             'user': request.user,
             'date': datetime.datetime.now(),
-            'user_parameters': user_node.hyperdata
+            'user_parameters': get_user_params(request.user)
         },
     )

@@ -11,33 +11,60 @@ help = {"#project":{
             "placement":"bottom",
             "position": "inside",
           },
-        "#corpus":{
-          "en":
-            { "title":"Adding a project",
-            "content": "Click on the button and give a name to your projet",
+          "#corpus-btn":{
+            "en":
+              { "title":"Adding a corpus",
+              "content": "Click on the button and give a name to your projet",
+              },
+            "fr":
+              { "title": "Ajouter un corpus",
+                "content": "<p>Pour ajouter un corpus à votre projet"+
+                        "<br><b>Sélectionnez une base de données</b></br>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous avez déjà un fichier à téléverser :</b>"+
+                        "<ol>"+
+                        "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+                        "<li>Cliquez sur 'Choisir un fichier...'</li>"+
+                        "<li>Puis donnez un nom à votre corpus</li>"+
+                        "<li>Cliquez sur 'Process this!'</li></ol>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</b>"+
+                        "<ol>"+
+                        "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
+                        "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
+                        "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
+                        "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
+                        "</ul>"+
+                        "</p>",
+                      },
+            "placement": "bottom",
+            "position": "inside",
             },
-          "fr":
-            { "title": "Ajouter un corpus",
-              "content": "<p>Pour ajouter un corpus à votre projet"+
-                      "<br><b>Sélectionnez une base de données</b>"+
-                      "<h4><span class='glyphicon glyphicon-hand-left'></span>  Si vous avez déjà un fichier à téléverser :</h4>"+
-                      "<ol>"+
-                      "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
-                      "<li>Cliquez sur 'Choisir un fichier...'</li>"+
-                      "<li>Puis donnez un nom à votre corpus</li>"+
-                      "<li>Cliquez sur 'Process this!'</li></ol>"+
-                      "<h4><span class='glyphicon glyphicon-hand-left'>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</h4>"+
-                      "<ol>"+
-                      "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
-                      "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
-                      "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
-                      "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
-                      "</ul>"+
-                      "</p>",
-                    },
-          "placement": "right",
-          "position": "inside",
-          },
+        // "#corpus":{
+        //   "en":
+        //     { "title":"Adding a corpus",
+        //     "content": "Click on the button and give a name to your projet",
+        //     },
+        //   "fr":
+        //     { "title": "Ajouter un corpus",
+        //       "content": "<p>Pour ajouter un corpus à votre projet"+
+        //               "<br><b>Sélectionnez une base de données</b>"+
+        //               "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous avez déjà un fichier à téléverser :</b>"+
+        //               "<ol>"+
+        //               "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+        //               "<li>Cliquez sur 'Choisir un fichier...'</li>"+
+        //               "<li>Puis donnez un nom à votre corpus</li>"+
+        //               "<li>Cliquez sur 'Process this!'</li></ol>"+
+        //               "<b><span class='glyphicon glyphicon-hand-right'>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</b>"+
+        //               "<ol>"+
+        //               "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
+        //               "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
+        //               "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
+        //               "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
+        //               "</ul>"+
+        //               "</p>",
+        //             },
+        //   "placement": "bottom",
+        //   "position": "inside",
+        //   },
           '#docFilter':{
             "en":{
                 "title":"Filter document",
@@ -213,7 +240,7 @@ function loadHelp(lang){
     info = help[div_id]
     console.log(lang)
     console.log(info[lang]["content"])
-    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" tab-index=0 data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
+    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
 
 
     if (info["position"] == "inside"){

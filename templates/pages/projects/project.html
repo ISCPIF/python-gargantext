@@ -67,8 +67,11 @@
                             <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>
                             Add a corpus
                             </button>
+                            <p class="help" id="corpus-btn"></p>
                         </a>
+
                     </center>
+
                 </p>
             </div>
     </div>
@@ -84,7 +87,7 @@
 
 <div class="container">
 
-    
+
     {% if list_corpora  %}
         {% for key, corpora in list_corpora.items %}
             <h2>

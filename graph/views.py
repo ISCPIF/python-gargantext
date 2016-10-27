@@ -65,7 +65,7 @@ def myGraphs(request, project_id, corpus_id):
     '''
 
     user = cache.User[request.user.id]
-    user_node = get_node_user(user)
+
     # we pass our corpus
     corpus = cache.Node[corpus_id]
 
@@ -105,7 +105,7 @@ def myGraphs(request, project_id, corpus_id):
             'view'         : 'myGraph',
             'coocs'        : coocs,
             'coocs_count'  : coocs_count,
-            'user_parameters': user_node.hyperdata,
+            'user_parameters': get_user_params(request.user),
             'languages': USER_LANG,
         },
     )

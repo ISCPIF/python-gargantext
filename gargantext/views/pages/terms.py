@@ -35,7 +35,6 @@ def ngramtable(request, project_id, corpus_id):
     corpora_infos = corpora_infos_q.all()
 
     source_type = corpus.resources()[0]['type']
-    user_node = get_node_user(request.user)
     # rendered page : terms.html
     return render(
         template_name = 'pages/corpora/terms.html',

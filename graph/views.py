@@ -23,7 +23,7 @@ def explorer(request, project_id, corpus_id):
 
     # security check
     user = cache.User[request.user.id]
-    node_user = get_node_user(user)
+
     if corpus is None:
         raise Http404()
     if not user.owns(corpus):

@@ -31,7 +31,7 @@ class UserParameters(APIView):
             node_user.hyperdata[k] =  v
             # setattr(node_user.hyperdata, k, v)
             # print(node_user.hyperdata)
-        # node_user.save_hyperdata()
+        node_user.save_hyperdata()
         session.add(node_user)
         session.commit()
         node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()

@@ -25,10 +25,6 @@ class LoginView(FormView):
             login(self.request, user)
 
             node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
-            if "language" not in node_user["hyperdata"].keys():
-                node_user.hyperdata["language"] = "fr"
-                session.add(node_user)
-                session.commit()
             #user hasn't been found inside Node table
             #create it from auth table => node table
             if node_user is None:
@@ -42,6 +38,8 @@ class LoginView(FormView):
                 node_user.hyperdata = {"language":"fr"}
                 session.add(node_user)
                 session.commit()
+            
+
             return super(LoginView, self).form_valid(form)
         else:
             return self.form_invalid(form)

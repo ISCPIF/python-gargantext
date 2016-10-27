@@ -28,7 +28,6 @@ def docs_by_titles(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
-    node_user = get_node_user(user)
     source_type = corpus.resources()[0]['type']
     # response!
     return render(
@@ -42,7 +41,7 @@ def docs_by_titles(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'titles',
             'user': request.user,
-            'user_parameters': node_user.hyperdata,
+            'user_parameters': get_user_params(user),
             'languages': USER_LANG
         },
     )
@@ -61,9 +60,8 @@ def docs_by_sources(request, project_id, corpus_id):
     project = cache.Node[project_id]
     user = cache.User[request.user.id]
     source_type = corpus.resources()[0]['type']
-    node_user = get_node_user(user)
     # rendered page : sources.html
-    print(node_user)
+    
     return render(
         template_name = 'pages/corpora/sources.html',
         request = request,
@@ -74,7 +72,7 @@ def docs_by_sources(request, project_id, corpus_id):
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
             'user': request.user,
-            'user_parameters': node_user,
+            'user_parameters': get_user_params(user),
             'view': 'sources',
             'languages': USER_LANG
         },
@@ -120,7 +118,6 @@ def analytics(request, project_id, corpus_id):
         return HttpResponseForbidden()
 
     source_type = corpus.resources()[0]['type']
-    node_user = get_node_user(user)
     # response!
     return render(
         template_name = 'pages/analytics/histories.html',
@@ -133,7 +130,7 @@ def analytics(request, project_id, corpus_id):
             'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
             'user': request.user,
-            'user_parameters': node_user.hyperdata,
+            'user_parameters': get_user_params(user),
             'languages': USER_LANG
         },
     )

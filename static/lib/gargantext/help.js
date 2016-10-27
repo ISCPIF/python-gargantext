@@ -174,57 +174,59 @@ help = {"#project":{
             "position":"after",
           }
         };
-//define lang
+
+
+//current lang
 lang = $("a#lang").data("lang")
-//load help
-loadHelp(lang)
-//change lang
+loadHelp(lang);
+
+//change lang on click and load corresponding Help
 $("a.new_lang").on("click", function(){
   //close all popover while changing lang
   $('.popover').popover('hide');
+  old_lang = $("a#lang").data("lang")
   new_lang = $(this).data("lang")
-  loadHelp(new_lang);
-  //current lang in tab
-  $("a#lang").attr("data-lang", new_lang);
-
-  image = $("a#lang > img")
-  image.attr({"value":new_lang, "src":"/static/img/"+new_lang+".png"})
-  label = $("a#lang > span")
-  label.text(new_lang)
-  //console.log(label)
-  //$('a#lang').text(new_lang)
-  //$("img[value=]").attr("value", new_lang)
-  //$("img").attr("src", "/static/img/"+new_lang+."png")
-  $("a.new_lang").attr("data-lang", lang);
-  image = $("a.new_lang > img")
-  image.attr({"value":lang, "src":"/static/img/"+lang+".png"})
-  label = $("a.new_lang > span")
-  label.text(lang)
-  // console.log("AJAX")
-  $.ajax({
-     url: '/api/user/parameters/',
-     type: 'PUT',
-     data: {"language":new_lang},
-    beforeSend: function(xhr) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-               },
-    success: function(response) {
-       console.log(response);
-       console.log("EDIT SUCCESS!");
-       //$("a#lang").attr("data-lang", new_lang);
-  //      console.log("a#lang")
-  //      //$("a#lang").next("img").attr({"value": new_lang, "src":"/static/img/"+new_lang+".png")
-  //      //$("a.new_lang").attr("data-lang", new_lang);
-  //      //$("a.new_lang").next("img").attr({"value": lang, "src":"/static/img/"+lang+".png")
-  //      //window.location.reload()
-        },
-  error: function(xhr) {
-      console.log("EDIT FAIL!")
-
-       },
-  });
-
+  updateLang(lang, new_lang)
+  loadHelp(new_lang)
 });
+
+function updateLang(old_lang, new_lang){
+  console.log("Old", old_lang)
+  console.log("Updating to", new_lang)
+
+  //update lang in db
+    $.ajax({
+       url: '/api/user/parameters/',
+       type: 'PUT',
+       data: {"language":new_lang},
+       beforeSend: function(xhr) {
+             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                   },
+      success: function(response, data) {
+        console.log(data)
+        var old_lang = $("a#lang").data("lang")
+        //var new_lang = data["language"]
+
+
+          //change active langue
+        $("a#lang").attr("data-lang", new_lang);
+        $("a#lang > img").attr({"value":new_lang, "src":"/static/img/"+new_lang+".png"})
+        $("a#lang > span").text(new_lang)
+          //switch lang to option
+        $("a.new_lang").attr("data-lang", old_lang);
+        $("a.new_lang > img").attr({"value":old_lang, "src":"/static/img/"+lang+".png"})
+        $("a.new_lang > span").text(old_lang)
+        console.log(response, data)
+               },
+          error: function(xhr) {
+              console.log("EDIT FAIL!")
+               },
+          });
+
+      console.log("defaut lang is now", $("a#lang").data("lang"))
+};
+
+
 
 function loadHelp(lang){
   $("span.help-btn").remove()
@@ -270,6 +272,10 @@ function loadHelp(lang){
 
   });
 }
+
+
+
+
 $(document).on('click', function (e) {
     $('[data-toggle="popover"],[data-original-title]').each(function () {
         //the 'is' for buttons that trigger popups
@@ -280,3 +286,20 @@ $(document).on('click', function (e) {
 
     });
 });
+
+
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+          var cookie = jQuery.trim(cookies[i]);
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+};

@@ -6,7 +6,7 @@ from gargantext.util.generators import paragraphs, credits
 from gargantext.constants       import USER_LANG
 
 def get_user_node(user):
-    if user.is_authenticated:
+    if user is not None:
         node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename== "USER").first()
         return node_user
     else:

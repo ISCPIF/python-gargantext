@@ -148,77 +148,79 @@ help = {"#project":{
         };
 //define lang
 lang = $("a#lang").data("lang")
+
+loadHelp(lang)
 //change lang
-
 $("a.new_lang").on("click", function(){
+  new_lang = $(this).data("lang")
+  //new_lang.setAttr("data-lang", lang)
+  loadHelp(new_lang);
 
-  new_lang = $(this).data("lang"))
-  // $.ajax({
-  // url: '/api/users?lang='+new_lang,
-  // type: 'PUT',
-  // beforeSend: function(xhr) {
-  //       xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-  //             },
-  // success: function(response) {
-  //     console.log(response);
-  //     console.log("EDIT SUCCESS!");
-  //     //addFormStatus("success", "div#editForm-"+id, response["detail"]);
-  //     window.location.reload()
-  //      },
-  // error: function(xhr) {
-  //     console.log("EDIT FAIL!")
-  //     var status = xhr.status;
-  //     var info = xhr.responseJSON["detail"];
-  //     var msg = "<strong>ERROR ["+status+"]:</strong>"+ "<p>"+info+"</p>"
-  //     addFormStatus("error", "div#editForm-"+id, msg);
-  //     },
-  // });
-// };
-});
+  console.log("AJAX")
+  $.ajax({
+    url: '/api/users/?'+jQuery.param({"default_language":new_lang}),
+    type: 'PUT',
+    beforeSend: function(xhr) {
+         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+               },
+  success: function(response) {
+       console.log(response);
+       console.log("EDIT SUCCESS!");
+       
+       //window.location.reload()
+        },
+  error: function(xhr) {
+      console.log("EDIT FAIL!")
 
-
-$( ".help" ).each(function(i, el) {
-  console.log("This", el);
-  id = el.id
-  div_id = "#"+id
-  help_steps = Object.keys(help)
-  //console.log(help_steps)
-  //console.log("div help:", div_id)
-  if (help_steps.includes(div_id) == false){
-    console.log("Step #",id,"class='help' not described in help")
-    return
-  }
-  btn = id+"-help"
-  info = help[div_id]
-  console.log(lang)
-  console.log(info[lang]["content"])
-  help_btn = '<span class="glyphicon glyphicon-question-sign" tab-index=0 data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
-
-
-  if (info["position"] == "inside"){
-    $(help_btn).appendTo(el);
-  }
-  else if (info["position"] == "after"){
-    $(help_btn).insertAfter(el);
-  }
-  else if (info["position"] == "before"){
-    $(help_btn).insertBefore(el);
-  }
-  else if (info["position"] == "dup_child"){
-    //copy the first child inside the element and create a custom one with btn
-    console.log(el.children())
-  }
-  else if (info["position"] == "dup_parent"){
-    //copy the element and create a copy with btn
-    console.log(el.parent())
-  }
-  else{
-    //duplicate element and insert the button
-    //$(help_btn).insertBefore(el);
-  }
+       },
+  });
 
 });
 
+function loadHelp(lang){
+  $("span.help-btn").remove()
+  $( ".help" ).each(function(i, el) {
+    console.log("This", el);
+    id = el.id
+    div_id = "#"+id
+    help_steps = Object.keys(help)
+    //console.log(help_steps)
+    //console.log("div help:", div_id)
+    if (help_steps.includes(div_id) == false){
+      console.log("Step #",id,"class='help' not described in help")
+      return
+    }
+    btn = id+"-help"
+    info = help[div_id]
+    console.log(lang)
+    console.log(info[lang]["content"])
+    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" tab-index=0 data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
+
+
+    if (info["position"] == "inside"){
+      $(help_btn).appendTo(el);
+    }
+    else if (info["position"] == "after"){
+      $(help_btn).insertAfter(el);
+    }
+    else if (info["position"] == "before"){
+      $(help_btn).insertBefore(el);
+    }
+    else if (info["position"] == "dup_child"){
+      //copy the first child inside the element and create a custom one with btn
+      console.log(el.children())
+    }
+    else if (info["position"] == "dup_parent"){
+      //copy the element and create a copy with btn
+      console.log(el.parent())
+    }
+    else{
+      //duplicate element and insert the button
+      //$(help_btn).insertBefore(el);
+    }
+
+  });
+}
 $(document).on('click', function (e) {
     $('[data-toggle="popover"],[data-original-title]').each(function () {
         //the 'is' for buttons that trigger popups

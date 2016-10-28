@@ -281,7 +281,7 @@ function loadHelp(lang){
     info = help[div_id]
     console.log(lang)
     console.log(info[lang]["content"])
-    help_btn = '<span class="glyphicon glyphicon-question-sign help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></span>'
+    help_btn = '<img src="/static/img/question-mark.png" width="15px" height="15px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
 
 
     if (info["position"] == "inside"){

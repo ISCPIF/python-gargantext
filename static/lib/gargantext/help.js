@@ -313,6 +313,90 @@ help = { "#project":{
           //   "placement": "top",
           //   "position": "inside",
           // },
+          "#edition":{
+              "en":{
+                "title":"Graph Edition and Manipulation Toolbar",
+                "content":"Manipulate and edit your graph using this toolbar"+
+                          "<ul>"+
+                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
+                  				"mention its label and its associated terms (if any ).</li>"+
+                  				"<li>When  according to the chosen proximity measure, the proximity"+
+                  				"between two terms is strong enough, a link is displayed.</li>"+
+                  				"<li>You can filter links by strength using the 'edges filter' slider"+
+                  				"(this will fold/unfold the graph):"+
+                  				"</li>"+
+                  				"<img src='/static/img/slider_edges.png'/>"+
+                  				"<li>You can decide to  remove small nodes or large nodes using the"+
+                  				"'nodes filter' slider (e.g. to get only the most popular"+
+                  				"expressions):</li>"+
+                  				"<img src='/static/img/slider_nodes.png'/>"+
+                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                          "<img src='/static/img/slider_label.png'/>"+
+                  				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_color.png'/>"+
+                  				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_size.png'/>"+
+                          "</ul>",
+
+              },
+              "fr":{
+                "title":"Outil d'édition et de manipulation du graph",
+                "content":"Manipuler and éditer le graph  grace à cette barre d'outil"+
+                          "<ul>"+
+                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
+                  				"mention its label and its associated terms (if any ).</li>"+
+                  				"<li>When  according to the chosen proximity measure, the proximity"+
+                  				"between two terms is strong enough, a link is displayed.</li>"+
+                  				"<li>You can filter links by strength using the 'edges filter' slider"+
+                  				"(this will fold/unfold the graph):"+
+                  				"</li>"+
+                  				"<img src='/static/img/slider_edges.png'/>"+
+                  				"<li>You can decide to  remove small nodes or large nodes using the"+
+                  				"'nodes filter' slider (e.g. to get only the most popular"+
+                  				"expressions):</li>"+
+                  				"<img src='/static/img/slider_nodes.png'/>"+
+                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                          "<img src='/static/img/slider_label.png'/>"+
+                  				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_color.png'/>"+
+                  				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_size.png'/>"+
+                          "</ul>",
+
+              },
+              "placement": "right",
+              "position": "inside",
+          },
+          "#exploration":{
+            "en":{
+            "title":"Graph Exploration Toolbar",
+            "content":"<div>Explore your graph using this navigation bar"+
+            "<ul>"+
+    				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+    				"<li>To center the graph, click on the center button. </li>"+
+            "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
+            "<li>To calculate proximity measure and show the edges click on the button</li>"+
+    				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
+    				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+    				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+            "</li></ul>",
+              },
+              "fr":{
+              "title":"Outils d'exploration du Graphe",
+              "content":"<div>Explorer le graph en utilisant cette barre d'outils"+
+              "<ul>"+
+      				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+      				"<li>To center the graph, click on the center button. </li>"+
+              "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
+              "<li>To calculate proximity measure and show the edges click on the button</li>"+
+      				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
+      				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+      				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+              "</li></ul>",
+                },
+          "placement": "right",
+          "position": "inside",
+          },
         }
 
 
@@ -386,7 +470,7 @@ function loadHelp(lang){
     info = help[div_id]
     console.log(lang)
     console.log(info[lang]["content"])
-    help_btn = '<img src="/static/img/question-mark.png" width="20px" height="20px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
+    help_btn = '<img src="/static/img/question-mark.png" width="20px" height="20px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
 
 
     if (info["position"] == "inside"){

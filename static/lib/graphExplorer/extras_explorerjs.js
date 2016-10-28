@@ -1007,27 +1007,33 @@ function getTips(){
 				"<center><b>Graph Explorer</b></center>"+
         "<ul><b>Basic Interactions:</b>"+
         "<li>With the <b>mouse selector</b>, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
-				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+
+				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> remove selected terms from map list.</li>"+
 				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
 				"</ul>"+
         "<ul><b>Graph manipulation:</b>"+
-        "<li>Link and node sizes indicate their strength.</li>"+
-        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' slider:</li> <img src='/static/img/slider_edges.png'/>"+
-				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider :</li><img src='/static/img/slider_nodes.png'/>"+
-				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> <img src='/static/img/slider_label.png'/>"+
-				"<li>Change cluster coloration using a different algorithm in the options <ul><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Colors' src='/static/img/colors.png' width='22px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='colorsBy(&quot;clust_default&quot; , &quot;color&quot;)'>By default</a></li><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;color&quot;)'>By degree</a></li><li><a href='#' onclick='colorsBy(&quot;clust_louvain&quot; , &quot;color&quot;)'>By community (louvain)</a></li>  </ul> </li></ul> "+
-				"<li>Change size of cluster using the options <ul id='sizeGraph'><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Sizes' src='/static/img/NodeSize.png' width='18px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;size&quot;)'>By degree</a></li><li><a href='#' onclick='clustersBy(&quot;default&quot; , &quot;size&quot;)'>By default</a></li>  </ul> </li></ul>"+
+				"<li>Node sizes maps (on a log scale) the number of documents that"+
+				"mention its label and its associated terms (if any ).<br>"+
+				"When  according to the chosen proximity measure, the proximity"+
+				"between two terms is strong enough, a link is displayed.</li>"+
+				"<li>You can filter links by strength using the 'edges filter' slider"+
+				"(this will fold/unfold the graph):"+
+				"</li>"+
+				"<img src='/static/img/slider_edges.png'/>"+
+				"<li>You can decide to  remove small nodes or large nodes using the"+
+				"'nodes filter' slider (e.g. to get only the most popular"+
+				"expressions):</li>"+
+				"<img src='/static/img/slider_nodes.png'/>"+
+				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
         "</ul>"+
         "<ul><b>Micro/Macro view:</b>"+
 				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
 				"<li>To center the graph, click on the center button. </li>"+
-        "<li>To explore the neighborhood of a selection, double click on the selected nodes</li>"+
-				"<li>You can explore the graph using the slider and the  macro/mesolevel button.</li>"+
-				"<a style='float: right;' class='btn-xs' href='#' id='zoomPlusButton'></a>"+
-				"<a style='float: right;' class='btn-xs' href='#' id='zoomMinusButton'></a>"+
-				"<li>Recalculate the clusters of your graph using the edge button</li>"
-				"<a style='float:right;' href='#' id='edgesButton'></a>"+
-        "</ul>";
+				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
+				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+        "</li></ul>";
 
     $("#tab-container").hide();
     $("#tab-container-top").hide();

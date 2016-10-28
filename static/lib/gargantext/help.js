@@ -12,14 +12,14 @@ help = {"#project":{
             "placement":"bottom",
             "position": "inside",
           },
-          "#corpus-btn":{
+          "#corpus":{
             "en":
               { "title":"Adding a corpus",
               "content": "<p>To add a corpus to your project"+
                         "<br><b>Select a database</b></br>"+
                         "<b><span class='glyphicon glyphicon-hand-right'></span>  If you have a file to upload already :</b>"+
                         "<ol>"+
-                        "<li>Check your file is <a href=''>zipped (.zip archive) </a> and with the right <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+                        "<li>Check your file is <a target='_blank' href='https://iscpif.fr/gargantext/import-formats_en/'>zipped (.zip archive) </a> and with the right <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
                         "<li>Click on 'Chose a file...'</li>"+
                         "<li>And give a name to your corpus</li>"+
                         "<li>Click on 'Process this!'</li></ol>"+
@@ -33,12 +33,12 @@ help = {"#project":{
                         "</p>",
               },
             "fr":
-              { "title": "Ajouter un corpus",
+              { "title": "Pour ajouter un corpus",
                 "content": "<p>Pour ajouter un corpus à votre projet"+
                         "<br><b>Sélectionnez une base de données</b></br>"+
                         "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous avez déjà un fichier à téléverser :</b>"+
                         "<ol>"+
-                        "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
+                        "<li>Vérifiez que votre fichier est <a href='https://iscpif.fr/gargantext/import-formats_fr/'>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
                         "<li>Cliquez sur 'Choisir un fichier...'</li>"+
                         "<li>Puis donnez un nom à votre corpus</li>"+
                         "<li>Cliquez sur 'Process this!'</li></ol>"+
@@ -126,7 +126,7 @@ help = {"#project":{
                             "The list of terms which the number of occurrences falls into this range will appear at the bottom.",
             },
             "fr":{
-              "title": "Filtrer occurrences",
+              "title": "Filtrer les termes par occurrences",
               "content": "Selectionnez une plage d'occurences en utilisant le curseur sur l'histogramme ci dessus."+
                          "La liste des termes dont le nombre d'occurrences tombe dans cette place s'affichera dans la partie inférieure.",
             },
@@ -135,11 +135,11 @@ help = {"#project":{
           },
           '#export_corpus':{
             "en":{"title":"Export",
-                  "content":"You can export your corpus in <a href='https://en.wikipedia.org/wiki/Comma-separated_values'>CSV format</a>",
+                  "content":"You can export your corpus in <a target='_blank' href='https://iscpif.fr/gargantext/import-formats_en/'>CSV format</a>",
             },
             "fr":{
               "title": "Exporter",
-              "content": "Vous pouvez exporter les données <a href='https://fr.wikipedia.org/wiki/Comma-separated_values'>format CSV</a>",
+              "content": "Vous pouvez exporter les données <a target='_blank'  href='https://iscpif.fr/gargantext/import-formats_fr/'>format CSV</a>",
               },
             "placement": "right",
             "position": "inside",
@@ -147,11 +147,11 @@ help = {"#project":{
           },
           '#export_terms':{
             "en":{"title":"Export",
-                  "content":"You can export your list of terms in <a href='https://en.wikipedia.org/wiki/Comma-separated_values'>CSV format</a>.",
+                  "content":"You can export your list of terms in <a target='_blank'  href='https://iscpif.fr/gargantext/import-formats_en/'>CSV format</a>.",
             },
             "fr":{
               "title": "Exporter",
-              "content": "Vous pouvez exporter votre liste de termes au <a href='https://fr.wikipedia.org/wiki/Comma-separated_values'>format CSV</a>",
+              "content": "Vous pouvez exporter votre liste de termes au <a target='_blank'  href='https://iscpif.fr/gargantext/import-formats_fr/'>format CSV</a>",
             },
             "placement": "right",
             "position": "inside",
@@ -164,11 +164,11 @@ help = {"#project":{
           //   "class":"push-right"
           // }
           "#filter_analytics":{
-            "en":{"title":"Filter",
+            "en":{"title":"Filter documents",
                   "content":"You can filter the documents containing a certain type of data (words, authors, etc.) and see the changes in their number over time",
             },
             "fr":{
-              "title": "Filtrer",
+              "title": "Filtrer les documents",
               "content": "Vous pouvez filtrer les documents contenant un certain type de données (termes, auteurs, etc.) et consulter l'évolution de leur nombre au cours du temps",
             },
             "placement": "right",
@@ -199,11 +199,11 @@ help = {"#project":{
           },
           "#filter_graph":{
             "en":{
-              "title":"Filter",
-              "content":"Filter the links and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
+              "title":"Filter edges and nodes of the graph",
+              "content":"Filter the edges and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
             },
             "fr":{
-              "title": "Filtrer",
+              "title": "Filtrer les arcs et les noeuds du graph",
               "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
             },
             "placement": "right",

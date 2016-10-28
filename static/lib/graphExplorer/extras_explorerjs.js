@@ -999,42 +999,22 @@ function camaraButton(){
 }
 
 
+
 function getTips(){
     // console.log('FUN extras_explorerjs:getTips')
     param='';
-
-    text =
-				"<center><b>Graph Explorer</b></center>"+
-        "<ul><b>Basic Interactions:</b>"+
-        "<li>With the <b>mouse selector</b>, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
-				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> remove selected terms from map list.</li>"+
-				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
-				"</ul>"+
-        "<ul><b>Graph edition:</b>"+
-				"<p>Node sizes maps (on a log scale) the number of documents that"+
-				"mention its label and its associated terms (if any ).<br>"+
-				"When  according to the chosen proximity measure, the proximity"+
-				"between two terms is strong enough, a link is displayed.</p>"+
-				"<li>You can filter links by strength using the 'edges filter' slider"+
-				"(this will fold/unfold the graph):"+
-				"</li>"+
-				"<img src='/static/img/slider_edges.png'/>"+
-				"<li>You can decide to  remove small nodes or large nodes using the"+
-				"'nodes filter' slider (e.g. to get only the most popular"+
-				"expressions):</li>"+
-				"<img src='/static/img/slider_nodes.png'/>"+
-				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
-				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
-				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
-        "</ul>"+
-        "<ul><b>Graph Exploration</b>"+
-				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-				"<li>To center the graph, click on the center button. </li>"+
-				"<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
-				"<li>To see the edges, click on the edges button. </li>"+
-        "</ul>";
+		$("a.new_lang").on("click", function(){
+		  //close all popover while changing lang
+			$("#tab-container").hide();
+			$("#tab-container-top").hide();
+		  old_lang = $("a#lang").data("lang")
+		  new_lang = $(this).data("lang")
+		  updateLang(lang, new_lang);
+		});
+		active_lang = $("a#lang").data("lang")
+    help = {"en":"<h4>Graph basic manipulation</h4><p>Whenever you click on a node inside the graph. This window will show the label of the node and the  common expressions associated with the term.It will also display the list of associated documents. You can remove this node for candidate list by clicking on the button delete. You can edit the terms of this map by managing terms list<p> <a href='https://iscpif.fr/gargantext/improve-your-map/' target='_blank'>Discover how to improve your map</a>", "fr":"<h4>Manipuler les noeuds du graph</h4>"}
 
     $("#tab-container").hide();
     $("#tab-container-top").hide();
-    return text;
+    return help[active_lang];
 }

@@ -183,93 +183,93 @@ help = { "#project":{
             "placement": "right",
             "position":"before",
           },
-          "#nodeweight":{
-            "en":{
-              "title": "Filter Nodes Weight",
-              "content":  "Node sizes maps (on a log scale) correspond to the number of documents that"+
-                        "mention its label and its associated terms (if any). Filter node weight using the slider"
-
-            },
-            "fr":{
-              "title": "Filtrer les noeuds par leur poids",
-              "content": "La taille des noeuds (sur une echelle logarithmique) correspond au nombre de documents qui mentionnent leur label et leur termes associés (s'ils sont associés). Filtrer les noeuds par leur poids",
-            },
-            "placement": "right",
-            "position": "before",
-
-
-          },
-          "#edgeweight":{
-            "en":{
-              "title": "Filter Edges Weight",
-              "content":  "Edges sizes maps"
-
-            },
-            "fr":{
-              "title": "Filtrer les arcs par leur poids",
-              "content": "La taille des arcs ",
-            },
-            "placement": "right",
-            "position": "before",
-
-
-          },
-          "#labelsize":{
-            "en":{
-              "title":"Filter Label Size",
-              "content":"Filter on label size????",
-
-            },
-            "fr":{
-              "title": "Filtrer par la taille des labels",
-              "content": "????",
-
-            },
-            "placement": "right",
-            "position": "before",
-          },
-          "#colorgraph":{
-            "en":{
-              "title":"Color cluster",
-              "content":"Color clusters using options"
-
-            },
-            "fr":{
-              "title": "Colorer les clusters",
-              "content":"Colorer les clusters en utilisant les options"
-
-            },
-            "placement": "right",
-            "position": "before",
-          },
-          "#sizegraph":{
-            "en":{
-              "title":"Size graph",
-              "content":"Spatialize cluster using size options"
-
-            },
-            "fr":{
-              "title": "Size graph",
-              "content":"Spatialize cluster using size options"
-
-            },
-            "placement": "right",
-            "position": "before",
-          },
-          "#selectorsize":{
-            "en":{
-              "title":"Selector size",
-              "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
-
-            },
-            "fr":{
-              "title":"Selector size",
-              "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
-
-            },
-            "placement": "right",
-            "position": "before",
-          },
+          // "#nodeweight":{
+          //   "en":{
+          //     "title": "Filter Nodes Weight",
+          //     "content":  "Node sizes maps (on a log scale) correspond to the number of documents that"+
+          //               "mention its label and its associated terms (if any). Filter node weight using the slider"
+          //
+          //   },
+          //   "fr":{
+          //     "title": "Filtrer les noeuds par leur poids",
+          //     "content": "La taille des noeuds (sur une echelle logarithmique) correspond au nombre de documents qui mentionnent leur label et leur termes associés (s'ils sont associés). Filtrer les noeuds par leur poids",
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          //
+          //
+          // },
+          // "#edgeweight":{
+          //   "en":{
+          //     "title": "Filter Edges Weight",
+          //     "content":  "Edges sizes maps"
+          //
+          //   },
+          //   "fr":{
+          //     "title": "Filtrer les arcs par leur poids",
+          //     "content": "La taille des arcs ",
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          //
+          //
+          // },
+          // "#labelsize":{
+          //   "en":{
+          //     "title":"Filter Label Size",
+          //     "content":"Filter on label size????",
+          //
+          //   },
+          //   "fr":{
+          //     "title": "Filtrer par la taille des labels",
+          //     "content": "????",
+          //
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          // },
+          // "#colorgraph":{
+          //   "en":{
+          //     "title":"Color cluster",
+          //     "content":"Color clusters using options"
+          //
+          //   },
+          //   "fr":{
+          //     "title": "Colorer les clusters",
+          //     "content":"Colorer les clusters en utilisant les options"
+          //
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          // },
+          // "#sizegraph":{
+          //   "en":{
+          //     "title":"Size graph",
+          //     "content":"Spatialize cluster using size options"
+          //
+          //   },
+          //   "fr":{
+          //     "title": "Size graph",
+          //     "content":"Spatialize cluster using size options"
+          //
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          // },
+          // "#selectorsize":{
+          //   "en":{
+          //     "title":"Selector size",
+          //     "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
+          //
+          //   },
+          //   "fr":{
+          //     "title":"Selector size",
+          //     "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
+          //
+          //   },
+          //   "placement": "right",
+          //   "position": "before",
+          // },
           // "#addgraph":{
           //   "en":{
           //     "title":"Add results",
@@ -284,7 +284,22 @@ help = { "#project":{
           //   "placement": "right",
           //   "position": "inside",
           // },
-          "#search":{
+          // "#search":{
+          //   "en":{
+          //     "title":"Search in corpus",
+          //     "content":"Search nodes in graph: results will show the corresponding documents in corpus"
+          //
+          //   },
+          //   "fr":{
+          //     "title":"rechercher dans le corpus",
+          //     "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
+          //
+          //   },
+          //   "placement": "top",
+          //   "position": "inside",
+          // },
+          "#unfold":{
+            "type": "slider-content",
             "en":{
               "title":"Search in corpus",
               "content":"Search nodes in graph: results will show the corresponding documents in corpus"
@@ -295,9 +310,9 @@ help = { "#project":{
               "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
 
             },
-            "placement": "bottom",
+            "placement": "top",
             "position": "inside",
-          }
+          },
         }
 
 
@@ -371,7 +386,7 @@ function loadHelp(lang){
     info = help[div_id]
     console.log(lang)
     console.log(info[lang]["content"])
-    help_btn = '<img src="/static/img/question-mark.png" width="15px" height="15px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
+    help_btn = '<img src="/static/img/question-mark.png" width="20px" height="20px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info[lang]["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
 
 
     if (info["position"] == "inside"){

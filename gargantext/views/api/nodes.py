@@ -286,12 +286,13 @@ class NodeListResource(APIView):
             node_ids = [int(n) for n in parameters['ids'].split(',')]
         except :
             raise ValidationException('"ids" needs integers separated by comma.')
-
-        result = session.execute(
-            delete(Node).where(Node.id.in_(node_ids))
-        )
-        session.commit()
-
+        try:
+            result = session.execute(
+                delete(Node).where(Node.id.in_(node_ids))
+            )
+            session.commit()
+        finally:
+            session.close()
         return JsonHttpResponse({'deleted': result.rowcount})
 
 class NodeListHaving(APIView):
@@ -399,10 +400,13 @@ class NodeResource(APIView):
         parameters, query, count = _query_nodes(request, node_id)
         if not len(query):
             raise Http404()
-        result = session.execute(
-            delete(Node).where(Node.id == node_id)
-        )
-        session.commit()
+        try:
+            result = session.execute(
+                delete(Node).where(Node.id == node_id)
+            )
+            session.commit()
+        finally:
+            session.close()
         return JsonHttpResponse({'deleted': result.rowcount})
 
     def post(self, request, node_id):
@@ -567,16 +571,17 @@ class CorpusFavorites(APIView):
                 {'docs': list, 'default': ""}
             )
             nodeids_to_delete = [int(did) for did in req_params['docs'].split(',')]
-
-            # it deletes from favourites but not from DB
-            result = session.execute(
-                delete(NodeNode)
-                    .where(NodeNode.node1_id == fav_node.id)
-                    .where(NodeNode.node2_id.in_(nodeids_to_delete))
-            )
-            session.commit()
-            response = {'count_removed': result.rowcount}
-
+            try:
+                # it deletes from favourites but not from DB
+                result = session.execute(
+                    delete(NodeNode)
+                        .where(NodeNode.node1_id == fav_node.id)
+                        .where(NodeNode.node2_id.in_(nodeids_to_delete))
+                )
+                session.commit()
+                response = {'count_removed': result.rowcount}
+            finally:
+                session.close()
         return JsonHttpResponse(response)
 
     def put(self, request, corpus_id, check_each_doc=True):

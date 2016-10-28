@@ -1,16 +1,16 @@
 //Function that creates contextual help button
 
-help = {"#project":{
-          "en":
-            { "title":"Adding a project",
-              "content": "Click on the button and give a name to your projet",
-            },
-          "fr":
-            { "title": "Pour ajouter un projet",
-              "content":"Cliquez sur le bouton et donnez un nom à votre projet",
-            },
-            "placement":"bottom",
-            "position": "inside",
+help = { "#project":{
+            "en":
+              { "title":"Adding a project",
+                "content": "Click on the button and give a name to your projet",
+              },
+            "fr":
+              { "title": "Pour ajouter un projet",
+                "content":"Cliquez sur le bouton et donnez un nom à votre projet",
+              },
+              "placement":"bottom",
+              "position": "inside",
           },
           "#corpus":{
             "en":
@@ -181,65 +181,125 @@ help = {"#project":{
               "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
             },
             "placement": "right",
-            "position":"after",
+            "position":"before",
           },
-          "#graph_tips":{
-            "en":
-            { "title": "Graph Explorer",
-              "content": "<ul><b>Basic Interactions:</b>"+
-              "<li>With the <b>mouse selector</b>, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
-      				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+
-      				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
-      				"</ul>"+
-              "<ul><b>Graph manipulation:</b>"+
-              "<li>Link and node sizes indicate their strength.</li>"+
-              "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' slider:</li> <img src='/static/img/slider_edges.png'/>"+
-      				"<li>To select a more of less specific area of the graph, use the 'nodes filter' slider :</li><img src='/static/img/slider_nodes.png'/>"+
-      				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> <img src='/static/img/slider_label.png'/>"+
-      				"<li>Change cluster coloration using a different algorithm in the options <ul><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Colors' src='/static/img/colors.png' width='22px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='colorsBy(&quot;clust_default&quot; , &quot;color&quot;)'>By default</a></li><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;color&quot;)'>By degree</a></li><li><a href='#' onclick='colorsBy(&quot;clust_louvain&quot; , &quot;color&quot;)'>By community (louvain)</a></li>  </ul> </li></ul> "+
-      				"<li>Change size of cluster using the options <ul id='sizeGraph'><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Sizes' src='/static/img/NodeSize.png' width='18px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;size&quot;)'>By degree</a></li><li><a href='#' onclick='clustersBy(&quot;default&quot; , &quot;size&quot;)'>By default</a></li>  </ul> </li></ul>"+
-              "</ul>"+
-              "<ul><b>Micro/Macro view:</b>"+
-      				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-      				"<li>To center the graph, click on the center button. </li>"+
-              "<li>To explore the neighborhood of a selection, double click on the selected nodes</li>"+
-      				"<li>You can explore the graph using the slider and the  macro/mesolevel button.</li>"+
-      				"<a style='float: right;' class='btn-xs' href='#' id='zoomPlusButton'></a>"+
-      				"<a style='float: right;' class='btn-xs' href='#' id='zoomMinusButton'></a>"+
-      				"<li>Recalculate the clusters of your graph using the edge button</li>"
-      				"<a style='float:right;' href='#' id='edgesButton'></a>"+
-              "</ul>"
+          "#nodeweight":{
+            "en":{
+              "title": "Filter Nodes Weight",
+              "content":  "Node sizes maps (on a log scale) correspond to the number of documents that"+
+                        "mention its label and its associated terms (if any). Filter node weight using the slider"
+
+            },
+            "fr":{
+              "title": "Filtrer les noeuds par leur poids",
+              "content": "La taille des noeuds (sur une echelle logarithmique) correspond au nombre de documents qui mentionnent leur label et leur termes associés (s'ils sont associés). Filtrer les noeuds par leur poids",
+            },
+            "placement": "right",
+            "position": "before",
+
+
           },
-          "fr":{ "title": "Graph Explorer",
-            "content": "<ul><b>Interactions basiques:</b>"+
-            "<li>With the <b>mouse selector</b>, click on a node to select/unselect and get its contextual information. Associated terms, neighbours and the first 5 documents will appears in this window.</li>"+
-            "<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> clears all the active selections.</li>"+
-            "<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
-            "</ul>"+
-            "<ul><b>Graph manipulation:</b>"+
-            "<li>Link and node sizes indicate their strength.</li>"+
-            "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' slider:</li> <img src='/static/img/slider_edges.png'/>"+
-            "<li>To select a more of less specific area of the graph, use the 'nodes filter' slider :</li><img src='/static/img/slider_nodes.png'/>"+
-            "<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> <img src='/static/img/slider_label.png'/>"+
-            "<li>Change cluster coloration using a different algorithm in the options <ul><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Colors' src='/static/img/colors.png' width='22px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='colorsBy(&quot;clust_default&quot; , &quot;color&quot;)'>By default</a></li><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;color&quot;)'>By degree</a></li><li><a href='#' onclick='colorsBy(&quot;clust_louvain&quot; , &quot;color&quot;)'>By community (louvain)</a></li>  </ul> </li></ul> "+
-            "<li>Change size of cluster using the options <ul id='sizeGraph'><li class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>        <img title='Set Sizes' src='/static/img/NodeSize.png' width='18px'><b class='caret'></b></a>  <ul class='dropdown-menu'><li><a href='#' onclick='clustersBy(&quot;degree&quot; , &quot;size&quot;)'>By degree</a></li><li><a href='#' onclick='clustersBy(&quot;default&quot; , &quot;size&quot;)'>By default</a></li>  </ul> </li></ul>"+
-            "</ul>"+
-            "<ul><b>Micro/Macro view:</b>"+
-            "<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-            "<li>To center the graph, click on the center button. </li>"+
-            "<li>To explore the neighborhood of a selection, double click on the selected nodes</li>"+
-            "<li>You can explore the graph using the slider and the  macro/mesolevel button.</li>"+
-            "<a style='float: right;' class='btn-xs' href='#' id='zoomPlusButton'></a>"+
-            "<a style='float: right;' class='btn-xs' href='#' id='zoomMinusButton'></a>"+
-            "<li>Recalculate the clusters of your graph using the edge button</li>"
-            "<a style='float:right;' href='#' id='edgesButton'></a>"+
-            "</ul>"
-        },
-          "placement": "right",
-          "position": "after",
-          //special type
-          "type": "slider",
-        };
+          "#edgeweight":{
+            "en":{
+              "title": "Filter Edges Weight",
+              "content":  "Edges sizes maps"
+
+            },
+            "fr":{
+              "title": "Filtrer les arcs par leur poids",
+              "content": "La taille des arcs ",
+            },
+            "placement": "right",
+            "position": "before",
+
+
+          },
+          "#labelsize":{
+            "en":{
+              "title":"Filter Label Size",
+              "content":"Filter on label size????",
+
+            },
+            "fr":{
+              "title": "Filtrer par la taille des labels",
+              "content": "????",
+
+            },
+            "placement": "right",
+            "position": "before",
+          },
+          "#colorgraph":{
+            "en":{
+              "title":"Color cluster",
+              "content":"Color clusters using options"
+
+            },
+            "fr":{
+              "title": "Colorer les clusters",
+              "content":"Colorer les clusters en utilisant les options"
+
+            },
+            "placement": "right",
+            "position": "before",
+          },
+          "#sizegraph":{
+            "en":{
+              "title":"Size graph",
+              "content":"Spatialize cluster using size options"
+
+            },
+            "fr":{
+              "title": "Size graph",
+              "content":"Spatialize cluster using size options"
+
+            },
+            "placement": "right",
+            "position": "before",
+          },
+          "#selectorsize":{
+            "en":{
+              "title":"Selector size",
+              "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
+
+            },
+            "fr":{
+              "title":"Selector size",
+              "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
+
+            },
+            "placement": "right",
+            "position": "before",
+          },
+          // "#addgraph":{
+          //   "en":{
+          //     "title":"Add results",
+          //     "content":"Add next search results to current selection"
+          //
+          //   },
+          //   "fr":{
+          //     "title":"Ajouter",
+          //     "content":"Ajouter les resultats de la recherche à la selection active"
+          //
+          //   },
+          //   "placement": "right",
+          //   "position": "inside",
+          // },
+          "#search":{
+            "en":{
+              "title":"Search in corpus",
+              "content":"Search nodes in graph: results will show the corresponding documents in corpus"
+
+            },
+            "fr":{
+              "title":"rechercher dans le corpus",
+              "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
+
+            },
+            "placement": "bottom",
+            "position": "inside",
+          }
+        }
+
 
 
 //current lang

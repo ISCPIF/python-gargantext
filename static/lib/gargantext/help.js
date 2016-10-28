@@ -370,7 +370,7 @@ function updateLang(old_lang, new_lang){
 
 
 function loadHelp(lang){
-  $("span.help-btn").remove()
+  $("img.help-btn").remove()
   $( ".help" ).each(function(i, el) {
     console.log("This", el);
     id = el.id

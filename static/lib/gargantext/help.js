@@ -298,21 +298,21 @@ help = { "#project":{
           //   "placement": "top",
           //   "position": "inside",
           // },
-          "#unfold":{
-            "type": "slider-content",
-            "en":{
-              "title":"Search in corpus",
-              "content":"Search nodes in graph: results will show the corresponding documents in corpus"
-
-            },
-            "fr":{
-              "title":"rechercher dans le corpus",
-              "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
-
-            },
-            "placement": "top",
-            "position": "inside",
-          },
+          // "#unfold":{
+          //   "type": "slider-content",
+          //   "en":{
+          //     "title":"Search in corpus",
+          //     "content":"Search nodes in graph: results will show the corresponding documents in corpus"
+          //
+          //   },
+          //   "fr":{
+          //     "title":"rechercher dans le corpus",
+          //     "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
+          //
+          //   },
+          //   "placement": "top",
+          //   "position": "inside",
+          // },
         }
 
 

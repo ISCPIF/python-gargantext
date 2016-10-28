@@ -171,18 +171,18 @@ help = { "#project":{
             "placement": "right",
             "position": "inside",
           },
-          "#filter_graph":{
-            "en":{
-              "title":"Filter edges and nodes of the graph",
-              "content":"Filter the edges and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
-            },
-            "fr":{
-              "title": "Filtrer les arcs et les noeuds du graph",
-              "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
-            },
-            "placement": "right",
-            "position":"before",
-          },
+          // "#filter_graph":{
+          //   "en":{
+          //     "title":"Filter edges and nodes of the graph",
+          //     "content":"Filter the edges and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
+          //   },
+          //   "fr":{
+          //     "title": "Filtrer les arcs et les noeuds du graph",
+          //     "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
+          //   },
+          //   "placement": "right",
+          //   "position":"before",
+          // },
           // "#nodeweight":{
           //   "en":{
           //     "title": "Filter Nodes Weight",

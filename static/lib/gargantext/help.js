@@ -23,7 +23,7 @@ help = { "#project":{
                         "<li>Click on 'Chose a file...'</li>"+
                         "<li>And give a name to your corpus</li>"+
                         "<li>Click on 'Process this!'</li></ol>"+
-                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database (only supported by PubMed, IsTex or SCOAP3 right now):</b>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database</b> <small>(only supported by PubMed, IsTex or SCOAP3 right now):</small>"+
                         "<ol>"+
                         "<li>Select No option to the question 'Do you have a file already?'</li>"+
                         "<li>Enter your query (syntax of the database is still the same)</li>"+
@@ -42,7 +42,7 @@ help = { "#project":{
                         "<li>Cliquez sur 'Choisir un fichier...'</li>"+
                         "<li>Puis donnez un nom à votre corpus</li>"+
                         "<li>Cliquez sur 'Process this!'</li></ol>"+
-                        "<b><span class='glyphicon glyphicon-hand-right'>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</b>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'> </span> Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte</b> <small>(PubMed ou IsTex pour le moment):</small>"+
                         "<ol>"+
                         "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
                         "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
@@ -51,7 +51,7 @@ help = { "#project":{
                         "</ul>"+
                         "</p>",
                       },
-            "placement": "bottom",
+            "placement": "right",
             "position": "inside",
             },
 

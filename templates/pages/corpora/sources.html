@@ -20,40 +20,35 @@
 
 <div class="container">
     <div class="col-md-3 col-md-offset-2">
+      <div class="bs-callout">
+          <div class="row">
 
-
+              <div id="monthly-volume-chart"></div>
+          </div>
+        </div>
         <div class="bs-callout">
-            <div class="row">
-                <div id="monthly-volume-chart"></div>
-            </div>
-
-            <div id="content_loader">
-              <br>
+          <div class="row">
+            <div id="monthly-move-chart">
               <center>
-                <!-- <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img> -->
-              </center>
-              <br>
-            </div>
-
-
-
-            <div id="monthly-move-chart" class="bs-callout">
-                <center>
-                  <p id="sources_time" class="help">
-                    Select a frequency group in the chart with blue bars to zoom in  </p>
+                <p class="help" id="sources_time">Select a time range in the chart with blue bars to zoom in </p>
                 <p align="center">
-                <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
-                <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
-                <!-- <p style="font-size:70%">
-                    <b>x</b>: amount of documents for the source
-                    <b>y</b>: number of sources with that amount
-                  -->
+                  <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
+                  <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a>
                 </p>
                 <div class="clearfix"></div>
-                </center>
+              </center>
             </div>
+          </div>
+          <div id="content_loader">
+                <br>
+                <center>
+
+                  <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+                </center>
+                <br>
 
           </div>
+      </div>
     </div>
 </div>
 

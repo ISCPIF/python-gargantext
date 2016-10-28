@@ -1027,7 +1027,7 @@ function getTips(){
 				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
 				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
         "</ul>"+
-        "<ul><b>Micro/Macro view:</b>"+
+        "<ul><b>Graph Exploration</b>"+
 				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
 				"<li>To center the graph, click on the center button. </li>"+
 				"<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+

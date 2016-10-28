@@ -171,232 +171,91 @@ help = { "#project":{
             "placement": "right",
             "position": "inside",
           },
-          // "#filter_graph":{
-          //   "en":{
-          //     "title":"Filter edges and nodes of the graph",
-          //     "content":"Filter the edges and nodes of your graph according to their weight. Use each slippery extremity to remove the weakest elements (left) or the strongest (right)",
-          //   },
-          //   "fr":{
-          //     "title": "Filtrer les arcs et les noeuds du graph",
-          //     "content": "Filtrer les arcs et les noeuds de votre graphe en fonction de leur poids. Utilisez chaque extremité glissante pour retirer les éléments les plus faibles (à gauche) ou les plus forts (à droite)",
-          //   },
-          //   "placement": "right",
-          //   "position":"before",
-          // },
-          // "#nodeweight":{
-          //   "en":{
-          //     "title": "Filter Nodes Weight",
-          //     "content":  "Node sizes maps (on a log scale) correspond to the number of documents that"+
-          //               "mention its label and its associated terms (if any). Filter node weight using the slider"
-          //
-          //   },
-          //   "fr":{
-          //     "title": "Filtrer les noeuds par leur poids",
-          //     "content": "La taille des noeuds (sur une echelle logarithmique) correspond au nombre de documents qui mentionnent leur label et leur termes associés (s'ils sont associés). Filtrer les noeuds par leur poids",
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          //
-          //
-          // },
-          // "#edgeweight":{
-          //   "en":{
-          //     "title": "Filter Edges Weight",
-          //     "content":  "Edges sizes maps"
-          //
-          //   },
-          //   "fr":{
-          //     "title": "Filtrer les arcs par leur poids",
-          //     "content": "La taille des arcs ",
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          //
-          //
-          // },
-          // "#labelsize":{
-          //   "en":{
-          //     "title":"Filter Label Size",
-          //     "content":"Filter on label size????",
-          //
-          //   },
-          //   "fr":{
-          //     "title": "Filtrer par la taille des labels",
-          //     "content": "????",
-          //
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          // },
-          // "#colorgraph":{
-          //   "en":{
-          //     "title":"Color cluster",
-          //     "content":"Color clusters using options"
-          //
-          //   },
-          //   "fr":{
-          //     "title": "Colorer les clusters",
-          //     "content":"Colorer les clusters en utilisant les options"
-          //
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          // },
-          // "#sizegraph":{
-          //   "en":{
-          //     "title":"Size graph",
-          //     "content":"Spatialize cluster using size options"
-          //
-          //   },
-          //   "fr":{
-          //     "title": "Size graph",
-          //     "content":"Spatialize cluster using size options"
-          //
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          // },
-          // "#selectorsize":{
-          //   "en":{
-          //     "title":"Selector size",
-          //     "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
-          //
-          //   },
-          //   "fr":{
-          //     "title":"Selector size",
-          //     "content":"Use the mouse on the graph to select nodes. Change the size of the selector"
-          //
-          //   },
-          //   "placement": "right",
-          //   "position": "before",
-          // },
-          // "#addgraph":{
-          //   "en":{
-          //     "title":"Add results",
-          //     "content":"Add next search results to current selection"
-          //
-          //   },
-          //   "fr":{
-          //     "title":"Ajouter",
-          //     "content":"Ajouter les resultats de la recherche à la selection active"
-          //
-          //   },
-          //   "placement": "right",
-          //   "position": "inside",
-          // },
-          // "#search":{
-          //   "en":{
-          //     "title":"Search in corpus",
-          //     "content":"Search nodes in graph: results will show the corresponding documents in corpus"
-          //
-          //   },
-          //   "fr":{
-          //     "title":"rechercher dans le corpus",
-          //     "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
-          //
-          //   },
-          //   "placement": "top",
-          //   "position": "inside",
-          // },
-          // "#unfold":{
-          //   "type": "slider-content",
-          //   "en":{
-          //     "title":"Search in corpus",
-          //     "content":"Search nodes in graph: results will show the corresponding documents in corpus"
-          //
-          //   },
-          //   "fr":{
-          //     "title":"rechercher dans le corpus",
-          //     "content":"Rechercher les noeuds du graph:les resultats montreront leur emploi dans le corpus"
-          //
-          //   },
-          //   "placement": "top",
-          //   "position": "inside",
-          // },
-          // "#edition":{
-          //     "en":{
-          //       "title":"Graph Edition and Manipulation Toolbar",
-          //       "content":"Manipulate and edit your graph using this toolbar"+
-          //                 "<ul>"+
-          //         				"<li>Node sizes maps (on a log scale) the number of documents that"+
-          //         				"mention its label and its associated terms (if any ).</li>"+
-          //         				"<li>When  according to the chosen proximity measure, the proximity"+
-          //         				"between two terms is strong enough, a link is displayed.</li>"+
-          //         				"<li>You can filter links by strength using the 'edges filter' slider"+
-          //         				"(this will fold/unfold the graph):"+
-          //         				"</li>"+
-          //         				"<img src='/static/img/slider_edges.png'/>"+
-          //         				"<li>You can decide to  remove small nodes or large nodes using the"+
-          //         				"'nodes filter' slider (e.g. to get only the most popular"+
-          //         				"expressions):</li>"+
-          //         				"<img src='/static/img/slider_nodes.png'/>"+
-          //         				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
-          //                 "<img src='/static/img/slider_label.png'/>"+
-          //         				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
-          //                 "<img src='/static/img/slider_color.png'/>"+
-          //         				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
-          //                 "<img src='/static/img/slider_size.png'/>"+
-          //                 "</ul>",
-          //
-          //     },
-          //     "fr":{
-          //       "title":"Outil d'édition et de manipulation du graph",
-          //       "content":"Manipuler and éditer le graph  grace à cette barre d'outil"+
-          //                 "<ul>"+
-          //         				"<li>Node sizes maps (on a log scale) the number of documents that"+
-          //         				"mention its label and its associated terms (if any ).</li>"+
-          //         				"<li>When  according to the chosen proximity measure, the proximity"+
-          //         				"between two terms is strong enough, a link is displayed.</li>"+
-          //         				"<li>You can filter links by strength using the 'edges filter' slider"+
-          //         				"(this will fold/unfold the graph):"+
-          //         				"</li>"+
-          //         				"<img src='/static/img/slider_edges.png'/>"+
-          //         				"<li>You can decide to  remove small nodes or large nodes using the"+
-          //         				"'nodes filter' slider (e.g. to get only the most popular"+
-          //         				"expressions):</li>"+
-          //         				"<img src='/static/img/slider_nodes.png'/>"+
-          //         				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
-          //                 "<img src='/static/img/slider_label.png'/>"+
-          //         				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
-          //                 "<img src='/static/img/slider_color.png'/>"+
-          //         				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
-          //                 "<img src='/static/img/slider_size.png'/>"+
-          //                 "</ul>",
-          //
-          //     },
-          //     "placement": "right",
-          //     "position": "inside",
-          // },
-          // "#exploration":{
-          //   "en":{
-          //   "title":"Graph Exploration Toolbar",
-          //   "content":"<div>Explore your graph using this navigation bar"+
-          //   "<ul>"+
-    			// 	"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-    			// 	"<li>To center the graph, click on the center button. </li>"+
-          //   "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
-          //   "<li>To calculate proximity measure and show the edges click on the button</li>"+
-    			// 	"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
-    			// 	"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
-    			// 	"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
-          //   "</li></ul>",
-          //     },
-          //     "fr":{
-          //     "title":"Outils d'exploration du Graphe",
-          //     "content":"<div>Explorer le graph en utilisant cette barre d'outils"+
-          //     "<ul>"+
-      		// 		"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-      		// 		"<li>To center the graph, click on the center button. </li>"+
-          //     "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
-          //     "<li>To calculate proximity measure and show the edges click on the button</li>"+
-      		// 		"<li>You can explore the graph using the slider and the  +/- button."+
-      		// 		"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
-      		// 		"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
-          //     "</li></ul>",
-          //       },
-          // "placement": "right",
-          // "position": "inside",
-          // },
+          
+          "#edition":{
+              "en":{
+                "title":"Graph Edition and Manipulation Toolbar",
+                "content":"Manipulate and edit your graph using this toolbar"+
+                          "<ul>"+
+                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
+                  				"mention its label and its associated terms (if any ).</li>"+
+                  				"<li>When  according to the chosen proximity measure, the proximity"+
+                  				"between two terms is strong enough, a link is displayed.</li>"+
+                  				"<li>You can filter links by strength using the 'edges filter' slider"+
+                  				"(this will fold/unfold the graph):"+
+                  				"</li>"+
+                  				"<img src='/static/img/slider_edges.png'/>"+
+                  				"<li>You can decide to  remove small nodes or large nodes using the"+
+                  				"'nodes filter' slider (e.g. to get only the most popular"+
+                  				"expressions):</li>"+
+                  				"<img src='/static/img/slider_nodes.png'/>"+
+                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                          "<img src='/static/img/slider_label.png'/>"+
+                  				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_color.png'/>"+
+                  				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_size.png'/>"+
+                          "</ul>",
+
+              },
+              "fr":{
+                "title":"Outil d'édition et de manipulation du graph",
+                "content":"Manipuler and éditer le graph  grace à cette barre d'outil"+
+                          "<ul>"+
+                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
+                  				"mention its label and its associated terms (if any ).</li>"+
+                  				"<li>When  according to the chosen proximity measure, the proximity"+
+                  				"between two terms is strong enough, a link is displayed.</li>"+
+                  				"<li>You can filter links by strength using the 'edges filter' slider"+
+                  				"(this will fold/unfold the graph):"+
+                  				"</li>"+
+                  				"<img src='/static/img/slider_edges.png'/>"+
+                  				"<li>You can decide to  remove small nodes or large nodes using the"+
+                  				"'nodes filter' slider (e.g. to get only the most popular"+
+                  				"expressions):</li>"+
+                  				"<img src='/static/img/slider_nodes.png'/>"+
+                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                          "<img src='/static/img/slider_label.png'/>"+
+                  				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_color.png'/>"+
+                  				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
+                          "<img src='/static/img/slider_size.png'/>"+
+                          "</ul>",
+
+              },
+              "placement": "right",
+              "position": "inside",
+          },
+          "#exploration":{
+            "en":{
+            "title":"Graph Exploration Toolbar",
+            "content":"<div>Explore your graph using this navigation bar"+
+            "<ul>"+
+    				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+    				"<li>To center the graph, click on the center button. </li>"+
+            "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
+            "<li>To calculate proximity measure and show the edges click on the button</li>"+
+    				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
+    				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+    				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+            "</li></ul>",
+              },
+              "fr":{
+              "title":"Outils d'exploration du Graphe",
+              "content":"<div>Explorer le graph en utilisant cette barre d'outils"+
+              "<ul>"+
+      				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+      				"<li>To center the graph, click on the center button. </li>"+
+              "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
+              "<li>To calculate proximity measure and show the edges click on the button</li>"+
+      				"<li>You can explore the graph using the slider and the  +/- button."+
+      				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+      				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+              "</li></ul>",
+                },
+          "placement": "right",
+          "position": "inside",
+          },
         }
 
 

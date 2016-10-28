@@ -1011,10 +1011,10 @@ function getTips(){
 				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
 				"</ul>"+
         "<ul><b>Graph manipulation:</b>"+
-				"<li>Node sizes maps (on a log scale) the number of documents that"+
+				"<p>Node sizes maps (on a log scale) the number of documents that"+
 				"mention its label and its associated terms (if any ).<br>"+
 				"When  according to the chosen proximity measure, the proximity"+
-				"between two terms is strong enough, a link is displayed.</li>"+
+				"between two terms is strong enough, a link is displayed.</p>"+
 				"<li>You can filter links by strength using the 'edges filter' slider"+
 				"(this will fold/unfold the graph):"+
 				"</li>"+
@@ -1030,10 +1030,9 @@ function getTips(){
         "<ul><b>Micro/Macro view:</b>"+
 				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
 				"<li>To center the graph, click on the center button. </li>"+
-				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
-				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
-				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
-        "</li></ul>";
+				"<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
+				"<li>To see the edges, click on the edges button. </li>"+
+        "</ul>";
 
     $("#tab-container").hide();
     $("#tab-container-top").hide();

@@ -1010,7 +1010,7 @@ function getTips(){
 				"<li>In case of node selection(simple or multiple), the button <button class='delete'>Delete</button> remove selected terms from map list.</li>"+
 				"<!--<li>You can search a specific term in the search bar: <div id='search_input_group' class='input-group input-group-sm'><span class='input-group-btn'><button id='searchbutton' title='Search the topic in the map' class='btn btn-info' type='button'><span class='glyphicon glyphicon-search'></span></button></span><input id='searchinput' type='text' class='form-control' placeholder='Search' /></li>-->"+
 				"</ul>"+
-        "<ul><b>Graph manipulation:</b>"+
+        "<ul><b>Graph edition:</b>"+
 				"<p>Node sizes maps (on a log scale) the number of documents that"+
 				"mention its label and its associated terms (if any ).<br>"+
 				"When  according to the chosen proximity measure, the proximity"+

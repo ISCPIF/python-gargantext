@@ -23,7 +23,7 @@ help = {"#project":{
                         "<li>Click on 'Chose a file...'</li>"+
                         "<li>And give a name to your corpus</li>"+
                         "<li>Click on 'Process this!'</li></ol>"+
-                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database (only supported by PubMed or IsTex right now):</b>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database (only supported by PubMed, IsTex or SCOAP3 right now):</b>"+
                         "<ol>"+
                         "<li>Select No option to the question 'Do you have a file already?'</li>"+
                         "<li>Enter your query (syntax of the database is still the same)</li>"+

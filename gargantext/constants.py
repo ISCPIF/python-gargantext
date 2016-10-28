@@ -398,7 +398,7 @@ DEFAULT_N_DOCS_HAVING_NGRAM = 5
 # Graph constraints to compute the graph:
 # Modes: live graph generation, graph asynchronously computed or errors detected
 # here are the maximum size of corpus and maplist required to compute the graph
-graph_constraints = {'corpusMax' : 100
-                    ,'corpusMin' : 40
+graph_constraints = {'corpusMax' : 0
+                    ,'corpusMin' : 0
                     ,'mapList'   : 50
                     }

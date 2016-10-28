@@ -54,33 +54,7 @@ help = {"#project":{
             "placement": "bottom",
             "position": "inside",
             },
-        // "#corpus":{
-        //   "en":
-        //     { "title":"Adding a corpus",
-        //     "content": "Click on the button and give a name to your projet",
-        //     },
-        //   "fr":
-        //     { "title": "Ajouter un corpus",
-        //       "content": "<p>Pour ajouter un corpus à votre projet"+
-        //               "<br><b>Sélectionnez une base de données</b>"+
-        //               "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous avez déjà un fichier à téléverser :</b>"+
-        //               "<ol>"+
-        //               "<li>Vérifiez que votre fichier est <a href=''>compressé (archive .zip) </a> et dans le bon <a href='https://iscpif.fr/gargantext/import-formats'>format</a></li>"+
-        //               "<li>Cliquez sur 'Choisir un fichier...'</li>"+
-        //               "<li>Puis donnez un nom à votre corpus</li>"+
-        //               "<li>Cliquez sur 'Process this!'</li></ol>"+
-        //               "<b><span class='glyphicon glyphicon-hand-right'>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</b>"+
-        //               "<ol>"+
-        //               "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
-        //               "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
-        //               "<li>Cliquez ensuite sur 'Scan' pour avoir le nombre de résultats de votre requête</li>"+
-        //               "<li>Cliquez sur 'Download!' pour importer et analyser un échantillon</li>"+
-        //               "</ul>"+
-        //               "</p>",
-        //             },
-        //   "placement": "bottom",
-        //   "position": "inside",
-        //   },
+        
           '#docFilter':{
             "en":{
                 "title":"Filter document",
@@ -115,7 +89,7 @@ help = {"#project":{
             "fr":{
               "title": "Filtrer par nombre de publications",
               "content": "Selectionnez une plage de nombre minimal et maximal de publications par source en utilisant le curseur sur l'histogramme ci-dessus."+
-              "Les sources correspondant à cette plage avec leur nombre de publications s'affichera dans la partie inférieure.",
+              "Les sources correspondant à cette plage temporelle avec leur nombre de publications s'affichera dans la partie inférieure.",
             },
             "placement": "right",
             "position": "inside",

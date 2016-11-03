@@ -997,6 +997,41 @@ function camaraButton(){
         */
     });
 }
+function updateLang(old_lang, new_lang){
+  console.log("Old", old_lang)
+  console.log("Updating to", new_lang)
+
+  //update lang in db
+    $.ajax({
+       url: '/api/user/parameters/',
+       type: 'PUT',
+       data: {"language":new_lang},
+       beforeSend: function(xhr) {
+             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                   },
+      success: function(response, data) {
+        console.log(data)
+        var old_lang = $("a#lang").data("lang")
+        //var new_lang = data["language"]
+
+
+          //change active langue
+        $("a#lang").attr("data-lang", new_lang);
+        $("a#lang > img").attr({"value":new_lang, "src":"/static/img/"+new_lang+".png"})
+        $("a#lang > span").text(new_lang)
+          //switch lang to option
+        $("a.new_lang").attr("data-lang", old_lang);
+        $("a.new_lang > img").attr({"value":old_lang, "src":"/static/img/"+lang+".png"})
+        $("a.new_lang > span").text(old_lang)
+        console.log(response, data)
+               },
+          error: function(xhr) {
+              console.log("EDIT FAIL!")
+               },
+          });
+
+      console.log("defaut lang is now", $("a#lang").data("lang"))
+};
 
 
 

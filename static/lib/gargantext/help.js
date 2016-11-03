@@ -23,7 +23,7 @@ help = { "#project":{
                         "<li>Click on 'Chose a file...'</li>"+
                         "<li>And give a name to your corpus</li>"+
                         "<li>Click on 'Process this!'</li></ol>"+
-                        "<b><span class='glyphicon glyphicon-hand-right'>  If you want to import a corpus from an open database (only supported by PubMed, IsTex or SCOAP3 right now):</b>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'></span>  If you want to import a corpus from an open database <small>(only supported by PubMed, IsTex or SCOAP3 right now)</small>:</b>"+
                         "<ol>"+
                         "<li>Select No option to the question 'Do you have a file already?'</li>"+
                         "<li>Enter your query (syntax of the database is still the same)</li>"+
@@ -42,7 +42,7 @@ help = { "#project":{
                         "<li>Cliquez sur 'Choisir un fichier...'</li>"+
                         "<li>Puis donnez un nom à votre corpus</li>"+
                         "<li>Cliquez sur 'Process this!'</li></ol>"+
-                        "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte (PubMed ou IsTex pour le moment):</b>"+
+                        "<b><span class='glyphicon glyphicon-hand-right'></span>  Si vous souhaitez importer un corpus directement depuis une base de donnée ouverte <small>(SCOAP3, PubMed ou IsTex pour le moment)</small>:</b>"+
                         "<ol>"+
                         "<li>Sélectionnez l'option No à la question Do you have a file already?</li>"+
                         "<li>Entrez votre requête (la syntaxe de la base de donnée cible est conservée)</li>"+
@@ -65,7 +65,7 @@ help = { "#project":{
               "content": "En selectionnant l'option correspondante dans le menu déroulant, vous pouvez afficher ici tous les documents, uniquement vos favoris ou encore rechercher les doublons pour les supprimer",
             },
             "placement":"right",
-            "position": "after",
+            "position": "inside",
           },
           '#titles_time':{
             "en":{
@@ -130,13 +130,7 @@ help = { "#project":{
             "placement": "right",
             "position": "inside",
           },
-          // '#export_terms':{
-          //   "title": "Exporter",
-          //   "content": "Vous pouvez exporter votre liste de sources <a href=''>format CSV</a>",
-          //   "placement": "right",
-          //   "position": "after",
-          //   "class":"push-right"
-          // }
+
           "#filter_analytics":{
             "en":{"title":"Filter documents",
                   "content":"You can filter the documents containing a certain type of data (words, authors, etc.) and see the changes in their number over time",
@@ -177,13 +171,6 @@ help = { "#project":{
                 "title":"Graph Edition and Manipulation Toolbar",
                 "content":"Manipulate and edit your graph using this toolbar"+
                           "<ul>"+
-                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
-                  				"mention its label and its associated terms (if any ).</li>"+
-                  				"<li>When  according to the chosen proximity measure, the proximity"+
-                  				"between two terms is strong enough, a link is displayed.</li>"+
-                  				"<li>You can filter links by strength using the 'edges filter' slider"+
-                  				"(this will fold/unfold the graph):"+
-                  				"</li>"+
                   				"<img src='/static/img/slider_edges.png'/>"+
                   				"<li>You can decide to  remove small nodes or large nodes using the"+
                   				"'nodes filter' slider (e.g. to get only the most popular"+
@@ -202,13 +189,6 @@ help = { "#project":{
                 "title":"Outil d'édition et de manipulation du graph",
                 "content":"Manipuler and éditer le graph  grace à cette barre d'outil"+
                           "<ul>"+
-                  				"<li>Node sizes maps (on a log scale) the number of documents that"+
-                  				"mention its label and its associated terms (if any ).</li>"+
-                  				"<li>When  according to the chosen proximity measure, the proximity"+
-                  				"between two terms is strong enough, a link is displayed.</li>"+
-                  				"<li>You can filter links by strength using the 'edges filter' slider"+
-                  				"(this will fold/unfold the graph):"+
-                  				"</li>"+
                   				"<img src='/static/img/slider_edges.png'/>"+
                   				"<li>You can decide to  remove small nodes or large nodes using the"+
                   				"'nodes filter' slider (e.g. to get only the most popular"+
@@ -278,7 +258,7 @@ function updateLang(old_lang, new_lang){
   console.log("Old", old_lang)
   console.log("Updating to", new_lang)
 
-  //update lang in db
+  //update lang in db via API
     $.ajax({
        url: '/api/user/parameters/',
        type: 'PUT',
@@ -331,7 +311,7 @@ function loadHelp(lang){
     console.log(info[lang]["content"])
     help_btn = '<img src="/static/img/question-mark.png" width="20px" height="20px"  class="help-btn" data-html="true" tab-index=0 data-container="body" data-toggle="popover" data-placement="'+info["placement"]+'"  title="'+info[lang]["title"]+'" data-content="'+info[lang]["content"]+'"></i>'
 
-
+    console.log("position of the btn", info["position"])
     if (info["position"] == "inside"){
       $(help_btn).appendTo(el);
     }
@@ -339,15 +319,12 @@ function loadHelp(lang){
       $(help_btn).insertAfter(el);
     }
     else if (info["position"] == "before"){
+      console.log("position", info["position"])
+      //parent = $(el).parent()
+      //help = $(help_btn).appendTo(el)
+      //parent.prependTo(help)
+      //console.log(">>>>>", $(this))
       $(help_btn).insertBefore(el);
-    }
-    else if (info["position"] == "dup_child"){
-      //copy the first child inside the element and create a custom one with btn
-      console.log(el.children())
-    }
-    else if (info["position"] == "dup_parent"){
-      //copy the element and create a copy with btn
-      console.log(el.parent())
     }
     else{
       //duplicate element and insert the button

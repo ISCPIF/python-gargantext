@@ -176,7 +176,7 @@ help = { "#project":{
                   				"'nodes filter' slider (e.g. to get only the most popular"+
                   				"expressions):</li>"+
                   				"<img src='/static/img/slider_nodes.png'/>"+
-                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li>"+
                           "<img src='/static/img/slider_label.png'/>"+
                   				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
                           "<img src='/static/img/slider_color.png'/>"+
@@ -190,48 +190,50 @@ help = { "#project":{
                 "content":"Manipuler and éditer le graph  grace à cette barre d'outil"+
                           "<ul>"+
                   				"<img src='/static/img/slider_edges.png'/>"+
-                  				"<li>You can decide to  remove small nodes or large nodes using the"+
-                  				"'nodes filter' slider (e.g. to get only the most popular"+
-                  				"expressions):</li>"+
+                  				"<li>Vous pouvez supprimer en fonction de leur taille en utilisant"+
+                  				"la barre glissante 'nodes filter' (e.g. supprimer les petits noeuds pour conserver simplement les expressions les plus populaires):</li>"+
                   				"<img src='/static/img/slider_nodes.png'/>"+
-                  				"<li>To change size of label (proportionnal to their strenght) use the 'label size slider':</li> "+
+                  				"<li>Pour changer la taille des labels (proportionnel à leur poids) utilisez la barre glissante 'label size slider':</li> "+
                           "<img src='/static/img/slider_label.png'/>"+
-                  				"<li>Change cluster coloration using <label>'Colors'</label> button choosing in the options"+
+                  				"<li>Changez la coloration des clusters en utilsant le boutton <label>'Colors'</label> et en selectionnant une option de coloration</li>"+
                           "<img src='/static/img/slider_color.png'/>"+
-                  				"<li>Change size of the nodes using <label>'Sizes'</label> button choosing in the options"+
+                  				"<li>Changez la taille des noeuds en utilisant le bouton <label>'Sizes'</label> et en selectionnant une option de calcul"+
                           "<img src='/static/img/slider_size.png'/>"+
                           "</ul>",
 
               },
-              "placement": "right",
+              "placement": "bottom",
               "position": "inside",
           },
           "#exploration":{
             "en":{
-            "title":"Graph Exploration Toolbar",
-            "content":"<div>Explore your graph using this navigation bar"+
-            "<ul>"+
-    				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-    				"<li>To center the graph, click on the center button. </li>"+
-            "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
-            "<li>To calculate proximity measure and show the edges click on the button</li>"+
-    				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
-    				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
-    				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
-            "</li></ul>",
+              "title":"Graph Exploration Toolbar",
+              "content":"<div>Explore your graph using this navigation bar"+
+              "<ul>"+
+              "<a style='float:right' href='#' id='edgesButton'></a>"+
+              "<li>To calculate proximity measure and show the edges click on the button</li>"+
+              "<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+              "<li>To center the graph, click on the center button.</li>"+
+
+      				"<li>You can explore the graph using the slider and the  macro/mesolevel button."+
+              "<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a>"+
+              "<a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
+      				"</div>"+
+              "</li></ul>",
               },
               "fr":{
-              "title":"Outils d'exploration du Graphe",
-              "content":"<div>Explorer le graph en utilisant cette barre d'outils"+
-              "<ul>"+
-      				"<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
-      				"<li>To center the graph, click on the center button. </li>"+
-              "<a style='float: right;' class='btn-xs' href='#' id='edgesButton'></a>"+
-              "<li>To calculate proximity measure and show the edges click on the button</li>"+
-      				"<li>You can explore the graph using the slider and the  +/- button."+
-      				"<div class='inline'><a style='float: right;' class='small btn-xs' href='#' id='zoomPlusButton'></a>"+
-      				"<a style='float: right;' class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
-              "</li></ul>",
+                "title":"Barre d'outil d'exploration",
+                "content":"<div>Explorez votre graphe en utilisant la barre d'outil"+
+                "<ul>"+
+                "<a style='float:right' href='#' id='edgesButton'></a>"+
+                "<li>Calculez la mesure de proximité des noeuds et affichez les arc en cliquant sur le bouton</li>"+
+                "<a style='float: right;' class='btn-xs' href='#' id='lensButton'></a>"+
+                "<li>Centrez le graphe en clickant  sur le bouton.</li>"+
+                "<div style='display:inline-block; float:right'><a class='small btn-xs' href='#' id='zoomPlusButton'></a><a class='small btn-xs' href='#' id='zoomMinusButton'></a></div>"+
+        				"<li>Vous pouvez explorer le graph en utilisant le zoom et les boutons:"+
+                "</li>"+
+                "</ul>",
+
                 },
           "placement": "right",
           "position": "inside",
@@ -250,8 +252,8 @@ $("a.new_lang").on("click", function(){
   $('.popover').popover('hide');
   old_lang = $("a#lang").data("lang")
   new_lang = $(this).data("lang")
-  updateLang(lang, new_lang)
-  loadHelp(new_lang)
+  updateLang(lang, new_lang);
+  loadHelp(new_lang);
 });
 
 function updateLang(old_lang, new_lang){
@@ -319,16 +321,11 @@ function loadHelp(lang){
       $(help_btn).insertAfter(el);
     }
     else if (info["position"] == "before"){
-      console.log("position", info["position"])
-      //parent = $(el).parent()
-      //help = $(help_btn).appendTo(el)
-      //parent.prependTo(help)
-      //console.log(">>>>>", $(this))
       $(help_btn).insertBefore(el);
     }
     else{
       //duplicate element and insert the button
-      //$(help_btn).insertBefore(el);
+      $(help_btn).appendTo(el);
     }
 
   });

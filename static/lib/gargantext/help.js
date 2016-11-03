@@ -253,6 +253,7 @@ $("a.new_lang").on("click", function(){
   old_lang = $("a#lang").data("lang")
   new_lang = $(this).data("lang")
   updateLang(lang, new_lang);
+  location.reload();
   loadHelp(new_lang);
 });
 

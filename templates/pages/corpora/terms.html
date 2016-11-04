@@ -434,7 +434,7 @@ function listmergeCsvPost(theFile){
                xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
              },
              success: function(response) {
-                 my_html  = '<h3 style="color:green">IMPORT OK</h3>'
+                 my_html  = '<h3 style="color:green">File upload, you will receive a notification email</h3>'
                  my_html += "<p class='note'>" + response['log'].replace(/\n/g, '<br/>') + "</p>"
                  my_html += "<p'>(this page will reload in 3s)</p>"
                  $('#formanswer').html(my_html);

@@ -182,7 +182,6 @@ def parse_extract_indexhyperdata(corpus):
     corpus.save_hyperdata()
     session.commit()
 
-
 @shared_task
 def recount(corpus):
     """
@@ -283,10 +282,6 @@ def recount(corpus):
     corpus.status('Recounting mini-workflow', progress=10, complete=True)
     corpus.save_hyperdata()
     session.commit()
-
-
-
-
 
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

@@ -32,7 +32,7 @@ class LoginView(FormView):
                             typename = 'USER',
                             #in node = > name
                             #in user = > username
-                            name = user.name,
+                            name = user.username,
                             user_id = user.id,
                         )
                 node_user.hyperdata = {"language":"fr"}

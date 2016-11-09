@@ -169,8 +169,16 @@ $(document).on('keyup keydown', function(e){
             var att_c = AttsDict_sorted[i].value;
             var the_method = "clustersBy"
             if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
-            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>'
-            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+						var method_label = att_s
+						if (att_s == "clust_default"){
+							method_label = "default";
+						}
+						else if (att_s == "clust_louvain"){
+							method_label = "community (louvain)"
+						}
+
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+method_label+'</a></li>'
+            // pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "color")\'>By '+att_s+'('+att_c+')'+'</a></li>')
         }
         div_info += '  </ul>'
         div_info += ' </li>'
@@ -217,11 +225,12 @@ $(document).on('keyup keydown', function(e){
             var att_c = AttsDict_sorted[i].value;
             var the_method = "clustersBy"
             if(att_s.indexOf("clust")>-1) the_method = "colorsBy"
-            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>'
-            pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'('+att_c+')'+'</a></li>')
+						console.log(att_s)
+            div_info += '<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'</a></li>'
+            // pr('<li><a href="#" onclick=\''+the_method+'("'+att_s+'" , "size")\'>By '+att_s+'</a></li>')
         }
-        div_info += '<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>'
-        console.log('<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>' )
+        div_info += '<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'</a></li>'
+        //console.log('<li><a href="#" onclick=\''+"clustersBy"+'("default" , "size")\'>By '+"default"+'('+AttsDict_sorted[0].value+')'+'</a></li>' )
         div_info += '  </ul>'
         div_info += ' </li>'
 
@@ -988,34 +997,72 @@ function camaraButton(){
         */
     });
 }
+function updateLang(old_lang, new_lang){
+  console.log("Old", old_lang)
+  console.log("Updating to", new_lang)
+
+  //update lang in db
+    $.ajax({
+       url: '/api/user/parameters/',
+       type: 'PUT',
+       data: {"language":new_lang},
+       beforeSend: function(xhr) {
+             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                   },
+      success: function(response, data) {
+        console.log(data)
+        var old_lang = $("a#lang").data("lang")
+        //var new_lang = data["language"]
+
+
+          //change active langue
+        $("a#lang").attr("data-lang", new_lang);
+        $("a#lang > img").attr({"value":new_lang, "src":"/static/img/"+new_lang+".png"})
+        $("a#lang > span").text(new_lang)
+          //switch lang to option
+        $("a.new_lang").attr("data-lang", old_lang);
+        $("a.new_lang > img").attr({"value":old_lang, "src":"/static/img/"+lang+".png"})
+        $("a.new_lang > span").text(old_lang)
+        console.log(response, data)
+               },
+          error: function(xhr) {
+              console.log("EDIT FAIL!")
+               },
+          });
+
+      console.log("defaut lang is now", $("a#lang").data("lang"))
+};
+
 
 
 function getTips(){
     // console.log('FUN extras_explorerjs:getTips')
+		$("a.new_lang").on("click", function(){
+		  //close all popover while changing lang
+			$("#tab-container").hide();
+			$("#tab-container-top").hide();
+		  old_lang = $("a#lang").data("lang")
+		  new_lang = $(this).data("lang")
+		  updateLang(lang, new_lang);
+		});
+		active_lang = $("a#lang").data("lang")
     param='';
-
-    text =
-        "<br>"+
-        "Basic Interactions:"+
-        "<ul>"+
-        "<li>Click on a node to select/unselect and get its information. In case of multiple selection, the button unselect clears all selections.</li>"+
-        "<li>The switch button switch allows to change the view type.</li>"+
-        "</ul>"+
-        "<br>"+
-        "Graph manipulation:"+
-        "<ul>"+
-        "<li>Link and node sizes indicate their strength.</li>"+
-        "<li>To fold/unfold the graph (keep only strong links or weak links), use the 'edges filter' sliders.</li>"+
-        "<li>To select a more of less specific area of the graph, use the 'nodes filter' slider.</li>"+
-        "</ul>"+
-        "<br>"+
-        "Micro/Macro view:"+
-        "<ul>"+
-        "<li>To explore the neighborhood of a selection, either double click on the selected nodes, either click on the macro/meso level button. Zoom out in meso view return to macro view.</li>"+
-        "<li>Click on the 'all nodes' tab below to view the full clickable list of nodes.</li>"+
-        "</ul>";
-
     $("#tab-container").hide();
     $("#tab-container-top").hide();
-    return text;
+		console.log("loading getTips in", active_lang)
+
+		$("a.new_lang").on("click", function(){
+		  //close all popover while changing lang
+			$("#tab-container").hide();
+			$("#tab-container-top").hide();
+		  old_lang = $("a#lang").data("lang")
+		  new_lang = $(this).data("lang")
+		  updateLang(lang, new_lang);
+			location.reload();
+		});
+		active_lang = $("a#lang").data("lang")
+    help = {"en":"<h4>Graph basic manipulation</h4><p>Whenever you click on a node inside the graph. This window will show the label of the node and the  common expressions associated with the term.It will also display the list of associated documents. You can remove this node for candidate list by clicking on the button delete. You can edit the terms of this map by managing terms list<p> <a href='https://iscpif.fr/gargantext/improve-your-map/' target='_blank'>Discover how to improve your map</a>", "fr":"<h4>Manipuler les noeuds du graph</h4>"}
+    $("#tab-container").hide();
+    $("#tab-container-top").hide();
+    return help[active_lang];
 }

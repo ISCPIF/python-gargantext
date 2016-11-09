@@ -7,20 +7,20 @@ API views for advanced operations on ngrams and ngramlists
     - modify NodeNgramNgram groups (PUT/DEL a list of groupings like {"767[]":[209,640],"779[]":[436,265,385]}")
 """
 
-from gargantext.util.http     import APIView, get_parameters, JsonHttpResponse,\
-                                     ValidationException, Http404, HttpResponse
-from gargantext.util.db       import session, aliased, bulk_insert
-from gargantext.util.db_cache import cache
-from sqlalchemy               import tuple_
-from gargantext.models        import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram, Node
-from gargantext.util.lists    import UnweightedList, Translations
+from gargantext.util.http         import APIView, get_parameters, JsonHttpResponse,\
+                                         ValidationException, Http404, HttpResponse
+from gargantext.util.db           import session, aliased, bulk_insert
+from gargantext.util.db_cache     import cache
+from sqlalchemy                   import tuple_
+from gargantext.models            import Ngram, NodeNgram, NodeNodeNgram, NodeNgramNgram, Node
+from gargantext.util.lists        import UnweightedList, Translations
+from gargantext.util.scheduling   import scheduled
 
 # useful subroutines
 from gargantext.util.ngramlists_tools import query_list, export_ngramlists, \
                                              import_ngramlists, merge_ngramlists, \
                                              import_and_merge_ngramlists
 from gargantext.util.group_tools      import query_grouped_ngrams
-
 
 class List(APIView):
     """
@@ -89,7 +89,8 @@ class CSVLists(APIView):
 
         # import the csv
         # try:
-        log_msg = import_and_merge_ngramlists(csv_contents,
+        log_msg = "Async generation"
+        scheduled(import_and_merge_ngramlists)(csv_contents,
                                               onto_corpus_id = corpus_node.id)
         return JsonHttpResponse({
             'log': log_msg,

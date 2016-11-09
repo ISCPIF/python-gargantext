@@ -49,11 +49,12 @@
         </div>
         <div class="col-md-3"></div>
         <div class="col-md-5">
-            <p>
+            <p id="project" class="help">
             <br>
-            <button id="add" type="button" class="btn btn-primary btn-lg" data-container="body" data-toggle="popover" data-placement="bottom">
+            <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add a new project
+
             </button>
             <div id="popover-content"  class="hide">
                 <div id="createForm" class="form-group">
@@ -72,7 +73,7 @@
                     </div>
                   </div>
               </div>
-        </p>
+            </p>
         </div>
     </div>
 </div>
@@ -86,11 +87,11 @@
 
     </div>
     <!-- CHECKBOX EDITION -->
+          <!--
     <div class="row collapse" id="editor">
           <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
             <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
           </button>
-          <!--
           <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
             <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
           </button> -->
@@ -117,7 +118,9 @@
     <div id="{url}" class="item row">
         <h3>
             <div class="col-md-6 content">
+          <!--
                 <input type="checkbox" value="{url}" data-id="{id}">
+          -->
                 <a href="{url}">
                     <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                     <span class="item_name">{name}</span>
@@ -182,7 +185,9 @@
 </style>
 
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest_projects.js" %}"></script>
+<!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
 <script type="text/javascript">
+
     getProjects();
     // $(document).on("input#inoutName").bind('keypress', function(e) {
     //         if(e.keyCode==13){

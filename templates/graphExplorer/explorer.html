@@ -53,6 +53,7 @@
 
     <!-- this is a vertical spacer used to start everything below dafixedtop -->
     <div id="topspace">
+
     </div>
 
     <!-- this is the tweakbar -->
@@ -61,6 +62,8 @@
             <div id="left" class="col-sm-8 col-md-8 col-lg-7">
 
               <ul class="nav navbar-nav">
+                <li class="basicitem"><a class="help" style="display:inline-block;padding:15px;" id="edition">
+                </a></li>
                 <!--
                 <li>
                    <a>
@@ -83,10 +86,11 @@
                 <li class='basicitem'><a>
                   <!-- Create a subgraph -->
                   <ul id="category0" class="nav">
-                        <li><small>Nodes</small> <div id="slidercat0nodesweight" class="settingslider"></div></li>
-                        <li><small>Edges</small> <div id="slidercat0edgesweight" class="settingslider"></div></li>
+                        <li><small class="help" id="nodeweight">Nodes</small> <div id="slidercat0nodesweight" class="settingslider"></div></li>
+                        <li><small class="help" id="edgeweight">Edges</small> <div id="slidercat0edgesweight" class="settingslider"></div></li>
                   </ul>
                 </a></li>
+
 
                 <!-- <li class='basicitem'><a>
                   Compare<br>
@@ -95,22 +99,22 @@
 
                 <li class='basicitem'><a>
                   <!-- TODO fix: category0 -> category1 switching -->
-                  Label size<br>
+                  <small class="help" id="labelsize">Label size<br></small>
                   <div id="slidercat0nodessize" class="settingslider"></div>
                 </a></li>
 
-                 <li class='basicitem'><a>
-                   Colors<br>
+                 <li class='basicitem'><a >
+                   <small class='help' id="colorgraph">Colors<br></small>
                    <div class="colorgraph_div"></div>
                  </a></li>
 
                  <li class='basicitem'><a>
-                   Sizes<br>
+                   <small class='help' id="sizegraph">Sizes<br></small>
                    <div class="sizegraph_div"></div>
                  </a></li>
 
                  <li class='basicitem'><a>
-                   Selector size<br>
+                   <small class='help' id="selectorsize">Selector size<br></small>
                    <div id="unranged-value" class="settingslider"></div>
                  </a></li>
                 <!--
@@ -132,7 +136,7 @@
                                      title="Add next search results to current selection"
                                      class="btn btn-info"
                                      type="checkbox"></input>
-                             Add
+                             <small class='help' id="addgraph">Add</small>
                      </div>
 
                        <!-- the smaller the viewport, the larger the relative search box size -->
@@ -155,6 +159,8 @@
                                   class="form-control"
                                   placeholder="Search" />
                           <!-- #################################### -->
+                          <span id="search" class="input-group-btn help">
+                          </span>
                        </div>
                        <!-- messages below the search bar -->
                        <div id="unused_msg"></div>
@@ -202,6 +208,9 @@
 
           <ul id="ctlzoom">
 
+              <li >
+                <a style="display:inline-block;padding:5px;" id="exploration" class="help"></a>
+              </li>
                 <!-- <div class="content-header">
                         <button id="menu-toggle">X</button>
                 </div> -->
@@ -246,18 +255,22 @@
                      </a>
                  </li>
 
+
           </ul>
       </div>
 
       <!-- Sidebar -->
+
       <div id="sidecolumn">
-         <div id="unfold">
+
+         <div id="unfold" class="help">
+
              <!-- button to be replaced by handle when sidecolumn is hidden -->
              <a href="#" id="aUnfold" class="rightarrow"></a>
          </div>
         <div id="tips"></div>
         <div id="names"></div>
-        <div id="ngrams_actions"></div>
+        <div id="ngrams_actions" class="help"></div>
 
 
         <br>
@@ -477,6 +490,7 @@
     <script src="{% static "lib/graphExplorer/tinawebJS/asyncFA2.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "lib/graphExplorer/tinawebJS/Tinaweb.js" %}" type="text/javascript" language="javascript"></script>
     <script src="{% static "lib/graphExplorer/tinawebJS/main.js" %}" type="text/javascript" language="javascript"></script>
+
 
     <script type="text/javascript">
         // set exact height of topspace

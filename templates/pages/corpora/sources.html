@@ -1,11 +1,10 @@
-{% extends "pages/menu.html" %}
-
-{% block css %}
+{% extends "pages/menu.html"%}
 {% load staticfiles %}
 
-<link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
+{% block css %}
 <link rel="stylesheet" type="text/css" href="{% static "lib/d3/dc.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "lib/jquery/dynatable/jquery.dynatable.css"%}"/>
+
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/tables.css"%}"/>
 <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/charts.css"%}"/>
 
@@ -21,33 +20,35 @@
 
 <div class="container">
     <div class="col-md-3 col-md-offset-2">
-        <div id="monthly-move-chart">
-            <center>
-                Select a frequency group in the chart with blue bars to zoom in
-            <p align="center">
-            <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
-            <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a></p>
-            <!-- <p style="font-size:70%">
-                <b>x</b>: amount of documents for the source
-                <b>y</b>: number of sources with that amount
-            </p> -->
-            <div class="clearfix"></div>
-            </center>
-        </div>
+      <div class="bs-callout">
+          <div class="row">
 
+              <div id="monthly-volume-chart"></div>
+          </div>
+        </div>
         <div class="bs-callout">
-            <div class="row">
-                <div id="monthly-volume-chart"></div>
-            </div>
-
-            <div id="content_loader">
-              <br>
+          <div class="row">
+            <div id="monthly-move-chart">
               <center>
-                <!-- <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img> -->
+                <p class="help" id="sources_time">Select a time range in the chart with blue bars to zoom in </p>
+                <p align="center">
+                  <!--<a class="btn btn-xs btn-default" role="button" href="/chart/corpus/{{ corpus.id }}/data.csv">Save</a>-->
+                  <a class="btn btn-xs btn-default" href="javascript:volumeChart.filterAll();dc.redrawAll();">Reset</a>
+                </p>
+                <div class="clearfix"></div>
               </center>
-              <br>
             </div>
-        </div>
+          </div>
+          <div id="content_loader">
+                <br>
+                <center>
+
+                  <img width="10%" src="{% static "img/ajax-loader.gif"%}"></img>
+                </center>
+                <br>
+
+          </div>
+      </div>
     </div>
 </div>
 
@@ -87,5 +88,5 @@
 
 <!-- custom-lib for dynatable.js and dc.js -->
 <script type="text/javascript" src="{% static "lib/gargantext/Sources_dyna_chart_and_table.js" %}"></script>
-
+<!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
 {% endblock %}

@@ -5,7 +5,7 @@
         <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
         <link rel="stylesheet" type="text/css" href="{% static "lib/gargantext/menu.css"%}"/>
-
+        <!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
         {% block css %}
         {% endblock %}
 
@@ -21,11 +21,40 @@
 
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="/about/" title="More informations about the project, its sponsors and its authors.">
-                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                About
-                            </a>
-                        </li>
+
+                       <ul class="nav navbar-nav pull-left">
+                            <li class="dropdown">
+
+                                <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="Informations about Gargantext">
+                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                    Info
+                                <i class="caret"></i>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a
+                                            tabindex="-1" target="blank" title="Documentation and tutorials"
+                                            href='https://iscpif.fr/gargantext/your-first-map/' >
+                                            Documentation
+
+                                        </a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a
+                                            tabindex="-1" target="blank" title="About"
+                                            href="/about/" title="More informations about the project, its sponsors and its authors">
+                                            About
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+
+                        </ul>
+
+
                         {% if user.is_authenticated %}
                         <li><a href="/projects/" title="All your projects are here.">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
@@ -68,6 +97,8 @@
                         {% endif %}
                     </ul>
 
+
+
                     <ul class="nav navbar-nav pull-right">
                         <li class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle navbar-text" data-toggle="dropdown" title="That is your username">
@@ -102,7 +133,30 @@
                                 {% endif %}
                             </ul>
                         </li>
+
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown lang">
+
+
+
+                          <a class="nav-link dropdown-toggle" id="lang" data-lang="{{user_parameters.language}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img value="{{user_parameters.language}}" src="/static/img/{{user_parameters.language}}.png" width="25%"/>
+                            <span class="label">{{user_parameters.language}}</span>
+                            <i class="caret"></i>
+                          </a>
+                          <ul class="dropdown-menu" aria-labelledby="lang">
+
+                            {% for lang in languages %}
+                            {% if lang != user_parameters.language %}
+                            <li class="dropdown-item new_lang">
+                              <a class="new_lang" data-lang="{{lang}}"><img value="{{user_parameters.language}}" src="/static/img/{{lang}}.png" width="25%"/> <span>{{lang}}</span> </a></li>
+                            {% endif %}
+                            {% endfor %}
+                          </ul>
+                        </li>
+                        {% endif %}
                     </ul>
+
                 </div>
             </div>
             {% if corpus %}
@@ -211,6 +265,7 @@
                         <div class="jumbotron" style="margin-bottom:0">
                             <br>
                             <br>
+                            <br>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h3>
@@ -222,7 +277,10 @@
                                     </div>
                                     <!-- export button -->
                                     <div class="col-md-6">
+
                                         {% if view == 'terms'  %}
+                                        <a  id="export_terms" class="help btn pull-right">
+                                        </a>
                                         <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/ngramlists/export?corpus={{corpus.id}}"
                                             title="Export terms table in CSV">
@@ -230,14 +288,11 @@
                                         </a>
 
 
+
                                         {% elif view == 'titles'  %}
 
-
-                                        <a href="http://gitlab.iscpif.fr/humanities/gargantext/wikis/faq/exportImport" class="pull-right btn btn-lg">
-                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                        <a  id="export_corpus" class="help btn pull-right">
                                         </a>
-
-
                                         <a class="btn btn-primary exportbtn pull-right" role="button"
                                             href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
                                             title="Export full corpus in CSV">
@@ -252,6 +307,18 @@
 
                                         {% else  %}
                                         <!-- TODO export source table -->
+                                        <!-- <a  id="export_sources" class="help">
+
+                                        </a> -->
+                                        <!-- <a id="export_sources" class="help btn btn-primary exportbtn pull-right" role="button"
+                                            href="/api/nodes?parent_id={{corpus.id}}&types[]=DOCUMENT&pagination_limit=100000&formated=csv"
+                                            title="Export full corpus in CSV">
+
+                                            Export sources &nbsp;
+
+                                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+
+                                        </a><span class="help" id="export_sources"> -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -300,14 +367,14 @@
             <p>
                 Gargantext
                 <span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>
-                , version 3.0.5.7,
+                , version 3.0.6,
                 <a href="http://www.cnrs.fr" target="blank" title="Institution that enables this project.">
                     Copyrights
                     <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span>
                     CNRS {{ date.year }}
                 </a>
-                <a href="http://www.gnu.org/licenses/agpl-3.0.html" target="blank" title="Legal instructions of the project.">
-                    , Licence aGPLV3
+                <a href="http://gitlab.iscpif.fr/humanities/gargantext/blob/stable/LICENSE" target="blank" title="Legal instructions of the project.">
+                    , Licences aGPLV3 and CECILL variant Affero compliant
                 </a>
                 .
             </p>
@@ -387,8 +454,9 @@
         <script type="text/javascript" src="{% static "lib/gargantext/garganrest.js" %}"></script>
         <!-- Graph renaming (load after garganrest)-->
         <script type="text/javascript" src="{% static "lib/gargantext/graph_renamer.js" %}"></script>
+        <!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
         {% endif %}
-
+        <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
         {% if debug == False %}
 
         <!-- Piwik -->

@@ -3,7 +3,10 @@ from gargantext.util.db       import session
 from gargantext.util.db_cache import cache
 from gargantext.models        import Node
 from gargantext.constants     import get_resource
+from gargantext.constants     import USER_LANG
+from .main                    import get_user_params
 from datetime                 import datetime
+
 
 @requires_auth
 def ngramtable(request, project_id, corpus_id):
@@ -32,7 +35,6 @@ def ngramtable(request, project_id, corpus_id):
     corpora_infos = corpora_infos_q.all()
 
     source_type = corpus.resources()[0]['type']
-
     # rendered page : terms.html
     return render(
         template_name = 'pages/corpora/terms.html',
@@ -48,6 +50,9 @@ def ngramtable(request, project_id, corpus_id):
 
             # for the CSV import modal
             'importroute': "/api/ngramlists/import?onto_corpus=%i"% corpus.id,
-            'corporainfos' : corpora_infos
+            'corporainfos' : corpora_infos,
+            #user params
+            'user_parameters': get_user_params(request.user),
+            'languages': USER_LANG
         },
     )

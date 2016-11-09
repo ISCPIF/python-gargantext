@@ -482,6 +482,9 @@ function Main_test( data , initial) {
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
 
+    $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
+    $(".dynatable-record-count").insertAfter(".imadiv")
+    $(".dynatable-pagination-links").insertAfter(".imadiv")
 
     console.log("After table 3")
     return "OK"

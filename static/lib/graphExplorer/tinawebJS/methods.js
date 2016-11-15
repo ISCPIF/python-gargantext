@@ -303,7 +303,7 @@ function updateLeftPanel_fix( sels , oppos ) {
     var ngram_actions = ''
     if(partialGraph.states[1].categories.length==1) {
         ngram_actions += '<center>'
-        ngram_actions += '<span><button class="delete" onclick="modify_ngrams(this.className)">Delete</button></span>'
+        ngram_actions += '<span><button class="delete" onclick="modify_ngrams(this.className)">Remove</button></span>'
         // if( Object.keys(sels).length>1)
         //     ngram_actions += '<span><button class="group" onclick="modify_ngrams(this.className)">Group</button></span>'
         ngram_actions += '</center>'

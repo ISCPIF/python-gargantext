@@ -90,8 +90,10 @@ class CSVLists(APIView):
         # import the csv
         # try:
         log_msg = "Async generation"
-        scheduled(import_and_merge_ngramlists)(csv_contents,
-                                              onto_corpus_id = corpus_node.id)
+        
+        corpus_node_id = corpus_node.id
+        scheduled(import_and_merge_ngramlists)(csv_contents, corpus_node_id)
+        
         return JsonHttpResponse({
             'log': log_msg,
             }, 200)

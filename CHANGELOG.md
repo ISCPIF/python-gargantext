@@ -1,9 +1,13 @@
-
-## Version 3.0.6.2
+## TODO
 * Guided Tour
+* Sources form highlighting crawlers
 
 ## Version 3.0.6.1
-* Sources form highlighting crawlers
+* SQL Table change. Update:
+    * psql gargandb
+    * drop table contacts
+    * ./manage.py dbmigrate.py
+* Init accounts with ISC-PIF partner group
 * Link to Licence
 
 ## Version 3.0.6

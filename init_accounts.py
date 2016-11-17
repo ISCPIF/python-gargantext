@@ -288,6 +288,6 @@ def mass_account_creation(csv_file=None, init=False, test=False, notify=False):
     accounts.close()
 
 if __name__ == "__main__":
-    mass_account_creation(csv_file=sys.argv[1], init=True, notify=True, test=False)
+    mass_account_creation(csv_file=sys.argv[1], init=False, notify=True, test=False)
 
 

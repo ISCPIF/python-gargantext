@@ -1,8 +1,8 @@
-
-{% extends "pages/menu.html" %}
+{% extends "pages/menu.html"%}
+{% load staticfiles %}
 
 {% block css %}
-{% load staticfiles %}
+
 <link rel="stylesheet" href="{% static "lib/bootstrap/3.0.2/bootstrap.css" %}">
 <script type="text/javascript" src="{% static "lib/jquery/1.11.1/jquery.min.js" %}"></script>
 <script type="text/javascript" src="{% static "lib/gargantext/garganrest.js" %}"></script>
@@ -193,7 +193,7 @@
 
 
 
-
+      <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script>
       <script type="text/javascript">
 
         // initial vars

@@ -6,7 +6,6 @@ from datetime import datetime
 
 from .users import User
 
-
 __all__ = ['Node', 'NodeNode']
 
 class NodeType(TypeDecorator):

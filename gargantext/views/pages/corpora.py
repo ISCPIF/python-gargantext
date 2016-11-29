@@ -1,12 +1,12 @@
-from gargantext.util.http import *
-from gargantext.util.db import *
-from gargantext.util.db_cache import cache
-from gargantext.models import *
-from gargantext.constants import *
-from gargantext.settings import *
-
-from datetime import datetime
-
+from gargantext.util.http       import *
+from gargantext.util.db         import *
+from gargantext.util.db_cache   import cache
+from gargantext.models          import *
+from gargantext.constants       import *
+from gargantext.settings        import *
+from datetime                   import datetime
+from .main                      import get_user_params
+from gargantext.constants       import USER_LANG
 
 def _get_user_project_corpus(request, project_id, corpus_id):
     """Helper method to get a corpus, knowing the project's and corpus' ID.
@@ -28,7 +28,6 @@ def docs_by_titles(request, project_id, corpus_id):
     authorized, user, project, corpus = _get_user_project_corpus(request, project_id, corpus_id)
     if not authorized:
         return HttpResponseForbidden()
-
     source_type = corpus.resources()[0]['type']
     # response!
     return render(
@@ -41,7 +40,9 @@ def docs_by_titles(request, project_id, corpus_id):
             'corpus': corpus,
             'resourcename' : get_resource(source_type)['name'],
             'view': 'titles',
-            'user': request.user
+            'user': request.user,
+            'user_parameters': get_user_params(user),
+            'languages': USER_LANG
         },
     )
 
@@ -57,10 +58,10 @@ def docs_by_sources(request, project_id, corpus_id):
 
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
-
+    user = cache.User[request.user.id]
     source_type = corpus.resources()[0]['type']
-
     # rendered page : sources.html
+    
     return render(
         template_name = 'pages/corpora/sources.html',
         request = request,
@@ -70,7 +71,10 @@ def docs_by_sources(request, project_id, corpus_id):
             'project': project,
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
-            'view': 'sources'
+            'user': request.user,
+            'user_parameters': get_user_params(user),
+            'view': 'sources',
+            'languages': USER_LANG
         },
     )
 
@@ -86,10 +90,10 @@ def docs_by_authors(request, project_id, corpus_id):
 
     # and the project just for project.id in corpusBannerTop
     project = cache.Node[project_id]
-
+    user = cache.User[request.user.id]
     source_type = corpus.resources()[0]['type']
-
     # rendered page : sources.html
+    node_user = get_node_user(user)
     return render(
         template_name = 'pages/corpora/authors.html',
         request = request,
@@ -99,7 +103,10 @@ def docs_by_authors(request, project_id, corpus_id):
             'project': project,
             'corpus' : corpus,
             'resourcename' : get_resource(source_type)['name'],
-            'view': 'authors'
+            'view': 'authors',
+            'user': request.user,
+            'user_parameters': node_user.hyperdata,
+            'languages': USER_LANG
         },
     )
 
@@ -111,7 +118,6 @@ def analytics(request, project_id, corpus_id):
         return HttpResponseForbidden()
 
     source_type = corpus.resources()[0]['type']
-
     # response!
     return render(
         template_name = 'pages/analytics/histories.html',
@@ -123,6 +129,8 @@ def analytics(request, project_id, corpus_id):
             'corpus': corpus,
             'resourcename' : get_resource(source_type)['name'],
             'view': 'analytics',
-            'user': request.user
+            'user': request.user,
+            'user_parameters': get_user_params(user),
+            'languages': USER_LANG
         },
     )

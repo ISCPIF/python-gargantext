@@ -2,7 +2,9 @@ from gargantext           import settings
 from gargantext.util.json import json_dumps
 
 
+########################################################################
 # get engine, session, etc.
+########################################################################
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import delete
@@ -25,21 +27,24 @@ Base = declarative_base()
 session = scoped_session(sessionmaker(bind=engine))
 
 
+########################################################################
 # tools to build models
-
+########################################################################
 from sqlalchemy.types import *
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 Double = DOUBLE_PRECISION
 
+########################################################################
 # useful for queries
-
+########################################################################
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, desc
 
+########################################################################
 # bulk insertions
-
+########################################################################
 import psycopg2
 
 def get_cursor():
@@ -54,7 +59,6 @@ def get_cursor():
     return db, db.cursor()
 
 class bulk_insert:
-
     def __init__(self, table, fields, data, cursor=None):
         # prepare the iterator
         self.iter = iter(data)
@@ -84,7 +88,6 @@ class bulk_insert:
             return ''
 
     readline = read
-
 
 def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None, do_stats=False):
     """

@@ -16,6 +16,7 @@ from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
 from gargantext.util.lists       import UnweightedList, Translations
 
 from gargantext.constants        import DEFAULT_CSV_DELIM, DEFAULT_CSV_DELIM_GROUP
+from gargantext.util.toolchain.mail_notification import notify_listMerged
 
 # import will implement the same text cleaning procedures as toolchain
 from gargantext.util.toolchain.parsing           import normalize_chars
@@ -30,6 +31,7 @@ from csv                 import writer, reader, QUOTE_MINIMAL
 from collections         import defaultdict
 from re                  import match, findall
 from io                  import StringIO # pseudo file to write CSV to memory
+from celery              import shared_task
 
 def query_list(list_id,
                 pagination_limit=None, pagination_offset=None,
@@ -127,7 +129,6 @@ def query_list(list_id,
 
     return query
 
-
 # helper func for exports
 def ngrams_to_csv_rows(ngram_objs, ngram_dico={}, group_infos={},
                         list_type="", groupings_delim=DEFAULT_CSV_DELIM_GROUP):
@@ -190,8 +191,6 @@ def ngrams_to_csv_rows(ngram_objs, ngram_dico={}, group_infos={},
                   )
 
     return csv_rows
-
-
 
 def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
     """
@@ -324,8 +323,6 @@ def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
         out_file.close()
         print("EXPORT: wrote %i ngrams to CSV file '%s'"
                % (len(this_corpus_all_rows), path.abspath(fname)))
-
-
 
 def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
                              group_delimiter=DEFAULT_CSV_DELIM_GROUP):
@@ -614,7 +611,6 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
     # print("IMPORT RESULT", result)
     return result
 
-
 def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     """
     Integrates an external terms table to the current one:
@@ -648,6 +644,7 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     NB: Uses group_tools.group_union() to merge the synonym links.
         Uses ngrams_addition.index_new_ngrams() to also add new ngrams to the docs
     """
+    print("Merging Ngram Lists")
     # log to send back to client-side (lines will be joined)
     my_log = []
 
@@ -836,12 +833,16 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
         print(msg)
 
     # return a log
+    notify_listMerged(onto_corpus)
     return("\n".join(my_log))
 
+
+@shared_task
 def import_and_merge_ngramlists(file_contents, onto_corpus_id):
     """
     A single function to run import_ngramlists and merge_ngramlists together
     """
+    print("import list")
     new_lists = import_ngramlists(file_contents)
 
     corpus_node = session.query(Node).filter(Node.id == onto_corpus_id).first()

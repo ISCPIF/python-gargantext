@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{% static "lib/morris/morris.css" %}">
 
 <script src="{% static "lib/raphael/raphael-min.js"%}"></script>
+
 <style type="text/css">
     .ui-autocomplete {
         z-index: 5000;
@@ -53,9 +54,11 @@
                     {% if donut %}
                     <div id="hero-donut" style="height: 200px;"></div>
                     {% endif %}
-                    <center>
 
-                        <a data-toggle="modal" href="#addcorpus">
+                    <center id="corpus" class="help">
+
+                      
+                        <a  data-toggle="modal" href="#addcorpus" >
                             <button
                             type="button"
                             class="btn btn-primary btn-lg"
@@ -66,8 +69,13 @@
                             <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>
                             Add a corpus
                             </button>
+
                         </a>
+
+
                     </center>
+
+
                 </p>
             </div>
     </div>
@@ -105,93 +113,116 @@
                                         </a>
                                     </div>
                                     <div class="col-md-3 content"  id="corpus_{{corpus.id}}_tools">
-                                        {% for state in corpus.hyperdata.statuses %}
-                                            {% ifequal state.action "Workflow" %}
-                                                    <a class="{% if not state.complete %}hidden{% endif %}"
-                                                       href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
-                                                        <button type="button" class="btn btn-default" aria-label="Left Align">
-                                                              <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                        {% if corpus.hyperdata.statuses %}
+                                            {% for state in corpus.hyperdata.statuses %}
+                                                {% ifequal state.action "Workflow" %}
+                                                        <a class="{% if not state.complete %}hidden{% endif %}"
+                                                           href="/projects/{{project.id}}/corpora/{{corpus.id}}" title="View the corpus">
+                                                            <button type="button" class="btn btn-default" aria-label="Left Align">
+                                                                  <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                                                            </button>
+                                                        </a>
+
+                                                        <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
+                                                            data-content="
+                                                            <ul class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;updateCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-repeat" aria-hidden="true"
+                                                            title='Recalculate ngram scores and similarities'></span>
                                                         </button>
-                                                    </a>
 
-                                                    <button type="button" class="btn btn-default {% if not state.complete %}hidden{% endif %}" data-container="body" data-toggle="popover" data-placement="bottom"  data-trigger="focus"
-                                                        data-content="
-                                                        <ul class=&quot;inside-popover&quot;>
-                                                            <li
-                                                            onclick=&quot;updateCorpus(event, {{corpus.id}})&quot;>
-                                                                <a href='#'>Recalculate ngram metrics</a> <br/> (can take a little while)
-                                                            </li>
-                                                        </ul>
-                                                        ">
-                                                        <span class="glyphicon glyphicon-repeat" aria-hidden="true"
-                                                        title='Recalculate ngram scores and similarities'></span>
-                                                    </button>
+                                                        <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
+                                                        <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                            data-content="
+                                                            <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Delete this</a>
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                            title='Delete this corpus'></span>
+                                                        </button>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        {% else %}
 
-                                                    <!-- TODO: delete non seulement si state.complete mais aussi si state.error -->
-                                                    <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
-                                                        data-content="
-                                                        <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
-                                                            <li
-                                                            onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
-                                                                <a href='#'>Delete this</a>
-                                                            </li>
-                                                        </ul>
-                                                        ">
-                                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                                                        title='Delete this corpus'></span>
-                                                    </button>
-                                            {% endifequal %}
-                                        {% endfor %}
+                                                       <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="bottom"
+                                                            data-content="
+                                                            <ul id=&quot;{{corpus.id}}_trash_msg&quot; class=&quot;inside-popover&quot;>
+                                                                <li
+                                                                onclick=&quot;deleteCorpus(event, {{corpus.id}})&quot;>
+                                                                    <a href='#'>Delete this</a>
+                                                                </li>
+                                                            </ul>
+                                                            ">
+                                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                                                            title='Delete this corpus'></span>
+                                                        </button>
+
+
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-3 content" id="corpus_{{corpus.id}}_status">
-                                        {% for state in corpus.hyperdata.statuses %}
-                                                {% ifequal state.action "Workflow" %}
-                                                    {% if state.complete %}
-                                                        <span id="corpus_{{corpus.id}}_status_ok"
-                                                              class="glyphicon glyphicon-ok"
-                                                              aria-hidden="true"></span>
+                                        {% if corpus.hyperdata.statuses %}
+                                            {% for state in corpus.hyperdata.statuses %}
+                                                    {% ifequal state.action "Workflow" %}
+                                                        {% if state.complete %}
+                                                            <span id="corpus_{{corpus.id}}_status_ok"
+                                                                  class="glyphicon glyphicon-ok"
+                                                                  aria-hidden="true"></span>
 
-                                                    {% else %}
-                                                        {% if state.error %}
-                                                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                                            {{ state.error }}
                                                         {% else %}
-                                                            <div class="progress">
-                                                                <div class=" progress-bar progress-bar-striped
-                                                                                            progress-bar-success
-                                                                                     "
-                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
-                                                                              <span>
-                                                                                  Upload
-                                                                              </span>
+                                                            {% if state.error %}
+                                                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                                                {{ state.error }}
+                                                            {% else %}
+                                                                <div class="progress">
+                                                                    <div class=" progress-bar progress-bar-striped
+                                                                                                progress-bar-success
+                                                                                         "
+                                                                                    role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                                                                                  <span>
+                                                                                      Upload
+                                                                                  </span>
+                                                                    </div>
+
+                                                                    {% for state in corpus.hyperdata.statuses %}
+                                                                    <!-- {% if state.action != "Workflow" %} -->
+                                                                          <div class=" progress-bar progress-bar-striped
+                                                                                            {% if state.complete %}
+                                                                                                progress-bar-success
+                                                                                                {% else %}
+                                                                                                active
+                                                                                            {% endif %}
+                                                                                         "
+                                                                                    role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"
+                                                                                    id="corpus_{{corpus.id}}_status_{{state.action}}" style="width: 20%">
+                                                                                  <span>
+                                                                                      {{ state.action }}
+                                                                                            {% if not state.complete %}
+                                                                                                Processing
+                                                                                            {% endif %}
+
+                                                                                  </span>
+                                                                          </div>
+                                                                          <!-- {% endif %} -->
+                                                                    {% endfor %}
                                                                 </div>
-
-                                                                {% for state in corpus.hyperdata.statuses %}
-                                                                <!-- {% if state.action != "Workflow" %} -->
-                                                                      <div class=" progress-bar progress-bar-striped
-                                                                                        {% if state.complete %}
-                                                                                            progress-bar-success
-                                                                                            {% else %}
-                                                                                            active
-                                                                                        {% endif %}
-                                                                                     "
-                                                                                role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"
-                                                                                id="corpus_{{corpus.id}}_status_{{state.action}}" style="width: 20%">
-                                                                              <span>
-                                                                                  {{ state.action }}
-                                                                                        {% if not state.complete %}
-                                                                                            Processing
-                                                                                        {% endif %}
-
-                                                                              </span>
-                                                                      </div>
-                                                                      <!-- {% endif %} -->
-                                                                {% endfor %}
-                                                            </div>
+                                                            {% endif %}
                                                         {% endif %}
-                                                    {% endif %}
-                                                {% endifequal %}
-                                        {% endfor %}
+                                                    {% endifequal %}
+                                            {% endfor %}
+                                        {% else %}
+                                                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                                    Error at parsing. Please create a new corpus. If this error persists then <a href="https://iscpif.fr/gargantext-feedback-and-bug-report/" target="blank">report</a> the bug with this id: {{ corpus.id }}.
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-1 content"></div>
                                 </h4>
@@ -233,8 +264,7 @@
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 
-                                    <h3>Add a Corpus <a href="http://gitlab.iscpif.fr/humanities/gargantext/wikis/faq/exportImport">
-                                      <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                    <h3 id="corpus" class="help">Add a Corpus
                                     </a>
                                   </h3>
                                 </div>
@@ -308,6 +338,7 @@
                   </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->
                     <script type="text/javascript" src="{% static "lib/jquery/1.11.2/jquery-ui.js" %}"></script>
+                    <!-- <script type="text/javascript" src="{% static "lib/gargantext/help.js" %}"></script> -->
                     <script type="text/javascript">
 
                         var corporaDivs = document.getElementsByClassName('corpusElt')

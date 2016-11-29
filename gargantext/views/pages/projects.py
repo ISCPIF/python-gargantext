@@ -4,7 +4,7 @@ from gargantext.util.db_cache import cache
 from gargantext.util.files import upload
 from gargantext.models import *
 from gargantext.constants import *
-
+from .main import get_user_params
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain import parse_extract_indexhyperdata
 
@@ -13,6 +13,19 @@ from collections import defaultdict
 from django.utils.translation import ugettext_lazy
 import re
 
+def get_node_user(user):
+    node_user = session.query(Node).filter(Node.user_id == user.id, Node.typename == "USER").first()
+    if node_user is None:
+        node_user = Node(user_id = user.id,
+        typename = 'USER',
+        name = user.name,
+        )
+        #default language for now is  'fr'
+        node_user.hyperdata["language"] = "fr"
+        session.add(node_user)
+        session.commit()
+        print(node_user.hyperdata)
+    return node_user
 
 @requires_auth
 def overview(request):
@@ -22,7 +35,8 @@ def overview(request):
     '''
 
     user = cache.User[request.user.id]
-
+    print(user)
+    node_user = get_node_user(user)
     # If POST method, creates a new project...
     if request.method == 'POST':
         name = str(request.POST['name'])
@@ -31,6 +45,8 @@ def overview(request):
                 user_id = user.id,
                 typename = 'PROJECT',
                 name = name,
+                parent_id = node_user.id,
+
             )
             session.add(new_project)
             session.commit()
@@ -51,6 +67,8 @@ def overview(request):
             # projects owned by the user
             'number': user_projects.count(),
             'projects': user_projects,
+            'user_parameters': get_user_params(request.user),
+            'languages': USER_LANG,
             # projects owned by the user's contacts
             'common_users': (contact for contact, projects in contacts_projects),
             'common_projects': sum((projects for contact, projects in contacts_projects), []),
@@ -90,7 +108,8 @@ def project(request, project_id):
     # security check
     project = session.query(Node).filter(Node.id == project_id).first()
     user = cache.User[request.user.id]
-    
+    node_user = get_node_user(user)
+
     if project is None:
         raise Http404()
     if not user.owns(project):
@@ -168,8 +187,11 @@ def project(request, project_id):
             template_name = 'pages/projects/wait.html',
             request = request,
             context = {
+
                 'form': NewCorpusForm,
                 'user': request.user,
+                'user_parameters': get_user_params(request.user),
+                'languages': USER_LANG,
                 'date': datetime.now(),
                 'project': project,
                 'donut': donut,
@@ -189,6 +211,8 @@ def project(request, project_id):
         template_name = 'pages/projects/project.html',
         request = request,
         context = {
+            'user_parameters': get_user_params(request.user),
+            "languages": USER_LANG,
             'form': NewCorpusForm,
             'user': request.user,
             'date': datetime.now(),

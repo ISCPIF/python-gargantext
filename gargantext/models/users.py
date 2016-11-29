@@ -3,11 +3,9 @@ from gargantext.util.db import *
 
 from datetime import datetime
 
-__all__ = ['User']
-
+__all__ = ['User', 'Contact']
 
 class User(Base):
-
     # The properties below are a reflection of Django's auth module's models.
     __tablename__ = models.User._meta.db_table
     id           = Column(Integer, primary_key=True)
@@ -48,6 +46,7 @@ class User(Base):
         return query
 
     def contacts_nodes(self, typename=None):
+        from .nodes import Node
         for contact in self.contacts():
             contact_nodes = (session
                 .query(Node)
@@ -61,13 +60,16 @@ class User(Base):
         """check if a given node is owned by the user"""
         return (node.user_id == self.id) or \
                 node.id in (contact.id for contact in self.contacts())
-
+    
+    def get_params(self, username=None):
+        print(self.__dict__.items())
+        return self.hyperdata
 
 class Contact(Base):
     __tablename__ = 'contacts'
-    id = Column(Integer, primary_key=True)
-    user1_id = Column(Integer, primary_key=True)
-    user2_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user1_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user2_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
     is_blocked = Column(Boolean(), default=False)
     date_creation = Column(DateTime(timezone=False))
 

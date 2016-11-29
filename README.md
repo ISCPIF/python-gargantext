@@ -24,9 +24,16 @@ benefited from synergies with the whole ecosystem of open source
 softwares for text and network analytics, including Cortext, NLTK and
 SigmaJS.
 
+# Code of Conduct for the contributors
+In order to be allowed to contribute to the project, each
+contributor has to sign manually or digitally this [Code Of
+Conduct](CODE_OF_CONDUCT.md) and send it to (team AT gargantext DOT
+org). In case of digital signature, the digital identity has to be
+signed by 2 others members of the project at least. Digital identity
+means certified with the GPG key of the contributor with a strong level
+of security.
 
 # Team, partners and supports
-
 The core team at the origin of Gargantext is :
 * David Chavalarias, principal investigator
 * Alexandre Delanoë, project manager

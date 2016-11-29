@@ -580,9 +580,9 @@ function Main_test(Data) {
   $(".dynatable-record-count").insertAfter(".imadiv")
   $(".dynatable-pagination-links").insertAfter(".imadiv")
 
-  $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
-  $(".dynatable-record-count").insertAfter(".imadiv")
-  $(".dynatable-pagination-links").insertAfter(".imadiv")
+//  $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
+//  $(".dynatable-record-count").insertAfter(".imadiv")
+//  $(".dynatable-pagination-links").insertAfter(".imadiv")
     // binds a custom filter to our 'doubleSearch' via dynatable.queries.functions
   MyTable.data('dynatable').queries
       .functions['doubleSearch'] = function(record,searchString) {

@@ -3,7 +3,7 @@ from gargantext.util.db import *
 
 from datetime import datetime
 
-__all__ = ['User', 'Contact']
+__all__ = ['User', 'Contact', 'Role']
 
 class User(Base):
     # The properties below are a reflection of Django's auth module's models.
@@ -74,3 +74,13 @@ class Contact(Base):
     date_creation = Column(DateTime(timezone=False))
 
     __table_args__ = (UniqueConstraint('user1_id', 'user2_id'), )
+
+class Role(Base):
+    '''
+    Each user as a role
+    Role can be seen as a group
+    '''
+    __tablename__ = 'user_role'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    role_name = Column(String(255))

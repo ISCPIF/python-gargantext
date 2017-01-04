@@ -23,23 +23,28 @@ from annotations.views   import main as annotations_main_view
 
 # Module for graph service
 import graph.urls
+from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
+
 
 # Module Scrapers
 import moissonneurs.urls
 
 
-urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
-              , url(r'^api/'       , include( gargantext.views.api.urls )      )
-              , url(r'^'           , include( gargantext.views.pages.urls )    )
-              , url(r'^favicon.ico$', Redirect.as_view( url=static.url('favicon.ico')
-                                    , permanent=False), name="favicon")
+urlpatterns = [ url(r'^admin/'         , admin.site.urls                               )
+              , url(r'^api/'           , include( gargantext.views.api.urls )          )
+              , url(r'^'               , include( gargantext.views.pages.urls )        )
+              , url(r'^favicon.ico$'   , Redirect.as_view( url=static.url('favicon.ico')
+                                       , permanent=False), name="favicon"              )
+              , url(r'^api-token-auth/', obtain_jwt_token                              )
+                # change function: check if id = role_+id then return jwt_token
+              , url(r'^api-token-verify/', verify_jwt_token                            )
 
               # Module Graph
-              , url(r'^'           , include( graph.urls )                     )
+              , url(r'^'           , include( graph.urls )                             )
 
               # Module Annotation
               # tempo: unchanged doc-annotations routes --
-              , url(r'^annotations/', include( annotations_urls )              )
+              , url(r'^annotations/', include( annotations_urls )                      )
               , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/(focus=[0-9,]+)?$', annotations_main_view)
 
               # Module Scrapers (Moissonneurs in French)

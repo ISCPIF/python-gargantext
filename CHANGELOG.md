@@ -2,6 +2,11 @@
 * Guided Tour
 * Sources form highlighting crawlers
 
+## Version 3.0.6.3
+* COOC SQL improved
+* New buttons
+* Big graphs with conditional distance
+
 ## Version 3.0.6.2
 * SQL Table change. Update:
     * psql gargandb

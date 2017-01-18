@@ -2,33 +2,30 @@
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
 
-
 abstract:
 ---------
          something between global params, constants,
          configuration variables, ini file...
 
-
 contents:
 ---------
-
-      + db constants/ontology
+      + database constants/ontology
          - nodetypes
             (db int <=> named types <=> python code)
 
-      + input low-level limits
+      + low-level limits
          - query size
          - max upload size
          - doc parsing batch size
          - word extraction batch size
 
-      + process config
+      + main process config
          - resourcetypes config (~ input ontology)
          - wordlist generation params
          - graph creation params
          - £TODO sequence of transformations "custom pipeline"
 
-      + input process subclasses/subroutines
+      + subprocess config
          - crawling, import
          - tagger services and functions
          - parser services
@@ -83,12 +80,20 @@ NODETYPES = [
     # docs subset
     'FAVORITES',             # 15
     # more scores (sorry!)
+
     'TIRANK-LOCAL',          # 16
     'TIRANK-GLOBAL',         # 17
 
     'GENCLUSION',            # 18
     'RESOURCE',              # 19
 ]
+
+
+def get_nodetype_id_by_name(nodetype):
+    '''resource :: name => resource dict'''
+    for n in NODETYPES :
+        if str(n["name"]) == str(sourcename):
+            return n
 
 INDEXED_HYPERDATA = {
     # TODO use properties during toolchain.hyperdata_indexing
@@ -153,7 +158,6 @@ INDEXED_HYPERDATA = {
 }
 # user parameters----------------------------------------
 USER_LANG = ["fr", "en"]
-
 
 # resources ---------------------------------------------
 def get_resource(sourcetype):

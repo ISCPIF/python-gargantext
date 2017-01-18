@@ -63,10 +63,10 @@ def clusterByDistances( cooc_matrix
         n = n.sort_index(inplace=False)
         m = m.sort_index(inplace=False)
 
-        nodes_included = 500 #int(round(size/20,0))
+        nodes_included = 10000 #int(round(size/20,0))
         #nodes_excluded = int(round(size/10,0))
 
-        nodes_specific = 500 #int(round(size/10,0))
+        nodes_specific = 10000 #int(round(size/10,0))
         #nodes_generic = int(round(size/10,0))
 
         # TODO use the included score for the node size

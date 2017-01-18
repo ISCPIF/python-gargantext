@@ -218,6 +218,7 @@ def compute_coocs(  corpus,
 
     # 7) Building the final query
     final_sql += cooc_sql + select_cooc_sql
+    #final_sql += ";\n reset work_mem;"
 
     # 6) EXECUTE QUERY
     # ----------------

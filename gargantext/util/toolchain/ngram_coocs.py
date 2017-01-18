@@ -7,7 +7,7 @@ from sqlalchemy                import create_engine
 from gargantext.util.lists     import WeightedMatrix
 # from gargantext.util.db        import session, aliased, func
 from gargantext.util.db_cache  import cache
-from gargantext.constants      import DEFAULT_COOC_THRESHOLD
+from gargantext.constants      import DEFAULT_COOC_THRESHOLD, NODETYPES
 from gargantext.constants      import INDEXED_HYPERDATA
 from gargantext.util.tools     import datetime, convert_to_date
 
@@ -53,9 +53,9 @@ def compute_coocs(  corpus,
       - groupings_id: optional synonym relations to add all subform counts
                       with their mainform's counts
       - on_list_id: mainlist or maplist type, to constrain the input ngrams
-      - stoplist_id: stoplist for filtering input ngrams
+      - TODO stoplist_id: stoplist for filtering input ngrams
                      (normally unnecessary if a mainlist is already provided)
-      - start, end: provide one or both temporal limits to filter on doc date
+      - TODO start, end: provide one or both temporal limits to filter on doc date
                     NB the expected type of parameter value is datetime.datetime
                         (string is also possible but format must follow
                           this convention: "2001-01-01" aka "%Y-%m-%d")
@@ -72,183 +72,160 @@ def compute_coocs(  corpus,
     connection = engine.connect()
 
     # string vars for our SQL query
-    sql_statement     = ""
-    doc_idx_statement = ""
+    # setting work memory high to improve cache perf.
+    final_sql = "set work_mem='1GB'; \n"
+    # where
+    # final_sql = cooc_sql + select_cooc_sql
+    cooc_sql  = ""
+    select_cooc_sql    = ""
+    # where
+    # cooc_sql = cooc_sql + ngram_filter_A_sql + ngram_filter + cooc_filter_sql
+    cooc_filter_sql = ""
+    ngram_filter_A_sql = ""
+    ngram_filter_B_sql = ""
 
     # 2a) prepare the document selection (normal case)
-    doc_idx_statement = """
-    SELECT node_id, ngram_id
-    FROM nodes_ngrams
-    JOIN nodes
-        ON node_id = nodes.id
-    WHERE nodes.parent_id = {corpus_id}
-    AND nodes.typename = 4
-    """.format(corpus_id=corpus.id)
+    cooc_sql += """
+    WITH COOC as (
+    SELECT
+    COALESCE(grA.ngram1_id, wlA.ngram_id) as ngA,
+    COALESCE(grB.ngram1_id, wlB.ngram_id) as ngB,
+    COUNT(*) AS score
+    FROM
+    nodes AS n
+    --      / \
+    --     X   Y
+    -- SQL graph for getting the cooccurrences
+    """
 
+    # 2b) stating the filters
+    cooc_filter_sql = """
+        WHERE 
+            n.typename  = {nodetype_id}
+        AND n.parent_id = {corpus_id}
+        GROUP BY 1,2
+        --    ==
+        -- GROUP BY ngA, ngB
+        )
+        """.format( nodetype_id = NODETYPES.index('DOCUMENT')
+                  , corpus_id=corpus.id
+                  )
+    
+    # 3) taking the cooccurrences of ngram x2
+    ngram_filter_A_sql += """
+        -- STEP 1: X axis of the matrix
+        INNER JOIN nodes_ngrams
+                AS ngA  ON ngA.node_id  = n.id
+        -- \--> get the occurrences node/ngram of the corpus
+        """
 
-    # 2b) same if document filters
-    if start or end:
-        date_type_id = INDEXED_HYPERDATA['publication_date']['id']
+    ngram_filter_B_sql += """
+        -- STEP 2: Y axi of the matrix
+        INNER JOIN nodes_ngrams
+                AS ngB  ON ngB.node_id  = n.id
+        -- \--> get the occurrences node/ngram of the corpus
+        """
 
-        doc_idx_statement = """
-        SELECT node_id, ngram_id
-        FROM nodes_ngrams
-        JOIN nodes
-            ON node_id = nodes.id
-        -- preparing for date filter (1/2)
-        JOIN nodes_hyperdata
-            ON nodes_hyperdata.node_id = nodes_ngrams.node_id
-        WHERE nodes.parent_id = {corpus_id}
-        AND nodes.typename = 4
+    # 3) filter with lists (white or stop)
+    # on whiteList
+    if on_list_id:
+        ngram_filter_A_sql += """
+            INNER JOIN nodes_ngrams
+                    AS wlA  ON ngA.ngram_id = wlA.ngram_id
+                           AND wlA.node_id  = {wla_node_id}
+            -- \--> filter with white/main list
+            """.format(wla_node_id = on_list_id)
 
-        -- preparing for date filter (2/2)
-        AND nodes_hyperdata.key = {date_type_id}
-        """.format(corpus_id=corpus.id, date_type_id = date_type_id)
+        ngram_filter_B_sql += """
+            INNER JOIN nodes_ngrams
+                    AS wlB  ON ngB.ngram_id = wlB.ngram_id
+                           AND wlB.node_id  = {wlb_node_id}
+            -- \--> filter with white/main list
+            """.format(wlb_node_id = on_list_id)
 
-        if start:
-            if not isinstance(start, datetime):
-                try:
-                    start = datetime.strptime(start, '%Y-%m-%d')
-                except:
-                    raise TypeError("'start' param expects datetime object or %%Y-%%m-%%d string")
+    # on stopList
+    # TODO NOT TESTED
+    if stoplist_id:
+        raise("Stoplist not tested yet")
+        ngram_filter_A_sql += """
+            LEFT JOIN nodes_ngrams
+                    AS stA  ON ngA.ngram_id = stA.ngram_id
+                           AND stA.node_id  = {sta_node_id}
+                           AND stA.ngram_id IS NULL
+            -- \--> filter with stop list
+            """.format(sta_node_id = stoplist_id)
 
-            # datetime object ~> date db formatted filter (2013-09-16 00:00:00+02)
-            start_filter = "AND nodes_hyperdata.value_utc >= %s::date" % start.strftime('%Y-%m-%d %H:%M:%S%z')
+        ngram_filter_B_sql += """
+            LEFT JOIN nodes_ngrams
+                    AS stB  ON ngB.ngram_id = stB.ngram_id
+                           AND stB.node_id  = {stb_node_id}
+                           AND stB.ngram_id IS NULL
+            -- \--> filter with white/main list
+            """.format(stb_node_id = stoplist_id)
 
-            # the filtering by start limit
-            doc_idx_statement += "\n" + start_filter
-
-        if end:
-            if not isinstance(end, datetime):
-                try:
-                    end = datetime.strptime(end, '%Y-%m-%d')
-                except:
-                    raise TypeError("'end' param expects datetime object or %%Y-%%m-%%d string")
-
-            # datetime object ~> date db formatted filter
-            end_filter = "AND nodes_hyperdata.value_utc <= %s::date" % end.strftime('%Y-%m-%d %H:%M:%S%z')
-
-            # the filtering by end limit
-            doc_idx_statement += "\n" + end_filter
 
     # 4) prepare the synonyms
     if groupings_id:
-        syn_statement = """
-         SELECT * FROM nodes_ngrams_ngrams
-         WHERE node_id = {groupings_id}
+        ngram_filter_A_sql += """
+        LEFT JOIN  nodes_ngrams_ngrams 
+               AS grA  ON wlA.ngram_id = grA.ngram1_id 
+                      AND grA.node_id  = {groupings_id}
+        -- \--> adding (joining) ngrams that are grouped
+        LEFT JOIN  nodes_ngrams
+               AS wlAA ON grA.ngram2_id = wlAA.id
+                      AND wlA.node_id  = wlA.node_id 
+        -- \--> adding (joining) ngrams that are not grouped
+        --LEFT JOIN  ngrams        AS wlAA ON grA.ngram2_id = wlAA.id
+        -- \--> for joining all synonyms even if they are not in the main list (white list)
+
+        """.format(groupings_id = groupings_id)
+        
+        ngram_filter_B_sql += """
+        LEFT JOIN  nodes_ngrams_ngrams
+               AS grB  ON wlB.ngram_id = grB.ngram1_id 
+                      AND grB.node_id  = {groupings_id}
+        -- \--> adding (joining) ngrams that are grouped
+        LEFT JOIN  nodes_ngrams 
+               AS wlBB ON grB.ngram2_id = wlBB.id
+                      AND wlB.node_id   = wlB.node_id
+        -- \--> adding (joining) ngrams that are not grouped
+
+        -- LEFT JOIN  ngrams        AS wlBB ON grB.ngram2_id = wlBB.id
+        -- \--> for joining all synonyms even if they are not in the main list (white list)
         """.format(groupings_id = groupings_id)
 
 
-    # 5a) MAIN DB QUERY SKELETON (no groupings) --------------------------------
-    if not groupings_id:
-        sql_statement = """
-        SELECT cooc.*
-        FROM (
-         SELECT idxA.ngram_id AS ngA,
-                idxB.ngram_id AS ngB,
-          count((idxA.ngram_id,
-                 idxB.ngram_id)) AS cwei
-          -- read doc index x 2
-          FROM ({doc_idx}) AS idxA
-          JOIN ({doc_idx}) AS idxB
-          -- cooc <=> in same doc node
-          ON idxA.node_id = idxB.node_id
+    # 5) Buil the main COOC query
+    cooc_sql += ngram_filter_A_sql + ngram_filter_B_sql + cooc_filter_sql
 
-          GROUP BY ((idxA.ngram_id,idxB.ngram_id))
-        ) AS cooc
-        """.format(doc_idx = doc_idx_statement)
-    # --------------------------------------------------------------------------
-
-    # 5b) MAIN DB QUERY SKELETON (with groupings)
-    # groupings: we use additional Translation (synonyms) for ngA and ngB
-    else:
-        sql_statement = """
-        SELECT cooc.*
-        FROM (
-         SELECT COALESCE(synA.ngram1_id, idxA.ngram_id) AS ngA,
-                COALESCE(synB.ngram1_id, idxB.ngram_id) AS ngB,
-          count((COALESCE(synA.ngram1_id, idxA.ngram_id),
-                COALESCE(synB.ngram1_id, idxB.ngram_id))) AS cwei
-          -- read doc index x 2
-          FROM ({doc_idx}) AS idxA
-          JOIN ({doc_idx}) AS idxB
-          -- cooc <=> in same doc node
-          ON idxA.node_id = idxB.node_id
-
-          -- when idxA.ngram_id is a subform
-          LEFT JOIN ({synonyms}) as synA
-          ON synA.ngram2_id = idxA.ngram_id
-          -- when idxB.ngram_id is a subform
-          LEFT JOIN ({synonyms}) as synB
-          ON synB.ngram2_id = idxB.ngram_id
-
-          GROUP BY (COALESCE(synA.ngram1_id, idxA.ngram_id),
-                    COALESCE(synB.ngram1_id, idxB.ngram_id))
-        ) AS cooc
-        """.format(doc_idx = doc_idx_statement,
-                   synonyms = syn_statement)
-
-
-    # 6) prepare 2 x node_ngrams alias if whitelist
-    if on_list_id:
-        sql_statement +="""
-        JOIN nodes_ngrams AS whitelistA
-          ON whitelistA.ngram_id = cooc.ngA
-
-        JOIN nodes_ngrams AS whitelistB
-          ON whitelistB.ngram_id = cooc.ngB
-         """
-
-    if stoplist_id:
-        # used for reverse join
-        sql_statement +="""
-        LEFT JOIN (
-            SELECT * FROM nodes_ngrams
-            WHERE nodes_ngrams.node_id = %i
-            ) AS stoplistA
-          ON stoplistA.ngram_id = cooc.ngA
-
-        LEFT JOIN (
-            SELECT * FROM nodes_ngrams
-            WHERE nodes_ngrams.node_id = %i
-            ) AS stoplistB
-          ON stoplistA.ngram_id = cooc.ngA
-         """ % (stoplist_id, stoplist_id)
-
-    # 7) FILTERS
-
+    # 6) FILTERS
+    select_cooc_sql = """
+    SELECT ngA, ngB, score
+        FROM COOC    --> from the query above
+    """
     # the inclusive threshold filter is always here
-    sql_statement += "\n WHERE cooc.cwei >= %i" % threshold
-
-    # the optional whitelist perimeters
-    if on_list_id:
-        sql_statement += "\n AND whitelistA.node_id = %i" % on_list_id
-        sql_statement += "\n AND whitelistB.node_id = %i" % on_list_id
-
-    if stoplist_id:
-        sql_statement += "\n AND stoplistA.ngram_id IS NULL"
-        sql_statement += "\n AND stoplistB.ngram_id IS NULL"
-
+    select_cooc_sql += "\n WHERE score >= %i" % threshold
 
     # don't compute ngram with itself
     # NB: this option is bad for main toolchain
     if diagonal_filter:
-        sql_statement += "\n AND ngA != ngB"
+        select_cooc_sql += "\n AND ngA != ngB"
 
     # 1 filtre tenant en compte de la symétrie
     # NB: this option is also bad for main toolchain
     if symmetry_filter:
-        sql_statement += "\n AND ngA <= ngB"
+        select_cooc_sql += "\n AND ngA <= ngB"
 
-
+    # 7) Building the final query
+    final_sql += cooc_sql + select_cooc_sql
 
     # 6) EXECUTE QUERY
     # ----------------
     # debug
-    print(sql_statement)
+    print(final_sql)
 
     # executing the SQL statement
-    results = connection.execute(sql_statement)
+    results = connection.execute(final_sql)
 
     #  => storage in our matrix structure
     matrix = WeightedMatrix(results)

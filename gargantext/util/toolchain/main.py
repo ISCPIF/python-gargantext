@@ -9,8 +9,8 @@ from .list_stop           import do_stoplist
 from .ngram_groups        import compute_groups
 from .metric_tfidf        import compute_occs, compute_tfidf_local, compute_ti_ranking
 from .list_main           import do_mainlist
-#from .ngram_coocs         import compute_coocs
-from .ngram_coocs_old_sqlalchemy_version import compute_coocs
+from .ngram_coocs         import compute_coocs
+#from .ngram_coocs_old_sqlalchemy_version import compute_coocs
 from .metric_specgen      import compute_specgen
 from .list_map            import do_maplist
 from .mail_notification   import notify_owner

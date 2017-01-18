@@ -173,7 +173,7 @@ def compute_coocs(  corpus,
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams
                AS wlAA ON grA.ngram2_id = wlAA.ngram_id
-                      AND wlA.node_id  = wlA.node_id 
+                      AND wlAA.node_id  = wlA.node_id 
         -- \--> adding (joining) ngrams that are not grouped
         --LEFT JOIN  ngrams        AS wlAA ON grA.ngram2_id = wlAA.id
         -- \--> for joining all synonyms even if they are not in the main list (white list)
@@ -187,7 +187,7 @@ def compute_coocs(  corpus,
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams 
                AS wlBB ON grB.ngram2_id = wlBB.ngram_id
-                      AND wlB.node_id   = wlB.node_id
+                      AND wlBB.node_id   = wlB.node_id
         -- \--> adding (joining) ngrams that are not grouped
 
         -- LEFT JOIN  ngrams        AS wlBB ON grB.ngram2_id = wlBB.id

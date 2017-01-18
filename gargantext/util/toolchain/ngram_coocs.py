@@ -172,7 +172,7 @@ def compute_coocs(  corpus,
                       AND grA.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams
-               AS wlAA ON grA.ngram2_id = wlAA.id
+               AS wlAA ON grA.ngram2_id = wlAA.ngram_id
                       AND wlA.node_id  = wlA.node_id 
         -- \--> adding (joining) ngrams that are not grouped
         --LEFT JOIN  ngrams        AS wlAA ON grA.ngram2_id = wlAA.id
@@ -186,7 +186,7 @@ def compute_coocs(  corpus,
                       AND grB.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams 
-               AS wlBB ON grB.ngram2_id = wlBB.id
+               AS wlBB ON grB.ngram2_id = wlBB.ngram_id
                       AND wlB.node_id   = wlB.node_id
         -- \--> adding (joining) ngrams that are not grouped
 
@@ -218,6 +218,7 @@ def compute_coocs(  corpus,
 
     # 7) Building the final query
     final_sql += cooc_sql + select_cooc_sql
+    #final_sql += ";\n reset work_mem;"
 
     # 6) EXECUTE QUERY
     # ----------------

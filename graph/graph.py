@@ -82,7 +82,7 @@ def compute_graph( corpus_id=None      , cooc_id=None
 
         print("GRAPH #%d ... Notify by email owner of the graph." % cooc_id)
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
-        notify_owner(corpus, cooc_id, distance, bridgeness)
+        #notify_owner(corpus, cooc_id, distance, bridgeness)
 
         print("GRAPH #%d ... Returning data as json." % cooc_id)
         return data

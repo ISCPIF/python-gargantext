@@ -2,8 +2,10 @@
 * Guided Tour
 * Sources form highlighting crawlers
 
-## Version 3.0.6.3
+## Version 3.0.6.4
 * COOC SQL improved
+
+## Version 3.0.6.3
 * New buttons
 * Big graphs with conditional distance
 

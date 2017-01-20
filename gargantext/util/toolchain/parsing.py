@@ -81,6 +81,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
                 lang_result["doc_error"] = "Error: not enough text to index"
             else:
                 # detect_lang return object o with o.iso2, o.iso3 ...
+                print("trying to detect lang")
                 lang = detect_lang(text)
                 lang_result["doc_prediction"] = (getattr(lang, k) for k in ["iso2", "iso3", "name"])
                 if lang.iso2 not in LANGUAGES.keys():
@@ -220,10 +221,10 @@ def parse(corpus):
         #les jolis iso2
         observed_langs = dict(Counter(observed_languages))
 
-        # print("#LANGAGES OK")
-        # print(observed_langs)
-        # print("#LANGUAGES UNKNOWN")
-        # print(skipped_langs)
+        print("#LANGAGES OK")
+        print(observed_langs)
+        print("#LANGUAGES UNKNOWN")
+        print(skipped_langs)
 
         top_langs = sorted(observed_langs.items(), key = lambda x: x[1], reverse=True)
         if len(top_langs) > 0:

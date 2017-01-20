@@ -16,6 +16,9 @@ from celery                       import shared_task
 from datetime                     import datetime
 
 
+# https://docs.python.org/3.1/library/profile.html
+#import cProfile
+
 @shared_task
 def compute_graph( corpus_id=None      , cooc_id=None
                 , field1='ngrams'     , field2='ngrams'
@@ -57,6 +60,11 @@ def compute_graph( corpus_id=None      , cooc_id=None
 
 
         print("GRAPH #%d ... Clustering with %s distance." % (cooc_id,distance))
+        #cProfile('''clusterByDistances ( cooc_matrix
+         #                                              , field1="ngrams", field2="ngrams"
+         #                                              , distance=distance
+         #                                              )''')
+
         G, partition, ids, weight = clusterByDistances ( cooc_matrix
                                                        , field1="ngrams", field2="ngrams"
                                                        , distance=distance

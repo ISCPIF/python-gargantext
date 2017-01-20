@@ -141,6 +141,11 @@ def clusterByDistances( cooc_matrix
 
         for i in matrix.keys():
             si = sum([matrix[i][j] for j in matrix[i].keys() if i != j])
+            
+            #xx = pd.DataFrame.as_matrix(x)
+            #np.fill_diagonal(xx,0)
+            #sii = sum(sum(xx))
+
             for j in matrix[i].keys():
                 sj = sum([matrix[j][k] for k in matrix[j].keys() if j != k])
                 if i!=j :

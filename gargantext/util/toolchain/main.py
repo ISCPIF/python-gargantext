@@ -149,7 +149,7 @@ def parse_extract_indexhyperdata(corpus):
                             on_list_id = mainlist_id,
                             groupings_id = group_id,
                             just_pass_result = True,
-                           # symmetry_filter  = True,
+                            symmetry_filter  = True,
                             diagonal_filter = False) # preserving the diagonal
                                                      # (useful for spec/gen)
     print('CORPUS #%d: [%s] computed mainlist coocs for specif rank' % (corpus.id, t()))

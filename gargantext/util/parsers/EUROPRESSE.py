@@ -232,8 +232,7 @@ class EuropresseParser(Parser):
                             # print("=============== Header date en")
 
                             # save for FileParser
-                            # TODO this does not work
-                            hyperdata["language_iso2"] = 'fr'
+                            hyperdata["language_iso2"] = 'en'
                             # match str
                             date_str = test_date_en.group()
                         else:

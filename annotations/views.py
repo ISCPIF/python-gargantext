@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 import json
 import datetime
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 
@@ -25,12 +25,11 @@ def main(request, project_id, corpus_id, document_id, optional_focus_ngram):
 
     NB: url params are NOT used here (angular has its own url regex in app.js)
     """
-    return render_to_response('annotations/main.html', {
-        # TODO use reverse()
-        'api_url': urljoin(request.get_host(), '/annotations/'),
-        'garg_url': request.get_host(),
-        'nodes_api_url': urljoin(request.get_host(), '/api/'),
-    }, context_instance=RequestContext(request))
+    context = { 'api_url'      : urljoin(request.get_host(), '/annotations/')
+              , 'garg_url'     : request.get_host()
+              , 'nodes_api_url': urljoin(request.get_host(), '/api/')
+              }
+    return render(request, 'annotations/main.html', context)
 
 class NgramList(APIView):
     """Read the lists of ngrams (terms) that will become annotations"""

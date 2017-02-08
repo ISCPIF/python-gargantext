@@ -172,8 +172,8 @@ def compute_coocs(  corpus,
                       AND grA.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams
-               AS wlAA ON grA.ngram2_id = wlAA.id
-                      AND wlA.node_id  = wlA.node_id 
+               AS wlAA ON grA.ngram2_id = wlAA.ngram_id
+                      AND wlAA.node_id  = wlA.node_id 
         -- \--> adding (joining) ngrams that are not grouped
         --LEFT JOIN  ngrams        AS wlAA ON grA.ngram2_id = wlAA.id
         -- \--> for joining all synonyms even if they are not in the main list (white list)
@@ -186,8 +186,8 @@ def compute_coocs(  corpus,
                       AND grB.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams 
-               AS wlBB ON grB.ngram2_id = wlBB.id
-                      AND wlB.node_id   = wlB.node_id
+               AS wlBB ON grB.ngram2_id = wlBB.ngram_id
+                      AND wlBB.node_id   = wlB.node_id
         -- \--> adding (joining) ngrams that are not grouped
 
         -- LEFT JOIN  ngrams        AS wlBB ON grB.ngram2_id = wlBB.id
@@ -218,6 +218,7 @@ def compute_coocs(  corpus,
 
     # 7) Building the final query
     final_sql += cooc_sql + select_cooc_sql
+    #final_sql += ";\n reset work_mem;"
 
     # 6) EXECUTE QUERY
     # ----------------

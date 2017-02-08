@@ -112,7 +112,7 @@ def save(request , project_id):
 
         for k in chunks:
             if (k[0]+pagesize)>N: pagesize = N-k[0]
-            urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=*&"+"from="+str(k[0])+"&size="+str(pagesize))
+            urlreqs.append("http://api.istex.fr/document/?q="+query_string+"&output=id,corpusName,title,genre,language,doi,host,publicationDate,abstract,author&"+"from="+str(k[0])+"&size="+str(pagesize))
 
         # corpus node instanciation as a Django model
 

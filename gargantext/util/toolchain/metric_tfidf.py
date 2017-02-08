@@ -16,9 +16,12 @@ from sqlalchemy.sql.expression import case # for choice if ngram has mainform or
 from sqlalchemy import distinct   # for list of unique ngram_ids within a corpus
 from math                import log
 from re                  import match
+from datetime             import datetime
 # £TODO
 # from gargantext.util.lists import WeightedIndex
 
+def t():
+    return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
 def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
     """
@@ -106,7 +109,7 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
                     .group_by("counted_form")
                  )
 
-
+    #print(str(occs_q))
     occ_sums = occs_q.all()
     # example result = [(1970, 1.0), (2024, 2.0),  (259, 2.0), (302, 1.0), ... ]
     #                    ^^^^  ^^^
@@ -325,9 +328,13 @@ def compute_ti_ranking(corpus,
     log_tot_docs = log(total_docs)
 
     # result
+    print("%s : Starting Query tf_nd_query" % t())
+    print(str(tf_nd_query))
     tf_nd = tf_nd_query.all()
+    print("%s : End Query tf_nd_quer" % t())
 
     # -------------- "sommatoire" sur mot i ----------------
+    print("%s : tfidfsum" % t())
     tfidfsum = {}
     for (ngram_i, tf_i, nd_i) in tf_nd:
         # tfidfsum[ngram_i] = tf_i * log(total_docs/nd_i)
@@ -374,7 +381,6 @@ def compute_ti_ranking(corpus,
     )
 
     return the_id
-
 
 
 def compute_tfidf_local(corpus,

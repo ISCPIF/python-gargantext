@@ -23,7 +23,7 @@ class ISTexParser(Parser):
             "abstract"  : 'abstract',
             # "authors"           : 'author',
             "authorsRAW"        : 'author',
-            "keywords"          : "keywords"
+            #"keywords"          : "keywords"
         }
 
         suma = 0

@@ -1,31 +1,30 @@
 # try bottleneck
 amqp==1.4.9
 anyjson==0.3.3
-billiard==3.3.0.22             # multiprocessing fork
-celery==3.1.20
+billiard==3.3.0.23
+celery==3.1.25
 chardet==2.3.0
 dateparser==0.3.5
-Django==1.9.2
-django-celery==3.1.17
+Django==1.10.5
+django-celery==3.2.1
 django-pgfields==1.4.4
-django-pgjsonb==0.0.16
-djangorestframework==3.3.2
+django-pgjsonb==0.0.23
+djangorestframework==3.5.3
 html5lib==0.9999999
 python-igraph>=0.7.1
 jdatetime==1.7.2
-kombu==3.0.33                  # messaging
+kombu==3.0.37                  # messaging
 langdetect==1.0.6              #detectinglanguage
 nltk==3.1
 numpy==1.10.4
-psycopg2==2.6.1
+psycopg2==2.6.2
 pycountry==1.20
 python-dateutil==2.4.2
-pytz==2015.7                   # timezones
+pytz==2016.10                   # timezones
 PyYAML==3.11
 RandomWords==0.1.12
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
-wheel==0.29.0
 networkx==1.11
 pandas==0.18.0
 six==1.10.0

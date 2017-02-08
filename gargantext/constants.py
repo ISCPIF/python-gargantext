@@ -2,33 +2,30 @@
 # WARNING: to ensure consistency and retrocompatibility, lists should keep the
 #   initial order (ie., new elements should be appended at the end of the lists)
 
-
 abstract:
 ---------
          something between global params, constants,
          configuration variables, ini file...
 
-
 contents:
 ---------
-
-      + db constants/ontology
+      + database constants/ontology
          - nodetypes
             (db int <=> named types <=> python code)
 
-      + input low-level limits
+      + low-level limits
          - query size
          - max upload size
          - doc parsing batch size
          - word extraction batch size
 
-      + process config
+      + main process config
          - resourcetypes config (~ input ontology)
          - wordlist generation params
          - graph creation params
          - £TODO sequence of transformations "custom pipeline"
 
-      + input process subclasses/subroutines
+      + subprocess config
          - crawling, import
          - tagger services and functions
          - parser services
@@ -83,12 +80,20 @@ NODETYPES = [
     # docs subset
     'FAVORITES',             # 15
     # more scores (sorry!)
+
     'TIRANK-LOCAL',          # 16
     'TIRANK-GLOBAL',         # 17
 
     'GENCLUSION',            # 18
     'RESOURCE',              # 19
 ]
+
+
+def get_nodetype_id_by_name(nodetype):
+    '''resource :: name => resource dict'''
+    for n in NODETYPES :
+        if str(n["name"]) == str(sourcename):
+            return n
 
 INDEXED_HYPERDATA = {
     # TODO use properties during toolchain.hyperdata_indexing
@@ -154,7 +159,6 @@ INDEXED_HYPERDATA = {
 # user parameters----------------------------------------
 USER_LANG = ["fr", "en"]
 
-
 # resources ---------------------------------------------
 def get_resource(sourcetype):
     '''resource :: type => resource dict'''
@@ -180,7 +184,7 @@ def get_tagger(lang):
 
 
 RESOURCETYPES = [
-    {   "type":1,
+    {   "type": 1,
         'name': 'Europresse',
         'format': 'Europresse',
         'parser': "EuropresseParser",
@@ -201,14 +205,14 @@ RESOURCETYPES = [
         'file_formats':["zip", "xml"],
         'crawler': "PubmedCrawler",
     },
-    {   'type':4,
+    {   'type': 4,
         'name': 'Scopus [RIS]',
         'format': 'RIS',
         'parser': "RISParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
     },
-    {   'type':5,
+    {   'type': 5,
         'name': 'Web of Science [ISI]',
         'format': 'ISI',
         'parser': "ISIParser",
@@ -216,14 +220,14 @@ RESOURCETYPES = [
         #'crawler': "ISICrawler",
         'crawler': None,
     },
-    {   'type':6,
+    {   'type': 6,
         'name': 'Zotero [RIS]',
         'format': 'RIS',
         'parser': 'RISParser',
         'file_formats':["zip", "ris", "txt"],
         'crawler': None,
     },
-    {   'type':7,
+    {   'type': 7,
         'name': 'CSV',
         'format': 'CSV',
         'parser': 'CSVParser',
@@ -237,14 +241,14 @@ RESOURCETYPES = [
         'file_formats':["zip", "txt"],
         'crawler': None,
     },
-   {    "type":9,
+   {    "type": 9,
         "name": 'SCOAP [XML]',
         "parser": "CernParser",
         "format": 'MARC21',
         'file_formats':["zip","xml"],
         "crawler": "CernCrawler",
    },
-   {    "type":10,
+   {    "type": 10,
         "name": 'REPEC [RIS]',
         "parser": "RISParser",
         "format": 'RIS',

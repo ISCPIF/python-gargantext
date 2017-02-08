@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 # Module "Graph Explorer"
 from graph.rest         import Graph

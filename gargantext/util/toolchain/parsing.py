@@ -87,7 +87,7 @@ def add_lang(hyperdata, observed_languages, skipped_languages):
                     lang_result['skipped'].append(lang.iso2)    # idem
                 else:
                     lang_result['observed'].append(lang.iso2)
-
+    #print(lang_result)
     return lang_result
 
 

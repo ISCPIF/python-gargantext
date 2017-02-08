@@ -2376,9 +2376,9 @@ function MainTableAndCharts( ngdata , initial , filtersParams, callerLabel) {
     $(".dynatable-record-count").insertAfter(".imadiv")
     $(".dynatable-pagination-links").insertAfter(".imadiv")
 
-    $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
-    $(".dynatable-record-count").insertAfter(".imadiv")
-    $(".dynatable-pagination-links").insertAfter(".imadiv")
+//    $('<div class="imadiv"></div>').insertAfter("#my-ajax-table")
+//    $(".dynatable-record-count").insertAfter(".imadiv")
+//    $(".dynatable-pagination-links").insertAfter(".imadiv")
 
     // restore chart filters
     if (typeof(filtersParams.from) != 'undefined'

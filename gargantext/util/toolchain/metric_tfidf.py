@@ -177,6 +177,7 @@ def compute_ti_ranking(corpus,
       - overwrite_id: optional id of a pre-existing XXXX node for this corpus
                    (the Node and its previous Node NodeNgram rows will be replaced)
     """
+    print("compute_ti_ranking")
     # validate string params
     if count_scope not in ["local","global"]:
         raise ValueError("compute_ti_ranking: count_scope param allowed values: 'local', 'global'")
@@ -371,7 +372,7 @@ def compute_ti_ranking(corpus,
     # TODO 2 release these 2 typenames TFIDF-CORPUS and TFIDF-GLOBAL
     # TODO 3 recreate them elsewhere in their sims (WeightedIndex) version
     # TODO 4 requalify this here as a NodeNgram
-    # then TODO 5 use WeightedList.save() !
+    # TODO 5 use WeightedList.save()
 
     # reflect that in NodeNodeNgrams
     bulk_insert(

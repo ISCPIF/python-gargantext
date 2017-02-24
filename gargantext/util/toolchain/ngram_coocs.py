@@ -3,7 +3,7 @@ COOCS
     (this is the full SQL version, should be more reliable on outerjoin)
 """
 from gargantext                import settings
-from sqlalchemy                import create_engine
+from sqlalchemy                import create_engine, exc
 from gargantext.util.lists     import WeightedMatrix
 # from gargantext.util.db        import session, aliased, func
 from gargantext.util.db_cache  import cache
@@ -223,10 +223,19 @@ def compute_coocs(  corpus,
     # 6) EXECUTE QUERY
     # ----------------
     # debug
-    print(final_sql)
+    #print(final_sql)
 
     # executing the SQL statement
-    results = connection.execute(final_sql)
+    try:
+        # suppose the database has been restarted.
+        results = connection.execute(final_sql)
+        connection.close()
+    except exc.DBAPIError as e:
+        # an exception is raised, Connection is invalidated.
+        if e.connection_invalidated:
+            print("Connection was invalidated for ngram_coocs")
+        else:
+            print(e)
 
     #  => storage in our matrix structure
     matrix = WeightedMatrix(results)

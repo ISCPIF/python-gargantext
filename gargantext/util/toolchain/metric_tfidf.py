@@ -109,7 +109,7 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
                     .group_by("counted_form")
                  )
 
-    #print(str(occs_q))
+    #print(str(occs_q.all()))
     occ_sums = occs_q.all()
     # example result = [(1970, 1.0), (2024, 2.0),  (259, 2.0), (302, 1.0), ... ]
     #                    ^^^^  ^^^
@@ -190,7 +190,7 @@ def compute_ti_ranking(corpus,
     if type(corpus) == int:
         corpus_id = corpus
         corpus = cache.Node[corpus_id]
-    elif type(corpus) == str and match(r'\d+$', corpus):
+    elif type(corpus) == str and match(r'^\d+$', corpus):
         corpus_id = int(corpus)
         corpus = cache.Node[corpus_id]
     else:
@@ -330,7 +330,7 @@ def compute_ti_ranking(corpus,
 
     # result
     print("%s : Starting Query tf_nd_query" % t())
-    print(str(tf_nd_query))
+    #print(str(tf_nd_query.all()))
     tf_nd = tf_nd_query.all()
     print("%s : End Query tf_nd_quer" % t())
 
@@ -399,7 +399,8 @@ def compute_tfidf_local(corpus,
       - overwrite_id: optional id of a pre-existing TFIDF-XXXX node for this corpus
                    (the Node and its previous NodeNodeNgram rows will be replaced)
     """
-
+    print("Compute TFIDF local")
+    
     # All docs of this corpus
     docids_subquery = (session
                         .query(Node.id)

@@ -2,11 +2,12 @@ from gargantext.util.db      import session
 from gargantext.models.nodes import Node
 from graph.graph             import get_graph
 from graph.utils             import compress_graph, format_html
-from gargantext.util.http    import APIView, APIException\
+from gargantext.util.http    import APIView, APIException, HttpResponseForbidden\
                                   , JsonHttpResponse, requires_auth
 
 from gargantext.constants    import graph_constraints
 from traceback               import format_tb
+from gargantext.views.api.nodes import check_rights
 
 class Graph(APIView):
     '''
@@ -25,13 +26,11 @@ class Graph(APIView):
            before counting + filling data in async
         '''
 
-        if not request.user.is_authenticated():
-            # can't use @requires_auth because of positional 'self' within class
-            return HttpResponse('Unauthorized', status=401)
+        if check_rights(request) != True:
+            return HttpResponseForbidden()
 
         # Get the node we are working with
         corpus = session.query(Node).filter(Node.id==corpus_id).first()
-
 
         # TODO Parameters to save in hyperdata of the Node Cooc
         # WARNING: we could factorize the parameters as dict but ...

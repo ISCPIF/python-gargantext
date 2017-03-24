@@ -1,12 +1,12 @@
 
-from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNodeNgram, NodeNode, NodeUser, User
 from gargantext.constants       import NODETYPES, DEFAULT_N_DOCS_HAVING_NGRAM
 from gargantext.util.db         import session, delete, func, bulk_insert
 from gargantext.util.db_cache   import cache, or_
 from gargantext.util.validation import validate
 from gargantext.util.http       import ValidationException, APIView \
                                      , get_parameters, JsonHttpResponse, Http404\
-                                     , HttpResponse
+                                     , HttpResponse, requires_auth
 
 from .api import *
 from collections import defaultdict
@@ -25,13 +25,79 @@ _hyperdata_available_fields = ['title', 'source', 'abstract', 'statuses',
 #_node_available_formats = ['json', 'csv', 'bibex']
 
 
+
+def check_rights(request, node_id=None):
+    """
+    check rights of a request and maybe a node if given as parameters.
+    
+    check_rights :: Request -> Maybe Int -> Bool
+
+    True  : request is accepted
+    False : request is forbidden
+
+    """
+    
+    # First find the Node.id of the request
+    if node_id is None:
+        node_id = request.GET.get('parent_id', '')
+        if node_id == '':
+            node_id = request.GET.get('cooc_id', '')
+            print(node_id)
+            if node_id == '':
+                if node_id == '':
+                    node_id = request.GET.get('node_id', '')
+                    raise TypeError("No node given")
+                    # return False
+    
+    # Get the right access management rules of the node
+    nodeRights = ( session.query ( NodeUser                    )
+                          .filter( NodeUser.node_id == node_id )
+                          .first (                             )
+                  )
+    print(nodeRights.mode)
+    # If the user is anonymous
+    # Is the user authenticated i.e. anonymous ?
+    if request.user.id is None and nodeRights is not None :
+    # if request.user.id is None and nodeRights not defined then False
+        
+        # Check if the node has public rights
+        if int(str(nodeRights.mode)[2]) == 4:
+            return True
+        else:
+            return False
+    
+    # Common case: user is authenticated and owner of the node
+    # The user is authenticated (common case)
+    elif request.user.id is not None and nodeRights is not None :
+        # Is the user owner of the node ?
+        if nodeRights.user_id == request.user.id:
+            # Has the user the rights to read the Node ?
+            if int(str(nodeRights.mode)[0]) == 7:
+                return True
+        
+        elif int(str(nodeRights.mode)[1]) == 7:
+        # Is the user owner of the node ?
+            return True
+        else:
+            return False
+    # The user is authenticated and Node rights not implemented yet
+    elif request.user.id is not None and nodeRights is None :
+        node = session.query(Node).filter(Node.id == node_id).first()
+        if request.user.id == node.user_id :
+            return True
+        else:
+            return False
+    
+    else:
+        return False
+
+
 def _query_nodes(request, node_id=None):
 
-    if request.user.id is None:
-        raise TypeError("This API request must come from an authenticated user.")
-    else:
-        # we query among the nodes that belong to this user
-        user = cache.User[request.user.id]
+    if check_rights(request, node_id) != True:
+        return HttpResponseForbidden()
+
+    user = cache.User[request.user.id]
 
     # parameters validation
     # fixme: this validation does not allow custom keys in url (eg '?name=' for rename action)
@@ -217,10 +283,9 @@ class NodeListResource(APIView):
     def get(self, request):
         """Displays the list of nodes corresponding to the query.
         """
-
-        if not request.user.is_authenticated():
-            # can't use @requires_auth because of positional 'self' within class
-            return HttpResponse('Unauthorized', status=401)
+        
+        if check_rights(request) != True:
+            return HttpResponseForbidden()
 
         parameters, query, count = _query_nodes(request)
 
@@ -307,11 +372,16 @@ class NodeListHaving(APIView):
 
     2016-09: add total counts to output json
     '''
+    
+    #@maybe_public
     def get(self, request, corpus_id):
 
-        if not request.user.is_authenticated():
-            # can't use @requires_auth because of positional 'self' within class
-            return HttpResponse('Unauthorized', status=401)
+        if check_rights(request, corpus_id) != True:
+            return HttpResponseForbidden()
+
+#        if not request.user.is_authenticated():
+#            # can't use @requires_auth because of positional 'self' within class
+#            return HttpResponse('Unauthorized', status=401)
 
         parameters = get_parameters(request)
         parameters = validate(parameters, {'score': str, 'ngram_ids' : list} )
@@ -377,6 +447,7 @@ class NodeListHaving(APIView):
 class NodeResource(APIView):
 
     # contains a check on user.id (within _query_nodes)
+    #@maybe_public
     def get(self, request, node_id):
 
         if not request.user.is_authenticated():

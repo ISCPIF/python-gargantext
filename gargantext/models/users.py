@@ -31,7 +31,9 @@ class User(Base):
         return query.all()
 
     def nodes(self, typename=None, order=None):
-        """get all nodes belonging to the user"""
+        """get all nodes belonging to the user
+           TODO : add NodeUser rights management
+        """
         from .nodes import Node
         query = (session
             .query(Node)
@@ -60,7 +62,7 @@ class User(Base):
         """check if a given node is owned by the user"""
         return (node.user_id == self.id) or \
                 node.id in (contact.id for contact in self.contacts())
-    
+
     def get_params(self, username=None):
         print(self.__dict__.items())
         return self.hyperdata
@@ -74,3 +76,6 @@ class Contact(Base):
     date_creation = Column(DateTime(timezone=False))
 
     __table_args__ = (UniqueConstraint('user1_id', 'user2_id'), )
+
+
+

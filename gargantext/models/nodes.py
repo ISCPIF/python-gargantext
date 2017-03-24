@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .users import User
 
-__all__ = ['Node', 'NodeNode']
+__all__ = ['Node', 'NodeNode', 'NodeUser']
 
 class NodeType(TypeDecorator):
     """Define a new type of column to describe a Node's type.
@@ -192,3 +192,38 @@ class NodeNode(Base):
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     score    = Column(Float(precision=24))
+
+class NodeUser(Base):
+    """
+    NODE USER RIGHTS MANAGEMENT:
+    r: can read
+    w: can write
+    x: can execute (open, delete, share)
+
+    Symbolic	Int (Octal isomorphism)
+        rwx         7
+        rw-         6
+        r-x         5
+        r--         4
+        -wx         3
+        -w-         2
+        --x         1
+        ---         0
+
+    owner/user: first integer
+    group: second integer
+    others: third integer
+
+    Example:
+    A user only node:                              700 == rwx --- ---
+    A user sharing all rights to his group:        770 == rwx rwx ---
+    A user sharing to the public (read mode only): 744 == rwx r-- r--
+
+    """
+    __tablename__ = 'node_user'
+    node_id  = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    user_id  = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    group_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    mode     = Column(Integer)
+
+

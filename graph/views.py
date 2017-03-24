@@ -7,8 +7,11 @@ from gargantext.settings import *
 from gargantext.constants import USER_LANG
 from datetime import datetime
 from gargantext.views.pages.main import get_user_params
+from gargantext.views.api.nodes import check_rights
 
-@requires_auth
+from gargantext.util.http import HttpResponseForbidden
+
+#@requires_auth
 def explorer(request, project_id, corpus_id):
     '''
     Graph explorer, also known as TinaWebJS, using SigmaJS.
@@ -17,17 +20,11 @@ def explorer(request, project_id, corpus_id):
 
     Data are received in RESTfull mode (see rest.py).
     '''
+    if check_rights(request) != True:
+        return HttpResponseForbidden()
 
     # we pass our corpus
     corpus = cache.Node[corpus_id]
-
-    # security check
-    user = cache.User[request.user.id]
-
-    if corpus is None:
-        raise Http404()
-    if not user.owns(corpus):
-        return HttpResponseForbidden()
 
     # get the maplist_id for modifications
     maplist_id = corpus.children(typename="MAPLIST").first().id

@@ -41,7 +41,7 @@ class User(Base):
         return query
     
     
-    def invite(self, username=None, block=False, notification=True):
+    def invites(self, username=None, block=False, notification=True):
         if username is None:
             raise ValueError('if you contact someone give his username please.')
         
@@ -55,8 +55,8 @@ class User(Base):
 
 
         relation = (session.query(Contact)
-                           .filter( user1_id == self.id
-                                  , user2_id == maybeFriend.id
+                           .filter( Contact.user1_id == self.id
+                                  , Contact.user2_id == maybeFriend.id
                                   )
                            .first()
                    )
@@ -84,25 +84,27 @@ class User(Base):
             
             return relation
 
-    def accept(self, username=None, notification=False):
-        self.invite(username=username, block=False, notification=notification)
+    def accepts(self, username=None, notification=False):
+        self.invites(username=username, block=False, notification=notification)
 
-    def refuse(self, username=None, notification=False):
-        self.invite(username=username, block=True, notification=notification)
+    def refuses(self, username=None, notification=False):
+        self.invites(username=username, block=True, notification=notification)
 
     def contacts(self):
-        """get all contacts in one-relation with the user"""
-        Friend = aliased(User)
+        """ Get all contacts in one-relation with the user"""
+        
+        MaybeFriend = aliased(User)
+        
         query = (session
-            .query(Friend)
-            .join(Contact, Contact.user2_id == Friend.id)
+            .query(MaybeFriend)
+            .join(Contact, Contact.user2_id == MaybeFriend.id)
             .filter(Contact.user1_id == self.id, Contact.is_blocked==False)
         )
         return query.all()
 
 
     def friends(self):
-        """get all contacts in bidirectional-relation 
+        """ Get all contacts in bidirectional-relation 
         (both parties accepted to be linked) with the user"""
         
         Friend = aliased(User)
@@ -117,6 +119,23 @@ class User(Base):
             .filter(Contact2.user2_id == self.id, Contact2.is_blocked == False)
         )
         return query.all()
+
+    def pending_invitations(self):
+        """ Get invitations that have not been accepted nor refused.
+        """
+        Friend = aliased(User)
+        Contact1 = aliased(Contact)
+        Contact2 = aliased(Contact)
+        # outerjoin
+        query = (session
+            .query(Friend)
+            .join(Contact1, Contact1.user2_id == Friend.id)
+            .join(Contact2, Contact2.user1_id == Friend.id)
+            .filter(Contact1.user1_id == self.id, Contact1.is_blocked == False)
+            .filter(Contact2.user2_id == self.id)
+        )
+        return query.all()
+
 
 
 ########################################################################

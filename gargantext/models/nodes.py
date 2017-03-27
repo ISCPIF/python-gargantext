@@ -221,9 +221,11 @@ class NodeUser(Base):
 
     """
     __tablename__ = 'node_user'
-    node_id  = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
-    user_id  = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
-    group_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
-    mode     = Column(Integer)
+    node_id   = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
+    user_id   = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    group_id  = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    rules_user   = Column(Integer)
+    rules_group  = Column(Integer)
+    rules_others = Column(Integer)
 
 

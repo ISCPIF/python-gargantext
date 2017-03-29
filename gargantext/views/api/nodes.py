@@ -26,7 +26,7 @@ _hyperdata_available_fields = ['title', 'source', 'abstract', 'statuses',
 
 
 
-def check_rights(request, node_id=None):
+def check_rights(request, mode="read", node_id=None):
     """
     check rights of a request and maybe a node if given as parameters.
     
@@ -54,14 +54,14 @@ def check_rights(request, node_id=None):
                           .filter( NodeUser.node_id == node_id )
                           .first (                             )
                   )
-    print(nodeRights.mode)
+    
     # If the user is anonymous
     # Is the user authenticated i.e. anonymous ?
     if request.user.id is None and nodeRights is not None :
     # if request.user.id is None and nodeRights not defined then False
         
         # Check if the node has public rights
-        if int(str(nodeRights.mode)[2]) == 4:
+        if nodeRights.mode_others == 4:
             return True
         else:
             return False
@@ -72,10 +72,10 @@ def check_rights(request, node_id=None):
         # Is the user owner of the node ?
         if nodeRights.user_id == request.user.id:
             # Has the user the rights to read the Node ?
-            if int(str(nodeRights.mode)[0]) == 7:
+            if nodeRights.mode_user == 7:
                 return True
         
-        elif int(str(nodeRights.mode)[1]) == 7:
+        elif nodeRights.mode_group == 7:
         # Is the user owner of the node ?
             return True
         else:

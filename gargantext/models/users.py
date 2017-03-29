@@ -123,18 +123,19 @@ class User(Base):
     def pending_invitations(self):
         """ Get invitations that have not been accepted nor refused.
         """
-        Friend = aliased(User)
-        Contact1 = aliased(Contact)
-        Contact2 = aliased(Contact)
-        # outerjoin
-        query = (session
-            .query(Friend)
-            .join(Contact1, Contact1.user2_id == Friend.id)
-            .join(Contact2, Contact2.user1_id == Friend.id)
-            .filter(Contact1.user1_id == self.id, Contact1.is_blocked == False)
-            .filter(Contact2.user2_id == self.id)
-        )
-        return query.all()
+        undefined
+#        Friend = aliased(User)
+#        Contact1 = aliased(Contact)
+#        Contact2 = aliased(Contact)
+#        # TODO outerjoin
+#        query = (session
+#            .query(Friend)
+#            .join(Contact1, Contact1.user2_id == Friend.id)
+#            .join(Contact2, Contact2.user1_id == Friend.id)
+#            .filter(Contact1.user1_id == self.id, Contact1.is_blocked == False)
+#            .filter(Contact2.user2_id == self.id)
+#        )
+#        return query.all()
 
 
 
@@ -151,17 +152,17 @@ class User(Base):
 #                node.id in (contact.id for contact in self.friends())
 
 
-# Deprecated
-#    def contacts_nodes(self, typename=None):
-#        from .nodes import Node
-#        for contact in self.contacts():
-#            contact_nodes = (session
-#                .query(Node)
-#                .filter(Node.user_id == contact.id)
-#                .filter(Node.typename == typename)
-#                .order_by(Node.date)
-#            ).all()
-#            yield contact, contact_nodes
+# TODO add the right management toolbox
+    def contacts_nodes(self, typename=None):
+        from .nodes import Node
+        for contact in self.friends():
+            contact_nodes = (session
+                .query(Node)
+                .filter(Node.user_id == contact.id)
+                .filter(Node.typename == typename)
+                .order_by(Node.date)
+            ).all()
+            yield contact, contact_nodes
 
 
 

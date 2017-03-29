@@ -33,7 +33,7 @@ class Node(Base):
     parent_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     # main data
     name = Column(String(255))
-    date  = Column(DateTime(), default=datetime.now)
+    date = Column(DateTime(), default=datetime.now)
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
     hyperdata = Column(JSONB, default=dict)
 

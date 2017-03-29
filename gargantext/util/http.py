@@ -27,15 +27,15 @@ def requires_auth(func):
 
         # user was authenticated but something made the session expire
         except DetachedInstanceError as die:
-            print("===\n Detached instance error: trying to rollback session")
+            print("=== Warning:\nDetached instance error: trying to rollback session")
             print(die)
             from gargantext.util.db import session
             session.rollback()
-            print("=== session rollback ok!")
+            print("=== Info:\nsession rollback ok!")
             # re init the global cache (it must still have detached instances)
             from gargantext.util.db_cache import cache
             cache.clean_all()
-            print("=== cache reinit ok!")
+            print("=== Info:\ncache reinit ok!")
             # and relogin for safety
             url = '/auth/login/?next=%s' % urlencode(request.path)
             return redirect(url)

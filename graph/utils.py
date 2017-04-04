@@ -19,6 +19,8 @@ def compress_graph(graphdata):
     for node in graphdata['nodes']:
         node['lb'] = node['label']
         del node['label']
+        
+        #node['attributes']['growth'] = 0.8
 
         node['at'] = node['attributes']
         del node['attributes']

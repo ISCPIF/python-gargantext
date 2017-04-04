@@ -173,3 +173,4 @@ def bulk_insert_ifnotexists(model, uniquekey, fields, data, cursor=None, do_stat
 
     cursor.close()
 
+

@@ -3,9 +3,9 @@ COOCS
     (this is the full SQL version, should be more reliable on outerjoin)
 """
 from gargantext                import settings
-from sqlalchemy                import create_engine, exc
+from sqlalchemy                import exc
 from gargantext.util.lists     import WeightedMatrix
-# from gargantext.util.db        import session, aliased, func
+from gargantext.util.db        import get_engine
 from gargantext.util.db_cache  import cache
 from gargantext.constants      import DEFAULT_COOC_THRESHOLD, NODETYPES
 from gargantext.constants      import INDEXED_HYPERDATA
@@ -64,12 +64,7 @@ def compute_coocs(  corpus,
     """
 
     # 1) prepare direct connection to the DB
-    url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
-            **settings.DATABASES['default']
-        )
-
-    engine = create_engine( url )
-    connection = engine.connect()
+    connection = get_engine().connect()
 
     # string vars for our SQL query
     # setting work memory high to improve cache perf.

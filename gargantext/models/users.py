@@ -177,4 +177,20 @@ class Contact(Base):
     __table_args__ = (UniqueConstraint('user1_id', 'user2_id'), )
 
 
+class Group(Base):
+    __tablename__ = 'groups'
+    id           = Column(Integer, primary_key=True)
+    name         = Column(String(60))
+    is_active    = Column(Boolean(), default=True)
+
+
+class GroupUser(Base):
+    __tablename__ = 'group_user'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    group_id = Column(Integer, ForeignKey(Group.id, ondelete='CASCADE'))
+    user_id  = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    
+    __table_args__ = (UniqueConstraint('group_id', 'user_id'), )
+
 

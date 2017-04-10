@@ -216,14 +216,17 @@ class NodeUser(Base):
 
     Example:
     A user only node:                              700 == rwx --- ---
+    A user sharing read mode  to his group:        740 == rwx r-- ---
     A user sharing all rights to his group:        770 == rwx rwx ---
     A user sharing to the public (read mode only): 744 == rwx r-- r--
+    A user sharing rights with group and publc:    774 == rwx rwx r--
 
     """
     __tablename__ = 'node_user'
     node_id   = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     user_id   = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
     group_id  = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    
     rules_user   = Column(Integer)
     rules_group  = Column(Integer)
     rules_others = Column(Integer)

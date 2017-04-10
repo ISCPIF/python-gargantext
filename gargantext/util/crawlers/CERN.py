@@ -15,7 +15,7 @@ from lxml import etree
 from gargantext.settings import API_TOKENS
 
 from ._Crawler import Crawler
-from gargantext.util.timeit_damnit  import timing
+from gargantext.util.timeit  import timing
 
 
 class CernCrawler(Crawler):

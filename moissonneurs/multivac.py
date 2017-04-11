@@ -45,7 +45,7 @@ def save(request, project_id):
         print(query, N)
         #for next time
         #ids = request.POST["ids"]
-        source = get_resource(RESOURCE_TYPE_SCOAP)
+        source = get_resource(RESOURCE_TYPE_MULTIVAC)
         if N == 0:
             raise Http404()
         if N > QUERY_SIZE_N_MAX:

@@ -671,7 +671,7 @@
                                             $("#submit_thing").prop('disabled' , false)
                                             //$("#submit_thing").attr('onclick', testCERN(query, N));
                                             $("#submit_thing").on("click", function(){
-                                              testCERN(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N);
                                             //$("#submit_thing").onclick()
                                           })}
                                           //(N > {{query_size}})
@@ -680,7 +680,7 @@
                                             $('#submit_thing').prop('disabled', false);
                                             $("#submit_thing").html("Processing a sample file")
                                             $("#submit_thing").on("click", function(){
-                                              testCERN(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N);
                                             //$("#submit_thing").onclick()
                                           })}
                                       }
@@ -885,6 +885,60 @@
                                     }
                                 });
                             }
+
+                        function saveMultivac(query, N){
+                          //alert("CERN!")
+                          console.log("In Multivac")
+                          if(!query || query=="") return;
+                          //var origQuery = query
+
+                          var data = { "query" : query , "N": N };
+                          var projectid = window.location.href.split("projects")[1].replace(/\//g, '')//replace all the slashes
+                          console.log(data)
+                          $.ajax({
+                              dataType: 'json',
+                              url: window.location.origin+"/moissonneurs/multivac/save/"+projectid,
+                              data: data,
+                              type: 'POST',
+                              beforeSend: function(xhr) {
+                                  xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                              },
+                              success: function(data) {
+                                  console.log("ajax_success: in saveMultivac()")
+                                  console.log(data)
+                                  alert("OK")
+                                  setTimeout(
+                                      function() {
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show");
+                                        // setTimeout(
+                                        //   function(){
+                                        //     location.reload();
+                                        //
+                                        //   }, 600);
+                                        // )
+                                        //setTimeout(, 300)
+                                        //location.reload();
+                                      }, 600);
+                                },
+
+
+                              error: function(data) {
+                                console.log(data)
+                                setTimeout(
+                                    function() {
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show")
+                                        //setTimeout(, 300)
+                                        //location.reload();
+                                      }, 600);
+
+                                  },
+                              });
+                          }
+
+
+
 
                         function deleteCorpus(e, corpusId) {
                           // prevents scroll back to top of page

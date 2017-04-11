@@ -9,7 +9,7 @@
 from ._Crawler import *
 import json
 from gargantext.settings import API_TOKENS
-
+from math import trunc
 
 class MultivacCrawler(Crawler):
     ''' Multivac API CLIENT'''
@@ -24,6 +24,7 @@ class MultivacCrawler(Crawler):
         # Final EndPoints
         # TODO : Change endpoint according type of database
         self.URL   = self.BASE_URL + "/" + self.API_URL
+        self.status = []
 
     def __format_query__(self, query=None):
         '''formating the query'''
@@ -58,6 +59,7 @@ class MultivacCrawler(Crawler):
                                    , params  = querystring
                                    )
         
+        print(querystring)
         # Validation : 200 if ok else raise Value
         if response.status_code == 200:
             charset = response.headers["Content-Type"].split("; ")[1].split("=")[1]
@@ -77,12 +79,13 @@ class MultivacCrawler(Crawler):
         return self.results_nb
 
     def download(self, query):
+        self.path = "/tmp/MultivacResults.xml"
         downloaded = False
         self.status.append("fetching results")
 
         corpus = []
         paging = 100
-        self.query_max = self.results_nb
+        self.query_max = self.scan_results(query)
         
         if self.query_max > QUERY_SIZE_N_MAX:
             msg = "Invalid sample size N = %i (max = %i)" % (self.query_max, QUERY_SIZE_N_MAX)
@@ -91,10 +94,13 @@ class MultivacCrawler(Crawler):
         
         
         with open(self.path, 'wb') as f:
-            for page in range(0, self.query_max, paging):
-                corpus.append(self.get(self.query, fromPage=page, count=paging)["hits"])
-            
-            f.write(str(corpus).encode("utf-8"))
+            #for page in range(1, self.query_max, paging):
+            for page in range(1, trunc(self.query_max / 100) + 1):
+                docs = self._get(query, fromPage=page, count=paging)["results"]["hits"]
+                for doc in docs:
+                    corpus.append(doc)
+
+            f.write(json.dumps(corpus).encode("utf-8"))
             downloaded = True
         
         return downloaded

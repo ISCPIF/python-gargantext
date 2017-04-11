@@ -13,20 +13,21 @@ class ISTexParser(Parser):
         hyperdata_list = []
         hyperdata_path = {
             "id"                : "id",
-            "source"           : 'corpusName',
-            "title"             : 'title',
+            "source"            : "corpusName",
+            "title"             : "title",
             "genre"             : "genre",
-            "language_iso3"     : 'language',
-            "doi"               : 'doi',
-            "host"              : 'host',
-            "publication_date"  : 'publicationDate',
-            "abstract"  : 'abstract',
+            "language_iso3"     : "language",
+            "doi"               : "doi",
+            "host"              : "host",
+            "publication_date"  : "publicationDate",
+            "abstract"          : "abstract",
             # "authors"           : 'author',
-            "authorsRAW"        : 'author',
+            "authorsRAW"        : "author",
             #"keywords"          : "keywords"
         }
 
         suma = 0
+        
         for json_doc in json_docs:
 
             hyperdata = {}

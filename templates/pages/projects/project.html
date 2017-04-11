@@ -545,7 +545,7 @@
 
                                     },
                                     error: function(result) {
-                                        $("#theresults").html("Pubmed connection error!</i><br>")
+                                        $("#theresults").html("Pubmed connection error.</i><br>")
                                         $('#submit_thing').prop('disabled', true);
                                     }
                                 });
@@ -643,6 +643,68 @@
                               });
 
                             }
+
+                            //MULTIVAC = 10
+
+                            if (SourceTypeId == "10"){
+                              $.ajax({
+                                  // contentType: "application/json",
+                                  url: window.location.origin+"/moissonneurs/multivac/query",
+                                  data: formData,
+                                  type: 'POST',
+                                  beforeSend: function(xhr) {
+                                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                  },
+                                  success: function(data) {
+                                      console.log("SUCCESS")
+                                      console.log("enabling "+"#"+value.id)
+                                      $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      $("#submit_thing").prop('disabled' , false)
+                                      //$("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                      N = data["results_nb"]
+
+                                      if(N > 0) {
+                                          if (N <= {{query_size}}){
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $("#submit_thing").html("Download!")
+                                            $("#submit_thing").prop('disabled' , false)
+                                            //$("#submit_thing").attr('onclick', testCERN(query, N));
+                                            $("#submit_thing").on("click", function(){
+                                              testCERN(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                          //(N > {{query_size}})
+                                          else {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                            $("#submit_thing").html("Processing a sample file")
+                                            $("#submit_thing").on("click", function(){
+                                              testCERN(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                      }
+
+
+                                      else {
+                                          $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                          if(data[0]==false)
+                                          $("#theresults").html(theType +" connection error!</i><br>")
+                                          $('#submit_thing').prop('disabled', true);
+                                      }
+
+                                  },
+                                  error: function(result) {
+                                      $("#theresults").html(theType +" connection error!</i><br>")
+                                      $('#submit_thing').prop('disabled', true);
+                                  }
+                              });
+
+                            }
+
+
+
+
                         }
 
                         // CSS events for selecting one Radio-Input
@@ -689,7 +751,7 @@
                             console.log("selected:", selectedId);
 
                             // by typeID: 3 = PUBMED, 8 = ISTEX, 9 = CERN
-                            if(selectedId =="3" || selectedId == "8" || selectedId == "9") {
+                            if(selectedId =="3" || selectedId == "8" || selectedId == "9" || selectedId == "10") {
                                 console.log("show the button for: " + selectedId)
                                 $("#div-fileornot").css("visibility", "visible");
                                 $("#div-fileornot").show();

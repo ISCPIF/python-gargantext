@@ -248,13 +248,22 @@ RESOURCETYPES = [
         'file_formats':["zip","xml"],
         "crawler": "CernCrawler",
    },
+#   {    "type": 10,
+#        "name": 'REPEC [RIS]',
+#        "parser": "RISParser",
+#        "format": 'RIS',
+#        'file_formats':["zip","ris", "txt"],
+#        "crawler": None,
+#   },
+#
    {    "type": 10,
-        "name": 'REPEC [RIS]',
-        "parser": "RISParser",
-        "format": 'RIS',
-        'file_formats':["zip","ris", "txt"],
-        "crawler": None,
+        "name": 'REPEC [MULTIVAC]',
+        "parser": "MultivacParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "MultivacCrawler",
    },
+
 ]
 #shortcut for resources declaration in template
 PARSERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["parser"] is not None]

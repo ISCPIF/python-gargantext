@@ -8,8 +8,10 @@
 
 from ._Crawler import *
 import json
-from gargantext.settings import API_TOKENS
+from gargantext.settings  import API_TOKENS
+from gargantext.constants import UPLOAD_DIRECTORY
 from math import trunc
+from gargantext.util.files import save
 
 class MultivacCrawler(Crawler):
     ''' Multivac API CLIENT'''
@@ -79,8 +81,9 @@ class MultivacCrawler(Crawler):
         return self.results_nb
 
     def download(self, query):
-        self.path = "/tmp/MultivacResults.xml"
+        
         downloaded = False
+        
         self.status.append("fetching results")
 
         corpus = []
@@ -92,15 +95,12 @@ class MultivacCrawler(Crawler):
             print("ERROR (scrap: multivac d/l ): ",msg)
             self.query_max = QUERY_SIZE_N_MAX
         
-        
-        with open(self.path, 'wb') as f:
-            #for page in range(1, self.query_max, paging):
-            for page in range(1, trunc(self.query_max / 100) + 1):
-                docs = self._get(query, fromPage=page, count=paging)["results"]["hits"]
-                for doc in docs:
-                    corpus.append(doc)
+        for page in range(1, trunc(self.query_max / 100) + 1):
+            docs = self._get(query, fromPage=page, count=paging)["results"]["hits"]
+            for doc in docs:
+                corpus.append(doc)
 
-            f.write(json.dumps(corpus).encode("utf-8"))
-            downloaded = True
+        self.path = save(json.dumps(corpus).encode("utf-8"), name='Multivac', basedir=UPLOAD_DIRECTORY )
+        downloaded = True
         
         return downloaded

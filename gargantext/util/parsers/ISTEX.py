@@ -104,7 +104,7 @@ class ISTexParser(Parser):
                     RealDate = RealDate[0]
 
                 # print( RealDate ," | length:",len(RealDate))
-                Decision=""
+                Decision = True
                 if len(RealDate)>4:
                     if len(RealDate)>8:
                         try: Decision = datetime.strptime(RealDate, '%Y-%b-%d').date()

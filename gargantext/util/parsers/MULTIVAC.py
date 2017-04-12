@@ -65,7 +65,7 @@ class MultivacParser(Parser):
                     date = datetime.strptime(year, '%Y')
                 except:
                     print("FIX DATE MULTIVAC REPEC %s" % year)
-                    year = datetime.now()
+                    date = datetime.now()
 
             hyperdata["publication_date"] = date
             hyperdata["publication_year"]  = str(date.year)

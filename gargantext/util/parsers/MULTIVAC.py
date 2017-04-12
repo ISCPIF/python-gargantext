@@ -55,6 +55,9 @@ class MultivacParser(Parser):
             year = doc.get("serial"  , {})\
                       .get("issuedate", None)
             
+            if year == "Invalide date":
+                year = doc.get("issuedate"  , None)
+
             if year is None:
                 year = datetime.now()
             else:

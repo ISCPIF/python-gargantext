@@ -100,7 +100,7 @@ class MultivacCrawler(Crawler):
             for doc in docs:
                 corpus.append(doc)
 
-        self.path = save(json.dumps(corpus).encode("utf-8"), name='Multivac', basedir=UPLOAD_DIRECTORY )
+        self.path = save(json.dumps(corpus).encode("utf-8"), name='Multivac.json', basedir=UPLOAD_DIRECTORY )
         downloaded = True
         
         return downloaded

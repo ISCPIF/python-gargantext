@@ -89,13 +89,15 @@ class MultivacCrawler(Crawler):
         corpus = []
         paging = 100
         self.query_max = self.scan_results(query)
-        
+        print("self.query_max : %s" % self.query_max)
+
         if self.query_max > QUERY_SIZE_N_MAX:
             msg = "Invalid sample size N = %i (max = %i)" % (self.query_max, QUERY_SIZE_N_MAX)
-            print("ERROR (scrap: multivac d/l ): ",msg)
+            print("ERROR (scrap: Multivac d/l ): ",msg)
             self.query_max = QUERY_SIZE_N_MAX
         
         for page in range(1, trunc(self.query_max / 100) + 1):
+            print("Downloading page %s to %s results" % (page, paging))
             docs = self._get(query, fromPage=page, count=paging)["results"]["hits"]
             for doc in docs:
                 corpus.append(doc)

@@ -656,9 +656,11 @@
                                       xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
                                   },
                                   success: function(data) {
+                                      console.log(data)
                                       console.log("SUCCESS")
                                       console.log("enabling "+"#"+value.id)
-                                      $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      
+                                      // $("#"+value.id).attr('onclick','getGlobalResults(this);');
                                       $("#submit_thing").prop('disabled' , false)
                                       //$("#submit_thing").html("Process a {{ query_size }} sample!")
 
@@ -695,14 +697,12 @@
 
                                   },
                                   error: function(result) {
-                                      $("#theresults").html(theType +" connection error!</i><br>")
+                                      $("#theresults").html(theType +" connection error</i><br>")
                                       $('#submit_thing').prop('disabled', true);
                                   }
                               });
 
                             }
-
-
 
 
                         }
@@ -887,13 +887,17 @@
                             }
 
                         function saveMultivac(query, N){
-                          //alert("CERN!")
                           console.log("In Multivac")
+                          
                           if(!query || query=="") return;
-                          //var origQuery = query
-
+                          console.log(query)
+                          
+                              //var origQuery = query
                           var data = { "query" : query , "N": N };
-                          var projectid = window.location.href.split("projects")[1].replace(/\//g, '')//replace all the slashes
+                          
+                          // Replace all the slashes
+                          var projectid = window.location.href.split("projects")[1].replace(/\//g, '')
+                          
                           console.log(data)
                           $.ajax({
                               dataType: 'json',
@@ -911,14 +915,6 @@
                                       function() {
                                         $('#addcorpus').modal('hide')
                                         $("#wait").modal("show");
-                                        // setTimeout(
-                                        //   function(){
-                                        //     location.reload();
-                                        //
-                                        //   }, 600);
-                                        // )
-                                        //setTimeout(, 300)
-                                        //location.reload();
                                       }, 600);
                                 },
 

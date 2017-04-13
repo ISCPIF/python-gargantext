@@ -32,7 +32,8 @@ class HalParser(Parser):
                          , "authors"  : "authFullName_s"
                          }
 
-        
+        uris = set()
+
         for doc in json_docs:
 
             hyperdata = {}
@@ -45,6 +46,10 @@ class HalParser(Parser):
                     else:
                         hyperdata[key] = field
             
+            if hyperdata["url"] in uris:
+                print("Document already parsed")
+            else:
+                uris.add(hyperdata["url"])
 #            hyperdata["authors"] = ", ".join(
 #                                             [ p.get("person", {})
 #                                                .get("name"  , "")
@@ -53,18 +58,18 @@ class HalParser(Parser):
 #                                             ]
 #                                            )
 #            
-            maybeDate = doc.get("submittedDate_s", None)
+                maybeDate = doc.get("submittedDate_s", None)
 
-            if maybeDate is not None:
-                date = datetime.strptime(maybeDate, "%Y-%m-%d %H:%M:%S")
-            else:
-                date = datetime.now()
+                if maybeDate is not None:
+                    date = datetime.strptime(maybeDate, "%Y-%m-%d %H:%M:%S")
+                else:
+                    date = datetime.now()
 
-            hyperdata["publication_date"] = date
-            hyperdata["publication_year"]  = str(date.year)
-            hyperdata["publication_month"] = str(date.month)
-            hyperdata["publication_day"]   = str(date.day)
-            
-            hyperdata_list.append(hyperdata)
+                hyperdata["publication_date"] = date
+                hyperdata["publication_year"]  = str(date.year)
+                hyperdata["publication_month"] = str(date.month)
+                hyperdata["publication_day"]   = str(date.day)
+                
+                hyperdata_list.append(hyperdata)
         
         return hyperdata_list

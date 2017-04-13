@@ -325,11 +325,13 @@
                         <h2 class="modal-title"><h2><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>  Building the corpus...</h2>
                       </div>
                       <div class="modal-body">
+                        <center>
                         <p>
-                        Gargantext is gathering your texts
-                         and need some time to eat it.
+                        Gargantext is gathering your texts       <br>
+                         and need some time to eat it.           <br>
                         Duration depends on the size of the dish.
                         </p>
+                        </center>
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Continue on Gargantext</button>
@@ -440,9 +442,9 @@
                           var type = $("#id_type").val()
 
                           // 5 booleans
-                          var nameField = $("#id_name").val()!=""
-                          var typeField = (type!="") && (type!="0")
-                          var fileField = $("#id_file").val()!=""
+                          var nameField = $("#id_name").val() != ""
+                          var typeField = (type != "") && (type != "0")
+                          var fileField = $("#id_file").val() != ""
                           var wantfileField = $("#file_yes").prop("checked")
                           var crawling = ((type==3)||(type==8)||(type==9)) && ! wantfileField
 
@@ -705,6 +707,67 @@
                             }
 
 
+                            //HAL = 11
+
+                            if (SourceTypeId == "11"){
+                              $.ajax({
+                                  // contentType: "application/json",
+                                  url: window.location.origin+"/moissonneurs/hal/query",
+                                  data: formData,
+                                  type: 'POST',
+                                  beforeSend: function(xhr) {
+                                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                  },
+                                  success: function(data) {
+                                      console.log(data)
+                                      console.log("SUCCESS")
+                                      console.log("enabling "+"#"+value.id)
+                                      
+                                      // $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      $("#submit_thing").prop('disabled' , false)
+                                      //$("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                      N = data["results_nb"]
+
+                                      if(N > 0) {
+                                          if (N <= {{query_size}}){
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $("#submit_thing").html("Download!")
+                                            $("#submit_thing").prop('disabled' , false)
+                                            //$("#submit_thing").attr('onclick', testCERN(query, N));
+                                            $("#submit_thing").on("click", function(){
+                                              saveALL(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                          //(N > {{query_size}})
+                                          else {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                            $("#submit_thing").html("Processing a sample file")
+                                            $("#submit_thing").on("click", function(){
+                                              saveALL(pubmedquery, N);
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                      }
+
+
+                                      else {
+                                          $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                          if(data[0]==false)
+                                          $("#theresults").html(theType +" connection error!</i><br>")
+                                          $('#submit_thing').prop('disabled', true);
+                                      }
+
+                                  },
+                                  error: function(result) {
+                                      $("#theresults").html(theType +" connection error</i><br>")
+                                      $('#submit_thing').prop('disabled', true);
+                                  }
+                              });
+
+                            }
+
+
                         }
 
                         // CSS events for selecting one Radio-Input
@@ -751,7 +814,12 @@
                             console.log("selected:", selectedId);
 
                             // by typeID: 3 = PUBMED, 8 = ISTEX, 9 = CERN
-                            if(selectedId =="3" || selectedId == "8" || selectedId == "9" || selectedId == "10") {
+                            if (  selectedId == "3" 
+                               || selectedId == "8" 
+                               || selectedId == "9" 
+                               || selectedId == "10" 
+                               || selectedId == "11" 
+                                ) {
                                 console.log("show the button for: " + selectedId)
                                 $("#div-fileornot").css("visibility", "visible");
                                 $("#div-fileornot").show();
@@ -932,6 +1000,55 @@
                                   },
                               });
                           }
+
+                        function saveALL(query, N){
+                          console.log("In Gargantext")
+                          
+                          if(!query || query=="") return;
+                          console.log(query)
+                          
+                              //var origQuery = query
+                          var data = { "query" : query , "N": N };
+                          
+                          // Replace all the slashes
+                          var projectid = window.location.href.split("projects")[1].replace(/\//g, '')
+                          
+                          console.log(data)
+                          $.ajax({
+                              dataType: 'json',
+                              url: window.location.origin+"/moissonneurs/hal/save/"+projectid,
+                              data: data,
+                              type: 'POST',
+                              beforeSend: function(xhr) {
+                                  xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                              },
+                              success: function(data) {
+                                  console.log("ajax_success: in Gargantext()")
+                                  console.log(data)
+                                  alert("OK")
+                                  setTimeout(
+                                      function() {
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show");
+                                      }, 600);
+                                },
+
+
+                              error: function(data) {
+                                console.log(data)
+                                setTimeout(
+                                    function() {
+                                        $('#addcorpus').modal('hide')
+                                        $("#wait").modal("show")
+                                        //setTimeout(, 300)
+                                        //location.reload();
+                                      }, 600);
+
+                                  },
+                              });
+                          }
+
+
 
 
 

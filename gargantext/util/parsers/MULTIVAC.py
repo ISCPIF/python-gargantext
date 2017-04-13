@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# ****************************
+# ****  MULTIVAC Parser    ***
+# ****************************
+# CNRS COPYRIGHTS
+# SEE LEGAL LICENCE OF GARGANTEXT.ORG
+
 from ._Parser import Parser
 from datetime import datetime
 import json
@@ -16,14 +24,11 @@ class MultivacParser(Parser):
         json_docs = data
         hyperdata_list = []
         
-        hyperdata_path = {
-            "id"                : "id",
-            "title"             : "title",
-            "abstract"          : "abstract",
-            "type"              : "type"
-        }
-
-        suma = 0
+        hyperdata_path = { "id"       : "id"
+                         , "title"    : "title"
+                         , "abstract" : "abstract"
+                         , "type"     : "type"
+                         }
         
         for json_doc in json_docs:
 

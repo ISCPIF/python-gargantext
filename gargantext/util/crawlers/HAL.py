@@ -1,27 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ****************************
-# ****  MULTIVAC Scrapper  ***
+# ****  HAL      Scrapper  ***
 # ****************************
 # CNRS COPYRIGHTS
 # SEE LEGAL LICENCE OF GARGANTEXT.ORG
 
 from ._Crawler import *
 import json
-from gargantext.settings   import API_TOKENS
 from gargantext.constants  import UPLOAD_DIRECTORY
 from math                  import trunc
 from gargantext.util.files import save
 
-class MultivacCrawler(Crawler):
-    ''' Multivac API CLIENT'''
+class HalCrawler(Crawler):
+    ''' HAL API CLIENT'''
     
     def __init__(self):
-        self.apikey = API_TOKENS["MULTIVAC"]
-        
         # Main EndPoints
-        self.BASE_URL = "https://api.iscpif.fr/v2"
-        self.API_URL  = "pvt/economy/repec/search"
+        self.BASE_URL = "https://api.archives-ouvertes.fr"
+        self.API_URL  = "search"
         
         # Final EndPoints
         # TODO : Change endpoint according type of database
@@ -30,18 +27,37 @@ class MultivacCrawler(Crawler):
 
     def __format_query__(self, query=None):
         '''formating the query'''
-        None
+
+        #search_field="title_t"
+        search_field="abstract_t"
+
+        return (search_field + ":" + "(" + query  + ")")
+
 
     def _get(self, query, fromPage=1, count=10, lang=None):
         # Parameters
-        querystring = { "q"       : query
-                      , "count"   : count
-                      , "from"    : fromPage
-                      , "api_key" : API_TOKENS["MULTIVAC"]["APIKEY"]
-                      }
+
+        fl = """ title_s
+               , abstract_s
+               , submittedDate_s
+               , journalDate_s
+               , authFullName_s
+               , uri_s
+               , isbn_s
+               , issue_s
+               , journalPublisher_s
+             """
+               #, authUrl_s
+               #, type_s
         
-        if lang is not None:
-            querystring["lang"] = lang
+        wt = "json"
+
+        querystring = { "q"       : query
+                      , "rows"    : count
+                      , "start"   : fromPage
+                      , "fl"      : fl
+                      , "wt"      : wt
+                      }
         
         # Specify Headers
         headers = { "cache-control" : "no-cache" }
@@ -73,8 +89,8 @@ class MultivacCrawler(Crawler):
         self.results_nb = 0
         
         total = ( self._get(query)
-                      .get("results", {})
-                      .get("total"  ,  0)
+                      .get("response", {})
+                      .get("numFound"  ,  0)
                 )
         
         self.results_nb = total
@@ -102,15 +118,15 @@ class MultivacCrawler(Crawler):
         for page in range(1, trunc(self.query_max / 100) + 2):
             print("Downloading page %s to %s results" % (page, paging))
             docs = (self._get(query, fromPage=page, count=paging)
-                        .get("results", {})
-                        .get("hits"   , [])
+                        .get("response", {})
+                        .get("docs"   , [])
                    )
 
             for doc in docs:
                 corpus.append(doc)
 
         self.path = save( json.dumps(corpus).encode("utf-8")
-                        , name='Multivac.json'
+                        , name='HAL.json'
                         , basedir=UPLOAD_DIRECTORY
                         )
         downloaded = True

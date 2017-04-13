@@ -181,8 +181,6 @@ def get_tagger(lang):
     return tagger()
 
 
-
-
 RESOURCETYPES = [
     {   "type": 1,
         'name': 'Europresse',
@@ -262,6 +260,14 @@ RESOURCETYPES = [
         "format": 'JSON',
         'file_formats':["zip","json"],
         "crawler": "MultivacCrawler",
+   },
+
+   {    "type": 11,
+        "name": 'HAL [CRAWLER]',
+        "parser": "HalParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "HalCrawler",
    },
 
 ]

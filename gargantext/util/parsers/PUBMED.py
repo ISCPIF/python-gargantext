@@ -78,7 +78,7 @@ class PubmedParser(Parser):
             if "publication_month" in hyperdata: PubmedDate+=" "+hyperdata["publication_month"]
             if "publication_day" in hyperdata: PubmedDate+=" "+hyperdata["publication_day"]
 
-            Decision=""
+            Decision=True
             if len(RealDate)>4:
                 if len(RealDate)>8:
                     try: Decision = datetime.strptime(RealDate, '%Y %b %d').date()

@@ -28,19 +28,20 @@ import graph.urls
 import moissonneurs.urls
 
 
-urlpatterns = [ url(r'^admin/'     , admin.site.urls                           )
-              , url(r'^api/'       , include( gargantext.views.api.urls )      )
-              , url(r'^'           , include( gargantext.views.pages.urls )    )
+urlpatterns = [ url(r'^admin/'     , admin.site.urls                                   )
+              , url(r'^api/'       , include( gargantext.views.api.urls )              )
+              , url(r'^'           , include( gargantext.views.pages.urls )            )
               , url(r'^favicon.ico$', Redirect.as_view( url=static.url('favicon.ico')
-                                    , permanent=False), name="favicon")
+                                    , permanent=False), name="favicon"                 )
 
               # Module Graph
-              , url(r'^'           , include( graph.urls )                     )
+              , url(r'^'           , include( graph.urls )                             )
 
               # Module Annotation
               # tempo: unchanged doc-annotations routes --
-              , url(r'^annotations/', include( annotations_urls )              )
-              , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/(focus=[0-9,]+)?$', annotations_main_view)
+              , url(r'^annotations/', include( annotations_urls )                      )
+              , url(r'^projects/(\d+)/corpora/(\d+)/documents/(\d+)/(focus=[0-9,]+)?$'
+                                                                , annotations_main_view)
 
               # Module Scrapers (Moissonneurs in French)
               , url(r'^moissonneurs/'   , include( moissonneurs.urls )                 )

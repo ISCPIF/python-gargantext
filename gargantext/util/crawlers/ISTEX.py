@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# ****************************
+# ****  MULTIVAC Scrapper  ***
+# ****************************
+# CNRS COPYRIGHTS
+# SEE LEGAL LICENCE OF GARGANTEXT.ORG
+
 from ._Crawler import *
 import json
 

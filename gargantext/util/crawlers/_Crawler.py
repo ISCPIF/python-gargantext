@@ -1,7 +1,7 @@
 # Scrapers config
 QUERY_SIZE_N_MAX     = 1000
 
-from gargantext.constants import get_resource
+from gargantext.constants import get_resource, QUERY_SIZE_N_MAX
 from gargantext.util.scheduling import scheduled
 from gargantext.util.db         import session
 from requests_futures.sessions import FuturesSession
@@ -18,31 +18,34 @@ class Crawler:
 
         #the name of corpus
         #that will be built in case of internal fileparsing
-        self.record = record
-        self.name = record["corpus_name"]
-        self.project_id = record["project_id"]
-        self.user_id = record["user_id"]
-        self.resource = record["source"]
-        self.type = get_resource(self.resource)
-        self.query = record["query"]
+        self.record       = record
+        self.name         = record["corpus_name"]
+        self.project_id   = record["project_id"]
+        self.user_id      = record["user_id"]
+        self.resource     = record["source"]
+        self.type         = get_resource(self.resource)
+        self.query        = record["query"]
         #format the sampling
         self.n_last_years = 5
-        self.YEAR = date.today().year
+        self.YEAR         = date.today().year
         #pas glop
         # mais easy version
-        self.MONTH = str(date.today().month)
+        self.MONTH        = str(date.today().month)
+        
         if len(self.MONTH) == 1:
             self.MONTH = "0"+self.MONTH
-        self.MAX_RESULTS = 1000
+        
+        self.MAX_RESULTS = QUERY_SIZE_N_MAX
+        
         try:
             self.results_nb = int(record["count"])
         except KeyError:
             #n'existe pas encore
             self.results_nb = 0
         try:
-            self.webEnv = record["webEnv"]
+            self.webEnv   = record["webEnv"]
             self.queryKey = record["queryKey"]
-            self.retMax = record["retMax"]
+            self.retMax   = record["retMax"]
         except KeyError:
             #n'exsite pas encore
             self.queryKey = None
@@ -67,6 +70,7 @@ class Crawler:
         if self.download():
             self.create_corpus()
             return self.corpus_id
+    
     def get_sampling_dates():
         '''Create a sample list of min and max date based on Y and M f*
         or N_LAST_YEARS results'''

@@ -8,28 +8,11 @@ import random
 
 _members = [
 
-    { 'first_name' : 'Constance', 'last_name' : 'de Quatrebarbes',
-     'mail' : '4barbesATgmail.com',
-     'website'  : 'http://c24b.github.io/',
-     'picture' : 'constance.jpg',
-     'role' : 'developer'},
-
     { 'first_name' : 'David', 'last_name' : 'Chavalarias',
      'mail' : 'david.chavalariasATiscpif.fr',
      'website' : 'http://chavalarias.com',
      'picture' : 'david.jpg',
      'role':'principal investigator'},
-
-   # { 'first_name' : 'Elias', 'last_name' : 'Showk',
-   #  'mail' : '',
-   #  'website' : 'https://github.com/elishowk',
-   #  'picture' : '', 'role' : 'developer'},
-
-    { 'first_name' : 'Mathieu', 'last_name' : 'Rodic',
-     'mail' : '',
-     'website'  : 'http://rodic.fr',
-     'picture' : 'mathieu.jpg',
-     'role' : 'developer'},
 
     { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.',
      'mail' : 'kaisleanATgmail.com',
@@ -43,12 +26,6 @@ _members = [
      'picture' : 'maziyar.jpg',
      'role' : 'developer'},
 
-    { 'first_name' : 'Romain', 'last_name' : 'Loth',
-     'mail' : '',
-     'website'  : 'http://iscpif.fr',
-     'picture' : 'romain.jpg',
-     'role' : 'developer'},
-
     { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',
      'mail' : 'alexandre+gargantextATdelanoe.org',
      'website' : 'http://alexandre.delanoe.org',
@@ -58,6 +35,31 @@ _members = [
     #{ 'first_name' : '', 'name' : '', 'mail' : '', 'website' : '', 'picture' : ''},
     # copy-paste the line above and write your informations please
 ]
+
+_membersPast = [
+    { 'first_name' : 'Constance', 'last_name' : 'de Quatrebarbes',
+     'mail' : '4barbesATgmail.com',
+     'website'  : 'http://c24b.github.io/',
+     'picture' : 'constance.jpg',
+     'role' : 'developer'},
+
+     { 'first_name' : 'Mathieu', 'last_name' : 'Rodic',
+     'mail' : '',
+     'website'  : 'http://rodic.fr',
+     'picture' : 'mathieu.jpg',
+     'role' : 'developer'},
+        
+    { 'first_name' : 'Romain', 'last_name' : 'Loth',
+     'mail' : '',
+     'website'  : 'http://iscpif.fr',
+     'picture' : 'romain.jpg',
+     'role' : 'developer'},
+
+    { 'first_name' : 'Elias', 'last_name' : 'Showk',
+     'mail' : '',
+     'website' : 'https://github.com/elishowk',
+     'picture' : '', 'role' : 'developer'},
+        ]
 
 _institutions = [
     { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png', 'funds':''},
@@ -86,6 +88,10 @@ _grants = [
 def members():
     random.shuffle(_members)
     return _members
+
+def membersPast():
+    random.shuffle(_membersPast)
+    return _membersPast
 
 def institutions():
     random.shuffle(_institutions)

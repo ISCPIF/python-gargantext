@@ -5,13 +5,10 @@ apt-get install -y \
 apt-utils ca-certificates locales \
 sudo aptitude gcc g++ wget git vim \
 build-essential make \
-postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5 \
-postgresql-server-dev-9.5 libpq-dev libxml2 \
-postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5 \
-nginx rabbitmq-server 
-
-# WARNING: uwsgi is not on stretch any more (get it from unstable)
-# uwsgi uwsgi-core uwsgi-plugin-python3
+postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6 \
+postgresql-server-dev-9.6 libpq-dev libxml2 \
+postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6 \
+nginx rabbitmq-server uwsgi uwsgi-core uwsgi-plugin-python3
 
 
 ### Configure timezone and locale
@@ -32,15 +29,15 @@ update-locale LC_ALL=fr_FR.UTF-8
 ### Install main dependencies and python packages based on Debian distrib
  echo "############# PYTHON DEPENDENCIES ###############"
  apt-get update && apt-get install -y \
-  libxml2-dev xml-core libgfortran-5-dev \
+  libxml2-dev xml-core libgfortran-6-dev \
   libpq-dev \
   python3.5 \
   python3-dev \
   python3-six python3-numpy python3-setuptools \
   python3-numexpr \
   python3-pip \
-  libxml2-dev libxslt-dev
-  #libxslt1-dev zlib1g-dev
+  libxml2-dev libxslt-dev zlib1g-dev
+  #libxslt1-dev
  
  UPDATE AND CLEAN
  apt-get update && apt-get autoclean
@@ -70,7 +67,7 @@ update-locale LC_ALL=fr_FR.UTF-8
 ## POSTGRESQL DATA (as ROOT)
 #######################################################################
 
-sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargandata\'%" /etc/postgresql/9.5/main/postgresql.conf
-echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
-echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
+sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargandata\'%" /etc/postgresql/9.6/main/postgresql.conf
+echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.6/main/pg_hba.conf
+echo "listen_addresses='*'" >> /etc/postgresql/9.6/main/postgresql.conf
 

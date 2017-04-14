@@ -86,12 +86,12 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-    <h2 class="modal-title"><h2><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>  Uploading corpus...</h2>
+    <h2 class="modal-title"><h2><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Building corpus...</h2>
   </div>
   <div class="modal-body">
     <h5>
-    Your file has been uploaded !
-    Gargantext need some time to eat it.
+    Gargantext is gathering your texts
+      and need some time to eat it.
     Duration depends on the size of the dish.
   </h5>
   </div>

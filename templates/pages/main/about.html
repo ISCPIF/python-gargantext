@@ -183,9 +183,55 @@
                         </div>
                     </div>
                 </div>
+        {% endif %}
+
+        {% if teamPast %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseTeamPast">
+                        <center>
+                            <h2>
+                                <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                Former Developers
+                                <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                            </h2>
+                        </center>
+                    </a>
+                </h2>
+            </div>
+            <div id="collapseTeamPast" class="panel-collapse collapse" role="tabpanel">
+                <div class="panel-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="thumbnails">
+                                {% for member in teamPast %}
+                                <div class="col-md-5 ">
+                                    <div class="thumbnail">
+                                        <div class="caption">
+                                            <center>
+                                            <h3>{{ member.first_name }} {{member.last_name }}</h3>
+                                            {% if member.role %}
+                                            <p class="description">{{ member.role }}</p>
+                                            {% endif %}
+                                            </center>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {% endif %}
+            
+            </div>
+        </div>
+
+
+
 
         <div class="panel panel-default">
             <div class="panel-heading">

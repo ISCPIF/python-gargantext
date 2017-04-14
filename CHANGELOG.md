@@ -2,6 +2,12 @@
 * Guided Tour
 * Sources form highlighting crawlers
 
+
+## Version 3.0.6.8
+* REPEC Crawler (connection with https://multivac.iscpif.fr)
+* HAL Crawler (connection to https://hal.archives-ouvertes.fr/)
+* New Graph Feature: color nodes by growth
+
 ## Version 3.0.6.4
 * COOC SQL improved
 

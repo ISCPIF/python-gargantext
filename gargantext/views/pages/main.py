@@ -47,7 +47,8 @@ def about(request):
         context = {
             'user': request.user,
             'date': datetime.datetime.now(),
-            'team': credits.members(),
+            'team'    : credits.members(),
+            'teamPast': credits.membersPast(),
             'institutions': credits.institutions(),
             'labos': credits.labs(),
             'grants': credits.grants(),

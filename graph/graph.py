@@ -8,6 +8,7 @@ from graph.cooccurrences          import countCooccurrences
 from graph.distances              import clusterByDistances
 from graph.bridgeness             import filterByBridgeness
 from graph.mail_notification      import notify_owner
+from graph.growth                 import compute_growth
 
 from gargantext.util.scheduling   import scheduled
 from gargantext.constants         import graph_constraints
@@ -64,7 +65,15 @@ def compute_graph( corpus_id=None      , cooc_id=None
 
         print("GRAPH #%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
         data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
+        
+        if start is not None and end is not None:
+            growth= dict()
+            for (ng_id, score) in compute_growth(corpus_id, groupList_id, mapList_id, start, end):
+                growth[ng_id] = float(score) + 100 # for the normalization, should not be negativ
 
+            for node in data['nodes']:
+                node['attributes']['growth'] = growth[node['id']]
+        
         print("GRAPH #%d ... Saving Graph in hyperdata as json." % cooc_id)
         node = session.query(Node).filter(Node.id == cooc_id).first()
 
@@ -187,7 +196,7 @@ def get_graph( request=None         , corpus=None
                                      )
                                 .filter( Start.key == 'publication_date')
                                 .filter( Start.value_utc >= date_start_utc)
-                      )
+                            )
 
 
     # Filter corpus by date if any end date
@@ -203,8 +212,7 @@ def get_graph( request=None         , corpus=None
                                      )
                                 .filter( End.key == 'publication_date')
                                 .filter( End.value_utc <= date_end_utc )
-                      )
-
+                            )
 
     # Finally test if the size of the corpora is big enough
     # --------------------------------
@@ -221,10 +229,11 @@ def get_graph( request=None         , corpus=None
                                    #, limit=size
                                     )
 
-        return {"state" : "saveOnly",
-                "target_id" : cooc_id,
-                "target_name": cooc_name,
-                "target_date": cooc_date}
+        return { "state"      : "saveOnly"
+               , "target_id"  : cooc_id
+               , "target_name": cooc_name
+               , "target_date": cooc_date
+               }
 
     elif corpus_size > graph_constraints['corpusMax']:
         # Then compute cooc asynchronously with celery
@@ -262,5 +271,5 @@ def get_graph( request=None         , corpus=None
     if len(data) == 0:
         print("GRAPH #   ... GET_GRAPH: 0 coocs in matrix")
         data = {'nodes':[], 'links':[]}  # empty data
-
+    
     return data

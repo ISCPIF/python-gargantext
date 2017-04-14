@@ -115,7 +115,8 @@ class HalCrawler(Crawler):
             print("ERROR (scrap: Multivac d/l ): " , msg)
             self.query_max = QUERY_SIZE_N_MAX
         
-        for page in range(1, trunc(self.query_max / 100) + 2):
+        #for page in range(1, trunc(self.query_max / 100) + 2):
+        for page in range(0, self.query_max, paging):
             print("Downloading page %s to %s results" % (page, paging))
             docs = (self._get(query, fromPage=page, count=paging)
                         .get("response", {})

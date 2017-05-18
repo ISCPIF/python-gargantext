@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ****************************
-# ****  HAL      Scrapper  ***
+# ****  ISIDORE  Scrapper  ***
 # ****************************
 # CNRS COPYRIGHTS
 # SEE LEGAL LICENCE OF GARGANTEXT.ORG

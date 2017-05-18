@@ -10,19 +10,15 @@
 # moissonneurs == getting data from external databases
 
 
-# Available databases :
-## Pubmed
-## IsTex,
-## CERN
-
-
 from django.conf.urls import url
 
+# Available databases :
 import moissonneurs.pubmed   as pubmed
 import moissonneurs.istex    as istex
 import moissonneurs.cern     as cern
 import moissonneurs.multivac as multivac
 import moissonneurs.hal      as hal
+import moissonneurs.isidore  as isidore
 
 # TODO : ISIDORE
 
@@ -42,7 +38,7 @@ urlpatterns = [ url(r'^pubmed/query$'       , pubmed.query   )
               , url(r'^hal/query$'          , hal.query      )
               , url(r'^hal/save/(\d+)'      , hal.save       )
 
-             #, url(r'^isidore/query$'      , isidore.query  )
-             #, url(r'^isidore/save/(\d+)'  , isidore.save   )
+             , url(r'^isidore/query$'      , isidore.query   )
+             , url(r'^isidore/save/(\d+)'  , isidore.save    )
               
               ]

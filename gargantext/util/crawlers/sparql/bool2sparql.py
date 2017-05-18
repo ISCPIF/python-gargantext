@@ -1,9 +1,10 @@
 
 import subprocess
 
-import sparql as s
+from .sparql import Service
+#from sparql import Service
 
-def bool2sparql(query, count=False, limit=None):
+def bool2sparql(query, count=False, offset=None, limit=None):
     """
     bool2sparql :: String -> Bool -> Int -> String
     Translate a boolean query into a Sparql request
@@ -11,13 +12,19 @@ def bool2sparql(query, count=False, limit=None):
     See: https://github.com/delanoe/bool2sparql
     """
 
-    bashCommand = ["./bool2sparql-exe","-q",query]
+    bashCommand = ["/srv/gargantext/gargantext/util/crawlers/sparql/bool2sparql-exe","-q",query]
 
     if count is True :
         bashCommand.append("-c")
     else :
-        for command in ["-l", str(limit)] :
-            bashCommand.append(command)
+        if offset is not None :
+            for command in ["--offset", str(offset)] :
+                bashCommand.append(command)
+        
+        if limit is not None :
+            for command in ["--limit", str(limit)] :
+                bashCommand.append(command)
+
 
     process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE)
     output, error = process.communicate()
@@ -27,27 +34,29 @@ def bool2sparql(query, count=False, limit=None):
     else :
         return(output.decode("utf-8"))
 
-def isidore(query, count=False, limit=None):
+def isidore(query, count=False, offset=None, limit=None):
     """
     isidore :: String -> Bool -> Int -> Either (Dict String) Int
     use sparql-client either to search or to scan
     """
 
-    query = bool2sparql(query, count, limit)
+    query = bool2sparql(query, count=count, offset=offset, limit=limit)
     print(query)
-    go = s.Service("https://www.rechercheisidore.fr/sparql/", "utf-8", "GET")
-
+    
+    go = Service("https://www.rechercheisidore.fr/sparql/", "utf-8", "GET")
     results = go.query(query)
 
     if count is False:
         for r in results:
             doc        = dict()
             doc_values = dict()
-            doc["url"], doc["id"], doc["title"], doc["date"], doc["abstract"], doc["journal"] = r
-
+            doc["url"], doc["id"], doc["title"], doc["date"], doc["abstract"], doc["source"] = r
+            
+            print(doc)
             for k in doc.keys():
                 doc_values[k] = doc[k].value
-
+            print(doc_values)
+            
             yield(doc_values)
 
 
@@ -60,12 +69,13 @@ def isidore(query, count=False, limit=None):
 
 
 def test():
-    query = "ricoeur"
-    limit = 2
+    query = "delanoe"
+    limit  = 100
+    offset = 10
 
-    for d in isidore(query, limit=limit):
-        print(d["abstract"])
-    print([n for n in isidore(query, count=True)])
+    for d in isidore(query, offset=offset, limit=limit):
+        print(d["date"])
+    #print([n for n in isidore(query, count=True)])
 
 test()
 

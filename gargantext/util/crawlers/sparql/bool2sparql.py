@@ -41,7 +41,6 @@ def isidore(query, count=False, offset=None, limit=None):
     """
 
     query = bool2sparql(query, count=count, offset=offset, limit=limit)
-    print(query)
     
     go = Service("https://www.rechercheisidore.fr/sparql/", "utf-8", "GET")
     results = go.query(query)
@@ -52,10 +51,8 @@ def isidore(query, count=False, offset=None, limit=None):
             doc_values = dict()
             doc["url"], doc["id"], doc["title"], doc["date"], doc["abstract"], doc["source"] = r
             
-            print(doc)
             for k in doc.keys():
                 doc_values[k] = doc[k].value
-            print(doc_values)
             
             yield(doc_values)
 

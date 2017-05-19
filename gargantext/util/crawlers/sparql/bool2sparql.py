@@ -77,5 +77,5 @@ def test():
         print(d["date"])
     #print([n for n in isidore(query, count=True)])
 
-test()
-
+if __name__ == '__main__':
+    test()

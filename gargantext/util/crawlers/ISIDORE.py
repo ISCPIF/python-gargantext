@@ -33,7 +33,7 @@ class IsidoreCrawler(Crawler):
         return (bool2sparql(query, count=count, offset=offset, limit=limit))
 
 
-    def _get(self, query, offset=0, limit=100, lang=None):
+    def _get(self, query, offset=0, limit=None, lang=None):
         '''Parameters to download data'''
         
         isidore(query, count=False, offset=offset, limit=limit)
@@ -53,9 +53,9 @@ class IsidoreCrawler(Crawler):
         self.status.append("fetching results")
 
         corpus = []
-        limit = 100
+        limit = 1000
         self.query_max = self.scan_results(query)
-        #print("self.query_max : %s" % self.query_max)
+        print("self.query_max : %s" % self.query_max)
 
         if self.query_max > QUERY_SIZE_N_MAX:
             msg = "Invalid sample size N = %i (max = %i)" % ( self.query_max
@@ -64,11 +64,9 @@ class IsidoreCrawler(Crawler):
             print("WARNING (scrap: ISIDORE d/l ): " , msg)
             self.query_max = QUERY_SIZE_N_MAX
         
-        #for page in range(1, trunc(self.query_max / 100) + 2):
         for offset in range(0, self.query_max, limit):
             print("Downloading result %s to %s" % (offset, self.query_max))
 
-            #for doc in self._get(query, count=False, offset=offset, limit=limit) :
             for doc in isidore(query, offset=offset, limit=limit) :
                 corpus.append(doc)
 

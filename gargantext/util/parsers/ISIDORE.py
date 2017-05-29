@@ -31,6 +31,8 @@ class IsidoreParser(Parser):
                          , "source"   : "source"
                          }
         
+        uniq_id = set()
+
         for doc in json_docs:
 
             hyperdata = {}
@@ -38,27 +40,31 @@ class IsidoreParser(Parser):
             for key, path in hyperdata_path.items():
                     hyperdata[key] = doc.get(path, "")
             
-            # Source is the Journal Name 
-            hyperdata["source"] = doc.get("journal", "ISIDORE Database")
-            
-            # Working on the date
-            maybeDate = doc.get("date"  , None)
+            if hyperdata["url"] not in uniq_id:
+                # Removing the duplicates implicitly
+                uniq_id.add(hyperdata["url"])
+                
+                # Source is the Journal Name 
+                hyperdata["source"] = doc.get("journal", "ISIDORE Database")
+                
+                # Working on the date
+                maybeDate = doc.get("date"  , None)
 
-            if maybeDate is None:
-                date = datetime.now()
-            else:
-                try :
-                    # Model of date: 1958-01-01T00:00:00
-                    date = datetime.strptime(maybeDate, '%Y-%m-%dT%H:%M:%S')
-                except :
-                    print("FIX DATE ISIDORE please >%s<" % maybeDate)
+                if maybeDate is None:
                     date = datetime.now()
+                else:
+                    try :
+                        # Model of date: 1958-01-01T00:00:00
+                        date = datetime.strptime(maybeDate, '%Y-%m-%dT%H:%M:%S')
+                    except :
+                        print("FIX DATE ISIDORE please >%s<" % maybeDate)
+                        date = datetime.now()
 
-            hyperdata["publication_date"] = date
-            hyperdata["publication_year"]  = str(date.year)
-            hyperdata["publication_month"] = str(date.month)
-            hyperdata["publication_day"]   = str(date.day)
-            
-            hyperdata_list.append(hyperdata)
+                hyperdata["publication_date"] = date
+                hyperdata["publication_year"]  = str(date.year)
+                hyperdata["publication_month"] = str(date.month)
+                hyperdata["publication_day"]   = str(date.day)
+                
+                hyperdata_list.append(hyperdata)
         
         return hyperdata_list

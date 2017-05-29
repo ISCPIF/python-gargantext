@@ -49,7 +49,7 @@ def isidore(query, count=False, offset=None, limit=None):
         for r in results:
             doc        = dict()
             doc_values = dict()
-            doc["url"], doc["id"], doc["title"], doc["date"], doc["abstract"], doc["source"] = r
+            doc["url"], doc["title"], doc["date"], doc["abstract"], doc["source"] = r
             
             for k in doc.keys():
                 doc_values[k] = doc[k].value

@@ -45,7 +45,7 @@ class IsidoreParser(Parser):
                 uniq_id.add(hyperdata["url"])
                 
                 # Source is the Journal Name 
-                hyperdata["source"] = doc.get("journal", "ISIDORE Database")
+                hyperdata["source"] = doc.get("source", "ISIDORE Database")
                 
                 # Working on the date
                 maybeDate = doc.get("date"  , None)

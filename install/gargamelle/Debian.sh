@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ### Update and install base dependencies
 echo "############ DEBIAN LIBS ###############"
 apt-get update && \
@@ -38,17 +40,17 @@ update-locale LC_ALL=fr_FR.UTF-8
   python3-pip \
   libxml2-dev libxslt-dev zlib1g-dev
   #libxslt1-dev
- 
- UPDATE AND CLEAN
+
+ # UPDATE AND CLEAN
  apt-get update && apt-get autoclean
  #NB: removing /var/lib will avoid to significantly fill up your /var/ folder on your native system
- 
+
  ########################################################################
  ### PYTHON ENVIRONNEMENT (as ROOT)
  ########################################################################
- 
+
  #adduser --disabled-password --gecos "" gargantua
- 
+
  cd /srv/
  pip3 install virtualenv
  virtualenv /srv/env_3-5

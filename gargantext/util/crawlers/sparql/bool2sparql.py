@@ -1,17 +1,17 @@
 
 import subprocess
-
+import re
 from .sparql import Service
 #from sparql import Service
 
-def bool2sparql(query, count=False, offset=None, limit=None):
+def bool2sparql(rawQuery, count=False, offset=None, limit=None):
     """
     bool2sparql :: String -> Bool -> Int -> String
     Translate a boolean query into a Sparql request
     You need to build bool2sparql binaries before
     See: https://github.com/delanoe/bool2sparql
     """
-
+    query = re.sub("\"", "\'", rawQuery)
     bashCommand = ["/srv/gargantext/gargantext/util/crawlers/sparql/bool2sparql-exe","-q",query]
 
     if count is True :
@@ -32,6 +32,7 @@ def bool2sparql(query, count=False, offset=None, limit=None):
     if error is not None :
         raise(error)
     else :
+        print(output)
         return(output.decode("utf-8"))
 
 def isidore(query, count=False, offset=None, limit=None):

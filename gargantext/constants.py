@@ -181,8 +181,6 @@ def get_tagger(lang):
     return tagger()
 
 
-
-
 RESOURCETYPES = [
     {   "type": 1,
         'name': 'Europresse',
@@ -242,19 +240,44 @@ RESOURCETYPES = [
         'crawler': None,
     },
    {    "type": 9,
-        "name": 'SCOAP [XML]',
+        "name": 'SCOAP [API/XML]',
         "parser": "CernParser",
         "format": 'MARC21',
         'file_formats':["zip","xml"],
         "crawler": "CernCrawler",
    },
+#   {    "type": 10,
+#        "name": 'REPEC [RIS]',
+#        "parser": "RISParser",
+#        "format": 'RIS',
+#        'file_formats':["zip","ris", "txt"],
+#        "crawler": None,
+#   },
+#
    {    "type": 10,
-        "name": 'REPEC [RIS]',
-        "parser": "RISParser",
-        "format": 'RIS',
-        'file_formats':["zip","ris", "txt"],
-        "crawler": None,
+        "name": 'REPEC [MULTIVAC API]',
+        "parser": "MultivacParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "MultivacCrawler",
    },
+
+   {    "type": 11,
+        "name": 'HAL [API]',
+        "parser": "HalParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "HalCrawler",
+   },
+
+   {    "type": 12,
+        "name": 'ISIDORE [SPARQLE API /!\ BETA]',
+        "parser": "IsidoreParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "IsidoreCrawler",
+   },
+
 ]
 #shortcut for resources declaration in template
 PARSERS = [(n["type"],n["name"]) for n in RESOURCETYPES if n["parser"] is not None]

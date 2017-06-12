@@ -209,9 +209,11 @@
   function CustomForSelect( selected ) {
       // show Radio-Inputs and trigger FileOrNotFile>@upload-file events
       selected = selected.toLowerCase()
-      var is_pubmed = (selected.indexOf('pubmed') != -1);
-      var is_istex = (selected.indexOf('istex') != -1);
-      if (is_pubmed || is_istex) {
+      var is_pubmed = (selected.indexOf('pubmed')  != -1);
+      var is_istex  = (selected.indexOf('istex' )  != -1);
+      var is_repec  = (selected.indexOf('repec' )  != -1);
+      
+      if (is_pubmed || is_istex || is_repec) {
           // if(selected=="pubmed") {
           console.log("show the button for: " + selected)
           $("#pubmedcrawl").css("visibility", "visible");

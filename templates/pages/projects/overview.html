@@ -57,21 +57,23 @@
 
                     </button>
                     <div id="popover-content" class="hide">
-                        <div id="createForm" class="form-group">
-                            {% csrf_token %}
-                            <div id="status-form" class="collapse"></div>
+                        <form>
+                            <div id="createForm" class="form-group">
+                                {% csrf_token %}
+                                <div id="status-form" class="collapse"></div>
 
-                            <div class="row inline">
-                                <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
-                                <input class="col-lg-8" type="text" id="inputName" class="form-control">
-                            </div>
+                                <div class="row inline">
+                                    <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
+                                    <input class="col-lg-8" type="text" id="inputName" class="form-control">
+                                </div>
 
-                            <div class="row inline">
-                                <div class="col-lg-3"></div>
-                                <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
-                                <div class="col-lg-2"></div>
+                                <div class="row inline">
+                                    <div class="col-lg-3"></div>
+                                    <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
+                                    <div class="col-lg-2"></div>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </p>
             </div>

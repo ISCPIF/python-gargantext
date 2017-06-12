@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ### Update and install base dependencies
 echo "############ DEBIAN LIBS ###############"
 apt-get update && \
@@ -32,26 +34,26 @@ update-locale LC_ALL=fr_FR.UTF-8
   libxml2-dev xml-core libgfortran-6-dev \
   libpq-dev \
   python3.5 \
-  python3-dev \
+  python3.5-dev \
   python3-six python3-numpy python3-setuptools \
   python3-numexpr \
   python3-pip \
-  libxml2-dev libxslt-dev zlib1g-dev
+  libxml2-dev libxslt-dev zlib1g-dev libigraph0-dev
   #libxslt1-dev
- 
- UPDATE AND CLEAN
+
+ # UPDATE AND CLEAN
  apt-get update && apt-get autoclean
  #NB: removing /var/lib will avoid to significantly fill up your /var/ folder on your native system
- 
+
  ########################################################################
  ### PYTHON ENVIRONNEMENT (as ROOT)
  ########################################################################
- 
+
  #adduser --disabled-password --gecos "" gargantua
- 
+
  cd /srv/
  pip3 install virtualenv
- virtualenv /srv/env_3-5
+ virtualenv /srv/env_3-5 -p /usr/bin/python3.5
  echo 'alias venv="source /srv/env_3-5/bin/activate"' >> ~/.bashrc
  # CONFIG FILES
 
@@ -60,9 +62,9 @@ update-locale LC_ALL=fr_FR.UTF-8
  source /srv/env_3-5/bin/activate && pip3 install -r /srv/gargantext/install/gargamelle/requirements.txt && \
  pip3  install git+https://github.com/zzzeek/sqlalchemy.git@rel_1_1 && \
  python3 -m nltk.downloader averaged_perceptron_tagger -d /usr/local/share/nltk_data
- 
+
  chown gargantua:gargantua -R /srv/env_3-5
- 
+
 #######################################################################
 ## POSTGRESQL DATA (as ROOT)
 #######################################################################

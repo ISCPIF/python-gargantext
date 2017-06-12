@@ -41,39 +41,40 @@
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
         <div class="row">
-        <div class="col-md-4">
-            <h1>
-                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
-                Projects
-            </h1>
-        </div>
-        <div class="col-md-3"></div>
-        <div class="col-md-5">
-            <p id="project" class="help">
-            <br>
-            <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                Add a new project
+            <div class="col-md-4">
+                <h1>
+                    <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                    Projects
+                </h1>
+            </div>
+            <div class="col-md-3"></div>
+            <div class="col-md-5">
+                <p id="project" class="help">
+                    <br>
+                    <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add a new project
 
-            </button>
-            <div id="popover-content"  class="hide">
-                <div id="createForm" class="form-group">
-                    {% csrf_token %}
-                    <div id="status-form" class="collapse">
-                    </div>
-                    <div class="row inline">
-                      <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
-                      <input class="col-lg-8" type="text" id="inputName" class="form-control">
-                    </div>
+                    </button>
+                    <div id="popover-content" class="hide">
+                        <div id="createForm" class="form-group">
+                            {% csrf_token %}
+                            <div id="status-form" class="collapse"></div>
 
-                    <div class="row inline">
-                      <div class="col-lg-3"></div>
-                      <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
-                      <div class="col-lg-2"></div>
+                            <div class="row inline">
+                                <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
+                                <input class="col-lg-8" type="text" id="inputName" class="form-control">
+                            </div>
+
+                            <div class="row inline">
+                                <div class="col-lg-3"></div>
+                                <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
+                                <div class="col-lg-2"></div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-              </div>
-            </p>
+                </p>
+            </div>
         </div>
     </div>
 </div>
@@ -87,7 +88,7 @@
 
     </div>
     <!-- CHECKBOX EDITION -->
-          <!--
+    <!--
     <div class="row collapse" id="editor">
           <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
             <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
@@ -98,9 +99,8 @@
           <!-- <button type="button" class="btn btn-info" id="recalculate">
                   <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
           </button>
-          -->
-
     </div>
+    -->
 
     <br />
 

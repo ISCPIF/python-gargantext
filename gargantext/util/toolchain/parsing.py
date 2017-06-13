@@ -175,7 +175,6 @@ def parse(corpus):
                         hyperdata = hyperdata,
                     )
                     session.add(document)
-                    session.commit()
                     documents_count += 1
 
                     if pending_add_error_stats:
@@ -189,6 +188,9 @@ def parse(corpus):
                         corpus.save_hyperdata()
                         session.add(corpus)
                         session.commit()
+
+                # Commit any pending document
+                session.commit()
 
                 # update info about the resource
                 resource['extracted'] = True

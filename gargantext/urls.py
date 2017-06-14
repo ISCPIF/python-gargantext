@@ -35,9 +35,12 @@ urlpatterns = [ url(r'^admin/'         , admin.site.urls                        
               , url(r'^'               , include( gargantext.views.pages.urls )        )
               , url(r'^favicon.ico$'   , Redirect.as_view( url=static.url('favicon.ico')
                                        , permanent=False), name="favicon"              )
-              , url(r'^api-token-auth/', obtain_jwt_token                              )
+              
+              # JWT Authorizations
+              , url(r'^jwt-auth/'      , obtain_jwt_token                              )
+              , url(r'^jwt-renew/'     , obtain_jwt_token                              )
                 # change function: check if id = role_+id then return jwt_token
-              , url(r'^api-token-verify/', verify_jwt_token                            )
+              , url(r'^jwt-verify/'    , verify_jwt_token                              )
 
               # Module Graph
               , url(r'^'           , include( graph.urls )                             )

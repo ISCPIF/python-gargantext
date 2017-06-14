@@ -7,16 +7,31 @@ __all__ = ['Ngram', 'NodeNgram', 'NodeNodeNgram', 'NodeNgramNgram']
 
 class Ngram(Base):
     __tablename__ = 'ngrams'
+
     id = Column(Integer, primary_key=True)
     terms = Column(String(255), unique=True)
     n = Column(Integer)
 
+    def __str__(self):
+        return '<{0.terms}>#{0.n}'.format(self)
+
+    def __repr__(self):
+        return '<Ngram(id={0.id}, terms={0.terms!r}, n={0.n})>'.format(self)
+
 
 class NodeNgram(Base):
     __tablename__ = 'nodes_ngrams'
+
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float)
+
+    node = relationship(Node)
+    ngram = relationship(Ngram)
+
+    def __repr__(self):
+        return '<NodeNgram(node_id={0.node_id}, ngram={0.ngram}, weight={0.weight})>'.format(self)
+
 
 class NodeNodeNgram(Base):
     """ for instance for TFIDF
@@ -28,6 +43,7 @@ class NodeNodeNgram(Base):
     )
     """
     __tablename__ = 'nodes_nodes_ngrams'
+
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
@@ -35,6 +51,14 @@ class NodeNodeNgram(Base):
     # précision max 24 bit pour un type sql "real" (soit 7 chiffres après virgule)
     # sinon par défaut on aurait un type sql "double_precision" (soit 15 chiffres)
     # (cf. www.postgresql.org/docs/9.4/static/datatype-numeric.html#DATATYPE-FLOAT)
+
+    node1 = relationship(Node, foreign_keys=[node1_id])
+    node2 = relationship(Node, foreign_keys=[node2_id])
+    ngram = relationship(Ngram)
+
+    def __repr__(self):
+        return '<NodeNodeNgram(node1_id={0.node1_id}, node2_id={0.node2_id}, ngram={0.ngram}, score={0.score})>'.format(self)
+
 
 class NodeNgramNgram(Base):
     """ for instance for COOCCURRENCES and GROUPLIST
@@ -46,7 +70,15 @@ class NodeNgramNgram(Base):
     )
     """
     __tablename__ = 'nodes_ngrams_ngrams'
+
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram1_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     ngram2_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float(precision=24))  # see comment for NodeNodeNgram.score
+
+    node = relationship(Node)
+    ngram1 = relationship(Ngram, foreign_keys=[ngram1_id])
+    ngram2 = relationship(Ngram, foreign_keys=[ngram2_id])
+
+    def __repr__(self):
+        return '<NodeNgramNgram(node_id={0.node_id}, ngram1={0.ngram1}, ngram2={0.ngram2}, weight={0.weight})>'.format(self)

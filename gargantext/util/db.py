@@ -39,7 +39,7 @@ Double = DOUBLE_PRECISION
 ########################################################################
 # useful for queries
 ########################################################################
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, relationship
 from sqlalchemy import func, desc
 
 ########################################################################

@@ -19,6 +19,7 @@ class NodeType(TypeDecorator):
     def process_result_value(self, typeindex, dialect):
         return NODETYPES[typeindex]
 
+
 class Node(Base):
     """This model can fit many purposes.
     It intends to provide a generic model, allowing hierarchical structure
@@ -26,6 +27,7 @@ class Node(Base):
     The possible types are defined in `gargantext.constants.NODETYPES`.
     """
     __tablename__ = 'nodes'
+
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
     # foreign keys
@@ -36,6 +38,8 @@ class Node(Base):
     date  = Column(DateTime(), default=datetime.now)
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
     hyperdata = Column(JSONB, default=dict)
+
+    parent = relationship('Node', remote_side=[id])
 
     def __init__(self, **kwargs):
         """Node's constructor.
@@ -54,6 +58,10 @@ class Node(Base):
         """Allow direct access to hyperdata via the bracket operator.
         """
         self.hyperdata[key] = value
+
+    def __repr__(self):
+        return '<Node(typename={0.typename}, user_id={0.user_id}, parent_id={0.parent_id}, ' \
+               'name={0.name!r}, date={0.date})>'.format(self)
 
     @property
     def ngrams(self):
@@ -187,8 +195,16 @@ class Node(Base):
         ))
         return self['statuses'][-1]
 
+
 class NodeNode(Base):
     __tablename__ = 'nodes_nodes'
+
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     score    = Column(Float(precision=24))
+
+    node1 = relationship(Node, foreign_keys=[node1_id])
+    node2 = relationship(Node, foreign_keys=[node2_id])
+
+    def __repr__(self):
+        return '<NodeNode(node1_id={0.node1_id}, node2_id={0.node2_id}, score={0.score})>'.format(self)

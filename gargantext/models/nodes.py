@@ -39,6 +39,7 @@ class Node(Base):
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
     hyperdata = Column(JSONB, default=dict)
 
+    user = relationship(User)
     parent = relationship('Node', remote_side=[id])
 
     def __init__(self, **kwargs):

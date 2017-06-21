@@ -31,6 +31,8 @@ Then:
 - Then Node[corpus] is a corpus.
 - Then Node[document] is a document.
 
+In Python code, typenames are represented as UPPERCASE strings (eg. "PROJECT").
+
 
 ### Each Node as a typename and a parent
 
@@ -61,6 +63,13 @@ This node is the parent of the other nodes for parameters.
     │   ├── Node[tfidf](database2)
     │   └── Node[tfidf](database2)
     └── Node[anotherMetric](global)
+
+
+
+[//]: # (Are there any plans to add user wide or project wide parameters or metrics?  For example TFIDF nodes related to a normal user -- ie. not Gargantua?)
+
+
+[//]: # (What is the purpose of the 3 child nodes of Node[TFIDF-Global]?  Are they TFIDF metrics related to databases 1, 2 and 3? If so, shouldn't they be children of related CORPUS nodes?)
 
 
 ## NodeNgram

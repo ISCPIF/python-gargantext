@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .users import User
 
-__all__ = ['Node', 'NodeNode']
+__all__ = ['Node', 'NodeNode', 'CorpusNode']
 
 class NodeType(TypeDecorator):
     """Define a new type of column to describe a Node's type.
@@ -42,6 +42,24 @@ class Node(Base):
     user = relationship(User)
     parent = relationship('Node', remote_side=[id])
 
+    __mapper_args__ = {
+        'polymorphic_on': typename
+    }
+
+    def __new__(cls, *args, **kwargs):
+        """Automagically cast a new Node to its sub-class!
+
+        >>> Node(name='without-type')
+        <Node(typename=None, user_id=None, parent_id=None, name='without-type', date=None)>
+        >>> Node(typename='CORPUS')
+        <CorpusNode(typename='CORPUS', user_id=None, parent_id=None, name=None, date=None)>
+        """
+
+        if cls is Node and kwargs.get('typename'):
+            typename = kwargs.pop('typename')
+            return _NODE_MODELS[typename](*args, **kwargs)
+        return super(Node, cls).__new__(cls)
+
     def __init__(self, **kwargs):
         """Node's constructor.
         Initialize the `hyperdata` as a dictionary if no value was given.
@@ -61,7 +79,7 @@ class Node(Base):
         self.hyperdata[key] = value
 
     def __repr__(self):
-        return '<Node(typename={0.typename}, user_id={0.user_id}, parent_id={0.parent_id}, ' \
+        return '<{0.__class__.__name__}(typename={0.typename!r}, user_id={0.user_id}, parent_id={0.parent_id}, ' \
                'name={0.name!r}, date={0.date})>'.format(self)
 
     @property
@@ -129,36 +147,6 @@ class Node(Base):
             **kwargs
         )
 
-    def resources(self):
-        """Return all the resources attached to a given node.
-        Mainly used for corpora.
-
-        example:
-        [{'extracted': True,
-          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
-          'type': 1,
-          'url': None}]
-        """
-        if 'resources' not in self.hyperdata:
-            self['resources'] = MutableList()
-        return self['resources']
-
-    def add_resource(self, type, path=None, url=None):
-        """Attach a resource to a given node.
-        Mainly used for corpora.
-
-        this just adds metadata to the CORPUS node (NOT for adding documents)
-
-        example:
-        {'extracted': True,
-          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
-          'type': 1,
-          'url': None}
-        """
-        self.resources().append(MutableDict(
-            {'type': type, 'path':path, 'url':url, 'extracted': False}
-        ))
-
     def status(self, action=None, progress=0, complete=False, error=None):
         """Get or update the status of the given action.
         If no action is given, the status of the first uncomplete or last item
@@ -197,6 +185,40 @@ class Node(Base):
         return self['statuses'][-1]
 
 
+class CorpusNode(Node):
+    __mapper_args__ = {
+        'polymorphic_identity': 'CORPUS'
+    }
+
+    def resources(self):
+        """Return all the resources attached to a given node.
+
+        example:
+        [{'extracted': True,
+          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
+          'type': 1,
+          'url': None}]
+        """
+        if 'resources' not in self.hyperdata:
+            self['resources'] = MutableList()
+        return self['resources']
+
+    def add_resource(self, type, path=None, url=None):
+        """Attach a resource to a given node.
+
+        this just adds metadata to the CORPUS node (NOT for adding documents)
+
+        example:
+        {'extracted': True,
+          'path': '/home/me/gargantext/uploads/corpora/0c/0c5b/0c5b50/0c5b50ad8ebdeb2ae33d8e54141a52ee_Corpus_Europresse-Français-2015-12-11.zip',
+          'type': 1,
+          'url': None}
+        """
+        self.resources().append(MutableDict(
+            {'type': type, 'path':path, 'url':url, 'extracted': False}
+        ))
+
+
 class NodeNode(Base):
     __tablename__ = 'nodes_nodes'
 
@@ -209,3 +231,35 @@ class NodeNode(Base):
 
     def __repr__(self):
         return '<NodeNode(node1_id={0.node1_id}, node2_id={0.node2_id}, score={0.score})>'.format(self)
+
+
+# --8<-- Begin hack ------
+
+# XXX Hack to automatically defines subclasses of Node for every NODETYPES,
+#     in order to avoid SQLAlchemy complaints -- and subsequent exceptions.
+#
+#     We could manually write a class for every NodeType, or find a way to
+#     tell SQLAlchemy that it should stick to instantiate a Node when a
+#     class is not defined for the wanted typename.
+
+_ALREADY_IMPLEMENTED_NODE_TYPES = \
+    set(cls.__mapper_args__.get('polymorphic_identity') for cls in Node.__subclasses__())
+
+for nodetype in NODETYPES:
+    if nodetype and nodetype not in _ALREADY_IMPLEMENTED_NODE_TYPES:
+        # Convert nodetype to a CamelCase class name, assuming it's possible...
+        class_name = ''.join(nodetype.title().split("-")) + 'Node'
+        # Create new class and add it to global scope
+        globals()[class_name] = type(class_name, (Node,), {
+            "__mapper_args__": {
+                "polymorphic_identity": nodetype
+            }
+        })
+
+# ------ End of hack ------
+
+_NODE_MODELS = {
+    mapper.polymorphic_identity: mapper.class_
+    for mapper in Node.__mapper__.self_and_descendants
+    if mapper.class_ is not Node
+}

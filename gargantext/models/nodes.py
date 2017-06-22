@@ -25,6 +25,26 @@ class Node(Base):
     It intends to provide a generic model, allowing hierarchical structure
     and NoSQL-like data structuring.
     The possible types are defined in `gargantext.constants.NODETYPES`.
+
+    Thanks to __new__ overriding and SQLAlchemy's polymorphism, every Node
+    instance is automagically casted to its sub-class, assuming a typename
+    is specified.
+
+    >>> Node(name='without-type')
+    <Node(id=None, typename=None, user_id=None, parent_id=None, name='without-type', date=None)>
+    >>> Node(typename='CORPUS')
+    <CorpusNode(id=None, typename='CORPUS', user_id=None, parent_id=None, name=None, date=None)>
+    >>> from gargantext.util.db import session
+    >>> session.query(Node).filter_by(typename='USER').first() # doctest: +ELLIPSIS
+    <UserNode(...)>
+
+    But beware, there are some caveats with bulk queries. In this case typename
+    MUST be specified manually.
+
+    >>> session.query(UserNode).delete() # doctest: +SKIP
+    # Wrong: all nodes are deleted!
+    >>> session.query(UserNode).filter_by(typename='USER').delete() # doctest: +SKIP
+    # Right: only user nodes are deleted.
     """
     __tablename__ = 'nodes'
 
@@ -47,14 +67,6 @@ class Node(Base):
     }
 
     def __new__(cls, *args, **kwargs):
-        """Automagically cast a new Node to its sub-class!
-
-        >>> Node(name='without-type')
-        <Node(id=None, typename=None, user_id=None, parent_id=None, name='without-type', date=None)>
-        >>> Node(typename='CORPUS')
-        <CorpusNode(id=None, typename='CORPUS', user_id=None, parent_id=None, name=None, date=None)>
-        """
-
         if cls is Node and kwargs.get('typename'):
             typename = kwargs.pop('typename')
             return _NODE_MODELS[typename](*args, **kwargs)

@@ -50,9 +50,9 @@ class Node(Base):
         """Automagically cast a new Node to its sub-class!
 
         >>> Node(name='without-type')
-        <Node(typename=None, user_id=None, parent_id=None, name='without-type', date=None)>
+        <Node(id=None, typename=None, user_id=None, parent_id=None, name='without-type', date=None)>
         >>> Node(typename='CORPUS')
-        <CorpusNode(typename='CORPUS', user_id=None, parent_id=None, name=None, date=None)>
+        <CorpusNode(id=None, typename='CORPUS', user_id=None, parent_id=None, name=None, date=None)>
         """
 
         if cls is Node and kwargs.get('typename'):
@@ -79,7 +79,8 @@ class Node(Base):
         self.hyperdata[key] = value
 
     def __repr__(self):
-        return '<{0.__class__.__name__}(typename={0.typename!r}, user_id={0.user_id}, parent_id={0.parent_id}, ' \
+        return '<{0.__class__.__name__}(id={0.id}, typename={0.typename!r}, ' \
+               'user_id={0.user_id}, parent_id={0.parent_id}, ' \
                'name={0.name!r}, date={0.date})>'.format(self)
 
     @property

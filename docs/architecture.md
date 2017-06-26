@@ -68,7 +68,7 @@ This node is the parent of the other nodes for parameters.
 
 [//]: # (Are there any plans to add user wide or project wide parameters or metrics?  For example TFIDF nodes related to a normal user -- ie. not Gargantua?)
 
-Yes we can in the futur (but we have others priorities before.
+Yes we can in the future (but we have others priorities before.
 
 [//]: # (What is the purpose of the 3 child nodes of Node[TFIDF-Global]?  Are they TFIDF metrics related to databases 1, 2 and 3? If so, shouldn't they be children of related CORPUS nodes?)
 

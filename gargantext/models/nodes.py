@@ -21,7 +21,10 @@ class NodeType(TypeDecorator):
 
 
 class Node(Base):
-    """This model can fit many purposes.
+    """This model can fit many purposes:
+    
+    myFirstCorpus = session.query(CorpusNode).first()
+
     It intends to provide a generic model, allowing hierarchical structure
     and NoSQL-like data structuring.
     The possible types are defined in `gargantext.constants.NODETYPES`.

@@ -4,7 +4,7 @@
 # *****  CERN Scrapper    *****
 # ****************************
 # Author:c24b
-# Date: 27/05/2015
+# Date: 27/05/2016
 import hmac, hashlib
 import requests
 import os
@@ -96,10 +96,12 @@ class CernCrawler(Crawler):
         print(self.results_nb, "res")
         #self.generate_urls()
         return(self.ids)
+    
     def generate_urls(self):
         ''' generate raw urls of ONE record'''
         self.urls = ["http://repo.scoap3.org/record/%i/export/xm?ln=en" %rid for rid in self.ids]
         return self.urls
+    
     def fetch_records(self, ids):
         ''' for NEXT time'''
         raise NotImplementedError

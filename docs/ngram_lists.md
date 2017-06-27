@@ -1,6 +1,6 @@
 # Gargantext foundations : main definitions
 
-Documentation valid for 3.0\* versions of Gargantext.
+Documentation valid for 3.0.\* versions of Gargantext.
 
 ## Project
 A project is a list of corpora (a project may have duplicate corpora).
@@ -49,12 +49,27 @@ is a non negative natural number).
 
 ## Main ngrams lists: Stop/Map/Main
 
+Receipe of Gargantext consist of offering the rights ngrams for the map.
+A the better level of complexity in order to unveil its richness
+according to this 2 main rules:
+
+If ngrams are too specifics, then the graph becomes too sparse.
+If ngrams are too generics, then the graph becomes too connected.
+
+As a consequence, finding the right balance of specific and generic
+ngrams is the main target.
+
+In first versions of Gargantext, this balance is solved with linear
+methods. After 3.1.\*, non linear methods trained on dataset of the
+users enable the system to find a better balance at any scale.
+
+
 ### Definition
 
 3 main kinds of lists :
     1. Stop List contains black listed ngrams i.e. the noise or in others words ngrams users do not want to deal with.
     2. Map List contains ngrams that will be shown in the map.
-    3. Main list or Candidate list contains all other ngrams that are not in the stop list and not in the map list. Then it could be in the map according to the choice of the user or, by default, the default parameters of Gargantext.
+    3. Main list or Candidate list contains all other ngrams that are neither in the stop list or in the map list. Then it _could_ be in the map according to the choice of the user or, by default, the default parameters of Gargantext.
 
 ### Storage
 
@@ -80,8 +95,27 @@ relation where
 
 ### Policy
 
+#### Algo
 
-#### Stops
+Let be a set of ngrams where NodeNgram != 0 then
+    find 2 subsets of these ngrams that show a split 
+        - stop ngrams
+        - not stop ngrams
+    then for the subset "not stop ngrams"
+        find 2 subset of ngrams that show a split:
+            - map ngrams
+            - others ngrams
+
+#### Techno algo
+
+A classifier (Support Machine Vector) is used on the following scaled-measures
+for each step:
+    - Occurrences : Zip Law
+    - TFICF-CORPUS-SOURCETYPE
+    - TFICF-SOURCETYPE-ALL
+    - Genericity score
+    - Specificty score
+
 
 
 

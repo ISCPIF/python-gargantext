@@ -46,6 +46,13 @@ class HalCrawler(Crawler):
                , isbn_s
                , issue_s
                , journalPublisher_s
+               , language_s
+               , doiId_s
+               , authId_i
+               , instStructId_i
+               , deptStructId_i
+               , labStructId_i
+               , rteamStructId_i
              """
                #, authUrl_s
                #, type_s

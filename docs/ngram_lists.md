@@ -110,7 +110,9 @@ Let be a set of ngrams where NodeNgram != 0 then
 
 A classifier (Support Machine Vector) is used on the following scaled-measures
 for each step:
-    - Occurrences : Zip Law
+    - n (of the "n" gram)
+    - Occurrences : Zip Law (in fact already used in TFICF, this
+      features are correletad, put here for pedagogical purpose)
     - TFICF-CORPUS-SOURCETYPE
     - TFICF-SOURCETYPE-ALL
     - Genericity score
@@ -144,17 +146,71 @@ If the context is a document in a set of documents (corpus), then it is a TFIDF 
 Then TFICF-DOCUMENT-CORPUS == TFICF(ngram,DOCUMENT,CORPUS) = TFIDF.
 TFICF is the generalization of [TFIDF, Term Frequency - Inverse Document Frequency](https://en.wikipedia.org/wiki/Tf%E2%80%93idf).
 
+#### Implementation
+
+TFICF = TF * log (ICF)
+
+To prepare the groups, we need to store TF and ICF seperately (in
+NodesNogram via 2 nodes).
+
+Let be TF and ICF typename of Nodes.
+
+
+    Node[USER](gargantua)
+    ├── Node[OCCURRENCES](source)
+    ├── Node[TF](all sourcetype)
+    ├── Node[ICF](all sourcetype)
+    ├── Node[SOURCETYPE](Pubmed)
+    │   ├── Node[OCCURRENCES](all corpora)
+    │   ├── Node[TF](all corpora)
+    │   └── Node[ICF](all corpora)
+    ├── Node[SOURCETYPE](WOS)
+
+
 
 
 ## others ngrams lists
 
 ### Group List
 
+#### Definition
 
+Group list gives a quantifiable link between two ngrams.
+
+
+#### Policy to build group lists
+
+To group the ngrams:
+- stemming or lemming
+- c-value
+- clustering (see graphs)
+- manually by the user (supervised learning)
+
+The scale is the character.
+
+
+#### Storage
+
+In the table NodeNgramNgram where Node has type name Group for ngram1
+and ngram2.
+
+
+### Favorite List
 
 #### Definition
-#### Policy to build group lists
+
+Fovorite Nodes
+The scale is the node.
+
+#### Building policy
+
+- manually by the user (supervised learning)
+
 #### Storage
+
+NodeNode relation where first Node has type Favorite.
+
+
 
 
 

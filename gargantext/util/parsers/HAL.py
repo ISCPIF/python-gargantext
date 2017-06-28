@@ -24,12 +24,21 @@ class HalParser(Parser):
         json_docs = data
         hyperdata_list = []
         
-        hyperdata_path = { "id"       : "isbn_s"
-                         , "title"    : "title_s"
-                         , "abstract" : "abstract_s"
-                         , "source"   : "journalPublisher_s"
-                         , "url"      : "uri_s"
-                         , "authors"  : "authFullName_s"
+        hyperdata_path = { "id"              : "isbn_s"
+                         , "title"           : "title_s"
+                         , "abstract"        : "abstract_s"
+                         , "source"          : "journalPublisher_s"
+                         , "url"             : "uri_s"
+                         , "authors"         : "authFullName_s"
+                         , "isbn_s"          : "isbn_s"
+                         , "issue_s"         : "issue_s"
+                         , "language_s"      : "language_s"
+                         , "doiId_s"         : "doiId_s"
+                         , "authId_i"        : "authId_i"
+                         , "instStructId_i"  : "instStructId_i"
+                         , "deptStructId_i"  : "deptStructId_i"
+                         , "labStructId_i"   : "labStructId_i"
+                         , "rteamStructId_i" : "rteamStructId_i" 
                          }
 
         uris = set()
@@ -42,9 +51,10 @@ class HalParser(Parser):
                     
                     field = doc.get(path, "NOT FOUND")
                     if isinstance(field, list):
-                        hyperdata[key] = ", ".join(field)
+                        #hyperdata[key] = ", ".join(field)
+                        hyperdata[key] = str(field)
                     else:
-                        hyperdata[key] = field
+                        hyperdata[key] = str(field)
             
             if hyperdata["url"] in uris:
                 print("Document already parsed")

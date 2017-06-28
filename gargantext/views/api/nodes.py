@@ -246,9 +246,25 @@ class NodeListResource(APIView):
 
             writer = csv.writer(response, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
-            keys =  [ 'title'   , 'source'
-                    , 'publication_year', 'publication_month', 'publication_day'
-                    , 'abstract', 'authors']
+            keys =  [ "title"   
+                    , "source"
+                    , "publication_year"
+                    , "publication_month"
+                    , "publication_day"
+                    , "abstract"
+                    , "authors"
+                    , "url"
+                    , "isbn_s"
+                    , "issue_s"
+                    , "journalPublisher_s"
+                    , "language_s"
+                    , "doiId_s"
+                    , "authId_i"
+                    , "instStructId_i"
+                    , "deptStructId_i"
+                    , "labStructId_i"
+                    , "rteamStructId_i"
+                    ]
 
             writer.writerow(keys)
 

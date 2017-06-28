@@ -401,8 +401,8 @@ BATCH_NGRAMSEXTRACTION_SIZE = 3000   # how many new node-ngram relations before 
 
 
 # Scrapers config
-QUERY_SIZE_N_MAX     = 1000
-QUERY_SIZE_N_DEFAULT = 1000
+QUERY_SIZE_N_MAX     = 10000000
+QUERY_SIZE_N_DEFAULT = 10000000
 
 # Refresh corpora workflow status for project view's progressbar
 PROJECT_VIEW_REFRESH_INTERVAL  = 3000     # 1st refresh in ms (then increasing arithmetically)

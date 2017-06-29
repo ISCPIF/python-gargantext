@@ -1,6 +1,17 @@
-# Gargantext foundations : main definitions
+# Gargantext foundations 
+
+Collaborative platform for multi-scale text experiments
+Embrace the past, update the present, forecast the future.
+
+# Main Types of Entity definitions
 
 Documentation valid for 3.0.\* versions of Gargantext.
+
+## Nature of the entities
+
+In Object programming language, it is objects.
+In purely functional language, it is types.
+
 
 ## Project
 A project is a list of corpora (a project may have duplicate corpora).

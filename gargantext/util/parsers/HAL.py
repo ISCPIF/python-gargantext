@@ -51,8 +51,7 @@ class HalParser(Parser):
                     
                     field = doc.get(path, "NOT FOUND")
                     if isinstance(field, list):
-                        #hyperdata[key] = ", ".join(field)
-                        hyperdata[key] = str(field)
+                        hyperdata[key] = ", ".join(map(lambda x: str(x), field))
                     else:
                         hyperdata[key] = str(field)
             

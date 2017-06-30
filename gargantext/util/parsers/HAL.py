@@ -27,7 +27,7 @@ class HalParser(Parser):
         hyperdata_path = { "id"              : "isbn_s"
                          , "title"           : "title_s"
                          , "abstract"        : "abstract_s"
-                         , "source"          : "journalPublisher_s"
+                         , "source"          : "journalTitle_s"
                          , "url"             : "uri_s"
                          , "authors"         : "authFullName_s"
                          , "isbn_s"          : "isbn_s"

@@ -240,7 +240,7 @@ RESOURCETYPES = [
         'crawler': None,
     },
    {    "type": 9,
-        "name": 'SCOAP [CRAWLER/XML]',
+        "name": 'SCOAP [API/XML]',
         "parser": "CernParser",
         "format": 'MARC21',
         'file_formats':["zip","xml"],
@@ -255,7 +255,7 @@ RESOURCETYPES = [
 #   },
 #
    {    "type": 10,
-        "name": 'REPEC [CRAWLER]',
+        "name": 'REPEC [MULTIVAC API]',
         "parser": "MultivacParser",
         "format": 'JSON',
         'file_formats':["zip","json"],
@@ -263,11 +263,19 @@ RESOURCETYPES = [
    },
 
    {    "type": 11,
-        "name": 'HAL [CRAWLER]',
+        "name": 'HAL [API]',
         "parser": "HalParser",
         "format": 'JSON',
         'file_formats':["zip","json"],
         "crawler": "HalCrawler",
+   },
+
+   {    "type": 12,
+        "name": 'ISIDORE [SPARQLE API /!\ BETA]',
+        "parser": "IsidoreParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "IsidoreCrawler",
    },
 
 ]

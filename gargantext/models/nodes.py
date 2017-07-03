@@ -1,9 +1,12 @@
-from gargantext.util.db import *
+from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
 from datetime import datetime
 
+from .base import Base, Column, ForeignKey, relationship, TypeDecorator, \
+                  Integer, Float, String, DateTime, JSONB, \
+                  MutableList, MutableDict
 from .users import User
 
 __all__ = ['Node', 'NodeNode', 'CorpusNode']
@@ -22,7 +25,7 @@ class NodeType(TypeDecorator):
 
 class Node(Base):
     """This model can fit many purposes:
-    
+
     myFirstCorpus = session.query(CorpusNode).first()
 
     It intends to provide a generic model, allowing hierarchical structure

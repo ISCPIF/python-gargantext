@@ -6,7 +6,6 @@ from gargantext.util.json import json_dumps
 # get engine, session, etc.
 ########################################################################
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import delete
 
 def get_engine():
@@ -22,24 +21,13 @@ def get_engine():
 
 engine = get_engine()
 
-Base = declarative_base()
-
 session = scoped_session(sessionmaker(bind=engine))
 
 
 ########################################################################
-# tools to build models
-########################################################################
-from sqlalchemy.types import *
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION
-from sqlalchemy.ext.mutable import MutableDict, MutableList
-Double = DOUBLE_PRECISION
-
-########################################################################
 # useful for queries
 ########################################################################
-from sqlalchemy.orm import aliased, relationship
+from sqlalchemy.orm import aliased
 from sqlalchemy import func, desc
 
 ########################################################################

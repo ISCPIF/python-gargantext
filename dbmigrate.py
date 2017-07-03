@@ -18,8 +18,8 @@ if __name__ == "__main__":
     django_models_names = set(model._meta.db_table for model in django_models)
 
     # migrate SQLAlchemy models
-    from gargantext import models
-    from gargantext.util.db import Base, engine
+    from gargantext.models import Base
+    from gargantext.util.db import engine
     sqla_models_names = (
         model for model in Base.metadata.tables.keys()
         if model not in django_models_names

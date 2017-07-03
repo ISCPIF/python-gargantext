@@ -1,7 +1,10 @@
 from django.contrib.auth import models
-from gargantext.util.db import *
+from gargantext.util.db import session, aliased
 
 from datetime import datetime
+
+from .base import Base, Column, ForeignKey, UniqueConstraint, \
+                  Integer, Boolean, DateTime, String
 
 __all__ = ['User', 'Contact']
 
@@ -60,7 +63,7 @@ class User(Base):
         """check if a given node is owned by the user"""
         return (node.user_id == self.id) or \
                 node.id in (contact.id for contact in self.contacts())
-    
+
     def get_params(self, username=None):
         print(self.__dict__.items())
         return self.hyperdata

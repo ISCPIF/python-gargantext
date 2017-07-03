@@ -1,5 +1,5 @@
-from gargantext.util.db import *
-
+from .base import Base, Column, ForeignKey, relationship, \
+                  Integer, Float, String
 from .nodes import Node
 
 __all__ = ['Ngram', 'NodeNgram', 'NodeNodeNgram', 'NodeNgramNgram']

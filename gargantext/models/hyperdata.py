@@ -1,6 +1,7 @@
-from gargantext.util.db import *
 from gargantext.constants import INDEXED_HYPERDATA
 
+from .base import Base, Column, ForeignKey, TypeDecorator, \
+                  Integer, Double, DateTime, String, Text
 from .nodes import Node
 import datetime
 

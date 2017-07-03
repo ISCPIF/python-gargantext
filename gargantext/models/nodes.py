@@ -271,6 +271,8 @@ for nodetype in NODETYPES:
                 "polymorphic_identity": nodetype
             }
         })
+        # Add class to exports
+        __all__.append(class_name)
 
 # ------ End of hack ------
 

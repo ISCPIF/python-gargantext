@@ -4,7 +4,7 @@ from gargantext.constants import *
 
 from datetime import datetime
 
-from .base import Base, Column, ForeignKey, relationship, TypeDecorator, \
+from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
                   Integer, Float, String, DateTime, JSONB, \
                   MutableList, MutableDict
 from .users import User
@@ -53,6 +53,9 @@ class Node(Base):
     # Right: only user nodes are deleted.
     """
     __tablename__ = 'nodes'
+    __table_args__ = (
+            Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
+            Index('nodes_hyperdata_idx', 'hyperdata'))
 
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
@@ -240,6 +243,8 @@ class CorpusNode(Node):
 
 class NodeNode(Base):
     __tablename__ = 'nodes_nodes'
+    __table_args__ = (
+            Index('nodes_nodes_node1_id_node2_id_idx', 'node1_id', 'node2_id'),)
 
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)

@@ -1,4 +1,4 @@
-from .base import Base, Column, ForeignKey, relationship, \
+from .base import Base, Column, ForeignKey, relationship, Index, \
                   Integer, Float, String
 from .nodes import Node
 
@@ -7,6 +7,9 @@ __all__ = ['Ngram', 'NodeNgram', 'NodeNodeNgram', 'NodeNgramNgram']
 
 class Ngram(Base):
     __tablename__ = 'ngrams'
+    __table_args__ = (
+            Index('ngrams_id_n_idx', 'id', 'n'),
+            Index('ngrams_n_idx', 'n'))
 
     id = Column(Integer, primary_key=True)
     terms = Column(String(255), unique=True)
@@ -21,6 +24,10 @@ class Ngram(Base):
 
 class NodeNgram(Base):
     __tablename__ = 'nodes_ngrams'
+    __table_args__ = (
+            Index('nodes_ngrams_node_id_ngram_id_idx', 'node_id', 'ngram_id'),
+            Index('nodes_ngrams_node_id_idx', 'node_id'),
+            Index('nodes_ngrams_ngram_id_idx', 'ngram_id'))
 
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
@@ -43,6 +50,9 @@ class NodeNodeNgram(Base):
     )
     """
     __tablename__ = 'nodes_nodes_ngrams'
+    __table_args__ = (
+            Index('nodes_nodes_ngrams_node2_id_idx', 'node2_id'),
+            Index('nodes_nodes_ngrams_node1_id_idx', 'node1_id'))
 
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
@@ -70,6 +80,11 @@ class NodeNgramNgram(Base):
     )
     """
     __tablename__ = 'nodes_ngrams_ngrams'
+    __table_args__ = (
+            Index('nodes_ngrams_ngrams_node_id_ngram1_id_ngram2_id_idx', 'node_id', 'ngram1_id', 'ngram2_id'),
+            Index('nodes_ngrams_ngrams_node_id_idx', 'node_id'),
+            Index('nodes_ngrams_ngrams_ngram1_id_idx', 'ngram1_id'),
+            Index('nodes_ngrams_ngrams_ngram2_id_idx', 'ngram2_id'))
 
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram1_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)

@@ -1,4 +1,4 @@
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import TypeDecorator, \
                              Integer, Float, Boolean, DateTime, String, Text

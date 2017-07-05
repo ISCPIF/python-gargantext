@@ -11,6 +11,13 @@ UPGRADE TO LATEST DATABASE VERSION
     alembic upgrade head
 
 
+DOWNGRADE TO INITIAL DATABASE STATE
+
+    # /!\ RUNNING THIS COMMAND WILL CAUSE ALL DATA LOST WITHOUT ASKING !!
+
+    alembic downgrade base
+
+
 GENERATE A NEW REVISION
 
     alembic revision -m "Message for this migration"

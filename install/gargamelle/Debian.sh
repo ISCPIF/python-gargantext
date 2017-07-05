@@ -54,6 +54,7 @@ update-locale LC_ALL=fr_FR.UTF-8
  cd /srv/
  pip3 install virtualenv
  virtualenv /srv/env_3-5 -p /usr/bin/python3.5
+ echo '/srv/gargantext' > /srv/env_3-5/lib/python3.5/site-packages/gargantext.pth
  echo 'alias venv="source /srv/env_3-5/bin/activate"' >> ~/.bashrc
  # CONFIG FILES
 

@@ -1,11 +1,9 @@
 # Make this a standalone script...
 # Can be called this way: python3 gargantext/tools/show_nodes.py
 
-import sys
 import os
 import django
 
-sys.path.append(os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
 

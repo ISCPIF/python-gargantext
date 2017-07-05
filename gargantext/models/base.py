@@ -11,7 +11,13 @@ __all__ = ["Column", "ForeignKey", "UniqueConstraint", "relationship",
            "TypeDecorator",
            "JSONB", "Double",
            "MutableDict", "MutableList",
-           "Base"]
+           "Base", "DjangoBase"]
 
 
+# All the models should derive from this base class, so Base.metadata keeps
+# all tables handled by Alembic migration scripts.
 Base = declarative_base()
+
+# To be used by tables already handled by Django ORM, such as User model. We
+# separate them in order to keep those out of Alembic sight.
+DjangoBase = declarative_base()

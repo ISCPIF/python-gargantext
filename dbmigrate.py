@@ -12,21 +12,12 @@ if __name__ == "__main__":
     from django.core.wsgi import get_wsgi_application
     application = get_wsgi_application()
 
-    # retrieve Django models
-    import django.apps
-    django_models = django.apps.apps.get_models()
-    django_models_names = set(model._meta.db_table for model in django_models)
-
     # migrate SQLAlchemy models
     from gargantext.models import Base
     from gargantext.util.db import engine
-    sqla_models_names = (
-        model for model in Base.metadata.tables.keys()
-        if model not in django_models_names
-    )
     sqla_models = (
         Base.metadata.tables[model_name]
-        for model_name in sqla_models_names
+        for model_name in Base.metadata.tables.keys()
     )
     print()
     for model in sqla_models:

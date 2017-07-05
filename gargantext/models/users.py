@@ -3,12 +3,12 @@ from gargantext.util.db import session, aliased
 
 from datetime import datetime
 
-from .base import Base, Column, ForeignKey, UniqueConstraint, \
+from .base import DjangoBase, Base, Column, ForeignKey, UniqueConstraint, \
                   Integer, Boolean, DateTime, String
 
 __all__ = ['User', 'Contact']
 
-class User(Base):
+class User(DjangoBase):
     # The properties below are a reflection of Django's auth module's models.
     __tablename__ = models.User._meta.db_table
     id           = Column(Integer, primary_key=True)

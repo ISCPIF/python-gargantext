@@ -2,10 +2,23 @@ from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
+import re
+
+# Add projet root directory in path and setup Django...
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
+django.setup()
+
+# ...to be able to import gargantext.
+
+from gargantext import settings, models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+config.set_main_option("sqlalchemy.url", settings.DATABASES['default']['URL'])
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -15,12 +28,28 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = models.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+# Inspired from https://gist.github.com/utek/6163250
+def exclude_tables_from_config(config):
+    tables = config.get("tables", '').replace('*', '.*').split(' ')
+    pattern = '|'.join(tables)
+    return re.compile(pattern)
+
+exclude_tables = exclude_tables_from_config(config.get_section('alembic:exclude'))
+
+
+def include_object(obj, name, typ, reflected, compare_to):
+    if typ == "table" and exclude_tables.match(name):
+        return False
+    else:
+        return True
 
 
 def run_migrations_offline():
@@ -37,7 +66,8 @@ def run_migrations_offline():
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=url, target_metadata=target_metadata, literal_binds=True,
+        include_object=include_object)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -58,7 +88,8 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
+            include_object=include_object
         )
 
         with context.begin_transaction():

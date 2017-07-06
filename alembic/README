@@ -6,6 +6,17 @@ Keep in mind that Alembic only handles SQLAlchemy models: tables created from
 Django ORM must be put out of Alembic sight. See [alembic:exclude] section in
 alembic.ini.
 
+
+TELL ALEMBIC TO NOT START FROM SCRATCH
+
+    # To upgrade a database populated before Alembic usage in Gargantext,
+    # don't forget to tell Alembic your current version before to run
+    # "upgrade head" command. If you don't want to do this, you can of course
+    # drop your database and really start from scratch.
+
+    alembic stamp 601e9d9baa4c
+
+
 UPGRADE TO LATEST DATABASE VERSION
 
     alembic upgrade head

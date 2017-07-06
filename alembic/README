@@ -38,4 +38,5 @@ GENERATE A REVISION FROM CURRENT STATE
     # Alembic should generate a script reflecting changes already made in
     # database. However it is always a good idea to check it and edit it
     # manually, Alembic is not always accurate and can't see all alterations.
-    # It should work with basic changes such as model or column creation.
+    # It should work with basic changes such as model or column creation. See
+    # http://alembic.zzzcomputing.com/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect

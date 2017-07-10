@@ -55,7 +55,7 @@ class Node(Base):
     __tablename__ = 'nodes'
     __table_args__ = (
             Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
-            Index('nodes_hyperdata_idx', 'hyperdata'))
+            Index('nodes_hyperdata_idx', 'hyperdata', postgresql_using='gin'))
 
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)

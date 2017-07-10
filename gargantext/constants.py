@@ -36,7 +36,7 @@ import os
 import re
 import importlib
 from gargantext.util.lists import *
-from gargantext.util.tools import datetime, convert_to_date
+from gargantext.util import datetime, convert_to_datetime
 from .settings import BASE_DIR
 
 # types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
@@ -108,9 +108,9 @@ INDEXED_HYPERDATA = {
 
     'publication_date':
         { 'id'             : 2
-        , 'type'           : datetime.datetime
-        , 'convert_to_db'  : convert_to_date
-        , 'convert_from_db': datetime.datetime.fromtimestamp
+        , 'type'           : datetime
+        , 'convert_to_db'  : convert_to_datetime
+        , 'convert_from_db': convert_to_datetime
         },
 
     'title':

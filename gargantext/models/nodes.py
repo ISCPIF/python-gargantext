@@ -1,9 +1,12 @@
-from gargantext.util.db import *
+from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
 from datetime import datetime
 
+from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
+                  Integer, Float, String, DateTime, JSONB, \
+                  MutableList, MutableDict
 from .users import User
 
 __all__ = ['Node', 'NodeNode', 'CorpusNode']
@@ -22,7 +25,7 @@ class NodeType(TypeDecorator):
 
 class Node(Base):
     """This model can fit many purposes:
-    
+
     myFirstCorpus = session.query(CorpusNode).first()
 
     It intends to provide a generic model, allowing hierarchical structure
@@ -50,6 +53,9 @@ class Node(Base):
     # Right: only user nodes are deleted.
     """
     __tablename__ = 'nodes'
+    __table_args__ = (
+            Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
+            Index('nodes_hyperdata_idx', 'hyperdata'))
 
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
@@ -58,7 +64,7 @@ class Node(Base):
     parent_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     # main data
     name = Column(String(255))
-    date  = Column(DateTime(), default=datetime.now)
+    date  = Column(DateTime(timezone=True), default=datetime.now)
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
     hyperdata = Column(JSONB, default=dict)
 
@@ -237,6 +243,8 @@ class CorpusNode(Node):
 
 class NodeNode(Base):
     __tablename__ = 'nodes_nodes'
+    __table_args__ = (
+            Index('nodes_nodes_node1_id_node2_id_idx', 'node1_id', 'node2_id'),)
 
     node1_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     node2_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
@@ -271,6 +279,8 @@ for nodetype in NODETYPES:
                 "polymorphic_identity": nodetype
             }
         })
+        # Add class to exports
+        __all__.append(class_name)
 
 # ------ End of hack ------
 

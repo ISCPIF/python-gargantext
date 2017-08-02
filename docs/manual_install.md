@@ -49,11 +49,23 @@ by cloning the repository of gargantext
 ``` bash
 git clone ssh://gitolite@delanoe.org:1979/gargantext /srv/gargantext \
         && cd /srv/gargantext \
-        && git fetch origin refactoring \
-        && git checkout refactoring \
+        && git fetch origin stable \
+        && git checkout stable \
 ```
 
     TODO(soon): git clone https://gogs.iscpif.fr/gargantext.git
 
 
+* Install and configure the virtual environment
+``` bash
+cd /srv/
+pip3 install virtualenv
+virtualenv /srv/env_3-5 -p /usr/bin/python3.5
+pip install -r /srv/gargantext/install
+echo '/srv/gargantext' > /srv/env_3-5/lib/python3.5/site-packages/gargantext.pth
+echo 'alias venv="source /srv/env_3-5/bin/activate"' >> ~/.bashrc
+```
+
+
 See the [next steps of installation procedure](install.md#Install)
+See the [next manual steps of installation procedure](Debian.sh)

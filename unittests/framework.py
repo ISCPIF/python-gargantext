@@ -26,8 +26,7 @@ environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext.settings")
 DATABASES['default']['NAME'] = DATABASES['default']['TEST']['NAME']
 
 setup()   # models can now be imported
-from gargantext import models # Base is now filled
-from gargantext.util.db  import Base  # contains metadata.tables
+from gargantext.models import Base  # contains metadata.tables
 # ------------------------------------------------------------------------------
 
 # thanks to our hack, util.db.engine and util.db.session already use the test DB

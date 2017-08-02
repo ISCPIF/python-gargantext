@@ -1,6 +1,7 @@
-from gargantext.util.db import *
 from gargantext.constants import INDEXED_HYPERDATA
 
+from .base import Base, Column, ForeignKey, TypeDecorator, Index, \
+                  Integer, Double, DateTime, String, Text
 from .nodes import Node
 import datetime
 
@@ -64,6 +65,14 @@ class NodeHyperdata(Base):
         )
     """
     __tablename__ = 'nodes_hyperdata'
+    __table_args__ = (
+            Index('nodes_hyperdata_node_id_value_utc_idx', 'node_id', 'value_utc'),
+            Index('nodes_hyperdata_node_id_key_value_utc_idx', 'node_id', 'key', 'value_utc'),
+            Index('nodes_hyperdata_node_id_key_value_str_idx', 'node_id', 'key', 'value_str'),
+            Index('nodes_hyperdata_node_id_key_value_int_idx', 'node_id', 'key', 'value_int'),
+            Index('nodes_hyperdata_node_id_key_value_flt_idx', 'node_id', 'key', 'value_flt'),
+            Index('nodes_hyperdata_node_id_key_idx', 'node_id', 'key'))
+
     id        = Column( Integer, primary_key=True )
     node_id   = Column( Integer, ForeignKey(Node.id, ondelete='CASCADE'))
     key       = Column( HyperdataKey )

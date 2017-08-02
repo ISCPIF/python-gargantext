@@ -5,16 +5,15 @@ from gargantext.util.json import json_dumps
 ########################################################################
 # get engine, session, etc.
 ########################################################################
+import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import delete
+from sqlalchemy_searchable import make_searchable
 
 def get_engine():
     from sqlalchemy import create_engine
-    url = 'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
-        **settings.DATABASES['default']
-    )
-    return create_engine( url
+    return create_engine( settings.DATABASES['default']['URL']
                         , use_native_hstore = True
                         , json_serializer = json_dumps
                         , pool_size=20, max_overflow=0
@@ -22,19 +21,15 @@ def get_engine():
 
 engine = get_engine()
 
+# To make Full Text search possible, uncomment lines below
+# https://sqlalchemy-searchable.readthedocs.io/
+#sa.orm.configure_mappers()
 Base = declarative_base()
+#Base.metadata.create_all(engine)
+#make_searchable()
 
 session = scoped_session(sessionmaker(bind=engine))
 
-
-########################################################################
-# tools to build models
-########################################################################
-from sqlalchemy.types import *
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION
-from sqlalchemy.ext.mutable import MutableDict, MutableList
-Double = DOUBLE_PRECISION
 
 ########################################################################
 # useful for queries

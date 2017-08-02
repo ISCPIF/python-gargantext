@@ -34,3 +34,4 @@ requests-futures==0.9.7
 bs4==0.0.1
 requests==2.10.0
 alembic>=0.9.2
+SQLAlchemy-Searchable==0.10.4

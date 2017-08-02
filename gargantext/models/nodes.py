@@ -2,6 +2,8 @@ from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
+from sqlalchemy_utils.types import TSVectorType
+
 from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
@@ -60,13 +62,16 @@ class Node(Base):
     id = Column(Integer, primary_key=True)
     typename = Column(NodeType, index=True)
     # foreign keys
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
-    parent_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
+    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    parent_id     = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     # main data
     name = Column(String(255))
     date  = Column(DateTime(timezone=True), default=datetime.now)
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
-    hyperdata = Column(JSONB, default=dict)
+    hyperdata     = Column(JSONB, default=dict)
+    
+    # To make search possible uncomment the line below
+    #search_vector = Column(TSVectorType('hyperdata'))
 
     user = relationship(User)
     parent = relationship('Node', remote_side=[id])

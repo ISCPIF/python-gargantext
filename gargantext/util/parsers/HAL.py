@@ -3,7 +3,7 @@
 # ****************************
 # ****  HAL Parser    ***
 # ****************************
-# CNRS COPYRIGHTS
+# CNRS COPYRIGHTS 2017
 # SEE LEGAL LICENCE OF GARGANTEXT.ORG
 
 from ._Parser import Parser

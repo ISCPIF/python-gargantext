@@ -1,0 +1,15 @@
+#!/bin/bash
+
+        #-v /srv/gargandata:/srv/gargandata \
+        #-v /srv/gargantext_lib:/srv/gargantext_lib \
+
+sudo docker rm $(sudo docker ps -a | grep notebook | grep sh | awk '{print $1}')
+sudo docker run \
+        --name=garg-notebook \
+        -v /srv/gargantext:/srv/gargantext \
+        -p 8899:8899 \
+        -it garg-notebook:latest \
+        /bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser --notebook-dir=/home/notebooks/'"
+        #/bin/bash -c "/bin/su gargantua -c 'source /env_3-5/bin/activate && jupyter notebook --port=8899 --ip=127.0.0.1 --no-browser'"
+
+

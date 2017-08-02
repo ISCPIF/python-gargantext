@@ -41,78 +41,77 @@
 <div class="container theme-showcase" role="main">
     <div class="jumbotron">
         <div class="row">
-        <div class="col-md-4">
-            <h1>
-                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
-                Projects
-            </h1>
+            <div class="col-md-4">
+                <h1>
+                    <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                    Projects
+                </h1>
+            </div>
+            <div class="col-md-3"></div>
+            <div class="col-md-5">
+                <p id="project" class="help">
+                    <br>
+                    <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add a new project
+
+                    </button>
+                    <div id="popover-content" class="hide">
+                        <form>
+                            <div id="createForm" class="form-group">
+                                {% csrf_token %}
+                                <div id="status-form" class="collapse"></div>
+
+                                <div class="row inline">
+                                    <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
+                                    <input class="col-lg-8" type="text" id="inputName" class="form-control">
+                                </div>
+
+                                <div class="row inline">
+                                    <div class="col-lg-3"></div>
+                                    <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
+                                    <div class="col-lg-2"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </p>
+            </div>
         </div>
-        <div class="col-md-3"></div>
-        <div class="col-md-5">
-            <p id="project" class="help">
-            <br>
-            <button id="add" type="button" class="btn btn-primary btn-lg help" data-container="body" data-toggle="popover" data-placement="bottom">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                Add a new project
+    </div>
 
-            </button>
-            <div id="popover-content"  class="hide">
-                <div id="createForm" class="form-group">
-                    {% csrf_token %}
-                    <div id="status-form" class="collapse">
-                    </div>
-                    <div class="row inline">
-                      <label class="col-lg-3" for="inputName" ><span class="pull-right">Name:</span></label>
-                      <input class="col-lg-8" type="text" id="inputName" class="form-control">
-                    </div>
+    <div class="container">
+        <!-- GENERIC STATUS INFO -->
+        <div id="status" class="row col-lg-12 collapse">
 
-                    <div class="row inline">
-                      <div class="col-lg-3"></div>
-                      <button id="createProject" class="btn btn-primary btn-sm col-lg-8 push-left">Add Project</button>
-                      <div class="col-lg-2"></div>
-                    </div>
-                  </div>
-              </div>
-            </p>
+          <div id="status-msg" class="alert">
+          </div>
+
         </div>
-    </div>
-</div>
+        <!-- CHECKBOX EDITION -->
+        <!--
+        <div class="row collapse" id="editor">
+              <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
+                <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
+              </button>
+              <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
+                <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
+              </button> -->
+              <!-- <button type="button" class="btn btn-info" id="recalculate">
+                      <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
+              </button>
+        </div>
+        -->
 
-<div class="container">
-    <!-- GENERIC STATUS INFO -->
-    <div id="status" class="row col-lg-12 collapse">
-
-      <div id="status-msg" class="alert">
-      </div>
-
-    </div>
-    <!-- CHECKBOX EDITION -->
-          <!--
-    <div class="row collapse" id="editor">
-          <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
-            <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
-          </button>
-          <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
-            <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
-          </button> -->
-          <!-- <button type="button" class="btn btn-info" id="recalculate">
-                  <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
-          </button>
-          -->
-
-    </div>
-
-    <br />
+        <br />
 
 
 
-    <div class="row container" id="projects">
-            <!--here loading projectlist from GET /projects-->
-    </div>
+        <div class="row container" id="projects">
+                <!--here loading projectlist from GET /projects-->
+        </div>
 
-    <img id="wait-img" width="90%" style="display:none" src="{% static "img/ajax-loader.gif"%}"></img>
-
-</div>
+        <img id="wait-img" width="90%" style="display:none" src="{% static "img/ajax-loader.gif"%}"></img>
 
 <script type="html/tpl" id="project_item">
     <div id="{url}" class="item row">

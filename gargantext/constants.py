@@ -59,25 +59,25 @@ LISTTYPES = {
 NODETYPES = [
     # TODO separate id not array index, read by models.node
     None,                    # 0
-    # documents hierarchy
+    # node/file hierarchy
     'USER',                  # 1
     'PROJECT',               # 2
     #RESOURCE should be here but last
     'CORPUS',                # 3
     'DOCUMENT',              # 4
-    # lists
+    # lists of ngrams
     'STOPLIST',              # 5
     'GROUPLIST',             # 6
     'MAINLIST',              # 7
     'MAPLIST',               # 8
     'COOCCURRENCES',         # 9
-    # scores
+    # scores for ngrams
     'OCCURRENCES',           # 10
     'SPECCLUSION',           # 11
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
-    # docs subset
+    # node subset
     'FAVORITES',             # 15
     # more scores (sorry!)
 
@@ -197,7 +197,7 @@ RESOURCETYPES = [
         'crawler': None,
     },
     {   'type': 3,
-        'name': 'Pubmed [CRAWLER/XML]',
+        'name': 'Pubmed [XML]',
         'format': 'Pubmed',
         'parser': "PubmedParser",
         'file_formats':["zip", "xml"],
@@ -233,14 +233,14 @@ RESOURCETYPES = [
         'crawler': None,
     },
     {   'type': 8,
-        'name': 'ISTex [CRAWLER]',
+        'name': 'ISTex',
         'format': 'json',
         'parser': "ISTexParser",
         'file_formats':["zip", "txt"],
         'crawler': None,
     },
    {    "type": 9,
-        "name": 'SCOAP [CRAWLER/XML]',
+        "name": 'SCOAP [API/XML]',
         "parser": "CernParser",
         "format": 'MARC21',
         'file_formats':["zip","xml"],
@@ -255,7 +255,7 @@ RESOURCETYPES = [
 #   },
 #
    {    "type": 10,
-        "name": 'REPEC [CRAWLER]',
+        "name": 'REPEC [MULTIVAC API]',
         "parser": "MultivacParser",
         "format": 'JSON',
         'file_formats':["zip","json"],
@@ -263,11 +263,19 @@ RESOURCETYPES = [
    },
 
    {    "type": 11,
-        "name": 'HAL [CRAWLER]',
+        "name": 'HAL [API]',
         "parser": "HalParser",
         "format": 'JSON',
         'file_formats':["zip","json"],
         "crawler": "HalCrawler",
+   },
+
+   {    "type": 12,
+        "name": 'ISIDORE [SPARQLE API /!\ BETA]',
+        "parser": "IsidoreParser",
+        "format": 'JSON',
+        'file_formats':["zip","json"],
+        "crawler": "IsidoreCrawler",
    },
 
 ]

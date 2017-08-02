@@ -15,9 +15,9 @@ RUN apt-get update && \
     apt-utils ca-certificates locales \
     sudo aptitude gcc g++ wget git vim \
     build-essential make \
-    postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5 \
-    postgresql-server-dev-9.5 libpq-dev libxml2 \
-    postgresql-9.5 postgresql-client-9.5 postgresql-contrib-9.5
+    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6 \
+    postgresql-server-dev-9.6 libpq-dev libxml2 \
+    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6
 
 
 ### Configure timezone and locale
@@ -37,7 +37,7 @@ ENV LC_ALL fr_FR.UTF-8
 ### Install main dependencies and python packages based on Debian distrib
 RUN echo "############# PYTHON DEPENDENCIES ###############"
 RUN apt-get update && apt-get install -y \
-        libxml2-dev xml-core libgfortran-5-dev \
+        libxml2-dev xml-core libgfortran-6-dev \
         libpq-dev \
         python3.5 \
         python3-dev \
@@ -47,8 +47,8 @@ RUN apt-get update && apt-get install -y \
         # python dependencies
         python3-pip \
         # for lxml
-        libxml2-dev libxslt-dev
-        #libxslt1-dev zlib1g-dev
+        libxml2-dev libxslt-dev \
+        libxslt1-dev zlib1g-dev
 
 # UPDATE AND CLEAN
 RUN apt-get update && apt-get autoclean &&\

@@ -53,6 +53,7 @@ class HalCrawler(Crawler):
                , deptStructId_i
                , labStructId_i
                , rteamStructId_i
+               , docType_s
              """
                #, authUrl_s
                #, type_s

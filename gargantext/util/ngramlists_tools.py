@@ -461,6 +461,7 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
                     raise ValueError('Wrong header "%s" on line %i (only possible headers are "label", "forms" and "status")' % (colname, n_read_lines))
             if 'label' not in columns:
                 raise ValueError('CSV must contain at least one column with the header "label"')
+            continue
 
         if not len(csv_row):
             continue

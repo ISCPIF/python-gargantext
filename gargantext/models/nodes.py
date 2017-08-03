@@ -2,7 +2,8 @@ from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
-from sqlalchemy_utils.types import TSVectorType
+# Uncomment to make column full text searchable
+#from sqlalchemy_utils.types import TSVectorType
 
 from datetime import datetime
 

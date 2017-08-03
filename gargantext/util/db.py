@@ -9,7 +9,10 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import delete
-from sqlalchemy_searchable import make_searchable
+
+# To make Full Text search possible, uncomment lines below
+# (and install it with pip before)
+#from sqlalchemy_searchable import make_searchable
 
 def get_engine():
     from sqlalchemy import create_engine

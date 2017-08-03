@@ -1,5 +1,5 @@
 """
-   Gargantext Software Copyright (c) 2016 CNRS ISC-PIF -
+   Gargantext Software Copyright (c) 2016-2017 CNRS ISC-PIF -
 http://iscpif.fr
     Licence (see :
 http://gitlab.iscpif.fr/humanities/gargantext/blob/stable/LICENSE )
@@ -47,7 +47,7 @@ def documents(corpus_id):
         )
 
 
-import seaborn as sns
+#import seaborn as sns
 import pandas as pd
 
 def chart(docs, field):

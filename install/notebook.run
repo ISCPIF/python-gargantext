@@ -4,12 +4,20 @@
         #-v /srv/gargantext_lib:/srv/gargantext_lib \
 
 sudo docker rm $(sudo docker ps -a | grep notebook | grep sh | awk '{print $1}')
+
+#HOSTIP=$(ip route show 0.0.0.0/0 | awk '{print $3}')
+#--add-host=localhost:${HOSTIP} \
+
+
 sudo docker run \
         --name=garg-notebook \
-        -v /srv/gargantext:/srv/gargantext \
+        --net=host \
         -p 8899:8899 \
+        --env POSTGRES_HOST=localhost \
+        -v /srv/gargantext:/srv/gargantext \
         -it garg-notebook:latest \
-        /bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser --notebook-dir=/home/notebooks/'"
-        #/bin/bash -c "/bin/su gargantua -c 'source /env_3-5/bin/activate && jupyter notebook --port=8899 --ip=127.0.0.1 --no-browser'"
+        /bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && cd /srv/gargantext/ && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser'"
+#        #&& jupyter nbextension enable --py widgetsnbextension --sys-prefix 
+        #/bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && cd /srv/gargantext/ && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser --notebook-dir=/home/notebooks/'"
 
 

@@ -250,6 +250,23 @@ em {
 
             <br/>
 
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" id="importoverwrite"> Overwrite old lists
+                    <script>
+                        function updateSubmitLabel() {
+                            $('#importsubmit').val($(this).is(':checked') ? 'Overwrite current table' : 'Import and merge with current table');
+                        }
+                        $(function() {
+                            updateSubmitLabel.call($('#importoverwrite'));
+                            $('#importoverwrite').change(updateSubmitLabel);
+                        });
+                    </script>
+                </label>
+            </div>
+
+            <br/>
+
             <input type="submit" class="btn btn-xs btn-info" id="importsubmit" value="Import and merge with current table" />
         </form>
     </div>
@@ -372,6 +389,8 @@ function listmergeUpdate(aFormData){
     // all params are added in the url like a GET
     theUrl += "&from_corpus="+sourceCorpusId
     theUrl += "&todo="+todoLists.join(',')
+    if ($('#importoverwrite').is(':checked'))
+        theUrl += "&overwrite=1"
 
     // result url looks like this : /api/ngramlists/import?onto_corpus=2&from=13308&todo=map,stop
     // console.log(theUrl)
@@ -424,7 +443,7 @@ function listmergeCsvPost(theFile){
 
         //postCorpusFile
         $.ajax({
-             url: "{{importroute | safe}}",
+             url: "{{importroute | safe}}" + ($('#importoverwrite').is(':checked') ? '&overwrite=1' : ''),
              type: 'POST',
              async: true,
              contentType: false,
@@ -436,11 +455,11 @@ function listmergeCsvPost(theFile){
              success: function(response) {
                  my_html  = '<h3 style="color:green">File upload, you will receive a notification email</h3>'
                  my_html += "<p class='note'>" + response['log'].replace(/\n/g, '<br/>') + "</p>"
-                 my_html += "<p'>(this page will reload in 3s)</p>"
+                 my_html += "<p'>(this page will reload in 30s)</p>"
                  $('#formanswer').html(my_html);
                  console.log(response) ;
                  // reload after 3s
-                 setTimeout("location.reload(true)", 3000);
+                 setTimeout("location.reload(true)", 30000);
                  },
               error: function(result, t) {
                   if (t != 'timeout') {

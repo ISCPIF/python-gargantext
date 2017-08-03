@@ -16,10 +16,10 @@ RUN apt-get update &&                                     \
     apt-utils ca-certificates locales                       \
     sudo aptitude gcc g++ wget git vim                       \
     build-essential make                                      \
-    curl                                                       \
-    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6 \
-    postgresql-server-dev-9.6 libpq-dev libxml2                  \
-    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6
+    curl                                                       
+#    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6 \
+#    postgresql-server-dev-9.6 libpq-dev libxml2                  \
+#    postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6
 
 # Install Stack
 
@@ -69,7 +69,7 @@ RUN virtualenv /env_3-5
 RUN echo 'alias venv="source /env_3-5/bin/activate"' >> ~/.bashrc
 # CONFIG FILES
 ADD requirements.txt /
-ADD psql_configure.sh /
+#ADD psql_configure.sh /
 ADD django_configure.sh /
 
 RUN . /env_3-5/bin/activate && pip3 install -r requirements.txt                         && \
@@ -85,23 +85,23 @@ RUN chown notebooks:notebooks -R /env_3-5
 ### Notebook IHaskell and IPYTHON ENVIRONNEMENT
 ########################################################################
 
-RUN apt-get update && apt-get install -y    \
-        libtinfo-dev                        \
-        libzmq3-dev                         \
-        libcairo2-dev                       \
-        libpango1.0-dev                     \
-        libmagic-dev                        \
-        libblas-dev                         \
-        liblapack-dev
-RUN curl -sSL https://get.haskellstack.org/ | sh 
-RUN stack setup
-RUN git clone https://github.com/gibiansky/IHaskell
-RUN . /env_3-5/bin/activate     \
-    && cd IHaskell                    \
-    && stack install gtk2hs-buildtools \
-    && stack install --fast             \
-    && /root/.local/bin/ihaskell install --stack
-
+#RUN apt-get update && apt-get install -y    \
+#        libtinfo-dev                        \
+#        libzmq3-dev                         \
+#        libcairo2-dev                       \
+#        libpango1.0-dev                     \
+#        libmagic-dev                        \
+#        libblas-dev                         \
+#        liblapack-dev
+#RUN curl -sSL https://get.haskellstack.org/ | sh 
+#RUN stack setup
+#RUN git clone https://github.com/gibiansky/IHaskell
+#RUN . /env_3-5/bin/activate     \
+#    && cd IHaskell                    \
+#    && stack install gtk2hs-buildtools \
+#    && stack install --fast             \
+#    && /root/.local/bin/ihaskell install --stack
+#
 
 #
 ########################################################################
@@ -112,6 +112,6 @@ RUN . /env_3-5/bin/activate     \
 #RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
 #RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
 
-EXPOSE 8899
+EXPOSE 5432 8899
 
 VOLUME ["/srv/","/home/notebooks/"]

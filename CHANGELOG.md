@@ -2,6 +2,8 @@
 * Guided Tour
 * Sources form highlighting crawlers
 
+## Version 3.0.7
+* Alembic implemented to manage database migrations
 
 ## Version 3.0.6.8
 * REPEC Crawler (connection with https://multivac.iscpif.fr)

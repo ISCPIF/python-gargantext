@@ -2,6 +2,9 @@ from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
+# Uncomment to make column full text searchable
+#from sqlalchemy_utils.types import TSVectorType
+
 from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
@@ -57,23 +60,28 @@ class Node(Base):
             Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
             Index('nodes_hyperdata_idx', 'hyperdata', postgresql_using='gin'))
 
+    # TODO
+    # create INDEX full_text_idx on nodes using gin(to_tsvector('english', hyperdata ->> 'abstract' || 'title'));
+
     id = Column(Integer, primary_key=True)
+
     typename = Column(NodeType, index=True)
+    __mapper_args__ = { 'polymorphic_on': typename }
+
     # foreign keys
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
-    parent_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
-    # main data
+    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user          = relationship(User)
+
+    parent_id     = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
+    parent        = relationship('Node', remote_side=[id])
+
     name = Column(String(255))
     date  = Column(DateTime(timezone=True), default=datetime.now)
+
+    hyperdata     = Column(JSONB, default=dict)
     # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
-    hyperdata = Column(JSONB, default=dict)
-
-    user = relationship(User)
-    parent = relationship('Node', remote_side=[id])
-
-    __mapper_args__ = {
-        'polymorphic_on': typename
-    }
+    # To make search possible uncomment the line below
+    #search_vector = Column(TSVectorType('hyperdata'))
 
     def __new__(cls, *args, **kwargs):
         if cls is Node and kwargs.get('typename'):

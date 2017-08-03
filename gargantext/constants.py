@@ -59,25 +59,25 @@ LISTTYPES = {
 NODETYPES = [
     # TODO separate id not array index, read by models.node
     None,                    # 0
-    # documents hierarchy
+    # node/file hierarchy
     'USER',                  # 1
     'PROJECT',               # 2
     #RESOURCE should be here but last
     'CORPUS',                # 3
     'DOCUMENT',              # 4
-    # lists
+    # lists of ngrams
     'STOPLIST',              # 5
     'GROUPLIST',             # 6
     'MAINLIST',              # 7
     'MAPLIST',               # 8
     'COOCCURRENCES',         # 9
-    # scores
+    # scores for ngrams
     'OCCURRENCES',           # 10
     'SPECCLUSION',           # 11
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
-    # docs subset
+    # node subset
     'FAVORITES',             # 15
     # more scores (sorry!)
 

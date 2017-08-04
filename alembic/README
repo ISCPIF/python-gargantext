@@ -14,7 +14,7 @@ TELL ALEMBIC TO NOT START FROM SCRATCH
     # "upgrade head" command. If you don't want to do this, you can of course
     # drop your database and really start from scratch.
 
-    alembic stamp 601e9d9baa4c
+    alembic stamp bedce47c9e34
 
 
 UPGRADE TO LATEST DATABASE VERSION

@@ -43,8 +43,7 @@ def _nodes_hyperdata_generator(corpus):
                             key['id'],
                             None,
                             None,
-                            value.strftime("%Y-%m-%d %H:%M:%S"), 
-                            # FIXME check timestamp +%Z
+                            str(value),
                             None,
                             None,
                         )

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from gargantext.tools.show_nodes import tree_show, nodes
+from gargantext.util.show_nodes import tree_show, nodes
 import colorama
 
 

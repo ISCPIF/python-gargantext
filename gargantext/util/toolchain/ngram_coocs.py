@@ -9,7 +9,6 @@ from gargantext.util.db        import get_engine
 from gargantext.util.db_cache  import cache
 from gargantext.constants      import DEFAULT_COOC_THRESHOLD, NODETYPES
 from gargantext.constants      import INDEXED_HYPERDATA
-from gargantext.util.tools     import datetime, convert_to_date
 
 def compute_coocs(  corpus,
                     overwrite_id    = None,
@@ -95,7 +94,7 @@ def compute_coocs(  corpus,
 
     # 2b) stating the filters
     cooc_filter_sql = """
-        WHERE 
+        WHERE
             n.typename  = {nodetype_id}
         AND n.parent_id = {corpus_id}
         GROUP BY 1,2
@@ -105,7 +104,7 @@ def compute_coocs(  corpus,
         """.format( nodetype_id = NODETYPES.index('DOCUMENT')
                   , corpus_id=corpus.id
                   )
-    
+
     # 3) taking the cooccurrences of ngram x2
     ngram_filter_A_sql += """
         -- STEP 1: X axis of the matrix
@@ -162,25 +161,25 @@ def compute_coocs(  corpus,
     # 4) prepare the synonyms
     if groupings_id:
         ngram_filter_A_sql += """
-        LEFT JOIN  nodes_ngrams_ngrams 
-               AS grA  ON wlA.ngram_id = grA.ngram1_id 
+        LEFT JOIN  nodes_ngrams_ngrams
+               AS grA  ON wlA.ngram_id = grA.ngram1_id
                       AND grA.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
         LEFT JOIN  nodes_ngrams
                AS wlAA ON grA.ngram2_id = wlAA.ngram_id
-                      AND wlAA.node_id  = wlA.node_id 
+                      AND wlAA.node_id  = wlA.node_id
         -- \--> adding (joining) ngrams that are not grouped
         --LEFT JOIN  ngrams        AS wlAA ON grA.ngram2_id = wlAA.id
         -- \--> for joining all synonyms even if they are not in the main list (white list)
 
         """.format(groupings_id = groupings_id)
-        
+
         ngram_filter_B_sql += """
         LEFT JOIN  nodes_ngrams_ngrams
-               AS grB  ON wlB.ngram_id = grB.ngram1_id 
+               AS grB  ON wlB.ngram_id = grB.ngram1_id
                       AND grB.node_id  = {groupings_id}
         -- \--> adding (joining) ngrams that are grouped
-        LEFT JOIN  nodes_ngrams 
+        LEFT JOIN  nodes_ngrams
                AS wlBB ON grB.ngram2_id = wlBB.ngram_id
                       AND wlBB.node_id   = wlB.node_id
         -- \--> adding (joining) ngrams that are not grouped

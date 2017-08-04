@@ -78,8 +78,20 @@ RUN . /env_3-5/bin/activate && pip3 install -r requirements.txt                 
 
 #RUN ./psql_configure.sh
 #RUN ./django_configure.sh
-
 RUN chown notebooks:notebooks -R /env_3-5
+
+########################################################################
+### POSTGRESQL DATA (as ROOT)
+########################################################################
+
+#RUN sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargandata\'%" /etc/postgresql/9.5/main/postgresql.conf
+#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
+#RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
+
+EXPOSE 5432 8899
+
+VOLUME ["/srv/","/home/notebooks/"]
+
 
 ########################################################################
 ### Notebook IHaskell and IPYTHON ENVIRONNEMENT
@@ -107,14 +119,4 @@ RUN cd  /home/notebooks                              \
     &&  /root/.local/bin/ihaskell install --stack
 
 
-########################################################################
-### POSTGRESQL DATA (as ROOT)
-########################################################################
 
-#RUN sed -iP "s%^data_directory.*%data_directory = \'\/srv\/gargandata\'%" /etc/postgresql/9.5/main/postgresql.conf
-#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
-#RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
-
-EXPOSE 5432 8899
-
-VOLUME ["/srv/","/home/notebooks/"]

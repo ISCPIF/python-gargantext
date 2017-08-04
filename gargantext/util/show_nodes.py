@@ -1,5 +1,5 @@
 # Make this a standalone script...
-# Can be called this way: python3 gargantext/tools/show_nodes.py
+# Can be called this way: python3 gargantext/util/show_nodes.py
 
 import os
 import django

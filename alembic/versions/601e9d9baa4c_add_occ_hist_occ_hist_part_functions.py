@@ -7,7 +7,7 @@ Create Date: 2017-07-06 10:52:16.161118
 """
 from alembic import op
 import sqlalchemy as sa
-from gargantext.tools.alembic import ReplaceableObject
+from gargantext.util.alembic import ReplaceableObject
 
 
 # revision identifiers, used by Alembic.

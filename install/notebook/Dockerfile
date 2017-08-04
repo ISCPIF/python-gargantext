@@ -85,25 +85,28 @@ RUN chown notebooks:notebooks -R /env_3-5
 ### Notebook IHaskell and IPYTHON ENVIRONNEMENT
 ########################################################################
 
-#RUN apt-get update && apt-get install -y    \
-#        libtinfo-dev                        \
-#        libzmq3-dev                         \
-#        libcairo2-dev                       \
-#        libpango1.0-dev                     \
-#        libmagic-dev                        \
-#        libblas-dev                         \
-#        liblapack-dev
-#RUN curl -sSL https://get.haskellstack.org/ | sh 
-#RUN stack setup
-#RUN git clone https://github.com/gibiansky/IHaskell
-#RUN . /env_3-5/bin/activate     \
-#    && cd IHaskell                    \
-#    && stack install gtk2hs-buildtools \
-#    && stack install --fast             \
-#    && /root/.local/bin/ihaskell install --stack
-#
+RUN apt-get update && apt-get install -y \
+        libtinfo-dev                      \
+        libzmq3-dev                        \
+        libcairo2-dev                       \
+        libpango1.0-dev                      \
+        libmagic-dev                          \
+        libblas-dev                            \
+        liblapack-dev
 
-#
+USER notebooks
+
+RUN cd  /home/notebooks                              \
+    &&  curl -sSL https://get.haskellstack.org/ | sh  \
+    &&  stack setup                                    \
+    &&  git clone https://github.com/gibiansky/IHaskell \
+    &&  . /env_3-5/bin/activate                          \
+    &&  cd IHaskell                                       \
+    &&  stack install gtk2hs-buildtools                    \
+    &&  stack install --fast                                \
+    &&  /root/.local/bin/ihaskell install --stack
+
+
 ########################################################################
 ### POSTGRESQL DATA (as ROOT)
 ########################################################################

@@ -112,6 +112,6 @@ RUN chown notebooks:notebooks -R /env_3-5
 #RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
 #RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
 
-EXPOSE 5432 8899
+EXPOSE 5432 8080 
 
 VOLUME ["/srv/","/home/notebooks/"]

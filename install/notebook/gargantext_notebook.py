@@ -118,7 +118,11 @@ def get_moissonneur(name):
     """ Return moissonneur module from its name """
     if not isinstance(name, str) or not name.islower():
         raise NotebookError("Invalid moissonneur name: %r" % name)
-    return importlib.import_module('moissonneurs.%s' % name)
+
+    module = importlib.import_module('moissonneurs.%s' % name)
+    module.name = name
+
+    return module
 
 
 def run_moissonneur(moissonneur, project, name, query):
@@ -135,12 +139,33 @@ def run_moissonneur(moissonneur, project, name, query):
     request.POST = {'string': name,
                     'query': query,
                     'N': QUERY_SIZE_N_MAX}
-    request.user = (session.query(UserNode).join(User)
-                           .filter(User.username=='gargantua').first())
+    request.user = Dummy()
+    request.user.id = project.user_id
+    request.user.is_authenticated = lambda: True
+
+    if moissonneur.name == 'istex':
+        # Replace ALL spaces by plus signs
+        request.POST['query'] = '+'.join(filter(None, query.split(' ')))
 
     try:
-        moissonneur.query(request)
-        corpus = moissonneur.save(request, project.id, return_corpus=True)
+        import json
+
+        r = moissonneur.query(request)
+        raw_json = r.content.decode('utf-8')
+        data = json.loads(raw_json)
+
+        if moissonneur.name == 'pubmed':
+            count = sum(x['count'] for x in data)
+            request.POST['query'] = raw_json
+        elif moissonneur.name == 'istex':
+            count = data.get('total', 0)
+        else:
+            count = data.get('results_nb', 0)
+
+        if count > 0:
+            corpus = moissonneur.save(request, project.id, return_corpus=True)
+        else:
+            return None
 
     except (ValueError, Http404) as e:
         raise e

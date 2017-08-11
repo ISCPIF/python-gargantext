@@ -69,31 +69,34 @@ def myProject_fromUrl(url):
     return project
 
 
-def newCorpus(project, resource=11, name="Machine learning", query="LSTM"):
+def newCorpus(project, source, name=None, query=None):
     error = False
+
+    if name is None:
+        name = query
 
     if not isinstance(project, ProjectNode):
         error = "a valid project"
-    if not isinstance(resource, int) and not isinstance(resource, str):
-        error = "a valid resource identifier: id or name"
-    elif not isinstance(name, str):
-        error = "a valid name"
+    if not isinstance(source, int) and not isinstance(source, str):
+        error = "a valid source identifier: id or name"
     elif not isinstance(query, str):
         error = "a valid query"
+    elif not isinstance(name, str):
+        error = "a valid name"
 
     if error:
         raise NotebookError("Please provide %s." % error)
 
-    source = get_resource(resource) if isinstance(resource, int) else \
-             get_resource_by_name(resource)
+    resource = get_resource(source) if isinstance(source, int) else \
+               get_resource_by_name(source)
 
-    moissonneur_name = get_moissonneur_name(source) if source else \
-                       resource.lower()
+    moissonneur_name = get_moissonneur_name(resource) if resource else \
+                       source.lower()
 
     try:
         moissonneur = get_moissonneur(moissonneur_name)
     except ImportError:
-        raise NotebookError("Invalid resource identifier: %r" % resource)
+        raise NotebookError("Invalid source identifier: %r" % source)
 
     return run_moissonneur(moissonneur, project, name, query)
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
    Gargantext Software Copyright (c) 2016-2017 CNRS ISC-PIF -
 http://iscpif.fr
@@ -6,39 +7,25 @@ http://gitlab.iscpif.fr/humanities/gargantext/blob/stable/LICENSE )
     - In France : a CECILL variant affero compliant
     - GNU aGPLV3 for all other countries
 """
-#!/usr/bin/env python
+
 import os
+import django
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
+django.setup()
 
-# Django settings
-dirname = os.path.dirname(os.path.realpath(__file__))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext.settings")
-
-# initialize Django application
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
-from gargantext.util.db import *
-from gargantext.util.toolchain.main import parse_extract_indexhyperdata
-from nltk.tokenize import wordpunct_tokenize
-
-from gargantext.models import *
-from nltk.tokenize import word_tokenize
-import nltk as nltk
-from statistics import mean
-from math import log
-from collections import defaultdict
-import matplotlib.pyplot as plt
-import numpy as np
-import datetime
-
+from gargantext.models import ProjectNode, DocumentNode
+from gargantext.util.db import session, get_engine
 from collections import Counter
-from langdetect import detect as detect_lang
+
+
+
 
 def documents(corpus_id):
     return (session.query(DocumentNode).filter_by(parent_id=corpus_id)
                   #.order_by(Node.hyperdata['publication_date'])
                    .all())
+
 
 #import seaborn as sns
 import pandas as pd
@@ -49,10 +36,13 @@ def chart(docs, field):
     frame1 = pd.DataFrame(year_publis, columns=['Date', 'DateValue'], index=frame0.Date)
     return frame1
 
+
 from gargantext.util.crawlers.HAL import HalCrawler
+
 def scan_hal(request):
     hal = HalCrawler()
     return hal.scan_results(request)
+
 
 def scan_gargantext(corpus_id, lang, request):
     connection = get_engine().connect()

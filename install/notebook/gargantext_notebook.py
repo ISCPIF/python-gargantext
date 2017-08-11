@@ -14,11 +14,16 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
 
-from gargantext.models import ProjectNode, DocumentNode
+from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
+from gargantext.models import ProjectNode, DocumentNode, UserNode, User
 from gargantext.util.db import session, get_engine
 from collections import Counter
+import importlib
+from django.http import Http404
 
 
+class NotebookError(Exception):
+    pass
 
 
 def documents(corpus_id):
@@ -64,43 +69,68 @@ def myProject_fromUrl(url):
     return project
 
 
-def newCorpus(project, resourceName=11, name="Machine learning", query="LSTM"):
-    print("Corpus \"%s\" in project \"%s\" created" % (name, project.name))
+def newCorpus(project, resource=11, name="Machine learning", query="LSTM"):
+    source = get_resource(resource) if isinstance(resource, int) else \
+             get_resource_by_name(resource)
 
-    corpus = project.add_child(name="Corpus name", typename='CORPUS')
-    corpus.hyperdata["resources"] = [{"extracted" : "true", "type" : 11}]
-    corpus.hyperdata["statuses"]  = [{"action" : "notebook", "complete" : "true"}]
-    # [TODO] Add informations needed to get buttons on the Project view.
-    session.add(corpus)
-    session.commit()
+    moissonneur_name = get_moissonneur_name(source) if source else \
+                       resource.lower()
 
-    hal = HalCrawler()
-    max_result = hal.scan_results(query)
-    paging = 100
-    for page in range(0, max_result, paging):
-        print("%s documents downloaded / %s." % (str( paging * (page +1)), str(max_result) ))
-        docs = (hal._get(query, fromPage=page, count=paging)
-                     .get("response", {})
-                      .get("docs", [])
-               )
+    try:
+        moissonneur = get_moissonneur(moissonneur_name)
+    except ImportError:
+        raise NotebookError("Invalid resource identifier: %r" % resource)
 
-        from gargantext.util.parsers.HAL import HalParser
-        # [TODO] fix boilerplate for docs here
-        new_docs = HalParser(docs)._parse(docs)
+    return run_moissonneur(moissonneur, project, name, query)
 
-        for doc in new_docs:
-            new_doc = (corpus.add_child( name      = doc["title"][:255]
-                                       , typename  = 'DOCUMENT')
-                      )
-            new_doc["hyperdata"] = doc
-            session.add(new_doc)
-            session.commit()
 
-    print("Extracting the ngrams")
-    parse_extract_indexhyperdata(corpus)
+def get_moissonneur_name(ident):
+    """ Return moissonneur module name from RESOURCETYPE or crawler name """
 
-    print("Corpus is ready to explore:")
-    print("http://imt.gargantext.org/projects/%s/corpora/%s/" % (project.id, corpus.id))
+    # Does it quacks like a RESOURCETYPE ?
+    if hasattr(ident, 'get'):
+        ident = ident.get('crawler')
+
+    # Extract name from crawler class name, otherwise assume ident is already
+    # a moissonneur name.
+    if isinstance(ident, str) and ident.endswith('Crawler'):
+        return ident[:-len('Crawler')].lower()
+
+
+def get_moissonneur(name):
+    """ Return moissonneur module from its name """
+    if not isinstance(name, str) or not name.islower():
+        raise NotebookError("Invalid moissonneur name: %r" % name)
+    return importlib.import_module('moissonneurs.%s' % name)
+
+
+def run_moissonneur(moissonneur, project, name, query):
+    """ Run moissonneur and return resulting corpus """
+
+    # XXX Uber-kludge with gory details. Spaghetti rulezzzzz!
+    class Dummy(object):
+        pass
+
+    request = Dummy()
+    request.method = 'POST'
+    request.path = 'nowhere'
+    request.META = {}
+    request.POST = {'string': name,
+                    'query': query,
+                    'N': QUERY_SIZE_N_MAX}
+    request.user = (session.query(UserNode).join(User)
+                           .filter(User.username=='gargantua').first())
+
+    try:
+        moissonneur.query(request)
+        corpus = moissonneur.save(request, project.id, return_corpus=True)
+
+    except (ValueError, Http404) as e:
+        raise e
+
+    # Sometimes strange things happens...
+    if corpus.name != name:
+        corpus.name = name
+        session.commit()
 
     return corpus
-

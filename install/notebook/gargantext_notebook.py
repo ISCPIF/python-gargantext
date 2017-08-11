@@ -7,7 +7,6 @@ http://gitlab.iscpif.fr/humanities/gargantext/blob/stable/LICENSE )
     - GNU aGPLV3 for all other countries
 """
 #!/usr/bin/env python
-import sys
 import os
 
 
@@ -19,9 +18,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gargantext.settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from gargantext.util.toolchain.main import parse_extract_indexhyperdata
 from gargantext.util.db import *
-from gargantext.models import Node
 from gargantext.util.toolchain.main import parse_extract_indexhyperdata
 from nltk.tokenize import wordpunct_tokenize
 
@@ -39,13 +36,9 @@ from collections import Counter
 from langdetect import detect as detect_lang
 
 def documents(corpus_id):
-    return (session.query(Node).filter( Node.parent_id==corpus_id
-                                  , Node.typename=="DOCUMENT"
-                                  )
-        # .order_by(Node.hyperdata['publication_date'])
-        .all()
-        )
-
+    return (session.query(DocumentNode).filter_by(parent_id=corpus_id)
+                  #.order_by(Node.hyperdata['publication_date'])
+                   .all())
 
 #import seaborn as sns
 import pandas as pd
@@ -77,7 +70,7 @@ def myProject_fromUrl(url):
     myProject :: String -> Project
     """
     project_id = url.split("/")[4]
-    project = session.query(Node).filter(Node.id == project_id).first()
+    project = session.query(ProjectNode).get(project_id)
     return project
 
 

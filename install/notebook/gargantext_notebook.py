@@ -58,9 +58,9 @@ def scan_gargantext(corpus_id, lang, request):
     connection = get_engine().connect()
     # TODO add some sugar the request (ideally request should be the same for hal and garg)
     query = """select count(n.id) from nodes n
-                  where to_tsvector('%s', hyperdata ->> 'abstract' || 'title') 
+                  where to_tsvector('%s', hyperdata ->> 'abstract' || 'title')
                   @@ to_tsquery('%s')
-                  AND n.parent_id = %s;""" % (lang, request, corpus_id) 
+                  AND n.parent_id = %s;""" % (lang, request, corpus_id)
     return [i for i in connection.execute(query)][0][0]
     connection.close()
 
@@ -76,28 +76,28 @@ def myProject_fromUrl(url):
 
 def newCorpus(project, resourceName=11, name="Machine learning", query="LSTM"):
     print("Corpus \"%s\" in project \"%s\" created" % (name, project.name))
-    
+
     corpus = project.add_child(name="Corpus name", typename='CORPUS')
     corpus.hyperdata["resources"] = [{"extracted" : "true", "type" : 11}]
     corpus.hyperdata["statuses"]  = [{"action" : "notebook", "complete" : "true"}]
     # [TODO] Add informations needed to get buttons on the Project view.
     session.add(corpus)
     session.commit()
-    
+
     hal = HalCrawler()
     max_result = hal.scan_results(query)
-    paging = 100 
+    paging = 100
     for page in range(0, max_result, paging):
         print("%s documents downloaded / %s." % (str( paging * (page +1)), str(max_result) ))
         docs = (hal._get(query, fromPage=page, count=paging)
                      .get("response", {})
                       .get("docs", [])
                )
-            
+
         from gargantext.util.parsers.HAL import HalParser
         # [TODO] fix boilerplate for docs here
         new_docs = HalParser(docs)._parse(docs)
-        
+
         for doc in new_docs:
             new_doc = (corpus.add_child( name      = doc["title"][:255]
                                        , typename  = 'DOCUMENT')
@@ -105,12 +105,12 @@ def newCorpus(project, resourceName=11, name="Machine learning", query="LSTM"):
             new_doc["hyperdata"] = doc
             session.add(new_doc)
             session.commit()
-    
+
     print("Extracting the ngrams")
     parse_extract_indexhyperdata(corpus)
-    
+
     print("Corpus is ready to explore:")
     print("http://imt.gargantext.org/projects/%s/corpora/%s/" % (project.id, corpus.id))
-    
+
     return corpus
 

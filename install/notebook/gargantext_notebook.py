@@ -70,6 +70,20 @@ def myProject_fromUrl(url):
 
 
 def newCorpus(project, resource=11, name="Machine learning", query="LSTM"):
+    error = False
+
+    if not isinstance(project, ProjectNode):
+        error = "a valid project"
+    if not isinstance(resource, int) and not isinstance(resource, str):
+        error = "a valid resource identifier: id or name"
+    elif not isinstance(name, str):
+        error = "a valid name"
+    elif not isinstance(query, str):
+        error = "a valid query"
+
+    if error:
+        raise NotebookError("Please provide %s." % error)
+
     source = get_resource(resource) if isinstance(resource, int) else \
              get_resource_by_name(resource)
 

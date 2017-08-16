@@ -136,6 +136,9 @@ def run_moissonneur(moissonneur, project, name, query):
     request.method = 'POST'
     request.path = 'nowhere'
     request.META = {}
+    # XXX 'string' only have effect on moissonneurs.pubmed; its value is added
+    #     when processing request client-side, take a deep breath and see
+    #     templates/projects/project.html for more details.
     request.POST = {'string': name,
                     'query': query,
                     'N': QUERY_SIZE_N_MAX}

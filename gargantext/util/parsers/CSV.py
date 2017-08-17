@@ -24,6 +24,9 @@ class CSVParser(Parser):
 
         contents = filebuf.read().decode("UTF-8").split("\n")
 
+        # Filter out empty lines
+        contents = list(filter(None, contents))
+
         sample_size = 10
         sample_contents = contents[0:sample_size]
 

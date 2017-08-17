@@ -43,10 +43,7 @@ class CSVParser(Parser):
             sorted_delimiters = sorted(selected_delimiters, key=lambda x: x[1])
             best_delimiter = sorted_delimiters[-1][0]
         else:
-            # Fallback
-            best_delimiter = ','
-            print("WARNING: CSV: couldn't detect delimiter, fallback to %r" %
-                  best_delimiter)
+            raise ValueError("CSV: couldn't detect delimiter, bug or malformed data")
 
         print("CSV selected delimiter:", best_delimiter)
 

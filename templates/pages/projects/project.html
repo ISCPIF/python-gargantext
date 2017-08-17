@@ -440,11 +440,12 @@
                           // in the form "Add a corpus"
 
                           var type = $("#id_type").val()
+                          var file = $("#id_file").val()
 
                           // 5 booleans
                           var nameField = $("#id_name").val() != ""
                           var typeField = (type != "") && (type != "0")
-                          var fileField = $("#id_file").val() != ""
+                          var fileField = file != ""
                           var wantfileField = $("#file_yes").prop("checked")
                           var crawling = ((type==3)||(type==8)||(type==9)) && ! wantfileField
 
@@ -456,6 +457,23 @@
 
                           if (! crawling) {
                               $("#submit_thing").prop('disabled' , !(nameField && typeField && fileField))
+                          }
+
+                          // Automatically select CSV when type is undefined
+                          // and we have a .csv file
+                          if (!typeField && file && file.match(/.csv$/i)) {
+                              // Get CSV type id
+                              var csv = $('#id_type > option')
+                                  .filter(function() {
+                                      return $(this).text() === 'CSV'
+                                  })
+                                  .attr('value')
+                              // Select CSV type
+                              $('#id_type').val(csv)
+                              // Focus on name field
+                              setTimeout(function() {
+                                  $("#id_name").focus()
+                              })
                           }
                         }
 

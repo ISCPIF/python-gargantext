@@ -4,7 +4,7 @@ import sys
 import csv
 csv.field_size_limit(sys.maxsize)
 import numpy as np
-import os
+
 
 class CSVParser(Parser):
 
@@ -20,9 +20,11 @@ class CSVParser(Parser):
         sample_size = 10
         sample_contents = contents[0:sample_size]
 
-        hyperdata_list = []
-
         delimiters = ", \t;|:"
+
+        #==========================#
+        # DELIMITER AUTO-DETECTION #
+        #==========================#
 
         # Compute frequency of each delimiter on each input line
         delimiters_freqs = {
@@ -45,63 +47,29 @@ class CSVParser(Parser):
         else:
             raise ValueError("CSV: couldn't detect delimiter, bug or malformed data")
 
-        print("CSV selected delimiter:", best_delimiter)
+        print("CSV: selected delimiter: %r" % delimiter)
 
-        # # = = = = [ First data coordinate ] = = = = #
-        Coords = {
-            "row": -1,
-            "column": -1
-        }
+        #=================#
+        # DATA PROCESSING #
+        #=================#
 
         reader = csv.reader(contents, delimiter=best_delimiter)
 
-        for rownum, tokens in enumerate(reader):
-            if rownum % 250 == 0:
-                print("CSV row: ", rownum)
-            joined_tokens = "".join (tokens)
-            if Coords["row"]<0 and len( joined_tokens )>0 :
-                Coords["row"] = rownum
-                for columnum in range(len(tokens)):
-                    t = tokens[columnum]
-                    if len(t)>0:
-                        Coords["column"] = columnum
-                        break
-        # # = = = = [ / First data coordinate ] = = = = #
+        # Get first not empty row and its fields (ie. header row), or (0, [])
+        first_row, headers = \
+            next(((i, fields) for i, fields in enumerate(reader) if any(fields)),
+                 (0, []))
 
+        # Get first not empty column of the first row, or 0
+        first_col = next((i for i, field in enumerate(headers) if field), 0)
 
+        # Strip out potential empty fields in headers
+        headers = headers[first_col:]
 
-        # # = = = = [ Setting Headers ] = = = = #
-        Headers_Int2Str = {}
-        reader = csv.reader(contents, delimiter=best_delimiter)
-        for rownum, tokens in enumerate(reader):
-            if rownum>=Coords["row"]:
-                for columnum in range( Coords["column"],len(tokens) ):
-                    t = tokens[columnum]
-                    Headers_Int2Str[columnum] = t
-                break
-        # print("Headers_Int2Str")
-        # print(Headers_Int2Str)
-        # # = = = = [ / Setting Headers ] = = = = #
-        # # OUTPUT example:
-        # #  Headers_Int2Str = {
-        # #     0: 'publication_date',
-        # #      1: 'publication_month',
-        # #      2: 'publication_second',
-        # #      3: 'abstract'
-        # #  }
-
-
-        # # = = = = [ Reading the whole CSV and saving ] = = = = #
-        hyperdata_list = []
-        reader = csv.reader(contents, delimiter=best_delimiter)
-        for rownum, tokens in enumerate(reader):
-            if rownum>Coords["row"]:
-                RecordDict = {}
-                for columnum in range( Coords["column"],len(tokens) ):
-                    data = tokens[columnum]
-                    RecordDict[ Headers_Int2Str[columnum] ] = data
-                if len(RecordDict.keys())>0:
-                    hyperdata_list.append( RecordDict )
-        # # = = = = [ / Reading the whole CSV and saving ] = = = = #
-
-        return hyperdata_list
+        # Return a generator of dictionaries with column labels as keys,
+        # filtering out empty rows
+        for i, fields in enumerate(reader):
+            if i % 500 == 0:
+                print("CSV: parsing row #%s..." % (i+1))
+            if any(fields):
+                yield dict(zip(headers, fields[first_col:]))

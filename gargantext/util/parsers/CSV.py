@@ -7,29 +7,15 @@ import numpy as np
 
 
 class CSVParser(Parser):
+    DELIMITERS = ", \t;|:"
 
-    def parse(self, filebuf):
-
-        print("CSV: parsing (assuming UTF-8 and LF line endings)")
-
-        contents = filebuf.read().decode("UTF-8").split("\n")
-
-        # Filter out empty lines
-        contents = [line for line in contents if line.strip()]
-
-        sample_size = 10
-        sample_contents = contents[0:sample_size]
-
-        delimiters = ", \t;|:"
-
-        #==========================#
-        # DELIMITER AUTO-DETECTION #
-        #==========================#
+    def detect_delimiter(self, lines, sample_size=10):
+        sample = lines[:sample_size]
 
         # Compute frequency of each delimiter on each input line
         delimiters_freqs = {
-            d: [line.count(d) for line in sample_contents]
-            for d in delimiters
+            d: [line.count(d) for line in sample]
+            for d in self.DELIMITERS
         }
 
         # Select delimiters with a standard deviation of zero, ie. delimiters
@@ -43,17 +29,26 @@ class CSVParser(Parser):
         if selected_delimiters:
             # Choose the delimiter with highest frequency amongst selected ones
             sorted_delimiters = sorted(selected_delimiters, key=lambda x: x[1])
-            best_delimiter = sorted_delimiters[-1][0]
-        else:
+            return sorted_delimiters[-1][0]
+
+    def parse(self, filebuf):
+        print("CSV: parsing (assuming UTF-8 and LF line endings)")
+
+        contents = filebuf.read().decode("UTF-8").split("\n")
+
+        # Filter out empty lines
+        contents = [line for line in contents if line.strip()]
+
+        # Delimiter auto-detection
+        delimiter = self.detect_delimiter(contents, sample_size=10)
+
+        if delimiter is None:
             raise ValueError("CSV: couldn't detect delimiter, bug or malformed data")
 
         print("CSV: selected delimiter: %r" % delimiter)
 
-        #=================#
-        # DATA PROCESSING #
-        #=================#
-
-        reader = csv.reader(contents, delimiter=best_delimiter)
+        # Parse CSV
+        reader = csv.reader(contents, delimiter=delimiter)
 
         # Get first not empty row and its fields (ie. header row), or (0, [])
         first_row, headers = \

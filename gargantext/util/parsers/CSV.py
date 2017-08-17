@@ -8,16 +8,6 @@ import os
 
 class CSVParser(Parser):
 
-    def CSVsample( self, small_contents , delim) :
-        reader = csv.reader(small_contents, delimiter=delim)
-
-        Freqs = []
-        for row in reader:
-            Freqs.append(len(row))
-
-        return Freqs
-
-
     def parse(self, filebuf):
 
         print("CSV: parsing (assuming UTF-8 and LF line endings)")
@@ -32,47 +22,33 @@ class CSVParser(Parser):
 
         hyperdata_list = []
 
-        # # = = = = [ Getting delimiters frequency ] = = = = #
-        PossibleDelimiters = [ ',',' ','\t', ';', '|', ':' ]
-        AllDelimiters = {}
-        for delim in PossibleDelimiters:
-            AllDelimiters[delim] = self.CSVsample( sample_contents , delim )
-        # # = = = = [ / Getting delimiters frequency ] = = = = #
-        # # OUTPUT example:
-        # #  AllDelimiters = {
-        # #   '\t': [1, 1, 1, 1, 1],
-        # #   ' ': [1, 13, 261, 348, 330],
-        # #   ',': [15, 15, 15, 15, 15],
-        # #   ';': [1, 1, 1, 1, 1],
-        # #   '|': [1, 1, 1, 1, 1]
-        # #  }
+        delimiters = ", \t;|:"
 
-        # # = = = = [ Stand.Dev=0 & Sum of delimiters ] = = = = #
-        Delimiters = []
-        for d in AllDelimiters:
-            freqs = AllDelimiters[d]
-            suma = np.sum( freqs )
-            if suma >0:
-                std = np.std( freqs )
-                # print [ d , suma , len(freqs) , std]
-                if std == 0:
-                    Delimiters.append ( [ d , suma , len(freqs) , std] )
-        # # = = = = [ / Stand.Dev=0 & Sum of delimiters ] = = = = #
-        # # OUTPUT example:
-        # #  Delimiters = [
-        # #     ['\t', 5, 5, 0.0],
-        # #     [',', 75, 5, 0.0],
-        # #     ['|', 5, 5, 0.0]
-        # #  ]
+        # Compute frequency of each delimiter on each input line
+        delimiters_freqs = {
+            d: [line.count(d) for line in sample_contents]
+            for d in delimiters
+        }
 
+        # Select delimiters with a standard deviation of zero, ie. delimiters
+        # for which we have the same number of fields on each line
+        selected_delimiters = [
+            (d, np.sum(freqs))
+            for d, freqs in delimiters_freqs.items()
+            if any(freqs) and np.std(freqs) == 0
+        ]
 
-        # # = = = = [ Delimiter selection ] = = = = #
-        Sorted_Delims = sorted(Delimiters, key=lambda x: x[1], reverse=True)
-        HighestDelim = Sorted_Delims[0][0]
-        # HighestDelim = ","
-        print("CSV selected delimiter:",[HighestDelim])
-        # # = = = = [ / Delimiter selection ] = = = = #
+        if selected_delimiters:
+            # Choose the delimiter with highest frequency amongst selected ones
+            sorted_delimiters = sorted(selected_delimiters, key=lambda x: x[1])
+            best_delimiter = sorted_delimiters[-1][0]
+        else:
+            # Fallback
+            best_delimiter = ','
+            print("WARNING: CSV: couldn't detect delimiter, fallback to %r" %
+                  best_delimiter)
 
+        print("CSV selected delimiter:", best_delimiter)
 
         # # = = = = [ First data coordinate ] = = = = #
         Coords = {
@@ -80,7 +56,7 @@ class CSVParser(Parser):
             "column": -1
         }
 
-        reader = csv.reader(contents, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=best_delimiter)
 
         for rownum, tokens in enumerate(reader):
             if rownum % 250 == 0:
@@ -99,7 +75,7 @@ class CSVParser(Parser):
 
         # # = = = = [ Setting Headers ] = = = = #
         Headers_Int2Str = {}
-        reader = csv.reader(contents, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=best_delimiter)
         for rownum, tokens in enumerate(reader):
             if rownum>=Coords["row"]:
                 for columnum in range( Coords["column"],len(tokens) ):
@@ -120,7 +96,7 @@ class CSVParser(Parser):
 
         # # = = = = [ Reading the whole CSV and saving ] = = = = #
         hyperdata_list = []
-        reader = csv.reader(contents, delimiter=HighestDelim)
+        reader = csv.reader(contents, delimiter=best_delimiter)
         for rownum, tokens in enumerate(reader):
             if rownum>Coords["row"]:
                 RecordDict = {}

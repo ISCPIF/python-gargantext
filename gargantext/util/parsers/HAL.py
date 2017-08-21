@@ -39,6 +39,7 @@ class HalParser(Parser):
                          , "deptStructId_i"  : "deptStructId_i"
                          , "labStructId_i"   : "labStructId_i"
                          , "rteamStructId_i" : "rteamStructId_i" 
+                         , "docType_s"       : "docType_s" 
                          }
 
         uris = set()

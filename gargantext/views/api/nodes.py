@@ -264,6 +264,7 @@ class NodeListResource(APIView):
                     , "deptStructId_i"
                     , "labStructId_i"
                     , "rteamStructId_i"
+                    , "docType_s"
                     ]
 
             writer.writerow(keys)

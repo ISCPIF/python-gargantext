@@ -35,8 +35,8 @@ from celery              import shared_task
 
 def query_list(list_id,
                 pagination_limit=None, pagination_offset=None,
-                details=False, scoring_metric_id=None, groupings_id=None
-                ):
+                details=False, scoring_metric_id=None, groupings_id=None,
+                sort=False):
     """
     Paginated listing of ngram_ids in a NodeNgram lists.
 
@@ -51,6 +51,7 @@ def query_list(list_id,
                            (for details and sorting)
       - groupings_id: optional id of a list of grouping relations (synonyms)
                       (each synonym will be added to the list if not already in there)
+      - sort: order by Ngram.terms (not possible if details is False)
 
     FIXME: subforms appended recently and not generalized enough
             => add a common part for all "if groupings_id"
@@ -115,6 +116,9 @@ def query_list(list_id,
 
     if pagination_offset:
         query = query.offset(pagination_offsets)
+
+    if details and sort:
+        query = query.order_by(Ngram.terms)
 
     return query
 
@@ -220,9 +224,10 @@ def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
     # listes de ngram_ids correspondantes
     # ------------------------------------
     # contenu: liste des objets ngrammes [(2562,"monterme",1),...]
-    stop_ngrams  = query_list(stoplist_node.id, details=True, groupings_id=group_node.id).all()
-    main_ngrams  = query_list(mainlist_node.id, details=True, groupings_id=group_node.id).all()
-    map_ngrams  = query_list(maplist_node.id, details=True, groupings_id=group_node.id).all()
+    stop_ngrams, main_ngrams, map_ngrams = (
+        query_list(n.id, details=True, groupings_id=group_node.id, sort=True).all()
+        for n in (stoplist_node, mainlist_node, maplist_node)
+    )
 
     # pour debug ---------->8 --------------------
     #~ stop_ngrams = stop_ngrams[0:10]
@@ -239,7 +244,7 @@ def export_ngramlists(node,fname=None,delimiter=DEFAULT_CSV_DELIM,titles=True):
     # for the groups we got couples of ids in the DB
     # -------------------
     # ex: [(3544, 2353), (2787, 4032), ...]
-    group_ngram_id_couples = query_groups(group_node.id).all()
+    group_ngram_id_couples = query_groups(group_node.id, sort=True)
 
     # we expend this to double structure for groups lookup
     # 1) g['links'] = k couples (x,y_i) as a set   [x => {y1,y2}]

@@ -675,7 +675,7 @@
                                             $("#submit_thing").prop('disabled' , false)
                                             //$("#submit_thing").attr('onclick', testCERN(query, N));
                                             $("#submit_thing").on("click", function(){
-                                              saveMultivac(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N, "/moissonneurs/multivac/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                           //(N > {{query_size}})
@@ -684,7 +684,7 @@
                                             $('#submit_thing').prop('disabled', false);
                                             $("#submit_thing").html("Processing a sample file")
                                             $("#submit_thing").on("click", function(){
-                                              saveMultivac(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N,"/moissonneurs/multivac/save/" );
                                             //$("#submit_thing").onclick()
                                           })}
                                       }
@@ -708,7 +708,6 @@
 
 
                             //HAL = 11
-
                             if (SourceTypeId == "11"){
                               $.ajax({
                                   // contentType: "application/json",
@@ -736,7 +735,7 @@
                                             $("#submit_thing").prop('disabled' , false)
                                             //$("#submit_thing").attr('onclick', testCERN(query, N));
                                             $("#submit_thing").on("click", function(){
-                                              saveALL(pubmedquery, N);
+                                              save(pubmedquery, N, "/moissonneurs/hal/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                           //(N > {{query_size}})
@@ -745,7 +744,7 @@
                                             $('#submit_thing').prop('disabled', false);
                                             $("#submit_thing").html("Processing a sample file")
                                             $("#submit_thing").on("click", function(){
-                                              saveALL(pubmedquery, N);
+                                              save(pubmedquery, N, "/moissonneurs/hal/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                       }
@@ -766,6 +765,69 @@
                               });
 
                             }
+
+
+                            //HAL = 12
+                            if (SourceTypeId == "12"){
+                              $.ajax({
+                                  // contentType: "application/json",
+                                  url: window.location.origin+"/moissonneurs/isidore/query",
+                                  data: formData,
+                                  type: 'POST',
+                                  beforeSend: function(xhr) {
+                                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                  },
+                                  success: function(data) {
+                                      console.log(data)
+                                      console.log("SUCCESS")
+                                      console.log("enabling "+"#"+value.id)
+                                      
+                                      // $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      $("#submit_thing").prop('disabled' , false)
+                                      //$("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                      N = data["results_nb"]
+
+                                      if(N > 0) {
+                                          if (N <= {{query_size}}){
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $("#submit_thing").html("Download!")
+                                            $("#submit_thing").prop('disabled' , false)
+                                            //$("#submit_thing").attr('onclick', testCERN(query, N));
+                                            $("#submit_thing").on("click", function(){
+                                              save(pubmedquery, N, "/moissonneurs/isidore/save/");
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                          //(N > {{query_size}})
+                                          else {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                            $("#submit_thing").html("Processing a sample file")
+                                            $("#submit_thing").on("click", function(){
+                                              save(pubmedquery, N, "/moissonneurs/isidore/save/");
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                      }
+
+
+                                      else {
+                                          $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                          if(data[0]==false)
+                                          $("#theresults").html(theType +" connection error!</i><br>")
+                                          $('#submit_thing').prop('disabled', true);
+                                      }
+
+                                  },
+                                  error: function(result) {
+                                      $("#theresults").html(theType +" connection error</i><br>")
+                                      $('#submit_thing').prop('disabled', true);
+                                  }
+                              });
+
+                            }
+
+
+
 
 
                         }
@@ -819,6 +881,7 @@
                                || selectedId == "9" 
                                || selectedId == "10" 
                                || selectedId == "11" 
+                               || selectedId == "12" 
                                 ) {
                                 console.log("show the button for: " + selectedId)
                                 $("#div-fileornot").css("visibility", "visible");
@@ -1001,7 +1064,7 @@
                               });
                           }
 
-                        function saveALL(query, N){
+                        function save(query, N, urlGarg){
                           console.log("In Gargantext")
                           
                           if(!query || query=="") return;
@@ -1016,7 +1079,7 @@
                           console.log(data)
                           $.ajax({
                               dataType: 'json',
-                              url: window.location.origin+"/moissonneurs/hal/save/"+projectid,
+                              url: window.location.origin + urlGarg + projectid,
                               data: data,
                               type: 'POST',
                               beforeSend: function(xhr) {

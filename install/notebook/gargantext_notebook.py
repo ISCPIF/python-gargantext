@@ -22,7 +22,7 @@ application = get_wsgi_application()
 from gargantext.util.toolchain.main import parse_extract_indexhyperdata
 from gargantext.util.db import *
 from gargantext.models import Node
-
+from gargantext.util.toolchain.main import parse_extract_indexhyperdata
 from nltk.tokenize import wordpunct_tokenize
 
 from gargantext.models import *
@@ -56,9 +56,7 @@ def chart(docs, field):
     frame1 = pd.DataFrame(year_publis, columns=['Date', 'DateValue'], index=frame0.Date)
     return frame1
 
-
 from gargantext.util.crawlers.HAL import HalCrawler
-
 def scan_hal(request):
     hal = HalCrawler()
     return hal.scan_results(request)
@@ -72,4 +70,54 @@ def scan_gargantext(corpus_id, lang, request):
                   AND n.parent_id = %s;""" % (lang, request, corpus_id) 
     return [i for i in connection.execute(query)][0][0]
     connection.close()
+
+
+def myProject_fromUrl(url):
+    """
+    myProject :: String -> Project
+    """
+    project_id = url.split("/")[4]
+    project = session.query(Node).filter(Node.id == project_id).first()
+    return project
+
+
+def newCorpus(project, resourceName=11, name="Machine learning", query="LSTM"):
+    print("Corpus \"%s\" in project \"%s\" created" % (name, project.name))
+    
+    corpus = project.add_child(name="Corpus name", typename='CORPUS')
+    corpus.hyperdata["resources"] = [{"extracted" : "true", "type" : 11}]
+    corpus.hyperdata["statuses"]  = [{"action" : "notebook", "complete" : "true"}]
+    # [TODO] Add informations needed to get buttons on the Project view.
+    session.add(corpus)
+    session.commit()
+    
+    hal = HalCrawler()
+    max_result = hal.scan_results(query)
+    paging = 100 
+    for page in range(0, max_result, paging):
+        print("%s documents downloaded / %s." % (str( paging * (page +1)), str(max_result) ))
+        docs = (hal._get(query, fromPage=page, count=paging)
+                     .get("response", {})
+                      .get("docs", [])
+               )
+            
+        from gargantext.util.parsers.HAL import HalParser
+        # [TODO] fix boilerplate for docs here
+        new_docs = HalParser(docs)._parse(docs)
+        
+        for doc in new_docs:
+            new_doc = (corpus.add_child( name      = doc["title"][:255]
+                                       , typename  = 'DOCUMENT')
+                      )
+            new_doc["hyperdata"] = doc
+            session.add(new_doc)
+            session.commit()
+    
+    print("Extracting the ngrams")
+    parse_extract_indexhyperdata(corpus)
+    
+    print("Corpus is ready to explore:")
+    print("http://imt.gargantext.org/projects/%s/corpora/%s/" % (project.id, corpus.id))
+    
+    return corpus
 

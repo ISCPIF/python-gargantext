@@ -95,19 +95,30 @@ def query_list(list_id,
     else:
         # NB: score can be undefined (eg ex-subform that now became free)
         #     ==> we need outerjoin
+        #     and the filter needs to have scoring_metric_id so we do it before
 
-        NNN = NodeNodeNgram
+        ScoresTable = (session
+                        .query(NodeNodeNgram.score, NodeNodeNgram.ngram_id)
+                        .filter(NodeNodeNgram.node1_id == scoring_metric_id)
+                        .subquery()
+                        )
 
         query = (session
-                    .query(Ngram.id, Ngram.terms, NNN.score)
-                    # Ngrams must be related to our list <Node(id=list_id)>
-                    .join(NodeNgram, (NodeNgram.ngram_id == Ngram.id) &
-                                     (NodeNgram.node_id == list_id))
-                    # Select by metric <Node(id=scoring_metric_id)>
-                    .outerjoin(NNN, (NNN.ngram_id == Ngram.id) &
-                                    (NNN.node1_id == scoring_metric_id))
-                    # Sort by descending score
-                    .order_by(NNN.score.desc())
+                    .query(
+                        NodeNgram.ngram_id,
+                        Ngram.terms,
+                        ScoresTable.c.score
+                     )
+                    .join(Ngram, NodeNgram.ngram_id == Ngram.id)
+
+                    # main filter ----------------------
+                    .filter(NodeNgram.node_id == list_id)
+
+                    # scores if possible
+                    .outerjoin(ScoresTable,
+                               ScoresTable.c.ngram_id == NodeNgram.ngram_id)
+
+                    .order_by(desc(ScoresTable.c.score))
                 )
 
     if pagination_limit:

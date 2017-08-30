@@ -11,17 +11,8 @@ from datetime import datetime
 import json
 
 class HalParser(Parser):
-
-    def parse(self, filebuf):
-        '''
-        parse :: FileBuff -> [Hyperdata]
-        '''
-        contents = filebuf.read().decode("UTF-8")
-        data = json.loads(contents)
+    def _parse(self, json_docs):
         
-        filebuf.close()
-        
-        json_docs = data
         hyperdata_list = []
         
         hyperdata_path = { "id"              : "isbn_s"
@@ -83,3 +74,13 @@ class HalParser(Parser):
                 hyperdata_list.append(hyperdata)
         
         return hyperdata_list
+
+    def parse(self, filebuf):
+        '''
+        parse :: FileBuff -> [Hyperdata]
+        '''
+        contents = filebuf.read().decode("UTF-8")
+        data = json.loads(contents)
+
+        return self._parse(data)
+

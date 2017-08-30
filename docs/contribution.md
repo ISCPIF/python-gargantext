@@ -2,7 +2,7 @@
 
 ## Community
 * [http://gargantext.org/about](http://gargantext.org/about)
-* IRC Chat: (OFTC/FreeNode) #gargantex
+* IRC Chat: (OFTC/FreeNode) #gargantext
 
 ##Tools
 * gogs

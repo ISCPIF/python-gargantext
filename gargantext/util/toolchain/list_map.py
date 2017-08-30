@@ -12,15 +12,19 @@ from gargantext.constants     import DEFAULT_MAPLIST_MAX,\
                                      DEFAULT_MAPLIST_GENCLUSION_RATIO,\
                                      DEFAULT_MAPLIST_MONOGRAMS_RATIO
 
+def do_maplist_query():
+    return None
+
+
 def do_maplist(corpus,
-               overwrite_id = None,
-               mainlist_id  = None,
-               specclusion_id = None,
-               genclusion_id = None,
-               grouplist_id = None,
-               limit=DEFAULT_MAPLIST_MAX,
-               genclusion_part=DEFAULT_MAPLIST_GENCLUSION_RATIO,
-               monograms_part=DEFAULT_MAPLIST_MONOGRAMS_RATIO
+               overwrite_id    = None,
+               mainlist_id     = None,
+               specclusion_id  = None,
+               genclusion_id   = None,
+               grouplist_id    = None,
+               limit           = DEFAULT_MAPLIST_MAX,
+               genclusion_part = DEFAULT_MAPLIST_GENCLUSION_RATIO,
+               monograms_part  = DEFAULT_MAPLIST_MONOGRAMS_RATIO
                ):
     '''
     According to Genericity/Specificity and mainlist
@@ -28,9 +32,9 @@ def do_maplist(corpus,
     Parameters:
       - mainlist_id (starting point, already cleaned of stoplist terms)
       - specclusion_id (ngram inclusion by cooc specificity -- ranking factor)
-      - genclusion_id (ngram inclusion by cooc genericity -- ranking factor)
+      - genclusion_id  (ngram inclusion by cooc genericity  -- ranking factor)
       - grouplist_id (filtering grouped ones)
-      - overwrite_id: optional if preexisting MAPLIST node to overwrite
+      - overwrite_id: optional. Overwrite if preexisting MAPLIST node
 
       + 3 params to modulate the terms choice
         - limit for the amount of picked terms
@@ -77,6 +81,7 @@ def do_maplist(corpus,
                         )
                 .join(Ngram, Ngram.id == ScoreSpec.ngram_id)
                 .join(ScoreGen, ScoreGen.ngram_id == ScoreSpec.ngram_id)
+                
                 .filter(ScoreSpec.node_id == specclusion_id)
                 .filter(ScoreGen.node_id == genclusion_id)
 
@@ -155,10 +160,10 @@ def do_maplist(corpus,
         # at the end of the first loop we just need to sort all by the second ranker (gen)
         scored_ngrams = sorted(scored_ngrams, key=lambda ng_infos: ng_infos[2], reverse=True)
 
-    obtained_spec_mono = len(chosen_ngrams['topspec']['monograms'])
+    obtained_spec_mono  = len(chosen_ngrams['topspec']['monograms'])
     obtained_spec_multi = len(chosen_ngrams['topspec']['multigrams'])
-    obtained_gen_mono = len(chosen_ngrams['topgen']['monograms'])
-    obtained_gen_multi = len(chosen_ngrams['topgen']['multigrams'])
+    obtained_gen_mono   = len(chosen_ngrams['topgen']['monograms'])
+    obtained_gen_multi  = len(chosen_ngrams['topgen']['multigrams'])
     obtained_total = obtained_spec_mono   \
                     + obtained_spec_multi \
                     + obtained_gen_mono   \

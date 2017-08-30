@@ -45,6 +45,7 @@ class HalCrawler(Crawler):
                , uri_s
                , isbn_s
                , issue_s
+               , docType_s
                , journalPublisher_s
              """
                #, authUrl_s
@@ -112,7 +113,7 @@ class HalCrawler(Crawler):
             msg = "Invalid sample size N = %i (max = %i)" % ( self.query_max
                                                             , QUERY_SIZE_N_MAX
                                                             )
-            print("ERROR (scrap: Multivac d/l ): " , msg)
+            print("ERROR (scrap: HAL d/l ): " , msg)
             self.query_max = QUERY_SIZE_N_MAX
         
         #for page in range(1, trunc(self.query_max / 100) + 2):

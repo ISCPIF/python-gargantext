@@ -17,7 +17,7 @@ jdatetime==1.7.2
 kombu==3.0.37                  # messaging
 langdetect==1.0.6              #detectinglanguage
 nltk==3.1
-numpy==1.10.4
+numpy==1.13.1
 psycopg2==2.6.2
 pycountry==1.20
 python-dateutil==2.4.2
@@ -33,3 +33,5 @@ lxml==3.5.0
 requests-futures==0.9.7
 bs4==0.0.1
 requests==2.10.0
+alembic>=0.9.2
+# SQLAlchemy-Searchable==0.10.4

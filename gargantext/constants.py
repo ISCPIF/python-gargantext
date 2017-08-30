@@ -36,7 +36,7 @@ import os
 import re
 import importlib
 from gargantext.util.lists import *
-from gargantext.util.tools import datetime, convert_to_date
+from gargantext.util import datetime, convert_to_datetime
 from .settings import BASE_DIR
 
 # types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
@@ -59,25 +59,25 @@ LISTTYPES = {
 NODETYPES = [
     # TODO separate id not array index, read by models.node
     None,                    # 0
-    # documents hierarchy
+    # node/file hierarchy
     'USER',                  # 1
     'PROJECT',               # 2
     #RESOURCE should be here but last
     'CORPUS',                # 3
     'DOCUMENT',              # 4
-    # lists
+    # lists of ngrams
     'STOPLIST',              # 5
     'GROUPLIST',             # 6
     'MAINLIST',              # 7
     'MAPLIST',               # 8
     'COOCCURRENCES',         # 9
-    # scores
+    # scores for ngrams
     'OCCURRENCES',           # 10
     'SPECCLUSION',           # 11
     'CVALUE',                # 12
     'TFIDF-CORPUS',          # 13
     'TFIDF-GLOBAL',          # 14
-    # docs subset
+    # node subset
     'FAVORITES',             # 15
     # more scores (sorry!)
 
@@ -108,9 +108,9 @@ INDEXED_HYPERDATA = {
 
     'publication_date':
         { 'id'             : 2
-        , 'type'           : datetime.datetime
-        , 'convert_to_db'  : convert_to_date
-        , 'convert_from_db': datetime.datetime.fromtimestamp
+        , 'type'           : datetime
+        , 'convert_to_db'  : convert_to_datetime
+        , 'convert_from_db': convert_to_datetime
         },
 
     'title':

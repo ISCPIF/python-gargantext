@@ -52,7 +52,7 @@ def query( request ):
 
 
 
-def save(request , project_id):
+def save(request , project_id, return_corpus=False):
     print("testISTEX:")
     print(request.method)
     alist = ["bar","foo"]
@@ -170,6 +170,9 @@ def save(request , project_id):
             # sanitize session after interrupted transact
             session.rollback()
             # --------------------------------------------
+
+        if return_corpus:
+            return corpus
 
         return render(
             template_name = 'pages/projects/wait.html',

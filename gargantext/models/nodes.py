@@ -9,7 +9,7 @@ from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
                   Integer, Float, String, DateTime, JSONB, \
-                  MutableList, MutableDict
+                  MutableList, MutableDict, validates, ValidatorMixin
 from .users import User
 
 __all__ = ['Node', 'NodeNode', 'CorpusNode']
@@ -26,7 +26,7 @@ class NodeType(TypeDecorator):
         return NODETYPES[typeindex]
 
 
-class Node(Base):
+class Node(ValidatorMixin, Base):
     """This model can fit many purposes:
 
     myFirstCorpus = session.query(CorpusNode).first()
@@ -111,6 +111,10 @@ class Node(Base):
         return '<{0.__class__.__name__}(id={0.id}, typename={0.typename!r}, ' \
                'user_id={0.user_id}, parent_id={0.parent_id}, ' \
                'name={0.name!r}, date={0.date})>'.format(self)
+
+    @validates('name')
+    def validate_name(self, key, value):
+        return self.enforce_length(key, value)
 
     @property
     def ngrams(self):

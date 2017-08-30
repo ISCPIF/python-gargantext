@@ -1,5 +1,5 @@
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, Index
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import TypeDecorator, \
                              Integer, Float, Boolean, DateTime, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION as Double
@@ -7,6 +7,7 @@ from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.ext.declarative import declarative_base
 
 __all__ = ["Column", "ForeignKey", "UniqueConstraint", "relationship",
+           "validates", "ValidatorMixin",
            "Integer", "Float", "Boolean", "DateTime", "String", "Text",
            "TypeDecorator",
            "JSONB", "Double",
@@ -18,6 +19,25 @@ __all__ = ["Column", "ForeignKey", "UniqueConstraint", "relationship",
 # all tables handled by Alembic migration scripts.
 Base = declarative_base()
 
+
 # To be used by tables already handled by Django ORM, such as User model. We
 # separate them in order to keep those out of Alembic sight.
 DjangoBase = declarative_base()
+
+
+class ValidatorMixin(object):
+    def enforce_length(self, key, value):
+        """Truncate a string according to its column length
+
+        Usage example:
+
+        .. code-block:: python
+
+            @validates('some_column')
+            def validate_some_column(self, key, value):
+                self.enforce_length(key, value)
+        """
+        max_len = getattr(self.__class__, key).prop.columns[0].type.length
+        if value and len(value) > max_len:
+            return value[:max_len]
+        return value

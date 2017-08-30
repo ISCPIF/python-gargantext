@@ -16,7 +16,7 @@ sudo docker run \
         --env POSTGRES_HOST=localhost \
         -v /srv/gargantext:/srv/gargantext \
         -it garg-notebook:latest \
-        /bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && cd /srv/gargantext/ && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser'"
+        /bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && cd /home/notebooks && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser'"
 #        #&& jupyter nbextension enable --py widgetsnbextension --sys-prefix 
         #/bin/bash -c "/bin/su notebooks -c 'source /env_3-5/bin/activate && cd /srv/gargantext/ && jupyter notebook --port=8899 --ip=0.0.0.0 --no-browser --notebook-dir=/home/notebooks/'"
 

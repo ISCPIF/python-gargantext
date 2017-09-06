@@ -2,6 +2,7 @@ from gargantext.util.db_cache   import cache
 from gargantext.util.http       import ValidationException, APIView \
                                      , HttpResponse, JsonHttpResponse
 from gargantext.util.toolchain.main import recount
+from gargantext.util.scheduling import scheduled
 from datetime                   import datetime
 
 class CorpusMetrics(APIView):
@@ -32,7 +33,7 @@ class CorpusMetrics(APIView):
         else:
             t_before = datetime.now()
             # =============
-            recount(corpus)
+            scheduled(recount)(corpus.id)
             # =============
             t_after = datetime.now()
 

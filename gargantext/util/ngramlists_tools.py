@@ -472,6 +472,7 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
                     raise ValueError('Wrong header "%s" on line %i (only possible headers are "label", "forms" and "status")' % (colname, n_read_lines))
             if 'label' not in columns:
                 raise ValueError('CSV must contain at least one column with the header "label"')
+            continue
 
         if not len(csv_row):
             continue
@@ -578,7 +579,8 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
          'map':  UnweightedList(),
          'main': UnweightedList(),
          'stop': UnweightedList(),
-         'groupings' : Translations()
+         'groupings' : Translations(),
+         'new_ngram_count': n_added_ng,
          }
 
     for list_type in imported_nodes_ngrams:
@@ -674,12 +676,13 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             for ng_id in new_lists[list_type].items:
                 collect(ng_id)
 
-    from gargantext.util.toolchain.main import t
-    print("MERGE DEBUG: starting index_new_ngrams", t())
-    n_added = index_new_ngrams(all_possibly_new_ngram_ids, onto_corpus)
-    print("MERGE DEBUG: finished index_new_ngrams", t())
+    if new_lists.get('new_ngram_count', 0) > 0:
+        from gargantext.util.toolchain.main import t
+        print("MERGE DEBUG: starting index_new_ngrams", t())
+        n_added = index_new_ngrams(all_possibly_new_ngram_ids, onto_corpus)
+        print("MERGE DEBUG: finished index_new_ngrams", t())
 
-    my_log.append("MERGE: added %i new ngram occurrences in docs" % n_added)
+        my_log.append("MERGE: added %i new ngram occurrences in docs" % n_added)
 
     # ======== Get the old lists =========
     old_lists = {}
@@ -838,7 +841,7 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
 
 
 @shared_task
-def import_and_merge_ngramlists(file_contents, onto_corpus_id):
+def import_and_merge_ngramlists(file_contents, onto_corpus_id, overwrite=False):
     """
     A single function to run import_ngramlists and merge_ngramlists together
     """
@@ -848,6 +851,7 @@ def import_and_merge_ngramlists(file_contents, onto_corpus_id):
     corpus_node = session.query(Node).filter(Node.id == onto_corpus_id).first()
 
     # merge the new_lists onto those of the target corpus
-    log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node)
+    del_originals = ['stop', 'main', 'map'] if overwrite else []
+    log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node, del_originals=del_originals)
 
     return log_msg

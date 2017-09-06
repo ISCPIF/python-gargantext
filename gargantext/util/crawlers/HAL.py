@@ -45,6 +45,7 @@ class HalCrawler(Crawler):
                , uri_s
                , isbn_s
                , issue_s
+               , docType_s
                , journalPublisher_s
              """
                #, authUrl_s

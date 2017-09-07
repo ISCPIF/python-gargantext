@@ -8,8 +8,7 @@ Tools to work with ngramlists (MAINLIST, MAPLIST, STOPLIST)
 """
 
 from gargantext.util.group_tools import query_groups, group_union
-from gargantext.util.db          import session, desc, func, \
-                                        bulk_insert_ifnotexists
+from gargantext.util.db          import session, bulk_insert_ifnotexists
 from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
                                         NodeNgramNgram, Node
 
@@ -25,7 +24,6 @@ from gargantext.util.toolchain.ngrams_extraction import normalize_forms
 # merge will also index the new ngrams in the docs of the corpus
 from gargantext.util.toolchain.ngrams_addition   import index_new_ngrams
 
-from sqlalchemy.sql      import exists
 from os                  import path
 from csv                 import writer, reader, QUOTE_MINIMAL
 from collections         import defaultdict
@@ -179,9 +177,7 @@ def ngrams_to_csv_rows(ngram_objs, ngram_dico={}, group_infos={},
             # 3 columns = |status,         |  mainform, |  forms
             #             (type_of_list)    ( term )     ( subterm1|&|subterm2 )
 
-            csv_rows.append(
-                  [list_type,ng_obj.terms,this_grouped_terms]
-                  )
+            csv_rows.append([list_type, ng_obj.terms, this_grouped_terms])
 
     return csv_rows
 
@@ -391,6 +387,9 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
     NB: To merge the imported lists into a corpus node's lists,
         chain this function with merge_ngramlists()
     '''
+
+    list_types = ['stop','main','map']
+
     # ---------------
     #  ngram storage
     # ---------------
@@ -455,7 +454,6 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
 
         # headers
         if i == 0:
-            n_cols = len(csv_row)
             for j, colname in enumerate(csv_row):
                 if colname in ['label', 'status', 'forms']:
                     columns[colname] = j
@@ -502,31 +500,30 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
             continue
 
         # --- check correct list type
-        if not this_list_type in ['stop','main','map']:
+        if not this_list_type in list_types:
             print("IMPORT WARN: (skip line) wrong list type at CSV %s:l.%i" % (fname, i))
             continue
 
         # subforms can be duplicated (in forms and another label)
         # but we must take care of unwanted other duplicates too
-        if this_row_label in imported_unique_ngramstrs:
-            print("TODO IMPORT DUPL: (skip line) term appears more than once at CSV %s:l.%i"
-                    % (fname, i))
+        if imported_unique_ngramstrs.get(this_row_label) == 1:
+            print("TODO IMPORT DUPL: (skip line) term %r appears more than once at CSV %s:l.%i"
+                    % (this_row_label, fname, i))
 
         # ================= Store the data ====================
         # the ngram census
-        imported_unique_ngramstrs[this_row_label] = True
+        imported_unique_ngramstrs[this_row_label] = 1
 
         # and the "list to ngram" relation
         imported_nodes_ngrams[this_list_type].append(this_row_label)
 
         # ====== Store synonyms from the import (if any) ======
         if len(this_row_forms) != 0:
-            other_terms = []
             for raw_term_str in this_row_forms.split(group_delimiter):
 
                 # each subform is also like an ngram declaration
                 term_str = normalize_forms(normalize_chars(raw_term_str))
-                imported_unique_ngramstrs[term_str] = True
+                imported_unique_ngramstrs[term_str] = 2
                 imported_nodes_ngrams[this_list_type].append(term_str)
 
                 # the optional repeated mainform doesn't interest us
@@ -604,7 +601,10 @@ def import_ngramlists(the_file, delimiter=DEFAULT_CSV_DELIM,
                 % (n_total_ng, n_added_ng, n_total_ng-n_added_ng) )
     print("IMPORT: read %i grouping relations" % n_group_relations)
 
-    # print("IMPORT RESULT", result)
+    list_counts = [(typ, len(result.get(typ))) for typ in list_types]
+    list_counts.append(('total', sum(x[1] for x in list_counts)))
+    print("IMPORT: " + '; '.join('%s %s' % stats for stats in list_counts))
+
     return result
 
 def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
@@ -712,9 +712,11 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
 
     # ======== Merging all involved ngrams =========
 
-    # all memberships with resolved conflicts of interfering memberships
+    # all ngram memberships with resolved conflicts of interfering memberships
+    # (associates ngram ids with list types -- see linfos definition above)
     resolved_memberships = {}
 
+    # iterates over each ngram of each list type for both old and new lists
     for list_set in [old_lists, new_lists]:
         for lid, info in enumerate(linfos):
             list_type = info['key']
@@ -744,11 +746,11 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
     # ======== Merging old and new groups =========
     # get the arcs already in the target DB (directed couples)
     previous_links = session.query(
-       NodeNgramNgram.ngram1_id,
-       NodeNgramNgram.ngram2_id
-      ).filter(
-         NodeNgramNgram.node_id == old_group_id
-       ).all()
+            NodeNgramNgram.ngram1_id,
+            NodeNgramNgram.ngram2_id
+        ).filter(
+            NodeNgramNgram.node_id == old_group_id
+        ).all()
 
     n_links_previous = len(previous_links)
 
@@ -816,7 +818,7 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
             list_type = linfos[lid]['key']
             merged_results[list_type].items.add(ng_id)
 
-    # print("IMPORT: added %i elements in the lists indices" % added_nd_ng)
+    print("IMPORT: added %i elements in the lists indices" % added_nd_ng)
 
     # ======== Overwrite old data with new =========
     for lid, info in enumerate(linfos):
@@ -839,10 +841,14 @@ def import_and_merge_ngramlists(file_contents, onto_corpus_id, overwrite=False):
     """
     A single function to run import_ngramlists and merge_ngramlists together
     """
-    print("import list")
+
+    print("IMPORT CSV termlists file with %s lines in corpus %s (%s)" % (
+        len(file_contents),
+        onto_corpus_id, 'overwrite' if overwrite else 'merge'))
+
     new_lists = import_ngramlists(file_contents)
 
-    corpus_node = session.query(Node).filter(Node.id == onto_corpus_id).first()
+    corpus_node = session.query(Node).get(onto_corpus_id)
 
     # merge the new_lists onto those of the target corpus
     del_originals = ['stop', 'main', 'map'] if overwrite else []

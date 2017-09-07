@@ -113,7 +113,7 @@ def query_list(list_id,
         query = query.limit(pagination_limit)
 
     if pagination_offset:
-        query = query.offset(pagination_offsets)
+        query = query.offset(pagination_offset)
 
     if details and sort:
         query = query.order_by(Ngram.terms)

@@ -31,7 +31,8 @@ class HalCrawler(Crawler):
         #search_field="title_t"
         search_field="abstract_t"
 
-        return (search_field + ":" + "(" + query  + ")")
+        #return (search_field + ":" + "(" + query  + ")")
+        return query # (search_field + ":" + "(" + query  + ")")
 
 
     def _get(self, query, fromPage=1, count=10, lang=None):
@@ -45,8 +46,15 @@ class HalCrawler(Crawler):
                , uri_s
                , isbn_s
                , issue_s
+               , journalTitle_s
+               , language_s
+               , doiId_s
+               , authId_i
+               , instStructId_i
+               , deptStructId_i
+               , labStructId_i
+               , rteamStructId_i
                , docType_s
-               , journalPublisher_s
              """
                #, authUrl_s
                #, type_s

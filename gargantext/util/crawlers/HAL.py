@@ -29,17 +29,18 @@ class HalCrawler(Crawler):
         '''formating the query'''
 
         #search_field="title_t"
-        search_field="abstract_t"
+        #search_field="abstract_t"
 
         #return (search_field + ":" + "(" + query  + ")")
-        return query # (search_field + ":" + "(" + query  + ")")
+        return "(" + query + ")"
 
 
     def _get(self, query, fromPage=1, count=10, lang=None):
         # Parameters
 
-        fl = """ title_s
-               , abstract_s
+        fl = """ en_title_s
+               , en_title_s
+               , en_abstract_s
                , submittedDate_s
                , journalDate_s
                , authFullName_s

@@ -95,7 +95,8 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                             continue
                             # get ngrams
                         for ngram in tagger.extract(value):
-                            tokens = tuple(normalize_forms(token[0]) for token in ngram)
+                            normal_forms = (normalize_forms(t[0]) for t in ngram)
+                            tokens = tuple(nf for nf in normal_forms if nf)
                             if do_subngrams:
                                 # ex tokens = ["very", "cool", "exemple"]
                                 #    subterms = [['very', 'cool'],...]

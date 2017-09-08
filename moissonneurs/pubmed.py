@@ -69,7 +69,7 @@ def query( request ):
     return JsonHttpResponse(data)
 
 
-def save( request , project_id ) :
+def save( request , project_id, return_corpus=False ) :
     # implicit global session
     # do we have a valid project id?
     try:
@@ -164,6 +164,10 @@ def save( request , project_id ) :
             session.rollback()
             # --------------------------------------------
         sleep(1)
+
+        if return_corpus:
+            return corpus
+
         return HttpResponseRedirect('/projects/' + str(project_id))
 
     data = alist

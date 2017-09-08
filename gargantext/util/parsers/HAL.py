@@ -11,25 +11,26 @@ from datetime import datetime
 import json
 
 class HalParser(Parser):
-
-    def parse(self, filebuf):
-        '''
-        parse :: FileBuff -> [Hyperdata]
-        '''
-        contents = filebuf.read().decode("UTF-8")
-        data = json.loads(contents)
+    def _parse(self, json_docs):
         
-        filebuf.close()
-        
-        json_docs = data
         hyperdata_list = []
         
-        hyperdata_path = { "id"       : "isbn_s"
-                         , "title"    : "title_s"
-                         , "abstract" : "abstract_s"
-                         , "source"   : "journalPublisher_s"
-                         , "url"      : "uri_s"
-                         , "authors"  : "authFullName_s"
+        hyperdata_path = { "id"              : "isbn_s"
+                         , "title"           : "en_title_s"
+                         , "abstract"        : "en_abstract_s"
+                         , "source"          : "journalTitle_s"
+                         , "url"             : "uri_s"
+                         , "authors"         : "authFullName_s"
+                         , "isbn_s"          : "isbn_s"
+                         , "issue_s"         : "issue_s"
+                         , "language_s"      : "language_s"
+                         , "doiId_s"         : "doiId_s"
+                         , "authId_i"        : "authId_i"
+                         , "instStructId_i"  : "instStructId_i"
+                         , "deptStructId_i"  : "deptStructId_i"
+                         , "labStructId_i"   : "labStructId_i"
+                         , "rteamStructId_i" : "rteamStructId_i" 
+                         , "docType_s"       : "docType_s" 
                          }
 
         uris = set()
@@ -42,9 +43,9 @@ class HalParser(Parser):
                     
                     field = doc.get(path, "NOT FOUND")
                     if isinstance(field, list):
-                        hyperdata[key] = ", ".join(field)
+                        hyperdata[key] = ", ".join(map(lambda x: str(x), field))
                     else:
-                        hyperdata[key] = field
+                        hyperdata[key] = str(field)
             
             if hyperdata["url"] in uris:
                 print("Document already parsed")
@@ -73,3 +74,13 @@ class HalParser(Parser):
                 hyperdata_list.append(hyperdata)
         
         return hyperdata_list
+
+    def parse(self, filebuf):
+        '''
+        parse :: FileBuff -> [Hyperdata]
+        '''
+        contents = filebuf.read().decode("UTF-8")
+        data = json.loads(contents)
+
+        return self._parse(data)
+

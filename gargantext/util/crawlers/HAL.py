@@ -29,24 +29,33 @@ class HalCrawler(Crawler):
         '''formating the query'''
 
         #search_field="title_t"
-        search_field="abstract_t"
+        #search_field="abstract_t"
 
-        return (search_field + ":" + "(" + query  + ")")
+        #return (search_field + ":" + "(" + query  + ")")
+        return "(" + query + ")"
 
 
     def _get(self, query, fromPage=1, count=10, lang=None):
         # Parameters
 
-        fl = """ title_s
-               , abstract_s
+        fl = """ en_title_s
+               , en_title_s
+               , en_abstract_s
                , submittedDate_s
                , journalDate_s
                , authFullName_s
                , uri_s
                , isbn_s
                , issue_s
+               , journalTitle_s
+               , language_s
+               , doiId_s
+               , authId_i
+               , instStructId_i
+               , deptStructId_i
+               , labStructId_i
+               , rteamStructId_i
                , docType_s
-               , journalPublisher_s
              """
                #, authUrl_s
                #, type_s
@@ -113,7 +122,7 @@ class HalCrawler(Crawler):
             msg = "Invalid sample size N = %i (max = %i)" % ( self.query_max
                                                             , QUERY_SIZE_N_MAX
                                                             )
-            print("ERROR (scrap: Multivac d/l ): " , msg)
+            print("ERROR (scrap: HAL d/l ): " , msg)
             self.query_max = QUERY_SIZE_N_MAX
         
         #for page in range(1, trunc(self.query_max / 100) + 2):

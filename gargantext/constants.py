@@ -263,7 +263,7 @@ RESOURCETYPES = [
    },
 
    {    "type": 11,
-        "name": 'HAL [API]',
+        "name": 'HAL (english) [API]',
         "parser": "HalParser",
         "format": 'JSON',
         'file_formats':["zip","json"],

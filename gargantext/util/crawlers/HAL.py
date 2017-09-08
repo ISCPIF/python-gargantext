@@ -31,7 +31,8 @@ class HalCrawler(Crawler):
         #search_field="title_t"
         search_field="abstract_t"
 
-        return (search_field + ":" + "(" + query  + ")")
+        #return (search_field + ":" + "(" + query  + ")")
+        return query # (search_field + ":" + "(" + query  + ")")
 
 
     def _get(self, query, fromPage=1, count=10, lang=None):

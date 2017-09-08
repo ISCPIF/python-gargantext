@@ -745,12 +745,15 @@ def merge_ngramlists(new_lists={}, onto_corpus=None, del_originals=[]):
 
     # ======== Merging old and new groups =========
     # get the arcs already in the target DB (directed couples)
-    previous_links = session.query(
-            NodeNgramNgram.ngram1_id,
-            NodeNgramNgram.ngram2_id
-        ).filter(
-            NodeNgramNgram.node_id == old_group_id
-        ).all()
+    if 'groupings' in del_originals:
+        previous_links = []
+    else:
+        previous_links = session.query(
+                NodeNgramNgram.ngram1_id,
+                NodeNgramNgram.ngram2_id
+            ).filter(
+                NodeNgramNgram.node_id == old_group_id
+            ).all()
 
     n_links_previous = len(previous_links)
 
@@ -851,7 +854,7 @@ def import_and_merge_ngramlists(file_contents, onto_corpus_id, overwrite=False):
     corpus_node = session.query(Node).get(onto_corpus_id)
 
     # merge the new_lists onto those of the target corpus
-    del_originals = ['stop', 'main', 'map'] if overwrite else []
+    del_originals = ['stop', 'main', 'map', 'groupings'] if overwrite else []
     log_msg = merge_ngramlists(new_lists, onto_corpus=corpus_node, del_originals=del_originals)
 
     return log_msg

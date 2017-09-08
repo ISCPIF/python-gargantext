@@ -81,44 +81,45 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
                     corpus.hyperdata["skipped_docs"].append(document.id)
                     corpus.save_hyperdata()
                     continue
-                else:
-                    # ready !
-                    tagger = tagger_bots[language_iso2]
 
-                    # to do verify if document has no KEYS to index
-                    # eg: use set intersect (+ loop becomes direct! with no continue)
-                    for key in keys:
-                        try:
-                            value = document.hyperdata[str(key)]
-                            if not isinstance(value, str):
-                                #print("DBG wrong content in doc for key", key)
-                                continue
-                                # get ngrams
-                            for ngram in tagger.extract(value):
-                                tokens = tuple(normalize_forms(token[0]) for token in ngram)
-                                if do_subngrams:
-                                    # ex tokens = ["very", "cool", "exemple"]
-                                    #    subterms = [['very', 'cool'],...]
+                # ready !
+                tagger = tagger_bots[language_iso2]
 
-                                    subterms = subsequences(tokens)
-                                else:
-                                    subterms = [tokens]
-
-                                for seqterm in subterms:
-                                    ngram = ' '.join(seqterm)
-                                    nbwords = len(seqterm)
-                                    nbchars = len(ngram)
-                                    if nbchars > 1:
-                                        if nbchars > 255:
-                                            # max ngram length (DB constraint)
-                                            ngram = ngram[:255]
-                                        # doc <=> ngram index
-                                        nodes_ngrams_count[(document.id, ngram)] += 1
-                                        # add fields :   terms          n
-                                        ngrams_data.add((ngram, nbwords, ))
-                        except:
-                            #value not in doc
+                # to do verify if document has no KEYS to index
+                # eg: use set intersect (+ loop becomes direct! with no continue)
+                for key in keys:
+                    try:
+                        value = document.hyperdata[str(key)]
+                        if not isinstance(value, str):
+                            #print("DBG wrong content in doc for key", key)
                             continue
+                            # get ngrams
+                        for ngram in tagger.extract(value):
+                            normal_forms = (normalize_forms(t[0]) for t in ngram)
+                            tokens = tuple(nf for nf in normal_forms if nf)
+                            if do_subngrams:
+                                # ex tokens = ["very", "cool", "exemple"]
+                                #    subterms = [['very', 'cool'],...]
+
+                                subterms = subsequences(tokens)
+                            else:
+                                subterms = [tokens]
+
+                            for seqterm in subterms:
+                                ngram = ' '.join(seqterm)
+                                nbwords = len(seqterm)
+                                nbchars = len(ngram)
+                                if nbchars > 1:
+                                    if nbchars > 255:
+                                        # max ngram length (DB constraint)
+                                        ngram = ngram[:255]
+                                    # doc <=> ngram index
+                                    nodes_ngrams_count[(document.id, ngram)] += 1
+                                    # add fields :   terms          n
+                                    ngrams_data.add((ngram, nbwords, ))
+                    except:
+                        #value not in doc
+                        continue
 
             # integrate ngrams and nodes-ngrams
             if len(nodes_ngrams_count) >= BATCH_NGRAMSEXTRACTION_SIZE:

@@ -41,24 +41,18 @@ class HalParser(Parser):
 
             for key, path in hyperdata_path.items():
 
-                    field = doc.get(path, "NOT FOUND")
-                    if isinstance(field, list):
-                        hyperdata[key] = ", ".join(map(lambda x: str(x), field))
-                    else:
-                        hyperdata[key] = str(field)
+                field = doc.get(path, "NOT FOUND")
+
+                if isinstance(field, list):
+                    hyperdata[key] = ", ".join(map(lambda x: str(x), field))
+                else:
+                    hyperdata[key] = str(field)
 
             if hyperdata["url"] in uris:
                 print("Document already parsed")
+
             else:
                 uris.add(hyperdata["url"])
-#            hyperdata["authors"] = ", ".join(
-#                                             [ p.get("person", {})
-#                                                .get("name"  , "")
-#
-#                                               for p in doc.get("hasauthor", [])
-#                                             ]
-#                                            )
-#
                 maybeDate = doc.get("submittedDate_s", None)
 
                 if maybeDate is not None:

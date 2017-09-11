@@ -14,12 +14,12 @@ from gargantext.util.files import save
 
 class HalCrawler(Crawler):
     ''' HAL API CLIENT'''
-    
+
     def __init__(self):
         # Main EndPoints
         self.BASE_URL = "https://api.archives-ouvertes.fr"
         self.API_URL  = "search"
-        
+
         # Final EndPoints
         # TODO : Change endpoint according type of database
         self.URL   = self.BASE_URL + "/" + self.API_URL
@@ -59,7 +59,7 @@ class HalCrawler(Crawler):
              """
                #, authUrl_s
                #, type_s
-        
+
         wt = "json"
 
         querystring = { "q"       : query
@@ -68,18 +68,18 @@ class HalCrawler(Crawler):
                       , "fl"      : fl
                       , "wt"      : wt
                       }
-        
+
         # Specify Headers
         headers = { "cache-control" : "no-cache" }
-        
-        
+
+
         # Do Request and get response
         response = requests.request( "GET"
                                    , self.URL
                                    , headers = headers
                                    , params  = querystring
                                    )
-        
+
         #print(querystring)
         # Validation : 200 if ok else raise Value
         if response.status_code == 200:
@@ -90,27 +90,27 @@ class HalCrawler(Crawler):
             return (json.loads(response.content.decode(charset)))
         else:
             raise ValueError(response.status_code, response.reason)
-        
+
     def scan_results(self, query):
         '''
         scan_results : Returns the number of results
         Query String -> Int
         '''
         self.results_nb = 0
-        
+
         total = ( self._get(query)
                       .get("response", {})
                       .get("numFound"  ,  0)
                 )
-        
+
         self.results_nb = total
 
         return self.results_nb
 
     def download(self, query):
-        
+
         downloaded = False
-        
+
         self.status.append("fetching results")
 
         corpus = []
@@ -124,7 +124,7 @@ class HalCrawler(Crawler):
                                                             )
             print("ERROR (scrap: HAL d/l ): " , msg)
             self.query_max = QUERY_SIZE_N_MAX
-        
+
         #for page in range(1, trunc(self.query_max / 100) + 2):
         for page in range(0, self.query_max, paging):
             print("Downloading page %s to %s results" % (page, paging))
@@ -141,5 +141,5 @@ class HalCrawler(Crawler):
                         , basedir=UPLOAD_DIRECTORY
                         )
         downloaded = True
-        
+
         return downloaded

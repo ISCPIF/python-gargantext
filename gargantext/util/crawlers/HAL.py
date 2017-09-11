@@ -38,7 +38,10 @@ class HalCrawler(Crawler):
     def _get(self, query, fromPage=1, count=10, lang=None):
         # Parameters
 
-        fl = """ en_title_s
+        fl = """ docid
+               , title_s
+               , abstract_s
+               , en_title_s
                , en_abstract_s
                , submittedDate_s
                , journalDate_s

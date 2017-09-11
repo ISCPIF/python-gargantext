@@ -15,9 +15,9 @@ class HalParser(Parser):
 
         hyperdata_list = []
 
-        hyperdata_path = { "id"              : "isbn_s"
-                         , "title"           : "en_title_s"
-                         , "abstract"        : "en_abstract_s"
+        hyperdata_path = { "id"              : "docid"
+                         , "title"           : ["en_title_s", "title_s"]
+                         , "abstract"        : ["en_abstract_s", "abstract_s"]
                          , "source"          : "journalTitle_s"
                          , "url"             : "uri_s"
                          , "authors"         : "authFullName_s"
@@ -41,10 +41,19 @@ class HalParser(Parser):
 
             for key, path in hyperdata_path.items():
 
-                field = doc.get(path, "NOT FOUND")
+                # A path can be a field name or a sequence of field names
+                if isinstance(path, (list, tuple)):
+                    # Get first non-empty value of fields in path sequence, or None
+                    field = next((x for x in (doc.get(p) for p in path) if x), None)
+                else:
+                    # Get field value
+                    field = doc.get(path)
+
+                if field is None:
+                    field = "NOT FOUND"
 
                 if isinstance(field, list):
-                    hyperdata[key] = ", ".join(map(lambda x: str(x), field))
+                    hyperdata[key] = ", ".join(map(str, field))
                 else:
                     hyperdata[key] = str(field)
 
@@ -53,8 +62,8 @@ class HalParser(Parser):
 
             else:
                 uris.add(hyperdata["url"])
-                maybeDate = doc.get("submittedDate_s", None)
 
+                maybeDate = doc.get("submittedDate_s", None)
                 if maybeDate is not None:
                     date = datetime.strptime(maybeDate, "%Y-%m-%d %H:%M:%S")
                 else:

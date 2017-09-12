@@ -5,14 +5,8 @@ from gargantext.util.json import json_dumps
 ########################################################################
 # get engine, session, etc.
 ########################################################################
-import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import delete
-
-# To make Full Text search possible, uncomment lines below
-# (and install it with pip before)
-#from sqlalchemy_searchable import make_searchable
 
 def get_engine():
     from sqlalchemy import create_engine
@@ -24,15 +18,7 @@ def get_engine():
 
 engine = get_engine()
 
-# To make Full Text search possible, uncomment lines below
-# https://sqlalchemy-searchable.readthedocs.io/
-#sa.orm.configure_mappers()
-Base = declarative_base()
-#Base.metadata.create_all(engine)
-#make_searchable()
-
 session = scoped_session(sessionmaker(bind=engine))
-
 
 ########################################################################
 # useful for queries

@@ -155,7 +155,12 @@ class CSVLists(APIView):
         try:
             # merge the source_lists onto those of the target corpus
             delete = todo_lists if bool(params.get('overwrite')) else []
+
+            if len(delete) == len(list_types):
+                delete.append('groupings')
+
             log_msg = merge_ngramlists(source_lists, onto_corpus=corpus_node, del_originals=delete)
+
             return JsonHttpResponse({
                 'log': log_msg,
                 }, 200)

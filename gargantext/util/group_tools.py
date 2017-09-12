@@ -7,7 +7,7 @@ from gargantext.util.db  import session, aliased
 from gargantext.models   import Ngram, NodeNgramNgram
 from igraph              import Graph  # for group_union
 
-def query_groups(groupings_id, details=False):
+def query_groups(groupings_id, details=False, sort=False):
     """
     Listing of couples (mainform,   subform)
                  aka   (ngram1_id, ngram2_id)
@@ -15,24 +15,27 @@ def query_groups(groupings_id, details=False):
     Parameter:
       - details: if False, just send the array of couples
                  if True, send quadruplets with (ngram1_id, term1, ngram2_id, term2)
+      - sort: order results by terms of ngram1 then ngram2
     """
+    if details or sort:
+        Ngram1, Ngram2 = Ngram, aliased(Ngram)
+
     if not details:
         # simple contents
-        query = session.query(NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id)
+        columns = (NodeNgramNgram.ngram1_id, NodeNgramNgram.ngram2_id)
     else:
         # detailed contents (id + terms)
-        Ngram1 = aliased(Ngram)
-        Ngram2 = aliased(Ngram)
-        query = (session
-                    .query(
-                        NodeNgramNgram.ngram1_id,
-                        Ngram1.terms,
-                        NodeNgramNgram.ngram2_id,
-                        Ngram2.terms,
-                     )
-                    .join(Ngram1, NodeNgramNgram.ngram1_id == Ngram1.id)
-                    .join(Ngram2, NodeNgramNgram.ngram2_id == Ngram2.id)
-                )
+        columns = (Ngram1.id, Ngram1.terms,
+                   Ngram2.id, Ngram2.terms)
+
+    query = session.query(*columns)
+
+    if details or sort:
+        query = (query.join(Ngram1, NodeNgramNgram.ngram1_id == Ngram1.id)
+                      .join(Ngram2, NodeNgramNgram.ngram2_id == Ngram2.id))
+
+    if sort:
+        query = query.order_by(Ngram1.terms, Ngram2.terms)
 
     # main filter
     # -----------

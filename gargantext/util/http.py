@@ -73,7 +73,8 @@ from rest_framework.views import APIView
 from gargantext.util.json import json_encoder
 def JsonHttpResponse(data, status=200):
     return HttpResponse(
-        content      = json_encoder.encode(data),
+        content      = data.encode('utf-8') if isinstance(data, str) else \
+                       json_encoder.encode(data),
         content_type = 'application/json; charset=utf-8',
         status       = status
     )

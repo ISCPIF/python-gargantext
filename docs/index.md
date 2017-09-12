@@ -8,6 +8,9 @@ Gargantext is a web plateform to explore your corpora using text-mining[...](abo
 
 * [Take a tour](demo.md) of the different features offered by Gargantext
 
+## Architecture
+* [Architecture](architecture.md) Architecture of Gargantext
+
 ##Need some help?
 
 Ask the community at:

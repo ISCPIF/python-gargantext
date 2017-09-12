@@ -57,7 +57,7 @@
 
                     <center id="corpus" class="help">
 
-                      
+
                         <a  data-toggle="modal" href="#addcorpus" >
                             <button
                             type="button"
@@ -440,11 +440,12 @@
                           // in the form "Add a corpus"
 
                           var type = $("#id_type").val()
+                          var file = $("#id_file").val()
 
                           // 5 booleans
                           var nameField = $("#id_name").val() != ""
                           var typeField = (type != "") && (type != "0")
-                          var fileField = $("#id_file").val() != ""
+                          var fileField = file != ""
                           var wantfileField = $("#file_yes").prop("checked")
                           var crawling = ((type==3)||(type==8)||(type==9)) && ! wantfileField
 
@@ -456,6 +457,23 @@
 
                           if (! crawling) {
                               $("#submit_thing").prop('disabled' , !(nameField && typeField && fileField))
+                          }
+
+                          // Automatically select CSV when type is undefined
+                          // and we have a .csv file
+                          if (!typeField && file && file.match(/.csv$/i)) {
+                              // Get CSV type id
+                              var csv = $('#id_type > option')
+                                  .filter(function() {
+                                      return $(this).text() === 'CSV'
+                                  })
+                                  .attr('value')
+                              // Select CSV type
+                              $('#id_type').val(csv)
+                              // Focus on name field
+                              setTimeout(function() {
+                                  $("#id_name").focus()
+                              })
                           }
                         }
 
@@ -532,7 +550,7 @@
                                         $("#submit_thing").html("Process a {{ query_size }} sample!")
 
                                         thequeries = data
-                                        var N=0,k=0;
+                                        var N=0;
 
                                         for(var i in thequeries) N += thequeries[i].count
                                         if( N>0) {
@@ -571,12 +589,11 @@
                                         $("#submit_thing").html("Process a {{ query_size }} sample!")
 
                                         thequeries = data
-                                        var N=data.length,k=0;
-                                        // for(var i in thequeries) N += thequeries[i].count
-                                        if( N>1) {
-                                            var total = JSON.parse(data).total
-                                            console.log("N: "+total)
-                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+total+" publications.</i><br>")
+                                        var N = data.total;
+
+                                        if (N > 0) {
+                                            console.log("N: "+N)
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications.</i><br>")
                                             $('#submit_thing').prop('disabled', false);
                                         } else {
                                             $("#theresults").html("<i>  <b>"+data[0]+"</b></i><br>")
@@ -661,7 +678,7 @@
                                       console.log(data)
                                       console.log("SUCCESS")
                                       console.log("enabling "+"#"+value.id)
-                                      
+
                                       // $("#"+value.id).attr('onclick','getGlobalResults(this);');
                                       $("#submit_thing").prop('disabled' , false)
                                       //$("#submit_thing").html("Process a {{ query_size }} sample!")
@@ -675,7 +692,7 @@
                                             $("#submit_thing").prop('disabled' , false)
                                             //$("#submit_thing").attr('onclick', testCERN(query, N));
                                             $("#submit_thing").on("click", function(){
-                                              saveMultivac(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N, "/moissonneurs/multivac/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                           //(N > {{query_size}})
@@ -684,7 +701,7 @@
                                             $('#submit_thing').prop('disabled', false);
                                             $("#submit_thing").html("Processing a sample file")
                                             $("#submit_thing").on("click", function(){
-                                              saveMultivac(pubmedquery, N);
+                                              saveMultivac(pubmedquery, N,"/moissonneurs/multivac/save/" );
                                             //$("#submit_thing").onclick()
                                           })}
                                       }
@@ -708,7 +725,6 @@
 
 
                             //HAL = 11
-
                             if (SourceTypeId == "11"){
                               $.ajax({
                                   // contentType: "application/json",
@@ -722,7 +738,7 @@
                                       console.log(data)
                                       console.log("SUCCESS")
                                       console.log("enabling "+"#"+value.id)
-                                      
+
                                       // $("#"+value.id).attr('onclick','getGlobalResults(this);');
                                       $("#submit_thing").prop('disabled' , false)
                                       //$("#submit_thing").html("Process a {{ query_size }} sample!")
@@ -736,7 +752,7 @@
                                             $("#submit_thing").prop('disabled' , false)
                                             //$("#submit_thing").attr('onclick', testCERN(query, N));
                                             $("#submit_thing").on("click", function(){
-                                              saveALL(pubmedquery, N);
+                                              save(pubmedquery, N, "/moissonneurs/hal/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                           //(N > {{query_size}})
@@ -745,7 +761,7 @@
                                             $('#submit_thing').prop('disabled', false);
                                             $("#submit_thing").html("Processing a sample file")
                                             $("#submit_thing").on("click", function(){
-                                              saveALL(pubmedquery, N);
+                                              save(pubmedquery, N, "/moissonneurs/hal/save/");
                                             //$("#submit_thing").onclick()
                                           })}
                                       }
@@ -766,6 +782,69 @@
                               });
 
                             }
+
+
+                            //HAL = 12
+                            if (SourceTypeId == "12"){
+                              $.ajax({
+                                  // contentType: "application/json",
+                                  url: window.location.origin+"/moissonneurs/isidore/query",
+                                  data: formData,
+                                  type: 'POST',
+                                  beforeSend: function(xhr) {
+                                      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                                  },
+                                  success: function(data) {
+                                      console.log(data)
+                                      console.log("SUCCESS")
+                                      console.log("enabling "+"#"+value.id)
+
+                                      // $("#"+value.id).attr('onclick','getGlobalResults(this);');
+                                      $("#submit_thing").prop('disabled' , false)
+                                      //$("#submit_thing").html("Process a {{ query_size }} sample!")
+
+                                      N = data["results_nb"]
+
+                                      if(N > 0) {
+                                          if (N <= {{query_size}}){
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $("#submit_thing").html("Download!")
+                                            $("#submit_thing").prop('disabled' , false)
+                                            //$("#submit_thing").attr('onclick', testCERN(query, N));
+                                            $("#submit_thing").on("click", function(){
+                                              save(pubmedquery, N, "/moissonneurs/isidore/save/");
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                          //(N > {{query_size}})
+                                          else {
+                                            $("#theresults").html("<i> <b>"+pubmedquery+"</b>: "+N+" publications </i><br>")
+                                            $('#submit_thing').prop('disabled', false);
+                                            $("#submit_thing").html("Processing a sample file")
+                                            $("#submit_thing").on("click", function(){
+                                              save(pubmedquery, N, "/moissonneurs/isidore/save/");
+                                            //$("#submit_thing").onclick()
+                                          })}
+                                      }
+
+
+                                      else {
+                                          $("#theresults").html("<i>  <b>"+pubmedquery+"</b>: No results!.</i><br>")
+                                          if(data[0]==false)
+                                          $("#theresults").html(theType +" connection error!</i><br>")
+                                          $('#submit_thing').prop('disabled', true);
+                                      }
+
+                                  },
+                                  error: function(result) {
+                                      $("#theresults").html(theType +" connection error</i><br>")
+                                      $('#submit_thing').prop('disabled', true);
+                                  }
+                              });
+
+                            }
+
+
+
 
 
                         }
@@ -814,11 +893,12 @@
                             console.log("selected:", selectedId);
 
                             // by typeID: 3 = PUBMED, 8 = ISTEX, 9 = CERN
-                            if (  selectedId == "3" 
-                               || selectedId == "8" 
-                               || selectedId == "9" 
-                               || selectedId == "10" 
-                               || selectedId == "11" 
+                            if (  selectedId == "3"
+                               || selectedId == "8"
+                               || selectedId == "9"
+                               || selectedId == "10"
+                               || selectedId == "11"
+                               || selectedId == "12"
                                 ) {
                                 console.log("show the button for: " + selectedId)
                                 $("#div-fileornot").css("visibility", "visible");
@@ -956,16 +1036,16 @@
 
                         function saveMultivac(query, N){
                           console.log("In Multivac")
-                          
+
                           if(!query || query=="") return;
                           console.log(query)
-                          
+
                               //var origQuery = query
                           var data = { "query" : query , "N": N };
-                          
+
                           // Replace all the slashes
                           var projectid = window.location.href.split("projects")[1].replace(/\//g, '')
-                          
+
                           console.log(data)
                           $.ajax({
                               dataType: 'json',
@@ -1001,22 +1081,22 @@
                               });
                           }
 
-                        function saveALL(query, N){
+                        function save(query, N, urlGarg){
                           console.log("In Gargantext")
-                          
+
                           if(!query || query=="") return;
                           console.log(query)
-                          
+
                               //var origQuery = query
                           var data = { "query" : query , "N": N };
-                          
+
                           // Replace all the slashes
                           var projectid = window.location.href.split("projects")[1].replace(/\//g, '')
-                          
+
                           console.log(data)
                           $.ajax({
                               dataType: 'json',
-                              url: window.location.origin+"/moissonneurs/hal/save/"+projectid,
+                              url: window.location.origin + urlGarg + projectid,
                               data: data,
                               type: 'POST',
                               beforeSend: function(xhr) {

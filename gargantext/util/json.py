@@ -10,7 +10,7 @@ __all__ = ['json_encoder', 'json_dumps']
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
-        from gargantext.util.db import Base
+        from gargantext.models import Base
         if isinstance(obj, Base):
             return {
                 key: value

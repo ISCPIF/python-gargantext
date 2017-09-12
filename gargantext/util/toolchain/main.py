@@ -185,7 +185,7 @@ def parse_extract_indexhyperdata(corpus):
     session.commit()
 
 @shared_task
-def recount(corpus):
+def recount(corpus_id):
     """
     Recount essential metrics of the toolchain after group modifications.
 
@@ -203,6 +203,7 @@ def recount(corpus):
 
     NB: no new extraction, no list change, just the metrics
     """
+    corpus = session.query(Node).filter(Node.id==corpus_id).first()
     # 1) we'll need the new groups and mainlist as basis
     group_id = corpus.children("GROUPLIST").first().id
     mainlist_id = corpus.children("MAINLIST").first().id

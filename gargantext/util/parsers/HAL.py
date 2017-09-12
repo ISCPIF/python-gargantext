@@ -3,7 +3,7 @@
 # ****************************
 # ****  HAL Parser    ***
 # ****************************
-# CNRS COPYRIGHTS
+# CNRS COPYRIGHTS 2017
 # SEE LEGAL LICENCE OF GARGANTEXT.ORG
 
 from ._Parser import Parser
@@ -11,22 +11,15 @@ from datetime import datetime
 import json
 
 class HalParser(Parser):
-
-    def parse(self, filebuf):
-        '''
-        parse :: FileBuff -> [Hyperdata]
-        '''
-        contents = filebuf.read().decode("UTF-8")
-        data = json.loads(contents)
+    def _parse(self, json_docs):
         
-        filebuf.close()
-        
-        json_docs = data
         hyperdata_list = []
         
         hyperdata_path = { "id"              : "isbn_s"
                          , "title"           : "title_s"
                          , "abstract"        : "abstract_s"
+                         , "title"           : "en_title_s"
+                         , "abstract"        : "en_abstract_s"
                          , "source"          : "journalTitle_s"
                          , "url"             : "uri_s"
                          , "authors"         : "authFullName_s"
@@ -39,6 +32,7 @@ class HalParser(Parser):
                          , "deptStructId_i"  : "deptStructId_i"
                          , "labStructId_i"   : "labStructId_i"
                          , "rteamStructId_i" : "rteamStructId_i" 
+                         , "docType_s"       : "docType_s" 
                          }
 
         uris = set()
@@ -82,3 +76,13 @@ class HalParser(Parser):
                 hyperdata_list.append(hyperdata)
         
         return hyperdata_list
+
+    def parse(self, filebuf):
+        '''
+        parse :: FileBuff -> [Hyperdata]
+        '''
+        contents = filebuf.read().decode("UTF-8")
+        data = json.loads(contents)
+
+        return self._parse(data)
+

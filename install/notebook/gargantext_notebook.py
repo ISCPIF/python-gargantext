@@ -15,11 +15,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
 
 from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
-from gargantext.models import ProjectNode, DocumentNode, UserNode, User
+from gargantext.models import ProjectNode, DocumentNode
 from gargantext.util.db import session, get_engine
 from collections import Counter
 import importlib
 from django.http import Http404
+
+# Import those to be available by notebook user
+from langdetect import detect as detect_lang
+from gargantext.models import UserNode, User
 
 
 class NotebookError(Exception):

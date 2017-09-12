@@ -39,7 +39,6 @@ class HalCrawler(Crawler):
         # Parameters
 
         fl = """ en_title_s
-               , en_title_s
                , en_abstract_s
                , submittedDate_s
                , journalDate_s

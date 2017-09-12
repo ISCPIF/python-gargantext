@@ -8,7 +8,7 @@ Tools to work with ngramlists (MAINLIST, MAPLIST, STOPLIST)
 """
 
 from gargantext.util.group_tools import query_groups, group_union
-from gargantext.util.db          import session, bulk_insert_ifnotexists
+from gargantext.util.db          import session, bulk_insert_ifnotexists, desc
 from gargantext.models           import Ngram, NodeNgram, NodeNodeNgram, \
                                         NodeNgramNgram, Node
 

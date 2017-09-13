@@ -98,8 +98,8 @@
   */
   http.factory('MainApiAddNgramHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL
+       // adding explicit "https://" b/c this a cross origin request
+      'https://' + window.GARG_ROOT_URL
                 + "/api/ngrams?text=:ngramStr&corpus=:corpusId&testgroup",
       {
         ngramStr: '@ngramStr',
@@ -131,8 +131,8 @@
 
   http.factory('MainApiChangeNgramHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL
+       // adding explicit "https://" b/c this a cross origin request
+      'https://' + window.GARG_ROOT_URL
                 + "/api/ngramlists/change?list=:listId&ngrams=:ngramIdList",
       {
         listId: '@listId',
@@ -171,8 +171,8 @@
   */
   http.factory('MainApiFavoritesHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL  + "/api/nodes/:corpusId/favorites?docs=:docId",
+       // adding explicit "https://" b/c this a cross origin request
+      'https://' + window.GARG_ROOT_URL  + "/api/nodes/:corpusId/favorites?docs=:docId",
       {
         corpusId: '@corpusId',
         docId: '@docId'

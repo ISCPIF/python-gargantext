@@ -2,13 +2,15 @@ from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import TypeDecorator, \
                              Integer, Float, Boolean, DateTime, String, Text
+from sqlalchemy_utils.types import TSVectorType
 from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION as Double
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.ext.declarative import declarative_base
 
-__all__ = ["Column", "ForeignKey", "UniqueConstraint", "relationship",
+__all__ = ["Column", "ForeignKey", "UniqueConstraint", "Index", "relationship",
            "validates", "ValidatorMixin",
            "Integer", "Float", "Boolean", "DateTime", "String", "Text",
+           "TSVectorType",
            "TypeDecorator",
            "JSONB", "Double",
            "MutableDict", "MutableList",

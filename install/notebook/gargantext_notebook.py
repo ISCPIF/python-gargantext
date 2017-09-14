@@ -60,11 +60,12 @@ def scan_gargantext(corpus_id, request):
                    .count())
 
 
-def scan_gargantext_and_delte(corpus_id, request):
+def scan_gargantext_and_delete(corpus_id, request):
     return (session.query(DocumentNode)
                    .filter_by(parent_id=corpus_id)
                    .filter(Node.title_abstract.match(request))
-                   .delete())
+                   .delete(synchronize_session='fetch')
+                   )
 
 def myProject_fromUrl(url):
     """

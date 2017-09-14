@@ -60,6 +60,12 @@ def scan_gargantext(corpus_id, request):
                    .count())
 
 
+def scan_gargantext_and_delte(corpus_id, request):
+    return (session.query(DocumentNode)
+                   .filter_by(parent_id=corpus_id)
+                   .filter(Node.title_abstract.match(request))
+                   .delete())
+
 def myProject_fromUrl(url):
     """
     myProject :: String -> Project

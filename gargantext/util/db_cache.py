@@ -29,6 +29,7 @@ class ModelCache(dict):
                 continue
         if formatted_key in self:
             self[key] = self[formatted_key]
+            element = self[key]
         else:
             element = session.query(self._model).filter(or_(*conditions)).first()
             if element is None:

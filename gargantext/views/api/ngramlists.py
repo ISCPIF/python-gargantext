@@ -90,10 +90,11 @@ class CSVLists(APIView):
         # import the csv
         # try:
         log_msg = "Async generation"
-        
+
         corpus_node_id = corpus_node.id
-        scheduled(import_and_merge_ngramlists)(csv_contents, corpus_node_id)
-        
+        scheduled(import_and_merge_ngramlists)(csv_contents, corpus_node_id,
+                                               overwrite=bool(params.get('overwrite')))
+
         return JsonHttpResponse({
             'log': log_msg,
             }, 200)
@@ -153,7 +154,13 @@ class CSVLists(APIView):
         # attempt to merge and send response
         try:
             # merge the source_lists onto those of the target corpus
-            log_msg = merge_ngramlists(source_lists, onto_corpus=corpus_node)
+            delete = todo_lists if bool(params.get('overwrite')) else []
+
+            if len(delete) == len(list_types):
+                delete.append('groupings')
+
+            log_msg = merge_ngramlists(source_lists, onto_corpus=corpus_node, del_originals=delete)
+
             return JsonHttpResponse({
                 'log': log_msg,
                 }, 200)

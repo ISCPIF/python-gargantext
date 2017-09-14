@@ -79,42 +79,39 @@
             </div>
         </div>
     </div>
-</div>
 
-<div class="container">
-    <!-- GENERIC STATUS INFO -->
-    <div id="status" class="row col-lg-12 collapse">
+    <div class="container">
+        <!-- GENERIC STATUS INFO -->
+        <div id="status" class="row col-lg-12 collapse">
 
-      <div id="status-msg" class="alert">
-      </div>
+          <div id="status-msg" class="alert">
+          </div>
 
-    </div>
-    <!-- CHECKBOX EDITION -->
-    <!--
-    <div class="row collapse" id="editor">
-          <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
-            <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
-          </button>
-          <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
-            <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
-          </button> -->
-          <!-- <button type="button" class="btn btn-info" id="recalculate">
-                  <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
-          </button>
-    </div>
-    -->
+        </div>
+        <!-- CHECKBOX EDITION -->
+        <!--
+        <div class="row collapse" id="editor">
+              <button title="delete selected project" type="button" class="btn btn-danger" id="delete">
+                <span class="glyphicon glyphicon-trash " aria-hidden="true" ></span>
+              </button>
+              <button title="edit selected project" type="button" class="btn btn-warning" id="edit">
+                <span class="glyphicon glyphicon-pencil " aria-hidden="true" onclick="editProjects()"></span>
+              </button> -->
+              <!-- <button type="button" class="btn btn-info" id="recalculate">
+                      <span class="glyphicon glyphicon-refresh " aria-hidden="true" onclick="recalculateProjects()"></span>
+              </button>
+        </div>
+        -->
 
-    <br />
-
+        <br />
 
 
-    <div class="row container" id="projects">
-            <!--here loading projectlist from GET /projects-->
-    </div>
 
-    <img id="wait-img" width="90%" style="display:none" src="{% static "img/ajax-loader.gif"%}"></img>
+        <div class="row container" id="projects">
+                <!--here loading projectlist from GET /projects-->
+        </div>
 
-</div>
+        <img id="wait-img" width="90%" style="display:none" src="{% static "img/ajax-loader.gif"%}"></img>
 
 <script type="html/tpl" id="project_item">
     <div id="{url}" class="item row">
@@ -206,6 +203,7 @@
       // do something…
         resetStatusForm("#createForm");
       })
+      return false;
 
     })
 

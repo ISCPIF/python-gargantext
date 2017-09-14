@@ -50,6 +50,9 @@ class _BaseClass:
         else:
             return NotImplemented
 
+    def __len__(self):
+        return len(self.items)
+
     def __repr__(self):
         items = self.items
         if isinstance(items, defaultdict):

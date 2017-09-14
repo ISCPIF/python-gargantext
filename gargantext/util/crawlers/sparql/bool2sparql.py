@@ -2,6 +2,7 @@
 import subprocess
 import re
 from .sparql import Service
+from gargantext.settings import BOOL_TOOLS_PATH
 #from sparql import Service
 
 def bool2sparql(rawQuery, count=False, offset=None, limit=None):
@@ -12,7 +13,7 @@ def bool2sparql(rawQuery, count=False, offset=None, limit=None):
     See: https://github.com/delanoe/bool2sparql
     """
     query = re.sub("\"", "\'", rawQuery)
-    bashCommand = ["/srv/gargantext/gargantext/util/crawlers/sparql/bool2sparql-exe","-q",query]
+    bashCommand = [BOOL_TOOLS_PATH + "/bool2sparql-exe","-q",query]
 
     if count is True :
         bashCommand.append("-c")

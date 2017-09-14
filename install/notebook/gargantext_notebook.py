@@ -15,7 +15,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
 
 from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
-from gargantext.models import ProjectNode, DocumentNode
+from gargantext.models import Node, ProjectNode, DocumentNode
 from gargantext.util.db import session, get_engine
 from collections import Counter
 import importlib
@@ -53,15 +53,11 @@ def scan_hal(request):
     return hal.scan_results(request)
 
 
-def scan_gargantext(corpus_id, lang, request):
-    connection = get_engine().connect()
-    # TODO add some sugar the request (ideally request should be the same for hal and garg)
-    query = """select count(n.id) from nodes n
-                  where to_tsvector('%s', hyperdata ->> 'abstract' || 'title')
-                  @@ to_tsquery('%s')
-                  AND n.parent_id = %s;""" % (lang, request, corpus_id)
-    return [i for i in connection.execute(query)][0][0]
-    connection.close()
+def scan_gargantext(corpus_id, request):
+    return (session.query(DocumentNode)
+                   .filter_by(parent_id=corpus_id)
+                   .filter(Node.title_abstract.match(request))
+                   .count())
 
 
 def myProject_fromUrl(url):

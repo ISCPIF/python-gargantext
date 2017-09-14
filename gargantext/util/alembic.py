@@ -16,9 +16,9 @@ __all__ = ['ReplaceableObject']
 
 
 class ReplaceableObject(object):
-    def __init__(self, name, sqltext):
+    def __init__(self, name, *args):
         self.name = name
-        self.sqltext = sqltext
+        self.args = args
 
 
 class ReversibleOp(MigrateOperation):
@@ -85,11 +85,24 @@ class DropSPOp(ReversibleOp):
         return CreateSPOp(self.target)
 
 
+@Operations.register_operation("create_trigger", "invoke_for_target")
+@Operations.register_operation("replace_trigger", "replace")
+class CreateTriggerOp(ReversibleOp):
+    def reverse(self):
+        return DropTriggerOp(self.target)
+
+
+@Operations.register_operation("drop_trigger", "invoke_for_target")
+class DropTriggerOp(ReversibleOp):
+    def reverse(self):
+        return CreateTriggerOp(self.target)
+
+
 @Operations.implementation_for(CreateViewOp)
 def create_view(operations, operation):
     operations.execute("CREATE VIEW %s AS %s" % (
         operation.target.name,
-        operation.target.sqltext
+        operation.target.args[0]
     ))
 
 
@@ -102,7 +115,7 @@ def drop_view(operations, operation):
 def create_sp(operations, operation):
     operations.execute(
         "CREATE FUNCTION %s %s" % (
-            operation.target.name, operation.target.sqltext
+            operation.target.name, operation.target.args[0]
         )
     )
 
@@ -110,3 +123,23 @@ def create_sp(operations, operation):
 @Operations.implementation_for(DropSPOp)
 def drop_sp(operations, operation):
     operations.execute("DROP FUNCTION %s" % operation.target.name)
+
+
+@Operations.implementation_for(CreateTriggerOp)
+def create_trigger(operations, operation):
+    args = operation.target.args
+    operations.execute(
+        "CREATE TRIGGER %s %s ON %s %s" % (
+            operation.target.name, args[0], args[1], args[2]
+        )
+    )
+
+
+@Operations.implementation_for(DropTriggerOp)
+def drop_trigger(operations, operation):
+    operations.execute(
+        "DROP TRIGGER %s ON %s" % (
+            operation.target.name,
+            operation.target.args[1]
+        )
+    )

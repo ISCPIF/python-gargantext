@@ -2,13 +2,10 @@ from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
-# Uncomment to make column full text searchable
-#from sqlalchemy_utils.types import TSVectorType
-
 from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
-                  Integer, Float, String, DateTime, JSONB, \
+                  Integer, Float, String, DateTime, JSONB, TSVectorType, \
                   MutableList, MutableDict, validates, ValidatorMixin
 from .users import User
 
@@ -60,9 +57,6 @@ class Node(ValidatorMixin, Base):
             Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
             Index('nodes_hyperdata_idx', 'hyperdata', postgresql_using='gin'))
 
-    # TODO
-    # create INDEX full_text_idx on nodes using gin(to_tsvector('english', hyperdata ->> 'abstract' || 'title'));
-
     id = Column(Integer, primary_key=True)
 
     typename = Column(NodeType, index=True)
@@ -78,10 +72,15 @@ class Node(ValidatorMixin, Base):
     name = Column(String(255))
     date  = Column(DateTime(timezone=True), default=datetime.now)
 
-    hyperdata     = Column(JSONB, default=dict)
-    # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
-    # To make search possible uncomment the line below
-    #search_vector = Column(TSVectorType('hyperdata'))
+    hyperdata      = Column(JSONB, default=dict)
+
+    # Create a TSVECTOR column to use fulltext search feature of PostgreSQL.
+    # We need to create a trigger to update this column on update and insert,
+    # it's created in alembic/version/1fb4405b59e1_add_english_fulltext_index_on_nodes_.py
+    #
+    # To use this column: session.query(DocumentNode) \
+    #                            .filter(Node.title_abstract.match('keyword'))
+    title_abstract = Column(TSVectorType(regconfig='english'))
 
     def __new__(cls, *args, **kwargs):
         if cls is Node and kwargs.get('typename'):

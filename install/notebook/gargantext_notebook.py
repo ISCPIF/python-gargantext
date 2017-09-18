@@ -16,7 +16,7 @@ django.setup()
 
 from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
 from gargantext.models import Node, ProjectNode, DocumentNode
-from gargantext.util.db import session, get_engine
+from gargantext.util.db import session, get_engine, func
 from collections import Counter
 import importlib
 from django.http import Http404
@@ -53,20 +53,24 @@ def scan_hal(request):
     return hal.scan_results(request)
 
 
-def scan_gargantext(corpus_id, request):
+def _search_docs(corpus_id, request):
     return (session.query(DocumentNode)
-                   .filter(DocumentNode.parent_id==corpus_id)
-                   .filter(DocumentNode.title_abstract.match(request))
-                   .count())
+                   .filter_by(parent_id=corpus_id)
+                   .filter(Node.title_abstract.match(request)))
+
+
+def scan_gargantext(corpus_id, request):
+    return (_search_docs(corpus_id, request)
+                .with_entities(func.count(DocumentNode.id.distinct()))
+                .one())[0]
 
 
 def scan_gargantext_and_delete(corpus_id, request):
-    (session.query(DocumentNode)
-            .filter(DocumentNode.parent_id=corpus_id)
-            .filter(DocumentNode.title_abstract.match(request))
-            .delete(synchronize_session='fetch')
-            )
+    r = _search_docs(corpus_id, request).delete(synchronize_session='fetch')
     session.commit()
+
+    return r
+
 
 def myProject_fromUrl(url):
     """

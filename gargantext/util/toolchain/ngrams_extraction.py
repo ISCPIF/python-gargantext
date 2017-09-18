@@ -56,18 +56,15 @@ def extract_ngrams(corpus, keys=DEFAULT_INDEX_FIELDS, do_subngrams = DEFAULT_IND
         tagger_bots = {lang: load_tagger(lang) for lang in corpus.hyperdata["languages"] \
                                 if lang != "__unknown__"}
         tagger_bots["__unknown__"] = load_tagger("en")
-        # print("#TAGGERS LOADED: ", tagger_bots)
+        print("#TAGGERS LOADED: ", tagger_bots)
         supported_taggers_lang = tagger_bots.keys()
-        # print("#SUPPORTED TAGGER LANGS", supported_taggers_lang)
+        print("#SUPPORTED TAGGER LANGS", list(supported_taggers_lang))
 
         for documents_count, document in enumerate(corpus.children('DOCUMENT')):
             #load only the docs that have passed the parsing without error
             if document.id not in corpus.hyperdata["skipped_docs"]:
 
-                if 'language_iso2' in document.hyperdata:
-                    language_iso2 = document.hyperdata['language_iso2']
-                else:
-                    language_iso2 = "__unknown__"
+                language_iso2 = document.hyperdata.get('language_iso2', '__unknown__')
 
                 # debug
                 # print(language_iso2)

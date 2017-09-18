@@ -55,16 +55,18 @@ def scan_hal(request):
 
 def scan_gargantext(corpus_id, request):
     return (session.query(DocumentNode)
-                   .filter_by(parent_id=corpus_id)
-                   .filter(Node.title_abstract.match(request))
+                   .filter(DocumentNode.parent_id==corpus_id)
+                   .filter(DocumentNode.title_abstract.match(request))
                    .count())
 
 
-def scan_gargantext_and_delte(corpus_id, request):
-    return (session.query(DocumentNode)
-                   .filter_by(parent_id=corpus_id)
-                   .filter(Node.title_abstract.match(request))
-                   .delete())
+def scan_gargantext_and_delete(corpus_id, request):
+    (session.query(DocumentNode)
+            .filter(DocumentNode.parent_id=corpus_id)
+            .filter(DocumentNode.title_abstract.match(request))
+            .delete(synchronize_session='fetch')
+            )
+    session.commit()
 
 def myProject_fromUrl(url):
     """

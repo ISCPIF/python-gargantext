@@ -16,7 +16,7 @@ django.setup()
 
 from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
 from gargantext.models import (Node, ProjectNode, DocumentNode,
-                               Ngram, NodeNgram, NodeNgramNgram)
+                               Ngram, NodeNgram, NodeNgramNgram, NodeNodeNgram)
 from gargantext.util.db import session, get_engine, func, aliased, case
 from collections import Counter
 import importlib
@@ -223,7 +223,8 @@ def _ngrams(corpus_id, list_types, entities):
                            Node.typename.in_(list_typenames)))
 
 
-def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=True):
+def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=False,
+                with_count=False):
     # Link between a GROUPLIST, a normal form (ngram1), and a synonym (ngram2)
     NNN = NodeNgramNgram
 
@@ -235,6 +236,9 @@ def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=True):
 
     # We will retrieve each ngram as the following tuple:
     entities = (list_type, Ngram.terms.label('ng'))
+
+    if with_count:
+        entities += (Ngram.id.label('id'),)
 
     # First, get ngrams from wanted lists
     ngrams = _ngrams(corpus_id, list_types, entities)
@@ -252,7 +256,8 @@ def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=True):
     # source for them
     if with_synonyms:
         Synonym = aliased(Ngram)
-        synonyms = (ngrams.with_entities(list_type, Synonym.terms.label('ng'))
+        ent = (list_type, Synonym.terms.label('ng'), Synonym.id.label('id'))
+        synonyms = (ngrams.with_entities(*ent)
                           .filter(NNN.ngram1_id==Ngram.id,
                                   NNN.ngram2_id==Synonym.id,
                                   NNN.node_id==Groups.id,
@@ -264,8 +269,15 @@ def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=True):
     # we don't wan't that
     if 'main' in list_types and 'map' not in list_types:
         # Exclude MAPLIST ngrams from MAINLIST
-        entities = ("'main'", entities[1])
         query = query.except_(_ngrams(corpus_id, 'map', entities))
+
+    if with_count:
+        N = query.subquery()
+        return (session.query(N.c.type, N.c.ng, NodeNodeNgram.score)
+                       .join(Node, (Node.parent_id==corpus_id) & (Node.typename=='OCCURRENCES'))
+                       .outerjoin(NodeNodeNgram, (NodeNodeNgram.ngram_id==N.c.id) &
+                                                 (NodeNodeNgram.node1_id==Node.id) &
+                                                 (NodeNodeNgram.node2_id==corpus_id)))
 
     # Return found ngrams sorted by list type, and then alphabetically
     return query.order_by('type', 'ng')

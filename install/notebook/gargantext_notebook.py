@@ -69,10 +69,13 @@ def _search_docs(corpus_id, request, fast=False):
            q.filter(H('title', request) | H('abstract', request))
 
 
-def scan_gargantext(corpus_id, request, fast=False):
-    return (_search_docs(corpus_id, request, fast)
-                .with_entities(func.count(DocumentNode.id.distinct()))
-                .one())[0]
+def scan_gargantext(corpus_id, request, fast=False, documents=False):
+    query = _search_docs(corpus_id, request, fast)
+
+    if documents:
+        return query.all()
+
+    return query.with_entities(func.count(DocumentNode.id.distinct())).one()[0]
 
 
 def scan_gargantext_and_delete(corpus_id, request, fast=False):

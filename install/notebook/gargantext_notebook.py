@@ -15,8 +15,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
 
 from gargantext.constants import QUERY_SIZE_N_MAX, get_resource, get_resource_by_name
-from gargantext.models import Node, ProjectNode, DocumentNode
-from gargantext.util.db import session, get_engine, func
+from gargantext.models import (Node, ProjectNode, DocumentNode,
+                               Ngram, NodeNgram, NodeNgramNgram)
+from gargantext.util.db import session, get_engine, func, aliased, case
 from collections import Counter
 import importlib
 from django.http import Http404
@@ -200,3 +201,68 @@ def run_moissonneur(moissonneur, project, name, query):
         session.commit()
 
     return corpus
+
+
+ALL_LIST_TYPES = ['main', 'map', 'stop']
+
+
+def _ngrams(corpus_id, list_types, entities):
+    list_types = (list_types,) if isinstance(list_types, str) else list_types
+    list_typenames = [
+        '{}LIST'.format(t.upper()) for t in list_types if t in ALL_LIST_TYPES]
+
+    # `Node` is our list, ie. MAINLIST and/or MAPLIST and/or STOPLIST
+    return (session.query(*entities)
+                   .select_from(Ngram)
+                   .filter(NodeNgram.ngram_id==Ngram.id,
+                           NodeNgram.node_id==Node.id,
+                           Node.parent_id==corpus_id,
+                           Node.typename.in_(list_typenames)))
+
+
+def corpus_list(corpus_id, list_types=ALL_LIST_TYPES, with_synonyms=True):
+    # Link between a GROUPLIST, a normal form (ngram1), and a synonym (ngram2)
+    NNN = NodeNgramNgram
+
+    # Get the list type from the Node type -- as in CSV export
+    list_type = (case([(Node.typename=='MAINLIST', 'main'),
+                       (Node.typename=='MAPLIST',  'map'),
+                       (Node.typename=='STOPLIST', 'stop')])
+                 .label('type'))
+
+    # We will retrieve each ngram as the following tuple:
+    entities = (list_type, Ngram.terms.label('ng'))
+
+    # First, get ngrams from wanted lists
+    ngrams = _ngrams(corpus_id, list_types, entities)
+
+    # Secondly, exclude "synonyms" (grouped ngrams that are not normal forms).
+    # We have to exclude synonyms first because data is inconsistent and some
+    # of them can be both in GROUPLIST and in MAIN/MAP/STOP lists. We want to
+    # take synonyms from GROUPLIST only -- see below.
+    Groups = aliased(Node, name='groups')
+    query = (ngrams.outerjoin(Groups, (Groups.parent_id==corpus_id) & (Groups.typename=='GROUPLIST'))
+                   .outerjoin(NNN, (NNN.node_id==Groups.id) & (NNN.ngram2_id==Ngram.id))
+                   .filter(NNN.ngram1_id==None))
+
+    # If `with_synonyms` is True, add them from GROUPLIST: this is the reliable
+    # source for them
+    if with_synonyms:
+        Synonym = aliased(Ngram)
+        synonyms = (ngrams.with_entities(list_type, Synonym.terms.label('ng'))
+                          .filter(NNN.ngram1_id==Ngram.id,
+                                  NNN.ngram2_id==Synonym.id,
+                                  NNN.node_id==Groups.id,
+                                  Groups.parent_id==corpus_id,
+                                  Groups.typename=='GROUPLIST'))
+        query = query.union(synonyms)
+
+    # Again, data is inconsistent: MAINLIST may intersect with MAPLIST and
+    # we don't wan't that
+    if 'main' in list_types and 'map' not in list_types:
+        # Exclude MAPLIST ngrams from MAINLIST
+        entities = ("'main'", entities[1])
+        query = query.except_(_ngrams(corpus_id, 'map', entities))
+
+    # Return found ngrams sorted by list type, and then alphabetically
+    return query.order_by('type', 'ng')

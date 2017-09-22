@@ -25,6 +25,7 @@ session = scoped_session(sessionmaker(bind=engine))
 ########################################################################
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, desc
+from sqlalchemy.sql.expression import case
 
 ########################################################################
 # bulk insertions

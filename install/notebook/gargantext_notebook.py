@@ -53,20 +53,29 @@ def scan_hal(request):
     return hal.scan_results(request)
 
 
-def _search_docs(corpus_id, request):
-    return (session.query(DocumentNode)
-                   .filter_by(parent_id=corpus_id)
-                   .filter(Node.title_abstract.match(request)))
+def _search_docs(corpus_id, request, fast=False):
+    q = session.query(DocumentNode).filter_by(parent_id=corpus_id)
+
+    # Search ngram <request> in hyperdata <field>
+    H = lambda field, request: Node.hyperdata[field].astext.op('~*')(request)
+
+    if not fast:
+        # Only match <request> starting and ending with word boundary
+        # Sequence of spaces will match any sequence of spaces
+        request = '\s+'.join(filter(None, r'\m{}\M'.format(request).split(' ')))
+
+    return q.filter(Node.title_abstract.match(request)) if fast else \
+           q.filter(H('title', request) | H('abstract', request))
 
 
-def scan_gargantext(corpus_id, request):
-    return (_search_docs(corpus_id, request)
+def scan_gargantext(corpus_id, request, fast=False):
+    return (_search_docs(corpus_id, request, fast)
                 .with_entities(func.count(DocumentNode.id.distinct()))
                 .one())[0]
 
 
-def scan_gargantext_and_delete(corpus_id, request):
-    r = _search_docs(corpus_id, request).delete(synchronize_session='fetch')
+def scan_gargantext_and_delete(corpus_id, request, fast=False):
+    r = _search_docs(corpus_id, request, fast).delete(synchronize_session='fetch')
     session.commit()
 
     return r

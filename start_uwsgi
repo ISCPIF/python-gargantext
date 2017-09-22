@@ -1,5 +1,13 @@
 #!/bin/bash
+# Script to start uwsgi
+# TODO do it as sudo or simple user ?
 
+# Creat the log file at current time
 FILE="/var/log/gargantext/uwsgi/$(date +%Y%m%d-%H:%M:%S).log"
-#touch /var/log/gargantext/uwsgi/$FILE && sudo 
-sudo uwsgi gargantext.ini --logto $FILE
+touch ${FILE}
+
+# add a group here
+chmod o+r ${FILE}
+
+# finally start the server with that log file
+uwsgi gargantext.ini --logto ${FILE}

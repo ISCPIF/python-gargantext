@@ -23,6 +23,11 @@ class Ngram(Base):
 
 
 class NodeNgram(Base):
+    """
+    For instance :
+        - Document - Ngram indexation
+        - Node of type List - Ngram indexation
+    """
     __tablename__ = 'nodes_ngrams'
     __table_args__ = (
             Index('nodes_ngrams_node_id_ngram_id_idx', 'node_id', 'ngram_id'),
@@ -32,6 +37,17 @@ class NodeNgram(Base):
     node_id = Column(Integer, ForeignKey(Node.id, ondelete='CASCADE'), primary_key=True)
     ngram_id = Column(Integer, ForeignKey(Ngram.id, ondelete='CASCADE'), primary_key=True)
     weight = Column(Float)
+    
+    # List case:
+    # subtypename_id    = Column(Integer, ForeignKey(Subtypename))
+    # For instance: Node can has type List
+    #               and it subtype can be Ngrams, Sources, Authors, Classification etc.
+    # subsubtypename_id = Stop (0) or Map (1) or Others (2)
+    # social_score   = Column(Integer)    # incremented by one each time nodeNgram is modified
+
+    # Indexation case:
+    # if ngrams indexed by user : social_score ++1
+    # subsubtypename : null ?
 
     node = relationship(Node)
     ngram = relationship(Ngram)
@@ -41,12 +57,12 @@ class NodeNgram(Base):
 
 
 class NodeNodeNgram(Base):
-    """ for instance for TFIDF
+    """ for instance for TFICF at doc/corpus level (TFIDF like)
     (
         doc                              ::Node ,
         corpus                           ::Node ,
         word                             ::Ngram ,
-        tfidf of ngram in doc in corpus  ::Float (real)
+        TFICF of ngram in doc in corpus  ::Float (real)
     )
     """
     __tablename__ = 'nodes_nodes_ngrams'

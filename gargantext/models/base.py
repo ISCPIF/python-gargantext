@@ -6,8 +6,10 @@ from sqlalchemy_utils.types import TSVectorType
 from sqlalchemy.dialects.postgresql import JSONB, DOUBLE_PRECISION as Double
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import text
 
 __all__ = ["Column", "ForeignKey", "UniqueConstraint", "Index", "relationship",
+           "text",
            "validates", "ValidatorMixin",
            "Integer", "Float", "Boolean", "DateTime", "String", "Text",
            "TSVectorType",

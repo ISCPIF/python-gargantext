@@ -98,6 +98,19 @@ class DropTriggerOp(ReversibleOp):
         return CreateTriggerOp(self.target)
 
 
+@Operations.register_operation("create_role", "invoke_for_target")
+@Operations.register_operation("replace_sp", "replace")
+class CreateRoleOp(ReversibleOp):
+    def reverse(self):
+        return DropRoleOp(self.target)
+
+
+@Operations.register_operation("drop_role", "invoke_for_target")
+class DropRoleOp(ReversibleOp):
+    def reverse(self):
+        return CreateRoleOp(self.target)
+
+
 @Operations.implementation_for(CreateViewOp)
 def create_view(operations, operation):
     operations.execute("CREATE VIEW %s AS %s" % (
@@ -143,3 +156,19 @@ def drop_trigger(operations, operation):
             operation.target.args[1]
         )
     )
+
+
+@Operations.implementation_for(CreateRoleOp)
+def create_role(operations, operation):
+    args = operation.target.args
+    operations.execute(
+        "CREATE ROLE %s WITH %s" % (
+            operation.target.name,
+            args[0] if len(args) else 'NOLOGIN'
+        )
+    )
+
+
+@Operations.implementation_for(DropRoleOp)
+def drop_role(operations, operation):
+    operations.execute("DROP ROLE %s" % operation.target.name)

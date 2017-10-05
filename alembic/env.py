@@ -52,6 +52,14 @@ def include_object(obj, name, typ, reflected, compare_to):
         return True
 
 
+context_opts = dict(
+    target_metadata=target_metadata,
+    include_object=include_object,
+    compare_server_default=True,
+    compare_type=True,
+)
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -65,9 +73,7 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True,
-        include_object=include_object)
+    context.configure(url=url, literal_binds=True, **context_opts)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -86,11 +92,7 @@ def run_migrations_online():
         poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            include_object=include_object
-        )
+        context.configure(connection=connection, **context_opts)
 
         with context.begin_transaction():
             context.run_migrations()

@@ -84,8 +84,10 @@ class ReversibleOp(MigrateOperation):
 
 CreateViewOp,    DropViewOp    = ReversibleOp.define('view')
 CreateRoleOp,    DropRoleOp    = ReversibleOp.define('role')
+CreateSchemaOp,  DropSchemaOp  = ReversibleOp.define('schema')
 CreateSPOp,      DropSPOp      = ReversibleOp.define('sp', 'SP')
 CreateTriggerOp, DropTriggerOp = ReversibleOp.define('trigger')
+CreatePolicyOp,  DropPolicyOp  = ReversibleOp.define('policy')
 
 
 @Operations.implementation_for(CreateViewOp)
@@ -99,6 +101,32 @@ def create_view(operations, operation):
 @Operations.implementation_for(DropViewOp)
 def drop_view(operations, operation):
     operations.execute("DROP VIEW %s" % operation.target.name)
+
+
+@Operations.implementation_for(CreateRoleOp)
+def create_role(operations, operation):
+    args = operation.target.args
+    operations.execute(
+        "CREATE ROLE %s WITH %s" % (
+            operation.target.name,
+            args[0] if len(args) else 'NOLOGIN'
+        )
+    )
+
+
+@Operations.implementation_for(DropRoleOp)
+def drop_role(operations, operation):
+    operations.execute("DROP ROLE %s" % operation.target.name)
+
+
+@Operations.implementation_for(CreateSchemaOp)
+def create_schema(operations, operation):
+    operations.execute("CREATE SCHEMA %s" % operation.target.name)
+
+
+@Operations.implementation_for(DropSchemaOp)
+def drop_schema(operations, operation):
+    operations.execute("DROP SCHEMA %s" % operation.target.name)
 
 
 @Operations.implementation_for(CreateSPOp)
@@ -135,17 +163,22 @@ def drop_trigger(operations, operation):
     )
 
 
-@Operations.implementation_for(CreateRoleOp)
-def create_role(operations, operation):
-    args = operation.target.args
+@Operations.implementation_for(CreatePolicyOp)
+def create_policy(operations, operation):
     operations.execute(
-        "CREATE ROLE %s WITH %s" % (
+        "CREATE POLICY %s ON %s %s" % (
             operation.target.name,
-            args[0] if len(args) else 'NOLOGIN'
+            operation.target.args[0],
+            operation.target.args[1],
         )
     )
 
 
-@Operations.implementation_for(DropRoleOp)
-def drop_role(operations, operation):
-    operations.execute("DROP ROLE %s" % operation.target.name)
+@Operations.implementation_for(DropPolicyOp)
+def drop_policy(operations, operation):
+    operations.execute(
+        "DROP POLICY %s ON %s" % (
+            operation.target.name,
+            operation.target.args[0],
+        )
+    )

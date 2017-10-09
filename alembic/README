@@ -18,6 +18,9 @@ USUAL WORKFLOW WITH ALEMBIC
 4. Commit alembic revision (it should never be reverted)
 5. Commit changes in models (it can be reverted if needed)
 
+To create, drop or modify views, schemas, roles, stored procedures, triggers or
+policies see below: REPLACEABLE OBJECTS.
+
 
 TELL ALEMBIC TO NOT START FROM SCRATCH
 
@@ -63,3 +66,54 @@ GENERATE AN EMPTY REVISION
     # This script must be edited to write the migration itself, mainly
     # in `upgrade` and `downgrade` functions. See Alembic documentation for
     # further details.
+
+
+REPLACEABLE OBJECTS
+
+There is no specific way no handle views, schemas, roles, stored procedures,
+triggers or policies with Alembic. To ease revisions of such objects, avoid
+boilerplate code and too much op.execute we use an enhanced version of
+ReplaceableObject recipe (see Alembic documentation).
+
+To create, drop or modify such object you need to make a ReplaceableObject
+instance, and then use create_*, drop_* or replace_* method of alembic.op.
+Conversion between ReplaceableObject and SQL is implemented in
+gargantext/util/alembic.py.
+
+* Views: create_view(ReplaceableObject(<name>, <query>))
+* Roles: create_role(ReplaceableObject(<name>, <options>))
+* Schemas: create_schema(ReplaceableObject(<name>))
+* Stored procedures: create_sp(ReplaceableObject(<name(arguments)>, <body>)
+* Triggers: create_trigger(ReplaceableObject(<name>, <when>, <table>, <body>))
+* Policies: create_policy(ReplaceableObject(<name>, <table>, <body>))
+
+Here is an example with a stored procedure:
+
+    ...
+    from gargantext.util.alembic import ReplaceableObject
+
+    revision = '08230100f512'
+    ...
+
+    my_function_sp = ReplaceableObject(
+        "my_function()", "RETURNS integer AS $$ SELECT 42 $$ LANGUAGE sql")
+
+    def upgrade():
+        op.create_sp(my_function_sp)
+
+    def downgrade():
+        op.drop_sp(my_function_sp)
+
+To modify this stored procedure in a later revision:
+
+    ...
+    from gargantext.util.alembic import ReplaceableObject
+
+    my_function_sp = ReplaceableObject(
+        "my_function()", "RETURNS integer AS $$ SELECT 43 $$ LANGUAGE sql")
+
+    def upgrade():
+        op.replace_sp(my_function_sp, replaces="08230100f512.my_function_sp")
+
+    def downgrade():
+        op.replace_sp(my_function_sp, replace_with="08230100f512.my_function_sp")

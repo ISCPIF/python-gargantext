@@ -64,7 +64,8 @@ class Node(ValidatorMixin, Base):
 
     # foreign keys
     user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'),
-                           nullable=False)
+                           nullable=False,
+                           server_default=text('current_user_id()'))
     user          = relationship(User)
 
     parent_id     = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))

@@ -165,11 +165,10 @@ class Parser:
             file = self._file
         # if the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
-            zipArchive = zipfile.ZipFile(file)
-            for filename in zipArchive.namelist():
-                f = zipArchive.open(filename, 'r')
-                yield from self.__iter__(f)
-                f.close()
+            with zipfile.ZipFile(file) as zipArchive:
+                for filename in zipArchive.namelist():
+                    with zipArchive.open(filename) as f:
+                        yield from self.__iter__(f)
         # ...otherwise, let's parse it directly!
         else:
             try:

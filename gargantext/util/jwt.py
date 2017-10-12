@@ -7,9 +7,10 @@ from .dates import datetime
 def jwt_payload_handler(user):
     username = user.username
     payload = {
-        'user_id': user.pk,
-        'role': settings.ROLE_ADMIN if username == settings.ROLE_ADMIN else \
+        'role': settings.ROLE_SUPERUSER if user.is_superuser else \
+                settings.ROLE_STAFF if user.is_staff else \
                 settings.ROLE_USER,
+        'user_id': user.pk,
         'username': username,
         'exp': datetime.now() + api_settings.JWT_EXPIRATION_DELTA
     }

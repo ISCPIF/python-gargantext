@@ -25,7 +25,7 @@ from django.http import Http404
 # Import those to be available by notebook user
 from langdetect import detect as detect_lang
 from gargantext.models import UserNode, User
-
+import functools
 
 class NotebookError(Exception):
     pass
@@ -40,8 +40,11 @@ def documents(corpus_id):
 #import seaborn as sns
 import pandas as pd
 
+def countByField(docs, field):
+    return list(Counter([doc.hyperdata[field] for doc in docs]).items())
+
 def chart(docs, field):
-    year_publis = list(Counter([doc.hyperdata[field] for doc in docs]).items())
+    year_publis = countByField(docs, field)
     frame0 = pd.DataFrame(year_publis, columns=['Date', 'DateValue'])
     frame1 = pd.DataFrame(year_publis, columns=['Date', 'DateValue'], index=frame0.Date)
     return frame1

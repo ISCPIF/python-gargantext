@@ -20,6 +20,7 @@ def compute_coocs(  corpus,
                     stoplist_id     = None,
                     start           = None,
                     end             = None,
+                    year            = None,
                     symmetry_filter = False,
                     diagonal_filter = True):
     """
@@ -97,14 +98,21 @@ def compute_coocs(  corpus,
         WHERE
             n.typename  = {nodetype_id}
         AND n.parent_id = {corpus_id}
+            """.format( nodetype_id = NODETYPES.index('DOCUMENT')
+                  , corpus_id=corpus.id
+                  )
+    if year :
+        cooc_filter_sql += """
+        AND n.hyperdata -> 'publication_year' = '{year}'
+            """.format( year=str(year))
+
+    cooc_filter_sql += """
         GROUP BY 1,2
         --    ==
         -- GROUP BY ngA, ngB
         )
-        """.format( nodetype_id = NODETYPES.index('DOCUMENT')
-                  , corpus_id=corpus.id
-                  )
-
+        """
+    
     # 3) taking the cooccurrences of ngram x2
     ngram_filter_A_sql += """
         -- STEP 1: X axis of the matrix

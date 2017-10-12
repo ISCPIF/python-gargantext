@@ -11,8 +11,9 @@ def jwt_payload_handler(user):
                 settings.ROLE_STAFF if user.is_staff else \
                 settings.ROLE_USER,
         'user_id': user.pk,
-        'username': username,
-        'exp': datetime.now() + api_settings.JWT_EXPIRATION_DELTA
+        'sub': username,
+        'exp': datetime.now() + api_settings.JWT_EXPIRATION_DELTA,
+        'iat': datetime.now(),
     }
 
     # Include original issued at time for a brand new token,

@@ -18,6 +18,12 @@ depends_on = None
 
 
 def upgrade():
+    op.execute("UPDATE nodes SET date = CURRENT_TIMESTAMP WHERE date IS NULL")
+    op.execute("UPDATE nodes SET hyperdata = '{}'::jsonb WHERE hyperdata IS NULL")
+    op.execute("UPDATE nodes SET name = '' WHERE name IS NULL")
+    op.execute("DELETE FROM nodes WHERE typename IS NULL")
+    op.execute("DELETE FROM nodes WHERE user_id IS NULL")
+
     op.alter_column('nodes', 'date',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                server_default=sa.text('CURRENT_TIMESTAMP'),

@@ -21,7 +21,7 @@ su postgres -c 'pg_ctlcluster 9.6 main start'
 
 service postgresql start
 
-su postgres -c "psql -c \"CREATE user gargantua WITH PASSWORD 'C8kdcUrAQy66U'\""
+su postgres -c "psql -c \"CREATE USER gargantua PASSWORD 'C8kdcUrAQy66U' CREATEROLE BYPASSRLS\""
 su postgres -c "createdb -O gargantua gargandb"
 
 echo "Postgres configured"

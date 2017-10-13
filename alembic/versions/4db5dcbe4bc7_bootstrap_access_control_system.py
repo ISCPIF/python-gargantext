@@ -36,13 +36,17 @@ anon_role = ReplaceableObject("anon", "NOLOGIN")
 
 
 roles = [gargantext_role, authenticator_role, anon_role]
+
+
 grants = [
+    ('gargantext', 'gargantua'),
+
     # Enable login through PostgREST auth system for gargantua, anon and
     # gargantext
     ('gargantua, anon, gargantext', 'authenticator'),
 
     # Basic privileges for gargantext role
-    ('USAGE ON SCHEMA api', 'gargantext'),
+    ('CREATE, USAGE ON SCHEMA api', 'gargantext'),
     ('SELECT ON nodes', 'gargantext'),
     ('UPDATE (parent_id, name, date, hyperdata) ON nodes', 'gargantext'),
     ('INSERT ON nodes', 'gargantext'),
@@ -90,14 +94,11 @@ def upgrade():
         op.create_role(role)
 
     op.create_view(api_nodes_view)
-    op.execute("ALTER VIEW api.nodes OWNER TO gargantext")
-
-    # BYPASSRLS is only useful if gargantua is not owner of tables
-    op.execute("ALTER ROLE gargantua WITH BYPASSRLS")
 
     for grant in grants:
         op.execute('GRANT {} TO {}'.format(*grant))
 
+    op.execute("ALTER VIEW api.nodes OWNER TO gargantext")
     op.execute("ALTER TABLE nodes ENABLE ROW LEVEL SECURITY")
 
     for sp in stored_procedures:
@@ -119,7 +120,6 @@ def downgrade():
     for grant in grants:
         op.execute('REVOKE {} FROM {}'.format(*grant))
 
-    op.execute("ALTER ROLE gargantua WITH NOBYPASSRLS")
     op.drop_view(api_nodes_view)
 
     for role in roles:

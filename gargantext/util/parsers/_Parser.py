@@ -14,15 +14,14 @@ class Parser:
     """
 
     def __init__(self, file):
-        if isinstance(file, str):
-            self._file = open(file, 'rb')
-        else:
-            self._file = file
+        self._file = self.open(file)
 
     def __del__(self):
         if hasattr(self, '_file'):
             self._file.close()
 
+    def open(self, file):
+        return open(file, 'rb') if isinstance(file, str) else file
 
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
@@ -165,9 +164,9 @@ class Parser:
             file = self._file
         # if the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
-            with zipfile.ZipFile(file) as zipArchive:
-                for filename in zipArchive.namelist():
-                    with zipArchive.open(filename) as f:
+            with zipfile.ZipFile(file) as zf:
+                for filename in zf.namelist():
+                    with zf.open(filename) as df, self.open(df) as f:
                         yield from self.__iter__(f)
         # ...otherwise, let's parse it directly!
         else:

@@ -13,7 +13,7 @@ from .ngram_coocs         import compute_coocs
 #from .ngram_coocs_old_sqlalchemy_version import compute_coocs
 from .metric_specgen      import compute_specgen
 from .list_map            import do_maplist
-from .mail_notification   import notify_owner
+from .mail_notification   import notify_owner, notify_recount
 from gargantext.util.db   import session
 from gargantext.models    import Node
 
@@ -298,6 +298,11 @@ def recount(corpus_id):
     corpus.status('Recounting mini-workflow', progress=10, complete=True)
     corpus.save_hyperdata()
     session.commit()
+
+    if not DEBUG:
+        print('RECOUNT #%d: [%s] FINISHED Sending email notification' % (corpus.id, t()))
+        notify_recount(corpus)
+
 
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

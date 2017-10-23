@@ -44,7 +44,7 @@ class Node(ValidatorMixin, Base):
     >>> session.query(Node).filter_by(typename='USER').first() # doctest: +ELLIPSIS
     <UserNode(...)>
 
-    But beware, there are some caveats with bulk queries. In this case typename
+    But beware, there are some pitfalls with bulk queries. In this case typename
     MUST be specified manually.
 
     >>> session.query(UserNode).delete() # doctest: +SKIP

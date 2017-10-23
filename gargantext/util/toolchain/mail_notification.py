@@ -6,7 +6,7 @@ from gargantext.settings     import BASE_URL
 
 
 
-drafts = { 
+drafts = {
         'workflowEnd' : '''
     Bonjour,
     votre analyse sur Gargantext vient de se terminer.
@@ -51,7 +51,7 @@ def notification(corpus,draft):
     user = session.query(User).filter(User.id == corpus.user_id).first()
 
     message = draft % (corpus.name, BASE_URL, corpus.parent_id, corpus.id)
-    
+
     if user.email != "" :
         send_mail('[Gargantext] Update'
                  , message

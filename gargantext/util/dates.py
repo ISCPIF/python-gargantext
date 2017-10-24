@@ -2,6 +2,7 @@ import os
 from gargantext.settings import MEDIA_ROOT
 
 from datetime import MINYEAR
+from dateutil.parser import parse as parse_datetime_flexible
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import datetime as _datetime, utc as UTC, now as utcnow
 
@@ -19,7 +20,8 @@ class datetime(_datetime):
 
     @staticmethod
     def parse(s):
-        dt = parse_datetime(s)
+        dt = parse_datetime(s) or \
+             parse_datetime_flexible(s, default=datetime(MINYEAR, 1, 1))
         return dt.astimezone(UTC) if dt.tzinfo else dt.replace(tzinfo=UTC)
 
 

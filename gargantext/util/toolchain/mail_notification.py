@@ -6,7 +6,7 @@ from gargantext.settings     import BASE_URL
 
 
 
-drafts = { 
+drafts = {
         'workflowEnd' : '''
     Bonjour,
     votre analyse sur Gargantext vient de se terminer.
@@ -42,18 +42,33 @@ drafts = {
 
     ''',
 
+        'recountDone': '''
+    Bonjour,
+    le recalcul que vous avez lancé est terminé.
 
-        }
+    Vous pouvez accéder à votre corpus intitulé
+        \"%s\"
+    à l'adresse:
+
+    http://%s/projects/%d/corpora/%d
+
+    Nous restons à votre disposition pour tout complément d'information.
+    Cordialement
+    --
+        L'équipe de Gargantext (CNRS)
+    '''
+
+}
 
 
 
-def notification(corpus,draft):
+def notification(corpus, draft, subject='Update'):
     user = session.query(User).filter(User.id == corpus.user_id).first()
 
     message = draft % (corpus.name, BASE_URL, corpus.parent_id, corpus.id)
-    
+
     if user.email != "" :
-        send_mail('[Gargantext] Update'
+        send_mail('[Gargantext] %s' % subject
                  , message
                  , 'contact@gargantext.org'
                  , [user.email], fail_silently=False )
@@ -63,11 +78,12 @@ def notification(corpus,draft):
 
 
 def notify_owner(corpus):
-    notification(corpus, drafts['workflowEnd'])
+    notification(corpus, drafts['workflowEnd'], 'Corpus updated')
 
 
 def notify_listMerged(corpus):
-    notification(corpus, drafts['listMerged'])
+    notification(corpus, drafts['listMerged'], 'List merged')
 
 
-
+def notify_recount(corpus):
+    notification(corpus, drafts['recountDone'], 'Recount done')

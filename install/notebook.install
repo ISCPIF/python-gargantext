@@ -1,5 +1,0 @@
-#!/bin/bash
-
-sudo adduser --disabled-password --gecos "" notebooks
-sudo docker rm $(sudo docker ps -a | grep sh | awk '{print $1}')
-sudo docker build -t garg-notebook:latest ./notebook

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-FILE="/var/log/gargantext/celery/$(date +%Y%m%d-%H:%M:%S).log"
-source /srv/env_3-5/bin/activate
-./manage.py celery worker -f $FILE

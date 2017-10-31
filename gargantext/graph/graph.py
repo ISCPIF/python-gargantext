@@ -1,20 +1,19 @@
-# Gargantext lib
-from gargantext.util.db           import session, aliased
-from gargantext.util.lists        import WeightedMatrix, UnweightedList, Translations
-from gargantext.util.http         import JsonHttpResponse
-from gargantext.models            import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
+from celery                     import shared_task
+from datetime                   import datetime
 
-from graph.cooccurrences          import countCooccurrences
-from graph.distances              import clusterByDistances
-from graph.bridgeness             import filterByBridgeness
-from graph.mail_notification      import notify_owner
-from graph.growth                 import compute_growth
+from gargantext.util.db         import session, aliased
+from gargantext.util.lists      import WeightedMatrix, UnweightedList, Translations
+from gargantext.util.http       import JsonHttpResponse
+from gargantext.models          import Node, Ngram, NodeNgram, NodeNgramNgram, NodeHyperdata
 
-from gargantext.util.scheduling   import scheduled
-from gargantext.constants         import graph_constraints
+from gargantext.util.scheduling import scheduled
+from gargantext.constants       import graph_constraints
 
-from celery                       import shared_task
-from datetime                     import datetime
+from .cooccurrences             import countCooccurrences
+from .distances                 import clusterByDistances
+from .bridgeness                import filterByBridgeness
+from .mail_notification         import notify_owner
+from .growth                    import compute_growth
 
 
 @shared_task
@@ -65,7 +64,7 @@ def compute_graph( corpus_id=None      , cooc_id=None
 
         print("GRAPH #%d ... Filtering by bridgeness %d." % (cooc_id, bridgeness))
         data = filterByBridgeness(G,partition,ids,weight,bridgeness,"node_link",field1,field2)
-        
+
         if start is not None and end is not None:
             growth= dict()
             for (ng_id, score) in compute_growth(corpus_id, groupList_id, mapList_id, start, end):
@@ -73,7 +72,7 @@ def compute_graph( corpus_id=None      , cooc_id=None
 
             for node in data['nodes']:
                 node['attributes']['growth'] = growth[node['id']]
-        
+
         print("GRAPH #%d ... Saving Graph in hyperdata as json." % cooc_id)
         node = session.query(Node).filter(Node.id == cooc_id).first()
 
@@ -271,5 +270,5 @@ def get_graph( request=None         , corpus=None
     if len(data) == 0:
         print("GRAPH #   ... GET_GRAPH: 0 coocs in matrix")
         data = {'nodes':[], 'links':[]}  # empty data
-    
+
     return data

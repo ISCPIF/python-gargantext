@@ -10,7 +10,7 @@ from . import ngrams
 from . import metrics
 from . import ngramlists
 from . import analytics
-from graph.rest import Graph
+from gargantext.graph.rest import Graph
 
 urlpatterns = [ url(r'^nodes$'                , nodes.NodeListResource.as_view())
               , url(r'^nodes/(\d+)$'          , nodes.NodeResource.as_view())

@@ -1,12 +1,14 @@
+from traceback               import format_tb
+
 from gargantext.util.db      import session
 from gargantext.models.nodes import Node
-from graph.graph             import get_graph
-from graph.utils             import compress_graph, format_html
-from gargantext.util.http    import APIView, APIException\
-                                  , JsonHttpResponse, requires_auth
-
+from gargantext.util.http    import APIView, APIException, \
+                                    JsonHttpResponse, requires_auth
 from gargantext.constants    import graph_constraints
-from traceback               import format_tb
+
+from .graph  import get_graph
+from .utils  import compress_graph, format_html
+
 
 class Graph(APIView):
     '''

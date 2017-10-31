@@ -26,7 +26,7 @@ from gargantext.util.http       import JsonHttpResponse
 from gargantext.util.scheduling import scheduled
 from gargantext.util.toolchain  import parse_extract_indexhyperdata
 
-from moissonneurs.util              import Scraper
+from .util                      import Scraper
 
 
 

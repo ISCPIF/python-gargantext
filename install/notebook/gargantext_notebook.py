@@ -147,7 +147,7 @@ def get_moissonneur(name):
     if not isinstance(name, str) or not name.islower():
         raise NotebookError("Invalid moissonneur name: %r" % name)
 
-    module = importlib.import_module('moissonneurs.%s' % name)
+    module = importlib.import_module('gargantext.moissonneurs.%s' % name)
     module.name = name
 
     return module

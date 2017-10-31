@@ -1,18 +1,19 @@
-from gargantext.models     import Node, NodeNgram, NodeNgramNgram, \
-                                  NodeHyperdata
-from gargantext.util.db    import session, aliased
-
-from graph.louvain         import best_partition
+import math
+import numpy    as np
+import pandas   as pd
+import networkx as nx
 
 from copy        import copy
 from collections import defaultdict
 from math        import log,sqrt
 #from operator import itemgetter
 
-import math
-import numpy    as np
-import pandas   as pd
-import networkx as nx
+from gargantext.models     import Node, NodeNgram, NodeNgramNgram, \
+                                  NodeHyperdata
+from gargantext.util.db    import session, aliased
+
+from .louvain import best_partition
+
 
 def clusterByDistances( cooc_matrix
                , field1=None, field2=None

@@ -18,14 +18,14 @@ import gargantext.views.pages.urls
 
 # Module Annotation
     ## tempo: unchanged doc-annotations --
-from annotations         import urls as annotations_urls
-from annotations.views   import main as annotations_main_view
+from gargantext.annotations         import urls as annotations_urls
+from gargantext.annotations.views   import main as annotations_main_view
 
 # Module for graph service
-import graph.urls
+import gargantext.graph.urls
 
 # Module Scrapers
-import moissonneurs.urls
+import gargantext.moissonneurs.urls
 
 
 urlpatterns = [ url(r'^admin/'     , admin.site.urls                                   )
@@ -35,7 +35,7 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                            
                                     , permanent=False), name="favicon"                 )
 
               # Module Graph
-              , url(r'^'           , include( graph.urls )                             )
+              , url(r'^'           , include( gargantext.graph.urls )                  )
 
               # Module Annotation
               # tempo: unchanged doc-annotations routes --
@@ -44,5 +44,5 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                            
                                                                 , annotations_main_view)
 
               # Module Scrapers (Moissonneurs in French)
-              , url(r'^moissonneurs/'   , include( moissonneurs.urls )                 )
+              , url(r'^moissonneurs/'   , include( gargantext.moissonneurs.urls )      )
               ]

@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from annotations import views
+from gargantext.annotations import views
 
 
 # /!\ urls patterns here are *without* the trailing slash

@@ -1,9 +1,9 @@
 from django.conf.urls import url
 
 # Module "Graph Explorer"
-from graph.rest         import Graph
-from graph.views        import explorer, myGraphs
-from graph.intersection import intersection
+from .rest import Graph
+from .views import explorer, myGraphs
+from .intersection import intersection
 
 
 # TODO : factor urls

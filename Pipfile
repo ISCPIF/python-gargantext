@@ -1,0 +1,27 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+
+
+[packages]
+
+django = "*"
+dateutils = "*"
+celery = "==3.1.25"
+sqlalchemy = "*"
+"psycopg2" = "*"
+sqlalchemy-utils = "*"
+django-celery = "*"
+djangorestframework = "*"
+djangorestframework-jwt = "*"
+
+
+[requires]
+
+python_version = "3.5"

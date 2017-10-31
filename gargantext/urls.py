@@ -14,16 +14,10 @@ from django.contrib.staticfiles.storage import staticfiles_storage as static
 import gargantext.views.api.urls
 import gargantext.views.pages.urls
 
-# Module Scrapers
-import gargantext.moissonneurs.urls
-
 
 urlpatterns = [ url(r'^admin/'     , admin.site.urls                                   )
               , url(r'^api/'       , include( gargantext.views.api.urls )              )
               , url(r'^'           , include( gargantext.views.pages.urls )            )
               , url(r'^favicon.ico$', Redirect.as_view( url=static.url('favicon.ico')
                                     , permanent=False), name="favicon"                 )
-
-              # Module Scrapers (Moissonneurs in French)
-              , url(r'^moissonneurs/'   , include( gargantext.moissonneurs.urls )      )
               ]

@@ -5,7 +5,6 @@ Views are shared between these modules:
  - `pages`,          to present HTML views to the user
  - `contents`,       for Python-generated contents
  - `annotations`,    to annotate local context of a corpus (as global context)
- - `graph explorer`, to explore graphs
 """
 
 from django.conf.urls                   import include, url
@@ -21,9 +20,6 @@ import gargantext.views.pages.urls
 from gargantext.annotations         import urls as annotations_urls
 from gargantext.annotations.views   import main as annotations_main_view
 
-# Module for graph service
-import gargantext.graph.urls
-
 # Module Scrapers
 import gargantext.moissonneurs.urls
 
@@ -33,9 +29,6 @@ urlpatterns = [ url(r'^admin/'     , admin.site.urls                            
               , url(r'^'           , include( gargantext.views.pages.urls )            )
               , url(r'^favicon.ico$', Redirect.as_view( url=static.url('favicon.ico')
                                     , permanent=False), name="favicon"                 )
-
-              # Module Graph
-              , url(r'^'           , include( gargantext.graph.urls )                  )
 
               # Module Annotation
               # tempo: unchanged doc-annotations routes --

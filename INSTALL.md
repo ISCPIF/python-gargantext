@@ -32,6 +32,10 @@ insights. Here is the straightforward way:
 
     $ pip install pipenv --user
 
+If you use `pipenv shell`, don't forget to leave the virtualenv (`exit` or
+`<Ctrl-D>`) and enter it again each time you install or uninstall packages with
+`pipenv` or `pip`, to avoid weird issues with your environment.
+
 [1]: https://github.com/kennethreitz/pipenv
 [2]: https://docs.pipenv.org/
 
@@ -67,5 +71,5 @@ But also:
 To install specific packages without messing with dependencies, just use pip.
 For example, to install ipython or bpython shells locally:
 
-    $ pip install ipython
-    $ pip install bpython
+    $ pipenv run pip install ipython
+    $ pipenv run pip install bpython

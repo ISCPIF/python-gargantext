@@ -1,6 +1,3 @@
-import os
-from gargantext.settings import MEDIA_ROOT
-
 from datetime import MINYEAR
 from dateutil.parser import parse as parse_datetime_flexible
 from django.utils.dateparse import parse_datetime

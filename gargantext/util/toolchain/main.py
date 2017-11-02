@@ -1,5 +1,5 @@
 
-from gargantext.settings  import DEBUG
+from django.conf          import settings
 from .parsing             import parse
 from .ngrams_extraction   import extract_ngrams
 from .hyperdata_indexing  import index_hyperdata
@@ -176,7 +176,7 @@ def parse_extract_indexhyperdata(corpus):
     session.commit()
 
 
-    if DEBUG is False:
+    if settings.DEBUG is False:
         print('CORPUS #%d: [%s] FINISHED Sending email notification' % (corpus.id, t()))
         notify_owner(corpus)
 
@@ -299,7 +299,7 @@ def recount(corpus_id):
     corpus.save_hyperdata()
     session.commit()
 
-    if not DEBUG:
+    if not settings.DEBUG:
         print('RECOUNT #%d: [%s] FINISHED Sending email notification' % (corpus.id, t()))
         notify_recount(corpus)
 

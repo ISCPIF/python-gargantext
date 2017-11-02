@@ -37,7 +37,7 @@ import re
 import importlib
 from gargantext.util.lists import *
 from gargantext.util import datetime, convert_to_datetime
-from .settings import BASE_DIR
+from django.conf import settings
 
 # types & models (nodes, lists, hyperdata, resource) ---------------------------------------------
 LISTTYPES = {
@@ -398,7 +398,7 @@ DEFAULT_CSV_DELIM_GROUP        = '|&|'
 # Files ----------------------------------------------------------------
 # uploads/.gitignore prevents corpora indexing
 # copora can be either a folder or symlink towards specific partition
-UPLOAD_DIRECTORY   = os.path.join(BASE_DIR, 'uploads/corpora')
+UPLOAD_DIRECTORY   = os.path.join(settings.BASE_DIR, 'uploads/corpora')
 UPLOAD_LIMIT       = 1024 * 1024 * 1024
 DOWNLOAD_DIRECTORY = UPLOAD_DIRECTORY
 

@@ -1,4 +1,4 @@
-from gargantext           import settings
+from django.conf          import settings
 from gargantext.util.json import json_dumps
 
 

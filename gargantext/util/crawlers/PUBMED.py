@@ -13,7 +13,6 @@ import datetime
 from os import path
 import threading
 from traceback                  import print_tb
-#from gargantext.settings import MEDIA_ROOT, BASE_DIR
 from ._Crawler import Crawler
 import requests
 from lxml import etree

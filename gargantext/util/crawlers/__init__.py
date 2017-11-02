@@ -1,8 +1,8 @@
 import importlib
+from django.conf import settings
 from gargantext.constants import RESOURCETYPES
-from gargantext.settings import DEBUG
 
-#if DEBUG: print("Loading available Crawlers")
+#if settings.DEBUG: print("Loading available Crawlers")
 
 base_parser = "gargantext.util.crawlers"
 for resource in RESOURCETYPES:
@@ -14,7 +14,7 @@ for resource in RESOURCETYPES:
             module = base_parser+".%s" %(filename)
             importlib.import_module(module)
 
-            #if DEBUG: print("\t-", name)
+            #if settings.DEBUG: print("\t-", name)
         except Exception as e:
             print("Check constants.py RESOURCETYPES declaration %s \nCRAWLER %s is not available for %s" %(str(e), resource["crawler"], resource["name"]))
 

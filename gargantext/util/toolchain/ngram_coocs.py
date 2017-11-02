@@ -2,7 +2,6 @@
 COOCS
     (this is the full SQL version, should be more reliable on outerjoin)
 """
-from gargantext                import settings
 from sqlalchemy                import exc
 from gargantext.util.lists     import WeightedMatrix
 from gargantext.util.db        import get_engine
@@ -112,7 +111,7 @@ def compute_coocs(  corpus,
         -- GROUP BY ngA, ngB
         )
         """
-    
+
     # 3) taking the cooccurrences of ngram x2
     ngram_filter_A_sql += """
         -- STEP 1: X axis of the matrix

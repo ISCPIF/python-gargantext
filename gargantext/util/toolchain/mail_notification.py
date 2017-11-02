@@ -2,7 +2,7 @@
 from gargantext.models.users import User
 from gargantext.util.db      import session
 from django.core.mail        import send_mail
-from gargantext.settings     import BASE_URL
+from django.conf             import settings
 
 
 
@@ -65,7 +65,7 @@ drafts = {
 def notification(corpus, draft, subject='Update'):
     user = session.query(User).filter(User.id == corpus.user_id).first()
 
-    message = draft % (corpus.name, BASE_URL, corpus.parent_id, corpus.id)
+    message = draft % (corpus.name, settings.BASE_URL, corpus.parent_id, corpus.id)
 
     if user.email != "" :
         send_mail('[Gargantext] %s' % subject

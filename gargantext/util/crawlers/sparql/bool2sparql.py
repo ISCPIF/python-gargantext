@@ -1,9 +1,8 @@
-
 import subprocess
 import re
+from django.conf import settings
 from .sparql import Service
-from gargantext.settings import BOOL_TOOLS_PATH
-#from sparql import Service
+
 
 def bool2sparql(rawQuery, count=False, offset=None, limit=None):
     """
@@ -13,7 +12,7 @@ def bool2sparql(rawQuery, count=False, offset=None, limit=None):
     See: https://github.com/delanoe/bool2sparql
     """
     query = re.sub("\"", "\'", rawQuery)
-    bashCommand = [BOOL_TOOLS_PATH + "/bool2sparql-exe","-q",query]
+    bashCommand = [settings.BOOL_TOOLS_PATH + "/bool2sparql-exe","-q",query]
 
     if count is True :
         bashCommand.append("-c")
@@ -21,7 +20,7 @@ def bool2sparql(rawQuery, count=False, offset=None, limit=None):
         if offset is not None :
             for command in ["--offset", str(offset)] :
                 bashCommand.append(command)
-        
+
         if limit is not None :
             for command in ["--limit", str(limit)] :
                 bashCommand.append(command)
@@ -29,7 +28,7 @@ def bool2sparql(rawQuery, count=False, offset=None, limit=None):
 
     process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE)
     output, error = process.communicate()
-    
+
     if error is not None :
         raise(error)
     else :
@@ -43,7 +42,7 @@ def isidore(query, count=False, offset=None, limit=None):
     """
 
     query = bool2sparql(query, count=count, offset=offset, limit=limit)
-    
+
     go = Service("https://www.rechercheisidore.fr/sparql/", "utf-8", "GET")
     results = go.query(query)
 
@@ -52,10 +51,10 @@ def isidore(query, count=False, offset=None, limit=None):
             doc        = dict()
             doc_values = dict()
             doc["url"], doc["title"], doc["date"], doc["abstract"], doc["source"] = r
-            
+
             for k in doc.keys():
                 doc_values[k] = doc[k].value
-            
+
             yield(doc_values)
 
 

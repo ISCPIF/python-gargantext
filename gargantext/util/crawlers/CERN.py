@@ -12,7 +12,7 @@ import random
 
 import urllib.parse as uparse
 from lxml import etree
-from gargantext.settings import API_TOKENS
+from django.conf import settings
 
 from ._Crawler import Crawler
 from gargantext.util.timeit_damnit  import timing
@@ -21,7 +21,7 @@ from gargantext.util.timeit_damnit  import timing
 class CernCrawler(Crawler):
     '''CERN SCOAP3 API Interaction'''
     def __init__(self):
-        API = API_TOKENS["CERN"]
+        API = settings.API_TOKENS["CERN"]
         self.apikey = API["APIKEY"].encode("utf-8")
         self.secret  = bytearray(API["APISECRET"].encode("utf-8"))
         self.BASE_URL = u"http://api.scoap3.org/search?"
@@ -96,12 +96,12 @@ class CernCrawler(Crawler):
         print(self.results_nb, "res")
         #self.generate_urls()
         return(self.ids)
-    
+
     def generate_urls(self):
         ''' generate raw urls of ONE record'''
         self.urls = ["http://repo.scoap3.org/record/%i/export/xm?ln=en" %rid for rid in self.ids]
         return self.urls
-    
+
     def fetch_records(self, ids):
         ''' for NEXT time'''
         raise NotImplementedError

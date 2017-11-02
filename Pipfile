@@ -11,12 +11,12 @@ name = "pypi"
 
 [packages]
 
-django = "*"
+Django = ">=1.11,<1.12"
 dateutils = "*"
 celery = "==3.1.25"
-sqlalchemy = "*"
+SQLAlchemy = "*"
 "psycopg2" = "*"
-sqlalchemy-utils = "*"
+SQLAlchemy-Utils = "*"
 django-celery = "*"
 djangorestframework = "*"
 djangorestframework-jwt = "*"

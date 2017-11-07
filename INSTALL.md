@@ -2,9 +2,10 @@
 
 ## TL;DR
 
-You need `pipenv` and an up-to-date version of `pip`. To install and run:
+You need `pipenv` and an up-to-date version of `pip`. To setup development
+environment and run test server:
 
-    $ pipenv install
+    $ make dev
     $ pipenv run ./manage runserver
 
 
@@ -45,7 +46,7 @@ If you use `pipenv shell`, don't forget to leave the virtualenv (`exit` or
 To bootstrap Gargantext environment just cd into your local Gargantext repo and
 do:
 
-    $ pipenv install
+    $ make dev
 
 If everything is going well, you now have a clean virtualenv with every
 packages you need to run Gargantext. Here is how to get the path of the

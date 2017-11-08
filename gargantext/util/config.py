@@ -1,5 +1,10 @@
+import os
 from configparser import RawConfigParser
 from decouple import AutoConfig, RepositoryIni
+
+
+SEARCH_PATH, GARGANTEXT_CONF = \
+    os.path.split(os.environ.get('GARGANTEXT_CONF', 'gargantext.ini'))
 
 
 class GargantextIni(RepositoryIni):
@@ -12,7 +17,7 @@ class GargantextIni(RepositoryIni):
 
 
 class GargantextConfig(AutoConfig):
-    SUPPORTED = {'gargantext.ini': GargantextIni}
+    SUPPORTED = {GARGANTEXT_CONF: GargantextIni}
 
 
-config = GargantextConfig(search_path='.')
+config = GargantextConfig(search_path=SEARCH_PATH or '.')

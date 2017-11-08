@@ -1,3 +1,5 @@
+.PHONY: dev prod env
+
 dev: env
 	@echo "• Installing dependencies..."
 	pipenv install --dev

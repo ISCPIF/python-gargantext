@@ -42,8 +42,8 @@ def scheduled_celery(func):
     return go
 
 
-from gargantext.settings import DEBUG
-if DEBUG:
+from django.conf import settings
+if settings.DEBUG:
     # scheduled = scheduled_now
     scheduled = scheduled_thread
 else:

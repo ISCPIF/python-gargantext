@@ -42,10 +42,11 @@ DB_USER=${DB_USER:-$DB_USER_DEFAULT}
 
 read -s -p "Please provide the password for $DB_USER: " DB_PASS && echo
 
-SECRET_KEY=$(echo -n "$SECRET_KEY" | sed -e 's/[\\\/&\"]/\\\\&/g')
-DB_NAME=$(echo -n "$DB_NAME" | sed -e 's/[\\\/&\"]/\\\\&/g')
-DB_USER=$(echo -n "$DB_USER" | sed -e 's/[\\\/&\"]/\\\\&/g')
-DB_PASS=$(echo -n "$DB_PASS" | sed -e 's/[\\\/&\"]/\\\\&/g')
+# Escape variables
+SECRET_KEY=$(echo -n "$SECRET_KEY" | sed -e 's/[\/&\"]/\\&/g')
+DB_NAME=$(echo -n "$DB_NAME" | sed -e 's/[\/&\"]/\\&/g')
+DB_USER=$(echo -n "$DB_USER" | sed -e 's/[\/&\"]/\\&/g')
+DB_PASS=$(echo -n "$DB_PASS" | sed -e 's/[\/&\"]/\\&/g')
 
 echo "Generate configuration file from $TEMPLATE..."
 sed -E -e 's/[{]DEBUG[}]/True/g' \

@@ -1,11 +1,11 @@
-.PHONY: dev prod env
+.PHONY: dev prod env conf
 
-dev: env
+dev: conf env
 	@echo "• Installing dependencies..."
 	pipenv install --dev
 	@echo
 
-prod: env
+prod: conf env
 	@echo "• Installing dependencies..."
 	pipenv install
 	@echo
@@ -13,4 +13,9 @@ prod: env
 env:
 	@echo "• Setup django settings module..."
 	./tools/mkenv.sh
+	@echo
+
+conf:
+	@echo "• Setup gargantext configuration..."
+	./tools/mkconf.sh
 	@echo

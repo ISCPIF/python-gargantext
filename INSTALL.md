@@ -5,7 +5,7 @@
 You need `pipenv` and an up-to-date version of `pip`. To setup development
 environment and run test server:
 
-    $ make dev
+    $ make
     $ pipenv run ./manage runserver
 
 
@@ -46,10 +46,19 @@ If you use `pipenv shell`, don't forget to leave the virtualenv (`exit` or
 To bootstrap Gargantext environment just cd into your local Gargantext repo and
 do:
 
-    $ make dev
+    $ make
+
+Or for production (without dev dependencies and without DEBUG mode):
+
+    $ make TARGET=prod
+
+To specify a path for configuration file (by default gargantext.ini in current
+directory), use GARGANTEXT_CONF environment variable. For example:
+
+    $ GARGANTEXT_CONF=/etc/gargantext/gargantext.ini make TARGET=prod
 
 If everything is going well, you now have a clean virtualenv with every
-packages you need to run Gargantext.
+packages you need to run Gargantext, and a fresh configuration file.
 
 You can now run any command by prefixing it with `pipenv run` or by first
 entering the virtualenv with `pipenv shell`. To run Gargantext django backend

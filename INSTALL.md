@@ -49,22 +49,13 @@ do:
     $ make dev
 
 If everything is going well, you now have a clean virtualenv with every
-packages you need to run Gargantext. Here is how to get the path of the
-virtualenv directory pipenv just created:
-
-    $ pipenv --venv
+packages you need to run Gargantext.
 
 You can now run any command by prefixing it with `pipenv run` or by first
 entering the virtualenv with `pipenv shell`. To run Gargantext django backend
 test server you can do:
 
     $ pipenv run ./manage.py runserver
-
-But also:
-
-    $ pipenv shell
-    $ ./manage.py runserver
-    $ ... continue in your virtualenv ...
 
 
 ## Customize dev environment

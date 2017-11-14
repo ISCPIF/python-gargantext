@@ -84,17 +84,17 @@
         },
         "django-celery": {
             "hashes": [
-                "sha256:2d5d0c997fe1cc6c98a9c2a6cf91348f3fbff2438b63e43fa5e9fdadf033ed25",
-                "sha256:926a65bcee6bf2d192a80239f1ec591e1834ff19a547f61762e57fc0dcc5975f"
+                "sha256:1450264db5ec58e45f3f20d8d361e696920352f62481bf56047288cdb38bcc0b",
+                "sha256:aaba492bf7777f231ec6b02c80aa3ea68758c39f4723864dd4164589b99ad703"
             ],
-            "version": "==3.2.1"
+            "version": "==3.2.2"
         },
         "djangorestframework": {
             "hashes": [
-                "sha256:cd7f0f678d63e2be561834ff2049eef6d9fd6fb85c63bea7e94597b36c015bf4",
-                "sha256:305b2c6564ca46d3b558ba21110ed717135c467adf1a6dfd192bd85f4bb04d50"
+                "sha256:79268055755125caaebface3acbe13150bbc3a83b78e9bf1a1abfde7ab0c5231",
+                "sha256:067960e5e9e5586d3b2d53a1d626c4800dc33cd8309487d404fc63355674556f"
             ],
-            "version": "==3.7.1"
+            "version": "==3.7.3"
         },
         "djangorestframework-jwt": {
             "hashes": [
@@ -189,15 +189,15 @@
         },
         "sqlalchemy": {
             "hashes": [
-                "sha256:f1191e29e35b6fe1aef7175a09b1707ebb7bd08d0b17cb0feada76c49e5a2d1e"
+                "sha256:8b79a5ed91cdcb5abe97b0045664c55c140aec09e5dd5c01303e23de5fe7a95a"
             ],
-            "version": "==1.1.14"
+            "version": "==1.1.15"
         },
         "sqlalchemy-utils": {
             "hashes": [
-                "sha256:e537ed690e4a9d4044add13087b853757b2ad2893bc99d3b69754a9016b40bc8"
+                "sha256:e35431b0e57c4f7030ff598c23813c8b7b04b508ce10e8e9ebe448645b38d6d7"
             ],
-            "version": "==0.32.19"
+            "version": "==0.32.21"
         }
     },
     "develop": {}

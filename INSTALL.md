@@ -2,8 +2,8 @@
 
 ## TL;DR
 
-You need `pipenv` and an up-to-date version of `pip`. To setup development
-environment and run test server:
+You need `pipenv`, an up-to-date version of `pip`, and a PostgreSQL (>= 9.5)
+database. To setup development environment and run test server:
 
     $ make
     $ pipenv run ./manage runserver
@@ -39,6 +39,15 @@ If you use `pipenv shell`, don't forget to leave the virtualenv (`exit` or
 
 [1]: https://github.com/kennethreitz/pipenv
 [2]: https://docs.pipenv.org/
+
+## PostgreSQL
+
+Gargantext rely on PostgreSQL (>= 9.5) for data persistence. To setup
+database on a Debian-based OS:
+
+    $ sudo apt-get install postgresql-9.6 postgresql-client-9.6
+    $ sudo -u postgres psql -c "CREATE USER gargantua PASSWORD '<pass>' CREATEROLE BYPASSRLS"
+    $ sudo -u postgres createdb -O gargantua gargandb
 
 
 ## Installation

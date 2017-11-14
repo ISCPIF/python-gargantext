@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# Handle arguments
+USAGE="Usage: $0 [-h|--help] [-f|--force] [dev|prod]"
 while :; do
     case $1 in
-        -h|--help) echo "Usage: $0 [-h|--help] [-f|--force] [dev|prod]"; exit;;
+        -h|--help) echo $USAGE; exit;;
         -f|--force) FORCE=1;;
         --) shift; break;;
         *) break
@@ -43,9 +43,10 @@ SECRET_KEY=$(python ./tools/gensecret.py)
 
 echo "PostgreSQL configuration..."
 
-    DB_NAME_DEFAULT=gargandb
-    DB_USER_DEFAULT=gargantua
+DB_NAME_DEFAULT=gargandb
+DB_USER_DEFAULT=gargantua
 
+while :; do
     read -p "Database name [$DB_NAME_DEFAULT]: " DB_NAME
     DB_NAME=${DB_NAME:-$DB_NAME_DEFAULT}
 
@@ -53,6 +54,17 @@ echo "PostgreSQL configuration..."
     DB_USER=${DB_USER:-$DB_USER_DEFAULT}
 
     read -s -p "Please provide the password for $DB_USER: " DB_PASS && echo
+
+    echo "Check database access..."
+    if ! sudo -u postgres PGPASSWORD="$DB_PASS" psql -wq -d "$DB_NAME" \
+                    -U "$DB_USER" -h 127.0.0.1 -c "" 1>/dev/null 2>&1; then
+        read -p "Can't connect to database, give up? (Y/n) " GIVE_UP
+        [ -z "$GIVE_UP" -o "${GIVE_UP,,}" = "y" ] && break
+    else
+        echo "Access granted!"
+        break
+    fi
+done
 
 # Escape variables
 SECRET_KEY=$(echo -n "$SECRET_KEY" | sed -e 's/[\/&\"]/\\&/g')

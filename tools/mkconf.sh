@@ -82,5 +82,7 @@ sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
     && echo "Configuration for $TARGET environment written successfully in" \
             "$GARGANTEXT_CONF."
 
-[ -z "$DB_PASS" ] && echo "You didn't provide any database password, please" \
-                          "edit $GARGANTEXT_CONF before running Gargantext."
+if [ -z "$DB_PASS" ]; then
+    echo "You didn't provide any database password, please" \
+         "edit $GARGANTEXT_CONF before running Gargantext."
+fi

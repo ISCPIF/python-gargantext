@@ -9,7 +9,8 @@ PIPENV_ARGS=--dev
 endif
 
 VENV=$(shell pipenv --venv)
-PY_VERSION=$(shell python -c 'import sys; v=sys.version_info; print("{0}.{1}".format(*v))')
+PYTHON=$(shell pipenv --py)
+PY_VERSION=$(shell $(PYTHON) -c 'import sys; v=sys.version_info; print("{0}.{1}".format(*v))')
 
 gargantext: conf env
 	@echo "• Installing dependencies..."

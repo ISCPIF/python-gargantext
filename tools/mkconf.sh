@@ -18,7 +18,7 @@ TARGET="${1:-dev}"
 [ -z "$GARGANTEXT_CONF" ] && GARGANTEXT_CONF=gargantext.ini
 
 # Configuration template path
-TEMPLATE=tools/gargantext.template.ini
+TEMPLATE=tools/conf/gargantext.template.ini
 
 # Check for configuration file existence
 if [ -f "$GARGANTEXT_CONF" -a -z "$FORCE" ]; then
@@ -66,11 +66,15 @@ while :; do
     fi
 done
 
+escape_ini () {
+    echo -n "$1" | sed -e 's/[\/&\"]/\\&/g'
+}
+
 # Escape variables
-SECRET_KEY=$(echo -n "$SECRET_KEY" | sed -e 's/[\/&\"]/\\&/g')
-DB_NAME=$(echo -n "$DB_NAME" | sed -e 's/[\/&\"]/\\&/g')
-DB_USER=$(echo -n "$DB_USER" | sed -e 's/[\/&\"]/\\&/g')
-DB_PASS=$(echo -n "$DB_PASS" | sed -e 's/[\/&\"]/\\&/g')
+SECRET_KEY=$(escape_ini "$SECRET_KEY")
+DB_NAME=$(escape_ini "$DB_NAME")
+DB_USER=$(escape_ini "$DB_USER")
+DB_PASS=$(escape_ini "$DB_PASS")
 
 echo "Generate configuration file from $TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \

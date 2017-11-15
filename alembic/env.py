@@ -4,14 +4,9 @@ from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import re
 
-# Add projet root directory in path and setup Django...
-import os
+# Setup django to be able to import gargantext
 import django
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gargantext.settings')
 django.setup()
-
-# ...to be able to import gargantext.
 
 from django.conf import settings
 from gargantext import models

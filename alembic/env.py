@@ -13,7 +13,8 @@ django.setup()
 
 # ...to be able to import gargantext.
 
-from gargantext import settings, models
+from django.conf import settings
+from gargantext import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

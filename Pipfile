@@ -21,6 +21,7 @@ django-celery = "*"
 djangorestframework = "*"
 djangorestframework-jwt = "*"
 python-decouple = "*"
+alembic = "*"
 
 
 [requires]

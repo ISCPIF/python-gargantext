@@ -4,7 +4,7 @@ ENV_FILE=.env
 
 read -r -d '' DJANGO_VAR <<EOF
 # Django settings module, it is unlikely that you'll need to change that
-DJANGO_SETTINGS_MODULE=gargantext.settings
+DJANGO_SETTINGS_MODULE=gargantext.backend.settings
 EOF
 
 build_env () {

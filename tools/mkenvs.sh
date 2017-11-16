@@ -10,9 +10,10 @@ EOF
 build_env () {
     cat << EOF > $ENV_FILE
 $DJANGO_VAR
-# Path to gargantext configuration file, you're welcome to change that; when
-# a simple filename is given, it'll be searched in current directory
+# Paths of configuration files, you're welcome to change that; when a simple
+# filename is given, it'll be searched in current directory.
 GARGANTEXT_CONF=gargantext.ini
+POSTGREST_CONF=postgrest.conf
 EOF
 }
 

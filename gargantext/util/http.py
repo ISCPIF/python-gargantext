@@ -6,7 +6,7 @@ from django import forms
 
 from urllib.parse import quote_plus as urlencode
 
-from gargantext import settings
+from django.conf import settings
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from traceback import print_tb

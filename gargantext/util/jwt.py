@@ -1,4 +1,4 @@
-from gargantext import settings
+from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from calendar import timegm
 

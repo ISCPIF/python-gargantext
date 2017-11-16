@@ -6,7 +6,12 @@ query () {
 }
 
 escape_ini () {
-    echo -n "$1" | sed -e 's/[\/&\"]/\\&/g'
+    echo -n "$1" | sed -e 's/["\]/\\\\\\&/g' | sed -e 's/[/&]/\\&/g'
+}
+
+# See http://hackage.haskell.org/package/configurator-0.3.0.0/docs/Data-Configurator.html
+escape_pgrest () {
+    echo -n "$1" | sed -e 's/[$]/$$/g' | sed -e 's/["\]/\\\\\\&/g' | sed -e 's/[/&]/\\&/g'
 }
 
 # Adapted from https://gist.github.com/cdown/1163649
@@ -113,16 +118,17 @@ if $DB_ACCESS && query "$PGREST_USER" "$PGREST_PASS" ""; then
     fi
 fi
 
-PGREST_DB_URI="postgres://"$(escape_url "$PGREST_USER")":"$(escape_url "$PGREST_PASS")"@"$(escape_url "$DB_HOST")":"$(escape_url "$DB_PORT")"/"$(escape_url "$DB_NAME")
+DB_URI="postgres://"$(escape_url "$PGREST_USER")":"$(escape_url "$PGREST_PASS")"@"$(escape_url "$DB_HOST")":"$(escape_url "$DB_PORT")"/"$(escape_url "$DB_NAME")
 
 # Escape variables
+PGREST_DB_URI=$(escape_pgrest "$DB_URI")
+PGREST_SECRET_KEY=$(escape_pgrest "$SECRET_KEY")
 SECRET_KEY=$(escape_ini "$SECRET_KEY")
 DB_HOST=$(escape_ini "${DB_HOST:-127.0.0.1}")
 DB_PORT=$(escape_ini "${DB_PORT:-5432}")
 DB_NAME=$(escape_ini "$DB_NAME")
 DB_USER=$(escape_ini "$DB_USER")
 DB_PASS=$(escape_ini "$DB_PASS")
-PGREST_DB_URI=$(escape_ini "$PGREST_DB_URI")
 
 echo "▸ Generate configuration file from $GARGANTEXT_TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
@@ -138,7 +144,7 @@ sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
 
 echo "▸ Generate configuration file for PostgREST from $POSTGREST_TEMPLATE..."
 sed -E -e "s/[{]DB_URI[}]/$PGREST_DB_URI/g" \
-       -e "s/[{]SECRET_KEY[}]/$SECRET_KEY/g" \
+       -e "s/[{]SECRET_KEY[}]/$PGREST_SECRET_KEY/g" \
        "$POSTGREST_TEMPLATE" > "$POSTGREST_CONF" \
     && echo "PostgREST configuration written successfully in $POSTGREST_CONF."
 

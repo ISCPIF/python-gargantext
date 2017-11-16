@@ -178,7 +178,7 @@ REST_FRAMEWORK = {
 
 # See http://getblimp.github.io/django-rest-framework-jwt/
 JWT_AUTH = {
-    'JWT_PAYLOAD_HANDLER': 'gargantext.util.jwt.jwt_payload_handler',
+    'JWT_PAYLOAD_HANDLER': 'gargantext.backend.jwt.jwt_payload_handler',
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_SECRET_KEY': config('SECRET_KEY'),
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=36000),

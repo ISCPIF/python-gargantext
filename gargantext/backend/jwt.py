@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from calendar import timegm
 
-from .dates import datetime
+from gargantext.util.dates import datetime
 
 def jwt_payload_handler(user):
     username = user.username

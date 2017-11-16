@@ -108,13 +108,15 @@ echo "▸ PostgresREST configuration..."
 
 PGREST_USER=authenticator
 PGREST_PASS=CHANGEME
+PGREST_AUTO=false
 
-if $DB_ACCESS && query "$PGREST_USER" "$PGREST_PASS" ""; then
-    read -p "You should change password for database user $PGREST_USER, auto-generate a new one? (Y/n) " PGREST_CHANGE
+if $DB_ACCESS; then
+    read -p "Auto-generate a password for database user $PGREST_USER? (Y/n) " PGREST_CHANGE
     # Generate a password with letters and digits between 12 and 20 chars
     PGREST_PASS=$(pipenv run python ./tools/gensecret.py LD 12 20 2>/dev/null)
-    if [ "${PGREST_CHANGE,,}" = "y" ]; then
-        query "$DB_USER" "$DB_PASS" "ALTER ROLE $PGREST_USER PASSWORD '$PGREST_PASS'"
+    if [ -z "$PGREST_CHANGE" -o "${PGREST_CHANGE,,}" = "y" ]; then
+        query "$DB_USER" "$DB_PASS" "ALTER ROLE $PGREST_USER PASSWORD '$PGREST_PASS'" && \
+            echo "Changed $PGREST_USER password successfully." && PGREST_AUTO=true
     fi
 fi
 
@@ -148,12 +150,12 @@ sed -E -e "s/[{]DB_URI[}]/$PGREST_DB_URI/g" \
        "$POSTGREST_TEMPLATE" > "$POSTGREST_CONF" \
     && echo "PostgREST configuration written successfully in $POSTGREST_CONF."
 
-if [ -z "$DB_PASS" ]; then
-    echo "WARNING: You didn't provide any database password, please" \
+if ! $DB_ACCESS; then
+    echo "WARNING: Couldn't configure database access correctly, please" \
          "edit $GARGANTEXT_CONF before running Gargantext."
 fi
 
-if ! $DB_ACCESS; then
-    echo "WARNING: Couldn't configure PostgREST user $PGREST_USER correctly," \
+if ! $PGREST_AUTO; then
+    echo "WARNING: Didn't configure PostgREST user $PGREST_USER," \
          "you may need to edit $POSTGREST_CONF manually."
 fi

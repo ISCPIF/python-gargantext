@@ -5,6 +5,8 @@
 You need `pipenv`, an up-to-date version of `pip`, and a PostgreSQL (>= 9.5)
 database. To setup development environment and run test server:
 
+    $ git clone -b gargantext-light ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git gargantext-light
+    $ cd gargantext-light
     $ make
     $ pipenv run ./manage runserver
 

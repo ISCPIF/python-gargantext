@@ -1,4 +1,4 @@
-.PHONY: gargantext env conf
+.PHONY: gargantext venv envs migrate conf
 
 ifeq ($(TARGET), "prod")
 TARG=prod
@@ -12,17 +12,25 @@ VENV=$(shell pipenv --venv)
 PYTHON=$(shell pipenv --py)
 PY_VERSION=$(shell $(PYTHON) -c 'import sys; v=sys.version_info; print("{0}.{1}".format(*v))')
 
-gargantext: conf env
-	@echo "• Installing dependencies..."
+gargantext: venv migrate conf
+
+venv: envs
+	@echo "• Setup virtualenv with all dependencies..."
 	pipenv install $(PIPENV_ARGS)
 	@# Put current directory in python path to be able to import gargantext
 	@# from scripts in sub-directories (eg. alembic revisions)
 	@pwd > $(VENV)/lib/python$(PY_VERSION)/site-packages/gargantext.pth
 	@echo
 
-env:
+envs:
 	@echo "• Setup django settings module and configuration path..."
-	./tools/mkenv.sh
+	./tools/mkenvs.sh
+	@echo
+
+migrate:
+	@echo "• Migrate database to latest version..."
+	pipenv run ./manage.py migrate
+	pipenv run alembic upgrade head
 	@echo
 
 conf:

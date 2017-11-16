@@ -12,7 +12,7 @@ VENV=$(shell pipenv --venv)
 PYTHON=$(shell pipenv --py)
 PY_VERSION=$(shell $(PYTHON) -c 'import sys; v=sys.version_info; print("{0}.{1}".format(*v))')
 
-gargantext: venv migrate conf
+gargantext: venv conf migrate
 
 venv: envs
 	@echo "• Setup virtualenv with all dependencies..."

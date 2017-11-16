@@ -45,6 +45,8 @@ echo "PostgreSQL configuration..."
 
 DB_NAME_DEFAULT=gargandb
 DB_USER_DEFAULT=gargantua
+DB_HOST=127.0.0.1
+DB_PORT=5432
 
 while :; do
     read -p "Database name [$DB_NAME_DEFAULT]: " DB_NAME
@@ -79,6 +81,8 @@ DB_PASS=$(escape_ini "$DB_PASS")
 echo "Generate configuration file from $TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
        -e "s/[{]SECRET_KEY[}]/$SECRET_KEY/g" \
+       -e "s/[{]DB_HOST[}]/$DB_HOST/g" \
+       -e "s/[{]DB_PORT[}]/$DB_PORT/g" \
        -e "s/[{]DB_NAME[}]/$DB_NAME/g" \
        -e "s/[{]DB_USER[}]/$DB_USER/g" \
        -e "s/[{]DB_PASS[}]/$DB_PASS/g" \

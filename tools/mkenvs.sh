@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 
 ENV_FILE=.env
-<<<<<<< Updated upstream
-DSM=gargantext.settings
-=======
 DSM=gargantext.backend.settings
 GARGANTEXT_CONF=${GARGANTEXT_CONF:-gargantext.ini}
 POSTGREST_CONF=${POSTGREST_CONF:-postgrest.conf}
->>>>>>> Stashed changes
 
 read -r -d '' DJANGO_VAR <<EOF
 # Django settings module, it is unlikely that you'll need to change that.

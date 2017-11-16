@@ -6,7 +6,7 @@ query () {
 }
 
 escape_ini () {
-    echo -n "$1" | sed -e 's/["\]/\\\\\\&/g' | sed -e 's/[/&]/\\&/g'
+    echo -n "$1" | sed -e 's/[/&\]/\\&/g'
 }
 
 # See http://hackage.haskell.org/package/configurator-0.3.0.0/docs/Data-Configurator.html

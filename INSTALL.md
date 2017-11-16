@@ -66,6 +66,9 @@ directory), use GARGANTEXT_CONF environment variable. For example:
 
     $ GARGANTEXT_CONF=/etc/gargantext/gargantext.ini make TARGET=prod
 
+You can specify path of PostgREST configuration the same way by setting
+POSTGREST_CONF environment variable.
+
 If everything is going well, you now have a clean virtualenv with every
 packages you need to run Gargantext, and a fresh configuration file.
 

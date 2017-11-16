@@ -24,7 +24,7 @@ TEMPLATE=tools/conf/gargantext.template.ini
 if [ -f "$GARGANTEXT_CONF" -a -z "$FORCE" ]; then
     echo -e "Configuration file $GARGANTEXT_CONF already exists, you may" \
             "need to edit it.\nTo generate a new configuration anyway you" \
-            "can do: ./tools/mkconf.sh -f"
+            "can do: ./tools/mkconf.sh -f $TARGET"
     exit
 fi
 

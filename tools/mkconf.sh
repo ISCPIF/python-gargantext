@@ -63,6 +63,9 @@ if [ -f "$GARGANTEXT_CONF" -a -z "$FORCE" ]; then
     exit
 fi
 
+# At this point, delete configuration files if this script is interrupted
+trap "rm -f $GARGANTEXT_CONF $POSTGREST_CONF && echo -e '\nInterrupted' && exit 1" INT
+
 # Check permissions for configuration file
 D=$(dirname $GARGANTEXT_CONF)
 if ! (mkdir -p $D && touch $GARGANTEXT_CONF 2>/dev/null); then

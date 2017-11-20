@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
 ENV_FILE=.env
+DSM=gargantext.settings
 
 read -r -d '' DJANGO_VAR <<EOF
-# Django settings module, it is unlikely that you'll need to change that
-DJANGO_SETTINGS_MODULE=gargantext.settings
+# Django settings module, it is unlikely that you'll need to change that.
+# WARNING: It will be overwritten!
+DJANGO_SETTINGS_MODULE=$DSM
 EOF
 
 build_env () {
@@ -18,7 +20,9 @@ EOF
 }
 
 update_env () {
-    grep -Eq '^\s*DJANGO_SETTINGS_MODULE\s*=' "$ENV_FILE" || echo "$DJANGO_VAR" >> "$ENV_FILE"
+    grep -Eq '^\s*DJANGO_SETTINGS_MODULE=' "$ENV_FILE" \
+        && sed -E -i "s/^(\\s*DJANGO_SETTINGS_MODULE=).*/\\1$DSM/g" $ENV_FILE \
+        || echo "$DJANGO_VAR" >> "$ENV_FILE"
 }
 
 [ -f "$ENV_FILE" ] && update_env || build_env

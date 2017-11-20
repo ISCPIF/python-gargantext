@@ -271,7 +271,7 @@ RESOURCETYPES = [
    },
 
    {    "type": 12,
-        "name": 'ISIDORE [SPARQLE API /!\ BETA]',
+        "name": r'ISIDORE [SPARQLE API /!\ BETA]',
         "parser": "IsidoreParser",
         "format": 'JSON',
         'file_formats':["zip","json"],
@@ -384,9 +384,9 @@ DEFAULT_INDEX_FIELDS            = ('abstract','title' )
 # Grammar rules for chunking
 RULE_JJNN   = "{<JJ.*>*<NN.*|>+<JJ.*>*}"
 RULE_JJDTNN = "{<JJ.*>*<NN.*>+((<P|IN> <DT>? <JJ.*>* <NN.*>+ <JJ.*>*)|(<JJ.*>))*}"
-RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)\
-               +?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?\
-               ,){0,2}?(N.?.?,|\?,)+?)+?)*?$"
+RULE_TINA   = "^((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?,){0,2}?(N.?.?,|\?,)+?(CD.,)??)" \
+              "+?((PREP.?|DET.?,|IN.?,|CC.?,|\?,)((VBD,|VBG,|VBN,|CD.?,|JJ.?,|\?" \
+              ",){0,2}?(N.?.?,|\?,)+?)+?)*?$"
 
 
 # ngram lists import/export parameters -----------------------------------------

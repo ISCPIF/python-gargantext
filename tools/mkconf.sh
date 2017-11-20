@@ -45,6 +45,9 @@ done
 # Target can be dev or prod
 TARGET="${1:-dev}"
 
+# Virtual environment directory
+VENV=$(pipenv --venv)
+
 # Gargantext configuration file path
 [ -z "$GARGANTEXT_CONF" ] && GARGANTEXT_CONF=gargantext.ini
 
@@ -134,6 +137,7 @@ DB_PORT=$(escape_ini "${DB_PORT:-5432}")
 DB_NAME=$(escape_ini "$DB_NAME")
 DB_USER=$(escape_ini "$DB_USER")
 DB_PASS=$(escape_ini "$DB_PASS")
+VENV=$(escape_ini "$VENV")
 
 echo "▸ Generate configuration file from $GARGANTEXT_TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
@@ -143,6 +147,7 @@ sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
        -e "s/[{]DB_NAME[}]/$DB_NAME/g" \
        -e "s/[{]DB_USER[}]/$DB_USER/g" \
        -e "s/[{]DB_PASS[}]/$DB_PASS/g" \
+       -e "s/[{]VENV[}]/$VENV/g" \
        "$GARGANTEXT_TEMPLATE" > "$GARGANTEXT_CONF" \
     && echo "Configuration for $TARGET environment written successfully in" \
             "$GARGANTEXT_CONF."

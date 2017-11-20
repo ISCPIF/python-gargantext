@@ -8,9 +8,7 @@ TARG=dev
 PIPENV_ARGS=--dev
 endif
 
-VENV=$(shell pipenv --venv)
-PYTHON=$(shell pipenv --py)
-PY_VERSION=$(shell $(PYTHON) -c 'import sys; v=sys.version_info; print("{0}.{1}".format(*v))')
+PY_VERSION='import sys; v=sys.version_info; print("{0}.{1}".format(*v))'
 
 gargantext: venv conf migrate
 
@@ -19,7 +17,7 @@ venv: envs
 	pipenv install $(PIPENV_ARGS)
 	@# Put current directory in python path to be able to import gargantext
 	@# from scripts in sub-directories (eg. alembic revisions)
-	@pwd > $(VENV)/lib/python$(PY_VERSION)/site-packages/gargantext.pth
+	@pwd > $$(pipenv --venv)/lib/python$$($$(pipenv --py) -c $(PY_VERSION))/site-packages/gargantext.pth
 	@echo
 
 envs:

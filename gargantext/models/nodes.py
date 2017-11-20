@@ -1,6 +1,5 @@
 from gargantext.util.db import session
-from gargantext.util.files import upload
-from gargantext.constants import *
+from gargantext.constants import NODETYPES, LISTTYPES
 
 from datetime import datetime
 

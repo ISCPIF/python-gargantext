@@ -119,8 +119,8 @@ class NodeHyperdata(Base):
         else:
             self.value_flt = value
 
-    @classproperty
-    def value(cls):
+    @classproperty  #Pylint don't know @classproperty
+    def value(cls): #pylint: disable=method-hidden, no-self-argument
         """Pseudo-attribute used for hyperdata comparison inside a query.
         """
         return HyperdataValueComparer()

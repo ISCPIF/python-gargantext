@@ -28,7 +28,7 @@ RandomWords==0.1.12
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 networkx==1.11
-pandas==0.18.0
+pandas==0.21.0
 six==1.10.0
 lxml==3.5.0
 requests-futures==0.9.7

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
                   Integer, Float, String, DateTime, JSONB, TSVectorType, \
-                  MutableList, MutableDict, validates, ValidatorMixin
+                  MutableList, MutableDict, validates, ValidatorMixin, text
 from .users import User
 
 __all__ = ['Node', 'NodeNode', 'CorpusNode']
@@ -44,7 +44,7 @@ class Node(ValidatorMixin, Base):
     >>> session.query(Node).filter_by(typename='USER').first() # doctest: +ELLIPSIS
     <UserNode(...)>
 
-    But beware, there are some caveats with bulk queries. In this case typename
+    But beware, there are some pitfalls with bulk queries. In this case typename
     MUST be specified manually.
 
     >>> session.query(UserNode).delete() # doctest: +SKIP
@@ -59,20 +59,23 @@ class Node(ValidatorMixin, Base):
 
     id = Column(Integer, primary_key=True)
 
-    typename = Column(NodeType, index=True)
+    typename = Column(NodeType, index=True, nullable=False)
     __mapper_args__ = { 'polymorphic_on': typename }
 
     # foreign keys
-    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'),
+                           nullable=False)
     user          = relationship(User)
 
     parent_id     = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     parent        = relationship('Node', remote_side=[id])
 
-    name = Column(String(255))
-    date  = Column(DateTime(timezone=True), default=datetime.now)
+    name = Column(String(255), nullable=False, server_default='')
+    date = Column(DateTime(timezone=True), nullable=False,
+                  server_default=text('CURRENT_TIMESTAMP'))
 
-    hyperdata      = Column(JSONB, default=dict)
+    hyperdata = Column(JSONB, default=dict, nullable=False,
+                       server_default=text("'{}'::jsonb"))
 
     # Create a TSVECTOR column to use fulltext search feature of PostgreSQL.
     # We need to create a trigger to update this column on update and insert,

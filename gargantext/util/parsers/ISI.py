@@ -12,7 +12,7 @@ class ISIParser(RISParser):
             "DI":  {"type": "hyperdata", "key": "doi"},
             "SO":  {"type": "hyperdata", "key": "source"},
             "PY":  {"type": "hyperdata", "key": "publication_year"},
-            "PD":  {"type": "hyperdata", "key": "publication_month"},
+            "PD":  {"type": "hyperdata", "key": "publication_date_to_parse"},
             "LA":  {"type": "hyperdata", "key": "language_fullname"},
             "AB":  {"type": "hyperdata", "key": "abstract", "separator": " "},
             "WC":  {"type": "hyperdata", "key": "fields"},

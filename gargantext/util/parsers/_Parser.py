@@ -3,10 +3,7 @@ import zipfile
 import re
 import dateparser as date_parser
 from gargantext.util.languages import languages
-from gargantext.util import datetime, convert_to_datetime, MINYEAR
-
-
-DEFAULT_DATE = datetime(MINYEAR, 1, 1)
+from gargantext.util import datetime, convert_to_datetime
 
 
 class Parser:
@@ -14,15 +11,14 @@ class Parser:
     """
 
     def __init__(self, file):
-        if isinstance(file, str):
-            self._file = open(file, 'rb')
-        else:
-            self._file = file
+        self._file = self.open(file)
 
     def __del__(self):
         if hasattr(self, '_file'):
             self._file.close()
 
+    def open(self, file):
+        return open(file, 'rb') if isinstance(file, str) else file
 
     def detect_encoding(self, string):
         """Useful method to detect the encoding of a document.
@@ -47,10 +43,7 @@ class Parser:
         if date_string is not None:
             date_string = re.sub(r'\/\/+(\w*|\d*)', '', date_string)
             try:
-                hyperdata['publication_date'] = dateutil.parser.parse(
-                    date_string,
-                    default=DEFAULT_DATE
-                )
+                hyperdata['publication_date'] = datetime.parse(date_string)
             except Exception as error:
                 print(error, 'Date not parsed for:', date_string)
                 hyperdata['publication_date'] = datetime.now()
@@ -165,11 +158,10 @@ class Parser:
             file = self._file
         # if the file is a ZIP archive, recurse on each of its files...
         if zipfile.is_zipfile(file):
-            zipArchive = zipfile.ZipFile(file)
-            for filename in zipArchive.namelist():
-                f = zipArchive.open(filename, 'r')
-                yield from self.__iter__(f)
-                f.close()
+            with zipfile.ZipFile(file) as zf:
+                for filename in zf.namelist():
+                    with zf.open(filename) as df, self.open(df) as f:
+                        yield from self.__iter__(f)
         # ...otherwise, let's parse it directly!
         else:
             try:

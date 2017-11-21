@@ -16,7 +16,8 @@ class CSVParser(Parser):
 
     def parse(self, fp=None):
         fp = fp or self._file
-        df = pandas.read_csv(fp, dtype=object, skip_blank_lines=True, sep=None,
+        df = pandas.read_csv(fp, dtype=object, engine='python',
+                                 skip_blank_lines=True, sep=None,
                                  na_values=[], keep_default_na=False)
 
         # Return a generator of dictionaries with column labels as keys,

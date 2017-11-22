@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 ENV_FILE=.env
-DSM=gargantext.settings
+DSM=gargantext.backend.settings
+GARGANTEXT_CONF=${GARGANTEXT_CONF:-gargantext.ini}
+POSTGREST_CONF=${POSTGREST_CONF:-postgrest.conf}
 
 read -r -d '' DJANGO_VAR <<EOF
 # Django settings module, it is unlikely that you'll need to change that.
@@ -14,8 +16,8 @@ build_env () {
 $DJANGO_VAR
 # Paths of configuration files, you're welcome to change that; when a simple
 # filename is given, it'll be searched in current directory.
-GARGANTEXT_CONF=gargantext.ini
-POSTGREST_CONF=postgrest.conf
+GARGANTEXT_CONF=$GARGANTEXT_CONF
+POSTGREST_CONF=$POSTGREST_CONF
 EOF
 }
 

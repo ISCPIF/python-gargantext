@@ -42,24 +42,26 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
             for k, v in partition.items():
                 com_ids[v].append(k)
 
+        edge_id = 1
+        
         for e in G.edges_iter():
             s = e[0]
             t = e[1]
             weight = G[ids[s][1]][ids[t][1]]["weight"]
 
             if bridgeness < 0:
-                info = { "s": ids[s][1]
-                       , "t": ids[t][1]
-                       , "w": weight
+                info = { "source": ids[s][1]
+                       , "target": ids[t][1]
+                       , "weight": weight
                        }
                 links.append(info)
 
             else:
                 if partition[s] == partition[t]:
 
-                    info = { "s": ids[s][1]
-                           , "t": ids[t][1]
-                           , "w": weight
+                    info = { "source": ids[s][1]
+                           , "target": ids[t][1]
+                           , "weight": weight
                            }
                     links.append(info)
 
@@ -82,27 +84,35 @@ def filterByBridgeness(G,partition,ids,weight,bridgeness,type,field1,field2):
                                           , reverse=True)[:index]:
                             #print(c1, c2, link[2])
                             
-                            info = {"s": link[0], "t": link[1], "w": link[2]}
+                            info = {"source": link[0], "target": link[1], "weight": link[2]}
                             
                             links.append(info)
 
 
         B = json_graph.node_link_data(G)
-        B["links"] = []
-        B["links"] = links
+
+        links_id = []
+        edge_id = 0
+        for link in links:
+            edge_id += 1
+            link["id"] = edge_id
+            links_id.append(link)
+
+        B["edges"] = []
+        B["edges"] = links_id
         if field1 == field2 == 'ngrams' :
             data["nodes"] = B["nodes"]
-            data["links"] = B["links"]
+            data["edges"] = B["edges"]
         else:
-            A = get_graphA( "journal" , nodesB_dict , B["links"] , corpus )
+            A = get_graphA( "journal" , nodesB_dict , B["edges"] , corpus )
             print("#nodesA:",len(A["nodes"]))
             print("#linksAA + #linksAB:",len(A["links"]))
             print("#nodesB:",len(B["nodes"]))
             print("#linksBB:",len(B["links"]))
             data["nodes"] = A["nodes"] + B["nodes"]
-            data["links"] = A["links"] + B["links"]
+            data["edges"] = A["edges"] + B["edges"]
             print("  total nodes :",len(data["nodes"]))
-            print("  total links :",len(data["links"]))
+            print("  total links :",len(data["edges"]))
             print("")
 
     elif type == "adjacency":

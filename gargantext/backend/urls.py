@@ -19,7 +19,10 @@ from django.views.generic.base          import RedirectView        as Redirect
 from django.contrib.staticfiles.storage import staticfiles_storage as static
 from rest_framework_jwt.views import obtain_jwt_token
 
+from gargantext.backend.views import home
+
 urlpatterns = [
+    url(r'^$', home, name='home'),
     url(r'^admin/', admin.site.urls),
     url(r'^favicon.ico$', Redirect.as_view(url=static.url('favicon.ico'),
                                            permanent=False), name="favicon"),

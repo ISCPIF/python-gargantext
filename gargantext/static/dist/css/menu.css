@@ -1,0 +1,54 @@
+/* styles for menu.html template (navbar etc) */
+
+#dafixedtop .navbar-text, #graphsfixedtop .navbar-text {
+    margin: 0 ;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    float: none;
+}
+
+
+#corporatop.nav-tabs > li {
+    padding-left:1;
+    padding-right:1;
+}
+
+#corporatop.nav-tabs > li > a {
+    padding-top: 8;
+    padding-bottom: 8;
+    line-height: .85;
+    margin-bottom: -5px;
+}
+
+.exportbtn {
+    /* border: 1px solid #333 ; */
+    margin-top:17px ;   /* valigns with bootstrap h2  */
+}
+
+.btn .glyphicon {
+    /* glyphicons are always rendered too high within bootstrap buttons */
+    vertical-align:middle
+}
+
+
+/* graph name => editable input => submitName() => minimsg */
+.editable {
+    color: grey ;
+}
+
+#graphname-edit {
+    color: white;
+    background-color: transparent;
+    border: none;
+    max-width: 8em;
+}
+
+.minimsg {
+  font-size: .7em ;
+  padding: 7p0x 9px;
+}
+
+.minimsg * {
+  line-height: 100%;
+}
+

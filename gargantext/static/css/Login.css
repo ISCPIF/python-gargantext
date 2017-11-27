@@ -1,0 +1,21 @@
+
+.logoSmall {
+    line-height:15px;
+    height:10px;
+    padding: 10px 10px;
+}
+
+
+#logo-designed {
+    border:15px;
+ }
+
+#logo-designed img {
+
+    height:150px;
+    border:3px solid white;
+}
+
+#funnyimg {
+    border:2px solid black;
+}

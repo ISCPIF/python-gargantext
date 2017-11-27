@@ -37,10 +37,7 @@ of security.
 The core team at the origin of Gargantext is :
 * David Chavalarias, principal investigator
 * Alexandre Delanoë, project manager
-* Samuel Castillo J., developer
-* Romain Loth, developer
-* Mathieu Rodic, developer
-* Constance de Quatrebarbes, developer
+* Simon Murail, developer
 
 # Host institutions of this project
 * CNRS labs ISC-PIF (Institut des Systèmes Complexes de Paris Île de France)

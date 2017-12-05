@@ -120,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = config('TIME_ZONE', default='UTC')
 
 USE_I18N = True
 
@@ -154,7 +154,7 @@ djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_TIMEZONE = 'Europe/Paris'
+CELERY_TIMEZONE = TIME_ZONE
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERY_IMPORTS = (
     "gargantext.util.toolchain",

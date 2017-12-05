@@ -82,6 +82,12 @@ fi
 echo "▸ Generate secret key for Django..."
 SECRET_KEY=$(pipenv run python ./tools/gensecret.py 2>/dev/null)
 
+TIME_ZONE=$((timedatectl | grep 'Time zone' | sed -E 's/^\s*Time zone:\s*(\S+).*$/\1/g') 2>/dev/null)
+if [ -z "$TIME_ZONE" ]; then
+    echo "WARNING: Couldn't find out local timezone, fallback to UTC."
+    TIME_ZONE=${TIME_ZONE:-UTC}
+fi
+
 echo "▸ PostgreSQL configuration..."
 
 DB_NAME_DEFAULT=gargandb
@@ -132,6 +138,7 @@ DB_URI="postgres://"$(escape_url "$PGREST_USER")":"$(escape_url "$PGREST_PASS")"
 PGREST_DB_URI=$(escape_pgrest "$DB_URI")
 PGREST_SECRET_KEY=$(escape_pgrest "$SECRET_KEY")
 SECRET_KEY=$(escape_ini "$SECRET_KEY")
+TIME_ZONE=$(escape_ini "$TIME_ZONE")
 DB_HOST=$(escape_ini "${DB_HOST:-127.0.0.1}")
 DB_PORT=$(escape_ini "${DB_PORT:-5432}")
 DB_NAME=$(escape_ini "$DB_NAME")
@@ -142,6 +149,7 @@ VENV=$(escape_ini "$VENV")
 echo "▸ Generate configuration file from $GARGANTEXT_TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
        -e "s/[{]SECRET_KEY[}]/$SECRET_KEY/g" \
+       -e "s/[{]TIME_ZONE[}]/$TIME_ZONE/g" \
        -e "s/[{]DB_HOST[}]/$DB_HOST/g" \
        -e "s/[{]DB_PORT[}]/$DB_PORT/g" \
        -e "s/[{]DB_NAME[}]/$DB_NAME/g" \

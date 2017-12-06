@@ -94,6 +94,14 @@ To run Gargantext backend servers do:
 
     pipenv run make start
 
+If you want to run production servers in a development environment (or dev
+servers in prod) just specify environment like this:
+
+    # Run production servers regardless of current environment
+    pipenv run make ENVIR=prod start
+    # Don't forget to also set ENVIR at shutdown
+    pipenv run make ENVIR=prod stop
+
 
 ## Configuration
 

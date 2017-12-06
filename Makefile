@@ -1,7 +1,7 @@
 POSTGREST_INIT=./tools/init.d/gargantext-postgrest
 BACKEND_INIT=./tools/init.d/gargantext-testserver
 
-ifeq ($(TARGET), "prod")
+ifeq ("$(TARGET)", "prod")
 TARG=prod
 PIPENV_ARGS=
 else

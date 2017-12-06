@@ -4,11 +4,17 @@ BACKEND_INIT=./tools/init.d/gargantext-testserver
 ifeq ("$(ENVIR)", "prod")
 PIPENV_ARGS=
 else
+ENVIR=dev
 PIPENV_ARGS=--dev
 endif
 
 PY_VERSION='import sys; v=sys.version_info; print("{0}.{1}".format(*v))'
 
+.PHONY: default
+default:
+	@echo "Please specify a target."
+	@echo "To setup environment: make ENVIR=$(ENVIR) setup"
+	@echo "To start/stop/restart/reload/check: make ENVIR=$(ENVIR) {start|stop|restart|reload|check}"
 
 .PHONY: setup
 setup: venv conf migrate

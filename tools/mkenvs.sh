@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 ENV_FILE=.env
+ENVIR=${ENVIR:-dev}
 DSM=gargantext.backend.settings
 GARGANTEXT_CONF=${GARGANTEXT_CONF:-gargantext.ini}
 POSTGREST_CONF=${POSTGREST_CONF:-postgrest.conf}
@@ -13,6 +14,8 @@ EOF
 
 build_env () {
     cat << EOF > $ENV_FILE
+# ENVIR can be dev or prod
+ENVIR=$ENVIR
 $DJANGO_VAR
 # Paths of configuration files, you're welcome to change that; when a simple
 # filename is given, it'll be searched in current directory.

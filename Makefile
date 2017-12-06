@@ -1,11 +1,12 @@
 POSTGREST_INIT=./tools/init.d/gargantext-postgrest
-BACKEND_INIT=./tools/init.d/gargantext-testserver
 
 ifeq ("$(ENVIR)", "prod")
 PIPENV_ARGS=
+BACKEND_INIT=./tools/init.d/gargantext-uwsgi
 else
 ENVIR=dev
 PIPENV_ARGS=--dev
+BACKEND_INIT=./tools/init.d/gargantext-testserver
 endif
 
 PY_VERSION='import sys; v=sys.version_info; print("{0}.{1}".format(*v))'

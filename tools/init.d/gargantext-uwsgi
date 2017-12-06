@@ -1,0 +1,140 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          gargantext-uwsgi
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts gargantext web server
+# Description:       starts gargantext production web server using uwsgi
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=$(which uwsgi)
+NAME=gargantext-uwsgi
+DESC=gargantext-uwsgi
+
+STOP_SCHEDULE="${STOP_SCHEDULE:-QUIT/5/TERM/5/KILL/5}"
+
+GARGANTEXT_CONF=$(realpath ${GARGANTEXT_CONF:-gargantext.ini})
+DAEMON_OPTS=$GARGANTEXT_CONF
+
+test -x "$DAEMON" || exit 0
+
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+# Try to extract uwsgi pidfile
+PID=$(grep -oP '^\s*pidfile\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+PID=${PID:-/tmp/gargantext.pid}
+
+start() {
+	# Start the daemon/service
+	#
+	# Returns:
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	[ -f "$PID" ] && kill -0 $(cat $PID) > /dev/null 2>&1 && return 1
+	$DAEMON $GARGANTEXT_CONF > /dev/null 2>&1 || return 2
+}
+
+test_config() {
+	# Test the gargantext configuration
+	[ -f "$GARGANTEXT_CONF" ]
+}
+
+stop() {
+	# Stops the daemon/service
+	#
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	[ -f "$PID" ] || return 1
+	kill -0 $(cat $PID) > /dev/null 2>&1 || return 1
+	$DAEMON --stop $PID > /dev/null 2>&1 || return 2
+	# uWSGI takes a little time to remove pidfile
+	sleep 2
+}
+
+reload() {
+	# Function that sends a SIGHUP to the daemon/service
+	[ -f "$PID" ] || return 1
+	$DAEMON --reload $PID > /dev/null 2>&1
+}
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC" "$NAME"
+		start
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		;;
+	stop)
+		log_daemon_msg "Stopping $DESC" "$NAME"
+		stop
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		;;
+	restart)
+		log_daemon_msg "Restarting $DESC" "$NAME"
+
+		# Check configuration before stopping nginx
+		if ! test_config; then
+			log_end_msg 1 # Configuration error
+			exit $?
+		fi
+
+		stop
+		case "$?" in
+			0|1)
+				start
+				case "$?" in
+					0) log_end_msg 0 ;;
+					1) log_end_msg 1 ;; # Old process is still running
+					*) log_end_msg 1 ;; # Failed to start
+				esac
+				;;
+			*)
+				# Failed to stop
+				log_end_msg 1
+				;;
+		esac
+		;;
+	reload|force-reload)
+		log_daemon_msg "Reloading $DESC configuration" "$NAME"
+
+		# Check configuration before stopping nginx
+		#
+		# This is not entirely correct since the on-disk nginx binary
+		# may differ from the in-memory one, but that's not common.
+		# We prefer to check the configuration and return an error
+		# to the administrator.
+		if ! test_config; then
+			log_end_msg 1 # Configuration error
+			exit $?
+		fi
+
+		reload
+		log_end_msg $?
+		;;
+	configtest|testconfig)
+		log_daemon_msg "Testing $DESC configuration"
+		test_config
+		log_end_msg $?
+		;;
+	status)
+		status_of_proc -p $PID "$DAEMON" "$NAME" && exit 0 || exit $?
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|reload|force-reload|status|configtest}" >&2
+		exit 3
+		;;
+esac

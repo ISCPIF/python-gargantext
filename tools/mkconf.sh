@@ -88,6 +88,8 @@ if [ -z "$TIME_ZONE" ]; then
     TIME_ZONE=${TIME_ZONE:-UTC}
 fi
 
+[ "$DEBUG" = "False" ] && LOG_LEVEL=INFO || LOG_LEVEL=DEBUG
+
 echo "▸ PostgreSQL configuration..."
 
 DB_NAME_DEFAULT=gargandb
@@ -144,6 +146,7 @@ DB_PORT=$(escape_ini "${DB_PORT:-5432}")
 DB_NAME=$(escape_ini "$DB_NAME")
 DB_USER=$(escape_ini "$DB_USER")
 DB_PASS=$(escape_ini "$DB_PASS")
+LOG_LEVEL=$(escape_ini "$LOG_LEVEL")
 VENV=$(escape_ini "$VENV")
 
 echo "▸ Generate configuration file from $GARGANTEXT_TEMPLATE..."
@@ -155,6 +158,7 @@ sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
        -e "s/[{]DB_NAME[}]/$DB_NAME/g" \
        -e "s/[{]DB_USER[}]/$DB_USER/g" \
        -e "s/[{]DB_PASS[}]/$DB_PASS/g" \
+       -e "s/[{]LOG_LEVEL[}]/$LOG_LEVEL/g" \
        -e "s/[{]VENV[}]/$VENV/g" \
        "$GARGANTEXT_TEMPLATE" > "$GARGANTEXT_CONF" \
     && echo "Configuration for $TARGET environment written successfully in" \

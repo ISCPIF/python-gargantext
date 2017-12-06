@@ -76,6 +76,45 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gargantext.backend.wsgi.application'
 
+
+# Logging
+
+LOG_LEVEL = config('LOG_LEVEL', default='DEBUG' if DEBUG else 'INFO')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(name)s %(process)d %(threadName)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.FileHandler',
+            'filename': config('LOG_FILE', default='gargantext.log'),
+            'formatter': config('LOG_FORMATTER', default='verbose'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': LOG_LEVEL,
+            'propagate': True,
+        },
+        'django.template': {
+            # Don't keep debug logs for template module to avoid annoying and
+            # useless noise, see:
+            # https://github.com/encode/django-rest-framework/issues/3982#issuecomment-325290221
+            'level': 'INFO' if LOG_LEVEL == 'DEBUG' else LOG_LEVEL,
+        },
+    },
+}
+
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -97,6 +136,7 @@ DATABASES['default']['URL'] = \
         **DATABASES['default']
     )
 
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -115,6 +155,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -127,6 +168,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -146,6 +188,7 @@ STATICFILES_FINDERS = (
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+
 # Asynchronous tasks
 
 import djcelery
@@ -161,6 +204,7 @@ CELERY_IMPORTS = (
     "gargantext.util.crawlers",
     "gargantext.util.ngramlists_tools",
 )
+
 
 # REST-API
 
@@ -201,6 +245,7 @@ API_TOKENS = {
         "APIKEY": "3a8ca010-1dff-11e7-97ef-a1a6aa4c2352"
     }
 }
+
 
 # BOOL Interpreter
 

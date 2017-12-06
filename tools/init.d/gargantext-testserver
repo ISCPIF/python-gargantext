@@ -1,0 +1,137 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          gargantext-testserver
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts gargantext backend test server
+# Description:       starts gargantext backend test server using start-stop-daemon
+### END INIT INFO
+
+PATH=$PATH:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=$(pipenv --py)
+NAME=gargantext-testserver
+DESC=gargantext-testserver
+
+# Have to send SIGINT to django testserver main process in order to kill its sub-processes
+STOP_SCHEDULE="${STOP_SCHEDULE:-INT/5/KILL/5}"
+
+BASH=/bin/bash
+
+GARGANTEXT_CONF=$(realpath ${GARGANTEXT_CONF:-gargantext.ini})
+DAEMON_OPTS="$PWD/manage.py runserver"
+
+test -x "$DAEMON" || exit 0
+
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+# Try to extract gargantext testserver pidfile
+PID=$(grep -oP '^\s*TESTSERVER_PIDFILE\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+PID=${PID:-/tmp/gargantext_testserver.pid}
+
+start() {
+	# Start the daemon/service
+	#
+	# Returns:
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+
+	ERROR_LOG=$(mktemp)
+	CMD="exec $DAEMON $DAEMON_OPTS > $ERROR_LOG 2>&1"
+
+	start-stop-daemon --start --pidfile $PID --exec $DAEMON --test > /dev/null \
+		|| return 1
+	start-stop-daemon --start --pidfile $PID --make-pidfile --background --startas $BASH --chdir "$PWD" -- -c "$CMD" \
+		|| return 2
+
+	# Sleep 1 second and get error message if any
+	sleep 1
+	ERROR=$(tail -1 $ERROR_LOG)
+	start-stop-daemon --status --pidfile $PID --exec $DAEMON > /dev/null \
+		|| ( log_progress_msg "[$ERROR]" && return 2 )
+}
+
+test_config() {
+	# Test the gargantext configuration
+	[ -f "$GARGANTEXT_CONF" ]
+}
+
+stop() {
+	# Stops the daemon/service
+	#
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+
+	start-stop-daemon --stop --quiet --retry $STOP_SCHEDULE --remove-pidfile --pidfile $PID
+
+	# Let start-stop-daemon take time to remove pidfile
+	RETVAL="$?"
+	sleep 1
+
+	return "$RETVAL"
+}
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC" "$NAME"
+		start
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		cat $ERROR_LOG && rm $ERROR_LOG
+		;;
+	stop)
+		log_daemon_msg "Stopping $DESC" "$NAME"
+		stop
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		;;
+	restart|reload|force-reload)
+		log_daemon_msg "Restarting $DESC" "$NAME"
+
+		# Check configuration before stopping nginx
+		if ! test_config; then
+			log_end_msg 1 # Configuration error
+			exit $?
+		fi
+
+		stop
+		case "$?" in
+			0|1)
+				start
+				case "$?" in
+					0) log_end_msg 0 ;;
+					1) log_end_msg 1 ;; # Old process is still running
+					*) log_end_msg 1 ;; # Failed to start
+				esac
+				cat $ERROR_LOG && rm $ERROR_LOG
+				;;
+			*)
+				# Failed to stop
+				log_end_msg 1
+				;;
+		esac
+		;;
+	configtest|testconfig)
+		log_daemon_msg "Testing $DESC configuration"
+		test_config
+		log_end_msg $?
+		;;
+	status)
+		status_of_proc -p $PID "$DAEMON" "$NAME" && exit 0 || exit $?
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|reload|force-reload|status|configtest}" >&2
+		exit 3
+		;;
+esac

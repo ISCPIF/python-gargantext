@@ -1,14 +1,21 @@
-# Gargantext installation and dev environment
+# Gargantext backend configuration and installation
 
 ## TL;DR
 
-You need `pipenv`, an up-to-date version of `pip`, and a PostgreSQL (>= 9.5)
-database. To setup development environment and run test server:
+Gargantext main backend is written in Python 3.5. For a basic setup you need
+`pipenv`, an up-to-date version of `pip`, a PostgreSQL (>= 9.5) database and
+[PostgREST](https://postgrest.com/).
+
+To setup development environment, run django test server and postgrest:
 
     git clone -b gargantext-light ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git gargantext-light
     cd gargantext-light
     make
     pipenv run ./manage runserver
+    postgrest postgrest.conf
+
+By default Django test server is running at <http://localhost:8000>, and
+PostgREST at <http://localhost:3000>.
 
 
 ## Requirements
@@ -35,21 +42,26 @@ insights. Here is the straightforward way:
 
     pip install pipenv --user
 
-If you use `pipenv shell`, don't forget to leave the virtualenv (`exit` or
-`<Ctrl-D>`) and enter it again each time you install or uninstall packages with
-`pipenv` or `pip`, to avoid weird issues with your environment.
-
 [1]: https://github.com/kennethreitz/pipenv
 [2]: https://docs.pipenv.org/
 
-## PostgreSQL
 
-Gargantext rely on PostgreSQL (>= 9.5) for data persistence. To setup
-database on a Debian-based OS:
+### PostgreSQL
+
+Gargantext rely on PostgreSQL (>= 9.5) for data persistence. To install it
+on a Debian-based OS:
 
     sudo apt-get install postgresql-9.6 postgresql-client-9.6
+
+To setup Gargantext database:
+
     sudo -u postgres psql -c "CREATE USER gargantua PASSWORD '<pass>' CREATEROLE BYPASSRLS"
     sudo -u postgres createdb -O gargantua gargandb
+
+### PostgREST
+
+See <https://postgrest.com/en/v4.1/tutorials/tut0.html#step-3-install-postgrest>
+for installation instructions.
 
 
 ## Installation
@@ -59,26 +71,30 @@ do:
 
     make
 
-Or for production (without dev dependencies and without DEBUG mode):
+Or for production (without dev dependencies and without `DEBUG` mode):
 
     make TARGET=prod
 
-To specify a path for configuration file (by default gargantext.ini in current
-directory), use GARGANTEXT_CONF environment variable. For example:
+If you want to specify custom paths for configuration files (by default
+`gargantext.ini` and `postgrest.conf` in current directory), use `GARGANTEXT_CONF`
+and `POSTGREST_CONF` environment variable. For example:
 
-    GARGANTEXT_CONF=/etc/gargantext/gargantext.ini make TARGET=prod
-
-You can specify path of PostgREST configuration the same way by setting
-POSTGREST_CONF environment variable.
+    GARGANTEXT_CONF=/etc/gargantext/gargantext.ini \
+    POSTGREST_CONF=/etc/gargantext/postgrest.conf make TARGET=prod
 
 If everything is going well, you now have a clean virtualenv with every
-packages you need to run Gargantext, and a fresh configuration file.
+packages you need to run Gargantext, and fresh configuration files.
 
 You can now run any command by prefixing it with `pipenv run` or by first
-entering the virtualenv with `pipenv shell`. To run Gargantext django backend
-test server you can do:
+entering the virtualenv with `pipenv shell`. If you use `pipenv shell`, don't
+forget to leave the virtualenv (`exit` or `<Ctrl-D>`) and enter it again each
+time you install or uninstall packages with `pipenv` or `pip`, to avoid weird
+issues with your environment.
 
-    pipenv run ./manage.py runserver
+To run Gargantext backend servers do:
+
+    pipenv run ./manage runserver
+    postgrest postgrest.conf
 
 
 ## Customize dev environment

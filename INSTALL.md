@@ -72,14 +72,14 @@ do:
 
 Or for production (without dev dependencies and without `DEBUG` mode):
 
-    make TARGET=prod
+    make ENVIR=prod
 
 If you want to specify custom paths for configuration files (by default
 `gargantext.ini` and `postgrest.conf` in current directory), use `GARGANTEXT_CONF`
 and `POSTGREST_CONF` environment variable. For example:
 
     GARGANTEXT_CONF=/etc/gargantext/gargantext.ini \
-    POSTGREST_CONF=/etc/gargantext/postgrest.conf make TARGET=prod
+    POSTGREST_CONF=/etc/gargantext/postgrest.conf make ENVIR=prod
 
 If everything is going well, you now have a clean virtualenv with every
 packages you need to run Gargantext, and fresh configuration files.

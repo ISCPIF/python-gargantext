@@ -1,11 +1,9 @@
 POSTGREST_INIT=./tools/init.d/gargantext-postgrest
 BACKEND_INIT=./tools/init.d/gargantext-testserver
 
-ifeq ("$(TARGET)", "prod")
-TARG=prod
+ifeq ("$(ENVIR)", "prod")
 PIPENV_ARGS=
 else
-TARG=dev
 PIPENV_ARGS=--dev
 endif
 
@@ -40,7 +38,7 @@ migrate:
 .PHONY: conf
 conf:
 	@echo "• Setup gargantext configuration..."
-	./tools/mkconf.sh $(TARG)
+	./tools/mkconf.sh $(ENVIR)
 	@echo
 
 .PHONY: checkdebian

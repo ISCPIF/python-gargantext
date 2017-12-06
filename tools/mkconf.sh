@@ -42,8 +42,8 @@ while :; do
     shift
 done
 
-# Target can be dev or prod
-TARGET="${1:-dev}"
+# ENVIR can be dev or prod
+ENVIR="${1:-dev}"
 
 # Virtual environment directory
 VENV=$(pipenv --venv)
@@ -62,7 +62,7 @@ POSTGREST_TEMPLATE=tools/conf/postgrest.template.conf
 if [ -f "$GARGANTEXT_CONF" -a -z "$FORCE" ]; then
     echo -e "Configuration file $GARGANTEXT_CONF already exists, you may" \
             "need to edit it.\nTo generate a new configuration anyway you" \
-            "can do: ./tools/mkconf.sh -f $TARGET"
+            "can do: ./tools/mkconf.sh -f $ENVIR"
     exit
 fi
 
@@ -77,7 +77,7 @@ if ! (mkdir -p $D && touch $GARGANTEXT_CONF 2>/dev/null); then
 fi
 
 # Setup DEBUG mode for dev target
-[ "$TARGET" = "prod" ] && DEBUG=False || DEBUG=True
+[ "$ENVIR" = "prod" ] && DEBUG=False || DEBUG=True
 
 echo "▸ Generate secret key for Django..."
 SECRET_KEY=$(pipenv run python ./tools/gensecret.py 2>/dev/null)
@@ -161,7 +161,7 @@ sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
        -e "s/[{]LOG_LEVEL[}]/$LOG_LEVEL/g" \
        -e "s/[{]VENV[}]/$VENV/g" \
        "$GARGANTEXT_TEMPLATE" > "$GARGANTEXT_CONF" \
-    && echo "Configuration for $TARGET environment written successfully in" \
+    && echo "Configuration for $ENVIR environment written successfully in" \
             "$GARGANTEXT_CONF."
 
 echo "▸ Generate configuration file for PostgREST from $POSTGREST_TEMPLATE..."

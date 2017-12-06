@@ -11,8 +11,7 @@ To setup development environment, run django test server and postgrest:
     git clone -b gargantext-light ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git gargantext-light
     cd gargantext-light
     make
-    pipenv run ./manage runserver
-    postgrest postgrest.conf
+    pipenv run make start
 
 By default Django test server is running at <http://localhost:8000>, and
 PostgREST at <http://localhost:3000>.
@@ -93,8 +92,7 @@ issues with your environment.
 
 To run Gargantext backend servers do:
 
-    pipenv run ./manage runserver
-    postgrest postgrest.conf
+    pipenv run make start
 
 
 ## Customize dev environment

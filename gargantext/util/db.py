@@ -10,7 +10,7 @@ from sqlalchemy import delete
 
 def get_engine():
     from sqlalchemy import create_engine
-    return create_engine( settings.DATABASES['default']['URL']
+    return create_engine( settings.DATABASES['default']['SECRET_URL']
                         , use_native_hstore = True
                         , json_serializer = json_dumps
                         , pool_size=20, max_overflow=0

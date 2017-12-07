@@ -131,7 +131,7 @@ DATABASES = {
         },
     }
 }
-DATABASES['default']['URL'] = \
+DATABASES['default']['SECRET_URL'] = \
     'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'.format(
         **DATABASES['default']
     )

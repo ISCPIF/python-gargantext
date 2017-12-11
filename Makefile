@@ -1,3 +1,4 @@
+CELERY_INIT=./tools/init.d/gargantext-celery
 POSTGREST_INIT=./tools/init.d/gargantext-postgrest
 
 ifeq ("$(ENVIR)", "prod")
@@ -63,6 +64,7 @@ checkstartup: checkdebian checkpipenv
 start: checkstartup
 	@echo "• Start gargantext servers..."
 	@$(BACKEND_INIT) start
+	@$(CELERY_INIT) start
 	@$(POSTGREST_INIT) start
 	@echo
 
@@ -70,6 +72,7 @@ start: checkstartup
 stop: checkstartup
 	@echo "• Stop gargantext servers..."
 	@$(BACKEND_INIT) stop
+	@$(CELERY_INIT) stop
 	@$(POSTGREST_INIT) stop
 	@echo
 
@@ -77,6 +80,7 @@ stop: checkstartup
 restart: checkstartup
 	@echo "• Restart gargantext servers..."
 	@$(BACKEND_INIT) restart
+	@$(CELERY_INIT) restart
 	@$(POSTGREST_INIT) restart
 	@echo
 
@@ -84,6 +88,7 @@ restart: checkstartup
 reload: checkstartup
 	@echo "• Reload gargantext servers..."
 	@$(BACKEND_INIT) reload
+	@$(CELERY_INIT) force-reload
 	@$(POSTGREST_INIT) reload
 	@echo
 
@@ -91,6 +96,7 @@ reload: checkstartup
 check: checkstartup
 	@echo "• Check gargantext servers..."
 	@$(BACKEND_INIT) status || true
+	@$(CELERY_INIT) status || true
 	@$(POSTGREST_INIT) status || true
 	@echo
 

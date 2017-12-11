@@ -1,0 +1,127 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          gargantext-celery
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts gargantext task queue
+# Description:       starts gargantext task queue using celery
+### END INIT INFO
+
+DAEMON=$(pipenv --py)
+NAME=gargantext-celery
+DESC=gargantext-celery
+
+GARGANTEXT_CONF=$(realpath ${GARGANTEXT_CONF:-gargantext.ini})
+
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+CELERY_APP=$(grep -oP '^\s*CELERY_APP\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+CELERYD_PID_FILE=$(grep -oP '^\s*CELERYD_PID_FILE\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+CELERYD_LOG_FILE=$(grep -oP '^\s*CELERYD_LOG_FILE\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+CELERYD_LOG_LEVEL=$(grep -oP '^\s*CELERYD_LOG_LEVEL\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
+
+CELERY_APP=${CELERY_APP:-gargantext}
+CELERYD_PID_FILE=${CELERYD_PID_FILE:-/tmp/celery.pid}
+CELERYD_LOG_FILE=${CELERYD_LOG_FILE:-celery.log}
+CELERYD_LOG_LEVEL=${CELERYD_LOG_LEVEL:-INFO}
+
+celery() {
+	ERROR_LOG=$(mktemp)
+
+	if [ "$1" = "start" ]; then
+		# Detect errors in python code
+		$DAEMON $PWD/manage.py celery worker -A "$CELERY_APP" 2> $ERROR_LOG 1> /dev/null &
+		# Wait 1 second and kill process, if it was already exited we have an
+		# error
+		sleep 1 && kill $! > /dev/null 2>&1 || \
+			( log_progress_msg "[$(tail -1 $ERROR_LOG)]" && return 2 )
+	fi
+
+	$DAEMON $PWD/manage.py celery multi $1 1 -A "$CELERY_APP" -B -E \
+		--pidfile="$CELERYD_PID_FILE" \
+		--logfile="$CELERYD_LOG_FILE" \
+		--loglevel="$CELERYD_LOG_LEVEL" 2> $ERROR_LOG 1> /dev/null
+
+	[ $? -ne 0 ] && ERROR=$(tail -1 $ERROR_LOG) || ERROR=
+	[ -n "$ERROR" ] && log_progress_msg "[$ERROR]" && return 2 || return 0
+}
+
+start() {
+	# Start the daemon/service
+	#
+	# Returns:
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	celery start
+}
+
+test_config() {
+	# Test the gargantext configuration
+	[ -f "$GARGANTEXT_CONF" ]
+}
+
+stop() {
+	# Stops the daemon/service
+	#
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	celery stopwait
+}
+
+restart() {
+	celery restart
+}
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC" "$NAME"
+		start
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		cat $ERROR_LOG && rm $ERROR_LOG
+		;;
+	stop)
+		log_daemon_msg "Stopping $DESC" "$NAME"
+		stop
+		case "$?" in
+			0|1) log_end_msg 0 ;;
+			2)   log_end_msg 1 ;;
+		esac
+		cat $ERROR_LOG && rm $ERROR_LOG
+		;;
+	restart|reload|force-reload)
+		log_daemon_msg "Restarting $DESC" "$NAME"
+
+		# Check configuration before stopping nginx
+		if ! test_config; then
+			log_end_msg 1 # Configuration error
+			exit $?
+		fi
+
+		restart
+		log_end_msg $?
+		cat $ERROR_LOG && rm $ERROR_LOG
+		;;
+	configtest|testconfig)
+		log_daemon_msg "Testing $DESC configuration"
+		test_config
+		log_end_msg $?
+		;;
+	status)
+		status_of_proc -p $CELERYD_PID_FILE "$DAEMON" "$NAME" && exit 0 || exit $?
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|force-reload|status|configtest}" >&2
+		exit 3
+		;;
+esac

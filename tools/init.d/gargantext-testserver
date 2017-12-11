@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ### BEGIN INIT INFO
 # Provides:          gargantext-testserver
@@ -19,6 +19,7 @@ DESC=gargantext-testserver
 STOP_SCHEDULE="${STOP_SCHEDULE:-INT/5/KILL/5}"
 
 BASH=/bin/bash
+CELERY_INIT=$(dirname $0)/gargantext-celery
 
 GARGANTEXT_CONF=$(realpath ${GARGANTEXT_CONF:-gargantext.ini})
 DAEMON_OPTS="$PWD/manage.py runserver"
@@ -31,6 +32,16 @@ test -x "$DAEMON" || exit 0
 # Try to extract gargantext testserver pidfile
 PID=$(grep -oP '^\s*TESTSERVER_PIDFILE\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
 PID=${PID:-/tmp/gargantext_testserver.pid}
+
+reload_celery_when_needed() {
+	[ -s "$PID" ] && PPID=$(cat $PID) && CHILD=$(pgrep -P $PPID)
+	[ -n "$PPID" -a -n "$CHILD" ] && \
+		((while kill -0 $CHILD; do sleep 1; done) && \
+		 kill -0 $PPID && \
+		 $CELERY_INIT status && \
+		 $CELERY_INIT restart) > /dev/null 2>&1
+	kill -0 $PPID > /dev/null 2>&1 && reload_celery_when_needed
+}
 
 start() {
 	# Start the daemon/service
@@ -53,6 +64,12 @@ start() {
 	ERROR=$(tail -1 $ERROR_LOG)
 	start-stop-daemon --status --pidfile $PID --exec $DAEMON > /dev/null \
 		|| ( log_progress_msg "[$ERROR]" && return 2 )
+
+	# Wait for a restart in the background and reload celery if needed. We need
+	# to export function and exec a new bash with nohup, otherwise current
+	# process would be attached to current terminal.
+	export -f reload_celery_when_needed
+	nohup $BASH -c reload_celery_when_needed > /dev/null 2>&1 &
 }
 
 test_config() {

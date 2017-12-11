@@ -90,6 +90,11 @@ fi
 
 [ "$DEBUG" = "False" ] && LOG_LEVEL=INFO || LOG_LEVEL=DEBUG
 
+echo "▸ Configure allowed hosts for Django backend..."
+
+read -p "Hostname [localhost]: " HOSTNAME
+HOSTNAME=${HOSTNAME:-localhost}
+
 echo "▸ PostgreSQL configuration..."
 
 DB_NAME_DEFAULT=gargandb
@@ -140,6 +145,7 @@ DB_URI="postgres://"$(escape_url "$PGREST_USER")":"$(escape_url "$PGREST_PASS")"
 PGREST_DB_URI=$(escape_pgrest "$DB_URI")
 PGREST_SECRET_KEY=$(escape_pgrest "$SECRET_KEY")
 SECRET_KEY=$(escape_ini "$SECRET_KEY")
+HOSTNAME=$(escape_ini "$HOSTNAME")
 TIME_ZONE=$(escape_ini "$TIME_ZONE")
 DB_HOST=$(escape_ini "${DB_HOST:-127.0.0.1}")
 DB_PORT=$(escape_ini "${DB_PORT:-5432}")

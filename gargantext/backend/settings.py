@@ -194,16 +194,13 @@ MEDIA_URL = '/media/'
 import djcelery
 djcelery.setup_loader()
 
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+BROKER_URL = config('BROKER_URL', default='amqp://guest:guest@localhost:5672/')
 
+CELERY_APP = config('CELERY_APP', default='gargantext.backend')
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 CELERY_TIMEZONE = TIME_ZONE
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-CELERY_IMPORTS = (
-    "gargantext.util.toolchain",
-    "gargantext.util.crawlers",
-    "gargantext.util.ngramlists_tools",
-)
+CELERY_IMPORTS = ()
 
 
 # REST-API

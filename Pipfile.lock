@@ -289,10 +289,10 @@
         },
         "pylint": {
             "hashes": [
-                "sha256:948679535a28afc54afb9210dabc6973305409042ece8e5768ca1409910c1ed8",
-                "sha256:1f65b3815c3bf7524b845711d54c4242e4057dd93826586620239ecdfe591fb1"
+                "sha256:fbe0dca27639feefa2b8274289d3de827eea80c830f578c4fcb0fe70093a484f",
+                "sha256:dd20d6f17e7ea9d3a3a35c5d56ba2c50fdfdb7192096a1095f1791d072bc59a1"
             ],
-            "version": "==1.7.4"
+            "version": "==1.7.5"
         },
         "pylint-celery": {
             "hashes": [

@@ -3,10 +3,11 @@
 ## TL;DR
 
 Gargantext main backend is written in Python 3.5. For a basic setup you need
-`pipenv`, an up-to-date version of `pip`, a PostgreSQL (>= 9.5) database and
-[PostgREST](https://postgrest.com/).
+an up-to-date version of `pip`, `pipenv`, a PostgreSQL (>= 9.5) database,
+RabbitMQ (default message broker for asynchronous tasks) and
+[PostgREST](https://postgrest.com/). See below for more details.
 
-To setup development environment, run django test server and postgrest:
+To setup a development environment and run backend servers in DEBUG mode:
 
     git clone -b gargantext-light ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git gargantext-light
     cd gargantext-light
@@ -16,25 +17,32 @@ To setup development environment, run django test server and postgrest:
 By default Django test server is running at <http://localhost:8000>, and
 PostgREST at <http://localhost:3000>.
 
+Web server `uWSGI` is needed for production, behind any good enough HTTP
+server, for example `nginx`.
+
 
 ## Requirements
+
+External dependencies are listed below. Python ones are automatically handled
+by `pipenv` and are mainly Django, Celery, SQLAlchemy and Alembic. See
+`./Pipfile` for details about used versions.
 
 ### Up-to-date pip
 
 On Debian-like distros, `pip` is not installed by default, if you didn't do it
 already:
 
-    sudo apt install python3-pip
+    sudo apt-get install python3-pip
 
 Pipenv (see below) needs an up-to-date version of pip, on a Debian-like just
-`apt upgrade`, otherwise upgrade it like so:
+`apt-get upgrade`, otherwise upgrade it like so:
 
     pip install pip --user --upgrade
 
 ### Pipenv
 
-You will need [pipenv][1] to easily get dependencies of Gargantext.
-It handles packages and takes care of the virtualenv and environment variables.
+You will need [pipenv][1] to easily get dependencies of Gargantext. It handles
+python packages and takes care of the virtualenv and environment variables.
 
 There are various ways to install `pipenv`, see its [documentation][2] for more
 insights. Here is the straightforward way:
@@ -44,11 +52,10 @@ insights. Here is the straightforward way:
 [1]: https://github.com/kennethreitz/pipenv
 [2]: https://docs.pipenv.org/
 
-
 ### PostgreSQL
 
-Gargantext rely on PostgreSQL (>= 9.5) for data persistence. To install it
-on a Debian-based OS:
+Gargantext rely on [PostgreSQL](https://www.postgresql.org/) (>= 9.5) for data
+persistence. To install it on a Debian-based OS:
 
     sudo apt-get install postgresql-9.6 postgresql-client-9.6
 
@@ -57,10 +64,43 @@ To setup Gargantext database:
     sudo -u postgres psql -c "CREATE USER gargantua PASSWORD '<pass>' CREATEROLE BYPASSRLS"
     sudo -u postgres createdb -O gargantua gargandb
 
+### Celery
+
+[Celery](http://www.celeryproject.org/) is used to handle asynchronous tasks,
+its installation is handled by `pipenv` so you don't need to take care of it,
+just note that version 3.1 is used because `djcelery` is used for django admin
+integration.
+
+Celery 3.1 documentation: <http://docs.celeryproject.org/en/3.1/>
+
+### RabbitMQ
+
+[RabbitMQ](http://www.rabbitmq.com/) is the default[^2] message broker of
+Celery, version 3.6 is enough. Installations instructions here:
+<https://www.rabbitmq.com/download.html>.
+
+To install it on Debian:
+
+    sudo apt-get install rabbitmq-server
+
+[^2]: It it is possible to use another broker, but RabbitMQ is the only one
+supported out of the box, plus it is really simple to deploy. See
+<http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html>.
+
 ### PostgREST
 
 See <https://postgrest.com/en/v4.1/tutorials/tut0.html#step-3-install-postgrest>
 for installation instructions.
+
+### uWSGI
+
+[uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) is the web server used by
+Gargantext in production. It is supposed to run behind an HTTP server such as
+nginx.
+
+To install it on Debian:
+
+    sudo apt-get install uwsgi
 
 
 ## Installation
@@ -75,8 +115,8 @@ Or for production (without dev dependencies and without `DEBUG` mode):
     make ENVIR=prod setup
 
 If you want to specify custom paths for configuration files (by default
-`gargantext.ini` and `postgrest.conf` in current directory), use `GARGANTEXT_CONF`
-and `POSTGREST_CONF` environment variable. For example:
+`gargantext.ini` and `postgrest.conf` in current directory), use
+`GARGANTEXT_CONF` and `POSTGREST_CONF` environment variable. For example:
 
     GARGANTEXT_CONF=/etc/gargantext/gargantext.ini \
     POSTGREST_CONF=/etc/gargantext/postgrest.conf make ENVIR=prod setup
@@ -141,11 +181,14 @@ about how these options are used.
   generate JSON Web Tokens, so it MUST be reflected in PostgREST configuration
 * `ALLOWED_HOSTS`: space separated list of allowed hosts
 * `TIME_ZONE`: see <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
-* `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`: pretty obvious...
-* `LOG_FILE`: log file path
+* `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`: database settings
+* `LOG_FILE`: django backend log file path
 * `LOG_LEVEL`: `DEBUG` | `INFO` | `WARNING` | `ERROR` | `CRITICAL`
 * `LOG_FORMATTER`: `simple` | `verbose`, formatters can be added in settings.py
 * `TESTSERVER_PIDFILE`: pidfile for the testserver (only used by startup script)
+* `CELERYD_PID_FILE`: pidfile for celery main worker
+* `CELERYD_LOG_FILE`: celery log file path
+* `CELERYD_LOG_LEVEL`: `DEBUG` | `INFO` | `WARNING` | `ERROR` | `CRITICAL`
 
 [^1]: Details here: <https://stackoverflow.com/questions/15170637/effects-of-changing-djangos-secret-key#answer-15383766>.
 

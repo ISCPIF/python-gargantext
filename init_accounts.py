@@ -70,15 +70,12 @@ drafts = {
 
         Your feedback will be valuable for further development
         of the platform, do not hesitate to contact us and
-        to contribute!
+        to contribute on our forum:
+                https://discourse.iscpif.fr/c/gargantext
 
-        If you want to access your old corpuses,
-        access codes remain valid until June 30
-        2017 midnight:
-
-                http://old.gargantext.org
-
-        We remain at your disposal for any further information.
+        We remain at your disposal for any further information and you be
+        kept updated if you subscribe to our mailing-list:
+                https://phplist.iscpif.fr/?p=subscribe&id=4
         
         With our best regards,
         -- 
@@ -127,15 +124,14 @@ drafts = {
 
         Vos retours seront précieux pour poursuivre le développement
         de la plateforme, n'hésitez pas à nous contacter et
-        contribuer!
+        contribuer sur notre forum:
+                https://discourse.iscpif.fr/c/gargantext
 
-        Si vous souhaitez accéder à vos anciens corpus, vos anciens
-        codes d'accès restent valides à cette adresse jusqu'au 30 juin
-        2017 minuit:
+        Nous restons à votre disposition pour tout complément
+        d'information et vous serez informés de l'évolution des
+        services en vous inscrivant à la liste:
+            https://phplist.iscpif.fr/?p=subscribe&id=4
 
-                http://old.gargantext.org
-
-        Nous restons à votre disposition pour tout complément d'information.
         Cordialement
         --
             L'équipe de Gargantext (CNRS)
@@ -195,7 +191,13 @@ drafts = {
 
         Vos retours seront précieux pour poursuivre le développement
         de la plateforme, n'hésitez pas à nous contacter et
-        contribuer!
+        contribuer sur notre forum:
+                https://discourse.iscpif.fr/c/gargantext
+
+        Nous restons à votre disposition pour tout complément
+        d'information et vous serez informés de l'évolution des
+        services en vous inscrivant à la liste:
+            https://phplist.iscpif.fr/?p=subscribe&id=4
 
         Nous restons à votre disposition pour tout complément d'information.
         Cordialement

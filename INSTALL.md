@@ -47,7 +47,7 @@ python packages and takes care of the virtualenv and environment variables.
 There are various ways to install `pipenv`, see its [documentation][2] for more
 insights. Here is the straightforward way:
 
-    pip install pipenv --user
+    pip install pipenv --user --upgrade
 
 [1]: https://github.com/kennethreitz/pipenv
 [2]: https://docs.pipenv.org/

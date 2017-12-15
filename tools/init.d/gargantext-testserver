@@ -22,7 +22,7 @@ BASH=/bin/bash
 CELERY_INIT=$(dirname $0)/gargantext-celery
 
 GARGANTEXT_CONF=$(realpath ${GARGANTEXT_CONF:-gargantext.ini})
-DAEMON_OPTS="$PWD/manage.py runserver"
+DAEMON_OPTS="-u $PWD/manage.py runserver"
 
 test -x "$DAEMON" || exit 0
 
@@ -51,11 +51,26 @@ start() {
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
 
-	ERROR_LOG=$(mktemp)
-	CMD="exec $DAEMON $DAEMON_OPTS > $ERROR_LOG 2>&1"
-
+	# Already running?
 	start-stop-daemon --start --pidfile $PID --exec $DAEMON --test > /dev/null \
 		|| return 1
+
+	ERROR_LOG=$(mktemp)
+	CMD="exec $DAEMON $DAEMON_OPTS 2> $ERROR_LOG 1> /dev/null"
+
+	# Voodoo to disable stderr temporarily
+	exec 7>&2 2>/dev/null
+	# Check for errors at initialization that couldn't be catched otherwise
+	$DAEMON $DAEMON_OPTS --noreload 2> $ERROR_LOG 1> /dev/null &
+	# Wait 2 second and kill process, if it was already exited we have an error
+	if sleep 2 && ! kill $! &> /dev/null; then
+		log_progress_msg "[$(tail -1 $ERROR_LOG)]"
+		return 2
+	fi
+	# Voodoo to restore stderr
+	sleep 0.1 && exec 2>&7
+
+	# Start the daemon
 	start-stop-daemon --start --pidfile $PID --make-pidfile --background --startas $BASH --chdir "$PWD" -- -c "$CMD" \
 		|| return 2
 

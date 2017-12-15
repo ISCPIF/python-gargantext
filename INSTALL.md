@@ -220,10 +220,30 @@ options won't be taken into account by postgrest itself):
 For general options, see <https://postgrest.com/en/v4.3/install.html#configuration>.
 
 
-## Customize dev environment
+## Development
+
+### Customize dev environment
 
 To install specific packages without messing with dependencies, just use pip.
 For example, to install ipython or bpython shells locally:
 
     pipenv run pip install ipython
     pipenv run pip install bpython
+
+### Pylint
+
+> Pylint is a tool that checks for errors in Python code, tries to enforce a
+> coding standard and looks for code smells.
+
+See `pylintrc` for configuration. Be aware that pylint is slow to do its work,
+just be patient.
+
+To check for errors:
+
+    pipenv run pylint gargantext
+
+To get a full report with a dependency graph:
+
+    pipenv run pylint -r y gargantext
+    # To review a particular module pass its folder to pylint:
+    pipenv run pylint -r y gargantext/backend

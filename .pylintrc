@@ -11,10 +11,10 @@ init-hook=""
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=
+ignore=util,constants.py
 
 # Pickle collected data for later comparisons.
-persistent=no
+persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
@@ -210,7 +210,6 @@ enable=import-error,
        not-async-context-manager,
        yield-inside-async-function,
        undefined-variable,
-       unused-argument,
        no-name-in-module,
        parameter-unpacking,
        print-statement,
@@ -218,7 +217,8 @@ enable=import-error,
        map-builtin-not-iterating,
        range-builtin-not-iterating,
        zip-builtin-not-iterating,
-       unused-variable
+       unused-variable,
+       fixme
 
 
 # Needs investigation:
@@ -390,7 +390,7 @@ spelling-store-unknown-words=no
 [MISCELLANEOUS]
 
 # List of note tags to take in consideration, separated by a comma.
-notes=FIXME,XXX,TODO
+notes=FIXME,TODO
 
 
 [BASIC]

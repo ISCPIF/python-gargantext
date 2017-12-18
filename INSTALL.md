@@ -12,6 +12,10 @@ To setup a development environment and run backend servers in DEBUG mode:
     git clone -b gargantext-light ssh://git@gitlab.iscpif.fr:20022/humanities/gargantext.git gargantext-light
     cd gargantext-light
     make setup
+    # At this point you should check log directories existence and write access
+    # knowing that servers are run as your current user. Path of the log files
+    # are configured in gargantext.ini and postgrest.conf (see section
+    # Configuration below).
     pipenv run make start
 
 By default Django test server is running at <http://localhost:8000>, and

@@ -2,7 +2,7 @@
 
 ENV_FILE=.env
 ENVIR=${ENVIR:-dev}
-DSM=gargantext.backend.settings
+DSM=gargantext.settings
 GARGANTEXT_CONF=${GARGANTEXT_CONF:-gargantext.ini}
 POSTGREST_CONF=${POSTGREST_CONF:-postgrest.conf}
 

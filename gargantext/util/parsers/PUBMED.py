@@ -14,12 +14,12 @@ class PubmedParser(Parser):
         "language_iso3"     : 'MedlineCitation/Article/Language',
         "doi"               : 'PubmedData/ArticleIdList/ArticleId[@type=doi]',
         "realdate_full_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/MedlineDate',
-        "realdate_year_"     : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Year',
-        "realdate_month_"    : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Month',
-        "realdate_day_"      : 'MedlineCitation/Article/Journal/JournalIssue/PubDate/Day',
-        "publication_year"  : 'MedlineCitation/DateCreated/Year',
-        "publication_month" : 'MedlineCitation/DateCreated/Month',
-        "publication_day"   : 'MedlineCitation/DateCreated/Day',
+        "realdate_year_"     : 'PubmedData/History/PubMedPubDate/Year',
+        "realdate_month_"    : 'PubmedData/History/PubMedPubDate/Month',
+        "realdate_day_"      : 'PubmedData/History/PubMedPubDate/Day',
+        "publication_year"  : 'MedlineCitation/Article/ArticleDate/Year',
+        "publication_month" : 'MedlineCitation/Article/ArticleDate/Month',
+        "publication_day"   : 'MedlineCitation/Article/ArticleDate/Day',
         "authors"           : 'MedlineCitation/Article/AuthorList',
     }
 

@@ -33,14 +33,28 @@ test -x "$DAEMON" || exit 0
 PID=$(grep -oP '^\s*TESTSERVER_PIDFILE\s*=\s*\K.+' $GARGANTEXT_CONF | tail -1)
 PID=${PID:-/tmp/gargantext_testserver.pid}
 
-reload_celery_when_needed() {
-	[ -s "$PID" ] && PPID=$(cat $PID) && CHILD=$(pgrep -P $PPID)
-	[ -n "$PPID" -a -n "$CHILD" ] && \
-		((while kill -0 $CHILD; do sleep 1; done) && \
-		 kill -0 $PPID && \
+gargantext_reload_celery_when_needed() {
+	# Can't reference global variables from this function, so get parameters
+	# from arguments; PID is the pidfile of django test server
+	PID="$1"
+	CELERY_INIT="$2"
+
+	# Wait for testserver to start to get the correct pid
+	sleep 2
+
+	# Watch testserver and restart celery when it stops, provided that
+	# testserver is not totally stopped (to check this we check its parent
+	# process), and celery is running
+	[ -s "$PID" ] && PARENT_PID=$(cat $PID) && CHILD=$(pgrep -P $PARENT_PID)
+	[ -s "$PID" -a -n "$PARENT_PID" -a -n "$CHILD" ] && \
+		((while kill -0 "$CHILD"; do sleep 1; done) && \
+		 kill -0 "$PARENT_PID" && \
 		 $CELERY_INIT status && \
 		 $CELERY_INIT restart) > /dev/null 2>&1
-	kill -0 $PPID > /dev/null 2>&1 && reload_celery_when_needed
+
+	# Start again...
+	kill -0 "$PARENT_PID" > /dev/null 2>&1 && \
+		gargantext_reload_celery_when_needed "$PID" "$CELERY_INIT"
 }
 
 start() {
@@ -83,8 +97,8 @@ start() {
 	# Wait for a restart in the background and reload celery if needed. We need
 	# to export function and exec a new bash with nohup, otherwise current
 	# process would be attached to current terminal.
-	export -f reload_celery_when_needed
-	nohup $BASH -c reload_celery_when_needed > /dev/null 2>&1 &
+	export -f gargantext_reload_celery_when_needed
+	nohup $BASH -c "gargantext_reload_celery_when_needed '$PID' '$CELERY_INIT'" > /dev/null 2>&1 &
 }
 
 test_config() {

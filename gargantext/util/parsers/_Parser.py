@@ -86,6 +86,9 @@ class Parser:
             print("WARNING: Date unknown at _Parser level, using now()")
             hyperdata['publication_date'] = datetime.now()
 
+        # XXX Handling prefixes is most likely useless: there seem to be only
+        #     one prefix which is "publication" (like in "publication_date").
+
         # ...then parse all the "date" fields, to parse it into separate elements
         prefixes = [key[:-5] for key in hyperdata.keys() if key[-5:] == "_date"]
         for prefix in prefixes:

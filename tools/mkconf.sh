@@ -157,6 +157,7 @@ VENV=$(escape_ini "$VENV")
 
 echo "▸ Generate configuration file from $GARGANTEXT_TEMPLATE..."
 sed -E -e "s/[{]DEBUG[}]/$DEBUG/g" \
+       -e "s/[{]HOSTNAME[}]/$HOSTNAME/g" \
        -e "s/[{]SECRET_KEY[}]/$SECRET_KEY/g" \
        -e "s/[{]TIME_ZONE[}]/$TIME_ZONE/g" \
        -e "s/[{]DB_HOST[}]/$DB_HOST/g" \

@@ -18,7 +18,8 @@ from gargantext import settings, models
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASES['default']['URL'])
+config.set_main_option("sqlalchemy.url",
+    settings.DATABASES['default']['SECRET_URL'])
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

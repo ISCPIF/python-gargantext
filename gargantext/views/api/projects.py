@@ -5,6 +5,7 @@ from collections import defaultdict
 from gargantext.util.toolchain import  *
 import copy
 from gargantext.util.db import session
+from gargantext.models import UserNode
 
 class ProjectList(APIView):
     '''API endpoint that represent a list of projects owned by a user'''
@@ -36,10 +37,16 @@ class ProjectList(APIView):
                 return Response({"detail":"Project with this name already exists", "url":"/projects/%s" %str(project.id)}, status = HTTP_409_CONFLICT)
 
             else:
+                user_node = session.query(UserNode).filter_by(user_id=request.user.id).one_or_none()
+
+                if user_node is None:
+                    print("??? Can't find UserNode for %r to create ProjectNode with name %r ???" % (request.user, name))
+
                 new_project = Node(
                     user_id = request.user.id,
                     typename = 'PROJECT',
                     name = name,
+                    parent_id = user_node and user_node.id,
                 )
 
                 session.add(new_project)

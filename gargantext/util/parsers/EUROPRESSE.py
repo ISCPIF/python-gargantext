@@ -81,7 +81,7 @@ class EuropresseParser(Parser):
         #         "./header/div/p[@class='titreArticleVisu grandTitre']"
         #
         # title_xpath (chemin plus générique)
-        title_xpath         = "./header//*[contains(@class,'titreArticle')]"
+        title_xpath         = "./header//*[contains(@class,'titreArticleVisu rdp__articletitle')]"
         authors_xpath       = "./header//*[contains(@class,'docAuthors')]"
         text_xpath          = "./section/div[@class='DocText clearfix']//p"
         entire_header_xpath = "./header"

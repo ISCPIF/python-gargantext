@@ -2,6 +2,11 @@
 * Guided Tour
 * Sources form highlighting crawlers
 
+## Version 3.0.8.1
+* WOS parser date FIX
+* EUROPRESS parser author/text article FIX
+* Backend: each project as user node as parent
+
 ## Version 3.0.7
 * Alembic implemented to manage database migrations
 

@@ -199,7 +199,6 @@ drafts = {
         services en vous inscrivant à la liste:
             https://phplist.iscpif.fr/?p=subscribe&id=4
 
-        Nous restons à votre disposition pour tout complément d'information.
         Cordialement
         --
             L'équipe de Gargantext (CNRS)

@@ -62,9 +62,9 @@ _membersPast = [
         ]
 
 _institutions = [
-    { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png', 'funds':''},
-    #{ 'name' : 'Institut Pasteur', 'website' : 'http://www.pasteur.fr', 'picture' : 'pasteur.png', 'funds':''},
+    { 'name' : 'Institut Mines Telecom', 'website' : 'https://www.imt.fr', 'picture' : 'IMT.jpg', 'funds':''},
     { 'name' : 'EHESS', 'website' : 'http://www.ehess.fr', 'picture' : 'ehess.png', 'funds':''},
+    { 'name' : 'Mines ParisTech', 'website' : 'http://mines-paristech.fr', 'picture' : 'mines.png', 'funds':''},
     #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
     # copy paste the line above and write your informations please
 ]
@@ -76,10 +76,11 @@ _labs = [
 ]
 
 _grants = [
-    { 'name' : 'Institut Mines Telecom', 'website' : 'https://www.imt.fr', 'picture' : 'IMT.jpg', 'funds':''},
     { 'name' : 'Forccast', 'website' : 'http://forccast.hypotheses.org/', 'picture' : 'forccast.png', 'funds':''},
     { 'name' : 'Mastodons', 'website' : 'http://www.cnrs.fr/mi/spip.php?article53&lang=fr', 'picture' : 'mastodons.png', 'funds':''},
-    #{ 'name' : 'ADEME', 'website' : 'http://www.ademe.fr', 'picture' : 'ademe.png', 'funds':''},
+    { 'name' : 'ADEME', 'website' : 'http://www.ademe.fr', 'picture' : 'ademe.png', 'funds':''},
+    { 'name' : 'Institut Pasteur', 'website' : 'http://www.pasteur.fr', 'picture' : 'pasteur.png', 'funds':''},
+    { 'name' : 'Scoap 3', 'website' : 'https://scoap3.org/', 'picture' : 'cern.png', 'funds':''},
     #{ 'name' : '', 'website' : '', 'picture' : '', 'funds':''},
     # copy paste the line above and write your informations please
 ]

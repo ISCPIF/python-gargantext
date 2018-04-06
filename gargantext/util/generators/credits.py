@@ -14,17 +14,6 @@ _members = [
      'picture' : 'david.jpg',
      'role':'principal investigator'},
 
-    { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.',
-     'mail' : 'kaisleanATgmail.com',
-     'website'  : 'http://www.pksm3.droppages.com',
-     'picture' : 'samuel.jpg',
-     'role' : 'developer'},
-
-    { 'first_name' : 'Maziyar', 'last_name' : 'Panahi',
-     'mail' : '',
-     'website'  : 'http://iscpif.fr',
-     'picture' : 'maziyar.jpg',
-     'role' : 'developer'},
 
     { 'first_name' : 'Alexandre', 'last_name' : 'Delanoë',
      'mail' : 'alexandre+gargantextATdelanoe.org',
@@ -59,6 +48,13 @@ _membersPast = [
      'mail' : '',
      'website' : 'https://github.com/elishowk',
      'picture' : '', 'role' : 'developer'},
+    
+    { 'first_name' : 'Samuel', 'last_name' : 'Castillo J.',
+     'mail' : 'kaisleanATgmail.com',
+     'website'  : 'http://www.pksm3.droppages.com',
+     'picture' : 'samuel.jpg',
+     'role' : 'developer'},
+
         ]
 
 _institutions = [

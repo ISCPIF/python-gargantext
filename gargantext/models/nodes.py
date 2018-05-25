@@ -2,14 +2,11 @@ from gargantext.util.db import session
 from gargantext.util.files import upload
 from gargantext.constants import *
 
-# Uncomment to make column full text searchable
-#from sqlalchemy_utils.types import TSVectorType
-
 from datetime import datetime
 
 from .base import Base, Column, ForeignKey, relationship, TypeDecorator, Index, \
-                  Integer, Float, String, DateTime, JSONB, \
-                  MutableList, MutableDict, validates, ValidatorMixin
+                  Integer, Float, String, DateTime, JSONB, TSVectorType, \
+                  MutableList, MutableDict, validates, ValidatorMixin, text
 from .users import User
 
 __all__ = ['Node', 'NodeNode', 'CorpusNode']
@@ -47,7 +44,7 @@ class Node(ValidatorMixin, Base):
     >>> session.query(Node).filter_by(typename='USER').first() # doctest: +ELLIPSIS
     <UserNode(...)>
 
-    But beware, there are some caveats with bulk queries. In this case typename
+    But beware, there are some pitfalls with bulk queries. In this case typename
     MUST be specified manually.
 
     >>> session.query(UserNode).delete() # doctest: +SKIP
@@ -60,28 +57,33 @@ class Node(ValidatorMixin, Base):
             Index('nodes_user_id_typename_parent_id_idx', 'user_id', 'typename', 'parent_id'),
             Index('nodes_hyperdata_idx', 'hyperdata', postgresql_using='gin'))
 
-    # TODO
-    # create INDEX full_text_idx on nodes using gin(to_tsvector('english', hyperdata ->> 'abstract' || 'title'));
-
     id = Column(Integer, primary_key=True)
 
-    typename = Column(NodeType, index=True)
+    typename = Column(NodeType, index=True, nullable=False)
     __mapper_args__ = { 'polymorphic_on': typename }
 
     # foreign keys
-    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user_id       = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'),
+                           nullable=False)
     user          = relationship(User)
 
     parent_id     = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     parent        = relationship('Node', remote_side=[id])
 
-    name = Column(String(255))
-    date  = Column(DateTime(timezone=True), default=datetime.now)
+    name = Column(String(255), nullable=False, server_default='')
+    date = Column(DateTime(timezone=True), nullable=False,
+                  server_default=text('CURRENT_TIMESTAMP'))
 
-    hyperdata     = Column(JSONB, default=dict)
-    # metadata (see https://bashelton.com/2014/03/updating-postgresql-json-fields-via-sqlalchemy/)
-    # To make search possible uncomment the line below
-    #search_vector = Column(TSVectorType('hyperdata'))
+    hyperdata = Column(JSONB, default=dict, nullable=False,
+                       server_default=text("'{}'::jsonb"))
+
+    # Create a TSVECTOR column to use fulltext search feature of PostgreSQL.
+    # We need to create a trigger to update this column on update and insert,
+    # it's created in alembic/version/1fb4405b59e1_add_english_fulltext_index_on_nodes_.py
+    #
+    # To use this column: session.query(DocumentNode) \
+    #                            .filter(Node.title_abstract.match('keyword'))
+    title_abstract = Column(TSVectorType(regconfig='english'))
 
     def __new__(cls, *args, **kwargs):
         if cls is Node and kwargs.get('typename'):

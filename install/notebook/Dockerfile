@@ -106,17 +106,17 @@ RUN apt-get update && apt-get install -y \
         libblas-dev                            \
         liblapack-dev
 
-USER notebooks
-
-RUN cd  /home/notebooks                              \
-    &&  curl -sSL https://get.haskellstack.org/ | sh  \
-    &&  stack setup                                    \
-    &&  git clone https://github.com/gibiansky/IHaskell \
-    &&  . /env_3-5/bin/activate                          \
-    &&  cd IHaskell                                       \
-    &&  stack install gtk2hs-buildtools                    \
-    &&  stack install --fast                                \
-    &&  /root/.local/bin/ihaskell install --stack
-
+#USER notebooks
+#
+#RUN cd  /home/notebooks                              \
+#    &&  curl -sSL https://get.haskellstack.org/ | sh  \
+#    &&  stack setup                                    \
+#    &&  git clone https://github.com/gibiansky/IHaskell \
+#    &&  . /env_3-5/bin/activate                          \
+#    &&  cd IHaskell                                       \
+#    &&  stack install gtk2hs-buildtools                    \
+#    &&  stack install --fast                                \
+#    &&  /root/.local/bin/ihaskell install --stack
+#
 
 

@@ -1170,10 +1170,10 @@
 
                           // REST and callback
                           garganrest.metrics.update(corpusId, function(){
-                            statusDiv.innerHTML = '<div class="statusinfo">Corpus updated</div>'
+                            statusDiv.innerHTML = '<div class="statusinfo">Recount is started, please wait, you will be sent a notification email.</div>'
 
                             // revert visual
-                            setTimeout(function(){ statusDiv.innerHTML = previousStatus }, 2000);
+                            //setTimeout(function(){ statusDiv.innerHTML = previousStatus }, 2000);
                           })
 
                         }

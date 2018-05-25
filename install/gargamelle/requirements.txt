@@ -28,11 +28,13 @@ RandomWords==0.1.12
 ujson==1.35
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 networkx==1.11
-pandas==0.18.0
+pandas==0.21.0
 six==1.10.0
 lxml==3.5.0
 requests-futures==0.9.7
 bs4==0.0.1
 requests==2.10.0
 alembic>=0.9.2
-# SQLAlchemy-Searchable==0.10.4
+SQLAlchemy==1.1.14
+SQLAlchemy-Searchable==0.10.4
+SQLAlchemy-Utils==0.32.16

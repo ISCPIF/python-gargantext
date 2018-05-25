@@ -42,3 +42,7 @@ ipython==5.2.0
 ipython-genutils==0.1.0
 ipywidgets
 matplotlib==2.0.2
+alembic>=0.9.2
+SQLAlchemy==1.1.14
+SQLAlchemy-Searchable==0.10.4
+SQLAlchemy-Utils==0.32.16

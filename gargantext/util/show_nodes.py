@@ -61,12 +61,14 @@ def nodes(parent=None, group_by='typename', order_by='typename', has_child='chec
 
 def node_show(node, prefix='', maxlen=60):
     if node.children > 0 or node.cnt == 1:
+        node_id = '<{}> '.format(node.id)
         name = node.name[:maxlen] + '..' if len(node.name) > maxlen else node.name
-        label = Fore.CYAN + name + Fore.RESET
+        label = node_id + Fore.CYAN + name + Fore.RESET
     else:
         label = Fore.MAGENTA + str(node.cnt) + Fore.RESET
 
-    print(prefix, '%s%s %s' % (Fore.GREEN, node.typename, label), sep='')
+    typename = Fore.GREEN + node.typename + Fore.RESET
+    print(prefix, '%s %s' % (typename, label), sep='')
 
 
 def tree_show(node, pos=FIRST|LAST, level=0, prefix='', maxlen=60, compact=True):

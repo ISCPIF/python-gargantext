@@ -7,6 +7,8 @@ the name of "ReplaceableObject" class.
 This recipe is directly borrowed from Alembic documentation, see
 http://alembic.zzzcomputing.com/en/latest/cookbook.html#replaceable-objects
 
+**2017-10-09** ReversibleOp.define has been added to reduce boilerplate code.
+
 """
 
 from alembic.operations import Operations, MigrateOperation
@@ -16,9 +18,9 @@ __all__ = ['ReplaceableObject']
 
 
 class ReplaceableObject(object):
-    def __init__(self, name, sqltext):
+    def __init__(self, name, *args):
         self.name = name
-        self.sqltext = sqltext
+        self.args = args
 
 
 class ReversibleOp(MigrateOperation):
@@ -58,38 +60,41 @@ class ReversibleOp(MigrateOperation):
         operations.invoke(drop_old)
         operations.invoke(create_new)
 
+    @classmethod
+    def define(cls, name, cname=None, register=Operations.register_operation):
+        def create(self):
+            return CreateOp(self.target)
 
-@Operations.register_operation("create_view", "invoke_for_target")
-@Operations.register_operation("replace_view", "replace")
-class CreateViewOp(ReversibleOp):
-    def reverse(self):
-        return DropViewOp(self.target)
+        def drop(self):
+            return DropOp(self.target)
+
+        name = name.lower()
+        cname = cname or name.capitalize()
+
+        CreateOp = type('Create%sOp' % cname, (ReversibleOp,), {'reverse': drop})
+        DropOp = type('Drop%sOp' % cname, (ReversibleOp,), {'reverse': create})
+
+        CreateOp = register('create_' + name, 'invoke_for_target')(CreateOp)
+        CreateOp = register('replace_' + name, 'replace')(CreateOp)
+
+        DropOp = register('drop_' + name, 'invoke_for_target')(DropOp)
+
+        return (CreateOp, DropOp)
 
 
-@Operations.register_operation("drop_view", "invoke_for_target")
-class DropViewOp(ReversibleOp):
-    def reverse(self):
-        return CreateViewOp(self.view)
-
-
-@Operations.register_operation("create_sp", "invoke_for_target")
-@Operations.register_operation("replace_sp", "replace")
-class CreateSPOp(ReversibleOp):
-    def reverse(self):
-        return DropSPOp(self.target)
-
-
-@Operations.register_operation("drop_sp", "invoke_for_target")
-class DropSPOp(ReversibleOp):
-    def reverse(self):
-        return CreateSPOp(self.target)
+CreateViewOp,    DropViewOp    = ReversibleOp.define('view')
+CreateRoleOp,    DropRoleOp    = ReversibleOp.define('role')
+CreateSchemaOp,  DropSchemaOp  = ReversibleOp.define('schema')
+CreateSPOp,      DropSPOp      = ReversibleOp.define('sp', 'SP')
+CreateTriggerOp, DropTriggerOp = ReversibleOp.define('trigger')
+CreatePolicyOp,  DropPolicyOp  = ReversibleOp.define('policy')
 
 
 @Operations.implementation_for(CreateViewOp)
 def create_view(operations, operation):
     operations.execute("CREATE VIEW %s AS %s" % (
         operation.target.name,
-        operation.target.sqltext
+        operation.target.args[0]
     ))
 
 
@@ -98,11 +103,37 @@ def drop_view(operations, operation):
     operations.execute("DROP VIEW %s" % operation.target.name)
 
 
+@Operations.implementation_for(CreateRoleOp)
+def create_role(operations, operation):
+    args = operation.target.args
+    operations.execute(
+        "CREATE ROLE %s WITH %s" % (
+            operation.target.name,
+            args[0] if len(args) else 'NOLOGIN'
+        )
+    )
+
+
+@Operations.implementation_for(DropRoleOp)
+def drop_role(operations, operation):
+    operations.execute("DROP ROLE %s" % operation.target.name)
+
+
+@Operations.implementation_for(CreateSchemaOp)
+def create_schema(operations, operation):
+    operations.execute("CREATE SCHEMA %s" % operation.target.name)
+
+
+@Operations.implementation_for(DropSchemaOp)
+def drop_schema(operations, operation):
+    operations.execute("DROP SCHEMA %s" % operation.target.name)
+
+
 @Operations.implementation_for(CreateSPOp)
 def create_sp(operations, operation):
     operations.execute(
         "CREATE FUNCTION %s %s" % (
-            operation.target.name, operation.target.sqltext
+            operation.target.name, operation.target.args[0]
         )
     )
 
@@ -110,3 +141,44 @@ def create_sp(operations, operation):
 @Operations.implementation_for(DropSPOp)
 def drop_sp(operations, operation):
     operations.execute("DROP FUNCTION %s" % operation.target.name)
+
+
+@Operations.implementation_for(CreateTriggerOp)
+def create_trigger(operations, operation):
+    args = operation.target.args
+    operations.execute(
+        "CREATE TRIGGER %s %s ON %s %s" % (
+            operation.target.name, args[0], args[1], args[2]
+        )
+    )
+
+
+@Operations.implementation_for(DropTriggerOp)
+def drop_trigger(operations, operation):
+    operations.execute(
+        "DROP TRIGGER %s ON %s" % (
+            operation.target.name,
+            operation.target.args[1]
+        )
+    )
+
+
+@Operations.implementation_for(CreatePolicyOp)
+def create_policy(operations, operation):
+    operations.execute(
+        "CREATE POLICY %s ON %s %s" % (
+            operation.target.name,
+            operation.target.args[0],
+            operation.target.args[1],
+        )
+    )
+
+
+@Operations.implementation_for(DropPolicyOp)
+def drop_policy(operations, operation):
+    operations.execute(
+        "DROP POLICY %s ON %s" % (
+            operation.target.name,
+            operation.target.args[0],
+        )
+    )

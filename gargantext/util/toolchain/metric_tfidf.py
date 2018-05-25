@@ -23,7 +23,7 @@ from datetime             import datetime
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
-def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
+def compute_occs(corpus, overwrite_id = None, groupings_id = None, year=None, start=None, end=None, interactiv=False):
     """
     Calculates sum of occs per ngram (or per mainform if groups) within corpus
                  (used as info in the ngrams table view)
@@ -61,6 +61,8 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
                     .group_by(NodeNgram.ngram_id)
                    )
 
+        if year is not None:
+            occs_q = occs_q.filter(Node.hyperdata["publication_year"].astext == str(year))
 
     #   difficult case: with groups
     #                   ------------
@@ -108,6 +110,10 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
                     # for the sum
                     .group_by("counted_form")
                  )
+        
+        if year is not None:
+            occs_q = occs_q.filter(Node.hyperdata["publication_year"].astext == str(year))
+
 
     #print(str(occs_q.all()))
     occ_sums = occs_q.all()
@@ -134,13 +140,17 @@ def compute_occs(corpus, overwrite_id = None, groupings_id = None,):
 
     # £TODO  make it NodeNgram instead NodeNodeNgram ! and rebase :/
     #        (idem ti_ranking)
-    bulk_insert(
-        NodeNodeNgram,
-        ('node1_id' , 'node2_id', 'ngram_id', 'score'),
-        ((the_id, corpus.id,  res[0], res[1]) for res in occ_sums)
-    )
 
-    return the_id
+    if interactiv is False :
+        bulk_insert(
+            NodeNodeNgram,
+            ('node1_id' , 'node2_id', 'ngram_id', 'score'),
+            ((the_id, corpus.id,  res[0], res[1]) for res in occ_sums)
+        )
+
+        return the_id
+    else :
+        return [(res[0], res[1]) for res in occ_sums]
 
 
 def compute_ti_ranking(corpus,

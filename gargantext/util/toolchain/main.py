@@ -13,7 +13,7 @@ from .ngram_coocs         import compute_coocs
 #from .ngram_coocs_old_sqlalchemy_version import compute_coocs
 from .metric_specgen      import compute_specgen
 from .list_map            import do_maplist
-from .mail_notification   import notify_owner
+from .mail_notification   import notify_owner, notify_recount
 from gargantext.util.db   import session
 from gargantext.models    import Node
 
@@ -62,12 +62,12 @@ def parse_extract_indexhyperdata(corpus):
 
     # apply actions
     print('CORPUS #%d' % (corpus.id))
-    
+
     corpus.status('Docs', progress=1)
     corpus.save_hyperdata()
     session.commit()
     parse(corpus)
-    
+
     docs = corpus.children("DOCUMENT").count()
     print('CORPUS #%d: parsed %d' % (corpus.id, docs))
     extract_ngrams(corpus)
@@ -242,6 +242,19 @@ def recount(corpus_id):
     corpus.save_hyperdata()
     session.commit()
 
+    # START OF KLUDGE...
+    from gargantext.models import NodeNgram, DocumentNode
+    from .ngrams_addition import index_new_ngrams
+    maplist_id = corpus.children("MAPLIST").first().id
+    ngram_ids = session.query(NodeNgram.ngram_id.distinct())
+    indexed_ngrams = ngram_ids.join(DocumentNode).filter(DocumentNode.parent_id==corpus.id)
+    not_indexed_ngrams = ngram_ids.filter(NodeNgram.node_id==maplist_id,
+                                          ~NodeNgram.ngram_id.in_(indexed_ngrams))
+    not_indexed_ngrams = [x[0] for x in not_indexed_ngrams]
+    added = index_new_ngrams(not_indexed_ngrams, corpus)
+    print('RECOUNT #%d: [%s] indexed %s ngrams' % (corpus.id, t(), added))
+    # ...END OF KLUDGE
+
     # -> overwrite occurrences (=> NodeNodeNgram)
     occ_id = compute_occs(corpus,
                             groupings_id = group_id,
@@ -285,6 +298,11 @@ def recount(corpus_id):
     corpus.status('Recounting mini-workflow', progress=10, complete=True)
     corpus.save_hyperdata()
     session.commit()
+
+    if not DEBUG:
+        print('RECOUNT #%d: [%s] FINISHED Sending email notification' % (corpus.id, t()))
+        notify_recount(corpus)
+
 
 def t():
     return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

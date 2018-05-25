@@ -7,6 +7,12 @@
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
   }]);
+
+  function url(path) {
+    // adding explicit "http[s]://" -- for cross origin requests
+    return location.protocol + '//' + window.GARG_ROOT_URL + path;
+  }
+
   /*
   * DocumentHttpService: Read Document
   * ===================
@@ -98,9 +104,7 @@
   */
   http.factory('MainApiAddNgramHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL
-                + "/api/ngrams?text=:ngramStr&corpus=:corpusId&testgroup",
+      url("/api/ngrams?text=:ngramStr&corpus=:corpusId&testgroup"),
       {
         ngramStr: '@ngramStr',
         corpusId: '@corpusId',
@@ -131,9 +135,7 @@
 
   http.factory('MainApiChangeNgramHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL
-                + "/api/ngramlists/change?list=:listId&ngrams=:ngramIdList",
+      url("/api/ngramlists/change?list=:listId&ngrams=:ngramIdList"),
       {
         listId: '@listId',
         ngramIdList: '@ngramIdList'  // list in str form (sep=","): "12,25,30"
@@ -171,8 +173,7 @@
   */
   http.factory('MainApiFavoritesHttpService', function($resource) {
     return $resource(
-       // adding explicit "http://" b/c this a cross origin request
-      'http://' + window.GARG_ROOT_URL  + "/api/nodes/:corpusId/favorites?docs=:docId",
+      url("/api/nodes/:corpusId/favorites?docs=:docId"),
       {
         corpusId: '@corpusId',
         docId: '@docId'

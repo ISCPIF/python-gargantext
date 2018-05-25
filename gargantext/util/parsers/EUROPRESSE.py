@@ -81,8 +81,9 @@ class EuropresseParser(Parser):
         #         "./header/div/p[@class='titreArticleVisu grandTitre']"
         #
         # title_xpath (chemin plus générique)
-        title_xpath         = "./header//*[contains(@class,'titreArticle')]"
-        text_xpath          = "./section/div[@class='DocText']//p"
+        title_xpath         = "./header//*[contains(@class,'titreArticleVisu rdp__articletitle')]"
+        authors_xpath       = "./header//*[contains(@class,'docAuthors')]"
+        text_xpath          = "./section/div[@class='DocText clearfix']//p"
         entire_header_xpath = "./header"
 
         # diagnosed during date retrieval and used for rubrique
@@ -144,6 +145,15 @@ class EuropresseParser(Parser):
                         yield(hyperdata)
                         continue
 
+                    # Authors
+                    # --------
+                    try:
+                        authors    = scrap_text(html_article.xpath(authors_xpath))
+                        hyperdata['authors'] = '; '.join([author for author in authors])
+
+                    except:
+                        pass
+
 
                     # FULLTEXT
                     # --------
@@ -153,6 +163,7 @@ class EuropresseParser(Parser):
 
                     except:
                         pass
+
 
                     # PUBLICATIONNAME
                     # ----------------

@@ -230,6 +230,7 @@ def countCooccurrences( corpus_id=None      , cooc_id=None
         session.commit()
 
         #data = cooc2graph(coocNode.id, cooc, distance=distance, bridgeness=bridgeness)
-        #return data
+    else:
+        return cooc
 
     return(coocNode.id, cooc)

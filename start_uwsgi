@@ -1,5 +1,7 @@
 #!/bin/bash
 
-FILE="/var/log/gargantext/uwsgi/$(date +%Y%m%d-%H:%M:%S).log"
-#touch /var/log/gargantext/uwsgi/$FILE && sudo 
-sudo uwsgi gargantext.ini --logto $FILE
+# Script to start uwsgi
+uwsgi /srv/gargantext/gargantext.ini 
+
+echo "To reload UWSGI: touch /tmp/gargantext.reload"
+

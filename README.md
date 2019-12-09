@@ -4,7 +4,7 @@
 [Warnnings] the new code version of Gargantext is published on our own
 gitlab server:
 - [backend](https://gitlab.iscpif.fr/gargantext/haskell-gargantext)
-- [fronted](https://gitlab.iscpif.fr/gargantext/purescript-gargantext)
+- [frontend](https://gitlab.iscpif.fr/gargantext/purescript-gargantext)
 
 
 

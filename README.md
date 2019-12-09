@@ -1,3 +1,13 @@
+
+# New git repo !
+
+[Warnnings] the new code version of Gargantext is published on our own
+gitlab server:
+- [backend](https://gitlab.iscpif.fr/gargantext/haskell-gargantext)
+- [fronted](https://gitlab.iscpif.fr/gargantext/purescript-gargantext)
+
+
+
 # About Gargantext
 Gargantext is a collaborative web platform for the exploration of sets
 of unstructured documents. It combines tools from natural language

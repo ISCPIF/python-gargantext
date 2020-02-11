@@ -6,7 +6,7 @@ billiard==3.3.0.23
 celery==3.1.25
 chardet==2.3.0
 dateparser==0.3.5
-Django==1.10.5
+Django==1.11.28
 django-celery==3.2.1
 django-pgfields==1.4.4
 django-pgjsonb==0.0.23

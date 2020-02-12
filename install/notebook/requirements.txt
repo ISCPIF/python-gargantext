@@ -16,7 +16,7 @@ html5lib==0.9999999
 jdatetime==1.7.2
 kombu==3.0.37                  # messaging
 langdetect==1.0.6              #detectinglanguage
-nltk==3.1
+nltk==3.4.5
 numpy==1.13.1
 psycopg2==2.6.2
 pycountry==1.20

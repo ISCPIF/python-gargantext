@@ -1,5 +1,5 @@
 # try bottleneck
-eventlet==0.20.1
+eventlet==0.31.0
 amqp==1.4.9
 anyjson==0.3.3
 billiard==3.3.0.23

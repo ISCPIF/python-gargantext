@@ -38,7 +38,7 @@ jupyter==1.0.0
 jupyter-client==5.0.0
 jupyter-console==5.1.0
 jupyter-core==4.3.0
-ipython==5.2.0
+ipython==7.16.3
 ipython-genutils==0.1.0
 ipywidgets
 matplotlib==2.0.2

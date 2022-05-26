@@ -24,7 +24,7 @@ python-dateutil==2.4.2
 pytz==2016.10                   # timezones
 PyYAML==3.11
 RandomWords==0.1.12
-ujson==1.35
+ujson==5.2.0
 umalqurra==0.2                 # arabic calendars (?? why use ??)
 networkx==1.11
 pandas==0.18.0

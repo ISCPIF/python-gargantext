@@ -18,7 +18,7 @@ jdatetime==1.7.2
 kombu==3.0.37                  # messaging
 langdetect==1.0.6              #detectinglanguage
 nltk==3.1
-numpy==1.13.1
+numpy==1.21.0
 psycopg2==2.6.2
 pycountry==1.20
 python-dateutil==2.4.2

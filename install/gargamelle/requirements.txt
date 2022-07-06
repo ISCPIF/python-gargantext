@@ -12,7 +12,7 @@ django-pgfields==1.4.4
 django-pgjsonb==0.0.23
 djangorestframework==3.5.3
 djangorestframework-jwt==1.9.0
-html5lib==0.9999999
+html5lib==0.999999999
 python-igraph>=0.7.1
 jdatetime==1.7.2
 kombu==3.0.37                  # messaging
